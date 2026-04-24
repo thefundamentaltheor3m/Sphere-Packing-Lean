@@ -164,7 +164,6 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     choose z hz using hy
     simp only [hz, Int.cast_add, Int.cast_mul, Int.cast_one, Int.cast_ofNat] at *
     clear y hz
-    have hi (i : Fin 8) : x i = z i + 2⁻¹ := by linear_combination - 2⁻¹ * hy' i
     have hspan : span ℤ (evenLattice R 8) = evenLattice R 8 := by simp
     rw [← hspan, sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, hspan]
     refine ⟨1, LinearMap.intCast R z, ?_, by
@@ -173,7 +172,8 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     rw [← SetLike.mem_coe, coe_evenLattice]
     refine ⟨by simp, ?_⟩
     simp only [LinearMap.intCast_apply]
-    simp_rw [hi, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+    simp_rw [show ∀ i, x i = z i + 2⁻¹ from fun i => by linear_combination - 2⁻¹ * hy' i,
+      Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
       nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
     exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
   · rw [Submodule.span_le]
@@ -296,16 +296,15 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     obtain ⟨a, ha⟩ := AddCommGroup.modEq_iff_zsmul'.1 h1.symm
     simp only [sub_zero, zsmul_eq_mul] at ha
     rw [ha, mul_inv_cancel_right₀ (NeZero.ne 2)] at h0'
-    obtain h0 | h0 := h0
-    · obtain ⟨n, hn⟩ := h0 7; exact ⟨a - 4 * n, by simp [hn, h0']⟩
-    · obtain ⟨n, hn⟩ := h0 7
-      exact ⟨a - 2 * n, by norm_num [hn, h0', mul_add, add_comm, ← mul_assoc]⟩
+    obtain h0 | h0 := h0 <;> obtain ⟨n, hn⟩ := h0 7
+    · exact ⟨a - 4 * n, by simp [hn, h0']⟩
+    · exact ⟨a - 2 * n, by norm_num [hn, h0', mul_add, add_comm, ← mul_assoc]⟩
   obtain ⟨c7, hc7⟩ : ∃ n : ℤ, (n : R) = c' 7 := by
     have hc7 : c' 7 = 2 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse, mul_comm]
-    obtain ⟨(h0 | h0), _⟩ := Submodule.mem_E8''.1 hv
-    · obtain ⟨n, hn⟩ := h0 7; exact ⟨2 * n, by simp [hn, hc7]⟩
-    · obtain ⟨n, hn⟩ := h0 7; exact ⟨2 * n + 1, by simp [← hn, hc7, mul_add]⟩
+    obtain ⟨(h0 | h0), _⟩ := Submodule.mem_E8''.1 hv <;> obtain ⟨n, hn⟩ := h0 7
+    · exact ⟨2 * n, by simp [hn, hc7]⟩
+    · exact ⟨2 * n + 1, by simp [← hn, hc7, mul_add]⟩
   obtain ⟨c1, hc1⟩ := aux ![0, 1, 1, 1, 1, 1, 1, -6] rfl 1
     (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c2, hc2⟩ := aux ![0, 0, 1, 1, 1, 1, 1, -5] rfl 2

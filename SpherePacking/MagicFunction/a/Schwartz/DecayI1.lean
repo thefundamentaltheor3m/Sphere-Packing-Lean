@@ -68,7 +68,7 @@ public lemma norm_φ₀''_le (s : ℝ) (hs : 1 ≤ s) :
   have hpos : 0 < (I * (s : ℂ)).im := by simpa using lt_of_lt_of_le (by norm_num) hs
   let z : ℍ := ⟨I * (s : ℂ), hpos⟩
   have hz_im : z.im = s := by simp [z, UpperHalfPlane.im]
-  simpa [Cφ, hz_im, show φ₀'' (I * (s : ℂ)) = φ₀ z from by simpa [z] using φ₀''_def hpos] using
+  simpa [Cφ, hz_im, show φ₀'' (I * (s : ℂ)) = φ₀ z by simpa [z] using φ₀''_def hpos] using
     (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.2 z
       (hz_im ▸ lt_of_lt_of_le (by norm_num : (1/2 : ℝ) < 1) hs)
 
@@ -76,13 +76,13 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     ‖g r s‖ ≤ Cφ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   have hnorm : ‖MagicFunction.a.IntegralEstimates.I₃.g r s‖ = ‖g r s‖ := by
     let A : ℂ := (-I) * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
-    simp [show ‖cexp (π * I * r)‖ = (1 : ℝ) from by
+    simp [show ‖cexp (π * I * r)‖ = (1 : ℝ) by
             simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r),
-      show ‖cexp (-(π * I * r))‖ = (1 : ℝ) from by
+      show ‖cexp (-(π * I * r))‖ = (1 : ℝ) by
             simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r),
-      show MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) from by
+      show MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) by
         simp [MagicFunction.a.IntegralEstimates.I₃.g, A, mul_assoc, mul_left_comm, mul_comm],
-      show g r s = A * cexp (-π * I * r) from by
+      show g r s = A * cexp (-π * I * r) by
         simp [g, A, mul_assoc, mul_left_comm, mul_comm]]
   refine ((by simpa [hnorm] using
     MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := r) s hs :
@@ -97,7 +97,7 @@ lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 *
   calc
     ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
     _ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
-        rw [show ‖(-π : ℂ)‖ = (π : ℝ) from by
+        rw [show ‖(-π : ℂ)‖ = (π : ℝ) by
           simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
         gcongr; exact norm_add_le _ _
     _ ≤ (π : ℝ) * (1 + 1) := by gcongr; simp
@@ -245,8 +245,8 @@ lemma pow_mul_exp_neg_bounded (k : ℕ) :
     (show Continuous fun u : ℝ ↦ u ^ k * rexp (-u) by fun_prop).continuousOn
   refine ⟨max 1 (u0 ^ k * rexp (-u0)), fun u hu => ?_⟩
   by_cases huN : u ≤ max N 0
-  · exact (hu0max ⟨hu, huN⟩).trans (le_max_right _ _)
-  · exact (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)
+  exacts [(hu0max ⟨hu, huN⟩).trans (le_max_right _ _),
+    (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)]
 
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
@@ -279,7 +279,7 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
   calc
     x ^ k * rexp (-π * x / s)
         = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
-          rw [congrArg rexp (by show -π * x / s = -u; ring : -π * x / s = -u), hxpow]; ring
+          rw [congrArg rexp (show -π * x / s = -u by ring), hxpow]; ring
     _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by gcongr; exact hCpow u hu0
     _ = (π ^ k)⁻¹ * Cpow * s ^ k := by ring
 
@@ -327,11 +327,6 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_bounded (k := k)
   let I : ℝ := ∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)
   refine ⟨(2 * π) ^ n * (Cφ * ((π ^ k)⁻¹ * Cpow) * I), fun x hx => ?_⟩
-  have hconst : (∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s))) =
-      ((2 * π) ^ n * Cφ) * (∫ s in Ici (1 : ℝ), rexp (-2 * π * s) * rexp (-π * x / s)) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
-        ((2 * π) ^ n * Cφ) (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s))
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖
         = x ^ k * ‖iteratedDeriv n I₁' x‖ := by
@@ -340,7 +335,11 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     _ ≤ x ^ k * (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) :=
         mul_le_mul_of_nonneg_left (norm_iteratedDeriv_le (n := n) (x := x)) (by positivity)
     _ = ((2*π) ^ n * Cφ) * (x ^ k * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s))) := by
-        rw [hconst]; ring
+        rw [show (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) =
+          ((2 * π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s)) by
+          simpa [mul_assoc, mul_left_comm, mul_comm] using
+            MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
+              ((2 * π) ^ n * Cφ) (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s))]; ring
     _ ≤ ((2 * π) ^ n * Cφ) * (((π ^ k)⁻¹ * Cpow) * I) := mul_le_mul_of_nonneg_left
         (xpow_integral_le_of_Cpow (k := k) (Cpow := Cpow) hCpow x hx)
         (mul_nonneg (by positivity) Cφ_pos.le)

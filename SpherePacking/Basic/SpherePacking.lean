@@ -144,38 +144,32 @@ open Real
     obtain ⟨y, hy, rfl⟩ := hy
     exact ⟨x + y, S.lattice_action hx hy, smul_add ..⟩
   lattice_discrete := by
-    have := S.lattice_discrete
-    rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
-    obtain ⟨ε, hε, hε'⟩ := this
+    have hd := S.lattice_discrete
+    rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at hd ⊢
+    obtain ⟨ε, hε, hε'⟩ := hd
     refine ⟨c * ε, mul_pos hc hε, ?_⟩
     simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
     simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
     refine Or.inr ?_
-    specialize hε' x hx
-    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm,
-      Submodule.mk_eq_zero] at hx' hε'
+    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm] at hx'
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
-    exact hε' hx'
+    simpa using hε' x hx hx'
   lattice_isZLattice := by
     use ?_
     rw [← S.lattice_isZLattice.span_top]
     ext v
     simp_rw [Submodule.mem_span]
     constructor <;> intro h p hp
-    · specialize h (c • p) ?_
-      · rw [Submodule.coe_pointwise_smul]
-        exact Set.smul_set_mono hp
-      · have : c • v ∈ c • p := Submodule.smul_mem _ _ h
-        have := Submodule.smul_mem_pointwise_smul _ c⁻¹ _ this
-        simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul]
-    · specialize h (c⁻¹ • p) ?_
-      · rw [Submodule.coe_pointwise_smul] at *
+    · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
+      simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
+        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
+    · specialize h (c⁻¹ • p) (by
+        rw [Submodule.coe_pointwise_smul] at *
         have := Set.smul_set_mono (a := c⁻¹) hp
-        rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this
-      · have : c⁻¹ • v ∈ c⁻¹ • p := Submodule.smul_mem _ _ h
-        have := Submodule.smul_mem_pointwise_smul _ c _ this
-        simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
+        rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this)
+      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
+        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
 }
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -287,9 +281,8 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
-  have h := volume.mono <|
+  have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
-  change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
@@ -303,9 +296,8 @@ theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
       volume (S.balls ∩ ball 0 (R - S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
-  have h := volume.mono <|
+  have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
-  change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   exact ENNReal.div_le_of_le_mul h
