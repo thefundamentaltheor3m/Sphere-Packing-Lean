@@ -341,7 +341,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) from
       MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => by
         have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by
-          simpa using lt_trans (show (0 : ℝ) < 1 by norm_num) ht
+          simpa using lt_trans zero_lt_one ht
         with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)]
     simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ)))
@@ -372,13 +372,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
         MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
           hpt t (lt_trans (by norm_num) ht)]
-      simpa [mul_assoc, mul_left_comm, mul_comm] using (hsplitW (-bContourWeight u a)).trans
-        (show (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) =
-              VI * (-bContourWeight u a) by
-          dsimp [VI]
-          simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-            (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
+      simpa [mul_assoc, mul_left_comm, mul_comm, VI] using (hsplitW (-bContourWeight u a)).trans
+        (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
+          (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
     have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
     have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
     have hCenter : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
@@ -389,11 +385,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) = VI := by
       simpa [add_comm, add_left_comm, add_assoc] using hVI_split.symm
     simp only [smul_eq_mul, neg_mul]; grind only
-  refine hsum.trans ?_
-  simp [show bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) by
-          simp [bContourWeight, mul_left_comm, mul_comm],
-        show bContourWeight u (-1 : ℂ) = Complex.exp (-(((π * u : ℝ) : ℂ) * I)) by
-          simp [bContourWeight, mul_left_comm, mul_comm],
-        sub_eq_add_neg, add_left_comm, add_comm, mul_assoc]
+  have hw1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
+    simp [bContourWeight, mul_left_comm, mul_comm]
+  have hw2 : bContourWeight u (-1 : ℂ) = Complex.exp (-(((π * u : ℝ) : ℂ) * I)) := by
+    simp [bContourWeight, mul_left_comm, mul_comm]
+  simpa [hw1, hw2, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
 
 end MagicFunction.g.CohnElkies.IntegralReps
