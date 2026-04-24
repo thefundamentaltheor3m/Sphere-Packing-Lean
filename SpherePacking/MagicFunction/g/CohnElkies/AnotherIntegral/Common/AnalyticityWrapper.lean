@@ -75,8 +75,6 @@ public theorem analyticOnNhd_integral_base_exp
       (hbase_cont.aestronglyMeasurable measurableSet_Ioi).mul
         ((by fun_prop : Continuous fun t : ℝ =>
           Complex.exp (-(π : ℂ) * z * (t : ℂ))).aestronglyMeasurable)
-    have hF_meas' : ∀ᶠ z in nhds u, AEStronglyMeasurable (F z) μ :=
-      Filter.Eventually.of_forall hF_meas
     have hF'_meas : AEStronglyMeasurable (F' u) μ :=
       ((by fun_prop : Continuous fun t : ℝ =>
         (-(π : ℂ) * (t : ℂ))).aestronglyMeasurable).mul (hF_meas u)
@@ -164,7 +162,8 @@ public theorem analyticOnNhd_integral_base_exp
       (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
         (s := Metric.ball u ε) (Metric.ball_mem_nhds u hε) (x₀ := u)
         (F := F) (F' := F') (bound := bound)
-        (hF_meas := hF_meas') (hF_int := hF_int) (hF'_meas := hF'_meas)
+        (hF_meas := Filter.Eventually.of_forall hF_meas)
+        (hF_int := hF_int) (hF'_meas := hF'_meas)
         (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2
     change DifferentiableWithinAt ℂ
         (fun z : ℂ => ∫ t in Set.Ioi (0 : ℝ), base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)))

@@ -56,8 +56,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
   have hE4norm : ‖E₄ z‖ ≤ E4B := by
     have htri : ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 := by
       simpa using norm_add_le (E₄ z - (1 : ℂ)) (1 : ℂ)
-    simp only [E4B]
-    linarith [hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le)]
+    simp only [E4B]; linarith [hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le)]
   have hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ) := by
     simpa [z, q] using hΔq t ht0 ht1
   have hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := by
@@ -102,12 +101,10 @@ public lemma exists_phi2'_sub_720_bound_ge :
   exact this.trans (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg)
 
 lemma norm_base240_sq_sub_target480_eq {q : ℝ} :
-    ‖(((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) -
-          ((1 : ℂ) + (480 : ℂ) * (q : ℂ)))‖ =
-        (240 ^ 2 : ℝ) * q ^ (2 : ℕ) := by
+    ‖(((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ)))‖ =
+      (240 ^ 2 : ℝ) * q ^ (2 : ℕ) := by
   rw [show ((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ)) =
-    (240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ) from by ring]
-  simp
+    (240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ) from by ring]; simp
 
 lemma norm_base_add_e_sq_sub_one_sub_480q_le
     {q CE4 B240 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le_one : q ≤ 1) {e : ℂ}
@@ -132,9 +129,9 @@ lemma norm_base_add_e_sq_sub_one_sub_480q_le
       _ ≤ (CE4 ^ 2) * q ^ (2 : ℕ) := mul_le_mul_of_nonneg_left
           (pow_le_pow_of_le_one hq_nonneg hq_le_one (by decide)) (sq_nonneg _)
   have htri : ‖(b + e) ^ (2 : ℕ) - t‖ ≤
-      ‖b ^ (2 : ℕ) - t‖ + ‖(2 : ℂ) * b * e‖ + ‖e ^ (2 : ℕ)‖ := by
-    rw [show (b + e) ^ (2 : ℕ) - t = (b ^ (2 : ℕ) - t) + (2 : ℂ) * b * e + e ^ (2 : ℕ) from by ring]
-    exact norm_add₃_le ..
+      ‖b ^ (2 : ℕ) - t‖ + ‖(2 : ℂ) * b * e‖ + ‖e ^ (2 : ℕ)‖ :=
+    (show (b + e) ^ (2 : ℕ) - t = (b ^ (2 : ℕ) - t) + (2 : ℂ) * b * e + e ^ (2 : ℕ) by ring) ▸
+      norm_add₃_le ..
   linarith
 
 lemma phi4_numerator_bound
@@ -198,18 +195,15 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       simpa [e, sub_eq_add_neg, add_assoc] using hE4err
     have hE : E₄ z = ((1 : ℂ) + (240 : ℂ) * (q : ℂ)) + e := by
       simp [e, sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
-    have hbase_norm : ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ B240 :=
-      calc ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖
-            ≤ ‖(1 : ℂ)‖ + ‖(240 : ℂ) * (q : ℂ)‖ := norm_add_le _ _
-        _ = 1 + 240 * q := by simp [abs_of_nonneg hq_nonneg]
-        _ ≤ B240 := by dsimp [B240]; linarith [hq_le_q1]
+    have hbase_norm : ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ B240 := by
+      have := norm_add_le ((1 : ℂ)) ((240 : ℂ) * (q : ℂ))
+      simp [abs_of_nonneg hq_nonneg, B240] at this ⊢; linarith [hq_le_q1]
     simpa [hE.symm] using
       norm_base_add_e_sq_sub_one_sub_480q_le (q := q) (CE4 := CE4) (B240 := B240)
         hq_nonneg hq_le_one he hbase_norm
   have hΔ3err : ‖Δ z - ((q : ℂ) + (-24 : ℂ) * ((q : ℂ) ^ (2 : ℕ)))‖ ≤ CΔ3 * q ^ (3 : ℕ) := by
     simpa [z, q, pow_two] using hΔ3 t ht0 ht1
-  have hExpq : (Real.exp (2 * π * t)) * q = 1 := by
-    rw [show q = Real.exp (-2 * π * t) from rfl, ← Real.exp_add]; simp
+  have hExpq : (Real.exp (2 * π * t)) * q = 1 := by rw [← Real.exp_add]; simp
   have hExpq3 : (Real.exp (2 * π * t)) * (q ^ (3 : ℕ)) = q ^ (2 : ℕ) := by
     linear_combination q ^ 2 * hExpq
   have hExpΔ :
@@ -221,8 +215,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       simpa [E, qC, Complex.ofReal_mul] using congrArg (fun x : ℝ => (x : ℂ)) hExpq
     have happ : E * approx = (1 : ℂ) + (-24 : ℂ) * qC := by
       have hE2 : E * (qC ^ 2) = qC := by linear_combination qC * hExpqC
-      simp only [approx, mul_add]
-      linear_combination hExpqC + (-24 : ℂ) * hE2
+      simp only [approx, mul_add]; linear_combination hExpqC + (-24 : ℂ) * hE2
     rw [show E * Δ z - ((1 : ℂ) + (-24 : ℂ) * qC) = E * (Δ z - approx) by rw [mul_sub, happ],
       norm_mul, show ‖E‖ = Real.exp (2 * π * t) from norm_ofReal_exp _]
     calc Real.exp (2*π*t) * ‖Δ z - approx‖

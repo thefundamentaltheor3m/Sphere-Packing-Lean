@@ -126,8 +126,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
   set x : ℂ := H₂.resToImagAxis t
   set w : ℂ := A * (x ^ (2 : ℕ))
   have heu : e * u = 1 := by
-    rw [show e * u = Real.exp (2 * Real.pi * t + -(2 : ℝ) * Real.pi * t) from by
-      simp [e, u, ← Real.exp_add]]; simp
+    simp [e, u, ← Real.exp_add, show 2 * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring]
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
   have hw_tail :
       ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
@@ -262,8 +261,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
   have hC0 : 0 ≤ C0 := by positivity
   have heu : e * u = 1 := by
-    rw [show e * u = Real.exp (2 * Real.pi * t + -(2 : ℝ) * Real.pi * t) from by
-      simp [e, u, ← Real.exp_add]]; simp
+    simp [e, u, ← Real.exp_add, show 2 * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring]
   have hA8u : A * ((8 * u : ℝ) : ℂ) = ((1 / 32 : ℝ) : ℂ) := by
     simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
       congrArg (fun r : ℝ => (r : ℂ))
