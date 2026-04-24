@@ -125,15 +125,14 @@ lemma cuspFunction_qParam_eq {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL 
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
     ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
-  rw [show ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) from by
+  rw [show ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) by
       rw [show cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) =
-          (cexp (2 * π * Complex.I * z)) ^ (j + k) from by
+          (cexp (2 * π * Complex.I * z)) ^ (j + k) by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           (Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)),
-        show cexp (2 * π * Complex.I * z) = (q : ℂ) from by
+        show cexp (2 * π * Complex.I * z) = (q : ℂ) by
           simpa [Periodic.qParam] using hqC]
-      simp [abs_of_nonneg hq_nonneg],
-    pow_add]
+      simp [abs_of_nonneg hq_nonneg], pow_add]
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
 
@@ -144,8 +143,7 @@ private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
       Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)
   calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by simp
-    _ ≤ (m ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
-    _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast Nat.pow_le_pow_left hM 5
+    _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat.trans (Nat.pow_le_pow_left hM 5)
 
 lemma qExpansionFormalMultilinearSeries_partialSum_one
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -174,11 +172,8 @@ lemma qExpansionFormalMultilinearSeries_partialSum_three
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
 
 private lemma hh : (0 : ℝ) < (1 : ℝ) := by norm_num
-
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
-
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
-
 private lemma hr0 : (r0 : ℝ≥0∞) < (1 : ℝ≥0∞) :=
   ENNReal.coe_lt_one_iff.2 (show Real.exp (-π) < 1 from exp_neg_pi_lt_one)
 
@@ -205,9 +200,9 @@ private lemma exists_sub_partialSum_bound
   have hmain :
       ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
-    simpa [show cuspFunction (1 : ℝ) f q = f z from by
+    simpa [show cuspFunction (1 : ℝ) f q = f z by
         simpa [q] using cuspFunction_qParam_eq (f := f) z hΓ,
-      show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n from by
+      show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
         simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
       hbound q (by simpa [q, z] using qParam_zI_mem_ball (t := t) ht ht1) n
   simpa [z, q, hqnorm] using hmain
@@ -283,11 +278,9 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       ‖(E₂ (zI t ht)) * (E₄ (zI t ht)) - (E₆ (zI t ht)) -
             (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
         C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-  -- A fixed geometric ratio (valid for all `t ≥ 1`).
   let q1 : ℝ := Real.exp (-2 * π)
   have hq1_nonneg : 0 ≤ q1 := (Real.exp_pos _).le
   have hq1_lt_one : q1 < 1 := exp_neg_two_pi_lt_one
-  -- A summable majorant series.
   let b : ℕ → ℝ := fun n => ((n + 2 : ℝ) ^ 5) * q1 ^ n
   have hb_summ : Summable b := by
     have hq1_norm : ‖q1‖ < 1 := by simpa [Real.norm_of_nonneg hq1_nonneg] using hq1_lt_one
@@ -307,21 +300,15 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     calc b n = ((n + 2 : ℝ) ^ 5) * q1 ^ n := rfl
       _ ≤ ((512 : ℝ) * ((n : ℝ) ^ 5 + 1)) * q1 ^ n := by gcongr
       _ = (512 : ℝ) * (((n : ℝ) ^ 5 + 1) * q1 ^ n) := by ring
-  -- Choose a convenient positive constant.
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
   intro t ht0 ht1
   let z : ℍ := zI t ht0
-  -- `q = exp(-2πt)` and `q ≤ q1` for `t ≥ 1`.
   let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le : q ≤ q1 := q_le_q1 (t := t) ht1
-  have hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ) := by
-    simpa [q, z] using qParam_zI t ht0
-  -- Abbreviate the coefficient function.
-  let f : ℕ → ℂ :=
-    fun n =>
-      ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) *
-        cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
+  have hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ) := by simpa [q, z] using qParam_zI t ht0
+  let f : ℕ → ℂ := fun n =>
+    ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
     have hcoeff : ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
       have h := norm_mul_sigma_le (n + 2) (n + 2) le_rfl; push_cast at h ⊢; exact h
@@ -333,17 +320,13 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by simp [f, mul_assoc]
       _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by gcongr
       _ = q ^ (2 : ℕ) * b n := by simp [b]; ring
-  -- Use Ramanujan's identity and isolate the `n=1` term.
   have hRam := E₂_mul_E₄_sub_E₆ z
-  have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
-    simpa [Periodic.qParam] using hqC
-  -- Convert the `ℕ+`-sum to a shifted `ℕ`-sum.
+  have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
   have htsum :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) =
         ∑' n : ℕ, (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using tsum_pnat_eq_tsum_succ
       (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z))
-  -- Summability to justify splitting the first term.
   let g : ℕ → ℂ := fun n =>
     (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
   have hg_summ : Summable g := by
@@ -370,7 +353,6 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
               (hg_summ.sum_add_tsum_nat_add 1).symm)
       _ = ∑' n : ℕ, f n := by grind only
-  -- Now bound the tail series using the majorant `b`.
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
   have htail : ‖∑' n : ℕ, f n‖ ≤ q ^ (2 : ℕ) * (∑' n : ℕ, b n) :=
@@ -381,7 +363,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
     have hrew : (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) = (720 : ℂ) * (∑' n : ℕ, f n) := by
       rw [hRam, ← show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
-        ∑' n : ℕ, f n from by simpa [hqexp] using hsplit]; ring
+        ∑' n : ℕ, f n by simpa [hqexp] using hsplit]
+      ring
     calc
       ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖
           = ‖(720 : ℂ) * (∑' n : ℕ, f n)‖ := by rw [hrew]
