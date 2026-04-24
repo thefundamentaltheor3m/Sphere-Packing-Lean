@@ -25,19 +25,22 @@ noncomputable section
 
 private lemma t_mul_exp_le {c t : ℝ} (hc : 0 < c) :
     t * Real.exp (-c * t) ≤ (2 / c) * Real.exp (-(c / 2) * t) := by
-  have hx : (c / 2) * t ≤ Real.exp ((c / 2) * t) := by
-    linarith [Real.add_one_le_exp ((c / 2) * t)]
   have hc2 : 0 ≤ (2 / c) := (div_pos (by norm_num) hc).le
   have ht_le : t ≤ (2 / c) * Real.exp ((c / 2) * t) := by
-    have hmul := mul_le_mul_of_nonneg_left hx hc2
-    have hsimp : (2 / c) * ((c / 2) * t) = t := by field_simp [hc.ne']
-    simpa [mul_assoc, hsimp] using hmul
+    have hmul := mul_le_mul_of_nonneg_left
+      (by linarith [Real.add_one_le_exp ((c / 2) * t)] : (c / 2) * t ≤ Real.exp ((c / 2) * t)) hc2
+    simpa [mul_assoc, show (2 / c) * ((c / 2) * t) = t by field_simp [hc.ne']] using hmul
   refine (mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-c * t))).trans_eq ?_
-  calc
-    ((2 / c) * Real.exp ((c / 2) * t)) * Real.exp (-c * t)
-        = (2 / c) * (Real.exp ((c / 2) * t) * Real.exp (-c * t)) := by ring
-    _ = (2 / c) * Real.exp ((c / 2) * t + (-c * t)) := by simp [Real.exp_add]
-    _ = (2 / c) * Real.exp (-(c / 2) * t) := by ring_nf
+  rw [mul_assoc, ← Real.exp_add]; ring_nf
+
+private lemma norm_exp_le_of_re_ge {z : ℂ} {t c : ℝ} (ht0 : 0 ≤ t) (hcz : c ≤ z.re) :
+    ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * c * t) := by
+  have hre : (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t := by
+    simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
+  have hle : -π * z.re * t ≤ -π * c * t := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      mul_le_mul_of_nonpos_left hcz (by nlinarith [Real.pi_pos, ht0] : (-π * t : ℝ) ≤ 0)
+  simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr hle
 
 /--
 Generic analyticity of a parameter-dependent integral of the form
@@ -90,15 +93,8 @@ public theorem analyticOnNhd_integral_base_exp
         hBase_ε2.norm (hF_meas u) ?_
       filter_upwards [hmem_Ioi] with t ht
       have ht0 : 0 ≤ t := le_of_lt ht
-      have hExp_norm :
-          ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ ≤ Real.exp (-π * (ε / 2) * t) := by
-        have hre : (-(π : ℂ) * u * (t : ℂ)).re = -π * u.re * t := by
-          simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-        have hle : -π * u.re * t ≤ -π * (ε / 2) * t := by
-          have hneg : (-π * t : ℝ) ≤ 0 := by nlinarith [Real.pi_pos, ht0]
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            mul_le_mul_of_nonpos_left (by dsimp [ε]; linarith : (ε / 2 : ℝ) ≤ u.re) hneg
-        simpa [Complex.norm_exp, hre] using (Real.exp_le_exp.mpr hle)
+      have hExp_norm : ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ ≤ Real.exp (-π * (ε / 2) * t) :=
+        norm_exp_le_of_re_ge ht0 (by dsimp [ε]; linarith : (ε / 2 : ℝ) ≤ u.re)
       have hnormExp : ‖(Real.exp (-π * (ε / 2) * t) : ℂ)‖ = Real.exp (-π * (ε / 2) * t) :=
         Complex.norm_of_nonneg (Real.exp_nonneg _)
       calc
@@ -121,27 +117,17 @@ public theorem analyticOnNhd_integral_base_exp
           simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
             lt_of_le_of_lt (abs_re_le_norm (z - u))
               (by simpa [Metric.mem_ball] using hz : ‖z - u‖ < ε)
-        have hl : -ε < z.re - u.re := (abs_lt.mp hlt).1
-        dsimp [ε] at hl ⊢; nlinarith
-      have hExp :
-          ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * ε * t) := by
-        have hre : (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t := by
-          simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-        have hle : -π * z.re * t ≤ -π * ε * t := by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            mul_le_mul_of_nonpos_left hzre
-              (by nlinarith [Real.pi_pos, ht0] : (-π * t : ℝ) ≤ 0)
-        simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr hle
+        dsimp [ε] at hlt ⊢; nlinarith [(abs_lt.mp hlt).1]
+      have hExp : ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * ε * t) :=
+        norm_exp_le_of_re_ge ht0 hzre
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
-        have hc : 0 < (π * ε) := by positivity
-        have h1 := mul_le_mul_of_nonneg_left (t_mul_exp_le (t := t) hc) Real.pi_pos.le
-        have h2 :
-            (π * (t * Real.exp (-(π * ε) * t))) ≤
-              (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
-          simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv,
-            Real.pi_ne_zero, ne_of_gt hε,
-            mul_add, add_mul, sub_eq_add_neg, mul_neg, neg_mul, neg_add,
+        have h1 := mul_le_mul_of_nonneg_left
+          (t_mul_exp_le (t := t) (by positivity : (0 : ℝ) < π * ε)) Real.pi_pos.le
+        have h2 : (π * (t * Real.exp (-(π * ε) * t))) ≤
+            (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
+          simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv, Real.pi_ne_zero,
+            ne_of_gt hε, mul_add, add_mul, sub_eq_add_neg, mul_neg, neg_mul, neg_add,
             add_assoc, add_left_comm, add_comm] using h1
         simpa [mul_assoc, mul_left_comm, mul_comm] using h2
       have hbase_nonneg : 0 ≤ ‖base t‖ := norm_nonneg _
