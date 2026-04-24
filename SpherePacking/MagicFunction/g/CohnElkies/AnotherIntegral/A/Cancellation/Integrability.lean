@@ -168,14 +168,14 @@ lemma exists_phi0_cancellation_bound :
   have hClarge_pos : 0 < Clarge := by dsimp [Clarge]; positivity
   obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A →
       ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤ M := by
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+          ((8640 / π : ℝ) : ℂ) * t -
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤ M := by
     let g : ℝ → ℝ := fun t =>
       ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+          ((8640 / π : ℝ) : ℂ) * t -
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
       simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
         (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
@@ -199,8 +199,8 @@ lemma exists_phi0_cancellation_bound :
     have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have ht0le : 0 ≤ t := by linarith
     have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
-    have hnorm1 :
-        ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤ C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+    have hnorm1 : ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤
+        C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
       nlinarith [hφ₀z, hC₀pos, norm_nonneg (φ₀ z), hexp0]
     have hnorm2 :
@@ -228,12 +228,11 @@ lemma exists_phi0_cancellation_bound :
             simpa [one_mul, mul_assoc] using mul_le_mul_of_nonneg_left
               (mul_le_mul_of_nonneg_right ht2 (mul_nonneg hC₄pos.le hexp0)) (by positivity)
         _ = ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
-    have htri :
-        ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-          Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+    have htri : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+          ((8640 / π : ℝ) : ℂ) * t -
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
+        Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       set x : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z
       set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
       set z' : ℂ :=
@@ -263,15 +262,13 @@ private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
 
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
-  have hmeas : MeasurableSet (Set.Ioc (0 : ℝ) 1) := measurableSet_Ioc
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨Cφ₀, hCφ₀_pos, hCφ₀⟩
-  let M : ℝ :=
-    Cφ₀ +
-      ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-      ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖
+  let M : ℝ := Cφ₀ + ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
+    ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖
   refine MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Set.Ioc 0 1) < ⊤)
-    ((continuousOn_aAnotherIntegrand_of_subset_Ioi (fun t ht => ht.1) u).aestronglyMeasurable hmeas)
-    M ((ae_restrict_iff' hmeas).2 (Filter.Eventually.of_forall fun t ht => ?_))
+    ((continuousOn_aAnotherIntegrand_of_subset_Ioi (fun t ht => ht.1) u).aestronglyMeasurable
+      measurableSet_Ioc) M
+    ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun t ht => ?_))
   have ht0 : 0 < t := ht.1
   have him_pos : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
     simpa [imag_I_div t] using inv_pos.2 ht0
@@ -290,14 +287,13 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
   have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht0.le, ht.2]
   have hexp_le_one : Real.exp (-π * u * t) ≤ 1 :=
     Real.exp_le_one_iff.2 (by nlinarith [mul_nonneg (mul_nonneg Real.pi_pos.le hu.le) ht0.le])
-  have hbr :
-      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-        (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-          ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-          ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
+  have hbr : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+          ((8640 / π : ℝ) : ℂ) * t -
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
+      (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
+        ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
+        ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
     set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
     set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
     set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
@@ -319,12 +315,11 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]]
       simpa using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
     grind only
-  have hmul :
-      ‖aAnotherIntegrand u t‖ ≤
-        ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
+  have hmul : ‖aAnotherIntegrand u t‖ ≤
+      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+            ((8640 / π : ℝ) : ℂ) * t -
+            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
     have h1 : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
       rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
         simpa using norm_ofReal_exp (-π * u * t)]; exact hexp_le_one
