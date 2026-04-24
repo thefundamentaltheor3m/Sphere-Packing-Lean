@@ -42,8 +42,8 @@ private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
   obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1 hD_isBounded
   refine isBounded_iff_forall_norm_le.2 ⟨L + S.separation / 2, fun x hx ↦ ?_⟩
   obtain ⟨y, hy, hx⟩ := Set.mem_iUnion₂.1 hx
-  exact (norm_le_norm_add_norm_sub' x y).trans <|
-    add_le_add (hL y hy.2) (le_of_lt (by simpa [mem_ball, dist_eq_norm] using hx))
+  exact (norm_le_norm_add_norm_sub' x y).trans <| add_le_add (hL y hy.2)
+    (by simpa [mem_ball, dist_eq_norm] using hx.le)
 
 private lemma pairwiseDisjoint_ball_centers_inter (D : Set (EuclideanSpace ℝ (Fin d))) :
     Set.PairwiseDisjoint (S.centers ∩ D) (fun x ↦ ball x (S.separation / 2)) :=
@@ -73,8 +73,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     · simp [As, hs] at hi)).subset_ball 0
   exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
     (ne_top_of_le_ne_top (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (volume.mono hL))).subset
-    fun i hi ↦ by simpa [As, hi] using h_volume i hi
+      (volume.mono hL))).subset fun i hi ↦ by simpa [As, hi] using h_volume i hi
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
@@ -147,8 +146,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     congr 1
     convert Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) ?_)
     simp only [S.lattice.mk_vadd, vadd_eq_add, add_assoc]
-    simpa [Subtype.forall] using
-      (Classical.choose_spec (hD_unique_covers (y + v))).left
+    simpa [Subtype.forall] using (Classical.choose_spec (hD_unique_covers (y + v))).left
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
   left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ by
     simp_rw [Quotient.lift_mk, Quotient.eq]
@@ -156,7 +154,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
-    obtain ⟨g, ⟨hg, hg'⟩⟩ := hD_unique_covers x
+    obtain ⟨g, hg, hg'⟩ := hD_unique_covers x
     trans g.val <;> norm_cast
     · exact hg' _ (Classical.choose_spec (hD_unique_covers x)).left
     · exact (hg' 0 (by simpa using hx.right)).symm
@@ -247,8 +245,8 @@ public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice)
     (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
       rw [hS] at hx hy
       exact ⟨⟨y - x, sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
-  exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧,
-    fun y => Subsingleton.elim y _⟩
+  exact Fintype.card_eq_one_iff.2
+    ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, fun y => Subsingleton.elim y _⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
@@ -353,8 +351,8 @@ public theorem PeriodicSpherePacking.aux_ge
     rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain (S := S) b hx.left hy.left
-        (fun h ↦ hxy (Subtype.ext h))) hux.right huy.right
+      (disjoint_vadd_fundamentalDomain S b hx.left hy.left fun h ↦ hxy (Subtype.ext h))
+      hux.right huy.right
 
 private theorem aux'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
@@ -371,7 +369,7 @@ private theorem aux'
         simp [fract]).le.trans (norm_sub_le _ _)).trans_lt
       (add_lt_add_of_lt_of_le hx (hL _ (fract_mem_fundamentalDomain _ _)))
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]
-    exact fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+    exact fract_mem_fundamentalDomain _ x
 
 /-- Theorem 2.3, upper bound. -/
 public theorem PeriodicSpherePacking.aux_le
@@ -388,7 +386,7 @@ public theorem PeriodicSpherePacking.aux_le
     rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain (S := S) b hx.left hy.left
-        (fun h ↦ hxy (Subtype.ext h))) hux.right huy.right
+      (disjoint_vadd_fundamentalDomain S b hx.left hy.left fun h ↦ hxy (Subtype.ext h))
+      hux.right huy.right
 
 end theorem_2_3
