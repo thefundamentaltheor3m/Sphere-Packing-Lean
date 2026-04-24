@@ -55,8 +55,8 @@ lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
         ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t +
           ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
-  rw [IntegralB.B_as_complex (t := t) ht]
-  simp [aAnotherIntegrand, bAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm]
+  simp [IntegralB.B_as_complex (t := t) ht, aAnotherIntegrand, bAnotherIntegrand,
+    mul_assoc, mul_left_comm, mul_comm]
   ring_nf
 
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
@@ -174,7 +174,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       (π / 2160 : ℂ) *
         (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
-  set u : ℝ := ‖x‖ ^ 2 with hu_def
+  set u : ℝ := ‖x‖ ^ 2
   have hu : 0 < u := hx
   have hu2 : u ≠ 2 := hx2
   have hFourier :
@@ -212,9 +212,9 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
     simpa [IB] using bRadial_eq_another_integral_main (u := u) hu hu2
   have hcoefA : (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
-    ring_nf; simp; ring
+    field_simp; rw [Complex.I_sq]; ring
   have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
-    field_simp; ring_nf; simp
+    field_simp; rw [Complex.I_sq]; ring
   have hIexp :
       (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ) :=
     integral_exp_neg_pi_mul_Ioi_complex (u := u) hu
@@ -312,14 +312,10 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
       ((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq
     let useq : ℕ → ℝ := fun n => ‖xseq n‖ ^ 2
     have huseq_gt2 : ∀ n : ℕ, 2 < useq n := fun n => by
-      have hcn_pos : 0 < c n := by positivity
-      have hcn_one : 1 < c n := by
-        have : 0 < (1 / ((n : ℝ) + 1)) := by positivity
-        linarith
       rw [show useq n = (c n) ^ (2 : ℕ) * (‖x‖ ^ 2) from by
-        simp [useq, xseq, norm_smul, abs_of_pos hcn_pos, pow_two, mul_assoc, mul_left_comm,
-          mul_comm], hx2]
-      nlinarith [sq_nonneg (c n - 1)]
+        simp [useq, xseq, norm_smul, abs_of_pos (by positivity : (0 : ℝ) < c n), pow_two,
+          mul_assoc, mul_left_comm, mul_comm], hx2]
+      nlinarith [sq_nonneg (c n - 1), (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1))]
     have hEqseq :
         ∀ n : ℕ,
           ((𝓕 g : 𝓢(ℝ⁸, ℂ)) (xseq n)) =
@@ -349,12 +345,10 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
     have hsin_tendsto :
         Filter.Tendsto (fun n : ℕ => (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop
           (𝓝 (0 : ℝ)) := by
-      have hu_tendsto : Filter.Tendsto useq Filter.atTop (𝓝 (2 : ℝ)) := by
-        simpa [useq, hx2] using ((by continuity : Continuous (fun y : ℝ⁸ => ‖y‖ ^ 2)).tendsto
-          x).comp hxseq
-      simpa using
-        (show ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ) by
-          fun_prop).tendsto.comp hu_tendsto
+      simpa using (show ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ) by
+        fun_prop).tendsto.comp (show Filter.Tendsto useq Filter.atTop (𝓝 (2 : ℝ)) by
+          simpa [useq, hx2] using
+            ((by continuity : Continuous (fun y : ℝ⁸ => ‖y‖ ^ 2)).tendsto x).comp hxseq)
     have hRHSseq0 :
         Filter.Tendsto
             (fun n : ℕ =>
