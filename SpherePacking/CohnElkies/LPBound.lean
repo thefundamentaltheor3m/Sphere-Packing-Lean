@@ -74,7 +74,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have hf0 : f 0 = 0 := by simpa [hf0re.symm] using (hReal 0).symm
   have hintRe : ∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re = 0 := by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re) =
-        (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re from by
+        (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
     simpa [fourierInv_eq, hf0] using congrArg Complex.re
       (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion)
@@ -200,9 +200,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
         congr! 9 with m x y
-        simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
-        rw [RCLike.wInner_add_left]
-        simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
+        simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm,
+          RCLike.wInner_add_left, ofReal_add]
         rw [mul_add, Complex.exp_add, mul_comm]; simp
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
@@ -258,7 +257,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
         (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-        refine congrArg (fun t => (1 / ZLattice.covolume P.lattice volume) * t) ?_
+        refine congrArg ((1 / ZLattice.covolume P.lattice volume) * ·) ?_
         refine (Summable.tsum_eq_add_tsum_ite
           (summable_fourier_mul_norm_exp_sq (f := f) (P := P) (D := D)
             (hD_isBounded := hD_isBounded) hd) 0).trans ?_
@@ -266,8 +265,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
     _ ≥ (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
-        rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
-          ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
+        rw [ge_iff_le, ← tsub_nonpos, mul_assoc, ← mul_sub (1 / _) _ _]
         simp only [sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
         exact mul_nonneg
           (one_div_nonneg.mpr (by rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg))
@@ -316,7 +314,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+      measure_ball_lt_top.ne
     rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
     · rw [h𝓕f, zero_re, ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero,
         ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
@@ -338,15 +336,14 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
       div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
       ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
-      ← ENNReal.div_eq_inv_mul,
-      ← ENNReal.mul_le_mul_iff_right hnRaux₁ (Ne.symm (ne_of_beq_false rfl) :
-        ENat.toENNReal (P.numReps : ENat) ≠ ⊤), ENat.toENNReal_coe, ← mul_assoc, ← pow_two,
-      ← mul_div_assoc]
+      ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right hnRaux₁
+        (show ENat.toENNReal (P.numReps : ENat) ≠ ⊤ from (Ne.symm (ne_of_beq_false rfl))),
+      ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     have hRHSCast :
         (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal = (P.numReps : NNReal) * (f 0).re.toNNReal
-        from by rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
+      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal = (P.numReps : NNReal) * (f 0).re.toNNReal by
+        rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
       push_cast; rfl
     have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
@@ -374,8 +371,8 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
     periodic_constant_eq_periodic_constant_normalized (d := d)]
   refine iSup_le fun P => iSup_le fun hP => ?_
   cases isEmpty_or_nonempty ↑P.centers with
-  | inl instEmpty => simp [P.density_of_centers_empty hd]
-  | inr instNonempty =>
+  | inl _ => simp [P.density_of_centers_empty hd]
+  | inr _ =>
     let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (PeriodicSpherePacking.basis_index_equiv P)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
