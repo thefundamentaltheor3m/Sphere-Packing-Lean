@@ -130,26 +130,22 @@ lemma exists_bound_norm_ψI'_z₅' :
   simpa [mul_one] using mul_le_mul_of_nonneg_left
     (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ)) hM0
 
-lemma exists_bound_norm_ψT'_z₁' :
-    ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
-  rcases exists_bound_norm_ψI'_z₅' with ⟨M, hM⟩
+lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
+  obtain ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
   exact ⟨M, fun t ht => by
     simpa [MagicFunction.b.PsiParamRelations.ψT'_z₁'_eq_ψI'_z₅' (t := t)
       (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht⟩
 
-lemma exists_bound_norm_ψT'_z₃' :
-    ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M := by
-  rcases exists_bound_norm_ψI'_z₅' with ⟨M, hM⟩
+lemma exists_bound_norm_ψT'_z₃' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M := by
+  obtain ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
   exact ⟨M, fun t ht => by
     simpa [MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t)
       (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht⟩
 
-lemma exists_bound_norm_ψT'_z₂' :
-    ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
+lemma exists_bound_norm_ψT'_z₂' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
   simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₂' continuous_z₂' im_z₂'_pos_all
 
-lemma exists_bound_norm_ψT'_z₄' :
-    ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₄' t)‖ ≤ M := by
+lemma exists_bound_norm_ψT'_z₄' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₄' t)‖ ≤ M := by
   simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₄' continuous_z₄' im_z₄'_pos_all
 
 private lemma norm_add_I_mul_le_two (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (ha : ‖a‖ = 1) :
