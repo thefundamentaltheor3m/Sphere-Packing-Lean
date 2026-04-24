@@ -131,11 +131,9 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     ‖coeff t‖ ≤ 2 * π :=
   I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ))
     (fun t ht => by
-      have habs : |1 - t| ≤ 1 := by
-        grind only [= mem_Ioo, = abs.eq_1, = max_def]
       change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
       rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real]
-      exact habs)
+      exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1))
     t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
@@ -164,8 +162,7 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     ac_rfl
   let A : ℝ → ℂ := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by
-    simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using
-      congrArg (fun z ↦ A t * z) (exp_r_mul_coeff (r := r) (t := t)).symm
+    rw [exp_r_mul_coeff]; simp [A, g]; ring
   simpa [gN] using
     (iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
       (I := I₄') (coeff := coeff) (g := g) (A := A) (hI := I₄'_eq_integral_g_Ioo)
