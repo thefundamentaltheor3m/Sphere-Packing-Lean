@@ -345,13 +345,11 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         ∑' n : ℕ, f n := by
     have h0 : (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) = ∑' n : ℕ, g n := by
       simpa [g, mul_assoc, mul_left_comm, mul_comm] using htsum
-    calc
-      (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z)
-          = (∑' n : ℕ, g n) - g 0 := by simp [h0, g]
-      _ = ∑' n : ℕ, g (n + 1) := (sub_eq_iff_eq_add).2 (by
-            simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
-              (hg_summ.sum_add_tsum_nat_add 1).symm)
-      _ = ∑' n : ℕ, f n := by grind only
+    rw [h0, show cexp (2 * π * Complex.I * z) = g 0 by simp [g]]
+    refine (sub_eq_iff_eq_add).2 ?_
+    rw [show (∑' n : ℕ, f n) + g 0 = g 0 + ∑' n : ℕ, g (n + 1) by
+      grind only [tsum_eq_tsum_of_ne_zero_bij]]
+    simpa [Finset.range_one] using (hg_summ.sum_add_tsum_nat_add 1).symm
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
     .of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
   have htail : ‖∑' n : ℕ, f n‖ ≤ q ^ (2 : ℕ) * (∑' n : ℕ, b n) :=
