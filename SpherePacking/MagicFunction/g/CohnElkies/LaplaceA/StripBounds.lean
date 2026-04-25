@@ -243,9 +243,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
           (norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm)
           (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-        rw [show (K * (t ^ 2 * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
-            K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) by ring,
-          MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t]
+        rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
 /-- Integrability of `Φ₂'` on the imaginary-axis tail `(A,∞)` using modular bounds. -/
 lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A : ℝ} (hC₀_pos : 0 < C₀)
