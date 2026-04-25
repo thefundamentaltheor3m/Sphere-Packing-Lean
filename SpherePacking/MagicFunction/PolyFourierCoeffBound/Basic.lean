@@ -70,8 +70,7 @@ theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
   refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
-  simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg]
-  rw [← mul_pow]
+  simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg, ← mul_pow]
   refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
   norm_cast; cases abs_cases (n + n₀ : ℤ) <;> grind
 
@@ -86,15 +85,11 @@ lemma summable_norm_mul_rexp_neg_pi_div_two :
   have hr : ‖r‖ < 1 := by
     simpa [r, Complex.norm_exp] using
       Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)
-  have hs : Summable (fun n : ℕ => ‖c (n + n₀) * r ^ n‖) :=
-    summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := r) hr
-      (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)
-  refine hs.congr fun n => ?_
-  have hpow : ‖r ^ n‖ = rexp (-π * n / 2) := by
-    rw [norm_pow, show ‖r‖ = rexp (-(π : ℝ) / 2) by simp [r, Complex.norm_exp, div_eq_mul_inv],
-      ← Real.exp_nat_mul]
-    congr 1; ring
-  simp [hpow]
+  refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := r) hr
+    (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)).congr fun n => ?_
+  rw [norm_mul, norm_pow, show ‖r‖ = rexp (-(π : ℝ) / 2) by
+    simp [r, Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
+  congr 2; ring
 
 end summable_aux
 
@@ -134,9 +129,8 @@ lemma aux_7 (a : ℤ) :
 
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
-  rw [← Real.rexp_tsum_eq_tprod]
+  rw [← Real.rexp_tsum_eq_tprod (fun i ↦ by simp_all)]
   · exact Real.exp_pos _
-  · intro i; simp_all
   have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)
@@ -222,14 +216,14 @@ lemma step_10 :
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact aux_8 z
-  apply tprod_le_of_nonneg_of_multipliable (fun n => by positivity)
-  · intro n; simp only [neg_mul]; gcongr
+  refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_
+    (multipliable_pow _ (MultipliableEtaProductExpansion_pnat z).norm 24)
+  · simp only [neg_mul]; gcongr
     · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
     · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
       exact aux_2 (2 * π * I * n * z)
   · simpa [mul_assoc, mul_left_comm, mul_comm] using
       step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
-  · exact multipliable_pow _ (MultipliableEtaProductExpansion_pnat z).norm 24
 
 include hz hcsum hpoly in
 lemma step_11 :
@@ -257,15 +251,14 @@ lemma step_12 :
   · exact aux_11
   have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
     sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
-  apply tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24)
-  · intro n
-    refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 ?_) 1) 24
-    have := neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
-      (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
-    simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using this
-  · exact step_12a pi_pos
-  · simpa [mul_assoc, mul_left_comm, mul_comm] using
-      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
+  refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n => ?_)
+    (step_12a pi_pos)
+    (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
+  refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 ?_) 1) 24
+  have := neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
+    (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
+  simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using this
 
 end calc_steps
 
