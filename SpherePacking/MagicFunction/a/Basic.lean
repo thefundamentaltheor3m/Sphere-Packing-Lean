@@ -78,22 +78,22 @@ open MagicFunction.a.ComplexIntegrands
 section Def
 
 /-- Unfolding lemma for `Φ₁`. -/
-public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
+@[simp] public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
 
 /-- Unfolding lemma for `Φ₂`. -/
-public lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) := rfl
+@[simp] public lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) := rfl
 
 /-- Unfolding lemma for `Φ₃`. -/
-public lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) := rfl
+@[simp] public lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) := rfl
 
 /-- Unfolding lemma for `Φ₄`. -/
-public lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) := rfl
+@[simp] public lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) := rfl
 
 /-- Unfolding lemma for `Φ₅`. -/
-public lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) := rfl
+@[simp] public lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) := rfl
 
 /-- Unfolding lemma for `Φ₆`. -/
-public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) := rfl
+@[simp] public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) := rfl
 
 end Def
 
@@ -158,25 +158,25 @@ section Eq
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
 /-- Unfolding lemma expressing `a` as the sum of the six radial integrals `I₁`, ..., `I₆`. -/
-public lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
+@[simp] public lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
 
 /-- Unfolding lemma for `I₁` in terms of `I₁'`. -/
-public lemma I₁_eq (x : V) : I₁ x = I₁' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₁_eq (x : V) : I₁ x = I₁' (‖x‖ ^ 2) := rfl
 
 /-- Unfolding lemma for `I₂` in terms of `I₂'`. -/
-public lemma I₂_eq (x : V) : I₂ x = I₂' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₂_eq (x : V) : I₂ x = I₂' (‖x‖ ^ 2) := rfl
 
 /-- Unfolding lemma for `I₃` in terms of `I₃'`. -/
-public lemma I₃_eq (x : V) : I₃ x = I₃' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₃_eq (x : V) : I₃ x = I₃' (‖x‖ ^ 2) := rfl
 
 /-- Unfolding lemma for `I₄` in terms of `I₄'`. -/
-public lemma I₄_eq (x : V) : I₄ x = I₄' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₄_eq (x : V) : I₄ x = I₄' (‖x‖ ^ 2) := rfl
 
 /-- Unfolding lemma for `I₅` in terms of `I₅'`. -/
-public lemma I₅_eq (x : V) : I₅ x = I₅' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₅_eq (x : V) : I₅ x = I₅' (‖x‖ ^ 2) := rfl
 
 /-- Unfolding lemma for `I₆` in terms of `I₆'`. -/
-public lemma I₆_eq (x : V) : I₆ x = I₆' (‖x‖ ^ 2) := rfl
+@[simp] public lemma I₆_eq (x : V) : I₆ x = I₆' (‖x‖ ^ 2) := rfl
 
 /-- An explicit integral expression for `I₁'` after rewriting `Φ₁` and the parametrization `z₁'`. -/
 public lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
@@ -270,21 +270,6 @@ public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
   rw [z₆'_eq_of_mem ht, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]
   ring
-
-attribute [simp]
-  MagicFunction.a.RealIntegrands.Φ₁_def
-  MagicFunction.a.RealIntegrands.Φ₂_def
-  MagicFunction.a.RealIntegrands.Φ₃_def
-  MagicFunction.a.RealIntegrands.Φ₄_def
-  MagicFunction.a.RealIntegrands.Φ₅_def
-  MagicFunction.a.RealIntegrands.Φ₆_def
-  MagicFunction.a.RadialFunctions.a_eq
-  MagicFunction.a.RadialFunctions.I₁_eq
-  MagicFunction.a.RadialFunctions.I₂_eq
-  MagicFunction.a.RadialFunctions.I₃_eq
-  MagicFunction.a.RadialFunctions.I₄_eq
-  MagicFunction.a.RadialFunctions.I₅_eq
-  MagicFunction.a.RadialFunctions.I₆_eq
 
 end MagicFunction.a.RadialFunctions.Eq
 
