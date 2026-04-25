@@ -65,13 +65,6 @@ private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ �
   linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
     simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
 
-/-- Shared bound for `‖y‖` when `y = 1 ± 2q`, given `‖q‖ ≤ 1`. -/
-private lemma norm_one_add_two_mul_le (q : ℂ) (hq : ‖q‖ ≤ 1) : ‖(1 : ℂ) + (2 : ℂ) * q‖ ≤ 3 := by
-  have h := norm_add_le (1 : ℂ) ((2 : ℂ) * q); simp at h; linarith
-
-private lemma norm_one_sub_two_mul_le (q : ℂ) (hq : ‖q‖ ≤ 1) : ‖(1 : ℂ) - (2 : ℂ) * q‖ ≤ 3 := by
-  have h := norm_sub_le (1 : ℂ) ((2 : ℂ) * q); simp at h; linarith
-
 private lemma norm_pow4_le_pow3 {q : ℂ} (hq : ‖q‖ ≤ 1) : ‖q ^ (4 : ℕ)‖ ≤ ‖q ^ (3 : ℕ)‖ := by
   simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q ^ (3 : ℕ)))
 
@@ -85,7 +78,6 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   obtain ⟨M, hM⟩ := exists_bound_norm_Theta2_resToImagAxis_Ici_one
   obtain ⟨Cθ, hCθ⟩ := exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one
   have hCθ0 : 0 ≤ Cθ := nonneg_of_norm_le_mul_exp (hCθ 1 le_rfl)
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 1 le_rfl)
   refine ⟨(4 * (M + 4) ^ 3) * Cθ + 176, ?_⟩
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -201,9 +193,7 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
           (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hC20)
       · exact pow_le_pow_left₀ (by positivity) (by linarith [hx, hy]) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
-  have hσ_sq : σ ^ 2 = 1 := by rcases hσ with rfl | rfl <;> ring
   have hσ_cube_norm : ‖σ ^ 3‖ = 1 := by rw [norm_pow, hσ_norm]; ring
-  have hσ_four : σ ^ 4 = 1 := by rw [show (4 : ℕ) = 2 * 2 from rfl, pow_mul, hσ_sq, one_pow]
   have hy4 : ‖y ^ (4 : ℕ) - (1 : ℂ) - σ * (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
         48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
     have hq3' : ‖q' ^ (3 : ℕ)‖ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
@@ -241,7 +231,7 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
     (σ := 1) (Or.inl rfl)
     (fun t ht0 => by simp [H₃, Function.resToImagAxis, ResToImagAxis, ht0])
     (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)) hC1
-    (fun t ht => by simpa [sub_eq_add_neg, mul_assoc] using hC2 t ht)
+    fun t ht => by simpa [sub_eq_add_neg, mul_assoc] using hC2 t ht
   exact ⟨C, fun t ht => by simpa [one_mul] using hC t ht⟩
 
 /-- `H₄(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
@@ -258,9 +248,9 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     (σ := -1) (Or.inr rfl)
     (fun t ht0 => by simp [H₄, Function.resToImagAxis, ResToImagAxis, ht0])
     (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)) hC1
-    (fun t ht => by
+    fun t ht => by
       simpa [sub_eq_add_neg, mul_assoc, neg_mul, neg_neg, add_assoc, add_left_comm, add_comm]
-        using hC2 t ht)
+        using hC2 t ht
   exact ⟨C, fun t ht => by simpa [neg_mul, sub_eq_add_neg, neg_neg, add_assoc] using hC t ht⟩
 
 /-- `H₃(it) + H₄(it)` cancellation up to the `exp(-2π t)` term on `t ≥ 1`. -/
@@ -316,8 +306,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
           ((8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
           (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) =
         H₃.resToImagAxis t - (1 : ℂ) by ring] at htri'
-      nlinarith [C0, htri, htri', h1, h2, mul_le_mul_of_nonneg_left hq3_le hC30, hC3 t ht, hq2_le,
-        Real.exp_pos (-Real.pi * t)]
+      nlinarith [htri, htri', h1, h2, mul_le_mul_of_nonneg_left hq3_le hC30, hC3 t ht, hq2_le]
   have hnorm_H3_ge_one : ∀ t : ℝ, 1 ≤ t → (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht => by
     have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
     set τ : ℂ := (Complex.I : ℂ) * (t : ℂ)
