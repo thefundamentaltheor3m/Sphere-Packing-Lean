@@ -53,7 +53,7 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     rw [show (Real.pi * Complex.I * (n + (2⁻¹ : ℂ) : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
         ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by simp [τ, hr]; ring_nf; simp]
     exact Complex.norm_exp_ofReal _
-  simpa [τ, r] using h
+  simpa [r] using h
 
 /-- Rewrite `Θ₃` in terms of the one-variable Jacobi theta function `jacobiTheta`. -/
 public lemma Theta3_eq_jacobiTheta (τ : ℍ) : Θ₃ τ = jacobiTheta (τ : ℂ) := by
@@ -63,12 +63,10 @@ lemma exp_pi_I_mul_sq_int (n : ℤ) :
     Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) = (-1 : ℂ) ^ n := by
   rw [show (Real.pi * Complex.I * (n : ℂ) ^ 2 : ℂ) = (n ^ 2 : ℤ) * (Real.pi * Complex.I) by
     push_cast; ring, Complex.exp_int_mul, Complex.exp_pi_mul_I]
-  simpa using show (-1 : ℂ) ^ (n ^ 2 : ℤ) = (-1 : ℂ) ^ n by
-    simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
-      simpa using Int.even_pow' (m := n) (n := 2) (by simp : (2 : ℕ) ≠ 0)]
+  simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
+    simpa using Int.even_pow' (m := n) (n := 2) (by simp : (2 : ℕ) ≠ 0)]
 
 lemma Theta4_eq_jacobiTheta_add_one (τ : ℍ) : Θ₄ τ = jacobiTheta ((τ : ℂ) + 1) := by
-  unfold Θ₄ jacobiTheta
   refine tsum_congr fun n => ?_
   rw [show Θ₄_term n τ = Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ)) *
         Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) from by
@@ -134,19 +132,16 @@ private lemma two_div_one_sub_exp_pi_mul_le (t : ℝ) (ht : 1 ≤ t) :
     one_div_le_one_div_of_le hden_pos
       (by linarith [Real.exp_le_exp.2 (show (-Real.pi * t : ℝ) ≤ -Real.pi from by
         nlinarith [Real.pi_pos, ht])])
-  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-    mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2)
+  simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2)
 
 private lemma norm_jacobiTheta_I_mul_add_real_sub_one_le (a : ℝ) {t : ℝ} (ht : 1 ≤ t) :
     ‖jacobiTheta (((Complex.I : ℂ) * (t : ℂ)) + a) - 1‖ ≤
       (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-Real.pi * t) := by
   have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
-  have hbound : ‖jacobiTheta (((Complex.I : ℂ) * (t : ℂ)) + a) - 1‖ ≤
-        (2 / (1 - Real.exp (-Real.pi * t))) * Real.exp (-Real.pi * t) := by
-    simpa using
-      norm_jacobiTheta_sub_one_le (τ := ((Complex.I : ℂ) * (t : ℂ)) + a) (by simpa using htpos)
-  exact hbound.trans <|
+  refine (?_ : _ ≤ (2 / (1 - Real.exp (-Real.pi * t))) * Real.exp (-Real.pi * t)).trans <|
     mul_le_mul_of_nonneg_right (two_div_one_sub_exp_pi_mul_le t ht) (by positivity)
+  simpa using
+    norm_jacobiTheta_sub_one_le (τ := ((Complex.I : ℂ) * (t : ℂ)) + a) (by simpa using htpos)
 
 private lemma exp_neg_pi_mul_sq_add_two_mul_le_geom (t : ℝ) (ht : 1 ≤ t) (n : ℕ) :
     Real.exp (-Real.pi * (((n : ℝ) + 2) ^ 2 * t)) ≤
@@ -219,13 +214,13 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     rw [Complex.ofReal_exp (-Real.pi * t / 4)]
     refine congrArg Complex.exp ?_
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf
-    simp [div_eq_mul_inv, mul_assoc, mul_comm]
+    simp [div_eq_mul_inv]
   have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) := by
     unfold f Θ₂_term
     rw [Complex.ofReal_exp (-(9 / 4 : ℝ) * Real.pi * t)]
     refine congrArg Complex.exp ?_
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf
-    simp [div_eq_mul_inv, mul_assoc, mul_comm]
+    simp [div_eq_mul_inv]
   rw [show Θ₂.resToImagAxis t
           - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
           - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
@@ -322,8 +317,7 @@ public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one 
   have ha0 : a 0 = (Real.exp (-Real.pi * t) : ℂ) := by
     have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
       rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
-    simpa [Complex.ofReal_exp] using (show a 0 = Complex.exp ((-Real.pi * t : ℝ) : ℂ) by
-      simp [a, τ, pow_two, mul_assoc, mul_left_comm, mul_comm, hI_mul])
+    simp [a, τ, pow_two, mul_assoc, mul_left_comm, mul_comm, hI_mul, Complex.ofReal_exp]
   rw [show Θ₃.resToImagAxis t - (1 : ℂ) - (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) =
       (2 : ℂ) * ∑' n : ℕ, a (n + 1) from by rw [hΘ₃, hjac, ← ha0, ← hshift]; ring]
   exact jacobiTheta_tail_bound (by simp [τ]) ht
