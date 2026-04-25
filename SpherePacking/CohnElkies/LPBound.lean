@@ -71,13 +71,13 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
   refine lt_of_le_of_ne (f_nonneg_at_zero (f := f) hCohnElkies₂) fun hf0re => ?_
-  have hf0 : f 0 = 0 := by simpa [hf0re.symm] using (hReal 0).symm
   have hintRe : ∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re = 0 := by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re) =
         (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
-    simpa [fourierInv_eq, hf0] using congrArg Complex.re
-      (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion)
+    simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
+      congrArg Complex.re
+        (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion)
   have hfun : (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) = 0 := by
     refine (Continuous.integral_zero_iff_zero_of_nonneg (by fun_prop) ?_ hCohnElkies₂).1
       (by simpa using hintRe)
@@ -308,8 +308,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
   rw [P.density_eq' hd]
   suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
     (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
-    rw [hP]
-    rw [ge_iff_le] at hCalc
+    rw [hP]; rw [ge_iff_le] at hCalc
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
@@ -339,18 +338,17 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         (show ENat.toENNReal (P.numReps : ENat) ≠ ⊤ from (Ne.symm (ne_of_beq_false rfl))),
       ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
-    have hRHSCast :
-        (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-      simp [Real.toNNReal_mul (Nat.cast_nonneg _)]
-    have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
-        ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
-        (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
-      simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
-        Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
-          (inv_nonneg.mpr hcov_pos.le))]
-      norm_cast; rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
-        Real.toNNReal_of_nonneg hcov_pos.le]; rfl
-    rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
+    rw [show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal from by
+        simp [Real.toNNReal_mul (Nat.cast_nonneg _)],
+      show (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
+          ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) =
+          ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal from by
+        simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
+          Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
+            (inv_nonneg.mpr hcov_pos.le))]
+        norm_cast
+        rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl,
+      ENNReal.coe_le_coe]
     exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
 
