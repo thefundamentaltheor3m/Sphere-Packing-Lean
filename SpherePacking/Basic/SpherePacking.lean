@@ -212,9 +212,8 @@ public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc :
       (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
   rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm]
   repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
-  rw [ENNReal.mul_div_mul_left, finiteDensity]
-  · rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]; positivity
-  · exact ENNReal.ofReal_ne_top
+  rw [ENNReal.mul_div_mul_left _ _ ?_ ENNReal.ofReal_ne_top, finiteDensity]
+  rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]; positivity
 
 @[simp]
 public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
@@ -269,9 +268,7 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
       = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') := by
   have : Countable ↑(S.centers ∩ ball 0 R) :=
     Set.Countable.mono Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
-  refine measure_iUnion ?_ fun _ ↦ measurableSet_ball
-  rintro ⟨x, hx⟩ ⟨y, hy⟩ h
-  refine ball_disjoint_ball ?_
+  refine measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball ?_) fun _ ↦ measurableSet_ball
   simp_rw [ne_eq, Subtype.mk.injEq] at h
   linarith [S.centers_dist' x y hx.left hy.left h]
 
@@ -281,14 +278,14 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le
-    (Or.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (Or.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)] at h
+    (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
+    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)] at h
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
@@ -310,8 +307,7 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
   have hd' : 0 < d := Nat.pos_of_ne_zero hd
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd'
   exact ENat.toENNReal_lt.mp <| (S.inter_ball_encard_le hd' R).trans_lt <| ENNReal.div_lt_top
-    ((volume.mono Set.inter_subset_right).trans_lt
-      (MeasureTheory.measure_ball_lt_top (μ := volume))).ne
+    ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
     (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
 public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
@@ -323,8 +319,8 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   exact (ENNReal.le_div_iff_mul_le
-    (Or.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (Or.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
+    (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
+    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
       simpa [sub_add_cancel] using S.inter_ball_encard_le hd (R - S.separation / 2)
 
 public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
@@ -336,8 +332,8 @@ public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   exact (ENNReal.div_le_iff_le_mul
-    (Or.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (Or.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
+    (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
+    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
       simpa [add_sub_cancel_right] using S.inter_ball_encard_ge (R + S.separation / 2)
 
 end BasicResults
