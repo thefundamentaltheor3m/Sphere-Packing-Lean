@@ -74,7 +74,6 @@ lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
 /-- Modular rewrite for `ψT' (z₁' t)`, used to control the integrand near `t = 0`. -/
 public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     ψT' (z₁' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc ht
   have ht0 : 0 < t := ht.1
   have hz_im : 0 < (z₁' t).im := im_z₁'_pos (t := t) ht
   let z : ℍ := ⟨z₁' t, hz_im⟩
@@ -84,7 +83,7 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     simpa using h1.symm.trans (by simpa using (slashST' (z := z) (F := ψS)))
   have hzplus : (z + 1 : ℂ) = (Complex.I : ℂ) * (t : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm, add_left_comm, add_comm] using
-      congrArg (fun w : ℂ => w + (1 : ℂ)) (z₁'_eq_of_mem (t := t) htIcc)
+      congrArg (fun w : ℂ => w + (1 : ℂ)) (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
   have htne : (t : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ht0
   have hsmul : (S * T) • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
@@ -182,16 +181,14 @@ public theorem decay_J₁' :
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   refine ⟨Kn * B, fun x hx => ?_⟩
   have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
-  have hnorm_iter : ‖iteratedFDeriv ℝ n J₁' x‖ = ‖iteratedDeriv n J₁' x‖ := by
-    simpa using
-      (norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₁') (x := x))
-  have hiterJ : iteratedDeriv n J₁' x = I n x := by
-    simpa using congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))
+  have hnorm_iter : ‖iteratedFDeriv ℝ n J₁' x‖ = ‖iteratedDeriv n J₁' x‖ :=
+    norm_iteratedFDeriv_eq_norm_iteratedDeriv
+  have hiterJ : iteratedDeriv n J₁' x = I n x :=
+    congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
       filter_upwards [hμmem] with t ht
-      have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨ht.1, le_of_lt ht.2⟩
       have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
       have hcoeff : ‖coeff t‖ ^ n ≤ (2 * Real.pi) ^ n :=
         pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
@@ -199,7 +196,7 @@ public theorem decay_J₁' :
         simpa using
           (MagicFunction.norm_modular_rewrite_Ioc_exp_bound
             (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψT') (z := z₁')
-            (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t) htIoc)
+            (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t) ⟨ht.1, le_of_lt ht.2⟩)
       have hz1 : z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using (z₁'_eq_of_mem (t := t) htIcc)
       have hcoeff_re : (coeff t).re = -Real.pi * t := by
