@@ -56,8 +56,7 @@ lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
           ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
   simp [IntegralB.B_as_complex (t := t) ht, aAnotherIntegrand, bAnotherIntegrand,
-    mul_assoc, mul_left_comm, mul_comm]
-  ring_nf
+    mul_assoc, mul_left_comm, mul_comm]; ring_nf
 
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => bAnotherIntegrand u t)
@@ -164,9 +163,7 @@ lemma bracket_arith (u : ℝ) (IA IB : ℂ)
         (1 / (60 * π) : ℂ) * IB +
         (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
           (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-  push_cast
-  field_simp
-  ring
+  push_cast; field_simp; ring
 
 theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     (hx2 : ‖x‖ ^ 2 ≠ 2) :
@@ -175,8 +172,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
         (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   set u : ℝ := ‖x‖ ^ 2
-  have hu : 0 < u := hx
-  have hu2 : u ≠ 2 := hx2
   have hFourier :
       ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
@@ -205,19 +200,19 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
             (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
             (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
-    simpa [IA] using aRadial_eq_another_integral_main (u := u) hu hu2
+    simpa [IA] using aRadial_eq_another_integral_main (u := u) hx hx2
   have hbEq' : b' u =
       (-4 * (Complex.I : ℂ)) *
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
-    simpa [IB] using bRadial_eq_another_integral_main (u := u) hu hu2
+    simpa [IB] using bRadial_eq_another_integral_main (u := u) hx hx2
   have hcoefA : (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
     field_simp; rw [Complex.I_sq]; ring
   have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
     field_simp; rw [Complex.I_sq]; ring
   have hIexp :
       (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ) :=
-    integral_exp_neg_pi_mul_Ioi_complex (u := u) hu
+    integral_exp_neg_pi_mul_Ioi_complex (u := u) hx
   have hItExp : (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
       ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) :=
     integral_mul_exp_neg_pi_mul_Ioi_complex hx
@@ -243,10 +238,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     linear_combination
       ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
         ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) * hcoefB
-  have hIA : (∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) = IA := by
-    simp [IA, aAnotherIntegrand]
-  have hIB : (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) = IB := by
-    simp [IB, bAnotherIntegrand]
   have hBdecomp :
       (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
@@ -254,7 +245,10 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
               (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
               (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
-    simpa [hIA, hIB] using IntegralB.integral_B_mul_exp_decomp (u := u) hu
+    simpa [show (∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) = IA from by
+      simp [IA, aAnotherIntegrand],
+      show (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) = IB from by
+      simp [IB, bAnotherIntegrand]] using IntegralB.integral_B_mul_exp_decomp (u := u) hx
   have hBscaled :
       (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         (-(π / 2160 : ℂ)) * IA +
@@ -262,9 +256,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
             (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
     rw [hBdecomp, hItExp, hIexp]
-    push_cast
-    field_simp
-    ring
+    push_cast; field_simp; ring
   have hBracket :
       (-(π / 2160 : ℂ)) *
             ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
@@ -275,8 +267,8 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
         (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) :=
     (bracket_arith (u := u) (IA := IA) (IB := IB)
         (by exact_mod_cast Real.pi_ne_zero)
-        (by exact_mod_cast ne_of_gt hu)
-        (by exact_mod_cast sub_ne_zero.2 hu2)).trans hBscaled.symm
+        (by exact_mod_cast ne_of_gt hx)
+        (by exact_mod_cast sub_ne_zero.2 hx2)).trans hBscaled.symm
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
@@ -329,14 +321,12 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
     let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
     let M : ℝ :=
       ∫ t : ℝ, ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ ∂μ
-    have hM_int :
-        Integrable (fun t : ℝ => ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖) μ := by
-      simpa using (IntegralB.integrableOn_B_mul_exp_neg_pi_mul (u := 2) (by positivity)).norm
     have hInt_bound :
         ∀ n : ℕ,
           ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤ M := fun n =>
-      norm_integral_le_of_norm_le hM_int <|
-        MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+      norm_integral_le_of_norm_le
+        (by simpa using (IntegralB.integrableOn_B_mul_exp_neg_pi_mul (u := 2) (by positivity)).norm)
+        <| MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
           rw [norm_mul, norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le,
             Complex.norm_of_nonneg (Real.exp_pos _).le]
           refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
