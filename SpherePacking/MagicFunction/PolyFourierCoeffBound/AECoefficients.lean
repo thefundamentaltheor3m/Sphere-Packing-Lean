@@ -77,12 +77,11 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
   let t : ℕ → ℂ := fun n => A_E_term z n
   have hA : A_E z = ∑' n : ℕ, t n := by simpa [t] using A_E_eq_tsum (z := z)
   have ht_norm : Summable (fun n : ℕ => ‖t n‖) := by
-    let r : ℝ := Real.exp (-2 * Real.pi * z.im)
+    set r : ℝ := Real.exp (-2 * Real.pi * z.im)
     have hr0 : 0 ≤ r := (Real.exp_pos _).le
     have hr : ‖r‖ < 1 := by
-      have hz : (-2 * Real.pi * z.im) < 0 := by
-        nlinarith [Real.pi_pos, UpperHalfPlane.im_pos z]
-      simpa [r, Real.norm_of_nonneg hr0] using Real.exp_lt_one_iff.2 hz
+      simpa [r, Real.norm_of_nonneg hr0] using Real.exp_lt_one_iff.2 (by
+        nlinarith [Real.pi_pos, UpperHalfPlane.im_pos z] : (-2 * Real.pi * z.im) < 0)
     let g : ℕ → ℝ := fun n => (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 * r ^ (n + 1)
     have hg : Summable g := by
       have hs' : Summable (fun n : ℕ => ((n + 1 : ℕ) : ℝ) ^ 5 * r ^ (n + 1)) := by
@@ -90,8 +89,7 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
           ((n : ℝ) ^ 5 : ℝ) * r ^ n) 1).2
           (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr)
       simpa [g, mul_assoc, mul_left_comm, mul_comm] using hs'.mul_left (720 : ℝ)
-    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) ?_ hg
-    intro n
+    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hg
     have hexp : ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ ≤ r ^ (n + 1) := by
       rw [show ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ =
           rexp (-2 * π * ((n + 1 : ℕ) : ℝ) * z.im) from by
@@ -169,11 +167,11 @@ public lemma A_E_sq_fourierCoeff_isBigO :
 
 public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
     Summable (fun i : ℕ ↦ fouterm A_E_sq_fourierCoeff z (i + 4)) := by
-  let r : ℝ := Real.exp (-Real.pi / 2)
+  set r : ℝ := Real.exp (-Real.pi / 2)
   have hr0 : 0 ≤ r := (Real.exp_pos _).le
   have hr : ‖r‖ < 1 := by
-    have : (-Real.pi / 2) < 0 := by nlinarith [Real.pi_pos]
-    simpa [r, Real.norm_of_nonneg hr0] using Real.exp_lt_one_iff.2 this
+    simpa [r, Real.norm_of_nonneg hr0] using
+      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-Real.pi / 2 : ℝ) < 0)
   let g : ℕ → ℝ := fun m => ((m : ℝ) ^ 11) * r ^ m
   have hshift : Summable (fun n : ℕ => g (n + 4)) := by
     simpa [g] using (summable_nat_add_iff (f := g) 4).2
@@ -184,18 +182,14 @@ public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
       (720 : ℝ) ^ 2 * ((n + 4 : ℕ) : ℝ) ^ 11 :=
     norm_A_E_sq_fourierCoeff_ofNat_le (j := n + 4) (by omega)
   have hexp : ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ ≤ r ^ (n + 4) := by
-    have hnorm : ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ =
-        Real.exp (-Real.pi * ((n + 4 : ℕ) : ℝ) * z.im) := by
-      simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
-    have hle : (-Real.pi * ((n + 4 : ℕ) : ℝ)) * z.im ≤
-        (-Real.pi * ((n + 4 : ℕ) : ℝ)) * (1 / 2 : ℝ) :=
-      mul_le_mul_of_nonpos_left hz.le (by nlinarith [Real.pi_pos])
-    have hpow : Real.exp ((-Real.pi * ((n + 4 : ℕ) : ℝ)) * (1 / 2 : ℝ)) = r ^ (n + 4) := by
-      rw [show (-Real.pi * ((n + 4 : ℕ) : ℝ)) * (1 / 2 : ℝ) =
-        ((n + 4 : ℕ) : ℝ) * (-Real.pi / 2 : ℝ) by ring, Real.exp_nat_mul]
-    rw [hnorm, show -Real.pi * ((n + 4 : ℕ) : ℝ) * z.im =
-      (-Real.pi * ((n + 4 : ℕ) : ℝ)) * z.im by ring]
-    exact (Real.exp_le_exp.2 hle).trans_eq hpow
+    rw [show ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ =
+        Real.exp (-Real.pi * ((n + 4 : ℕ) : ℝ) * z.im) from by
+      simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm],
+      show -Real.pi * ((n + 4 : ℕ) : ℝ) * z.im = (-Real.pi * ((n + 4 : ℕ) : ℝ)) * z.im by ring]
+    refine (Real.exp_le_exp.2 (mul_le_mul_of_nonpos_left hz.le
+      (by nlinarith [Real.pi_pos]))).trans_eq ?_
+    rw [show (-Real.pi * ((n + 4 : ℕ) : ℝ)) * (1 / 2 : ℝ) =
+      ((n + 4 : ℕ) : ℝ) * (-Real.pi / 2 : ℝ) by ring, Real.exp_nat_mul]
   calc ‖fouterm A_E_sq_fourierCoeff z (n + 4)‖
       = ‖A_E_sq_fourierCoeff (Int.ofNat (n + 4))‖ *
           ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ := by simp [fouterm]
@@ -205,21 +199,19 @@ public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
 public lemma A_E_sq_series_summable (x : ℍ) :
     Summable (fun m : ℕ =>
       A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))) := by
-  let r : ℝ := Real.exp (-2 * Real.pi * x.im)
+  set r : ℝ := Real.exp (-2 * Real.pi * x.im)
   have hr0 : 0 ≤ r := (Real.exp_pos _).le
   have hr : ‖r‖ < 1 := by
-    have hx : (-2 * Real.pi * x.im) < 0 := by
-      nlinarith [Real.pi_pos, UpperHalfPlane.im_pos x]
-    simpa [r, Real.norm_of_nonneg hr0] using Real.exp_lt_one_iff.2 hx
+    simpa [r, Real.norm_of_nonneg hr0] using Real.exp_lt_one_iff.2 (by
+      nlinarith [Real.pi_pos, UpperHalfPlane.im_pos x] : (-2 * Real.pi * x.im) < 0)
   let g0 : ℕ → ℝ := fun m => ((m : ℝ) ^ 11) * r ^ m
   have hg1 : Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 1)) := by
     simpa [g0, Nat.cast_add, Nat.cast_one] using (summable_nat_add_iff (f := g0) 1).2
       (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 hr)
   have hg2 : Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 2)) := by
     simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm] using hg1.mul_right r
-  refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) ?_
+  refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
     (hg2.mul_left ((720 : ℝ) ^ 2))
-  intro m
   have hexp : ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ ≤ r ^ (m + 2) := by
     rw [show ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ =
         Real.exp (-2 * Real.pi * ((m + 2 : ℕ) : ℝ) * x.im) from by
@@ -232,9 +224,8 @@ public lemma A_E_sq_series_summable (x : ℍ) :
         mul_le_mul (norm_A_E_sq_coeff_le m) hexp (norm_nonneg _) (by positivity)
     _ = ((720 : ℝ) ^ 2) * (((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 2)) := by ring_nf
 
-public lemma A_E_sq_fourierCoeff_hf :
-    ∀ x : ℍ, (A_E x) ^ 2 = ∑' (n : ℕ), fouterm A_E_sq_fourierCoeff x (n + 4) := by
-  intro x
+public lemma A_E_sq_fourierCoeff_hf (x : ℍ) :
+    (A_E x) ^ 2 = ∑' (n : ℕ), fouterm A_E_sq_fourierCoeff x (n + 4) := by
   have hA2 := A_E_sq_eq_tsum (z := x)
   let f : ℕ → ℂ := fun n => fouterm A_E_sq_fourierCoeff x (n + 4)
   let g : ℕ → ℂ := fun m =>
