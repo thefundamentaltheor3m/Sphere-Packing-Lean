@@ -175,8 +175,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
             (norm_nonneg _) hC₀_pos.le)
       _ = (4 * C₀) * t ^ 2 := by ring
       _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
-          gcongr
-          nlinarith [sq_nonneg t,
+          gcongr; nlinarith [sq_nonneg t,
             Real.one_le_exp_iff.2 (show (0 : ℝ) ≤ 2 * π * t by positivity)]
   have hCφ_nonneg : 0 ≤ Cφ :=
     le_of_mul_le_mul_right (by simpa using (norm_nonneg _).trans hφ2) (Real.exp_pos _)
@@ -290,8 +289,7 @@ public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
       (Set.Ioi (1 : ℝ)) volume :=
     (h6.sub (integrableOn_Φ₂'_imag_axis (u := u) hu)).add h5
   refine hcomb.congr_fun (fun t ht => ?_) measurableSet_Ioi
-  have hfd := Φ_finite_difference_imag_axis (u := u) (t := t)
-    (lt_trans (by norm_num : (0 : ℝ) < 1) ht)
+  have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht)
   grind only
 
 /--
