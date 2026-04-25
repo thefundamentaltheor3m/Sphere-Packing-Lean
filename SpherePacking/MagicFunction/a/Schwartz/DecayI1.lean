@@ -49,10 +49,8 @@ def coeff (s : ℝ) : ℂ := (-π : ℂ) * (I + (1 / (s : ℂ)))
 
 def gN (n : ℕ) (r s : ℝ) : ℂ := (coeff s) ^ n * g r s
 
-/--
-A convenient constant controlling the bound on `‖φ₀ z‖` for `im z ≥ 1 / 2`, obtained from
-`MagicFunction.PolyFourierCoeffBound.norm_φ₀_le`.
--/
+/-- A convenient constant controlling the bound on `‖φ₀ z‖` for `im z ≥ 1 / 2`, obtained from
+`MagicFunction.PolyFourierCoeffBound.norm_φ₀_le`. -/
 public noncomputable def Cφ : ℝ :=
   (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose
 
@@ -60,9 +58,7 @@ public noncomputable def Cφ : ℝ :=
 public lemma Cφ_pos : 0 < Cφ :=
   (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.1
 
-/--
-Bound `‖φ₀'' (I * s)‖` for `s ≥ 1` using the Fourier coefficient estimate for `φ₀`.
--/
+/-- Bound `‖φ₀'' (I * s)‖` for `s ≥ 1` using the Fourier coefficient estimate for `φ₀`. -/
 public lemma norm_φ₀''_le (s : ℝ) (hs : 1 ≤ s) :
     ‖φ₀'' (I * (s : ℂ))‖ ≤ Cφ * rexp (-2 * π * s) := by
   have hpos : 0 < (I * (s : ℂ)).im := by simpa using lt_of_lt_of_le (by norm_num) hs
@@ -208,14 +204,14 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
   have h_bound :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r s‖ ≤ bound s := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs r hr => ?_
+    refine (gN_norm_bound (n := n + 1) (r := r) (s := s) hs).trans ?_
     have hExp : rexp (-π * r / s) ≤ rexp (π * R) :=
       (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans (Real.exp_le_exp.2
         (mul_le_mul_of_nonneg_left
           (SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr) Real.pi_pos.le))
-    refine (gN_norm_bound (n := n + 1) (r := r) (s := s) hs).trans ?_
-    have hcoef0 : 0 ≤ (2 * π) ^ (n + 1) * (Cφ * rexp (-2 * π * s)) :=
-      mul_nonneg (by positivity) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le)
-    have hmul := mul_le_mul_of_nonneg_left hExp hcoef0
+    have hmul := mul_le_mul_of_nonneg_left hExp
+      (show 0 ≤ (2 * π) ^ (n + 1) * (Cφ * rexp (-2 * π * s)) from
+        mul_nonneg (by positivity) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le))
     grind only
   simpa [μ, SpherePacking.Integration.μIciOne] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -250,12 +246,7 @@ lemma pow_mul_exp_neg_bounded (k : ℕ) :
 
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
-      ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := by
-  have hBound : IntegrableOn (fun s : ℝ ↦ Cφ * rexp (-2 * π * s) * rexp (-π * x / s))
-      (Ici (1 : ℝ)) volume := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := Cφ)
-  calc
+      ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := calc
     ‖iteratedDeriv n I₁' x‖ = ‖∫ s, gN n x s ∂μ‖ := by
       simp [iteratedDeriv_eq_integral_gN (n := n)]
     _ ≤ ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by
@@ -263,7 +254,9 @@ lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     _ ≤ ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) :=
         setIntegral_mono_on
           (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
-          (by simpa [mul_assoc, mul_left_comm, mul_comm] using hBound.const_mul ((2 * π) ^ n))
+          (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+              ((MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn
+                (r := x) (C₀ := Cφ)).const_mul ((2 * π) ^ n)))
           measurableSet_Ici fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
 
 lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 ≤ s)
@@ -271,16 +264,15 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
     x ^ k * rexp (-π * x / s) ≤ (π ^ k)⁻¹ * Cpow * s ^ k := by
   have hs0 : s ≠ 0 := (lt_of_lt_of_le (by norm_num) hs).ne'
   set u : ℝ := (π * x) / s
-  have hu0 : 0 ≤ u := div_nonneg (by positivity) (zero_le_one.trans hs)
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
     simp [show x = u * s / π from
       CancelDenoms.cancel_factors_eq_div (id (div_mul_cancel₀ (π * x) hs0).symm) Real.pi_ne_zero,
       mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
-  calc
-    x ^ k * rexp (-π * x / s)
-        = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
-          rw [congrArg rexp (show -π * x / s = -u by ring), hxpow]; ring
-    _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by gcongr; exact hCpow u hu0
+  calc x ^ k * rexp (-π * x / s)
+      = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
+        rw [congrArg rexp (show -π * x / s = -u by ring), hxpow]; ring
+    _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by
+        gcongr; exact hCpow u (div_nonneg (by positivity) (zero_le_one.trans hs))
     _ = (π ^ k)⁻¹ * Cpow * s ^ k := by ring
 
 lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
