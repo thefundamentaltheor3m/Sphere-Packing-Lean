@@ -99,32 +99,27 @@ public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
       z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)
   have hz_im : 0 < (z₅' t).im := by simpa [hz5] using ht0
   let z : ℍ := ⟨z₅' t, hz_im⟩
-  have hψI' : ψI' (z₅' t) = ψI z := by simp [ψI', hz_im, z]
-  have hψI : ψI z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-    have hrel : (ψS ∣[(-2 : ℤ)] S) z = ψI z := by
-      simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S
-    calc
-      ψI z = (ψS ∣[(-2 : ℤ)] S) z := by simpa using hrel.symm
-      _ = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by simpa using (slashS' (z := z) (F := ψS))
   have htne : (t : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt ht0)
   have hsmul : S • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
-    calc
-      (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := coe_S_smul (z := z)
+    calc (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := coe_S_smul (z := z)
       _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [z, hz5]
       _ = (Complex.I : ℂ) * (1 / t) := by field_simp [htne, Complex.I_ne_zero]; simp
   have hψS' :
       ψS (SpecialLinearGroup.toGL ((SpecialLinearGroup.map (Int.castRingHom ℝ)) S) • z) =
         ψS.resToImagAxis (1 / t) := by
-    have hsmul' :
-        SpecialLinearGroup.toGL ((SpecialLinearGroup.map (Int.castRingHom ℝ)) S) • z =
-          (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by simpa using hsmul
-    simp [Function.resToImagAxis, ResToImagAxis, ht0, hsmul']
+    simp [Function.resToImagAxis, ResToImagAxis, ht0,
+      show SpecialLinearGroup.toGL ((SpecialLinearGroup.map (Int.castRingHom ℝ)) S) • z =
+        (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) by simpa using hsmul]
   have hzcoe : (z : ℂ) = (Complex.I : ℂ) * (t : ℂ) := by simp [z, hz5]
-  have hψI'' :
-      ψI z = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-    simpa [hψS', hzcoe] using hψI
-  simpa [hψI'] using hψI''
+  have hψI : ψI z = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
+    have hslash : (ψS ∣[(-2 : ℤ)] S) z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by
+      simpa using slashS' (z := z) (F := ψS)
+    have hrel : ψI z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) :=
+      (congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S).symm.trans hslash
+    simpa [hψS', hzcoe] using hrel
+  have hψI' : ψI' (z₅' t) = ψI z := by simp [ψI', hz_im, z]
+  simpa [hψI'] using hψI
 
 lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
@@ -136,11 +131,10 @@ lemma exists_bound_norm_ψI'_z₅' :
     hM (1 / t) (by simpa using one_div_le_one_div_of_le ht0 htle)
   have hψIle : ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
     have hEq := ψI'_z₅'_eq (t := t) ⟨ht.1, htle⟩; simp_all
-  calc
-    ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
+  calc ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
     _ ≤ M * 1 := mul_le_mul_of_nonneg_left (by simpa using pow_le_pow_left₀ ht0.le htle 2)
       ((norm_nonneg _).trans hψS)
-    _ = M := by ring
+    _ = M := mul_one M
 
 lemma exists_bound_norm_hf :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
@@ -170,9 +164,8 @@ public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
     contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I) (fun n x => by
       simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
   -- `simp` normalizes `(-2) * f` to `-(2 * f)`, so match that normal form.
-  have hEq : (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' := by
-    funext x
-    simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm
+  have hEq : (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' :=
+    funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm
   simpa [hEq] using hmul
 
 /-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`.
@@ -203,24 +196,21 @@ public theorem decay_J₅' :
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
-  have hnorm_iter : ‖iteratedFDeriv ℝ n J₅' x‖ = ‖iteratedDeriv n J₅' x‖ := by
-    simpa using
-      (norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x))
-  have hiterI : iteratedDeriv n (fun y : ℝ => I 0 y) = fun y : ℝ ↦ I n y := by
-    simpa using (SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
-      (fun m y => by simpa using (hasDerivAt_integral_gN (n := m) (x₀ := y))) n)
-  have hJfun : J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) := by
-    funext y
-    simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using (J₅'_eq_integral_g_Ioo (x := y))
+  have hnorm_iter : ‖iteratedFDeriv ℝ n J₅' x‖ = ‖iteratedDeriv n J₅' x‖ :=
+    norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x)
+  have hiterI : iteratedDeriv n (fun y : ℝ => I 0 y) = fun y : ℝ ↦ I n y :=
+    SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
+      (fun m y => by simpa using (hasDerivAt_integral_gN (n := m) (x₀ := y))) n
+  have hJfun : J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) :=
+    funext fun y => by
+      simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using (J₅'_eq_integral_g_Ioo (x := y))
+  have hI0n : iteratedDeriv n (fun y : ℝ => I 0 y) x = I n x :=
+    congrArg (fun F : ℝ → ℂ => F x) hiterI
   have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
-    calc
-      iteratedDeriv n J₅' x =
-          iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by simp [hJfun]
+    calc iteratedDeriv n J₅' x
+        = iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by simp [hJfun]
       _ = (-2 : ℂ) • iteratedDeriv n (fun y : ℝ => I 0 y) x := by simp
-      _ = (-2 : ℂ) • I n x := by
-        simp [show iteratedDeriv n (fun y : ℝ => I 0 y) x = I n x from by
-          simpa using congrArg (fun F : ℝ → ℂ => F x) hiterI]
-      _ = (-2 : ℂ) * I n x := by simp [smul_eq_mul]
+      _ = (-2 : ℂ) * I n x := by simp [hI0n, smul_eq_mul]
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
