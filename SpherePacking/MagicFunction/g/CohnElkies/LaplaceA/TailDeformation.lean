@@ -157,25 +157,23 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
 
 /-- Top-edge decay needed for the left rectangle deformation (`Φ₂'`). -/
 lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
-    Tendsto
-      (fun m : ℝ => ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
+    Tendsto (fun m : ℝ => ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := -1) (x₂ := 0) (by norm_num)
-    (fun _ _ _ x _ h1 h2 h3 hx h4 h5 => by
+    fun _ _ _ x _ h1 h2 h3 hx h4 h5 =>
       have hx' : x ∈ Set.Ioc (-1 : ℝ) 0 := by
         simpa [Set.uIoc_of_le (show (-1:ℝ) ≤ 0 by norm_num)] using hx
-      exact norm_Φ₂'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5)
+      norm_Φ₂'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5
 
 /-- Top-edge decay needed for the right rectangle deformation (`Φ₄'`). -/
 lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
-    Tendsto
-      (fun m : ℝ => ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
+    Tendsto (fun m : ℝ => ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := 1) (x₂ := 0) (by norm_num)
-    (fun _ _ _ x _ h1 h2 h3 hx h4 h5 => by
+    fun _ _ _ x _ h1 h2 h3 hx h4 h5 =>
       have hx' : x ∈ Set.Ioc (0 : ℝ) 1 := by
         simpa [Set.uIoc_of_ge (show (0:ℝ) ≤ 1 by norm_num)] using hx
-      exact norm_Φ₄'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5)
+      norm_Φ₄'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5
 
 lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' u =
@@ -224,15 +222,12 @@ private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ :
         ((∫ t in Set.Ioi (1 : ℝ), f ((x₁ : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), f ((x₂ : ℂ) + (t : ℂ) * Complex.I)) := by
   have hcont : ContinuousOn f (Set.uIcc x₁ x₂ ×ℂ Set.Ici (1 : ℝ)) :=
-    hcontU.mono fun z hz => by
-      rcases (by simpa [mem_reProdIm] using hz :
-          z.re ∈ Set.uIcc x₁ x₂ ∧ z.im ∈ Set.Ici (1 : ℝ)) with ⟨-, hz⟩
-      exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hz
+    hcontU.mono fun z hz => show 0 < z.im from
+      lt_of_lt_of_le zero_lt_one (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ici (1 : ℝ)).2
   have hdiff : ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi (1 : ℝ)),
       DifferentiableAt ℂ f z := fun z hz => by
-    have hz' : z.re ∈ Set.Ioo (min x₁ x₂) (max x₁ x₂) ∧ z.im ∈ Set.Ioi (1 : ℝ) := by
-      simpa [mem_reProdIm] using hz
-    have hz0 : 0 < z.im := lt_trans (by norm_num : (0:ℝ) < 1) hz'.2
+    have hz0 : 0 < z.im := lt_trans zero_lt_one
+      (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
     exact (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0)
   have hrect := Complex.rect_deform_of_tendsto_top (f := f) (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ))
     hcont hdiff hint₁ hint₂ htop
