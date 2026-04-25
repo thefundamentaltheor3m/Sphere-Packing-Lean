@@ -116,29 +116,22 @@ public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
   have hz : z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) := by simp [z₁', Set.IccExtend_apply, z₁, hu]
-  calc
-    ‖z₁' t‖ = ‖(-1 : ℂ) + (I : ℂ) * (u : ℂ)‖ := by simp [hz]
+  calc ‖z₁' t‖ = ‖(-1 : ℂ) + (I : ℂ) * (u : ℂ)‖ := by simp [hz]
     _ ≤ ‖(-1 : ℂ)‖ + ‖(I : ℂ) * (u : ℂ)‖ := norm_add_le _ _
-    _ = 1 + |u| := by simp [Complex.norm_real]
-    _ ≤ 1 + 1 := by simpa [abs_of_nonneg hu0] using hu1
-    _ = 2 := by ring
+    _ ≤ 2 := by simp [Complex.norm_real, abs_of_nonneg hu0]; linarith
 
 /-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖(-1 : ℂ) + (u : ℂ)‖ ≤ 1 := by
-    have heq : ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| := by
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (Complex.norm_real (u - 1))
-    rw [heq]; grind only [= max_def, = min_def, = abs.eq_1]
+    rw [show ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| from by
+      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using Complex.norm_real (u - 1)]
+    grind only [= max_def, = min_def, = abs.eq_1]
   have hz : z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) := by simp [z₂', Set.IccExtend_apply, z₂, hu]
-  calc
-    ‖z₂' t‖ = ‖((-1 : ℂ) + (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
+  calc ‖z₂' t‖ = ‖((-1 : ℂ) + (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
     _ ≤ ‖(-1 : ℂ) + (u : ℂ)‖ + ‖(I : ℂ)‖ := norm_add_le _ _
-    _ ≤ (1 : ℝ) + 1 := add_le_add hnorm (by simp)
-    _ = 2 := by ring
+    _ ≤ 2 := by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
 
 /-- The extended parametrisation `z₄'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
@@ -146,16 +139,14 @@ public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖(1 : ℂ) - (u : ℂ)‖ ≤ 1 := by
-    have heq : ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| := by simpa using Complex.norm_real (1 - u)
-    rw [heq, abs_of_nonneg (sub_nonneg.mpr hu1)]
+    rw [show ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| from by simpa using Complex.norm_real (1 - u),
+      abs_of_nonneg (sub_nonneg.mpr hu1)]
     linarith
   have hz : z₄' t = ((1 : ℂ) - (u : ℂ)) + (I : ℂ) := by
     simp [z₄', Set.IccExtend_apply, z₄, hu, sub_eq_add_neg]
-  calc
-    ‖z₄' t‖ = ‖((1 : ℂ) - (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
+  calc ‖z₄' t‖ = ‖((1 : ℂ) - (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
     _ ≤ ‖(1 : ℂ) - (u : ℂ)‖ + ‖(I : ℂ)‖ := norm_add_le _ _
-    _ ≤ (1 : ℝ) + 1 := add_le_add hnorm (by simp)
-    _ = 2 := by ring
+    _ ≤ 2 := by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
 
 end Parametrisations
 
@@ -168,55 +159,49 @@ private lemma im_pos_of_mapsto {s : Set ℝ} {f : ℝ → ℂ} (hf : MapsTo f s 
   simpa [UpperHalfPlane.upperHalfPlaneSet] using hf ht
 
 /-- The map `z₁'` sends `Ioc 0 1` into the upper half-plane. -/
-public lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := by
-  intro t ht
+public lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₁', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₁] using ht.1
 
 /-- For `t ∈ Ioc 0 1`, the point `z₁' t` has positive imaginary part. -/
-public lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
-  simpa using im_pos_of_mapsto z₁'_mapsto ht
+public lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im :=
+  im_pos_of_mapsto z₁'_mapsto ht
 
 /-- The map `z₂'` sends `Icc 0 1` into the upper half-plane. -/
-public lemma z₂'_mapsto : MapsTo z₂' (Icc 0 1) ℍ₀ := by
-  intro t ht
+public lemma z₂'_mapsto : MapsTo z₂' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
 
 /-- For `t ∈ Icc 0 1`, the point `z₂' t` has positive imaginary part. -/
-public lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
-  simpa using im_pos_of_mapsto z₂'_mapsto ht
+public lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im :=
+  im_pos_of_mapsto z₂'_mapsto ht
 
 /-- The map `z₃'` sends `Ioc 0 1` into the upper half-plane. -/
-public lemma z₃'_mapsto : MapsTo z₃' (Ioc 0 1) ℍ₀ := by
-  intro t ht
+public lemma z₃'_mapsto : MapsTo z₃' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₃', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₃] using ht.1
 
 /-- For `t ∈ Ioc 0 1`, the point `z₃' t` has positive imaginary part. -/
-public lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
-  simpa using im_pos_of_mapsto z₃'_mapsto ht
+public lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im :=
+  im_pos_of_mapsto z₃'_mapsto ht
 
 /-- The map `z₄'` sends `Icc 0 1` into the upper half-plane. -/
-public lemma z₄'_mapsto : MapsTo z₄' (Icc 0 1) ℍ₀ := by
-  intro t ht
+public lemma z₄'_mapsto : MapsTo z₄' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
 
 /-- For `t ∈ Icc 0 1`, the point `z₄' t` has positive imaginary part. -/
-public lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
-  simpa using im_pos_of_mapsto z₄'_mapsto ht
+public lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im :=
+  im_pos_of_mapsto z₄'_mapsto ht
 
 /-- The map `z₅'` sends `Ioc 0 1` into the upper half-plane. -/
-public lemma z₅'_mapsto : MapsTo z₅' (Ioc 0 1) ℍ₀ := by
-  intro t ht
+public lemma z₅'_mapsto : MapsTo z₅' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₅', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₅] using ht.1
 
 /-- For `t ∈ Ioc 0 1`, the point `z₅' t` has positive imaginary part. -/
-public lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
-  simpa using im_pos_of_mapsto z₅'_mapsto ht
+public lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im :=
+  im_pos_of_mapsto z₅'_mapsto ht
 
 /-- The map `z₆'` sends `Ici 1` into the upper half-plane. -/
-public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := by
-  intro t ht
-  have ht0 : 0 < t := lt_of_lt_of_le one_pos ht
-  simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using ht0
+public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht => by
+  simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using
+    lt_of_lt_of_le one_pos ht
 
 end UpperHalfPlane
 
