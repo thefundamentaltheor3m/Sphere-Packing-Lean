@@ -38,8 +38,7 @@ public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
 private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : ℂ)‖ ≤ (1 : ℝ))
     (ht : (1 : ℝ) ≤ t) :
     ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
-  have : ‖(t : ℂ) * Complex.I‖ = t := by
-    simp [Complex.norm_real, abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
+  have : ‖(t : ℂ) * Complex.I‖ = t := by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
   linarith [norm_add_le ((a : ℝ) : ℂ) ((t : ℂ) * Complex.I)]
 
 /-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
@@ -186,8 +185,7 @@ lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
       simp [g, show MagicFunction.Parametrisations.z₂' t =
         (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) from by
           simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t)
-            (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-        show ((t + (-1 : ℝ) : ℝ) : ℂ) = (t : ℂ) + (-1 : ℂ) from by norm_cast, add_comm],
+            (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht), add_comm],
     show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x from by norm_num]
 
 lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
@@ -225,32 +223,29 @@ private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ :
     hcontU.mono fun z hz => show 0 < z.im from
       lt_of_lt_of_le zero_lt_one (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ici (1 : ℝ)).2
   have hdiff : ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi (1 : ℝ)),
-      DifferentiableAt ℂ f z := fun z hz => by
+      DifferentiableAt ℂ f z := fun z hz =>
     have hz0 : 0 < z.im := lt_trans zero_lt_one
       (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
-    exact (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0)
-  have hrect := Complex.rect_deform_of_tendsto_top (f := f) (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ))
-    hcont hdiff hint₁ hint₂ htop
-  simpa [smul_eq_mul, mul_sub, one_mul] using
-    eq_sub_of_add_eq (by simpa [one_mul] using sub_eq_zero.mp hrect)
+    (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0)
+  simpa [smul_eq_mul, mul_sub, one_mul] using eq_sub_of_add_eq (by
+    simpa [one_mul] using sub_eq_zero.mp <| Complex.rect_deform_of_tendsto_top (f := f)
+      (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ)) hcont hdiff hint₁ hint₂ htop)
 
 lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
     MagicFunction.a.RealIntegrals.I₂' u =
       (Complex.I : ℂ) •
         ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) := by
-  have hint₁ : IntegrableOn (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
-      (Set.Ioi (1 : ℝ)) volume := by
-    simpa [show (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
-        fun t : ℝ => Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
-          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₁'_shift_left (u := u) (t := t)]
-      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   rw [I₂'_eq_intervalIntegral_bottom (u := u)]
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₂' u)
     (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ))
     (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
     ((MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).differentiableOn (by simp))
-    (by simpa using hint₁) (by simpa using integrableOn_Φ₂'_imag_axis (u := u) hu)
+    (by simpa [show (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
+        fun t : ℝ => Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
+          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₁'_shift_left (u := u) (t := t)]
+      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _)
+    (by simpa using integrableOn_Φ₂'_imag_axis (u := u) hu)
     (tendsto_intervalIntegral_Φ₂'_top (u := u) hu)
 
 lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
@@ -258,18 +253,16 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
       (Complex.I : ℂ) •
         ((∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
-  have hint₁ : IntegrableOn (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
-      (Set.Ioi (1 : ℝ)) volume := by
-    simpa [show (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
-        fun t : ℝ => Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
-          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₃'_shift_right (u := u) (t := t)]
-      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   rw [I₄'_eq_intervalIntegral_bottom (u := u)]
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₄' u)
     (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
     (MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn_ℂ (r := u)).continuousOn
     ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn_ℂ (r := u)).differentiableOn (by simp))
-    (by simpa using hint₁) (by simpa using integrableOn_Φ₄'_imag_axis (u := u) hu)
+    (by simpa [show (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
+        fun t : ℝ => Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
+          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₃'_shift_right (u := u) (t := t)]
+      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _)
+    (by simpa using integrableOn_Φ₄'_imag_axis (u := u) hu)
     (tendsto_intervalIntegral_Φ₄'_top (u := u) hu)
 
 lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
