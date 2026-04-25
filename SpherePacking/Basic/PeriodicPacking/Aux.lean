@@ -129,16 +129,12 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       let g := Classical.choose (hD_unique_covers s.val)
       ⟨g.val + s.val, S.lattice_action g.prop s.prop,
         (Classical.choose_spec (hD_unique_covers s.val)).left⟩) <| by
-    intro ⟨u, hu⟩ ⟨v, hv⟩ h
-    change (S.addAction.orbitRel).r ⟨u, hu⟩ ⟨v, hv⟩ at h
-    rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
-    obtain ⟨⟨y, hy⟩, hy'⟩ := h
+    rintro ⟨u, hu⟩ ⟨v, hv⟩ ⟨⟨y, hy⟩, hy'⟩
     obtain rfl : y + v = u := Subtype.ext_iff.mp hy'
     have hv' := (Classical.choose_spec (hD_unique_covers v)).right
     simp only [Subtype.forall] at hv'
     simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
-    congr 1
-    convert Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) ?_)
+    refine congrArg (· + _) (Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) ?_))
     simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
       (Classical.choose_spec (hD_unique_covers (y + v))).left
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
@@ -150,8 +146,8 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
     obtain ⟨g, _, hg'⟩ := hD_unique_covers x
     trans g.val <;> norm_cast
-    · exact hg' _ (Classical.choose_spec (hD_unique_covers x)).left
-    · exact (hg' 0 (by simpa using hx.right)).symm
+    exacts [hg' _ (Classical.choose_spec (hD_unique_covers x)).left,
+      (hg' 0 (by simpa using hx.right)).symm]
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -322,8 +318,8 @@ private theorem disjoint_vadd_fundamentalDomain
   simpa [Λ] using disjoint_vadd_of_unique_covers (d := d) (Λ := Λ)
     (D := fundamentalDomain (b.ofZLatticeBasis ℝ _))
     (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u)
-    (fun h ↦ hxy (congrArg Subtype.val (h : (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) =
-      ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩)))
+    fun h ↦ hxy (congrArg Subtype.val (h : (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) =
+      ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩))
 
 private lemma pairwiseDisjoint_centers_inter_vadd
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {C : Set (EuclideanSpace ℝ (Fin d))} :
