@@ -150,9 +150,9 @@ open Real
     refine ⟨c * ε, mul_pos hc hε, ?_⟩
     simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
-    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
-    refine Or.inr ?_
-    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm] at hx'
+    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero,
+      AddSubgroupClass.coe_norm] at hx' ⊢
+    refine .inr ?_
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
     simpa using hε' x hx hx'
   lattice_isZLattice := by

@@ -280,8 +280,7 @@ public noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
 @[expose] public noncomputable def PeriodicSpherePacking.numReps'
     (S : PeriodicSpherePacking d) (hd : 0 < d)
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
-  letI := S.instFintypeNumReps' hd hD_isBounded
-  Fintype.card ↑(S.centers ∩ D)
+  haveI := S.instFintypeNumReps' hd hD_isBounded; Fintype.card ↑(S.centers ∩ D)
 
 public theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
