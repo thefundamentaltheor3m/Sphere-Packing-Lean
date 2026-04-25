@@ -57,7 +57,7 @@ lemma qParam_zI (t : ℝ) (ht : 0 < t) :
 
 lemma qParam_zI_norm (t : ℝ) (ht : 0 < t) :
     ‖Periodic.qParam (1 : ℝ) (zI t ht)‖ = Real.exp (-2 * π * t) := by
-  simpa [zI, mul_assoc, mul_left_comm, mul_comm, div_one] using
+  simpa [zI, mul_comm, div_one] using
     (Periodic.norm_qParam (h := (1 : ℝ)) (z := ((zI t ht : ℍ) : ℂ)))
 
 /-- The imaginary part of `(Complex.I : ℂ) / t` is `t⁻¹` (as a real number). -/
@@ -72,7 +72,7 @@ public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x :
 public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
     ModularGroup.S • zI t ht = zI t⁻¹ (inv_pos.2 ht) := by
   ext1
-  simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+  simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
     (ModularGroup.coe_S_smul (z := zI t ht))
 
 /-- `exp (-2π) < 1`. -/
@@ -145,29 +145,29 @@ private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
   calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by simp
     _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat.trans (Nat.pow_le_pow_left hM 5)
 
-lemma qExpansionFormalMultilinearSeries_partialSum_one
-    {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
-    [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ] (q : ℂ) :
+section partialSum
+variable {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
+  [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]
+
+lemma qExpansionFormalMultilinearSeries_partialSum_one (q : ℂ) :
     (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 1 q =
       (qExpansion (1 : ℝ) f).coeff 0 := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum]
 
-lemma qExpansionFormalMultilinearSeries_partialSum_two
-    {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
-    [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ] (q : ℂ) :
+lemma qExpansionFormalMultilinearSeries_partialSum_two (q : ℂ) :
     (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 2 q =
       (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
 
-lemma qExpansionFormalMultilinearSeries_partialSum_three
-    {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
-    [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ] (q : ℂ) :
+lemma qExpansionFormalMultilinearSeries_partialSum_three (q : ℂ) :
     (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 3 q =
       (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q +
         (qExpansion (1 : ℝ) f).coeff 2 * q ^ (2 : ℕ) := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
+
+end partialSum
 
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
 
@@ -298,9 +298,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
       have : (0 : ℝ) ≤ (n : ℝ) ^ 5 := by positivity
       grind only
-    calc b n = ((n + 2 : ℝ) ^ 5) * q1 ^ n := rfl
-      _ ≤ ((512 : ℝ) * ((n : ℝ) ^ 5 + 1)) * q1 ^ n := by gcongr
-      _ = (512 : ℝ) * (((n : ℝ) ^ 5 + 1) * q1 ^ n) := by ring
+    nlinarith [hpow, pow_nonneg hq1_nonneg n]
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
   intro t ht0 ht1
   let z : ℍ := zI t ht0
@@ -355,10 +353,10 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
               (hg_summ.sum_add_tsum_nat_add 1).symm)
       _ = ∑' n : ℕ, f n := by grind only
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
+    .of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
   have htail : ‖∑' n : ℕ, f n‖ ≤ q ^ (2 : ℕ) * (∑' n : ℕ, b n) :=
     (norm_tsum_le_tsum_norm hnorm_summ).trans <|
-      (hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))).trans_eq tsum_mul_left
+      (hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left _)).trans_eq tsum_mul_left
   have hmain :
       ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
         (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
@@ -366,12 +364,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       rw [hRam, ← show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
         ∑' n : ℕ, f n by simpa [hqexp] using hsplit]
       ring
-    calc
-      ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖
-          = ‖(720 : ℂ) * (∑' n : ℕ, f n)‖ := by rw [hrew]
-      _ = (720 : ℝ) * ‖∑' n : ℕ, f n‖ := by simp
-      _ ≤ (720 : ℝ) * (q ^ (2 : ℕ) * (∑' n : ℕ, b n)) := by gcongr
-      _ = (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by ring
+    rw [hrew, norm_mul, show ‖(720 : ℂ)‖ = 720 by simp, mul_assoc]
+    gcongr
   simpa [z, q] using (show ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
         ((720 : ℝ) * (∑' n : ℕ, b n)) * (Real.exp (-2 * π * t)) ^ (2 : ℕ) by
       simpa [q, mul_assoc, mul_left_comm, mul_comm] using hmain).trans
