@@ -32,8 +32,9 @@ private lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
     hw_tail.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
       (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
         (abs_nonneg C))
-  have htri := norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ)
-  rw [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring] at htri
+  have htri : ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ := by
+    simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring] using
+      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ)
   linarith [htri, htail', h8u.ge]
 
 private lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
@@ -84,8 +85,7 @@ lemma H2_norm_pow_two_ge (t : ℝ) (ht0 : 0 < t) :
       simp [H₂, Function.resToImagAxis, ResToImagAxis, ht0, norm_pow], ← pow_four_two_mul_exp t]
     exact pow_le_pow_left₀ (by positivity) (theta2_norm_ge_two_exp_quarter t ht0) 4
   have hleft : (16 * Real.exp (-Real.pi * t)) ^ (2 : ℕ) =
-      (256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
+      (256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
   linarith [pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ 16 * Real.exp (-Real.pi * t)) hx_ge 2]
 
 private lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
@@ -101,15 +101,14 @@ private lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     rw [show w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
       (w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) from by ring]
     exact norm_sub_le _ _
-  have hexp : (Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
-      Real.exp (-(4 : ℝ) * Real.pi * t) := by rw [← Real.exp_nat_mul]; ring_nf
   have hquad : ‖w⁻¹ - (2 - w)‖ ≤ (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     calc ‖w⁻¹ - (2 - w)‖ = ‖w - 1‖ ^ (2 : ℕ) * ‖w⁻¹‖ := by simp [hid, norm_pow]
       _ ≤ ‖w - 1‖ ^ (2 : ℕ) := by
           simpa using mul_le_mul_of_nonneg_left hw_inv (by positivity : 0 ≤ ‖w - 1‖ ^ (2 : ℕ))
       _ ≤ ((8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) :=
           pow_le_pow_left₀ (norm_nonneg _) hw_one 2
-      _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by rw [mul_pow, hexp]
+      _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
+          rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
   nlinarith [htri, hquad, hw_tail]
 
 private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
@@ -125,8 +124,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
   set A : ℂ := ((e / 256 : ℝ) : ℂ)
   set x : ℂ := H₂.resToImagAxis t
   set w : ℂ := A * (x ^ (2 : ℕ))
-  have heu : e * u = 1 := by
-    simp [e, u, ← Real.exp_add, show 2 * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring]
+  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
   have hw_tail :
       ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
@@ -147,7 +145,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
             ((64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ))
       nlinarith [htri, hq3_le]
     have hu_sq : (u ^ (2 : ℕ) : ℝ) = Real.exp (-(4 : ℝ) * Real.pi * t) := by
-      simp only [u]; rw [← Real.exp_nat_mul]; ring_nf
+      simp only [u, ← Real.exp_nat_mul]; ring_nf
     have hmain_sq :
         ‖main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤
           (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) := by
@@ -182,10 +180,10 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     have he256 : 0 ≤ e / 256 := by positivity
     have hA_norm : ‖A‖ = e / 256 := by
       simpa [A, abs_of_nonneg he256] using (RCLike.norm_ofReal (K := ℂ) (e / 256))
-    have heuu : e * (u ^ (2 : ℕ) : ℝ) = u := by
-      rw [show (u ^ (2 : ℕ) : ℝ) = u * u from by ring]; linear_combination u * heu
     have h256 : (e / 256) * (256 * u) = 1 := by linear_combination heu
-    have h2048 : (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * u := by linear_combination 8 * heuu
+    have h2048 : (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * u := by
+      have hu2 : (u ^ (2 : ℕ) : ℝ) = u * u := by ring
+      rw [hu2]; linear_combination 8 * u * heu
     have hw_rewrite : w - (1 : ℂ) - ((8 * u : ℝ) : ℂ) =
         A * (x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)) := by
       have h256' : A * ((256 * u : ℝ) : ℂ) = (1 : ℂ) := by
@@ -203,10 +201,10 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         (main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ))
       grind only
     have he6 : e * Real.exp (-(6 : ℝ) * Real.pi * t) = Real.exp (-(4 : ℝ) * Real.pi * t) := by
-      simp only [e]; rw [← Real.exp_add]; congr 1; ring
+      simp only [e, ← Real.exp_add]; congr 1; ring
     have he15 : e * (Real.exp (-Real.pi * t) * Real.exp (-(5 : ℝ) * Real.pi * t)) =
         Real.exp (-(4 : ℝ) * Real.pi * t) := by
-      simp only [e]; rw [← Real.exp_add, ← Real.exp_add]; congr 1; ring
+      simp only [e, ← Real.exp_add]; congr 1; ring
     have h1 : (e / 256) * ((4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t)) =
         16 * Real.exp (-(4 : ℝ) * Real.pi * t) := by linear_combination 16 * he6
     have h2 :
@@ -217,7 +215,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         (CH2 ^ 2) / 256 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
       have he8 : e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
           Real.exp (-(8 : ℝ) * Real.pi * t) := by
-        simp only [e]; rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
+        simp only [e, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
       calc (e / 256) * ((CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2)
           = (CH2 ^ 2) / 256 * (e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2) := by ring
         _ = (CH2 ^ 2) / 256 * Real.exp (-(8 : ℝ) * Real.pi * t) := by rw [he8]
@@ -260,8 +258,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     nonneg_of_mul_nonneg_left ((norm_nonneg _).trans (hH2 1 le_rfl)) (Real.exp_pos _)
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
   have hC0 : 0 ≤ C0 := by positivity
-  have heu : e * u = 1 := by
-    simp [e, u, ← Real.exp_add, show 2 * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring]
+  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
   have hA8u : A * ((8 * u : ℝ) : ℂ) = ((1 / 32 : ℝ) : ℂ) := by
     simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
       congrArg (fun r : ℝ => (r : ℂ))
@@ -277,7 +274,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     simpa [w, A, x, e, u, C0] using
       (hw_tail_bound (t := t) (ht := ht) (CH2 := CH2) (by simpa [x] using hH2 t ht))
   have hu_sq : u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) := by
-    simp only [u]; rw [← Real.exp_nat_mul]; ring_nf
+    simp only [u, ← Real.exp_nat_mul]; ring_nf
   have hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
     simpa [u, abs_of_nonneg hC0] using
       norm_sub_one_le_of_norm_sub_one_sub w u C0 (Real.exp_pos _).le
@@ -294,29 +291,26 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     bound_w_inv_sub_one_sub (t := t) (u := u) (C0 := C0) (w := w)
       hw_norm_ge hw_inv hw_tail hw_one
   have he4 : e * Real.exp (-(4 : ℝ) * Real.pi * t) = Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    simp only [e]; rw [← Real.exp_add]; congr 1; ring
+    simp only [e, ← Real.exp_add]; congr 1; ring
   have hexp : (e / 256) * Real.exp (-(4 : ℝ) * Real.pi * t) =
       (1 / 256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by linear_combination (1 / 256 : ℝ) * he4
   set K : ℝ := (8 + C0) ^ 2 + C0
   have hK : 0 ≤ K := by positivity
-  have hK' : (8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-      (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256) = K := by simp [K, C0]
   calc ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
           - ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ)
           + ((1 / 32 : ℝ) : ℂ)‖
       = ‖A‖ * ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ := by rw [hmain_id, norm_mul]
     _ ≤ (e / 256) * (K * Real.exp (-(4 : ℝ) * Real.pi * t)) := by
         rw [hA_norm]; exact mul_le_mul_of_nonneg_left hdiff he256
-    _ = K * ((1 / 256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t)) := by
+    _ = (1 / 256 : ℝ) * K * Real.exp (-(2 : ℝ) * Real.pi * t) := by
         rw [show (e / 256) * (K * Real.exp (-(4 : ℝ) * Real.pi * t)) =
-            K * ((e / 256) * Real.exp (-(4 : ℝ) * Real.pi * t)) from by ring, hexp]
+            K * ((e / 256) * Real.exp (-(4 : ℝ) * Real.pi * t)) from by ring, hexp]; ring
     _ ≤ (256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
           (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-        rw [hK', show K * ((1 / 256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t)) =
-            ((1 / 256 : ℝ) * K) * Real.exp (-(2 : ℝ) * Real.pi * t) from by ring]
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_right (by norm_num : (1 / 256 : ℝ) ≤ 256) hK)
-          (Real.exp_pos _).le
+        have : (1 / 256 : ℝ) * K ≤ 256 * K := by linarith [hK]
+        simp only [show (8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
+          (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256) = K from by simp [K, C0]]
+        exact mul_le_mul_of_nonneg_right this (Real.exp_pos _).le
 
 end
 
