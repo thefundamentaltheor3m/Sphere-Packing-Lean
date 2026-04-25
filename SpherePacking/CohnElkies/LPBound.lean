@@ -64,8 +64,8 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := fun h => hne_zero <|
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion, fourierInv_eq]
-  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
-  rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
+  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul,
+    ← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
   exact integral_nonneg fun v => by simpa using hCohnElkies₂ v
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
@@ -92,7 +92,7 @@ section Fundamental_Domain_Dependent
 
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
+variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
 omit [Nonempty ↑P.centers] in
 include hD_isBounded in
@@ -342,17 +342,15 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     have hRHSCast :
         (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal = (P.numReps : NNReal) * (f 0).re.toNNReal by
-        rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
-      push_cast; rfl
+      rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; push_cast; simp
     have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
         (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
       simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
         Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
           (inv_nonneg.mpr hcov_pos.le))]
-      norm_cast
-      rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl
+      norm_cast; rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
+        Real.toNNReal_of_nonneg hcov_pos.le]; rfl
     rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
     exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
