@@ -69,7 +69,7 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
     simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
       field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
       (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
-  have hmul := mul_le_mul_of_nonneg_right hCle
+  have := mul_le_mul_of_nonneg_right hCle
     (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))
   grind only
 
@@ -161,8 +161,7 @@ lemma exists_phi0_cancellation_bound :
       simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
         (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
     obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans hA₂'⟩ hg_cont
-    exact ⟨g t₀, fun t ht1 htA => (by simpa [isMaxOn_iff] using ht₀max :
-      ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀) t ⟨ht1, htA⟩⟩
+    exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, lt_of_lt_of_le hClarge_pos (le_max_left _ _), ?_⟩
   intro t ht1
@@ -222,8 +221,7 @@ lemma exists_phi0_cancellation_bound :
           ((8640 / π : ℝ) : ℂ) * t -
           ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' from by
         simpa [x, y, z'] using hrewrite ht0]
-      refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'] :
-        ‖x - y‖ + ‖z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖)).trans
+      refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])).trans
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
     exact htri.trans (by gcongr; exact le_max_left _ _)
@@ -280,7 +278,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
       linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
         (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
-    have ht2nn : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
+    have ht2nn : (0 : ℝ) ≤ t ^ (2 : ℕ) := by positivity
     have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
       simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nn]
         using mul_le_mul_of_nonneg_left hφ0'' ht2nn
@@ -338,9 +336,7 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       refine ((hfacBig.mul hExpRef).congr_left (fun t => ?_)).congr_right (fun _ => by ring)
       rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
-        (f := fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-        (b := (1 : ℝ))).2 <|
-      integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := (2 * π + π * u) / 2) ha
+        (b := (1 : ℝ))).2 <| integrable_of_isBigO_exp_neg (a := 1) (b := b) ha
         (by simpa [Set.Ici] using (by fun_prop :
           ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
             (Set.Ici (1 : ℝ)))) hO
@@ -355,8 +351,7 @@ public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
   rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ) from by
     ext t; refine ⟨fun ht => (le_total t 1).imp (fun h1 => ⟨ht, h1⟩) id, ?_⟩
     rintro (ht | ht) <;> [exact ht.1; exact lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht]]
-  exact (aAnotherIntegrand_integrableOn_Ioc (u := u) hu).union
-    (aAnotherIntegrand_integrableOn_Ici (u := u) hu)
+  exact (aAnotherIntegrand_integrableOn_Ioc hu).union (aAnotherIntegrand_integrableOn_Ici hu)
 
 end
 
