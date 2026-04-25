@@ -82,12 +82,10 @@ lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Io
 lemma continuous_coeff : Continuous coeff := by
   simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₅'
 
-lemma continuousOn_hf :
-    ContinuousOn hf (Ioo (0 : ℝ) 1) := by
-  simpa [hf] using (continuousOn_const.mul continuousOn_ψI'_z₅')
+lemma continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1) := by
+  simpa [hf] using continuousOn_const.mul continuousOn_ψI'_z₅'
 
-lemma coe_S_smul (z : ℍ) :
-    (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := by
+lemma coe_S_smul (z : ℍ) : (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := by
   simpa using ModularGroup.coe_S_smul z
 
 /-- Modular rewrite for `ψI' (z₅' t)` in terms of `ψS.resToImagAxis (1 / t)`. -/
@@ -123,7 +121,7 @@ public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
 
 lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
-  rcases exists_bound_norm_ψS_resToImagAxis_Ici_one with ⟨M, hM⟩
+  obtain ⟨M, hM⟩ := exists_bound_norm_ψS_resToImagAxis_Ici_one
   refine ⟨M, fun t ht => ?_⟩
   have ht0 : 0 < t := ht.1
   have htle : t ≤ 1 := le_of_lt ht.2
@@ -132,9 +130,9 @@ lemma exists_bound_norm_ψI'_z₅' :
   have hψIle : ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
     have hEq := ψI'_z₅'_eq (t := t) ⟨ht.1, htle⟩; simp_all
   calc ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
-    _ ≤ M * 1 := mul_le_mul_of_nonneg_left (by simpa using pow_le_pow_left₀ ht0.le htle 2)
-      ((norm_nonneg _).trans hψS)
-    _ = M := mul_one M
+    _ ≤ M := by
+      simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht0.le htle)
+        ((norm_nonneg _).trans hψS)
 
 lemma exists_bound_norm_hf :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
@@ -176,11 +174,11 @@ public theorem decay_J₅' :
   intro k n
   obtain ⟨B, hB⟩ :=
     exists_bound_pow_mul_exp_neg_mul_sqrt (k := k) (b := 2 * Real.pi) (by positivity)
-  rcases exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with ⟨Cψ, hCψ⟩
+  obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   have hCψ0 : 0 ≤ Cψ :=
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
-      (by simpa using (hCψ 1 (le_rfl : (1 : ℝ) ≤ 1)))
+      (by simpa using hCψ 1 le_rfl)
   have hμmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 := by
     simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01
   let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
@@ -195,22 +193,17 @@ public theorem decay_J₅' :
       (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
-  have hnorm_iter : ‖iteratedFDeriv ℝ n J₅' x‖ = ‖iteratedDeriv n J₅' x‖ :=
-    norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x)
   have hiterI : iteratedDeriv n (fun y : ℝ => I 0 y) = fun y : ℝ ↦ I n y :=
     SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
-      (fun m y => by simpa using (hasDerivAt_integral_gN (n := m) (x₀ := y))) n
+      (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n
   have hJfun : J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) :=
     funext fun y => by
-      simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using (J₅'_eq_integral_g_Ioo (x := y))
-  have hI0n : iteratedDeriv n (fun y : ℝ => I 0 y) x = I n x :=
-    congrArg (fun F : ℝ → ℂ => F x) hiterI
+      simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)
   have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
     calc iteratedDeriv n J₅' x
         = iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by simp [hJfun]
       _ = (-2 : ℂ) • iteratedDeriv n (fun y : ℝ => I 0 y) x := by simp
-      _ = (-2 : ℂ) * I n x := by simp [hI0n, smul_eq_mul]
+      _ = (-2 : ℂ) * I n x := by simp [hiterI, smul_eq_mul]
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
@@ -247,17 +240,17 @@ public theorem decay_J₅' :
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   have hpoly : x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B := by
     simpa [mul_assoc] using hB x hx
-  have hiterJnorm : ‖iteratedDeriv n J₅' x‖ ≤ 2 * ‖I n x‖ :=
-    le_of_eq (by simp [hiterJ])
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖
-        = x ^ k * ‖iteratedDeriv n J₅' x‖ := by simp [hxabs, hnorm_iter]
+        = x ^ k * ‖iteratedDeriv n J₅' x‖ := by
+          simp [Real.norm_of_nonneg hx,
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x)]
     _ ≤ x ^ k * (2 * ‖I n x‖) :=
-      mul_le_mul_of_nonneg_left hiterJnorm (pow_nonneg hx k)
+      mul_le_mul_of_nonneg_left (le_of_eq (by simp [hiterJ])) (pow_nonneg hx k)
     _ ≤ x ^ k * (2 * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
     _ = (2 * Kn) * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
-    _ ≤ (2 * Kn) * B := by simpa using
-      (mul_le_mul_of_nonneg_left hpoly (by positivity : (0 : ℝ) ≤ 2 * Kn))
+    _ ≤ (2 * Kn) * B := by
+      simpa using mul_le_mul_of_nonneg_left hpoly (by positivity : (0 : ℝ) ≤ 2 * Kn)
 
 end
 
