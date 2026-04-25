@@ -65,8 +65,7 @@ public instance PeriodicSpherePacking.instIsZLattice (S : PeriodicSpherePacking 
     IsZLattice ℝ S.lattice := S.lattice_isZLattice
 
 public instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
-    DiscreteTopology S.centers :=
-  DiscreteTopology.of_forall_le_dist S.separation_pos S.centers_dist
+    DiscreteTopology S.centers := .of_forall_le_dist S.separation_pos S.centers_dist
 
 public noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
     AddAction S.lattice S.centers where
@@ -79,8 +78,7 @@ alias PeriodicSpherePacking.instAddAction := PeriodicSpherePacking.addAction
 @[simp]
 public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d)
     {x : S.lattice} {y : S.centers} :
-      x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ :=
-  rfl
+      x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ := rfl
 
 /-- The union of the balls of radius `S.separation / 2` around the centers of a packing. -/
 @[expose, reducible] public def SpherePacking.balls (S : SpherePacking d) :
@@ -174,8 +172,7 @@ open Real
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
     (S.scale hc).balls = c • S.balls := by
-  ext x
-  simp [SpherePacking.balls, SpherePacking.scale, Set.smul_set_iUnion, Set.mem_smul_set,
+  ext; simp [SpherePacking.balls, SpherePacking.scale, Set.smul_set_iUnion, Set.mem_smul_set,
     _root_.smul_ball hc.ne', Real.norm_eq_abs, abs_of_pos hc, mul_div_assoc]
 
 lemma PeriodicSpherePacking.scale_balls {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -303,7 +300,7 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
     Finite ↑(S.centers ∩ ball 0 R) := by
   refine Set.encard_lt_top_iff.mp ?_
   rcases eq_or_ne d 0 with rfl | hd
-  · exact Set.encard_lt_top_iff.2 <| Set.Finite.of_subsingleton (S.centers ∩ ball 0 R)
+  · exact Set.encard_lt_top_iff.2 <| .of_subsingleton (S.centers ∩ ball 0 R)
   have hd' : 0 < d := Nat.pos_of_ne_zero hd
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd'
   exact ENat.toENNReal_lt.mp <| (S.inter_ball_encard_le hd' R).trans_lt <| ENNReal.div_lt_top

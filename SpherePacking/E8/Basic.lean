@@ -213,8 +213,8 @@ lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
 /-- The determinant of `E8Matrix` is `1`. -/
 public theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] :
     (E8Matrix R).det = 1 := by
-  rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]
-  simp [E8Matrix, Fin.prod_univ_eight, NeZero.ne (2 : R)]
+  rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]; simp [E8Matrix,
+    Fin.prod_univ_eight, NeZero.ne (2 : R)]
 
 lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
@@ -241,7 +241,7 @@ public lemma E8Basis_apply [Field R] [NeZero (2 : R)] (i : Fin 8) :
 
 /-- The matrix of `E8Basis` is `E8Matrix`. -/
 public lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
-  ext i j; simp [E8Basis_apply]
+  ext; simp [E8Basis_apply]
 
 /-- The row vectors of `E8Matrix` all lie in the `E8` submodule. -/
 public theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
@@ -273,10 +273,9 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (hw : ∑ i, w i = 0) :
     ∃ c : ℤ, c = ∑ i, v i * w i := by
   obtain ⟨(hv' | hv'), _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
-  · exact ⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩
-  · exact ⟨∑ i, v' i * w i, by
-      simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul,
-        show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩
+  exacts [⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩,
+    ⟨∑ i, v' i * w i, by simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
+      Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
 
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
@@ -342,7 +341,7 @@ lemma E8Matrix_mul_E8Matrix_transpose_rat :
 lemma E8Matrix_mul_E8Matrix_transpose [Field R] [CharZero R] :
     E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
   rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
-    E8Matrix_mul_E8Matrix_transpose_rat, Matrix.map_map]; ext i j; simp
+    E8Matrix_mul_E8Matrix_transpose_rat, Matrix.map_map]; ext; simp
 
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by

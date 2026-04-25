@@ -104,10 +104,8 @@ open scoped Pointwise
 
 variable {d : ℕ}
 
-/--
-If a set `D` meets each orbit of the lattice action in exactly one point, then distinct lattice
-translates of `D` are disjoint.
--/
+/-- If a set `D` meets each orbit of the lattice action in exactly one point, then distinct
+lattice translates of `D` are disjoint. -/
 public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) {g h : Λ} (hgh : g ≠ h) :
