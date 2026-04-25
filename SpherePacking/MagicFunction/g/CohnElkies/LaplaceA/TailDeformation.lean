@@ -35,10 +35,6 @@ public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
     (show Integrable (fun t : ℝ => aLaplaceIntegrand u t) (volume.restrict (Set.Ioi (0 : ℝ))) from
       by simpa [IntegrableOn] using aLaplaceIntegral_convergent (u := u) hu).neg'
 
-lemma tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero (a : ℝ) (ha : 0 < a) :
-    Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0) := by
-  simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a) ha
-
 private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : ℂ)‖ ≤ (1 : ℝ))
     (ht : (1 : ℝ) ≤ t) :
     ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
@@ -93,12 +89,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
           mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-          rw [show (K * (t ^ 2 * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
-            K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by ring,
-            show Real.exp (2 * π * t) * Real.exp (-π * u * t) =
-              Real.exp (-(π * (u - 2)) * t) by
-              simpa [mul_assoc, mul_left_comm, mul_comm] using
-                MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)]
+          rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
 /-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/
 lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
@@ -154,7 +145,8 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
   have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
   have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) := by
     simpa [mul_zero] using tendsto_const_nhds.mul
-      (tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha)
+      (by simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a) ha :
+        Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0))
   refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) htend
   have hm1 : (1 : ℝ) ≤ m := (le_max_left _ _).trans hm
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
@@ -337,8 +329,7 @@ private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E :
     (hG : ∀ t, 1 < t → G t = E * Φ₅' u ((t : ℂ) * Complex.I)) :
     (∫ t in Set.Ioi (1 : ℝ), G t) =
       E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
-  rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi (fun t ht => hG t ht),
-    MeasureTheory.integral_const_mul]
+  rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hG, MeasureTheory.integral_const_mul]
 
 /--
 Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`.
