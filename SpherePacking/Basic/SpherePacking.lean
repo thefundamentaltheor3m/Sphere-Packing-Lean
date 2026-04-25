@@ -224,7 +224,7 @@ public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc 
 public lemma scale_density {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   simpa [density, Function.comp, map_div_atTop_eq c hc] using
-    (limsup_congr (Eventually.of_forall fun R => scale_finiteDensity' (S := S) hc R)).trans
+    (limsup_congr (.of_forall fun R => scale_finiteDensity' (S := S) hc R)).trans
       (Filter.limsup_comp (u := S.finiteDensity) (v := fun R => R / c) (f := atTop))
 
 public theorem constant_eq_constant_normalized {d : ℕ} :

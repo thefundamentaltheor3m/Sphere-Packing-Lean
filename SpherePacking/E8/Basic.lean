@@ -105,10 +105,9 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
                    exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)⟩
     obtain ha | ha := ha
     · refine hb.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha⟩ := ha i
-      · obtain ⟨b', hb⟩ := hb i
-        exact ⟨a' + b', by simp [ha, hb]⟩
-      · obtain ⟨b', hb', hb⟩ := hb i
-        exact ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
+      · exact let ⟨b', hb⟩ := hb i; ⟨a' + b', by simp [ha, hb]⟩
+      · exact let ⟨b', hb', hb⟩ := hb i
+          ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
     · refine hb.symm.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha', ha⟩ := ha i
       · obtain ⟨b', hb', hb⟩ := hb i
         use (a' + b') / 2
@@ -116,8 +115,8 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
           Int.cast_ofNat, mul_div_cancel_left₀ _ (NeZero.ne 2),
           mul_div_cancel_left₀ _ (NeZero.ne _)]
         rw [← even_iff_two_dvd]; exact ha'.add_odd hb'
-      · obtain ⟨b', hb⟩ := hb i
-        exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
+      · exact let ⟨b', hb⟩ := hb i
+          ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
   zero_mem' := ⟨.inl fun _ => ⟨0, by simp⟩, by simp⟩
   smul_mem' := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
