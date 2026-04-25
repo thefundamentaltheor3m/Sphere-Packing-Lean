@@ -112,27 +112,6 @@ public theorem summable_diff (z : ℍ) (d : ℤ) :
   rw [← summable_mul_left_iff (a := -1) (by norm_num)]
   grind only
 
-lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
-    := by ring
-
-/-- Rewrite a difference of symmetric `ℕ+` sums as a scaled sum in the variable `-d/z`. -/
-public lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
-  ∑' m : ℕ+,
-    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d))
-      =
-  (2 / z) * ∑' m : ℕ+,
-    ((1 / (-(d : ℂ)/↑z - m) + 1 / (-d/↑z + m))) := by
-  rw [← Summable.tsum_mul_left]
-  · congr
-    funext m
-    rw [arg1]
-    ring_nf
-    rw [add_comm]
-    have : (z : ℂ) ≠ (0 : ℂ) := ne_zero z
-    field_simp
-  · apply summable_diff
-
-
 private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) :
     a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   have h2 : (a⁻¹ : ℝ) * b ≤ c ↔ b ≤ c * a := by
@@ -152,51 +131,6 @@ public lemma summable_hammerTime_nat {α : Type} [NormedField α] [CompleteSpace
   refine hs.congr ?_
   intro b
   simp
-
-theorem summable_diff_denom (z : ℍ) (i : ℤ) :
-  Summable fun (m : ℤ) ↦ ((m : ℂ) * ↑z + ↑i + 1)⁻¹ * ((m : ℂ) * ↑z + ↑i)⁻¹ := by
-  conv =>
-    enter [1]
-    ext m
-    rw [← mul_inv]
-  apply summable_inv_of_isBigO_rpow_inv one_lt_two
-  have h3 := (linear_bigO' i z).mul (linear_bigO' (i + 1) z)
-  apply h3.congr
-  · intro n
-    rw [mul_comm]
-    simp
-    ring
-  · intro n
-    norm_cast
-    rw [pow_two]
-    rw [← mul_inv]
-    simp
-
-public lemma summable_pain (z : ℍ) (i : ℤ) :
-  Summable (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) := by
-  rw [← Finset.summable_compl_iff (s := {0})]
-  have h1 : (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i +
-    1)) =
-    (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / (((m.1 : ℂ) * ↑z + ↑i)*((m : ℂ) * ↑z + ↑i + 1)))
-    := by
-    funext m
-    rw [div_sub_div]
-    · simp only [one_mul, mul_one, add_sub_cancel_left, one_div, mul_inv_rev]
-    · have := linear_ne_zero (cd := ![m, i]) z ?_
-      · simpa using this
-      aesop
-    have h2 := linear_ne_zero (cd := ![m, i + 1]) z ?_
-    · simp only [Fin.isValue, Matrix.cons_val_zero, ofReal_intCast, Matrix.cons_val_one,
-        ofReal_add, ofReal_one, ne_eq] at h2
-      rw [add_assoc]
-      exact h2
-    aesop
-  rw [h1]
-  simp only [one_div, mul_inv_rev]
-  simpa using
-    (summable_diff_denom z i).comp_injective (i := fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ (m : ℤ))
-      Subtype.coe_injective
-
 
 theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
     ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by

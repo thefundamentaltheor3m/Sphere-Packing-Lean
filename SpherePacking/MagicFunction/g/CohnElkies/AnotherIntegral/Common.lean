@@ -42,32 +42,22 @@ public lemma differentiableAt_intervalIntegral_mul_exp
   have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by
     fun_prop
   have hF_meas :
-      ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) := by
-    refine Filter.Eventually.of_forall (fun u => ?_)
-    exact (hbase.mul (hexp u)).aestronglyMeasurable
-      (μ := (volume : Measure ℝ)) measurableSet_uIoc
+      ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) :=
+    Filter.Eventually.of_forall fun u =>
+      (hbase.mul (hexp u)).aestronglyMeasurable
+        (μ := (volume : Measure ℝ)) measurableSet_uIoc
   have hF'_meas :
       AEStronglyMeasurable (F' u0) (volume.restrict (Ι (0 : ℝ) 1)) := by
-    have hmeas :=
-      (hbase.mul (hk.mul (hexp u0))).aestronglyMeasurable
-        (μ := (volume : Measure ℝ)) measurableSet_uIoc
-    simpa [F', mul_assoc] using hmeas
+    simpa [F', mul_assoc] using (hbase.mul (hk.mul (hexp u0))).aestronglyMeasurable
+      (μ := (volume : Measure ℝ)) measurableSet_uIoc
   have hF_int : IntervalIntegrable (F u0) volume (0 : ℝ) 1 := by
-    refine (intervalIntegrable_iff).2 ?_
-    have hs : (volume : Measure ℝ) (Ι (0 : ℝ) 1) < ⊤ := by simp
-    have hmeas : AEStronglyMeasurable (F u0) (volume.restrict (Ι (0 : ℝ) 1)) :=
-      (hF_meas.self_of_nhds)
-    let B : ℝ := Cbase * Real.exp (‖u0‖ * K)
-    refine MeasureTheory.IntegrableOn.of_bound hs hmeas B ?_
-    refine (ae_restrict_iff' measurableSet_uIoc).2 <| .of_forall ?_
-    intro t ht
-    have hb : ‖base t‖ ≤ Cbase := hbase_bound t ht
-    have hk' : ‖k t‖ ≤ K := hk_bound t ht
+    refine intervalIntegrable_iff.2 ?_
+    refine MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Ι (0 : ℝ) 1) < ⊤)
+      hF_meas.self_of_nhds (Cbase * Real.exp (‖u0‖ * K)) <|
+      (ae_restrict_iff' measurableSet_uIoc).2 <| .of_forall fun t ht => ?_
     refine norm_mul_le_of_le (hbase_bound t ht) ?_
-    have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K := by
-      calc
-        ‖u0 * k t‖ ≤ ‖u0‖ * ‖k t‖ := norm_mul_le u0 (k t)
-        _ ≤ ‖u0‖ * K := by gcongr
+    have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K :=
+      (norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)
     exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
   let E : ℝ := Real.exp ((‖u0‖ + 1) * K)
   let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
@@ -80,45 +70,29 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     have hb : ‖base t‖ ≤ Cbase := hbase_bound t ht
     have hk' : ‖k t‖ ≤ K := hk_bound t ht
     have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
-      have : ‖u - u0‖ < (1 : ℝ) := by simpa [Metric.mem_ball, dist_eq_norm] using hu
-      have hle : ‖u - u0‖ ≤ (1 : ℝ) := le_of_lt this
-      have : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
-        simpa [sub_eq_add_neg, add_assoc] using (norm_add_le u0 (u - u0))
-      exact this.trans (by nlinarith)
-    have hexp_le : ‖Complex.exp (u * k t)‖ ≤ E := by
-      have h1 : ‖u * k t‖ ≤ (‖u0‖ + 1) * K := norm_mul_le_of_le hu' (hk_bound t ht)
-      exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
-    have : ‖F' u t‖ ≤ bound t := by
-      have hstep1 :
-          ‖F' u t‖ ≤ ‖base t‖ * (‖k t‖ * E) := by
-        calc
-          ‖F' u t‖ = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
-            simp [F', mul_left_comm, mul_comm]
-          _ ≤ ‖base t‖ * (‖k t‖ * E) := by
-            have hinner :
-                ‖k t‖ * ‖Complex.exp (u * k t)‖ ≤ ‖k t‖ * E :=
-              mul_le_mul_of_nonneg_left hexp_le (norm_nonneg (k t))
-            exact mul_le_mul_of_nonneg_left hinner (norm_nonneg (base t))
-      have hstep2 :
-          ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (K * E) := by
-        have hk'' : ‖k t‖ * E ≤ K * E :=
-          mul_le_mul_of_nonneg_right hk' (Real.exp_nonneg _)
-        have hbase' :
-            ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (‖k t‖ * E) :=
-          mul_le_mul_of_nonneg_right hb (mul_nonneg (norm_nonneg _) (Real.exp_nonneg _))
-        exact (hbase'.trans (mul_le_mul_of_nonneg_left hk'' hCbase))
-      simpa [bound, E, mul_assoc] using (hstep1.trans hstep2)
-    exact this
+      have hle : ‖u - u0‖ ≤ (1 : ℝ) :=
+        (by simpa [Metric.mem_ball, dist_eq_norm] using hu : ‖u - u0‖ < 1).le
+      have h2 : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
+        simpa [sub_eq_add_neg, add_assoc] using norm_add_le u0 (u - u0)
+      linarith
+    have hexp_le : ‖Complex.exp (u * k t)‖ ≤ E :=
+      (Complex.norm_exp_le_exp_norm _).trans
+        (Real.exp_le_exp.2 (norm_mul_le_of_le hu' (hk_bound t ht)))
+    have hstep1 : ‖F' u t‖ ≤ ‖base t‖ * (‖k t‖ * E) := by
+      calc
+        ‖F' u t‖ = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
+          simp [F', mul_left_comm, mul_comm]
+        _ ≤ ‖base t‖ * (‖k t‖ * E) := by
+          gcongr
+    have hstep2 : ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (K * E) := by gcongr
+    simpa [bound, E, mul_assoc] using hstep1.trans hstep2
   have h_diff :
       ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
-        ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u := by
-    refine Filter.Eventually.of_forall (fun t _ u _ => ?_)
-    have hmul : HasDerivAt (fun u : ℂ => u * k t) (k t) u :=
-      (hasDerivAt_mul_const (k t) (x := u))
-    have hexp :
-        HasDerivAt (fun u : ℂ => Complex.exp (u * k t)) (Complex.exp (u * k t) * k t) u :=
-      HasDerivAt.comp u (Complex.hasDerivAt_exp (u * k t)) hmul
-    simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using hexp.const_mul (base t)
+        ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
+    Filter.Eventually.of_forall fun t _ u _ => by
+      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
+        ((Complex.hasDerivAt_exp (u * k t)).comp u
+          (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
   have h :=
     intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le
       (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))

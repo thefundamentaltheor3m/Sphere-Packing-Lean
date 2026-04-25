@@ -35,20 +35,15 @@ public theorem summable_real_norm_mul_geometric_of_norm_lt_one {k : ℕ} {r : �
 /-- Summability of `(n+s)^k * exp(-2π n)` on `ℕ`, used to justify `q`-series limits. -/
 public theorem summable_pow_shift_mul_exp (k s : ℕ) :
     Summable (fun n : ℕ => ((n + s : ℝ) ^ k) * Real.exp (-2 * Real.pi * n)) := by
-  have hs :
-      Summable (fun n : ℕ => ((n + s : ℝ) ^ k) * Real.exp (-2 * Real.pi * (n + s : ℝ))) := by
+  have hs : Summable (fun n : ℕ => ((n + s : ℝ) ^ k) * Real.exp (-2 * Real.pi * (n + s : ℝ))) := by
     simpa [Nat.cast_add] using
       (summable_nat_add_iff s (f := fun n : ℕ =>
         ((n : ℝ) ^ k) * Real.exp (-2 * Real.pi * (n : ℝ)))).2 (by
           simpa [mul_assoc] using
             Real.summable_pow_mul_exp_neg_nat_mul k (r := 2 * Real.pi) (by positivity))
   refine (hs.mul_left (Real.exp (2 * Real.pi * (s : ℝ)))).congr fun n => ?_
-  have hexp :
-      Real.exp (2 * Real.pi * (s : ℝ)) * Real.exp (-2 * Real.pi * (n + s : ℝ)) =
-        Real.exp (-2 * Real.pi * (n : ℝ)) := by
-    calc
-      _ = Real.exp ((2 * Real.pi * (s : ℝ)) + (-2 * Real.pi * (n + s : ℝ))) := by
-            simpa using (Real.exp_add _ _).symm
-      _ = _ := by congr 1; ring
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    congrArg (fun x : ℝ => ((n + s : ℝ) ^ k) * x) hexp
+  rw [show Real.exp (2 * Real.pi * (s : ℝ)) *
+      ((n + s : ℝ) ^ k * Real.exp (-2 * Real.pi * (n + s : ℝ))) =
+    ((n + s : ℝ) ^ k) * (Real.exp (2 * Real.pi * (s : ℝ)) *
+      Real.exp (-2 * Real.pi * (n + s : ℝ))) by ring, ← Real.exp_add]
+  congr 2; ring

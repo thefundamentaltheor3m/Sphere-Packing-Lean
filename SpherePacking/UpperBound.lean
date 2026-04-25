@@ -38,8 +38,6 @@ private lemma scaledMagic_ratio_toNNReal :
 
 private lemma sixteen_mul_volume_ball_half :
     (16 : ℝ≥0∞) * volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) = ENNReal.ofReal π ^ 4 / 384 := by
-  have h384pos : (0 : ℝ) < (384 : ℝ) := by norm_num
-  have hpow : ((1 / 2 : ℝ) ^ 8) = (1 / 256 : ℝ) := by norm_num
   calc
     (16 : ℝ≥0∞) * volume (ball (0 : ℝ⁸) (1 / 2 : ℝ))
         = (16 : ℝ≥0∞) *
@@ -51,11 +49,10 @@ private lemma sixteen_mul_volume_ball_half :
             simpa using (ENNReal.inv_pow (a := (2 : ℝ≥0∞)) (n := 8)).symm
           simp [mul_left_comm, ENNReal.ofReal_mul, (by norm_num : (0 : ℝ) ≤ (16 : ℝ)), hinv]
     _ = ENNReal.ofReal (π ^ 4 / 384 : ℝ) := by
-          congr 1
-          rw [hpow]
-          ring_nf
+          congr 1; ring
     _ = ENNReal.ofReal π ^ 4 / 384 := by
-          simp [ENNReal.ofReal_div_of_pos h384pos, ENNReal.ofReal_pow Real.pi_pos.le]
+          simp [ENNReal.ofReal_div_of_pos (by norm_num : (0 : ℝ) < 384),
+            ENNReal.ofReal_pow Real.pi_pos.le]
 
 /-- Upper bound on `SpherePackingConstant 8` given by the density of the `E8` lattice packing. -/
 public theorem SpherePackingConstant_le_E8Packing_density :

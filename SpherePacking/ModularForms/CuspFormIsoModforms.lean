@@ -3,7 +3,7 @@ import Mathlib.LinearAlgebra.Dimension.Localization
 import Mathlib.NumberTheory.ModularForms.LevelOne
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.qExpansion_lems
+public import SpherePacking.ModularForms.QExpansionLemmas
 
 
 /-!

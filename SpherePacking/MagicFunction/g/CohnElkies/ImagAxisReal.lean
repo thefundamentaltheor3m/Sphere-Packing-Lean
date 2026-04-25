@@ -1,6 +1,6 @@
 module
 public import SpherePacking.ModularForms.EisensteinBase
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 import SpherePacking.ModularForms.Delta
 
 
@@ -29,17 +29,12 @@ private lemma imagAxis_im_eq_zero (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) (hF :
 
 lemma φ₀_imag_axis_im (t : ℝ) (ht : 0 < t) : (φ₀ ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  have hE2 : (E₂ z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero E₂ t ht E₂_imag_axis_real
-  have hE4 : (E₄ z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero E₄ t ht E₄_imag_axis_real
-  have hE6 : (E₆ z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero E₆ t ht E₆_imag_axis_real
-  have hΔ : (Δ z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero Δ t ht Delta_imag_axis_pos.1
+  have hE2 : (E₂ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₂ t ht E₂_imag_axis_real
+  have hE4 : (E₄ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₄ t ht E₄_imag_axis_real
+  have hE6 : (E₆ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₆ t ht E₆_imag_axis_real
+  have hΔ : (Δ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero Δ t ht Delta_imag_axis_pos.1
   have hA : ((E₂ z) * (E₄ z) - (E₆ z)).im = 0 := by
     simp [-E4_apply, -E6_apply, Complex.sub_im, Complex.mul_im, hE2, hE4, hE6]
-  -- `φ₀` is a quotient of real quantities on the imaginary axis.
   simp [-E4_apply, -E6_apply, φ₀, z, Complex.div_im, hΔ,
     Complex.im_pow_eq_zero_of_im_eq_zero hA 2]
 
@@ -60,12 +55,9 @@ lemma H₃_imag_axis_real : ResToImagAxis.Real H₃ := by
 lemma ψI_imag_axis_real : ResToImagAxis.Real ψI := by
   intro t ht
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  have hH2 : (H₂_MF z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero H₂ t ht H₂_imag_axis_real
-  have hH3 : (H₃_MF z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero H₃ t ht H₃_imag_axis_real
-  have hH4 : (H₄_MF z).im = 0 := by
-    simpa [z] using imagAxis_im_eq_zero H₄ t ht H₄_imag_axis_real
+  have hH2 : (H₂_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₂ t ht H₂_imag_axis_real
+  have hH3 : (H₃_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₃ t ht H₃_imag_axis_real
+  have hH4 : (H₄_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₄ t ht H₄_imag_axis_real
   have : (ψI z).im = 0 := by
     rw [ψI_eq]
     simp [z, Complex.add_im, Complex.sub_im, Complex.mul_im, Complex.div_im, hH2, hH3, hH4,

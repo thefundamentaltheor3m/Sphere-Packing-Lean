@@ -47,7 +47,8 @@ public lemma F_pos : ResToImagAxis.Pos F := by
       simpa [A, A_E, term, mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ τ)
     set r : ℝ := Real.exp (-2 * Real.pi * t) with hr
     have hτ : (τ : ℂ) = Complex.I * t := rfl
-    have hIImul (x : ℂ) : Complex.I * (Complex.I * x) = -x := by simpa using I_mul_I_mul x
+    have hIImul (x : ℂ) : Complex.I * (Complex.I * x) = -x := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     have exp_neg_two_pi_mul_eq (n : ℕ) :
         Real.exp (-(2 * Real.pi * (n : ℝ) * t)) = r ^ n := by
       have hn : (-(2 * Real.pi * (n : ℝ) * t)) = (n : ℝ) * (-2 * Real.pi * t) := by ring

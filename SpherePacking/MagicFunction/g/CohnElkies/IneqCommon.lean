@@ -61,14 +61,10 @@ public lemma phi0''_re_I_div (t : ℝ) (ht : 0 < t) :
       simpa [hz] using congrArg Complex.re (φ₀''_coe_upperHalfPlane z)
     _ = ((F z) / (Δ z)).re := by simp [φ₀, F]
     _ = ((FReal s : ℂ) / (Δ.resToImagAxis s)).re := by simp [hF, hΔ]
-    _ = ((FReal s : ℂ) / ((Δ.resToImagAxis s).re : ℂ)).re := by
-      rw [hΔof]
-      rfl
+    _ = ((FReal s : ℂ) / ((Δ.resToImagAxis s).re : ℂ)).re := by rw [hΔof]; rfl
     _ = (FReal s) / (Δ.resToImagAxis s).re := by
-      rw [(Complex.ofReal_div (FReal s) (Δ.resToImagAxis s).re).symm]
-      simp
-    _ = (FReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re := by
-      simp [s]
+      rw [(Complex.ofReal_div (FReal s) (Δ.resToImagAxis s).re).symm]; simp
+    _ = (FReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re := by simp [s]
 
 /-- Real part of `ψS` on the imaginary axis, written using `GReal` and `Δ`. -/
 public lemma ψS_resToImagAxis_re (s : ℝ) (hs : 0 < s) :
@@ -84,9 +80,7 @@ public lemma ψS_resToImagAxis_re (s : ℝ) (hs : 0 < s) :
     (ψS.resToImagAxis s).re = ((-(1 / 2 : ℂ)) * (G.resToImagAxis s) / (Δ.resToImagAxis s)).re := by
           simpa using congrArg Complex.re hψ
     _ = ((-(1 / 2 : ℂ)) * (GReal s : ℂ) / (Δ.resToImagAxis s)).re := by simp [hG]
-    _ = ((-(1 / 2 : ℂ)) * (GReal s : ℂ) / ((Δ.resToImagAxis s).re : ℂ)).re := by
-      rw [hΔof]
-      rfl
+    _ = ((-(1 / 2 : ℂ)) * (GReal s : ℂ) / ((Δ.resToImagAxis s).re : ℂ)).re := by rw [hΔof]; rfl
     _ = (-(1 / 2 : ℝ)) * (GReal s) / (Δ.resToImagAxis s).re := by simp
     _ = -(2⁻¹ * GReal s) / (Δ.resToImagAxis s).re := by simp [div_eq_mul_inv, mul_assoc]
 
@@ -106,14 +100,11 @@ public lemma ψI'_re_mul_I (t : ℝ) (ht : 0 < t) :
     simp [s, ht.ne', pow_two, div_eq_mul_inv, mul_assoc, mul_comm]
   have hψIaxis : ψI.resToImagAxis t = ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s := by
     have hmul := congrArg (fun w : ℂ => ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * w) hψS'
-    have : ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s = ψI.resToImagAxis t := by
-      calc
-        ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s =
-            ((t ^ (2 : ℕ) * s ^ (2 : ℕ) : ℝ) : ℂ) * ψI.resToImagAxis t := by
-              simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
-        _ = (1 : ℂ) * ψI.resToImagAxis t := by simp [hts]
-        _ = ψI.resToImagAxis t := by simp
-    simpa using this.symm
+    calc ψI.resToImagAxis t
+          = (1 : ℂ) * ψI.resToImagAxis t := (one_mul _).symm
+      _ = ((t ^ (2 : ℕ) * s ^ (2 : ℕ) : ℝ) : ℂ) * ψI.resToImagAxis t := by simp [hts]
+      _ = ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s := by
+            simpa [mul_assoc, mul_left_comm, mul_comm] using hmul.symm
   calc
     (ψI' ((Complex.I : ℂ) * (t : ℂ))).re
         = (ψI.resToImagAxis t).re := by simpa using congrArg Complex.re hψI'
@@ -132,47 +123,20 @@ public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
   have hs : 0 < s := one_div_pos.2 ht
   set Δr : ℝ := (Δ.resToImagAxis s).re
   have hΔr : Δr ≠ 0 := ne_of_gt (Delta_imag_axis_pos.2 s hs)
-  have hφ :
-      (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = (FReal s) / Δr := by
+  have hφ : (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = (FReal s) / Δr := by
     simpa [s, Δr] using (phi0''_re_I_div (t := t) ht)
   have hψS : (ψS.resToImagAxis s).re = -(2⁻¹ * GReal s) / Δr := by
     simpa [Δr] using (ψS_resToImagAxis_re (s := s) hs)
-  have hψS' : (ResToImagAxis ψS s).re = -(2⁻¹ * GReal s) / Δr := by
-    simpa [Function.resToImagAxis_apply] using hψS
-  have hψI :
-      (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re := by
-    simpa [s] using (ψI'_re_mul_I (t := t) ht)
-  have hψI' :
-      (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re := by
-    simpa [Function.resToImagAxis_apply] using hψI
+  have hψI' : (ψI' ((Complex.I : ℂ) * (t : ℂ))).re =
+      -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re := by
+    simpa [s, Function.resToImagAxis_apply] using (ψI'_re_mul_I (t := t) ht)
   calc
     A t =
         (-(t ^ (2 : ℕ))) * (FReal s / Δr) -
           (36 / (π ^ (2 : ℕ)) : ℝ) * (-(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re) := by
           simp [A, hφ, hψI']
-    _ = (-(t ^ (2 : ℕ))) * (FReal s / Δr) + (t ^ (2 : ℕ)) * (-c) * (GReal s / Δr) := by
-          simp [hψS', sub_eq_add_neg, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-          ring_nf
-          have hpi : (π⁻¹ : ℝ) ^ 2 = (π ^ 2)⁻¹ := inv_pow (π : ℝ) 2
-          rw [hpi]
-          have hswap :
-              t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ = t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ := by
-            exact mul_mul_mul_comm' (t ^ 2) ((π ^ 2)⁻¹) (GReal s) (Δr⁻¹)
-          have hcomm :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ :=
-            mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
-          have hswap18 :
-              t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ * 18 =
-                t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 :=
-            congrArg (fun x => x * 18) hswap
-          have hcomm18 :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 =
-                t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ * 18 :=
-            congrArg (fun x => x * 18) hcomm
-          exact hswap18.trans hcomm18
     _ = (-(t ^ (2 : ℕ))) * ((FReal s + c * GReal s) / Δr) := by
-          field_simp [hΔr]
-          ring
+          rw [hψS]; field_simp [hΔr]; ring
     _ =
         (-(t ^ (2 : ℕ))) *
           ((FReal (1 / t) + c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by
@@ -187,47 +151,20 @@ public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
   have hs : 0 < s := one_div_pos.2 ht
   set Δr : ℝ := (Δ.resToImagAxis s).re
   have hΔr : Δr ≠ 0 := ne_of_gt (Delta_imag_axis_pos.2 s hs)
-  have hφ :
-      (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = (FReal s) / Δr := by
+  have hφ : (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = (FReal s) / Δr := by
     simpa [s, Δr] using (phi0''_re_I_div (t := t) ht)
   have hψS : (ψS.resToImagAxis s).re = -(2⁻¹ * GReal s) / Δr := by
     simpa [Δr] using (ψS_resToImagAxis_re (s := s) hs)
-  have hψS' : (ResToImagAxis ψS s).re = -(2⁻¹ * GReal s) / Δr := by
-    simpa [Function.resToImagAxis_apply] using hψS
-  have hψI :
-      (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re := by
-    simpa [s] using (ψI'_re_mul_I (t := t) ht)
-  have hψI' :
-      (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re := by
-    simpa [Function.resToImagAxis_apply] using hψI
+  have hψI' : (ψI' ((Complex.I : ℂ) * (t : ℂ))).re =
+      -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re := by
+    simpa [s, Function.resToImagAxis_apply] using (ψI'_re_mul_I (t := t) ht)
   calc
     B t =
         (-(t ^ (2 : ℕ))) * (FReal s / Δr) +
           (36 / (π ^ (2 : ℕ)) : ℝ) * (-(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re) := by
           simp [B, hφ, hψI']
-    _ = (-(t ^ (2 : ℕ))) * (FReal s / Δr) + (t ^ (2 : ℕ)) * c * (GReal s / Δr) := by
-          simp [hψS', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-          ring_nf
-          have hpi : (π⁻¹ : ℝ) ^ 2 = (π ^ 2)⁻¹ := inv_pow (π : ℝ) 2
-          rw [hpi]
-          have hswap :
-              t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ = t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ := by
-            exact mul_mul_mul_comm' (t ^ 2) ((π ^ 2)⁻¹) (GReal s) (Δr⁻¹)
-          have hcomm :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ :=
-            mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
-          have hswap18 :
-              t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ * 18 =
-                t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 :=
-            congrArg (fun x => x * 18) hswap
-          have hcomm18 :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 =
-                t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ * 18 :=
-            congrArg (fun x => x * 18) hcomm
-          exact hswap18.trans hcomm18
     _ = (-(t ^ (2 : ℕ))) * ((FReal s - c * GReal s) / Δr) := by
-          field_simp [hΔr]
-          ring
+          rw [hψS]; field_simp [hΔr]; ring
     _ =
         (-(t ^ (2 : ℕ))) *
           ((FReal (1 / t) - c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by

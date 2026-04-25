@@ -82,7 +82,6 @@ public lemma J₁'_eq_Ioc (r : ℝ) :
     MagicFunction.b.RealIntegrals.J₁' r =
       ∫ t in Ioc (0 : ℝ) 1,
         (Complex.I : ℂ) * ψT' (z₁' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₁' t)) := by
-  -- Rewrite the interval integral `∫ t in (0)..1` as a set integral over `Ioc 0 1`.
   simp [MagicFunction.b.RealIntegrals.J₁', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
 
@@ -91,27 +90,23 @@ open scoped ModularForm
 /-- Modular rewrite for `ψT'` on the line `z₁line`, in terms of `ψS` on the imaginary axis. -/
 public lemma ψT'_z₁line_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     ψT' (z₁line t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc ht
-  have hz : z₁' t = z₁line t := SpherePacking.Contour.z₁'_eq_z₁line (t := t) htIcc
+  have hz := SpherePacking.Contour.z₁'_eq_z₁line (t := t) (mem_Icc_of_Ioc ht)
   simpa [hz] using MagicFunction.b.Schwartz.J1Smooth.ψT'_z₁'_eq (t := t) ht
 
 /-- Continuity of `t ↦ ψT' (z₁line t)` on `Ioc (0, 1)`. -/
 public lemma continuousOn_ψT'_z₁line :
-    ContinuousOn (fun t : ℝ => ψT' (z₁line t)) (Ioc (0 : ℝ) 1) := by
-  refine MagicFunction.continuousOn_ψT'_Ioc_of
+    ContinuousOn (fun t : ℝ => ψT' (z₁line t)) (Ioc (0 : ℝ) 1) :=
+  MagicFunction.continuousOn_ψT'_Ioc_of
       (k := 2) (ψS := ψS) (ψT' := ψT') (z := z₁line)
       (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
         MagicFunction.b.PsiBounds.continuous_ψS)
-      ?_
-  intro t ht
-  simpa using (ψT'_z₁line_eq (t := t) ht)
+      (fun t ht => by simpa using ψT'_z₁line_eq (t := t) ht)
 
 /-- Rewrite `J₂'` as a set integral over `Ioc (0, 1)`. -/
 public lemma J₂'_eq_Ioc (r : ℝ) :
     MagicFunction.b.RealIntegrals.J₂' r =
       ∫ t in Ioc (0 : ℝ) 1,
         ψT' (z₂' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t)) := by
-  -- Rewrite the interval integral `∫ t in (0)..1` as a set integral over `Ioc 0 1`.
   simp [MagicFunction.b.RealIntegrals.J₂', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
 
@@ -125,14 +120,10 @@ public lemma continuous_ψT'_z₂line : Continuous fun t : ℝ => ψT' (z₂line
 /-- Uniform boundedness of `‖ψT' (z₂' t)‖` on `Ioc (0, 1)`. -/
 public lemma exists_bound_norm_ψT'_z₂' :
     ∃ M, ∀ t ∈ Ioc (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
-  have hcont : Continuous fun t : ℝ => ψT' (z₂line t) := continuous_ψT'_z₂line
-  rcases
-    SpherePacking.Integration.exists_bound_norm_uIoc_zero_one_of_continuous
-      (f := fun t : ℝ => ψT' (z₂line t)) hcont with
-    ⟨M, hM⟩
-  refine ⟨M, ?_⟩
-  intro t ht
-  have hz : z₂' t = z₂line t := SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)
+  obtain ⟨M, hM⟩ := SpherePacking.Integration.exists_bound_norm_uIoc_zero_one_of_continuous
+      (f := fun t : ℝ => ψT' (z₂line t)) continuous_ψT'_z₂line
+  refine ⟨M, fun t ht => ?_⟩
+  have hz := SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)
   simpa [hz] using hM t (by simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)
 
 

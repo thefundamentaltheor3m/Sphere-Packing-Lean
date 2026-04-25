@@ -35,9 +35,10 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   rw [or_iff_not_imp_left, ← ne_eq]
   intro hv'
   obtain ⟨n, hn, hn'⟩ := E8_norm_eq_sqrt_even v hv
-  have hn0 : 0 ≤ n := by exact_mod_cast (by simp [hn'] : (0 : ℝ) ≤ (n : ℝ))
   have hn_ne : n ≠ 0 := by contrapose! hv'; simpa [hv'] using hn'.symm
-  have hn2 : 2 ≤ n := by obtain ⟨k, rfl⟩ := hn; omega
+  have hn2 : 2 ≤ n := by
+    have : 0 ≤ n := by exact_mod_cast (by simp [hn'] : (0 : ℝ) ≤ (n : ℝ))
+    obtain ⟨k, rfl⟩ := hn; omega
   apply le_of_sq_le_sq _ (by simp)
   simpa [hn', Real.sq_sqrt zero_le_two] using (show (2 : ℝ) ≤ n from mod_cast hn2)
 
@@ -53,10 +54,9 @@ public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   simp only [Submodule.mk_eq_zero]
   obtain ⟨v, hv, rfl⟩ := hx
   suffices v = 0 by simpa using congrArg (WithLp.toLp 2) this
-  refine (E8_norm_lower_bound v hv).resolve_right ?_
-  have hx1 : ‖WithLp.toLp 2 v‖ < (1 : ℝ) := by
-    simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx'
-  exact not_le_of_gt (hx1.trans Real.one_lt_sqrt_two)
+  refine (E8_norm_lower_bound v hv).resolve_right
+    (not_le_of_gt (((by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx' :
+      ‖WithLp.toLp 2 v‖ < (1 : ℝ))).trans Real.one_lt_sqrt_two))
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   refine (eq_top_iff).2 ?_
@@ -117,13 +117,9 @@ open scoped Real
     rw [SetLike.mem_coe, Submodule.mem_map] at ha hb
     obtain ⟨a', ha', rfl⟩ := ha
     obtain ⟨b', hb', rfl⟩ := hb
-    have hsub : a' - b' ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha' hb'
-    have hne : a' ≠ b' := by
-      contrapose! hab
-      simp [hab]
+    have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr (by contrapose! hab; simp [hab])
     simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
-    have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr hne
-    convert (E8_norm_lower_bound _ hsub).resolve_left hne' using 2
+    convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left hne' using 2
   lattice_action x y := add_mem
 
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=

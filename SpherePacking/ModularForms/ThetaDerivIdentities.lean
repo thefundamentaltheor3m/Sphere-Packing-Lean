@@ -343,55 +343,6 @@ derivative identities of Blueprint Proposition `prop:theta-der`.
 
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
-lemma tendsto_D_H₂_atImInfty : Tendsto (D H₂) atImInfty (𝓝 (0 : ℂ)) := by
-  simpa [UpperHalfPlane.IsZeroAtImInfty, ZeroAtFilter] using
-    D_isZeroAtImInfty_of_bounded H₂_SIF_MDifferentiable
-      (by simpa using ModularFormClass.bdd_at_infty H₂_MF)
-
-lemma tendsto_D_H₄_atImInfty : Tendsto (D H₄) atImInfty (𝓝 (0 : ℂ)) := by
-  simpa [UpperHalfPlane.IsZeroAtImInfty, ZeroAtFilter] using
-    D_isZeroAtImInfty_of_bounded H₄_SIF_MDifferentiable
-      (by simpa using ModularFormClass.bdd_at_infty H₄_MF)
-
-lemma tendsto_serre_D_H₂_atImInfty : Tendsto (serre_D 2 H₂) atImInfty (𝓝 (0 : ℂ)) := by
-  have hD : Tendsto (D H₂) atImInfty (𝓝 (0 : ℂ)) := tendsto_D_H₂_atImInfty
-  have hE2H2 : Tendsto (fun z : ℍ => E₂ z * H₂ z) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa using tendsto_E₂_atImInfty.mul H₂_tendsto_atImInfty
-  have h12 : Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * (E₂ z * H₂ z)) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa using (tendsto_const_nhds.mul hE2H2)
-  have hterm :
-      Tendsto (fun z : ℍ => (2 : ℂ) * ((12⁻¹ : ℂ) * (E₂ z * H₂ z))) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa [mul_assoc] using (tendsto_const_nhds.mul h12)
-  have hserre :
-      serre_D 2 H₂ = fun z : ℍ => D H₂ z - (2 : ℂ) * ((12⁻¹ : ℂ) * (E₂ z * H₂ z)) := by
-    funext z
-    simp [serre_D, mul_assoc]
-  simpa [hserre] using hD.sub hterm
-
-lemma tendsto_serre_D_H₄_atImInfty : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1 / 6 : ℂ))) := by
-  have hD : Tendsto (D H₄) atImInfty (𝓝 (0 : ℂ)) := tendsto_D_H₄_atImInfty
-  have hE2H4 : Tendsto (fun z : ℍ => E₂ z * H₄ z) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa using tendsto_E₂_atImInfty.mul H₄_tendsto_atImInfty
-  have h12 : Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * (E₂ z * H₄ z)) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
-    simpa [mul_one] using (tendsto_const_nhds.mul hE2H4)
-  have hterm :
-      Tendsto
-        (fun z : ℍ => (2 : ℂ) * ((12⁻¹ : ℂ) * (E₂ z * H₄ z)))
-        atImInfty (𝓝 ((2 : ℂ) * 12⁻¹)) := by
-    simpa [mul_assoc] using (tendsto_const_nhds.mul h12)
-  have hserre :
-      serre_D 2 H₄ = fun z : ℍ => D H₄ z - (2 : ℂ) * ((12⁻¹ : ℂ) * (E₂ z * H₄ z)) := by
-    funext z
-    simp [serre_D, mul_assoc]
-  have hmain :
-      Tendsto (fun z : ℍ => D H₄ z - (2 : ℂ) * ((12⁻¹ : ℂ) * (E₂ z * H₄ z)))
-        atImInfty (𝓝 (-((2 : ℂ) * 12⁻¹))) := by
-    simpa [mul_assoc, sub_eq_add_neg, add_assoc] using hD.sub hterm
-  have hmain' : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-((2 : ℂ) * 12⁻¹))) := by
-    simpa [hserre] using hmain
-  have hk : -((2 : ℂ) * 12⁻¹) = (-(1 / 6 : ℂ)) := by norm_num
-  simpa [hk] using hmain'
-
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
 Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f₂ → 0. -/
@@ -450,12 +401,6 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
   change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
   tendsto_cont
 
-lemma isBoundedAtImInfty_theta_g : IsBoundedAtImInfty theta_g :=
-  IsZeroAtImInfty.isBoundedAtImInfty theta_g_tendsto_atImInfty
-
-lemma isBoundedAtImInfty_theta_h : IsBoundedAtImInfty theta_h :=
-  IsZeroAtImInfty.isBoundedAtImInfty theta_h_tendsto_atImInfty
-
 noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
   toFun := theta_g
   slash_action_eq' := slashaction_generators_GL2R theta_g 6 theta_g_S_action theta_g_T_action
@@ -463,32 +408,6 @@ noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
 noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := slashaction_generators_GL2R theta_h 8 theta_h_S_action theta_h_T_action
-
-lemma theta_g_slash_eq (A' : SL(2, ℤ)) :
-    theta_g ∣[(6 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ A') = theta_g := by
-  simpa [ModularForm.SL_slash] using
-    (slashaction_generators_SL2Z theta_g 6 theta_g_S_action theta_g_T_action A')
-
-lemma theta_h_slash_eq (A' : SL(2, ℤ)) :
-    theta_h ∣[(8 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ A') = theta_h := by
-  simpa [ModularForm.SL_slash] using
-    (slashaction_generators_SL2Z theta_h 8 theta_h_S_action theta_h_T_action A')
-
-noncomputable def theta_g_MF : ModularForm (Γ 1) 6 := {
-  theta_g_SIF with
-  holo' := theta_g_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc
-      (isBoundedAtImInfty_slash_of_slash_eq theta_g_slash_eq isBoundedAtImInfty_theta_g)
-}
-
-noncomputable def theta_h_MF : ModularForm (Γ 1) 8 := {
-  theta_h_SIF with
-  holo' := theta_h_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc
-      (isBoundedAtImInfty_slash_of_slash_eq theta_h_slash_eq isBoundedAtImInfty_theta_h)
-}
 
 private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
   cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
@@ -624,17 +543,10 @@ lemma f₄_eq_zero : f₄ = 0 := by
   · funext τ
     simpa [ofComplex_apply_of_im_pos τ.im_pos] using hF4zero _ τ.im_pos
 
-lemma f₃_eq_zero : f₃ = 0 := by
-  simpa [f₂_eq_zero, f₄_eq_zero] using (f₂_add_f₄_eq_f₃).symm
-
 /-- Serre derivative identity for `H₂` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₂ :
     serre_D 2 H₂ = (1 / 6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄)) := by
   exact sub_eq_zero.mp (by simpa [f₂] using (f₂_eq_zero : f₂ = 0))
-
-public theorem serre_D_two_H₃ :
-    serre_D 2 H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) := by
-  exact sub_eq_zero.mp (by simpa [f₃] using (f₃_eq_zero : f₃ = 0))
 
 /-- Serre derivative identity for `H₄` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₄ :

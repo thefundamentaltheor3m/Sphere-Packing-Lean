@@ -8,8 +8,6 @@ public import Mathlib.Analysis.Calculus.DiffContOnCl
 
 public import SpherePacking.Basic.Domains.WedgeSet
 public import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.ForMathlib.ScalarOneFormDiffContOnCl
-import SpherePacking.ForMathlib.ScalarOneFormFDeriv
 
 /-!
 # Regularity lemmas on `wedgeSet` for contour arguments
@@ -39,16 +37,12 @@ public lemma diffContOnCl_wedgeSet_of
     (htend : Filter.Tendsto f (nhdsWithin (1 : ℂ) (closure wedgeSet)) (nhds 0))
     (hval : f (1 : ℂ) = 0) :
     DiffContOnCl ℝ f wedgeSet := by
-  refine ⟨(hdiffC.restrictScalars ℝ).mono wedgeSet_subset_upperHalfPlaneSet, ?_⟩
-  · intro z hzcl
-    by_cases h1 : z = (1 : ℂ)
-    · subst h1
-      simpa [ContinuousWithinAt, hval] using htend
-    · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
-        mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl h1
-      exact
-        (hdiffC.continuousOn.continuousAt
-          (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
+  refine ⟨(hdiffC.restrictScalars ℝ).mono wedgeSet_subset_upperHalfPlaneSet, fun z hzcl => ?_⟩
+  by_cases h1 : z = (1 : ℂ)
+  · subst h1; simpa [ContinuousWithinAt, hval] using htend
+  · exact (hdiffC.continuousOn.continuousAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
+        (mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl h1))).continuousWithinAt
 
 /--
 On `wedgeSet`, the `fderivWithin` of `scalarOneForm f` is symmetric when `f` is complex

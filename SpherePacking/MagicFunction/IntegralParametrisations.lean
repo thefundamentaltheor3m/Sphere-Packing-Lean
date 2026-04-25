@@ -105,7 +105,6 @@ public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by
 /-- The extended parametrisation `z₅'` stays in the closed unit disk. -/
 public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖z₅' t‖ = u := by
     simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]
@@ -116,17 +115,12 @@ public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
-  have huabs : |u| ≤ 1 := by
-    simpa [abs_of_nonneg hu0] using hu1
-  have hz : z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) := by
-    simp [z₁', Set.IccExtend_apply, z₁, hu]
+  have hz : z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) := by simp [z₁', Set.IccExtend_apply, z₁, hu]
   calc
     ‖z₁' t‖ = ‖(-1 : ℂ) + (I : ℂ) * (u : ℂ)‖ := by simp [hz]
     _ ≤ ‖(-1 : ℂ)‖ + ‖(I : ℂ) * (u : ℂ)‖ := norm_add_le _ _
-    _ = (1 : ℝ) + ‖(u : ℂ)‖ := by simp
     _ = 1 + |u| := by simp [Complex.norm_real]
-    _ ≤ 1 + 1 := by
-          simpa [add_comm] using add_le_add_right huabs 1
+    _ ≤ 1 + 1 := by simpa [abs_of_nonneg hu0] using hu1
     _ = 2 := by ring
 
 /-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
@@ -134,15 +128,12 @@ public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
-  have habs : |u - 1| ≤ 1 := by
-    grind only [= max_def, = min_def, = abs.eq_1]
   have hnorm : ‖(-1 : ℂ) + (u : ℂ)‖ ≤ 1 := by
-    have : ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| := by
+    have heq : ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| := by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
         (Complex.norm_real (u - 1))
-    simpa [this] using habs
-  have hz : z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) := by
-    simp [z₂', Set.IccExtend_apply, z₂, hu]
+    rw [heq]; grind only [= max_def, = min_def, = abs.eq_1]
+  have hz : z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) := by simp [z₂', Set.IccExtend_apply, z₂, hu]
   calc
     ‖z₂' t‖ = ‖((-1 : ℂ) + (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
     _ ≤ ‖(-1 : ℂ) + (u : ℂ)‖ + ‖(I : ℂ)‖ := norm_add_le _ _
@@ -154,14 +145,10 @@ public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
-  have habs : |1 - u| ≤ 1 := by
-    have hle : 0 ≤ 1 - u := sub_nonneg.mpr hu1
-    have habs_eq : |1 - u| = 1 - u := abs_of_nonneg hle
-    simpa [habs_eq] using sub_le_self (1 : ℝ) hu0
   have hnorm : ‖(1 : ℂ) - (u : ℂ)‖ ≤ 1 := by
-    have : ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| := by
-      simpa using Complex.norm_real (1 - u)
-    simpa [this] using habs
+    have heq : ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| := by simpa using Complex.norm_real (1 - u)
+    rw [heq, abs_of_nonneg (sub_nonneg.mpr hu1)]
+    linarith
   have hz : z₄' t = ((1 : ℂ) - (u : ℂ)) + (I : ℂ) := by
     simp [z₄', Set.IccExtend_apply, z₄, hu, sub_eq_add_neg]
   calc
@@ -231,12 +218,6 @@ public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := by
   have ht0 : 0 < t := lt_of_lt_of_le one_pos ht
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using ht0
 
-public lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by
-  simp only [z₆', IciExtend_of_mem z₆ ht, z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
-    one_mul, zero_add]
-  rw [mem_Ici] at ht
-  linarith
-
 end UpperHalfPlane
 
 section eq_of_mem
@@ -270,52 +251,5 @@ public lemma z₃'_eq_z₅'_add_one {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = z
   simp [z₃'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht, add_comm]
 
 end eq_of_mem
-
-section transforms_mem
-
-open Matrix Matrix.SpecialLinearGroup UpperHalfPlane ModularGroup
-open scoped MatrixGroups ComplexConjugate
-
-public lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
-
-public lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
-
-public lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
-
-public lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
-  simp only [← ModularGroup.ST_eq]; norm_cast
-
-public lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
-  simp only [← ModularGroup.S_eq]; norm_cast
-
-public lemma neg_inv_one_add_eq_ST_coe (z : ℍ) :
-    -1 / ((z : ℂ) + 1) = UpperHalfPlane.coe ((S * T) • z) := by
-  rw [specialLinearGroup_apply]
-  simp_all [ST_eq]
-
-public lemma neg_inv_one_add_mem (z : ℍ) : 0 < (-1 / ((z : ℂ) + 1)).im := by
-  rw [neg_inv_one_add_eq_ST_coe, coe_im]
-  exact ((S * T) • z).2
-
-public lemma neg_inv_one_add_eq_ST (z : ℍ) :
-    ⟨-1 / ((z : ℂ) + 1), neg_inv_one_add_mem z⟩ = (S * T) • z := by
-  apply UpperHalfPlane.ext
-  rw [← neg_inv_one_add_eq_ST_coe]
-
-public lemma neg_inv_eq_S_coe (z : ℍ) :
-    -1 / z = UpperHalfPlane.coe (S • z) := by
-  rw [specialLinearGroup_apply]
-  simp_all [S_eq]
-
-public lemma neg_inv_mem (z : ℍ) : 0 < (-1 / (z : ℂ)).im := by
-  rw [neg_inv_eq_S_coe, coe_im]
-  exact (S • z).2
-
-public lemma neg_inv_eq_S (z : ℍ) :
-    ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
-  apply UpperHalfPlane.ext
-  rw [← neg_inv_eq_S_coe]
-
-end transforms_mem
 
 end MagicFunction.Parametrisations

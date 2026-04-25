@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
 import SpherePacking.ModularForms.SlashActionAuxil
@@ -44,8 +44,7 @@ private lemma vadd_one_z₁'_eq_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
 
 private lemma vadd_one_z₅'_eq_z₃' (t : ℝ)
     (hz5 : 0 < (z₅' t).im) (hz3 : 0 < (z₃' t).im) :
-    ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ) : ℍ) = ⟨z₃' t, hz3⟩ := by
-  rfl
+    ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ) : ℍ) = ⟨z₃' t, hz3⟩ := rfl
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₁'`/`z₅'`.
 
@@ -56,14 +55,12 @@ public lemma ψT'_z₁'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
   by_cases ht0 : t = 0
   · subst ht0
     simp [ψT', ψI', z₁'_eq_of_mem (t := 0) (by simp), z₅'_eq_of_mem (t := 0) (by simp)]
-  · have ht0' : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨ht0', ht.2⟩
+  · have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨lt_of_le_of_ne ht.1 (Ne.symm ht0), ht.2⟩
     have hz1 : 0 < (z₁' t).im := im_z₁'_pos (t := t) htIoc
     have hz5 : 0 < (z₅' t).im := im_z₅'_pos (t := t) htIoc
     refine ψT'_eq_ψI'_of_ψT_eq_ψI hz1 hz5 ?_
-    have hT : ψT ⟨z₁' t, hz1⟩ = ψI ((1 : ℝ) +ᵥ (⟨z₁' t, hz1⟩ : ℍ)) :=
+    simpa [vadd_one_z₁'_eq_z₅' (t := t) ht hz1 hz5] using
       ψT_eq_ψI_vadd_one ⟨z₁' t, hz1⟩
-    simpa [vadd_one_z₁'_eq_z₅' (t := t) ht hz1 hz5] using hT
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`.
 
@@ -74,13 +71,11 @@ public lemma ψT'_z₃'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
   by_cases ht0 : t = 0
   · subst ht0
     simp [ψT', ψI', z₃'_eq_of_mem (t := 0) (by simp), z₅'_eq_of_mem (t := 0) (by simp)]
-  · have ht0' : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨ht0', ht.2⟩
+  · have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨lt_of_le_of_ne ht.1 (Ne.symm ht0), ht.2⟩
     have hz3 : 0 < (z₃' t).im := im_z₃'_pos (t := t) htIoc
     have hz5 : 0 < (z₅' t).im := im_z₅'_pos (t := t) htIoc
     refine ψT'_eq_ψI'_of_ψT_eq_ψI hz3 hz5 ?_
-    have hT : ψT ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ)) = ψI ⟨z₅' t, hz5⟩ :=
+    simpa [vadd_one_z₅'_eq_z₃' (t := t) hz5 hz3] using
       ψT_vadd_one_eq_ψI ⟨z₅' t, hz5⟩
-    simpa [vadd_one_z₅'_eq_z₃' (t := t) hz5 hz3] using hT
 
 end MagicFunction.b.PsiParamRelations

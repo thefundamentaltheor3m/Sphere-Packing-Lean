@@ -1,9 +1,9 @@
 module
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
-public import SpherePacking.ModularForms.eta
-public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.ClogArgLemmas
+public import SpherePacking.ModularForms.Eta
+public import SpherePacking.ModularForms.MultipliableLemmas
 public import SpherePacking.ModularForms.ResToImagAxis
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import SpherePacking.Tactic.NormNumI
@@ -487,15 +487,8 @@ lemma cexp_aux2 (t : ℝ) (n : ℕ)
     _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
     _ = rexp (-(2 * π * (n + 1) * t)) := by simp
 
-lemma cexp_aux3 (t : ℝ) (n : ℕ) (ht : 0 < t) : 0 < 1 - rexp (-(2 * π * (n + 1) * t)) := by
-  have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := Real.exp_lt_one_iff.mpr (by simp; positivity)
-  linarith
-
 lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := by
   simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-2 * π * (n + 1) * t)
-
-lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
-  simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
 
 /-- If `Im z = 0` then `Im (z^m) = 0`. -/
 public lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :

@@ -50,7 +50,6 @@ lemma cexp_mul_z₃'_eq (x t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
 
 lemma J₃'_eq (x : ℝ) :
     J₃' x = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by
-  -- First rewrite the integrand of `J₃'` in terms of `ψI' (z₅' t)`.
   have hJ3 :
       J₃' x =
         (∫ t in (0 : ℝ)..1,
@@ -64,38 +63,26 @@ lemma J₃'_eq (x : ℝ) :
       _ = ∫ t in (0 : ℝ)..1,
               (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t)) *
                 cexp (π * (Complex.I : ℂ) * x) := by
-              refine intervalIntegral.integral_congr ?_
-              intro t ht
+              refine intervalIntegral.integral_congr fun t ht => ?_
               have htIcc : t ∈ Icc (0 : ℝ) 1 := by
                 simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
-              have hψ : ψT' (z₃' t) = ψI' (z₅' t) := ψT'_z₃'_eq_ψI'_z₅' (t := t) htIcc
-              have hcexp : cexp (π * (Complex.I : ℂ) * x * (z₃' t)) =
-                  cexp (π * (Complex.I : ℂ) * x * (z₅' t)) * cexp (π * (Complex.I : ℂ) * x) :=
-                cexp_mul_z₃'_eq (x := x) (t := t) htIcc
-              -- rearrange using associativity/commutativity in `ℂ`
+              have hψ := ψT'_z₃'_eq_ψI'_z₅' (t := t) htIcc
+              have hcexp := cexp_mul_z₃'_eq (x := x) (t := t) htIcc
               grind only
       _ = (∫ t in (0 : ℝ)..1,
               (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))) *
             cexp (π * (Complex.I : ℂ) * x) := integral_mul_const _ _
-  -- Relate the remaining integral to `J₅'`.
   have hK :
       (∫ t in (0 : ℝ)..1,
           (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))) =
         (-1 / 2 : ℂ) * J₅' x := by
-    -- `J₅' x = -2 * ∫ ...`
     set K : ℂ :=
       ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))
-    have hJ5 : J₅' x = (-2 : ℂ) * K := by
-      simp [RealIntegrals.J₅', K]
+    have hJ5 : J₅' x = (-2 : ℂ) * K := by simp [RealIntegrals.J₅', K]
     grind only
-  -- combine
   calc
-    J₃' x
-        = ((-1 / 2 : ℂ) * J₅' x) * cexp (π * (Complex.I : ℂ) * x) := by
-            simpa [hK] using hJ3
-    _ = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by
-          -- reorganize factors
-          ring_nf
+    J₃' x = ((-1 / 2 : ℂ) * J₅' x) * cexp (π * (Complex.I : ℂ) * x) := by simpa [hK] using hJ3
+    _ = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by ring_nf
 
 /-- Smoothness of `J₃'`.
 
@@ -103,15 +90,12 @@ The prime in `contDiff_J₃'` refers to the function `J₃'`. -/
 public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
   have hExp : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ cexp ((π : ℂ) * Complex.I * (x : ℂ))) :=
     ((contDiff_const.mul contDiff_const).mul ofRealCLM.contDiff).cexp
-  have hJ5 : ContDiff ℝ (⊤ : ℕ∞) J₅' :=
-    MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
-  have hmul :
-      ContDiff ℝ (⊤ : ℕ∞)
-        (fun x : ℝ ↦ (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x) :=
-    (contDiff_const.mul hExp).mul hJ5
-  have hEq : (fun x : ℝ ↦ (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x) = J₃' := by
-    funext x
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (J₃'_eq (x := x)).symm
+  have hmul : ContDiff ℝ (⊤ : ℕ∞)
+      (fun x : ℝ ↦ (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x) :=
+    (contDiff_const.mul hExp).mul MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
+  have hEq : (fun x : ℝ ↦ (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x) = J₃' :=
+    funext fun x => by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using (J₃'_eq (x := x)).symm
   simpa [hEq] using hmul
 
 /-- Schwartz-type decay bounds for `J₃'` and its iterated derivatives on `0 ≤ x`.
@@ -120,30 +104,21 @@ The prime in `decay_J₃'` refers to the function `J₃'`. -/
 public theorem decay_J₃' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₃' x‖ ≤ C := by
   intro k n
-  -- Split off the bounded oscillatory factor `(-1/2) * exp(iπx)`.
   let c : ℂ := (Real.pi : ℂ) * Complex.I
   let e : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * c)
   let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • e x
-  have he_cont : ContDiff ℝ (⊤ : ℕ∞) e := by
-    simpa [e] using (ofRealCLM.contDiff.mul contDiff_const).cexp
   have hf_cont : ContDiff ℝ (⊤ : ℕ∞) f := by
-    simpa [f] using (he_cont.const_smul (-1 / 2 : ℂ))
-  have hJ5_cont : ContDiff ℝ (⊤ : ℕ∞) J₅' :=
-    MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
+    simpa [f, e] using ((ofRealCLM.contDiff.mul contDiff_const).cexp.const_smul (-1 / 2 : ℂ))
   have hbound_f : ∀ m : ℕ, ∀ x : ℝ, ‖iteratedFDeriv ℝ m f x‖ ≤ (1 / 2 : ℝ) * Real.pi ^ m :=
     fun m x => SpherePacking.ForMathlib.norm_iteratedFDeriv_smul_cexp_mul_pi_I_le m x
   have hdec5 : ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ m J₅' x‖ ≤ C :=
     fun m => by simpa using (MagicFunction.b.Schwartz.J5Smooth.decay_J₅' (k := k) (n := m))
-  rcases
-      (SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left (f := f) (g := J₅')
-        (k := k) (n := n) (B := fun m ↦ (1 / 2 : ℝ) * Real.pi ^ m)
-        hf_cont hJ5_cont (hbound_f := hbound_f) (hdec_g := hdec5)) with
-    ⟨C, hC⟩
+  obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left
+    (f := f) (g := J₅') (k := k) (n := n) (B := fun m ↦ (1 / 2 : ℝ) * Real.pi ^ m)
+    hf_cont MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅' hbound_f hdec5
   refine ⟨C, fun x hx => ?_⟩
-  have hJ3fun : J₃' = fun y : ℝ ↦ f y * J₅' y := by
-    funext y
-    -- rewrite `J₃'` using `J₃'_eq`, then normalize into `f * J₅'`.
-    simp [f, e, c, mul_assoc, mul_left_comm, mul_comm, J₃'_eq (x := y)]
+  have hJ3fun : J₃' = fun y : ℝ ↦ f y * J₅' y :=
+    funext fun y => by simp [f, e, c, mul_assoc, mul_left_comm, mul_comm, J₃'_eq (x := y)]
   simpa [hJ3fun] using hC x hx
 
 end

@@ -201,24 +201,6 @@ variable {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} {h : ℝ}
 
 open scoped ComplexConjugate
 
-lemma valueAtInfty_add
-    [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
-    (f g : ModularForm Γ k) (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :
-    valueAtInfty (f + g) = valueAtInfty f + valueAtInfty g := by
-  have hf :=
-    modularForm_tendsto_valueAtInfty (Γ := Γ) (k := k) (h := h) (f := f) hh hΓ
-  have hg :=
-    modularForm_tendsto_valueAtInfty (Γ := Γ) (k := k) (h := h) (f := g) hh hΓ
-  simpa [UpperHalfPlane.valueAtInfty, Pi.add_apply] using (hf.add hg).limUnder_eq
-
-lemma valueAtInfty_smul
-    [DiscreteTopology Γ] [Γ.HasDetOne]
-    (a : ℂ) (f : ModularForm Γ k) (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :
-    valueAtInfty (a • f) = a • valueAtInfty f := by
-  have hf :=
-    modularForm_tendsto_valueAtInfty (Γ := Γ) (k := k) (h := h) (f := f) hh hΓ
-  simpa [UpperHalfPlane.valueAtInfty, Pi.smul_apply] using (hf.const_smul a).limUnder_eq
-
 lemma cuspFunction_add
     [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
     (f g : ModularForm Γ k) (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :

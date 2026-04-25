@@ -3,14 +3,6 @@ public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 
 /-!
 # Periodizing a sphere packing
-
-This file defines a few auxiliary geometric constructions (coordinate cubes and their inner
-subcubes) and uses them to "periodize" a sphere packing with respect to a lattice.
-
-The key construction is `periodize_to_periodicSpherePacking`: given a sphere packing `S`, a lattice
-`Λ`, a measurable domain `D` meeting each orbit in exactly one point, and a set of representatives
-`F ⊆ S.centers` whose separation balls lie in `D`, we obtain a periodic sphere packing with lattice
-`Λ` and centers `⋃ g : Λ, g +ᵥ F`.
 -/
 
 open scoped ENNReal
@@ -38,15 +30,8 @@ lemma ball_subset_coordCube {x : EuclideanSpace ℝ (Fin d)} {r L : ℝ}
     ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, y i ∈ Set.Ico (0 : ℝ) L} := by
   intro y hy i
   have hxi := hx i
-  have hsub : |y i - x i| < r := abs_coord_sub_lt_of_mem_ball (d := d) hy i
-  have hy0 : 0 ≤ y i := by
-    have hx0 : 0 ≤ x i - r := sub_nonneg.mpr hxi.1
-    have : x i - r < y i := by linarith [(abs_lt.mp hsub).1]
-    exact hx0.trans (le_of_lt this)
-  have hyL : y i < L := by
-    have : y i < x i + r := by linarith [(abs_lt.mp hsub).2]
-    exact lt_of_lt_of_le this (by linarith [hxi.2])
-  exact ⟨hy0, hyL⟩
+  have hsub := abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)
+  exact ⟨by linarith [hxi.1], by linarith [hxi.2]⟩
 
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
@@ -61,9 +46,10 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
   let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
   have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith
   have hmx : m ∈ ball x r := by
-    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m] using hhalf : dist m x < r)
+    simpa [Metric.mem_ball, dist_comm, m] using (show dist m x < r by simpa [m] using hhalf)
   have hmy : m ∈ ball y r := by
-    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m, dist_comm] using hhalf : dist m y < r)
+    simpa [Metric.mem_ball, dist_comm, m] using
+      (show dist m y < r by simpa [m, dist_comm] using hhalf)
   exact Set.disjoint_left.1 hAB (hx hmx) (hy hmy)
 
 open scoped Pointwise in
@@ -78,16 +64,14 @@ public lemma mem_periodizedCenters_iff {Λ : Submodule ℤ (EuclideanSpace ℝ (
     x ∈ periodizedCenters (d := d) Λ F ↔ ∃ g : Λ, ∃ f ∈ F, x = g +ᵥ f := by
   simp [periodizedCenters, Set.mem_iUnion, Set.mem_vadd_set, eq_comm]
 
-/-! ## Basic closure properties -/
-
 /-- `periodizedCenters` is closed under addition by lattice vectors. -/
 public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {F : Set (EuclideanSpace ℝ (Fin d))} {x y : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ Λ) (hy : y ∈ periodizedCenters (d := d) Λ F) :
     x + y ∈ periodizedCenters (d := d) Λ F := by
   rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := y)).1 hy with ⟨g, f, hf, rfl⟩
-  refine (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)).2 ⟨(⟨x, hx⟩ : Λ) + g, f, hf, ?_⟩
-  simp [Submodule.vadd_def, vadd_eq_add, add_assoc]
+  exact (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)).2
+    ⟨(⟨x, hx⟩ : Λ) + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
 
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
 public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
@@ -97,9 +81,8 @@ public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin 
   intro y hy
   refine Set.mem_vadd_set.2 ⟨(-g : Λ) +ᵥ y, ?_, by simp [Submodule.vadd_def, vadd_eq_add]⟩
   apply hx
-  have :
-      (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ ball (g +ᵥ x) r :=
+  have : (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
+      (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ ball (g +ᵥ x) r :=
     Set.mem_vadd_set.2 ⟨y, by simpa [Submodule.vadd_def, vadd_eq_add] using hy, rfl⟩
   simpa [Metric.vadd_ball, add_vadd, Submodule.vadd_def, vadd_eq_add] using this
 
@@ -124,45 +107,28 @@ along a lattice `Λ`.
       lattice_action := ?_
       lattice_discrete := inferInstance
       lattice_isZLattice := inferInstance }
-  · -- `centers_dist`
-    intro a b hab
+  · intro a b hab
     change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
     rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)
-      (x := (a : EuclideanSpace ℝ (Fin d)))).1
-        a.property with ⟨ga, fa, hfa, ha⟩
+      (x := (a : EuclideanSpace ℝ (Fin d)))).1 a.property with ⟨ga, fa, hfa, ha⟩
     rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)
-      (x := (b : EuclideanSpace ℝ (Fin d)))).1
-        b.property with ⟨gb, fb, hfb, hb⟩
+      (x := (b : EuclideanSpace ℝ (Fin d)))).1 b.property with ⟨gb, fb, hfb, hb⟩
     by_cases hgg : ga = gb
     · subst hgg
-      have hne : fa ≠ fb := by
-        intro h
-        apply hab
-        apply Subtype.ext
-        simp [ha, hb, h]
+      have hne : fa ≠ fb := fun h => hab <| Subtype.ext <| by simp [ha, hb, h]
       have hdist := S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
-      -- rewrite the distance using translation invariance
-      have : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb) := by
-        have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb :=
-          dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
-        simpa [htrans] using hdist
-      simpa [ha, hb] using this
-    · -- different lattice translates: use disjointness of translated domains + midpoint argument
-      have hballa : ball (ga +ᵥ fa) (S.separation / 2) ⊆ ga +ᵥ D :=
-        ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa) (r := S.separation / 2)
-          (hF_ball fa hfa)
-      have hballb : ball (gb +ᵥ fb) (S.separation / 2) ⊆ gb +ᵥ D :=
-        ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := gb) (x := fb) (r := S.separation / 2)
-          (hF_ball fb hfb)
-      have hdisj : Disjoint (ga +ᵥ D) (gb +ᵥ D) :=
-        disjoint_vadd_of_unique_covers (d := d) (Λ := Λ) (D := D) hD_unique_covers hgg
-      have : 2 * (S.separation / 2) ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) :=
-        dist_le_of_disjoint_ball_subsets (d := d) hballa hballb hdisj
-      have : S.separation ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) := by
-        simpa [two_mul, add_halves] using this
-      simpa [ha, hb] using this
-  · -- lattice_action
-    intro x y hx hy
+      have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb :=
+        dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
+      simpa [ha, hb] using (htrans ▸ hdist : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb))
+    · have h2 : 2 * (S.separation / 2) ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) :=
+        dist_le_of_disjoint_ball_subsets (d := d)
+          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa)
+            (r := S.separation / 2) (hF_ball fa hfa))
+          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := gb) (x := fb)
+            (r := S.separation / 2) (hF_ball fb hfb))
+          (disjoint_vadd_of_unique_covers (d := d) (Λ := Λ) (D := D) hD_unique_covers hgg)
+      simpa [ha, hb, two_mul, add_halves] using h2
+  · intro x y hx hy
     exact periodizedCenters_lattice_action (d := d) (Λ := Λ) (F := F) hx hy
 
 end PeriodicConstantAux
@@ -196,26 +162,25 @@ variable {d : ℕ}
 public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
     fundamentalDomain (cubeBasis d L hL) = coordCube d L := by
   ext x
-  -- unfold the definition of `ZSpan.fundamentalDomain` and compute coordinates on the scaled basis
   simp only [ZSpan.mem_fundamentalDomain, coordCube, cubeBasis, Module.Basis.repr_isUnitSMul,
-    Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq,
-    Set.mem_Ico]
-  constructor
-  · intro hx i
-    specialize hx i
+    Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
+  have hLne : (L : ℝ) ≠ 0 := ne_of_gt hL
+  have hLinv : 0 < (L⁻¹ : ℝ) := inv_pos.mpr hL
+  refine ⟨fun hx i => ?_, fun hx i => ?_⟩
+  · specialize hx i
     refine ⟨?_, ?_⟩
-    · have : 0 ≤ (L : ℝ) * (L⁻¹ * x.ofLp i) := mul_nonneg (le_of_lt hL) hx.1
-      have : 0 ≤ (L * L⁻¹) * x.ofLp i := by simpa [mul_assoc] using this
-      simpa [mul_inv_cancel₀ (ne_of_gt hL)] using this
-    · have : (L : ℝ) * (L⁻¹ * x.ofLp i) < (L : ℝ) * 1 := mul_lt_mul_of_pos_left hx.2 hL
-      have : (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1 := by simpa [mul_assoc] using this
-      simpa [mul_inv_cancel₀ (ne_of_gt hL)] using this
-  · intro hx i
-    specialize hx i
-    have hLinv : 0 < (L⁻¹ : ℝ) := inv_pos.mpr hL
+    · have : 0 ≤ (L * L⁻¹) * x.ofLp i := by
+        have := mul_nonneg (le_of_lt hL) hx.1
+        simpa [mul_assoc] using this
+      simpa [mul_inv_cancel₀ hLne] using this
+    · have : (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1 := by
+        have := mul_lt_mul_of_pos_left hx.2 hL
+        simpa [mul_assoc] using this
+      simpa [mul_inv_cancel₀ hLne] using this
+  · specialize hx i
     refine ⟨mul_nonneg (le_of_lt hLinv) hx.1, ?_⟩
     have : (L⁻¹ : ℝ) * x.ofLp i < (L⁻¹ : ℝ) * L := mul_lt_mul_of_pos_left hx.2 hLinv
-    simpa [mul_assoc, inv_mul_cancel₀ (ne_of_gt hL), one_mul] using this
+    simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using this
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) :
@@ -228,18 +193,16 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
     (hF_sub : F ⊆ D) (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) :
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
-  constructor
-  · rintro ⟨hxPer, hxD⟩
-    rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).1 hxPer with
-      ⟨g, f, hfF, rfl⟩
-    obtain ⟨g0, hg0, hg0uniq⟩ := hD_unique_covers f
-    have hg : g = g0 := hg0uniq g (by simpa using hxD)
-    have hg0 : g0 = 0 := by
-      simpa using (hg0uniq 0 (by simpa using hF_sub hfF)).symm
-    simpa [hg, hg0] using hfF
-  · intro hxF
-    refine ⟨(mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).2 ?_, hF_sub hxF⟩
-    exact ⟨0, x, hxF, by simp⟩
+  refine ⟨?_, fun hxF =>
+    ⟨(mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).2 ⟨0, x, hxF, by simp⟩,
+      hF_sub hxF⟩⟩
+  rintro ⟨hxPer, hxD⟩
+  rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).1 hxPer with
+    ⟨g, f, hfF, rfl⟩
+  obtain ⟨g0, hg0, hg0uniq⟩ := hD_unique_covers f
+  have hg : g = g0 := hg0uniq g (by simpa using hxD)
+  have hg0 : g0 = 0 := by simpa using (hg0uniq 0 (by simpa using hF_sub hfF)).symm
+  simpa [hg, hg0] using hfF
 
 end PeriodicConstantCube
 
@@ -278,15 +241,13 @@ public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
 
 public lemma volume_coordCube (L : ℝ) :
     volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
-  have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
-    simpa using (MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico)
-  have hpre :
-      volume (coordCube d L) =
-        volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
+  have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) :=
+    MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico
+  rw [show volume (coordCube d L) =
+      volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) by
     simpa [coordCube_eq_preimage_ofLp (d := d) (L := L)] using
-      (volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) hmeas)
-  -- compute the product volume
-  rw [hpre, volume_pi, Measure.pi_pi]
+      volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) hmeas,
+    volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
 
 public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
@@ -298,16 +259,13 @@ public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
 
 public lemma volume_coordCubeInner (L r : ℝ) :
     volume (coordCubeInner d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
-  have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) := by
-    exact MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc
-  have hpre :
-      volume (coordCubeInner d L r) =
-        volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) := by
+  have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) :=
+    MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc
+  rw [show volume (coordCubeInner d L r) =
+      volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) by
     simpa [coordCubeInner_eq_preimage_ofLp (d := d) (L := L) (r := r)] using
-      (volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r))
-        hmeas)
-  rw [hpre, volume_pi, Measure.pi_pi]
-  -- each coordinate contributes `(L - r) - r = L - 2r`
+      volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) hmeas,
+    volume_pi, Measure.pi_pi]
   simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
 
 public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
@@ -328,33 +286,24 @@ variable {d : ℕ}
 
 public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
     (v : cubeLattice d L hL) :
-    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ v +ᵥ coordCube d L := by
-  intro x
+    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ v +ᵥ coordCube d L := fun x => by
   have hvadd (a : cubeLattice d L hL) :
       a +ᵥ x ∈ v +ᵥ coordCube d L ↔ (a - v) +ᵥ x ∈ coordCube d L := by
-    -- translate by `-v` and simplify `(-v) + (a + x) = (a - v) + x`
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
-  refine ⟨g + v, (hvadd (a := g + v)).2 (by simpa using hg), ?_⟩
-  intro a ha
-  have ha' : (a - v) +ᵥ x ∈ coordCube d L := (hvadd a).1 ha
-  have : a - v = g := hguniq _ ha'
-  exact (sub_eq_iff_eq_add).1 this
+  exact ⟨g + v, (hvadd (a := g + v)).2 (by simpa using hg),
+    fun a ha => (sub_eq_iff_eq_add).1 (hguniq _ ((hvadd a).1 ha))⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ v +ᵥ coordCubeInner d L r) :
     ball x r ⊆ v +ᵥ coordCube d L := by
-  -- translate back to the origin cell
   have hx' : (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x ∈ coordCubeInner d L r := by
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx
-  have hball : ball ((- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) r ⊆ coordCube d L :=
-    ball_subset_coordCube_of_mem_inner hx'
-  -- translate forward by `v`
-  have h :=
-    ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
-      (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r) hball
+  have h := ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
+    (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r)
+    (ball_subset_coordCube_of_mem_inner hx')
   simpa [add_vadd, Submodule.vadd_def, vadd_eq_add, add_assoc, add_comm] using h
 
 public lemma coordCube_subset_ball (L : ℝ) (hL : 0 < L) :
@@ -363,7 +312,6 @@ public lemma coordCube_subset_ball (L : ℝ) (hL : 0 < L) :
 
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
-  -- first show finiteness of the corresponding subset of `EuclideanSpace`
   have hfinE : Set.Finite ((ball (0 : EuclideanSpace ℝ (Fin d)) R) ∩
       (cubeLattice d L hL : Set (EuclideanSpace ℝ (Fin d)))) := by
     simpa [cubeLattice] using
@@ -371,9 +319,7 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
         (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)
   let f : cubeLattice d L hL ↪ EuclideanSpace ℝ (Fin d) :=
     ⟨fun g => (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩
-  refine (Set.Finite.preimage_embedding f hfinE).subset ?_
-  intro g hg
-  exact ⟨hg, g.property⟩
+  exact (Set.Finite.preimage_embedding f hfinE).subset fun g hg => ⟨hg, g.property⟩
 
 end PeriodicConstantApprox
 

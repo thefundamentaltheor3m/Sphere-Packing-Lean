@@ -50,17 +50,12 @@ public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := b
   let c : ℝ := Real.sqrt 2
   let A : ℝ⁸ ≃ₗ[ℝ] ℝ⁸ := LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) c sqrt2_ne_zero
   have hdet : abs (LinearMap.det (A : ℝ⁸ →ₗ[ℝ] ℝ⁸)) = (16 : ℝ) := by
-    have hA : (A : ℝ⁸ →ₗ[ℝ] ℝ⁸) = c • (LinearMap.id : ℝ⁸ →ₗ[ℝ] ℝ⁸) := by
-      ext x
-      simp [A]
+    have hA : (A : ℝ⁸ →ₗ[ℝ] ℝ⁸) = c • (LinearMap.id : ℝ⁸ →ₗ[ℝ] ℝ⁸) := by ext x; simp [A]
     have hc_pow : c ^ 8 = (16 : ℝ) := by
-      calc
-        c ^ 8 = (c ^ 2) ^ 4 := by simpa using (pow_mul c 2 4)
-        _ = (2 : ℝ) ^ 4 := by
-              simp [c, Real.sq_sqrt (by positivity : (0 : ℝ) ≤ 2)]
-        _ = 16 := by norm_num
-    rw [hA]
-    simp [LinearMap.det_smul, LinearMap.det_id, hc_pow]
+      rw [show (8 : ℕ) = 2 * 4 from rfl, pow_mul,
+        show c ^ 2 = 2 from Real.sq_sqrt (by positivity : (0 : ℝ) ≤ 2)]
+      norm_num
+    rw [hA]; simp [LinearMap.det_smul, LinearMap.det_id, hc_pow]
   have hg0 : (𝓕 (g : ℝ⁸ → ℂ)) 0 = (1 : ℂ) := by
     simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe] using
       (fourier_g_zero : FT g 0 = 1)

@@ -37,23 +37,17 @@ open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalInteg
 
 theorem perm_J₁_J₂ :
     FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) ((J₁ : SchwartzMap ℝ⁸ ℂ) + J₂) =
-      -((J₃ : SchwartzMap ℝ⁸ ℂ) + J₄) := by
-  refine SpherePacking.Contour.perm_J₁_J₂_of
-      (J₁ := (J₁ : SchwartzMap ℝ⁸ ℂ))
-      (J₂ := J₂)
-      (J₃ := (J₃ : SchwartzMap ℝ⁸ ℂ))
-      (J₄ := J₄)
-      (Ψ₁_fourier := Ψ₁_fourier)
-      (Ψ₁' := Ψ₁')
-      (h := by
-        refine ⟨perm_J12_contour, ?_, ?_, ?_⟩
-        · intro w
-          simpa [SchwartzMap.fourier_coe] using (fourier_J₁_eq_curveIntegral (w := w))
-        · intro w
-          simpa [SchwartzMap.fourier_coe] using (fourier_J₂_eq_curveIntegral (w := w))
-        · intro w
-          simpa [J₃_apply, J₄_apply, add_assoc, add_left_comm, add_comm] using
-            (J₃'_add_J₄'_eq_curveIntegral_segments (r := ‖w‖ ^ (2 : ℕ))).symm)
+      -((J₃ : SchwartzMap ℝ⁸ ℂ) + J₄) :=
+  SpherePacking.Contour.perm_J₁_J₂_of
+    (J₁ := (J₁ : SchwartzMap ℝ⁸ ℂ)) (J₂ := J₂)
+    (J₃ := (J₃ : SchwartzMap ℝ⁸ ℂ)) (J₄ := J₄)
+    (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := Ψ₁')
+    (h := ⟨perm_J12_contour,
+      fun w => by simpa [SchwartzMap.fourier_coe] using fourier_J₁_eq_curveIntegral (w := w),
+      fun w => by simpa [SchwartzMap.fourier_coe] using fourier_J₂_eq_curveIntegral (w := w),
+      fun w => by
+        simpa [J₃_apply, J₄_apply, add_assoc, add_left_comm, add_comm] using
+          (J₃'_add_J₄'_eq_curveIntegral_segments (r := ‖w‖ ^ (2 : ℕ))).symm⟩)
 
 theorem perm_₃_J₄ :
     FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) ((J₃ : SchwartzMap ℝ⁸ ℂ) + J₄) =
@@ -69,12 +63,9 @@ theorem perm_₃_J₄ :
     simp [J₃, J₄, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
   simpa [FT] using
     SpherePacking.Contour.perm_J₃_J₄_of
-      (J₁ := (J₁ : SchwartzMap ℝ⁸ ℂ))
-      (J₂ := J₂)
-      (J₃ := (J₃ : SchwartzMap ℝ⁸ ℂ))
-      (J₄ := J₄)
-      (hsymm := hsymm)
-      (perm_J₁_J₂ := perm_J₁_J₂)
+      (J₁ := (J₁ : SchwartzMap ℝ⁸ ℂ)) (J₂ := J₂)
+      (J₃ := (J₃ : SchwartzMap ℝ⁸ ℂ)) (J₄ := J₄)
+      (hsymm := hsymm) (perm_J₁_J₂ := perm_J₁_J₂)
 
 end Integral_Permutations
 

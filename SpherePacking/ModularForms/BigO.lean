@@ -30,8 +30,3 @@ public lemma linear_bigO_nat (m : ℤ) (z : ℍ) :
   refine ((linear_bigO m z).comp_tendsto Nat.cast_injective.tendsto_cofinite).congr' ?_ ?_ <;>
     exact Filter.Eventually.of_forall fun n => by simp [Function.comp]
 
-/-- A cofinite `BigO` estimate for `n ↦ (n * z + m)⁻¹` (integer variable on the left). -/
-public lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
-    fun n => (|(n : ℝ)|⁻¹) := by
-  simpa [Real.norm_eq_abs, abs_inv] using
-    (linear_inv_isBigO_left (d := m) (z := (z : ℂ)) (ne_zero z)).norm_right

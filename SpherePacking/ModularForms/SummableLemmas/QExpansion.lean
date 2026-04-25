@@ -677,10 +677,6 @@ public theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
   rw [hs.tsum_prod]
   simpa [q] using (tsum_prod_pow_eq_tsum_sigma (𝕜 := ℂ) k hq)
 
-/-- Summability of `∑_{d : ℤ} 1 / ((n z) + d)^k` for `k ≥ 2` and `z ∈ ℍ`. -/
-public lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
-    Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := linear_right_summable (↑z) n hk
-
 /-- A cleaner version of `tsum_sigma_eqn2` with product indexing by `ℕ+ × ℕ+`. -/
 public theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
     ∑' c : ℕ+ × ℕ+, (c.1 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c.1 * c.2) =
@@ -705,19 +701,6 @@ public theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
   rw [summable_nat_add_iff 1]
   simpa [summable_geometric_iff_norm_lt_one, norm_norm] using exp_upperHalfPlane_lt_one z
 
-/-- Summability of a geometric series with a fixed prefactor. -/
-public theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
-    Summable fun c : ℕ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by
-  refine Summable.mul_left _ ?_
-  have he : (0 : ℝ) < (e : ℝ) := by
-    exact_mod_cast e.pos
-  let z' : ℍ := ⟨(e : ℂ) * z, by simpa [Complex.mul_im] using mul_pos he z.im_pos⟩
-  have hz' : ‖Complex.exp (2 * ↑π * Complex.I * z')‖ < 1 := exp_upperHalfPlane_lt_one z'
-  refine (summable_geometric_iff_norm_lt_one.2 hz').congr (fun c => ?_)
-  simpa [z', mul_assoc, mul_left_comm, mul_comm] using
-    (Complex.exp_nat_mul (2 * ↑π * Complex.I * z') c).symm
-
-
 /-- A summability lemma for a two-variable exponential sum, used with divisor antidiagonals. -/
 public theorem a4 (k : ℕ) (z : ℍ) :
     Summable (uncurry fun b c : ℕ+ => ↑b ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑c * ↑z * ↑b)) := by
@@ -731,53 +714,3 @@ public theorem a4 (k : ℕ) (z : ℍ) :
     divisorsAntidiagonalFactors, Equiv.coe_fn_mk, PNat.mk_coe]
   ring_nf
 
-/-- A specialized evaluation of a `tsum` using `q_exp_iden` at `k = 2`. -/
-public lemma t9 (z : ℍ) : ∑' m : ℕ,
-  ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
-      ∑' n : ℕ+, n ^ ((2 - 1)) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) = -
-    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z) := by
-  have := tsum_pnat_eq_tsum_succ3 (fun m => 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
-      ∑' n : ℕ+, n ^ ((2 - 1)) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n))
-  simp only [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one, Nat.cast_one,
-    div_one, pow_one, Nat.cast_add] at *
-  rw [← this]
-  rw [tsum_mul_left, ← tsum_sigma_eqn z (k := 1)]
-  have he : 2 * (2 * ↑π * Complex.I) ^ 2 = - 8 * π ^ 2 := by
-    rw [pow_two]; ring_nf; simp [I_sq, mul_neg, mul_one, neg_mul]
-  rw [he]
-  simp only [neg_mul, pow_one, neg_inj, mul_eq_mul_left_iff, mul_eq_zero, OfNat.ofNat_ne_zero,
-    ne_eq, not_false_eq_true, pow_eq_zero_iff, ofReal_eq_zero, false_or]
-  left
-  symm
-  simp only [neg_mul] at *
-  rw [Summable.tsum_prod, Summable.tsum_comm']
-  · congr
-    funext m
-    congr
-    funext n
-    simp only [mul_eq_mul_left_iff, Nat.cast_eq_zero, PNat.ne_zero, or_false]
-    congr 1
-    ring
-  · have := (a4 2 z).prod_symm
-    simp only [Nat.add_one_sub_one, pow_one] at *
-    apply this.congr
-    intro b
-    rw [Prod.swap]
-    simp [uncurry]
-    ring_nf
-  · intro e
-    have := a33 (k := 1) e z
-    simp only [pow_one] at *
-    apply this.congr
-    intro b
-    ring_nf
-  · intro e
-    have := a1 2 e z
-    simp only [Nat.add_one_sub_one, pow_one] at *
-    apply this.subtype
-  have := a4 2 z
-  apply this.congr
-  intro b
-  simp [uncurry]
-  congr 1
-  ring

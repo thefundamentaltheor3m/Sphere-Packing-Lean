@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.Basic
 import SpherePacking.Contour.MobiusInv.PermJ12PsiFourier
 
@@ -61,54 +61,39 @@ Mobius change of variables `z ↦ -1 / z`. -/
 public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
     ψT' (mobiusInv z) = -(ψT' z) / z ^ (2 : ℕ) := by
   let zH : UpperHalfPlane := ⟨z, hz⟩
-  have hz0 : (zH : ℂ) ≠ 0 := by
-    exact fun hz0 => (ne_of_gt hz) (by simpa [zH] using congrArg Complex.im hz0)
+  have hz0 : (zH : ℂ) ≠ 0 :=
+    fun hz0 => hz.ne' (by simpa [zH] using congrArg Complex.im hz0)
   have hz2 : ((zH : ℂ) ^ (2 : ℕ) : ℂ) ≠ 0 := pow_ne_zero 2 hz0
   -- Evaluate `ψT ∣[-2] S = -ψT` at `zH`.
   have h := congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψT_slash_S
   have hS :
       (SlashAction.map (-2) ModularGroup.S ψT) zH =
         ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) * (zH : ℂ) ^ (2 : ℕ) := by
-    simpa using (modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH))
-  have hS' :
-      ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) * (zH : ℂ) ^ (2 : ℕ) =
-        -ψT zH := by
-    simpa [hS] using h
+    simpa using modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH)
   have hdiv :
       ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) =
         (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) :=
-    (eq_div_iff hz2).2 hS'
-  -- Identify the Möbius image point: `(-zH)⁻¹ = mobiusInv z`.
+    (eq_div_iff hz2).2 (by simpa [hS] using h)
   have hz' : 0 < (mobiusInv z).im := mobiusInv_im_pos z hz
   have hmk :
       (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos : UpperHalfPlane) =
-        ⟨mobiusInv z, hz'⟩ := by
-    ext1
-    simp [zH, mobiusInv, inv_neg]
-  -- Convert to `ψT'` on `ℂ`.
+        ⟨mobiusInv z, hz'⟩ := by ext1; simp [zH, mobiusInv, inv_neg]
   have hTz : ψT' z = ψT zH := by simp [ψT', hz, zH]
-  have hTw : ψT' (mobiusInv z) = ψT ⟨mobiusInv z, hz'⟩ := by
-    simp [ψT', hz']
-  have hmkψ :
-      ψT ⟨mobiusInv z, hz'⟩ =
-        ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) := by
-    simpa using congrArg ψT hmk.symm
-  -- Rewrite `hdiv` using `hmk` and the definitions of `ψT'`.
   calc
-    ψT' (mobiusInv z) = ψT ⟨mobiusInv z, hz'⟩ := hTw
-    _ = ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) := hmkψ
+    ψT' (mobiusInv z) = ψT ⟨mobiusInv z, hz'⟩ := by simp [ψT', hz']
+    _ = ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) := by
+      simpa using congrArg ψT hmk.symm
     _ = (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) := hdiv
-    _ = -(ψT' z) / z ^ (2 : ℕ) := by
-      simp [hTz, zH, div_eq_mul_inv]
+    _ = -(ψT' z) / z ^ (2 : ℕ) := by simp [hTz, zH, div_eq_mul_inv]
 
 /-- Express `Ψ₁_fourier` as the pullback of `Ψ₁'` under Mobius inversion, including the Jacobian
 factor `-deriv mobiusInv`. -/
 public lemma Ψ₁_fourier_eq_neg_deriv_mul (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
     Ψ₁_fourier r z = -(deriv mobiusInv z) * Ψ₁' r (mobiusInv z) := by
   simpa [Ψ₁', Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm] using
-    (SpherePacking.Contour.permJ12_Ψ₁_fourier_eq_neg_deriv_mul
+    SpherePacking.Contour.permJ12_Ψ₁_fourier_eq_neg_deriv_mul
       (ψ := ψT') (A := (π : ℂ) * Complex.I) (q := 2) (r := r) (z := z) hz
-      (hψ := ψT'_mobiusInv_eq_div (z := z) hz) (hI := by simp))
+      (hψ := ψT'_mobiusInv_eq_div (z := z) hz) (hI := by simp)
 
 end Integral_Permutations.PermJ12
 end

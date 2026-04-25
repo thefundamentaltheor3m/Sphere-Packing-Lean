@@ -49,33 +49,13 @@ open scoped ModularForm
 public lemma differentiableOn_ψT_ofComplex :
     DifferentiableOn ℂ (fun z : ℂ => ψT (UpperHalfPlane.ofComplex z))
       UpperHalfPlane.upperHalfPlaneSet := by
-  -- Get differentiability of `H₂,H₃,H₄` from their manifold differentiability.
-  have hH2 :
-      DifferentiableOn ℂ (fun z : ℂ => H₂ (UpperHalfPlane.ofComplex z))
-        UpperHalfPlane.upperHalfPlaneSet :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
-  have hH3 :
-      DifferentiableOn ℂ (fun z : ℂ => H₃ (UpperHalfPlane.ofComplex z))
-        UpperHalfPlane.upperHalfPlaneSet :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
-  have hH4 :
-      DifferentiableOn ℂ (fun z : ℂ => H₄ (UpperHalfPlane.ofComplex z))
-        UpperHalfPlane.upperHalfPlaneSet :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-  have hterm1 :
-      DifferentiableOn ℂ
-        (fun z : ℂ =>
-          (H₃ (UpperHalfPlane.ofComplex z) + H₄ (UpperHalfPlane.ofComplex z)) /
-            (H₂ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))
-        UpperHalfPlane.upperHalfPlaneSet :=
-    (hH3.add hH4).div (hH2.pow 2) fun z _ => pow_ne_zero 2 (H₂_ne_zero (UpperHalfPlane.ofComplex z))
-  have hterm2 :
-      DifferentiableOn ℂ
-        (fun z : ℂ =>
-          (H₂ (UpperHalfPlane.ofComplex z) + H₃ (UpperHalfPlane.ofComplex z)) /
-            (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))
-        UpperHalfPlane.upperHalfPlaneSet :=
-    (hH2.add hH3).div (hH4.pow 2) fun z _ => pow_ne_zero 2 (H₄_ne_zero (UpperHalfPlane.ofComplex z))
+  have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
+  have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
+  have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
+  have hterm1 := (hH3.add hH4).div (hH2.pow 2)
+    fun z _ => pow_ne_zero 2 (H₂_ne_zero (UpperHalfPlane.ofComplex z))
+  have hterm2 := (hH2.add hH3).div (hH4.pow 2)
+    fun z _ => pow_ne_zero 2 (H₄_ne_zero (UpperHalfPlane.ofComplex z))
   have hExpr :
       DifferentiableOn ℂ
         (fun z : ℂ =>
@@ -86,11 +66,8 @@ public lemma differentiableOn_ψT_ofComplex :
                     (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))))
         UpperHalfPlane.upperHalfPlaneSet := by
     simpa [mul_assoc] using (DifferentiableOn.const_mul (hterm1.add hterm2) (128 : ℂ))
-  refine hExpr.congr ?_
-  intro z hz
-  have hψ :=
+  exact hExpr.congr fun z _ =>
     congrArg (fun f : UpperHalfPlane → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
-  assumption
 
 /-- Holomorphicity of `ψT'` on the upper half-plane. -/
 public lemma differentiableOn_ψT'_upper :
@@ -102,8 +79,10 @@ public lemma differentiableOn_ψT'_upper :
 /-- Holomorphicity of `Ψ₁' r` on the upper half-plane. -/
 public lemma differentiableOn_Ψ₁'_upper (r : ℝ) :
     DifferentiableOn ℂ (Ψ₁' r) UpperHalfPlane.upperHalfPlaneSet := by
-  simpa [Ψ₁'] using SpherePacking.Contour.differentiableOn_mul_cexp_pi_I_mul_real
-    (s := UpperHalfPlane.upperHalfPlaneSet) (ψ := ψT') (hψ := differentiableOn_ψT'_upper) (r := r)
+  unfold Ψ₁'
+  exact differentiableOn_ψT'_upper.mul
+    ((differentiable_id.const_mul
+      ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
 
 open UpperHalfPlane Complex ModularGroup MatrixGroups ModularForm SlashAction Matrix
 open scoped Real ModularForm MatrixGroups
@@ -117,49 +96,31 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
     fun zH =>
       HSMul.hSMul (α := Matrix.SpecialLinearGroup (Fin 2) ℤ) (β := UpperHalfPlane)
         (γ := UpperHalfPlane) g zH
-  have hg :
-      g =
-        ⟨!![-1, 0; 1, -1], by
-          norm_num [Matrix.det_fin_two_of]⟩ := by
+  have hg : g = ⟨!![-1, 0; 1, -1], by norm_num [Matrix.det_fin_two_of]⟩ := by
     ext i j; fin_cases i <;> fin_cases j <;> simp [g, ModularGroup.S, ModularGroup.T]
+  have hdenom : ∀ {z : ℂ} (hz : 0 < z.im),
+      UpperHalfPlane.denom g (⟨z, hz⟩ : UpperHalfPlane) = (z : ℂ) - 1 := fun {z} hz => by
+    simp [UpperHalfPlane.denom, hg, sub_eq_add_neg]
   have hgAct_im :
       ∀ {z : ℂ} (hz : 0 < z.im),
-        (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1) := by
-    intro z hz
-    let zH : UpperHalfPlane := ⟨z, hz⟩
-    have him :
-        (gAct zH).im = z.im / Complex.normSq (UpperHalfPlane.denom g zH) := by
-      simpa [gAct, zH] using (ModularGroup.im_smul_eq_div_normSq (g := g) (z := zH))
-    have hdenom : UpperHalfPlane.denom g zH = (z : ℂ) - 1 := by
-      have hcalc : UpperHalfPlane.denom g zH = (z : ℂ) + (-1 : ℂ) := by
-        simp [UpperHalfPlane.denom, hg, zH]
-      simpa [sub_eq_add_neg] using hcalc
-    simpa [hdenom] using him
+        (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1) := fun {z} hz => by
+    simpa [hdenom hz, gAct] using
+      (ModularGroup.im_smul_eq_div_normSq (g := g) (z := (⟨z, hz⟩ : UpperHalfPlane)))
   have hψT' :
       ∀ {z : ℂ} (hz : 0 < z.im),
-        ψT' z = -ψS (gAct (⟨z, hz⟩ : UpperHalfPlane)) * (z - 1) ^ (2 : ℕ) := by
-    intro z hz
+        ψT' z = -ψS (gAct (⟨z, hz⟩ : UpperHalfPlane)) * (z - 1) ^ (2 : ℕ) := fun {z} hz => by
     let zH : UpperHalfPlane := ⟨z, hz⟩
-    have hrel0 := congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψS_slash_STS
     have hrel : (ψS ∣[(-2 : ℤ)] g) zH = -ψT zH := by
-      simpa [g] using hrel0
-    have hdenom : UpperHalfPlane.denom g zH = (z : ℂ) - 1 := by
-      have hcalc : UpperHalfPlane.denom g zH = (z : ℂ) + (-1 : ℂ) := by
-        simp [UpperHalfPlane.denom, hg, zH]
-      simpa [sub_eq_add_neg] using hcalc
-    have h1 :
-        ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) = -ψT zH := by
+      simpa [g] using congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψS_slash_STS
+    have h1 : ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) = -ψT zH := by
       simpa [ModularForm.SL_slash_apply, gAct] using hrel
     have h2 : ψT zH = -ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) := by
       simpa [neg_mul, mul_assoc] using (congrArg Neg.neg h1).symm
-    calc
-      ψT' z = ψT zH := by simp [ψT', hz, zH]
+    calc ψT' z = ψT zH := by simp [ψT', hz, zH]
       _ = -ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) := h2
-      _ = -ψS (gAct zH) * ((z : ℂ) - 1) ^ (2 : ℤ) := by
-            simp [hdenom]
+      _ = -ψS (gAct zH) * ((z : ℂ) - 1) ^ (2 : ℤ) := by rw [hdenom hz]
       _ = -ψS (gAct zH) * (z - 1) ^ (2 : ℕ) := by
-            simpa using
-              congrArg (fun t : ℂ => -ψS (gAct zH) * t) (zpow_ofNat (z - 1) 2)
+            simpa using congrArg (fun t : ℂ => -ψS (gAct zH) * t) (zpow_ofNat (z - 1) 2)
   simpa using
     (SpherePacking.Contour.tendsto_Ψ₁'_one_within_closure_wedgeSet_of
       (h := ({
@@ -171,8 +132,7 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
         ψT'_eq_neg_ψS_mul := hψT'
         mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one :=
           mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
-        closure_wedgeSet_subset_abs_re_sub_one_le_im := by
-          intro z hz
+        closure_wedgeSet_subset_abs_re_sub_one_le_im := fun {z} hz => by
           simpa using (closure_wedgeSet_subset_abs_re_sub_one_le_im (a := z) hz)
       } : SpherePacking.Contour.TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct 2))
       (r := r))

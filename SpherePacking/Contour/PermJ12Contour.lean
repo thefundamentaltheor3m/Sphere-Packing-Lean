@@ -1,6 +1,3 @@
-/-
-Shared contour deformation lemmas for the `perm_J12_contour_h1` / `perm_J12_contour_h2` identities.
--/
 module
 
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
@@ -10,6 +7,14 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
+
+/-!
+# Shared contour deformation lemmas for `J₁/J₂`
+
+Deformation lemmas underlying the `perm_J12_contour_h1` and `perm_J12_contour_h2` identities
+in the `b`-eigenfunction Fourier permutation proof. Packaged here to reuse between the two
+contours and to keep the topological hypotheses factored through `ClosedOneFormOn`.
+-/
 
 open MeasureTheory
 open MagicFunction
@@ -124,18 +129,11 @@ private lemma perm_J12_contour_h_aux
             scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment q0 q1, scalarOneForm (Ψ₁' r) z := by
   let ω : ℂ → ℂ →L[ℂ] ℂ := scalarOneForm (Ψ₁' r)
-  let γ :
-      Path (mobiusInv p0) (mobiusInv p1) :=
+  let γ : Path (mobiusInv p0) (mobiusInv p1) :=
     (Path.segment p0 p1).map' continuousOn_mobiusInv_segment
   let δ : Path q0 q1 := Path.segment q0 q1
   let I01 : Set ℝ := unitInterval
   let φ : (γ : C(I01, ℂ)).Homotopy δ := ContinuousMap.Homotopy.affine (γ : C(I01, ℂ)) δ
-  have hω : DiffContOnCl ℝ ω wedgeSet := by
-    simpa [ω] using (closed_ω_wedgeSet (r := r)).diffContOnCl
-  have hdω :
-      ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
-        fderivWithin ℝ ω wedgeSet x u v = fderivWithin ℝ ω wedgeSet x v u := by
-    simpa [ω] using (closed_ω_wedgeSet (r := r)).fderivWithin_symm
   have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := by
     intro a ha b hb
     simpa [φ, γ, δ, Path.map', Path.segment_apply] using
@@ -143,86 +141,42 @@ private lemma perm_J12_contour_h_aux
   have hcontdiff : ContDiffOn ℝ 2
       (fun xy : ℝ × ℝ ↦ Set.IccExtend zero_le_one (φ.extend xy.1) xy.2)
       (Set.Icc (0 : ℝ × ℝ) 1) := by
-    let F : ℝ × ℝ → ℂ := fun xy =>
-      ((AffineMap.lineMap (k := ℝ)
-            (mobiusInv ((AffineMap.lineMap (k := ℝ) p0 p1) xy.2))
-            ((AffineMap.lineMap (k := ℝ) q0 q1) xy.2)) xy.1)
-    have hF : ContDiffOn ℝ 2 (fun xy : ℝ × ℝ => F xy) (Set.Icc (0 : ℝ × ℝ) 1) := by
-      simpa [F] using contDiffOn_homotopy
-    refine (contDiffOn_congr ?_).2 hF
-    intro xy hxy
-    rcases xy with ⟨x, y⟩
-    rcases hxy with ⟨h0, h1⟩
-    have hx : x ∈ Set.Icc (0 : ℝ) 1 := ⟨h0.1, h1.1⟩
-    have hy : y ∈ Set.Icc (0 : ℝ) 1 := ⟨h0.2, h1.2⟩
-    let xI : I01 := ⟨x, hx⟩
-    let yI : I01 := ⟨y, hy⟩
-    calc
-      Set.IccExtend (h := (zero_le_one : (0 : ℝ) ≤ 1)) (φ.extend x) y = (φ.extend x) yI := by
-        simpa [yI] using
-          (Set.IccExtend_of_mem (h := (zero_le_one : (0 : ℝ) ≤ 1)) (f := φ.extend x) hy)
+    refine (contDiffOn_congr ?_).2 contDiffOn_homotopy
+    rintro ⟨x, y⟩ ⟨h0, h1⟩
+    let xI : I01 := ⟨x, h0.1, h1.1⟩
+    let yI : I01 := ⟨y, h0.2, h1.2⟩
+    calc Set.IccExtend (h := (zero_le_one : (0 : ℝ) ≤ 1)) (φ.extend x) y = (φ.extend x) yI := by
+          simpa [yI] using
+            (Set.IccExtend_of_mem (h := (zero_le_one : (0 : ℝ) ≤ 1)) (f := φ.extend x) ⟨h0.2, h1.2⟩)
       _ = φ (xI, yI) := by
-        simpa [xI, yI] using
-          (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := hx) (x := yI))
-      _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := by
-        rfl
-      _ = (AffineMap.lineMap (γ yI) (δ yI) x : ℂ) := by
-        simp [Path.segment_apply, xI]
-      _ = (F (x, y) : ℂ) := by
-        simp [F, γ, δ, yI, Path.map', Path.segment_apply]
-  have hmain :=
-    ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
-      (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
-      hφt hω hdω hcontdiff
-  have hφ0 : φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) := by
-    rfl
-  have hφ1 : φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) := by
-    rfl
+          simpa [xI, yI] using
+            (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := ⟨h0.1, h1.1⟩) (x := yI))
+      _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := rfl
+      _ = _ := by simp [γ, δ, yI, Path.map', Path.segment_apply, xI]
   have h :
       (∫ᶜ z in γ, ω z) + ∫ᶜ z in Path.segment (γ (1 : I01)) (δ (1 : I01)), ω z =
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
-    simpa [hφ0, hφ1] using hmain
-  have hflat :
-      (∫ᶜ z in (Path.segment p0 p1).map' continuousOn_mobiusInv_segment, ω z) +
-          ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-              ((AffineMap.lineMap q0 q1) (1 : ℝ)),
-            ω z =
-        (∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-                ((AffineMap.lineMap q0 q1) (0 : ℝ)),
-              ω z) +
-          ∫ᶜ z in Path.segment q0 q1, ω z := by
-    simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
-  have hseg1 :
-      (∫ᶜ z in Path.segment (mobiusInv p1) q1, ω z) =
-        ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (1 : ℝ)),
-          ω z := by
-    have hac : mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)) := by
-      simp [AffineMap.lineMap_apply_one]
-    have hbd : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ) := by
-      simp [AffineMap.lineMap_apply_one]
-    rw [← Path.cast_segment hac hbd]
-    exact curveIntegral_cast ω
-      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 1)) ((AffineMap.lineMap q0 q1) 1)) hac hbd
-  have hseg0 :
-      (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
+    simpa [show φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) from rfl,
+      show φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) from rfl] using
+      ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
+        (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
+        hφt (by simpa [ω] using (closed_ω_wedgeSet (r := r)).diffContOnCl)
+        (by simpa [ω] using (closed_ω_wedgeSet (r := r)).fderivWithin_symm) hcontdiff
+  rw [show (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (0 : ℝ)),
-          ω z := by
-    have hac : mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)) := by
-      simp [AffineMap.lineMap_apply_zero]
-    have hbd : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ) := by
-      simp [AffineMap.lineMap_apply_zero]
-    rw [← Path.cast_segment hac hbd]
-    exact curveIntegral_cast ω
-      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 0)) ((AffineMap.lineMap q0 q1) 0)) hac hbd
-  -- Rewrite the endpoint segments via casting and finish.
-  have hfinal := hflat
-  -- LHS endpoint segment
-  rw [← hseg1] at hfinal
-  -- RHS endpoint segment
-  rw [← hseg0] at hfinal
-  simpa [ω, add_assoc] using hfinal
+            ((AffineMap.lineMap q0 q1) (0 : ℝ)), ω z by
+      rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_zero] :
+        mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
+        (by simp [AffineMap.lineMap_apply_zero] : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ))]
+      exact curveIntegral_cast ω _ _ _,
+    show (∫ᶜ z in Path.segment (mobiusInv p1) q1, ω z) =
+        ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
+            ((AffineMap.lineMap q0 q1) (1 : ℝ)), ω z by
+      rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_one] :
+        mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
+        (by simp [AffineMap.lineMap_apply_one] : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ))]
+      exact curveIntegral_cast ω _ _ _]
+  simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
 
 /--
 Contour deformation identity for the first segment in the `perm_J12` argument.
@@ -243,23 +197,16 @@ public lemma perm_J12_contour_h1
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z =
       ∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Ψ₁' r) z := by
-  -- The start-segment term is a trivial curve integral (`mobiusInv (-1) = 1`).
   have hstart :
       (∫ᶜ z in Path.segment (mobiusInv (-1 : ℂ)) (1 : ℂ), scalarOneForm (Ψ₁' r) z) = 0 := by
-    rw [h.hyp.mobiusInv_neg_one]
-    simp [Path.segment_same]
+    rw [h.hyp.mobiusInv_neg_one]; simp [Path.segment_same]
   simpa [add_assoc, hstart] using
     perm_J12_contour_h_aux (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁')
       (wedgeSet := wedgeSet) h.closed_ω_wedgeSet
       (-1 : ℂ) ((-1 : ℂ) + Complex.I) (1 : ℂ) ((1 : ℂ) + Complex.I)
-      (continuousOn_mobiusInv_segment :=
-        h.hyp.continuousOn_mobiusInv_segment_z₁)
-      (homotopy_mem_wedgeSet := by
-        intro x y hx hy
-        simpa using h.hyp.homotopy_mem_wedgeSet (x := x) (y := y) hx hy)
-      (contDiffOn_homotopy := by
-        simpa using h.hyp.contDiffOn_homotopy)
-      (r := r)
+      h.hyp.continuousOn_mobiusInv_segment_z₁
+      (fun hx hy => by simpa using h.hyp.homotopy_mem_wedgeSet hx hy)
+      (by simpa using h.hyp.contDiffOn_homotopy) r
 
 /--
 Contour deformation identity for the second segment in the `perm_J12` argument.
@@ -281,23 +228,16 @@ public lemma perm_J12_contour_h2
             scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z := by
-  -- The end-segment term is a trivial curve integral (`mobiusInv I = I`).
   have hend :
       (∫ᶜ z in Path.segment (mobiusInv Complex.I) Complex.I,
           scalarOneForm (Ψ₁' r) z) = 0 := by
-    rw [h.hyp.mobiusInv_I]
-    simp [Path.segment_same]
+    rw [h.hyp.mobiusInv_I]; simp [Path.segment_same]
   simpa [add_assoc, add_left_comm, add_comm, hend] using
     perm_J12_contour_h_aux (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁')
       (wedgeSet := wedgeSet) h.closed_ω_wedgeSet
       (((-1 : ℂ) + Complex.I)) Complex.I (((1 : ℂ) + Complex.I)) Complex.I
-      (continuousOn_mobiusInv_segment :=
-        h.hyp.continuousOn_mobiusInv_segment_z₂)
-      (homotopy_mem_wedgeSet := by
-        intro x y hx hy
-        simpa using h.hyp.homotopy_mem_wedgeSet (x := x) (y := y) hx hy)
-      (contDiffOn_homotopy := by
-        simpa using h.hyp.contDiffOn_homotopy)
-      (r := r)
+      h.hyp.continuousOn_mobiusInv_segment_z₂
+      (fun hx hy => by simpa using h.hyp.homotopy_mem_wedgeSet hx hy)
+      (by simpa using h.hyp.contDiffOn_homotopy) r
 
 end SpherePacking.Contour

@@ -35,16 +35,6 @@ public lemma integral_integral_swap_muIoc01
             (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ioc).2 <|
               Filter.Eventually.of_forall fun t ht => by simp [hfg t ht]
 
-/-- Version of `integral_integral_swap_muIoc01` written with `∫ t in Ioc (0,1], ...`. -/
-public lemma integral_integral_swap_Ioc01
-    {V : Type*} [MeasureSpace V] [MeasureTheory.SFinite (volume : Measure V)]
-    {f : V → ℝ → ℂ} {g : ℝ → ℂ}
-    (hint : Integrable (Function.uncurry f) ((volume : Measure V).prod μIoc01))
-    (hfg : ∀ t ∈ Set.Ioc (0 : ℝ) 1, (∫ x : V, f x t) = g t) :
-    (∫ x : V, ∫ t in Set.Ioc (0 : ℝ) 1, f x t) = ∫ t in Set.Ioc (0 : ℝ) 1, g t := by
-  simpa [μIoc01] using
-    (integral_integral_swap_muIoc01 (V := V) (f := f) (g := g) hint hfg)
-
 end
 
 end SpherePacking.Integration

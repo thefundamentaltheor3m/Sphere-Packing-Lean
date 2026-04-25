@@ -74,26 +74,19 @@ private meta def matchNhds? (e : Expr) : MetaM (Option Expr) :=
   | _ => none
 
 /-- Parse the goal `Tendsto goalFn l (nhds c)`, returning `(goalFn, l, domTy)`. -/
-private meta def parseGoal (goal : Expr) :
-    MetaM (Expr × Expr × Expr) := do
-  match ← matchTendsto? goal with
-  | some (domTy, _, goalFn, l, tgt) =>
-    match ← matchNhds? tgt with
-    | some _ => return (goalFn, l, domTy)
-    | none =>
-      throwError "tendsto_cont: target filter is not `nhds _`"
-  | none =>
-    throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
+private meta def parseGoal (goal : Expr) : MetaM (Expr × Expr × Expr) := do
+  let some (domTy, _, goalFn, l, tgt) ← matchTendsto? goal
+    | throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
+  let some _ ← matchNhds? tgt
+    | throwError "tendsto_cont: target filter is not `nhds _`"
+  return (goalFn, l, domTy)
 
 /-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
 private meta def matchTendstoNhds? (e : Expr) :
     MetaM (Option (Expr × Expr × Expr × Expr)) := do
-  match ← matchTendsto? e with
-  | some (_α, codTy, f, l, tgt) =>
-    match ← matchNhds? tgt with
-    | some a => return some (codTy, f, l, a)
-    | none => return none
-  | none => return none
+  let some (_α, codTy, f, l, tgt) ← matchTendsto? e | return none
+  let some a ← matchNhds? tgt | return none
+  return some (codTy, f, l, a)
 
 -- ══════════════════════════════════════════════════════════════
 -- Atom discovery
@@ -174,31 +167,26 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
 -- Product type / limit / proof builders
 -- ══════════════════════════════════════════════════════════════
 
-/-- Right-associated product type. -/
-private meta def buildProdType (atoms : Array Atom) : MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.codTy
-  let mut ty := atoms.back!.codTy
+/-- Fold atoms right-associatively using `combine` on the given per-atom field. -/
+private meta def foldRightAssoc (atoms : Array Atom) (field : Atom → Expr)
+    (combine : Expr → Expr → MetaM Expr) : MetaM Expr := do
+  if atoms.size = 1 then return field atoms[0]!
+  let mut acc := field atoms.back!
   for i in List.range (atoms.size - 1) |>.reverse do
-    ty ← mkAppM ``Prod #[atoms[i]!.codTy, ty]
-  return ty
+    acc ← combine (field atoms[i]!) acc
+  return acc
+
+/-- Right-associated product type. -/
+private meta def buildProdType (atoms : Array Atom) : MetaM Expr :=
+  foldRightAssoc atoms (·.codTy) fun a b => mkAppM ``Prod #[a, b]
 
 /-- Right-associated limit point. -/
-private meta def buildLimitPoint (atoms : Array Atom) :
-    MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.limit
-  let mut pt := atoms.back!.limit
-  for i in List.range (atoms.size - 1) |>.reverse do
-    pt ← mkAppM ``Prod.mk #[atoms[i]!.limit, pt]
-  return pt
+private meta def buildLimitPoint (atoms : Array Atom) : MetaM Expr :=
+  foldRightAssoc atoms (·.limit) fun a b => mkAppM ``Prod.mk #[a, b]
 
 /-- Chain of `prodMk_nhds` applications. -/
-private meta def buildProdMkNhds (atoms : Array Atom) :
-    MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.hyp
-  let mut proof := atoms.back!.hyp
-  for i in List.range (atoms.size - 1) |>.reverse do
-    proof ← mkAppM ``Filter.Tendsto.prodMk_nhds #[atoms[i]!.hyp, proof]
-  return proof
+private meta def buildProdMkNhds (atoms : Array Atom) : MetaM Expr :=
+  foldRightAssoc atoms (·.hyp) fun a b => mkAppM ``Filter.Tendsto.prodMk_nhds #[a, b]
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
 private meta def buildProjection (p : Expr) (n i : Nat) :
@@ -222,24 +210,15 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
   if !body.containsFVar bvar then return body
   let bvarExpr := Expr.fvar bvar
   for i in [:atoms.size] do
-    let candApplied := mkApp atoms[i]!.fn bvarExpr
-    if ← withNewMCtxDepth (isDefEq body candApplied) then
+    if ← withNewMCtxDepth (isDefEq body (mkApp atoms[i]!.fn bvarExpr)) then
       return ← buildProjection pVar atoms.size i
+  let go := (abstractBody · bvar pVar atoms)
   match body with
-  | .app f a =>
-    return .app (← abstractBody f bvar pVar atoms)
-                (← abstractBody a bvar pVar atoms)
-  | .lam n t b bi =>
-    return .lam n (← abstractBody t bvar pVar atoms)
-                  (← abstractBody b bvar pVar atoms) bi
-  | .letE n t v b nd =>
-    return .letE n (← abstractBody t bvar pVar atoms)
-                   (← abstractBody v bvar pVar atoms)
-                   (← abstractBody b bvar pVar atoms) nd
-  | .mdata m e =>
-    return .mdata m (← abstractBody e bvar pVar atoms)
-  | .proj s i e =>
-    return .proj s i (← abstractBody e bvar pVar atoms)
+  | .app f a => return .app (← go f) (← go a)
+  | .lam n t b bi => return .lam n (← go t) (← go b) bi
+  | .letE n t v b nd => return .letE n (← go t) (← go v) (← go b) nd
+  | .mdata m e => return .mdata m (← go e)
+  | .proj s i e => return .proj s i (← go e)
   | _ => return body
 
 -- ══════════════════════════════════════════════════════════════

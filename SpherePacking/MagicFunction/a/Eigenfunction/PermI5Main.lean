@@ -1,6 +1,13 @@
+/-
+Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan
+-/
 module
+
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Integrability
 
 /-!
@@ -33,222 +40,78 @@ open MeasureTheory Set Complex Real
 /-- Fourier transform of `I₅` is `I₆`. -/
 public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) I₅ = I₆ := by
   ext w
-  -- Reduce to the underlying function equality `𝓕 I₅ = I₆`.
   simp only [FourierTransform.fourierCLE_apply, I₆_apply]
-  -- Expand the Fourier transform as an integral and rewrite `I₅` using the change of variables.
   change 𝓕 (I₅ : ℝ⁸ → ℂ) w = _
   rw [fourier_eq' (I₅ : ℝ⁸ → ℂ) w]
   simp only [smul_eq_mul, I₅_apply]
   have hI5' (x : ℝ⁸) :
       MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
         -2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-    simpa using (MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2))
+    simpa only [neg_mul] using
+      MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2)
   simp only [hI5', mul_assoc]
-  -- Move the `x`-dependent phase factor inside the `s`-integral so we can use Fubini.
   let μs : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
-  have hmul :
-      (fun x : ℝ⁸ ↦
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s) =
-        fun x : ℝ⁸ ↦
-          ∫ s in Ici (1 : ℝ),
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-    ext x
-    -- Pull out the scalar factor (as a constant with respect to `s`).
-    simpa [μs] using
-      (MeasureTheory.integral_const_mul (μ := μs)
-        (r := cexp (↑(-2 * (π * ⟪x, w⟫)) * I))
-        (f := fun s ↦ MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)).symm
-  -- Apply Fubini to swap the order of integration.
   let f : ℝ⁸ → ℝ → ℂ := fun x s => permI5Kernel w (x, s)
   have hint : Integrable (Function.uncurry f) ((volume : Measure ℝ⁸).prod μs) := by
-    simpa [f, Function.uncurry, μs, μIciOne] using (integrable_perm_I₅_kernel (w := w))
-  have hswap :=
-    (MeasureTheory.integral_integral_swap (μ := (volume : Measure ℝ⁸)) (ν := μs)
-      (f := f) hint)
+    simpa only [μIciOne] using integrable_perm_I₅_kernel (w := w)
   -- Compute the inner integral using the Gaussian Fourier transform.
   have hinner (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
-      (∫ x : ℝ⁸,
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)
-        =
+      (∫ x : ℝ⁸, f x s) =
       (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
     have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-    have hs_ne0 : (s : ℝ) ≠ 0 := ne_of_gt hs0
     have hcancel : ((s : ℂ) ^ (-4 : ℤ)) * (s ^ 4 : ℂ) = 1 :=
-      zpow_neg_four_mul_pow_four (s := s) hs_ne0
-    -- Factor constants from the integral, evaluate the Gaussian Fourier transform, then cancel.
+      zpow_neg_four_mul_pow_four (s := s) hs0.ne'
     have hfactor :
-        (fun x : ℝ⁸ ↦
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s) =
+        (fun x : ℝ⁸ ↦ f x s) =
           fun x : ℝ⁸ ↦
             ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
               (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
       funext x
-      -- Unfold `g`, turn `s ^ (-4 : ℤ)` into `((s : ℂ) ^ (-4 : ℤ))`, then reassociate/commute.
-      simp [MagicFunction.a.IntegralEstimates.I₅.g]
+      simp [f, permI5Kernel, permI5Phase, MagicFunction.a.IntegralEstimates.I₅.g]
       ac_rfl
-    -- Evaluate the inner integral using the Gaussian Fourier transform, then cancel `s^(-4) * s^4`.
-    calc
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor, integral_const_mul,
+      integral_phase_gaussian (w := w) (s := s) hs0,
+      ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _, hcancel, mul_one]
+  -- Pull the outer `-2` out and switch order via Fubini, then apply `hinner`.
+  have hswap :=
+    MeasureTheory.integral_integral_swap (μ := (volume : Measure ℝ⁸)) (ν := μs) (f := f) hint
+  have hmain :
       (∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)
-          =
-          ∫ x : ℝ⁸,
-            ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) :=
-            congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hfactor
-      _ =
-          ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-            ∫ x : ℝ⁸,
-              cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s) :=
-            integral_const_mul (-I * φ₀'' (I * ↑s) * ↑s ^ (-4)) fun a =>
-              cexp (↑(-2 * (π * ⟪a, w⟫)) * I) * cexp (-↑π * ↑‖a‖ ^ 2 / ↑s)
-      _ =
-          ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-            ((s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-            rw [integral_phase_gaussian (w := w) (s := s) hs0]
-      _ = (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-            calc
-              ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-                  ((s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s))
-                  =
-                  (-I) * φ₀'' (I * s) *
-                    (((s : ℂ) ^ (-4 : ℤ)) * (s ^ 4 : ℂ)) *
-                      cexp (-π * (‖w‖ ^ 2) * s) := by
-                        ac_rfl
-              _ = (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-                    rw [hcancel]
-                    simp [mul_assoc]
-  -- Put everything together and match the definition of `I₆'`.
-  have hpull2 :
-      (∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
-        (-2 : ℂ) *
-          ∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-    calc
-      (∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s))
-          =
-          ∫ x : ℝ⁸,
-            (-2 : ℂ) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s) := by
-            refine MeasureTheory.integral_congr_ae ?_
-            refine ae_of_all _ ?_
-            intro x
-            ring_nf
-      _ =
-          (-2 : ℂ) *
-            ∫ x : ℝ⁸,
-              cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s :=
-            integral_const_mul (-2) _
-  have htoIter :
-      (∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s) =
-        ∫ x : ℝ⁸,
-          ∫ s in Ici (1 : ℝ),
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s :=
-    congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hmul
-  have hswap' :
-      (∫ x : ℝ⁸, ∫ s in Ici (1 : ℝ), f x s) =
-        ∫ s in Ici (1 : ℝ), ∫ x : ℝ⁸, f x s := by
-    simpa [μs] using hswap
-  have hAE :
-      (fun s : ℝ ↦ ∫ x : ℝ⁸, f x s) =ᵐ[μs]
-        fun s : ℝ ↦ (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
-    intro s hs
-    simpa [f, permI5Kernel, permI5Phase] using hinner s hs
-  have hintEq :
-      (∫ s in Ici (1 : ℝ), ∫ x : ℝ⁸, f x s) =
-        ∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    simpa [μs] using (MeasureTheory.integral_congr_ae hAE)
-  have hconst_mul (c : ℂ) :
-      (∫ s in Ici (1 : ℝ), c * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s))) =
-        c * ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    have hexp (s : ℝ) :
-        cexp (-((π : ℂ) * (((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ)))) =
-          cexp (-(π : ℂ) * ((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ)) := by
-      ring_nf
-    simpa [μs, mul_assoc, neg_mul, hexp] using
-      (MeasureTheory.integral_const_mul (μ := μs)
-        (r := c)
-        (f := fun s : ℝ ↦ φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)))
-  have hpull :
-      (∫ s in Ici (1 : ℝ), (-I) * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s))) =
-        (-I) *
-          ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    simpa using (hconst_mul (-I))
-  have hpush :
-      (∫ s in Ici (1 : ℝ), I * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s))) =
-        I * ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    simpa using (hconst_mul I)
-  calc
-    (∫ x : ℝ⁸,
           cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s))
-        =
-        (-2 : ℂ) *
-          ∫ x : ℝ⁸,
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := hpull2
-    _ =
-        (-2 : ℂ) *
-          ∫ x : ℝ⁸,
-            ∫ s in Ici (1 : ℝ),
-              cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s :=
-          congrArg (fun z : ℂ => (-2 : ℂ) * z) htoIter
-    _ =
-        (-2 : ℂ) *
-          ∫ x : ℝ⁸, ∫ s in Ici (1 : ℝ), f x s := by
-          simp [f, permI5Kernel, permI5Phase]
-    _ =
-        (-2 : ℂ) *
-          ∫ s in Ici (1 : ℝ), ∫ x : ℝ⁸, f x s :=
-          congrArg (fun z : ℂ => (-2 : ℂ) * z) hswap'
-    _ =
-        (-2 : ℂ) *
-          ∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-          exact congrArg (fun z : ℂ => (-2 : ℂ) * z) hintEq
-    _ = 2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-          have hconst : ((-2 : ℂ) * (-I : ℂ)) = (2 : ℂ) * (I : ℂ) := by
-            ring_nf
-          calc
-            (-2 : ℂ) * ∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)
-                =
-                (-2 : ℂ) *
-                  ((-I : ℂ) *
-                    ∫ s in Ici (1 : ℝ),
-                      φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                  -- pull `(-I)` out of the integral, without rewriting the exponential argument
-                  have hrew :
-                      (∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
-                        ∫ s in Ici (1 : ℝ), (-I) * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                        simp [mul_assoc]
-                  rw [hrew, hconst_mul]
-            _ =
-                (2 : ℂ) *
-                  ((I : ℂ) *
-                    ∫ s in Ici (1 : ℝ),
-                      φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                  ring
-            _ = 2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-                  -- push `I` back into the integral
-                  rw [hpush.symm]
-                  simp [mul_assoc]
-    _ = MagicFunction.a.RealIntegrals.I₆' (‖w‖ ^ 2) := by
-          simp [MagicFunction.a.RadialFunctions.I₆'_eq, mul_assoc, mul_comm]
+            (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
+        (-2 : ℂ) * ∫ s in Ici (1 : ℝ),
+          (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
+    have hrew : (fun x : ℝ⁸ ↦
+        cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
+          (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
+        fun x : ℝ⁸ ↦ (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s := by
+      funext x
+      rw [show (∫ s in Ici (1 : ℝ), f x s) =
+            ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
+              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s
+          from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase],
+        MeasureTheory.integral_const_mul (μ := μs)]
+      ring
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew,
+      MeasureTheory.integral_const_mul, hswap]
+    congr 1
+    refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
+    simpa [f] using hinner s hs
+  rw [hmain]
+  -- Transform `(-2) * ∫ (-I) * … = 2 * ∫ I * …` and match `I₆'`.
+  rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
+            (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
+          2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) by
+    rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
+              (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
+        (-2 : ℂ) * -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) by
+      congr 1
+      rw [← MeasureTheory.integral_neg]
+      refine integral_congr_ae <| .of_forall fun _ ↦ ?_
+      ring]
+    ring]
+  simp only [neg_mul, mul_comm, mul_neg, mul_assoc,
+    MagicFunction.a.RadialFunctions.I₆'_eq, ofReal_pow]
 
 end Integral_Permutations.PermI5
 end
