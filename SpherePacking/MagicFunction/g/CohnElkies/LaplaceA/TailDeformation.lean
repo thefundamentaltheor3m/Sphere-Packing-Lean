@@ -64,29 +64,25 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
   have hw_im : w.im = t := by simp [w]
   let wH : ℍ := ⟨w, by simpa [hw_im] using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
-  have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-      K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ
-      (norm_real_add_mul_I_le_two_mul (a := s) (t := t)
-        (by simpa [Complex.norm_real] using hs) ht1)
-  have hphi0S : φ₀'' ((-1 : ℂ) / w) * (w ^ (2 : ℕ)) =
-      φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) := by
-    rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
-      show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
-        simpa using ModularGroup.coe_S_smul (z := wH)]
-  have hExpNorm :
-      ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))‖ =
-        Real.exp (-π * u * t) := by
-    rw [show ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
-        ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) from by
-      push_cast; ring_nf; simp [mul_left_comm, mul_comm, sub_eq_add_neg], Complex.norm_exp]
-    simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-          rw [hdef]; show ‖_ * _‖ = _; rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) = _ from hphi0S,
-            norm_mul, hExpNorm]
+          rw [hdef]; show ‖_ * _‖ = _
+          rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) =
+              φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) by
+            rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
+              show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
+                simpa using ModularGroup.coe_S_smul (z := wH)], norm_mul,
+            show ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))‖ =
+                Real.exp (-π * u * t) by
+              rw [show ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
+                  ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) from by
+                push_cast; ring_nf; simp [mul_left_comm, mul_comm, sub_eq_add_neg],
+                Complex.norm_exp]
+              simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
-          mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
+          mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ
+            (norm_real_add_mul_I_le_two_mul (a := s) (t := t)
+              (by simpa [Complex.norm_real] using hs) ht1)) (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
@@ -303,13 +299,12 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
     MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
       (f := fun t => f2 t - 2 * f5 t + f4 t)]
   have h1 := MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4
-  have h2 := MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2)
-  have h3 := MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)
   calc (Complex.I : ℂ) * (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
       = (Complex.I : ℂ) * ((∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
         simpa using congrArg ((Complex.I : ℂ) * ·) h1
-    _ = (Complex.I : ℂ) * (((∫ t, f2 t ∂μ) - ∫ t, 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by rw [h2]
-    _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by rw [h3]
+    _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
+        rw [MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2),
+          MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
 
 /-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
 `Ioi 1` equals `E` times the central ray integral. -/
