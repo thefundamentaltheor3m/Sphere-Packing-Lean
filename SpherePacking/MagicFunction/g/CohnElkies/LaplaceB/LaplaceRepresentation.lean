@@ -337,10 +337,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ)))
         (hintI.mono_set (Set.Ioi_subset_Ioi zero_le_one)).neg hintT_center
-  have hVI_split : VI =
-      (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
-        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) :=
-    setIntegral_Ioi0_eq_add_Ioc_Ioi hintI
   have hsum : J₁' u + J₂' u + J₃' u + J₄' u + J₅' u + J₆' u =
       (Complex.I : ℂ) *
         (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
@@ -365,7 +361,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
     have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
     have hCenter := eq_sub_iff_add_eq'.mp hCenter_split
-    have hCenterVI := hVI_split.symm
+    have hCenterVI : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
+        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
+      (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
   have hw1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
     simp [bContourWeight, mul_left_comm, mul_comm]
