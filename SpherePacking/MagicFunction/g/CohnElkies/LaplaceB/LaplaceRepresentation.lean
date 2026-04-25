@@ -72,9 +72,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hcontT : ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) :=
     (continuousOn_bContourIntegrandT (u := u)).mono hStrip0
   have hdiffT : ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
-      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz => by
+      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz =>
     have hzpos : 0 < z.im := lt_trans zero_lt_one (by simpa [Set.mem_Ioi] using hz.2)
-    exact (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
+    (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       (Set.Ioi (0 : ℝ)) := by
@@ -143,22 +143,17 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
     have hc : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
-    have htdec :
-        Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
-      simpa [mul_assoc] using tendsto_const_nhds.mul
-        (Real.tendsto_exp_neg_atTop_nhds_zero.comp
-          (by simpa [mul_assoc, mul_comm, mul_left_comm] using tendsto_id.const_mul_atTop hc))
     intro ε hε
-    rcases Filter.eventually_atTop.1 (htdec.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
+    rcases Filter.eventually_atTop.1
+      ((show Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) by
+        simpa [mul_assoc] using tendsto_const_nhds.mul
+          (Real.tendsto_exp_neg_atTop_nhds_zero.comp
+            (by simpa [mul_assoc, mul_comm, mul_left_comm] using
+              tendsto_id.const_mul_atTop hc))).eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
     refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
     have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
       (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
     have hzI : 0 < (z + (1 : ℂ)).im := by simpa [add_assoc] using hzpos
-    have htIm : Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
-      simpa [UpperHalfPlane.im, add_assoc] using
-        (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im)
-    have hψI : ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) := by
-      simpa [UpperHalfPlane.im, add_assoc] using hψbd _ htIm
     rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ from by
           simp [bContourIntegrandT],
         ψT'_eq_ψI'_add_one z hzpos, show ψI' (z + (1 : ℂ)) =
@@ -166,7 +161,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         show ‖bContourWeight u z‖ = Real.exp (-π * u * z.im) from by
           simp [bContourWeight, Complex.norm_exp]]
     refine lt_of_le_of_lt ?_ (hMε z.im ((le_max_right _ _).trans hzM))
-    refine (mul_le_mul_of_nonneg_right hψI (Real.exp_pos _).le).trans (le_of_eq ?_)
+    refine (mul_le_mul_of_nonneg_right (show
+      ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) by
+      simpa [UpperHalfPlane.im, add_assoc] using hψbd _ (by
+        simpa [UpperHalfPlane.im, add_assoc] using
+          (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im) :
+        Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ))) (Real.exp_pos _).le).trans (le_of_eq ?_)
     rw [mul_assoc, ← Real.exp_add]; ring_nf
   have hRectLeft :
       (∫ (x : ℝ) in (0 : ℝ)..1,
@@ -255,11 +255,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
               simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
                 (z₄'_eq_of_mem (t := t) (hmem_Icc ht)) :
               z₄' t = (1 : ℂ) - (t : ℂ) + (I : ℂ))]]
-    calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
-        = -∫ t in (0 : ℝ)..1, g t := by
-          simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t from by norm_num]
-      _ = ∫ t in (1 : ℝ)..0, g t := by
-        simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
+    rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
+      simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t from by norm_num,
+        (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
   have hJ2_ray : J₂' u =
       (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) -
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
@@ -366,10 +364,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
     have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
     have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
-    have hCenter : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
-          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
-        -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) :=
-      eq_sub_iff_add_eq'.mp hCenter_split
+    have hCenter := eq_sub_iff_add_eq'.mp hCenter_split
     have hCenterVI := hVI_split.symm
     simp only [smul_eq_mul, neg_mul]; grind only
   have hw1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
