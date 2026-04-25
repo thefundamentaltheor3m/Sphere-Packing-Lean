@@ -200,9 +200,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
         congr! 9 with m x y
-        simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm,
-          RCLike.wInner_add_left, ofReal_add]
-        rw [mul_add, Complex.exp_add, mul_comm]; simp
+        simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm,
+          RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
@@ -342,7 +341,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     have hRHSCast :
         (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-      rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; push_cast; simp
+      simp [Real.toNNReal_mul (Nat.cast_nonneg _)]
     have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
         (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
