@@ -46,11 +46,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioi (0 : ℝ),
           ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
         -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-    rw [← MeasureTheory.integral_neg,
-      MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi
-        (f := fun t : ℝ => ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t))
-        (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-        (fun t _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc])]
+    rw [← MeasureTheory.integral_neg, MeasureTheory.setIntegral_congr_fun
+      (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi
+      (f := fun t : ℝ => ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t))
+      (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
+      (fun t _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc])]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
   rw [MagicFunction.b.RealIntegrals.b',
     show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -72,10 +72,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hcontT : ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) :=
     (continuousOn_bContourIntegrandT (u := u)).mono hStrip0
   have hdiffT : ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
-      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz =>
-    let hzpos : 0 < z.im :=
-      lt_trans zero_lt_one (by simpa [Set.mem_Ioi] using hz.2)
-    (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
+      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz => by
+    have hzpos : 0 < z.im := lt_trans zero_lt_one (by simpa [Set.mem_Ioi] using hz.2)
+    exact (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       (Set.Ioi (0 : ℝ)) := by
@@ -193,20 +192,19 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         ((differentiableOn_bContourIntegrandT (u := u) (z - 1) hzpos').differentiableAt
           (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')).comp z
           (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z)
-    have hint₁ :
-        IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-      simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-        mul_assoc, mul_comm, mul_left_comm] using hintT_left
-    have hint₂ :
-        IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-      simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-        mul_assoc, mul_comm, mul_left_comm] using hintT_center
     simpa [min_eq_left zero_le_one, max_eq_right zero_le_one,
         f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_comm, mul_left_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := f) (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ))
-        hcont' (s := (∅ : Set ℂ)) (by simp) hdiff' hint₁ hint₂ (fun ε hε =>
+        hcont' (s := (∅ : Set ℂ)) (by simp) hdiff'
+        (show IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
+          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+            mul_assoc, mul_comm, mul_left_comm] using hintT_left)
+        (show IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
+          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+            mul_assoc, mul_comm, mul_left_comm] using hintT_center)
+        (fun ε hε =>
           let ⟨M, hM⟩ := htendstoT ε hε
           ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩)
   have hRectRight :
@@ -214,16 +212,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
             (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
               bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
-    have hint₁ : IntegrableOn
-        (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
-        (Set.Ioi (1 : ℝ)) volume := by
-      simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-        hintT_right
-    have hint₂ : IntegrableOn
-        (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
-        (Set.Ioi (1 : ℝ)) volume := by
-      simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-        hintT_center
     simpa [min_eq_right zero_le_one, max_eq_left zero_le_one,
         mul_assoc, mul_comm, mul_left_comm, add_assoc, add_left_comm, add_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
@@ -231,7 +219,15 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (by simpa [Set.uIcc_comm] using hcontT) (s := (∅ : Set ℂ)) (by simp)
         (fun z hz => hdiffT z (by
           simpa [min_eq_right zero_le_one, max_eq_left zero_le_one] using hz.1))
-        hint₁ hint₂ htendstoT
+        (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
+            (Set.Ioi (1 : ℝ)) volume by
+          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
+            hintT_right)
+        (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
+            (Set.Ioi (1 : ℝ)) volume by
+          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
+            hintT_center)
+        htendstoT
   have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx ↦ by
     simpa [Set.uIcc_of_le zero_le_one] using hx
   have hJ2_top : J₂' u =
@@ -263,7 +259,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         = -∫ t in (0 : ℝ)..1, g t := by
           simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t from by norm_num]
       _ = ∫ t in (1 : ℝ)..0, g t := by
-          simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
+        simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
   have hJ2_ray : J₂' u =
       (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) -
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
@@ -278,8 +274,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
         (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) :=
       fun a zp hzp => by
-    rw [show (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
-        cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
+    rw [show (∫ t in (0 : ℝ)..1,
+          (I : ℂ) * ψT' (zp t) * cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
         ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) from
       intervalIntegral.integral_congr fun t ht => by
         simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc],
@@ -295,8 +291,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
     dsimp [J₅']
     rw [show (∫ t in (0 : ℝ)..1,
-        (I : ℂ) * ψI' (z₅' t) *
-          cexp (π * (I : ℂ) * (u : ℂ) * z₅' t)) =
+          (I : ℂ) * ψI' (z₅' t) * cexp (π * (I : ℂ) * (u : ℂ) * z₅' t)) =
         ∫ t in (0 : ℝ)..1, -(I : ℂ) * bContourIntegrandI u (I * (t : ℂ)) from
       intervalIntegral.integral_congr fun t ht => by
         simp [bContourIntegrandI, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
@@ -309,8 +304,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
     dsimp [J₆']
     rw [show (∫ t in Set.Ici (1 : ℝ),
-        (I : ℂ) * ψS' (z₆' t) *
-          cexp (π * (I : ℂ) * (u : ℂ) * z₆' t)) =
+          (I : ℂ) * ψS' (z₆' t) * cexp (π * (I : ℂ) * (u : ℂ) * z₆' t)) =
         ∫ t in Set.Ici (1 : ℝ), (I : ℂ) * bContourIntegrandS u (I * (t : ℂ)) from
       MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
         simp [bContourIntegrandS, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
@@ -354,14 +348,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
     rw [hJ2_ray, hJ4_ray, hJ1_set, hJ3_set, hJ5_set, hJ6_set]
     have hsplitW (w : ℂ) :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) +
-            (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) =
-          (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) :=
-      Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi (by
-        simpa [mul_assoc] using hintI.mul_const w))
+        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) +
+            (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) =
+          (∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) :=
+      Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi (by simpa [mul_assoc] using hintI.mul_const w))
     have hfull : ∀ (a : ℂ) (_hpt : ∀ t : ℝ, 0 < t →
         bContourIntegrandT u (a + I * (t : ℂ)) =
           bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
