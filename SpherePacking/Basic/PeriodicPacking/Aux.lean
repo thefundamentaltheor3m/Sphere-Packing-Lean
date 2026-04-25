@@ -136,8 +136,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
       (Classical.choose_spec (hD_unique_covers (y + v))).left
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
-  left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ by
-    simp_rw [Quotient.lift_mk, Quotient.eq]
+  left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ Quotient.eq.2 <| by
     change (S.addAction.orbitRel).r _ _
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
