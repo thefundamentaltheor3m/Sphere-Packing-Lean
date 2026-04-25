@@ -55,23 +55,15 @@ public theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' :=
 private lemma I₃'_eq_exp_mul_I₁' :
     RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
   ext x
-  have hEqOn : EqOn
-      (fun t => I * φ₀'' (-1 / (z₃' t - 1)) * (z₃' t - 1) ^ 2 * cexp (π * I * x * z₃' t))
-      (fun t => cexp (2 * π * I * x) * (I * φ₀'' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 *
-                                        cexp (π * I * x * z₁' t)))
-      (uIcc 0 1) := fun t ht => by
-    rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-    simp_rw [show z₃' t - 1 = I * t by simp [z₃'_eq_of_mem ht],
-      show z₃' t = z₁' t + 2 by simp [z₁'_eq_of_mem ht, z₃'_eq_of_mem ht]; ring,
-      show z₁' t + 1 = I * t by simp [z₁'_eq_of_mem ht],
-      mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
-  simpa [RealIntegrals.I₃', Φ₃, Φ₃', RealIntegrals.I₁', Φ₁, Φ₁',
-    mul_comm, mul_left_comm, mul_assoc] using
-    intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+  rw [I₃'_eq, I₁'_eq, ← intervalIntegral.integral_const_mul]
+  refine intervalIntegral.integral_congr fun t _ => ?_
+  rw [show cexp (2 * ↑π * I * ↑x) * (-I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 * cexp (-↑π * I * ↑x) *
+        cexp (-↑π * ↑x * ↑t)) = -I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 *
+        (cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x)) * cexp (-↑π * ↑x * ↑t) from by ring,
+      ← Complex.exp_add, show 2 * (↑π : ℂ) * I * ↑x + -↑π * I * ↑x = ↑π * I * ↑x from by ring]
 
-public theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
-  rw [I₃'_eq_exp_mul_I₁']
-  exact (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
+public theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' :=
+  I₃'_eq_exp_mul_I₁' ▸ (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
 
 public theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' :=
   MagicFunction.a.Schwartz.I4Smooth.I₄'_contDiff
@@ -90,9 +82,8 @@ private lemma I₅'_eq_mul_exp_mul_I₁' :
   linear_combination (2 * ∫ t in (0 : ℝ)..1, f t) *
     (by simp [← Complex.exp_add] : cexp (π * I * x) * cexp (-π * I * x) = 1)
 
-public theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
-  rw [I₅'_eq_mul_exp_mul_I₁']
-  exact (contDiff_const.mul (contDiff_const.mul ofRealCLM.contDiff).cexp).mul I₁'_smooth'
+public theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := I₅'_eq_mul_exp_mul_I₁' ▸
+  (contDiff_const.mul (contDiff_const.mul ofRealCLM.contDiff).cexp).mul I₁'_smooth'
 
 public theorem I₆'_smooth' : ContDiff ℝ ∞ (fun r : ℝ ↦
     RadialSchwartz.cutoffC r * RealIntegrals.I₆' r) :=
@@ -111,13 +102,10 @@ public theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   MagicFunction.a.IntegralEstimates.I₂.decay'
 
 public theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := by
-  intro k n
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := fun k n ↦ by
   let g3 : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * ((2 * π : ℂ) * I))
-  have hI : RealIntegrals.I₃' = fun x : ℝ ↦ g3 x * RealIntegrals.I₁' x := by
-    ext x
-    simpa [g3, mul_assoc, mul_left_comm, mul_comm] using
-      congrArg (fun F : ℝ → ℂ => F x) I₃'_eq_exp_mul_I₁'
+  have hI : RealIntegrals.I₃' = fun x : ℝ ↦ g3 x * RealIntegrals.I₁' x :=
+    I₃'_eq_exp_mul_I₁'.trans <| funext fun _ ↦ by simp [g3, mul_comm, mul_left_comm]
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left (f := g3)
     (g := RealIntegrals.I₁') (k := k) (n := n) (B := fun m ↦ (2 * π) ^ m)
     (ofRealCLM.contDiff.mul contDiff_const).cexp I₁'_smooth' (fun m x => by
@@ -131,8 +119,7 @@ public theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   MagicFunction.a.IntegralEstimates.I₄.decay'
 
 public theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₅' x‖ ≤ C := by
-  intro k n
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₅' x‖ ≤ C := fun k n ↦ by
   let g5 : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * ((π : ℂ) * I))
   let f5 : ℝ → ℂ := fun x ↦ (-2 : ℂ) * g5 x
   have hg5_smooth : ContDiff ℝ ∞ g5 := (ofRealCLM.contDiff.mul contDiff_const).cexp
@@ -143,10 +130,8 @@ public theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
       norm_smul, show ‖(-2 : ℂ)‖ = (2 : ℝ) from by simp]
     exact mul_le_mul_of_nonneg_left
       (SpherePacking.ForMathlib.norm_iteratedFDeriv_cexp_mul_pi_I_le m x) (by norm_num)
-  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ f5 x * RealIntegrals.I₁' x := by
-    ext x
-    simpa [f5, g5, mul_assoc, mul_left_comm, mul_comm] using
-      congrArg (fun F : ℝ → ℂ => F x) I₅'_eq_mul_exp_mul_I₁'
+  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ f5 x * RealIntegrals.I₁' x :=
+    I₅'_eq_mul_exp_mul_I₁'.trans <| funext fun _ ↦ by simp [f5, g5, mul_comm, mul_left_comm]
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left (f := f5)
     (g := RealIntegrals.I₁') (k := k) (n := n) (B := fun m ↦ 2 * π ^ m)
     (contDiff_const.mul hg5_smooth) I₁'_smooth' hf5_bound (I₁'_decay' (k := k))
@@ -165,34 +150,24 @@ namespace MagicFunction.a.SchwartzIntegrals
 open RadialSchwartz.Bridge
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₁'`. -/
-@[expose] public def I₁' : 𝓢(ℝ, ℂ) :=
-  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁')
-    MagicFunction.a.SchwartzProperties.I₁'_smooth'
-    MagicFunction.a.SchwartzProperties.I₁'_decay'
+@[expose] public def I₁' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁')
+  MagicFunction.a.SchwartzProperties.I₁'_smooth' MagicFunction.a.SchwartzProperties.I₁'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₂'`. -/
-@[expose] public def I₂' : 𝓢(ℝ, ℂ) :=
-  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂')
-    MagicFunction.a.SchwartzProperties.I₂'_smooth'
-    MagicFunction.a.SchwartzProperties.I₂'_decay'
+@[expose] public def I₂' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂')
+  MagicFunction.a.SchwartzProperties.I₂'_smooth' MagicFunction.a.SchwartzProperties.I₂'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₃'`. -/
-@[expose] public def I₃' : 𝓢(ℝ, ℂ) :=
-  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃')
-    MagicFunction.a.SchwartzProperties.I₃'_smooth'
-    MagicFunction.a.SchwartzProperties.I₃'_decay'
+@[expose] public def I₃' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃')
+  MagicFunction.a.SchwartzProperties.I₃'_smooth' MagicFunction.a.SchwartzProperties.I₃'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₄'`. -/
-@[expose] public def I₄' : 𝓢(ℝ, ℂ) :=
-  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄')
-    MagicFunction.a.SchwartzProperties.I₄'_smooth'
-    MagicFunction.a.SchwartzProperties.I₄'_decay'
+@[expose] public def I₄' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄')
+  MagicFunction.a.SchwartzProperties.I₄'_smooth' MagicFunction.a.SchwartzProperties.I₄'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₅'`. -/
-@[expose] public def I₅' : 𝓢(ℝ, ℂ) :=
-  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅')
-    MagicFunction.a.SchwartzProperties.I₅'_smooth'
-    MagicFunction.a.SchwartzProperties.I₅'_decay'
+@[expose] public def I₅' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅')
+  MagicFunction.a.SchwartzProperties.I₅'_smooth' MagicFunction.a.SchwartzProperties.I₅'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₆'`.
 
@@ -202,11 +177,10 @@ open RadialSchwartz.Bridge
   smooth' := by
     simpa [RadialSchwartz.Bridge.fCut] using MagicFunction.a.SchwartzProperties.I₆'_smooth'
   decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
-        (f := MagicFunction.a.RealIntegrals.I₆')
-        (hg_smooth := MagicFunction.a.SchwartzProperties.I₆'_smooth')
-        MagicFunction.a.SchwartzProperties.I₆'_decay')
+    simpa using RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
+      (f := MagicFunction.a.RealIntegrals.I₆')
+      (hg_smooth := MagicFunction.a.SchwartzProperties.I₆'_smooth')
+      MagicFunction.a.SchwartzProperties.I₆'_decay'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₁'`. -/
 @[expose] public def I₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
@@ -233,28 +207,22 @@ open RadialSchwartz.Bridge
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₆'
 
 @[simp] public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r := fCut_apply_of_nonneg _ hr
 
 @[simp] public lemma I₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₂' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₂' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₂' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₂' r := fCut_apply_of_nonneg _ hr
 
 @[simp] public lemma I₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₃' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₃' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₃' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₃' r := fCut_apply_of_nonneg _ hr
 
 @[simp] public lemma I₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₄' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₄' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₄' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₄' r := fCut_apply_of_nonneg _ hr
 
 @[simp] public lemma I₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₅' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₅' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₅' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₅' r := fCut_apply_of_nonneg _ hr
 
 @[simp] public lemma I₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₆' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₆' r :=
-  fCut_apply_of_nonneg _ hr
+    (I₆' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₆' r := fCut_apply_of_nonneg _ hr
 
 end MagicFunction.a.SchwartzIntegrals
 
