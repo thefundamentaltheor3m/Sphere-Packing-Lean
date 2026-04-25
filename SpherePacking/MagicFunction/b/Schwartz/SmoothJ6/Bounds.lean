@@ -160,38 +160,29 @@ public theorem decay_J₆' :
   intro k n
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
-  rcases exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with ⟨Cψ, hCψ⟩
-  have hCψ0 : 0 ≤ Cψ := by
-    refine SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
-      (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity) ?_
-    simpa using (hCψ 1 (le_rfl : (1 : ℝ) ≤ 1))
-  -- A uniform bound for the integral defining `G n x` when `x ≥ 0`.
+  obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
+  have hCψ0 : 0 ≤ Cψ :=
+    SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
+      (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
+      (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ
   have hbound_int : Integrable bound (μ) := by
     have hInt :
         IntegrableOn (fun t : ℝ ↦ t ^ n * Real.exp (-Real.pi * t)) (Ici (1 : ℝ)) volume :=
       SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
-        (by simpa using Real.pi_pos)
-    have : Integrable (fun t : ℝ ↦ t ^ n * Real.exp (-Real.pi * t)) (μ) := by
-      simpa [IntegrableOn, μIciOne] using hInt
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
-      this.const_mul ((Real.pi ^ n) * Cψ)
+        Real.pi_pos
+    simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
+      hInt.const_mul ((Real.pi ^ n) * Cψ)
   let Kn : ℝ := ∫ t, bound t ∂μ
-  have hKn_nonneg : 0 ≤ Kn := by
-    refine integral_nonneg_of_ae <|
-      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
-    intro t ht
-    have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-    positivity
+  have hKn_nonneg : 0 ≤ Kn :=
+    integral_nonneg_of_ae <|
+      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht =>
+        by have ht0 : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
   have hx_s : x ∈ s := lt_of_lt_of_le (by norm_num) hx
   have hiter : iteratedDeriv n RealIntegrals.J₆' x = G n x := by
-    have hfun : RealIntegrals.J₆' = G 0 := funext J₆'_eq_G0
-    simpa [hfun] using (iteratedDeriv_G_eq (n := n) (m := 0)) hx_s
-  have hnorm_iter :
-      ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ = ‖iteratedDeriv n RealIntegrals.J₆' x‖ :=
-    norm_iteratedFDeriv_eq_norm_iteratedDeriv
+    simpa [show RealIntegrals.J₆' = G 0 from funext J₆'_eq_G0] using
+      (iteratedDeriv_G_eq (n := n) (m := 0)) hx_s
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
     have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := by
       have hnorm : ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
@@ -233,14 +224,13 @@ public theorem decay_J₆' :
             mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
       _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
   have hpoly : x ^ k * Real.exp (-Real.pi * x) ≤ B := hB x hx
-  have hpow0 : 0 ≤ 2 * Kn := by positivity
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖
-        = x ^ k * ‖iteratedDeriv n RealIntegrals.J₆' x‖ := by simp [hxabs, hnorm_iter]
-    _ = x ^ k * ‖G n x‖ := by simp [hiter]
+        = x ^ k * ‖G n x‖ := by
+          simp [Real.norm_of_nonneg hx, hiter, norm_iteratedFDeriv_eq_norm_iteratedDeriv]
     _ ≤ x ^ k * (2 * Kn * Real.exp (-Real.pi * x)) := by gcongr
     _ = (2 * Kn) * (x ^ k * Real.exp (-Real.pi * x)) := by ring_nf
-    _ ≤ (2 * Kn) * B := by simpa using (mul_le_mul_of_nonneg_left hpoly hpow0)
+    _ ≤ (2 * Kn) * B := by simpa using mul_le_mul_of_nonneg_left hpoly (by positivity : 0 ≤ 2 * Kn)
     _ = 2 * Kn * B := by ring
 
 end
