@@ -35,10 +35,10 @@ private lemma norm_pow4_sub_le (x y : ℂ) :
   have hy3 : ‖y ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
     simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hy 3
   have hx2y : ‖x ^ (2 : ℕ) * y‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow, pow_succ, mul_comm, mul_left_comm, mul_assoc] using
+    simpa [norm_pow, pow_succ, mul_comm] using
       mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hx 2) hy (norm_nonneg _) (by positivity)
   have hxy2 : ‖x * y ^ (2 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow, pow_succ, mul_comm, mul_left_comm, mul_assoc] using
+    simpa [norm_pow, pow_succ, mul_comm] using
       mul_le_mul hx (pow_le_pow_left₀ (norm_nonneg _) hy 2) (by positivity) (by positivity)
   rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) =
     (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) by ring, norm_mul]
