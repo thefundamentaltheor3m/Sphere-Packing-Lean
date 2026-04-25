@@ -70,8 +70,8 @@ public instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
 public noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
     AddAction S.lattice S.centers where
   vadd x y := ⟨↑x + ↑y, S.lattice_action x.prop y.prop⟩
-  zero_vadd := by rintro ⟨v, _⟩; exact Subtype.ext (zero_add v)
-  add_vadd := by rintro ⟨u, _⟩ ⟨v, _⟩ ⟨p, _⟩; exact Subtype.ext (add_assoc u v p)
+  zero_vadd y := Subtype.ext (zero_add y.val)
+  add_vadd u v p := Subtype.ext (add_assoc u.val v.val p.val)
 
 alias PeriodicSpherePacking.instAddAction := PeriodicSpherePacking.addAction
 
