@@ -38,8 +38,8 @@ private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
   obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1 hD_isBounded
   refine isBounded_iff_forall_norm_le.2 ⟨L + S.separation / 2, fun x hx ↦ ?_⟩
   obtain ⟨y, hy, hx⟩ := Set.mem_iUnion₂.1 hx
-  exact (norm_le_norm_add_norm_sub' x y).trans <| add_le_add (hL y hy.2)
-    (by simpa [mem_ball, dist_eq_norm] using hx.le)
+  exact (norm_le_norm_add_norm_sub' x y).trans <|
+    add_le_add (hL y hy.2) (by simpa [mem_ball, dist_eq_norm] using hx.le)
 
 private lemma pairwiseDisjoint_ball_centers_inter (D : Set (EuclideanSpace ℝ (Fin d))) :
     Set.PairwiseDisjoint (S.centers ∩ D) (fun x ↦ ball x (S.separation / 2)) :=
@@ -68,8 +68,8 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
     · simp [As, hs] at hi)).subset_ball 0
   exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
-    (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset
-    fun i hi ↦ by simpa [As, hi] using h_volume i hi
+    (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset fun i hi ↦ by
+    simpa [As, hi] using h_volume i hi
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
@@ -133,8 +133,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     change (S.addAction.orbitRel).r ⟨u, hu⟩ ⟨v, hv⟩ at h
     rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
     obtain ⟨⟨y, hy⟩, hy'⟩ := h
-    have hyv : y + v = u := Subtype.ext_iff.mp hy'
-    subst hyv
+    obtain rfl : y + v = u := Subtype.ext_iff.mp hy'
     have hv' := (Classical.choose_spec (hD_unique_covers v)).right
     simp only [Subtype.forall] at hv'
     simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
@@ -149,7 +148,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
-    obtain ⟨g, hg, hg'⟩ := hD_unique_covers x
+    obtain ⟨g, _, hg'⟩ := hD_unique_covers x
     trans g.val <;> norm_cast
     · exact hg' _ (Classical.choose_spec (hD_unique_covers x)).left
     · exact (hg' 0 (by simpa using hx.right)).symm
@@ -214,9 +213,9 @@ public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) := by
   rcases Nat.eq_zero_or_pos d with rfl | hd
   · exact Quotient.finite _
-  · let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
-    haveI := finite_centers_inter_fundamentalDomain S b hd
-    exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
+  let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
+  haveI := finite_centers_inter_fundamentalDomain S b hd
+  exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
@@ -323,9 +322,16 @@ private theorem disjoint_vadd_fundamentalDomain
   simpa [Λ] using disjoint_vadd_of_unique_covers (d := d) (Λ := Λ)
     (D := fundamentalDomain (b.ofZLatticeBasis ℝ _))
     (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u)
-    (show (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) ≠
-        ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩ from
-      fun h ↦ hxy (congrArg Subtype.val h))
+    (fun h ↦ hxy (congrArg Subtype.val (h : (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) =
+      ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩)))
+
+private lemma pairwiseDisjoint_centers_inter_vadd
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {C : Set (EuclideanSpace ℝ (Fin d))} :
+    Set.univ.PairwiseDisjoint fun i : (↑S.lattice ∩ C : Set _) ↦
+      S.centers ∩ (i.val +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
+  fun ⟨_, hx⟩ _ ⟨_, hy⟩ _ hxy ↦ Set.disjoint_left.2 fun _ hux huy ↦ Set.disjoint_left.1
+    (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
+    hux.right huy.right
 
 /-- Theorem 2.3, lower bound. -/
 public theorem PeriodicSpherePacking.aux_ge
@@ -336,14 +342,10 @@ public theorem PeriodicSpherePacking.aux_ge
   have hsub := Set.inter_subset_inter_right S.centers (aux S (b.ofZLatticeBasis ℝ _) hL R)
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
   have henc := Set.encard_mono hsub
-  rw [Set.encard_iUnion_of_pairwiseDisjoint] at henc
-  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
-    convert henc.ge
-    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
-  · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
-    exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
-      hux.right huy.right
+  rw [Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
+  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+  convert henc.ge
+  rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
 
 private theorem aux'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
@@ -370,13 +372,9 @@ public theorem PeriodicSpherePacking.aux_le
   have hsub := Set.inter_subset_inter_right S.centers (aux' S b hL R)
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
   have henc := Set.encard_mono hsub
-  rw [Set.encard_iUnion_of_pairwiseDisjoint] at henc
-  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
-    convert henc
-    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
-  · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
-    exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
-      hux.right huy.right
+  rw [Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
+  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+  convert henc
+  rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
 
 end theorem_2_3
