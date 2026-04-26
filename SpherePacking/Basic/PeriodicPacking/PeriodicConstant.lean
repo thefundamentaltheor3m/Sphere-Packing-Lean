@@ -41,14 +41,10 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) :
     2 * r ≤ dist x y := by
   by_contra hlt
-  let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
   have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith [lt_of_not_ge hlt]
-  have hmx : m ∈ ball x r := by
-    simpa [Metric.mem_ball, dist_comm, m] using (show dist m x < r by simpa [m] using hhalf)
-  have hmy : m ∈ ball y r := by
-    simpa [Metric.mem_ball, dist_comm, m] using
-      (show dist m y < r by simpa [m, dist_comm] using hhalf)
-  exact Set.disjoint_left.1 hAB (hx hmx) (hy hmy)
+  let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
+  refine Set.disjoint_left.1 hAB (hx (a := m) ?_) (hy (a := m) ?_) <;>
+    simpa [Metric.mem_ball, dist_comm, m] using hhalf
 
 open scoped Pointwise in
 /-- The union of all lattice translates of a set `F` of representatives. -/
@@ -113,18 +109,13 @@ along a lattice `Λ`.
     by_cases hgg : ga = gb
     · subst hgg
       have hne : fa ≠ fb := fun h => hab <| Subtype.ext <| by simp [ha, hb, h]
-      have hdist := S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
-      have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb :=
-        dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
-      simpa [ha, hb] using (htrans ▸ hdist : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb))
+      simpa [ha, hb] using (dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb).symm ▸
+        S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
     · simpa [ha, hb, two_mul, add_halves] using
-        dist_le_of_disjoint_ball_subsets (d := d)
-          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa)
-            (r := S.separation / 2) (hF_ball fa hfa))
-          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := gb) (x := fb)
-            (r := S.separation / 2) (hF_ball fb hfb))
-          (disjoint_vadd_of_unique_covers (d := d) (Λ := Λ) (D := D) hD_unique_covers hgg)
-  · exact fun x y hx hy => periodizedCenters_lattice_action (d := d) (Λ := Λ) (F := F) hx hy
+        dist_le_of_disjoint_ball_subsets
+          (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
+          (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
+  · exact fun _ _ hx hy => periodizedCenters_lattice_action hx hy
 
 end PeriodicConstantAux
 
@@ -160,18 +151,16 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
   simp only [ZSpan.mem_fundamentalDomain, coordCube, cubeBasis, Module.Basis.repr_isUnitSMul,
     Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
   have hLne : (L : ℝ) ≠ 0 := ne_of_gt hL
-  have hLinv : 0 < (L⁻¹ : ℝ) := inv_pos.mpr hL
-  refine ⟨fun hx i => ?_, fun hx i => ?_⟩
-  · specialize hx i
-    refine ⟨?_, ?_⟩
+  refine ⟨fun hx i => ?_, fun hx i => ?_⟩ <;> specialize hx i
+  · refine ⟨?_, ?_⟩
     · simpa [mul_inv_cancel₀ hLne] using
         (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i)
     · simpa [mul_inv_cancel₀ hLne] using
         (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
           (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)
-  · specialize hx i
-    exact ⟨mul_nonneg hLinv.le hx.1, by
-      simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using mul_lt_mul_of_pos_left hx.2 hLinv⟩
+  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
+      simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using
+        mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := by
@@ -188,13 +177,10 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
   rintro ⟨hxPer, hxD⟩
   rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).1 hxPer with
     ⟨g, f, hfF, rfl⟩
-  obtain ⟨g0, hg0, hg0uniq⟩ := hD_unique_covers f
-  simpa [hg0uniq g (by simpa using hxD),
-    (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
+  obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
+  simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
 
 end PeriodicConstantCube
-
-section Periodic_Constant_Eq_Constant
 
 open scoped Pointwise
 
@@ -297,5 +283,3 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
 end PeriodicConstantApprox
 
 end PeriodicConstantApprox
-
-end Periodic_Constant_Eq_Constant
