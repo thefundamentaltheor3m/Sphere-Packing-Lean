@@ -52,20 +52,13 @@ theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = �
 /-- Split an inverse into real and imaginary parts in `Complex.mk` form. -/
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
     z⁻¹ = ⟨x / (x * x + y * y), - y / (x * x + y * y)⟩ := by
-  subst h
-  apply Complex.ext <;> simp [normSq_apply]
+  subst h; apply Complex.ext <;> simp [normSq_apply]
 
 /-- Split a negation into real and imaginary parts in `Complex.mk` form. -/
-theorem split_neg {z : ℂ} {a b : ℝ} (h : z = ⟨a, b⟩) :
-    -z = ⟨-a, -b⟩ := by
-  subst h
-  rfl
+theorem split_neg {z : ℂ} {a b : ℝ} (h : z = ⟨a, b⟩) : -z = ⟨-a, -b⟩ := by subst h; rfl
 
 /-- Split a complex conjugate into real and imaginary parts in `Complex.mk` form. -/
-theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩) :
-    conj w = ⟨a, -b⟩ := by
-  rw [hw]
-  rfl
+theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩) : conj w = ⟨a, -b⟩ := by rw [hw]; rfl
 
 /-- Rewrite a numeral in `ℂ` as `⟨n, 0⟩`. -/
 theorem split_num (n : ℕ) [n.AtLeastTwo] :
@@ -77,24 +70,20 @@ theorem split_scientific (m exp : ℕ) (x : Bool) :
   rfl
 
 /-- Transport an equality `z = ⟨a, b⟩` along equalities `a = a'` and `b = b'`. -/
-theorem eq_eq {z : ℂ} {a b a' b' : ℝ} (pf : z = ⟨a, b⟩)
-  (pf_a : a = a') (pf_b : b = b') :
-  z = ⟨a', b'⟩ := by simp_all
+theorem eq_eq {z : ℂ} {a b a' b' : ℝ} (pf : z = ⟨a, b⟩) (pf_a : a = a') (pf_b : b = b') :
+    z = ⟨a', b'⟩ := by simp_all
 
 /-- Combine componentwise equalities to conclude equality of two complex numbers. -/
 theorem eq_of_eq_of_eq_of_eq {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (ha : az = aw) (hb : bz = bw) : z = w := by
-  simp [hz, hw, ha, hb]
+    (ha : az = aw) (hb : bz = bw) : z = w := by simp [hz, hw, ha, hb]
 
 /-- If real parts differ, then the complex numbers differ. -/
 theorem ne_of_re_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (ha : az ≠ aw) : z ≠ w := by
-  simp [hz, hw, ha]
+    (ha : az ≠ aw) : z ≠ w := by simp [hz, hw, ha]
 
 /-- If imaginary parts differ, then the complex numbers differ. -/
 theorem ne_of_im_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (hb : bz ≠ bw) : z ≠ w := by
-  simp [hz, hw, hb]
+    (hb : bz ≠ bw) : z ≠ w := by simp [hz, hw, hb]
 
 /-- Read off the real part from an equality `z = ⟨a, b⟩`. -/
 theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z = a := by simp [hz]
@@ -158,9 +147,8 @@ partial def parse (z : Q(ℂ)) :
       exact zpow_natCast (a := $w) $n)
     return ⟨a, b, q(Eq.trans $hpow $pf)⟩
   | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n) =>
-    let k? := n.nat?
-    let some k :=
-      k? <|> n.rawNatLit? | throwError "exponent {n} not handled by norm_numI"
+    let some k := n.nat? <|> n.rawNatLit? |
+      throwError "exponent {n} not handled by norm_numI"
     match k with
     | 0 => return ⟨q(1), q(0), (q(pow_zero $w) :)⟩
     | k + 1 =>
@@ -196,7 +184,6 @@ def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
 def getComplexLhs : TacticM Q(ℂ) := do
   let z ← Conv.getLhs
   unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
-  have z : Q(ℂ) := z
   return z
 
 /-- Conv tactic: rewrite a complex expression into `Complex.mk` form and simplify by `norm_num`. -/
@@ -205,7 +192,6 @@ elab "norm_numI" : conv => do
   let ⟨a, b, pf⟩ ← normalize z
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
--- Testing the `parse` function
 /-- Conv tactic: rewrite a complex expression into `Complex.mk` form using `parse` only. -/
 elab "norm_numI_parse" : conv => do
   let z ← getComplexLhs
