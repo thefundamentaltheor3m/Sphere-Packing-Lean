@@ -66,7 +66,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   let wH : ℍ := ⟨w, by simpa [hw_im] using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-          rw [hdef]; show ‖_ * _‖ = _
+          rw [hdef]
           rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) =
               φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) by
             rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
@@ -75,7 +75,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
             show ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))‖ =
                 Real.exp (-π * u * t) by
               rw [show ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
-                  ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) from by
+                  ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) by
                 push_cast; ring_nf; simp [mul_left_comm, mul_comm, sub_eq_add_neg],
                 Complex.norm_exp]
               simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]]
@@ -95,9 +95,9 @@ lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C
     (hx0 : -1 ≤ x) (hx1 : x ≤ 0) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
     ‖Φ₂' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
-        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-  refine norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) hC₀_pos hC₀ hφbd
-    (by rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ x + 1)]; linarith) ht1 htAφ ?_
+        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) :=
+  norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) hC₀_pos hC₀ hφbd
+    (by rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ x + 1)]; linarith) ht1 htAφ <| by
   simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
     show (x : ℂ) + (t : ℂ) * Complex.I + 1 =
       ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
@@ -111,9 +111,9 @@ lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C
     (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
     ‖Φ₄' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
-        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-  refine norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) hC₀_pos hC₀ hφbd
-    (by rw [abs_sub_comm, abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - x)]; linarith) ht1 htAφ ?_
+        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) :=
+  norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) hC₀_pos hC₀ hφbd
+    (by rw [abs_sub_comm, abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - x)]; linarith) ht1 htAφ <| by
   simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
     show (x : ℂ) + (t : ℂ) * Complex.I - 1 =
       ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
@@ -286,22 +286,22 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
   have hf2 : Integrable f2 μ := integrableOn_Φ₂'_imag_axis (u := u) hu
   have hf5 : Integrable f5 μ := integrableOn_Φ₅'_imag_axis (u := u) hu
   have hf4 : Integrable f4 μ := integrableOn_Φ₄'_imag_axis (u := u) hu
-  have hfdI : ∀ t ∈ Set.Ioi (1 : ℝ),
-      (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
-        (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t) := fun t ht => by
-    simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
-      sub_eq_add_neg] using (congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
-      (Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht))).symm
   rw [hI6,
     (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
       (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
-    MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hfdI,
+    MeasureTheory.setIntegral_congr_fun measurableSet_Ioi (fun t ht => by
+      simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
+        sub_eq_add_neg] using (congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
+        (Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht))).symm :
+      ∀ t ∈ Set.Ioi (1 : ℝ),
+      (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
+        (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t)),
     MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
       (f := fun t => f2 t - 2 * f5 t + f4 t)]
-  have h1 := MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4
   calc (Complex.I : ℂ) * (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
       = (Complex.I : ℂ) * ((∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
-        simpa using congrArg ((Complex.I : ℂ) * ·) h1
+        simpa using congrArg ((Complex.I : ℂ) * ·)
+          (MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4)
     _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
         rw [MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2),
           MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
@@ -314,9 +314,7 @@ private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E :
       E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
   rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hG, MeasureTheory.integral_const_mul]
 
-/--
-Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`.
--/
+/-- Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`. -/
 public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) :
     MagicFunction.a.RealIntegrals.I₂' u + MagicFunction.a.RealIntegrals.I₄' u +
         MagicFunction.a.RealIntegrals.I₆' u =
