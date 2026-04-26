@@ -25,13 +25,11 @@ open UnitAddTorus
     (fun n : Fin d → ℤ =>
       ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩)
-    ⟨fun a b hab => by
-      have hab' : SchwartzMap.PoissonSummation.Standard.intVec (d := d) a =
-          SchwartzMap.PoissonSummation.Standard.intVec (d := d) b := by
-        simpa using congrArg Subtype.val hab
-      funext i
+    ⟨fun a b hab => funext fun i => by
       simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
-        congrArg (fun x : E => x i) hab',
+        congrArg (fun x : E => x i) (by simpa using congrArg Subtype.val hab :
+          SchwartzMap.PoissonSummation.Standard.intVec (d := d) a =
+            SchwartzMap.PoissonSummation.Standard.intVec (d := d) b),
     fun ℓ => by
       obtain ⟨n, hn⟩ := SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
         (d := d) (x := (ℓ : E)) ℓ.property
@@ -74,10 +72,9 @@ public lemma finite_norm_le_lattice (r : ℝ) :
     Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
       Metric.isBounded_closedBall AddSubgroup.isClosed_of_discrete
   let e : Λ ↪ E := ⟨fun ℓ => (ℓ : E), Subtype.coe_injective⟩
-  have hfin_pre : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))).Finite :=
-    Set.Finite.preimage_embedding e (by simpa [Submodule.coe_toAddSubgroup] using hfinE)
-  exact hfin_pre.subset fun ℓ hℓ => by
-    simpa [e, Metric.mem_closedBall, dist_eq_norm] using hℓ
+  refine (Set.Finite.preimage_embedding e
+    (by simpa [Submodule.coe_toAddSubgroup] using hfinE)).subset fun ℓ hℓ => by
+      simpa [e, Metric.mem_closedBall, dist_eq_norm] using hℓ
 
 /--
 Schwartz decay implies that the sup norms of translates, restricted to a compact set, are summable
@@ -221,9 +218,8 @@ public lemma iocCube_subset_closedBall :
       Metric.closedBall (0 : E) (Real.sqrt d) := fun x hx => by
   have hsum : (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) := by
     have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := fun i => by
-      have hi : x i ∈ Set.Ioc (0 : ℝ) 1 := hx i
       have hxle : ‖x i‖ ≤ (1 : ℝ) := by
-        simpa [Real.norm_eq_abs, abs_of_nonneg hi.1.le] using hi.2
+        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2
       simpa [pow_two] using mul_le_mul hxle hxle (norm_nonneg _) (by positivity)
     simpa using (Finset.sum_le_sum fun i _ => hterm i).trans_eq (by simp)
   simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using Real.sqrt_le_sqrt hsum
@@ -259,19 +255,17 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
           (f.continuous.comp (continuous_id.add continuous_const))).aestronglyMeasurable
       (ae_restrict_of_forall_mem
         (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x hx => ?_)
-  have hmFourier :
-      ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ 1 := by
-    simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-      ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-        (PoissonSummation.Standard.coeFunE (d := d) x)
-  have hsup : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
-    simpa [translate_apply, ContinuousMap.restrict_apply] using
-      ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩
   calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
         f (x + (ℓ : E))‖
       = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
           ‖f (x + (ℓ : E))‖ := by simp
-    _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
-    _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by simpa using hsup
+    _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by
+      gcongr
+      simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+        ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
+          (PoissonSummation.Standard.coeFunE (d := d) x)
+    _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
+      simpa [translate_apply, ContinuousMap.restrict_apply] using
+        ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩
 
 end SchwartzMap.PoissonSummation.Standard
