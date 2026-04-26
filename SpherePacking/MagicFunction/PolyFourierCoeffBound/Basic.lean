@@ -65,7 +65,7 @@ include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
   have h_shift : (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) := by
     simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
-    rcases hpoly with ⟨C, m, hCa⟩
+    obtain ⟨C, m, hCa⟩ := hpoly
     exact ⟨C, (m - n₀).toNat, fun n hn ↦ hCa (n + n₀) (by grind)⟩
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
@@ -87,8 +87,9 @@ lemma summable_norm_mul_rexp_neg_pi_div_two :
       Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)
   refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := r) hr
     (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)).congr fun n => ?_
-  rw [norm_mul, norm_pow, show ‖r‖ = rexp (-(π : ℝ) / 2) by
-    simp [r, Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
+  rw [norm_mul, norm_pow,
+    show ‖r‖ = rexp (-(π : ℝ) / 2) by simp [r, Complex.norm_exp, div_eq_mul_inv],
+    ← Real.exp_nat_mul]
   congr 2; ring
 
 end summable_aux
@@ -116,14 +117,13 @@ lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
   simpa [norm_mul] using aux_3 z c n₀ hcsum
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
-  ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  simpa [← norm_pow] using (Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z))
+    ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
+  simpa [← norm_pow] using Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z)
 
 lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simp [← aux_5 z]
 
-lemma aux_7 (a : ℤ) :
-    norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
+lemma aux_7 (a : ℤ) : norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
   simpa [mul_assoc, mul_left_comm, mul_comm] using
     (Complex.norm_exp (I * (↑π * (a * z)))).le
 
@@ -134,10 +134,9 @@ lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
   have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)
-  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using
-    Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable
-      ((by simpa using hnat.comp_injective PNat.coe_injective :
-        Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
+  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
+    (Real.summable_log_one_add_of_summable ((by simpa using hnat.comp_injective PNat.coe_injective :
+      Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -145,13 +144,11 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
 
 lemma aux_9 (i : ℕ) :
     ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [norm_mul, show (↑π * I * (i : ℂ) * z) = I * ((↑π * i) * z) by ring, Complex.norm_exp]
-  simp
+  rw [norm_mul, show (↑π * I * (i : ℂ) * z) = I * ((↑π * i) * z) by ring, Complex.norm_exp]; simp
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← aux_9]
-  exact aux_3 z c n₀ hcsum
+  simp only [← aux_9]; exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   simpa using aux_tprod_one_sub_rexp_pow_24_pos (c := π) pi_pos
@@ -173,10 +170,9 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
   have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
-  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using
-    Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable
-      ((by simpa using hnat.comp_injective PNat.coe_injective :
-        Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
+  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
+    (Real.summable_log_one_add_of_summable ((by simpa using hnat.comp_injective PNat.coe_injective :
+      Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
 
 lemma step_7 :
     norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
@@ -231,15 +227,13 @@ lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-  have hsum : (∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n * z.im)) ≤
-      ∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n / 2) := by
-    refine Summable.tsum_le_tsum (fun n ↦ ?_) (by simpa using aux_10 z c n₀ hcsum)
-      (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-    refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
-    have := neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using this
-  gcongr
-  exact (aux_8 z).le
+  gcongr ?_ * ?_ / _
+  · exact (aux_8 z).le
+  refine Summable.tsum_le_tsum (fun n ↦ ?_) (by simpa using aux_10 z c n₀ hcsum)
+    (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
+  refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
+  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
+    neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
 
 include hz in
 lemma step_12 :
@@ -256,9 +250,9 @@ lemma step_12 :
     (by simpa [mul_assoc, mul_left_comm, mul_comm] using
       step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
   refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 ?_) 1) 24
-  have := neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
-    (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
-  simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using this
+  simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
+    neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
+      (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
 
 end calc_steps
 
@@ -266,11 +260,7 @@ section main_theorem
 
 include f hf z hz c n₀ hcsum k hpoly in
 /-- A uniform bound on `‖(f z) / (Δ z)‖` for a function given by a Fourier series with polynomially
-bounded coefficients.
-
-The bound is stated in terms of `DivDiscBound` and an exponential factor depending on the shift
-`n₀`.
--/
+bounded coefficients, in terms of `DivDiscBound` and an exponential factor depending on `n₀`. -/
 public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
   _ = norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
@@ -279,9 +269,7 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
         simp [DiscriminantProductFormula, hf, fouterm]
   _ = norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        congr
-        rw [← tsum_mul_left]
-        congr; ext n; ring_nf
+        congr; rw [← tsum_mul_left]; congr; ext n; ring_nf
         rw [mul_assoc (c (n + n₀)) (cexp _), ← Complex.exp_add]; congr 2; ring
   _ = norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
