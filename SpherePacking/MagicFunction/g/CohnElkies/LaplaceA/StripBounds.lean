@@ -220,8 +220,8 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
             cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) by
         simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
           mul_assoc],
-      show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl,
-      show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
+      show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl, show φ₀ (ModularGroup.S • wH) =
+        φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
       show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
         simpa using ModularGroup.coe_S_smul (z := wH)]
   calc ‖Φ₂' u ((t : ℂ) * I)‖
@@ -233,8 +233,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
             Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
         mul_le_mul_of_nonneg_right
-          (norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm)
-          (Real.exp_pos _).le
+          (norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm) (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
         rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
