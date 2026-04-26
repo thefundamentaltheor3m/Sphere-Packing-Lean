@@ -365,10 +365,9 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   rw [← periodic_constant_eq_constant hd,
     periodic_constant_eq_periodic_constant_normalized (d := d)]
   refine iSup_le fun P => iSup_le fun hP => ?_
-  cases isEmpty_or_nonempty ↑P.centers with
-  | inl _ => simp [P.density_of_centers_empty hd]
-  | inr _ =>
-    let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
+  rcases isEmpty_or_nonempty ↑P.centers with _ | _
+  · simp [P.density_of_centers_empty hd]
+  · let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (PeriodicSpherePacking.basis_index_equiv P)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
       (ZSpan.fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
