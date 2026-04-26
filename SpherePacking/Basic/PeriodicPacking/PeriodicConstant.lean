@@ -27,11 +27,10 @@ lemma abs_coord_sub_lt_of_mem_ball {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ} 
 
 lemma ball_subset_coordCube {x : EuclideanSpace ℝ (Fin d)} {r L : ℝ}
     (hx : ∀ i : Fin d, x i ∈ Set.Icc r (L - r)) :
-    ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, y i ∈ Set.Ico (0 : ℝ) L} := by
-  intro y hy i
-  have hxi := hx i
+    ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, y i ∈ Set.Ico (0 : ℝ) L} :=
+  fun y hy i =>
   have hsub := abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)
-  exact ⟨by linarith [hxi.1], by linarith [hxi.2]⟩
+  ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
@@ -175,10 +174,8 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
       simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using mul_lt_mul_of_pos_left hx.2 hLinv⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : x ∈ coordCubeInner d L r) :
-    ball x r ⊆ coordCube d L := by
-  simpa [coordCube, coordCubeInner] using
-    ball_subset_coordCube (x := x) (r := r) (L := L) hx
+    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := by
+  simpa [coordCube, coordCubeInner] using ball_subset_coordCube (x := x) (r := r) (L := L) hx
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
@@ -211,8 +208,8 @@ private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet
 
 public lemma coordCube_unique_covers (L : ℝ) (hL : 0 < L) :
     ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ coordCube d L := fun x => by
-    simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-      exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
+  simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
+    exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
 
 public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d L) := by
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
@@ -232,8 +229,7 @@ public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
 public lemma volume_coordCube (L : ℝ) :
     volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
   rw [coordCube_eq_preimage_ofLp, volume_preimage_ofLp _
-    (MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico),
-    volume_pi, Measure.pi_pi]
+    (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
 
 public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
@@ -245,14 +241,12 @@ public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
 public lemma volume_coordCubeInner (L r : ℝ) :
     volume (coordCubeInner d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
   rw [coordCubeInner_eq_preimage_ofLp, volume_preimage_ofLp _
-    (MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc),
-    volume_pi, Measure.pi_pi]
+    (.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc), volume_pi, Measure.pi_pi]
   simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
 
 public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
-    coordCubeInner d L r ⊆ coordCube d L := by
-  intro x hx i
-  exact ⟨le_trans hr.le (hx i).1, lt_of_le_of_lt (hx i).2 (sub_lt_self L hr)⟩
+    coordCubeInner d L r ⊆ coordCube d L := fun _ hx i =>
+  ⟨hr.le.trans (hx i).1, (hx i).2.trans_lt (sub_lt_self L hr)⟩
 
 end PeriodicConstant
 
@@ -274,7 +268,7 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
   exact ⟨g + v, (hvadd (a := g + v)).2 (by simpa using hg),
-    fun a ha => (sub_eq_iff_eq_add).1 (hguniq _ ((hvadd a).1 ha))⟩
+    fun a ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd a).1 ha))⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
