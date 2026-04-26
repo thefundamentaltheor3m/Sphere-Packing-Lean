@@ -126,26 +126,19 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
                 f (x + (ℓ : E)))
           hInt hSum).symm
-  have hFD :=
-    (PoissonSummation.Standard.isAddFundamentalDomain_iocCube (d := d))
   have hint :
       Integrable
           (fun x : E =>
             UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) * f x)
           (volume : Measure E) := by
-    have hmeas : AEStronglyMeasurable
-        (fun x : E => UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x))
-        (volume : Measure E) :=
-      ((UnitAddTorus.mFourier (-n)).continuous.comp
-        (PoissonSummation.Standard.continuous_coeFunE (d := d))).aestronglyMeasurable
-    have hbound : ∀ᵐ x : E ∂(volume : Measure E),
-        ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ (1 : ℝ) :=
-      ae_of_all _ fun x => by
+    simpa using Integrable.bdd_mul (μ := (volume : Measure E))
+      (SchwartzMap.integrable (μ := (volume : Measure E)) f)
+      (((UnitAddTorus.mFourier (-n)).continuous.comp
+        (PoissonSummation.Standard.continuous_coeFunE (d := d))).aestronglyMeasurable)
+      (ae_of_all _ fun x => by
         simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
           (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-            (PoissonSummation.Standard.coeFunE (d := d) x))
-    simpa using Integrable.bdd_mul (μ := (volume : Measure E))
-      (SchwartzMap.integrable (μ := (volume : Measure E)) f) hmeas hbound
+            (PoissonSummation.Standard.coeFunE (d := d) x)))
   have hFD' :
       ∑' ℓ : Λ,
           ∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
@@ -163,7 +156,7 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               ∂(volume : Measure E) := by
       simpa [g] using
         (MeasureTheory.IsAddFundamentalDomain.integral_eq_tsum'' (μ := (volume : Measure E))
-          hFD (f := g) hint)
+          (PoissonSummation.Standard.isAddFundamentalDomain_iocCube (d := d)) (f := g) hint)
     have hterm :
         ∀ ℓ : Λ,
           (∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d), g (ℓ +ᵥ x)
@@ -239,9 +232,8 @@ lemma summable_mFourierCoeff_descended :
       ‖𝓕 (fun x : E => f x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)‖) := by
     let k : ℕ := d + 1
     have hk : Module.finrank ℤ Λ < k := by
-      have hrank : Module.finrank ℤ Λ = d := by
-        simpa using (ZLattice.rank (K := ℝ) (L := Λ)).trans (by simp)
-      simp [hrank, k]
+      simp [show Module.finrank ℤ Λ = d from by
+        simpa using (ZLattice.rank (K := ℝ) (L := Λ)).trans (by simp), k]
     obtain ⟨C, _, hC⟩ := (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).decay k 0
     have hC' : ∀ x : E, ‖x‖ ^ k * ‖𝓕 (fun y : E => f y) x‖ ≤ C := by
       simpa [FourierTransform.fourierCLE_apply, fourier_coe, norm_iteratedFDeriv_zero] using hC
@@ -253,10 +245,8 @@ lemma summable_mFourierCoeff_descended :
       filter_upwards [(finite_norm_le_lattice (d := d) 1).compl_mem_cofinite] with ℓ hℓ
       have hnorm_pos : 0 < ‖(ℓ : E)‖ :=
         lt_trans (by positivity) (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)
-      have hdiv : ‖𝓕 (fun y : E => f y) (ℓ : E)‖ ≤ (C : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-        simpa [div_eq_mul_inv, inv_pow, one_div] using
-          (le_div_iff₀' (pow_pos hnorm_pos _)).2 (hC' (ℓ : E))
-      simpa [Real.norm_of_nonneg (norm_nonneg _)] using hdiv
+      simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
+        (le_div_iff₀' (pow_pos hnorm_pos _)).2 (hC' (ℓ : E))
     have : Summable (fun n : Fin d → ℤ =>
         ‖𝓕 (fun y : E => f y) ((PoissonSummation.Standard.equivIntVec (d := d) n : Λ) : E)‖) := by
       simpa using hsum_lattice.comp_injective
