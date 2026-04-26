@@ -62,11 +62,9 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
     all_goals simp [As, hi, hj]
-  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x from fun x hx ↦ by
-    obtain ⟨i, hi⟩ := Set.mem_iUnion.1 hx
-    by_cases hs : i ∈ s
-    · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
-    · simp [As, hs] at hi)).subset_ball 0
+  obtain ⟨L, hL⟩ := (h_bounded.subset (Set.iUnion_subset fun i x hi ↦ by
+    by_cases hs : i ∈ s <;> [exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩;
+      simp [As, hs] at hi] : (⋃ i, As i) ⊆ _)).subset_ball 0
   exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
     (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset fun i hi ↦ by
     simpa [As, hi] using h_volume i hi
@@ -147,14 +145,8 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   refine S.addActionOrbitRelEquiv _ fun x ↦ ?_
   obtain ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  use ⟨v.val, ?_⟩, ?_, ?_
-  · exact Set.mem_of_subset_of_mem
-      (by rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl) v.prop
-  · simpa using hv
-  · intro s hs
-    rw [← hv' ⟨s, ?_⟩ hs]
-    exact Set.mem_of_subset_of_mem
-      (by rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl) s.prop
+  refine ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv, fun s hs => ?_⟩
+  rw [← hv' ⟨s, (S.mem_basis_Z_span b _).2 s.prop⟩ hs]
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
