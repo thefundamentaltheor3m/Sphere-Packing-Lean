@@ -51,34 +51,28 @@ open MagicFunction.Parametrisations
 noncomputable section
 
 /-- Complexified `J₁'`. -/
-def J₁'C (u : ℂ) : ℂ :=
-  ∫ t in (0 : ℝ)..1,
-    (Complex.I : ℂ) * ψT' (z₁' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₁' t))
+def J₁'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
+  (Complex.I : ℂ) * ψT' (z₁' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₁' t))
 
 /-- Complexified `J₂'`. -/
-def J₂'C (u : ℂ) : ℂ :=
-  ∫ t in (0 : ℝ)..1,
-    ψT' (z₂' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₂' t))
+def J₂'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
+  ψT' (z₂' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₂' t))
 
 /-- Complexified `J₃'`. -/
-def J₃'C (u : ℂ) : ℂ :=
-  ∫ t in (0 : ℝ)..1,
-    (Complex.I : ℂ) * ψT' (z₃' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₃' t))
+def J₃'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
+  (Complex.I : ℂ) * ψT' (z₃' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₃' t))
 
 /-- Complexified `J₄'`. -/
-def J₄'C (u : ℂ) : ℂ :=
-  ∫ t in (0 : ℝ)..1,
-    (-1 : ℂ) * ψT' (z₄' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₄' t))
+def J₄'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
+  (-1 : ℂ) * ψT' (z₄' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₄' t))
 
 /-- Complexified `J₅'`. -/
-def J₅'C (u : ℂ) : ℂ :=
-  -2 * ∫ t in (0 : ℝ)..1,
-    (Complex.I : ℂ) * ψI' (z₅' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₅' t))
+def J₅'C (u : ℂ) : ℂ := -2 * ∫ t in (0 : ℝ)..1,
+  (Complex.I : ℂ) * ψI' (z₅' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₅' t))
 
 /-- Complexified `J₆'`. -/
-def J₆'C (u : ℂ) : ℂ :=
-  -2 * ∫ t in Set.Ici (1 : ℝ),
-    (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t))
+def J₆'C (u : ℂ) : ℂ := -2 * ∫ t in Set.Ici (1 : ℝ),
+  (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t))
 
 /-- Analytic extension of `b'` to complex parameters, defined as the sum of `J₁'C`, ..., `J₆'C`. -/
 public def bPrimeC (u : ℂ) : ℂ :=
@@ -257,7 +251,6 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
       (fun t ht => norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
 set_option maxHeartbeats 1000000 in
--- large dominated-convergence argument.
 lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   intro u0 hu0
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
@@ -351,10 +344,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     funext u
     simp only [J₆'C, μ]
     have hμ : (∫ t, F u t ∂μIciOne) = ∫ t in Set.Ici (1 : ℝ), F u t := by simp [μIciOne]
-    have hInt : (∫ t in Set.Ici (1 : ℝ), F u t) =
-          ∫ t in Set.Ici (1 : ℝ),
-            (Complex.I : ℂ) * ψS' (z₆' t) *
-              Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t)) := by
+    have hInt : (∫ t in Set.Ici (1 : ℝ), F u t) = ∫ t in Set.Ici (1 : ℝ),
+        (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t)) := by
       refine MeasureTheory.integral_congr_ae <|
         (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
       have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
