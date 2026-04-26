@@ -303,7 +303,6 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
             show (Complex.I : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) = -(t : ℂ) by
               rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
           push_cast; ring]
-    have hFnonneg : 0 ≤ (∑' n : ℕ, f n) := tsum_nonneg (fun n => by positivity)
     have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
       rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
         simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ],
@@ -313,7 +312,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
               = (↑(∑' n : ℕ, f n) : ℂ) by simp [Complex.ofReal_tsum, hterm]]
           push_cast; ring,
         Complex.norm_of_nonneg (by positivity)]
-      linarith [hFnonneg]
+      linarith [(tsum_nonneg fun n => by positivity : 0 ≤ ∑' n : ℕ, f n)]
     simpa [show ‖ResToImagAxis H₃ t‖ = ‖ResToImagAxis Θ₃ t‖ ^ (4 : ℕ) by
       simp [H₃, ResToImagAxis, ht0, norm_pow]] using
       pow_le_pow_left₀ (by positivity : (0 : ℝ) ≤ 1) hnormΘ₃ 4
