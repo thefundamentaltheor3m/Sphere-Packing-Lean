@@ -66,7 +66,7 @@ theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (
   have h_shift : (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) := by
     simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
     obtain ⟨C, m, hCa⟩ := hpoly
-    exact ⟨C, (m - n₀).toNat, fun n hn ↦ hCa (n + n₀) (by grind)⟩
+    exact ⟨C, (m - n₀).toNat, fun n _ ↦ hCa (n + n₀) (by grind)⟩
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
   refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
@@ -108,13 +108,8 @@ lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i *
   have hsplit : cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
       cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) := by
     rw [← Complex.exp_add]; congr 1; push_cast; ring
-  have hne : cexp (↑π * I * (n₀ : ℂ) * z) ≠ 0 := Complex.exp_ne_zero _
+  have hne := Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
   grind only
-
-include hcsum in
-lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
-    norm (cexp (↑π * I * ↑i * z)) := by
-  simpa [norm_mul] using aux_3 z c n₀ hcsum
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
@@ -148,7 +143,7 @@ lemma aux_9 (i : ℕ) :
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← aux_9]; exact aux_3 z c n₀ hcsum
+  simpa only [← aux_9] using aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   simpa using aux_tprod_one_sub_rexp_pow_24_pos (c := π) pi_pos
@@ -165,8 +160,7 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
     Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
   refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
   · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
-    have : (0 : ℝ) < (i : ℝ) := mod_cast i.pos
-    nlinarith
+    nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
   have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
@@ -201,7 +195,7 @@ lemma step_9 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · exact aux_4 z c n₀ hcsum
+  · simpa [norm_mul] using aux_3 z c n₀ hcsum
   · exact aux_10 z c n₀ hcsum
   · simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
 
@@ -223,15 +217,15 @@ lemma step_10 :
 
 include hz hcsum hpoly in
 lemma step_11 :
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-  (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-  (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr ?_ * ?_ / _
   · exact (aux_8 z).le
-  refine Summable.tsum_le_tsum (fun n ↦ ?_) (by simpa using aux_10 z c n₀ hcsum)
+  refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left
+    (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (by simpa using aux_10 z c n₀ hcsum)
     (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-  refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
     neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
 
@@ -305,11 +299,10 @@ section positivity
 include hpoly hcn₀ in
 public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
-  refine div_pos ?_ aux_11
-  refine Summable.tsum_pos
+  refine div_pos (Summable.tsum_pos
     (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-    (fun _ => by positivity) 0 ?_
-  simpa using (norm_pos_iff.2 hcn₀)
+    (fun _ => by positivity) 0 ?_) aux_11
+  simpa using norm_pos_iff.2 hcn₀
 
 end positivity
 
