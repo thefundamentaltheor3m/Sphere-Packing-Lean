@@ -149,25 +149,24 @@ open Real
     simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
     simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero,
-      AddSubgroupClass.coe_norm] at hx' ⊢
-    refine .inr ?_
-    rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
-    simpa using hε' x hx hx'
+      AddSubgroupClass.coe_norm, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le,
+      mul_lt_mul_iff_right₀ hc] at hx' ⊢
+    exact .inr (by simpa using hε' x hx hx')
   lattice_isZLattice := by
     use ?_
     rw [← S.lattice_isZLattice.span_top]
     ext v
     simp_rw [Submodule.mem_span]
-    constructor <;> intro h p hp
+    refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
     · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
       simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
         Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
-    · specialize h (c⁻¹ • p) (by
-        rw [Submodule.coe_pointwise_smul] at *
-        have := Set.smul_set_mono (a := c⁻¹) hp
-        rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this)
-      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
-        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
+    specialize h (c⁻¹ • p) (by
+      rw [Submodule.coe_pointwise_smul] at *
+      have := Set.smul_set_mono (a := c⁻¹) hp
+      rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this)
+    simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
+      Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
 }
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -201,8 +200,7 @@ namespace SpherePacking
 
 /-- Finite density of a scaled packing. -/
 @[simp]
-public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c)
-    (R : ℝ) :
+public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   have hball : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
     simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
@@ -256,8 +254,8 @@ lemma biUnion_balls_inter_subset_biUnion_inter_balls
   obtain ⟨⟨y, hy₁, hy₂⟩, hx⟩ := hx
   refine ⟨y, ⟨hy₁, ?_⟩, hy₂⟩
   rw [← sub_add_cancel R r]
-  exact (norm_le_norm_add_norm_sub x y).trans_lt <|
-    add_lt_add hx (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
+  exact (norm_le_norm_add_norm_sub x y).trans_lt
+    (add_lt_add hx (by simpa [dist_eq_norm, norm_sub_rev] using hy₂))
 
 theorem SpherePacking.volume_iUnion_balls_eq_tsum
     (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
@@ -269,8 +267,7 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
   simp_rw [ne_eq, Subtype.mk.injEq] at h
   linarith [S.centers_dist' x y hx.left hy.left h]
 
-/-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
--/
+/-- An upper bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
@@ -278,21 +275,20 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
-  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
+  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R le_rfl,
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   rwa [← ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
     (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)] at h
 
-/-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
--/
+/-- A lower bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
       volume (S.balls ∩ ball 0 (R - S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
-  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
+  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ le_rfl,
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   exact ENNReal.div_le_of_le_mul h
 
@@ -301,11 +297,11 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
   refine Set.encard_lt_top_iff.mp ?_
   rcases eq_or_ne d 0 with rfl | hd
   · exact Set.encard_lt_top_iff.2 <| .of_subsingleton (S.centers ∩ ball 0 R)
-  have hd' : 0 < d := Nat.pos_of_ne_zero hd
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd'
-  exact ENat.toENNReal_lt.mp <| (S.inter_ball_encard_le hd' R).trans_lt <| ENNReal.div_lt_top
-    ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
-    (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp (Nat.pos_of_ne_zero hd)
+  exact ENat.toENNReal_lt.mp <| (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <|
+    ENNReal.div_lt_top
+      ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
+      (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
 public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
     S.finiteDensity R
