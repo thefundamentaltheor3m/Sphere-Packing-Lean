@@ -105,8 +105,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
   refine (show ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
       (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
     rw [show Φ₆' u ((t : ℂ) * Complex.I) = φ₀'' ((t : ℂ) * Complex.I) *
-        cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) by
-      simp [Φ₆']]
+        cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) by simp [Φ₆']]
     refine norm_mul_le_of_le (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) by
       simpa [φ₀''_coe_upperHalfPlane, hz_im] using
         hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)) ?_
@@ -117,11 +116,10 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
 
 /-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`, via `aLaplaceIntegrand`. -/
 public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
-    IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  have hNeg : IntegrableOn (fun t : ℝ => -aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) volume :=
+    IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume :=
+  (show IntegrableOn (fun t : ℝ => -aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) volume from
     ((aLaplaceIntegral_convergent (u := u) hu).mono_set
-      fun _ ht => lt_trans (by norm_num : (0:ℝ) < 1) ht).neg
-  exact hNeg.congr_fun
+      fun _ ht => lt_trans (by norm_num : (0:ℝ) < 1) ht).neg).congr_fun
     (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)).symm)
     measurableSet_Ioi
 
@@ -326,8 +324,7 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
     have hparam : (∫ t in (0 : ℝ)..1, (I : ℂ) * Φ₅' u (MagicFunction.Parametrisations.z₅' t)) =
         (I : ℂ) * V0 := by
       rw [intervalIntegral.integral_congr (g := fun t => (I : ℂ) * Φ₅' u ((t : ℂ) * I)) fun t ht =>
-        by simp [MagicFunction.Parametrisations.z₅'_eq_of_mem (hmem ht), mul_comm]]
-      simp [V0]
+        by simp [MagicFunction.Parametrisations.z₅'_eq_of_mem (hmem ht), mul_comm]]; simp [V0]
     simpa [MagicFunction.a.RealIntegrals.I₅', MagicFunction.a.RealIntegrands.Φ₅, mul_assoc]
       using congrArg (fun z : ℂ => (-2 : ℂ) * z) hparam
   rw [hI1, hI3, hI5]; ring
