@@ -31,9 +31,8 @@ open MagicFunction.a.ComplexIntegrands
 local notation "c12π" => ‖(12 * (I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
 
-/--
-Turn an `IsBoundedAtImInfty` hypothesis into an explicit uniform bound with a positive constant.
--/
+/-- Turn an `IsBoundedAtImInfty` hypothesis into an explicit uniform bound with a positive
+constant. -/
 lemma exists_bound_of_isBoundedAtImInfty {f : ℍ → ℂ}
     (hbdd : UpperHalfPlane.IsBoundedAtImInfty f) :
     ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im → ‖f z‖ ≤ C :=
@@ -84,8 +83,7 @@ public lemma exists_phi2'_phi4'_bound_exp :
 public lemma φ₀_S_transform_mul_sq (w : ℍ) :
     φ₀ (ModularGroup.S • w) * ((w : ℂ) ^ (2 : ℕ)) =
         φ₀ w * ((w : ℂ) ^ (2 : ℕ)) - (12 * Complex.I) / π * (w : ℂ) * φ₂' w -
-          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' w := by
-  simpa using _root_.φ₀_S_transform_mul_sq w
+          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' w := by simpa using _root_.φ₀_S_transform_mul_sq w
 
 /-- Integrability of `Φ₆'` on the imaginary axis tail `t > 1`. -/
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
@@ -153,9 +151,9 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-  have hbd := hφbd wH (by simpa [hw_im] using htAφ)
-  have hφ2 : ‖φ₂' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by simpa [hw_im] using hbd.1
-  have hφ4 : ‖φ₄' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by simpa [hw_im] using hbd.2
+  obtain ⟨hbd1, hbd2⟩ := hφbd wH (by simpa [hw_im] using htAφ)
+  have hφ2 : ‖φ₂' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by simpa [hw_im] using hbd1
+  have hφ4 : ‖φ₄' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by simpa [hw_im] using hbd2
   have htri : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
         ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
@@ -163,7 +161,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     rw [show φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) =
         φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) - (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH -
           (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH by simpa using φ₀_S_transform_mul_sq (w := wH)]
-    exact (norm_sub_le _ _).trans (by gcongr; exact norm_sub_le _ _)
+    exact (norm_sub_le _ _).trans <| by gcongr; exact norm_sub_le _ _
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
     calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
@@ -249,20 +247,19 @@ lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioi A) volume := by
   set a : ℝ := π * (u - 2)
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
-  change Integrable (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I)) (volume.restrict (Set.Ioi A))
   refine MeasureTheory.Integrable.mono' (μ := volume.restrict (Set.Ioi A))
     (by simpa [IntegrableOn, mul_assoc] using
       ((integrableOn_sq_mul_exp_neg A a (mul_pos Real.pi_pos (sub_pos.mpr hu))).const_mul K :
         IntegrableOn (fun t : ℝ => K * (t ^ (2 : ℕ) * Real.exp (-a * t))) (Set.Ioi A) volume))
-    (aestronglyMeasurable_Φ₂'_imag_axis_Ioi u A (lt_of_lt_of_le (by norm_num) hA1)) ?_
-  exact (ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => by
-    simpa [K, a] using norm_Φ₂'_imag_axis_le (u := u) hC₀_pos hC₀ hφbd
-      (le_trans hA1 ht.le) (le_trans hAA ht.le)
+    (aestronglyMeasurable_Φ₂'_imag_axis_Ioi u A (lt_of_lt_of_le (by norm_num) hA1))
+    ((ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => by
+      simpa [K, a] using norm_Φ₂'_imag_axis_le (u := u) hC₀_pos hC₀ hφbd
+        (le_trans hA1 ht.le) (le_trans hAA ht.le))
 
 /-- Integrability of `Φ₂'` on the imaginary-axis tail `t > 1`. -/
 public lemma integrableOn_Φ₂'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  obtain ⟨Cφ, Aφ, hCφ, hφbd⟩ := exists_phi2'_phi4'_bound_exp
+  obtain ⟨Cφ, Aφ, _, hφbd⟩ := exists_phi2'_phi4'_bound_exp
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   let A : ℝ := max 1 Aφ
   have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
