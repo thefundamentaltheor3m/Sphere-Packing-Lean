@@ -179,8 +179,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
           - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
           - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by
-  refine ⟨2 / (1 - Real.exp (-Real.pi)), ?_⟩
-  intro t ht
+  refine ⟨2 / (1 - Real.exp (-Real.pi)), fun t ht => ?_⟩
   have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
   set f : ℕ → ℂ := fun n ↦ Θ₂_term (n : ℤ) τ
