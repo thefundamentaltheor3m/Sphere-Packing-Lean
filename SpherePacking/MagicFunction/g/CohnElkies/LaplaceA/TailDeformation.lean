@@ -66,8 +66,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   let wH : ℍ := ⟨w, by simpa [hw_im] using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-          rw [hdef]
-          rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) =
+          rw [hdef, show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) =
               φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) by
             rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
               show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
@@ -178,11 +177,10 @@ lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
   rw [show (∫ t in (0 : ℝ)..1, Φ₂' u (MagicFunction.Parametrisations.z₂' t)) =
       ∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ)) from
     intervalIntegral.integral_congr fun t ht => by
-      simp [g, show MagicFunction.Parametrisations.z₂' t =
-        (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) from by
-          simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t)
-            (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht), add_comm],
-    show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x from by norm_num]
+      simp [g, show MagicFunction.Parametrisations.z₂' t = (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) by
+        simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t)
+          (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht), add_comm],
+    show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x by norm_num]
 
 lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₄' u =
@@ -192,11 +190,10 @@ lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
   calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)
       = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) :=
         intervalIntegral.integral_congr fun t ht => by
-          simp [g, show MagicFunction.Parametrisations.z₄' t =
-            (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) from by
+          simp [g, sub_eq_add_neg,
+            show MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) by
               simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t)
-                (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-            sub_eq_add_neg]
+                (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
     _ = -∫ t in (0 : ℝ)..1, g t := by simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) =
           ∫ t in (0 : ℝ)..1, g t by norm_num]
     _ = ∫ t in (1 : ℝ)..0, g t := by
@@ -322,16 +319,16 @@ public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) 
         ((Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) +
               Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) - (2 : ℂ)) *
           (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I))) := by
-  have hLeft_ray := ray_integral_eq_const_mul_central
-    (G := fun t => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
-    (E := Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)))
-    fun t _ => by simpa [mul_assoc] using Φ₁'_shift_left (u := u) (t := t)
-  have hRight_ray := ray_integral_eq_const_mul_central
-    (G := fun t => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
-    (E := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I))
-    fun t _ => by simpa [mul_assoc] using Φ₃'_shift_right (u := u) (t := t)
   rw [I₂'_eq_deform_imag_axis (u := u) hu, I₄'_eq_deform_imag_axis (u := u) hu,
-    I₆'_eq_deform_imag_axis (u := u) hu, hLeft_ray, hRight_ray]
+    I₆'_eq_deform_imag_axis (u := u) hu,
+    ray_integral_eq_const_mul_central
+      (G := fun t => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
+      (E := Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)))
+      fun t _ => by simpa [mul_assoc] using Φ₁'_shift_left (u := u) (t := t),
+    ray_integral_eq_const_mul_central
+      (G := fun t => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
+      (E := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I))
+      fun t _ => by simpa [mul_assoc] using Φ₃'_shift_right (u := u) (t := t)]
   simp [smul_eq_mul, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_comm]
   ring
 
