@@ -68,11 +68,7 @@ theorem F_eq_FReal {t : ℝ} : F.resToImagAxis t = FReal t := by sorry
 
 theorem G_eq_GReal {t : ℝ} : G.resToImagAxis t = GReal t := by sorry
 
-/--
-`F = 9 * (D E₄)²` by Ramanujan's formula.
-From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
-Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (D E₄)²`.
--/
+/-- `F = 9 * (D E₄)²` by Ramanujan's formula `D E₄ = (1/3)(E₂ E₄ - E₆)`. -/
 theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   have h : E₂ * E₄.toFun - E₆.toFun = 3 • D E₄.toFun := by
     rw [ramanujan_E₄]; ext z; simp
@@ -104,9 +100,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
   ext z; simp [serre_D_apply]; norm_num
 
-/--
-Modular linear differential equation satisfied by $F$.
--/
+/-- Modular linear differential equation satisfied by `F`. -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) =
     5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
   rw [serre_D_10_F]
@@ -130,9 +124,7 @@ private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ +
     D_H₂, D_H₄, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul]
   ring
 
-/--
-Modular linear differential equation satisfied by $G$.
--/
+/-- Modular linear differential equation satisfied by `G`. -/
 theorem MLDE_G : serre_D 12 (serre_D 10 G) =
     5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
   ext z
@@ -200,10 +192,8 @@ The proof expands the definitions and simplifies using ζ(2) = π²/6. -/
 lemma E₂_sigma_qexp (z : UpperHalfPlane) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  -- Use E₂_eq and tsum_eq_tsum_sigma to convert n*q^n/(1-q^n) → σ₁(n)*q^n
   rw [E₂_eq z]
   congr 2
-  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ3
   have hl := tsum_pnat_eq_tsum_succ3
     (fun n ↦ ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
   have hr := tsum_pnat_eq_tsum_succ3
@@ -329,23 +319,18 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
         congrFun (D_add _ _ mdifferentiable_const (hf_mdiff.const_smul _)) z
     _ = _ := by rw [hD_one, hD_smul, zero_add, hDf]
 
-/--
-The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
-This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
-combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
--/
+/-- The q-expansion identity `E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ`.
+Follows from Ramanujan's formula `E₂E₄ - E₆ = 3·D(E₄)` and
+`D(E₄) = 240·Σn·σ₃(n)·qⁿ`. -/
 theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
     (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
     := by
-  -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
-  -- So: E₂ * E₄ - E₆ = 3 * D E₄
   have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
     have h := congrFun ramanujan_E₄ z
     simp only [Pi.mul_apply, Pi.sub_apply, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl] at h
     field_simp at h ⊢
     ring_nf at h ⊢
     exact h.symm
-  -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
   rw [hRam, DE₄_qexp]
   ring
 
@@ -391,22 +376,14 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 240) htsum_pos
 
-/--
-`D E₄` is positive on the imaginary axis.
-Direct proof via q-expansion: D E₄ = 240 * ∑ n*σ₃(n)*qⁿ (DE₄_qexp).
-On z = it, each term n*σ₃(n)*e^(-2πnt) > 0, so the sum is positive.
--/
+/-- `D E₄` is positive on the imaginary axis (each term in the q-expansion is positive). -/
 lemma DE₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
   ⟨DE₄_imag_axis_real, DE₄_imag_axis_re_pos⟩
 
-/-- Q-expansion identity: negDE₂ = 24 * ∑ n * σ₁(n) * q^n
-From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
-And the derivative of E₂ = 1 - 24∑ σ₁(n) q^n gives -D E₂ = 24 ∑ n σ₁(n) q^n.
-See blueprint equation at line 136 of modform-ineq.tex.
-Proof outline:
-1. E₂_sigma_qexp: E₂ = 1 - 24 * ∑ σ₁(n) * q^n
-2. D_qexp_tsum_pnat: D(∑ a(n) * q^n) = ∑ n * a(n) * q^n
-3. negDE₂ = -D E₂ = -D(1 - 24∑...) = 24 * ∑ n * σ₁(n) * q^n -/
+/-- Q-expansion identity: `negDE₂ = 24 * ∑ n * σ₁(n) * q^n`.
+From Ramanujan's formula `D E₂ = (E₂² - E₄)/12`, so `-D E₂ = (E₄ - E₂²)/12`,
+and the derivative of `E₂ = 1 - 24 ∑ σ₁(n) q^n` gives `-D E₂ = 24 ∑ n σ₁(n) q^n`.
+See blueprint equation at line 136 of `modform-ineq.tex`. -/
 theorem negDE₂_qexp (z : UpperHalfPlane) :
     negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
@@ -450,7 +427,7 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by simp only [negDE₂]; fun_prop
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by unfold negDE₂; fun_prop
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -481,32 +458,19 @@ Properties of G and F when restricted to the positive imaginary axis z = I*t.
 
 section ImagAxisProperties
 
-/--
-`G(it) > 0` for all `t > 0`.
-Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
-G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
--/
+/-- `G(it) > 0` for all `t > 0`. Blueprint: Lemma 8.6. -/
 theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
 
-/--
-`G(it)` is real for all `t > 0`.
-Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
--/
+/-- `G(it)` is real for all `t > 0`. -/
 theorem G_imag_axis_real : ResToImagAxis.Real G := G_imag_axis_pos.1
 
-/--
-`F(it) > 0` for all `t > 0`.
-Blueprint: F = 9*(D E₄)² and D E₄ > 0 on imaginary axis.
--/
+/-- `F(it) > 0` for all `t > 0`. Blueprint: `F = 9·(DE₄)²` and `DE₄ > 0` on the imaginary axis. -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   rw [F_eq_nine_DE₄_sq]
-  have _ := DE₄_imag_axis_pos
+  have := DE₄_imag_axis_pos
   fun_prop (disch := positivity)
 
-/--
-`F(it)` is real for all `t > 0`.
-Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
--/
+/-- `F(it)` is real for all `t > 0`. -/
 theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
 theorem F₁_imag_axis_real : ResToImagAxis.Real F₁ := by unfold F₁; fun_prop
@@ -618,15 +582,12 @@ private lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (h
 theorem E₂E₄_sub_E₆_div_q_tendsto :
     Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
       atImInfty (nhds (720 : ℂ)) := by
-  have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
-      720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-        cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
   have h_eq : ∀ z : ℍ,
       (E₂ z * E₄ z - E₆ z) / cexp (2 * π * Complex.I * z) =
       720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
         cexp (2 * π * Complex.I * (n - 1) * z)) := by
     intro z
-    rw [h_rw z, mul_div_assoc, ← tsum_div_const]
+    rw [E₂_mul_E₄_sub_E₆, mul_div_assoc, ← tsum_div_const]
     congr 1; apply tsum_congr; intro n
     rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
   simp_rw [h_eq, sigma3_qexp_reindex_pnat_nat]
@@ -660,10 +621,10 @@ private theorem Θ₂_div_exp_tendsto :
 private theorem H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
       atImInfty (nhds (16 : ℂ)) := by
-  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) =
-      (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := fun z => by
-    simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring
-  simp_rw [h_eq]; convert Θ₂_div_exp_tendsto.pow 4; norm_num
+  simp_rw [show ∀ z : ℍ, H₂ z / cexp (π * I * z) = (Θ₂ z / cexp (π * I * z / 4)) ^ 4 from
+    fun z => by simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring]
+  convert Θ₂_div_exp_tendsto.pow 4
+  norm_num
 
 private lemma H₂_eventually_ne_zero : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 :=
   eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
@@ -726,10 +687,7 @@ private theorem D_diff_div_q_tendsto :
     Tendsto (fun z : ℍ => D (fun w => E₂ w * E₄ w - E₆ w) z /
       cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) := by
-  have h_rw : ∀ z : ℍ, D (fun w => E₂ w * E₄ w - E₆ w) z =
-      720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
-        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := D_diff_qexp
-  simp_rw [h_rw]
+  simp_rw [D_diff_qexp]
   have h_eq : ∀ z : ℍ,
       (720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z)) / cexp (2 * π * I * z) =
@@ -792,14 +750,11 @@ theorem D_F_div_F_tendsto :
   have hf_div_q : Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) :=
     E₂E₄_sub_E₆_div_q_tendsto.congr fun z => by simp only [hf_def, ModularForm.toFun_eq_coe]
-  have hDf_div_q : Tendsto (fun z : ℍ => D f z / cexp (2 * π * Complex.I * z))
-      atImInfty (nhds (720 : ℂ)) := D_diff_div_q_tendsto
-  have h_720_ne : (720 : ℂ) ≠ 0 := by norm_num
   have hDf_div_f : Tendsto (fun z : ℍ => D f z / f z) atImInfty (nhds 1) := by
     have h_eq : ∀ z : ℍ, D f z / f z = (D f z / cexp (2 * π * Complex.I * z)) /
         (f z / cexp (2 * π * Complex.I * z)) := fun z => by field_simp [Complex.exp_ne_zero]
     simp_rw [h_eq, show (1 : ℂ) = 720 / 720 by norm_num]
-    exact hDf_div_q.div hf_div_q h_720_ne
+    exact D_diff_div_q_tendsto.div hf_div_q (by norm_num)
   have h_F_ne := eventually_ne_zero_of_tendsto_div
     (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
   simpa using (hDf_div_f.const_mul (2 : ℂ)).congr' (by
@@ -927,9 +882,9 @@ theorem D_G_div_G_tendsto :
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   unfold L₁₀
-  have hF := F_imag_axis_real
-  have hG := G_imag_axis_real
-  have hGh := G_holo
+  have := F_imag_axis_real
+  have := G_imag_axis_real
+  have := G_holo
   fun_prop
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
@@ -1098,10 +1053,9 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
     G (S • z) = -z ^ 10 * H₄ z ^ 3 * (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-  have hG_expand : G (S • z) = H₂ (S • z) ^ 3 *
-      ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
-       (5 : ℝ) * H₄ (S • z) ^ 2) := rfl
-  simp only [hG_expand, H₂_S_action', H₄_S_action', ofReal_ofNat]
+  change H₂ (S • z) ^ 3 * ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
+      (5 : ℝ) * H₄ (S • z) ^ 2) = _
+  simp only [H₂_S_action', H₄_S_action', ofReal_ofNat]
   ring
 
 theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
@@ -1130,8 +1084,8 @@ the limit of F/G as t → 0⁺.
 /-- F₁ has a Fourier expansion starting at index 1 (it's a cusp form).
 F₁ = E₂*E₄ - E₆ = 720 * ∑_{n≥1} n*σ₃(n)*q^n -/
 lemma F₁_fourier_expansion (z : ℍ) :
-    F₁ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
-  exact E₂_mul_E₄_sub_E₆ z
+    F₁ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) :=
+  E₂_mul_E₄_sub_E₆ z
 
 /-- E₄.resToImagAxis tends to 1 at atTop. -/
 lemma E₄_resToImagAxis_tendsto_one : Tendsto E₄.toFun.resToImagAxis atTop (nhds 1) :=
@@ -1210,9 +1164,9 @@ lemma numerator_tendsto_at_infty :
     refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
     filter_upwards [eventually_gt_atTop 0] with s hs
     unfold FReal
-    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
-    have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
-    simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
+    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
+      Complex.mul_re, show (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) by norm_cast,
+      Complex.ofReal_re, Complex.ofReal_im]
     ring
   have hF₁E₄ : Tendsto (fun s ↦ s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0) := by
     refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
@@ -1238,30 +1192,17 @@ lemma G_functional_eq_real {s : ℝ} (hs : 0 < s) :
     GReal (1 / s) = s ^ 10 * (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2) := by
-  -- From G_functional_equation' and the fact that H₂, H₄ are real on imaginary axis
   have hG := G_functional_equation' hs
-  have hH₂_eq := ResToImagAxis.Real.eq_real_part H₂_imag_axis_real s
-  have hH₄_eq := ResToImagAxis.Real.eq_real_part H₄_imag_axis_real s
-  rw [hH₂_eq, hH₄_eq] at hG
+  rw [ResToImagAxis.Real.eq_real_part H₂_imag_axis_real s,
+    ResToImagAxis.Real.eq_real_part H₄_imag_axis_real s] at hG
   apply Complex.ofReal_injective
   convert hG using 1
   push_cast
   ring
 
-/--
-$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
-
-Proof outline (following blueprint Lemma 8.8):
-1. Change of variables: lim_{t→0⁺} F(it)/G(it) = lim_{s→∞} F(i/s)/G(i/s)
-2. Apply functional equations:
-   - F(i/s) = s^12*F(is) - 12s^11/π*F₁(is)*E₄(is) + 36s^10/π²*E₄(is)²
-   - G(i/s) = s^10*H₄(is)³*(2H₄(is)² + 5H₄(is)*H₂(is) + 5H₂(is)²)
-3. Divide to get:
-   F(i/s)/G(i/s) = [s²*F(is) - 12s/π*F₁(is)*E₄(is) + 36/π²*E₄(is)²] /
-                   [H₄(is)³*(2H₄(is)² + 5H₄(is)*H₂(is) + 5H₂(is)²)]
-4. As s→∞: F, F₁ are cusp forms (decay to 0), E₄(is)→1, H₂(is)→0, H₄(is)→1
-5. Numerator → 36/π², denominator → 2, so limit = 18/π²
--/
+/-- $\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
+Blueprint: Lemma 8.8. Change variables `t = 1/s`, apply the functional equations for `F` and `G`,
+then take the limit as `s → ∞` (numerator → 36/π², denominator → 2). -/
 theorem FmodG_rightLimitAt_zero :
     Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
   let rhs : ℝ → ℝ := fun s ↦
@@ -1314,20 +1255,20 @@ theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
   rw [sub_neg]
-  -- Helper: FmodGReal u ≤ L for any u > 0 (from limit + strict antitonicity)
   have hLe : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu => by
     by_contra hGt
     push Not at hGt
-    have hLim := FmodG_rightLimitAt_zero; rw [Metric.tendsto_nhdsWithin_nhds] at hLim
+    have hLim := FmodG_rightLimitAt_zero
+    rw [Metric.tendsto_nhdsWithin_nhds] at hLim
     obtain ⟨δ, _, hLim'⟩ := hLim _ (sub_pos.mpr hGt)
     set s := min (u / 2) (δ / 2)
     have hs : 0 < s := by positivity
     have hsd : dist s 0 < δ := by simp [abs_of_pos hs]; linarith [min_le_right (u / 2) (δ / 2)]
-    have hBound := hLim' hs hsd; rw [Real.dist_eq] at hBound
+    have hBound := hLim' hs hsd
+    rw [Real.dist_eq] at hBound
     have hStrict := FmodG_strictAntiOn (Set.mem_Ioi.mpr hs) (Set.mem_Ioi.mpr hu)
       (lt_of_le_of_lt (min_le_left _ _) (by linarith : u / 2 < u))
     linarith [abs_sub_lt_iff.mp hBound]
-  -- FmodGReal t < L: by strict antitonicity, FmodGReal t < FmodGReal (t/2) ≤ L
   have hGoal : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
     lt_of_lt_of_le (FmodG_strictAntiOn (Set.mem_Ioi.mpr (by linarith : (0:ℝ) < t/2))
       (Set.mem_Ioi.mpr ht) (by linarith : t / 2 < t)) (hLe (t / 2) (by linarith))
