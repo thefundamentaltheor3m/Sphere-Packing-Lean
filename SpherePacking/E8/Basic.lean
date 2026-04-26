@@ -269,8 +269,7 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
   set c' := Matrix.vecMul v (E8Inverse R)
   have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8)
       (hk : c' k = ∑ i, v i * w i := by
-        simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) :
-      ∃ n : ℤ, (n : R) = c' k :=
+        simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) : ∃ n : ℤ, (n : R) = c' k :=
     let ⟨n, hn⟩ := exists_cast_eq_vecMul_E8Inverse_aux (R := R) v w hv hw
     ⟨n, hn.trans hk.symm⟩
   obtain ⟨c0, hc0⟩ : ∃ n : ℤ, (n : R) = c' 0 := by
