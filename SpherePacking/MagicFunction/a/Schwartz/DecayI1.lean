@@ -90,8 +90,7 @@ lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 *
   calc
     ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
     _ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
-        rw [show ‖(-π : ℂ)‖ = (π : ℝ) by
-          simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
+        rw [show ‖(-π : ℂ)‖ = (π : ℝ) by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
         gcongr; exact norm_add_le _ _
     _ ≤ (π : ℝ) * (1 + 1) := by
         gcongr <;> [simp; simpa [one_div, Complex.norm_real] using inv_le_one_of_one_le₀
@@ -171,13 +170,13 @@ lemma integrable_exp_neg_two_pi : Integrable (fun s : ℝ ↦ rexp (-(2 * π) * 
     (MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := (0 : ℝ)) (C₀ := (1 : ℝ)))
 
 lemma exp_neg_pi_mul_div_le_exp_pi_abs (r s : ℝ) (hs : 1 ≤ s) :
-    rexp (-π * r / s) ≤ rexp (π * |r|) := by
-  have hle : (-r / s : ℝ) ≤ |r| := (by
-    simpa [abs_div, abs_neg, abs_of_nonneg (zero_le_one.trans hs)] using
-      le_abs_self (-r / s) : (-r / s : ℝ) ≤ |r| / s).trans (div_le_self (abs_nonneg r) hs)
-  refine Real.exp_le_exp.2 ?_
-  simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using
-    mul_le_mul_of_nonneg_left hle Real.pi_pos.le
+    rexp (-π * r / s) ≤ rexp (π * |r|) :=
+  Real.exp_le_exp.2 <| by
+    simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using
+      mul_le_mul_of_nonneg_left ((by
+        simpa [abs_div, abs_neg, abs_of_nonneg (zero_le_one.trans hs)] using
+          le_abs_self (-r / s) : (-r / s : ℝ) ≤ |r| / s).trans (div_le_self (abs_nonneg r) hs))
+        Real.pi_pos.le
 
 lemma integrable_gN (n : ℕ) (r : ℝ) : Integrable (gN n r) μ := by
   let K : ℝ := (2 * π) ^ n * (Cφ * rexp (π * |r|))
