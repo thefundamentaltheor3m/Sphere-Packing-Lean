@@ -97,12 +97,11 @@ lemma exists_phi0_cancellation_bound :
                 (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by
     intro t ht0
     let z : ℍ := zI t ht0
-    have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
-        simpa [z] using modular_S_smul_zI t ht0]
-      simp [zI, div_eq_mul_inv]
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; rw [mul_pow]; simp
+    have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
+      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
+        simpa [z] using modular_S_smul_zI t ht0]; simp [zI, div_eq_mul_inv]
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
@@ -255,8 +254,6 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         (by simpa using mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
           (by nlinarith [Real.pi_pos, (z.2).le])) hCφ₀_pos.le)
   have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht0.le, ht.2]
-  have hexp_le_one : Real.exp (-π * u * t) ≤ 1 :=
-    Real.exp_le_one_iff.2 (by nlinarith [mul_nonneg (mul_nonneg Real.pi_pos.le hu.le) ht0.le])
   have hbr : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
@@ -288,8 +285,9 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
             ((8640 / π : ℝ) : ℂ) * t -
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
     simpa [aAnotherIntegrand, norm_mul, mul_assoc] using mul_le_mul_of_nonneg_left
-      (by rw [norm_ofReal_exp]; exact hexp_le_one : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1)
-      (norm_nonneg _)
+      (by rw [norm_ofReal_exp]; exact Real.exp_le_one_iff.2 (by
+        nlinarith [mul_nonneg (mul_nonneg Real.pi_pos.le hu.le) ht0.le]) :
+        ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1) (norm_nonneg _)
   nlinarith [hmul.trans hbr, mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le]
 
 lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
