@@ -40,11 +40,10 @@ public lemma exists_phi2'_sub_720_bound_ge :
   rcases exists_Delta_sub_q_bound with ⟨CΔq, hCΔq_pos, hΔq⟩
   rcases exists_E2E4_sub_E6_sub_720q_bound with ⟨CA, hCA_pos, hAq⟩
   let A : ℝ := max (1 : ℝ) AΔ
-  have hA1 : 1 ≤ A := le_max_left _ _
   let q1 : ℝ := Real.exp (-2 * π)
-  have hq1 : q1 < 1 := by simpa [q1] using exp_neg_two_pi_lt_one
   let E4B : ℝ := 1 + CE4 * q1
   let C : ℝ := 1 + CΔinv * (E4B * CA + 720 * (CE4 + CΔq))
+  have hA1 : 1 ≤ A := le_max_left _ _
   refine ⟨C, A, by positivity, hA1, ?_⟩
   intro t ht0 htA
   have ht1 : 1 ≤ t := le_trans hA1 htA
@@ -69,8 +68,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
     calc ‖E₄ z * (q : ℂ) - Δ z‖
           = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ := by congr 1; ring
       _ ≤ _ + _ := norm_add_le _ _
-      _ ≤ (CE4 + CΔq) * q ^ (2 : ℕ) := by
-          linarith [(by simpa [norm_sub_rev] using hΔerr : ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ))]
+      _ ≤ _ := by linarith [(by simpa [norm_sub_rev] using hΔerr :
+              ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ))]
   have hrew : φ₂' z - (720 : ℂ) =
       ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)) / (Δ z) := by
     dsimp [φ₂']; field_simp [Δ_ne_zero z]
@@ -79,7 +78,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
         (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
     have hA : ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ))‖ ≤
         (E4B * CA) * q ^ (2 : ℕ) := by
-      have := norm_mul_le_of_le hE4norm (hAq t ht0 ht1); linarith
+      linarith [norm_mul_le_of_le hE4norm (hAq t ht0 ht1)]
     have hB : ‖(720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ ≤ (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
       rw [norm_mul, Complex.norm_ofNat]
       linarith [mul_le_mul_of_nonneg_left hE4qΔ (by norm_num : (0:ℝ) ≤ 720)]
@@ -87,7 +86,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
           = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)) +
               (720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ := by congr 1; ring
       _ ≤ _ + _ := norm_add_le _ _
-      _ ≤ (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by linarith
+      _ ≤ _ := by linarith
   have hq2 : q ^ (2 : ℕ) * Real.exp (2 * π * t) = q := by
     simpa [q] using exp_neg_two_pi_pow_two_mul_exp_two_pi (t := t)
   have : ‖φ₂' z - (720 : ℂ)‖ ≤ (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q := by
@@ -95,8 +94,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
     calc ‖φ₂' z - (720 : ℂ)‖
           = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ * ‖(Δ z)⁻¹‖ := by
               simp [hrew, div_eq_mul_inv]
-      _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp (2 * π * t)) :=
-            mul_le_mul (by simpa [K] using hnum) hΔinv' (norm_nonneg _) (by positivity)
+      _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp (2 * π * t)) := mul_le_mul
+            (by simpa [K] using hnum) hΔinv' (norm_nonneg _) (by positivity)
       _ = (CΔinv * K) * q := by linear_combination (CΔinv * K) * hq2
   exact this.trans (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg)
 
@@ -122,7 +121,7 @@ lemma norm_base_add_e_sq_sub_one_sub_480q_le
     calc ‖(2 : ℂ) * b * e‖ = 2 * ‖b‖ * ‖e‖ := by simp [mul_assoc]
       _ ≤ 2 * B240 * (CE4 * q ^ (2 : ℕ)) := by gcongr
       _ = (2 * B240 * CE4) * q ^ (2 : ℕ) := by ring
-  have hquad : ‖e ^ (2 : ℕ)‖ ≤ (CE4 ^ 2) * q ^ (2 : ℕ) := by
+  have hquad : ‖e ^ (2 : ℕ)‖ ≤ (CE4 ^ 2) * q ^ (2 : ℕ) :=
     calc ‖e ^ (2 : ℕ)‖ = ‖e‖ ^ (2 : ℕ) := by simp [norm_pow]
       _ ≤ (CE4 * q ^ (2 : ℕ)) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) he _
       _ = (CE4 ^ 2) * q ^ (4 : ℕ) := by ring
@@ -150,8 +149,8 @@ lemma phi4_numerator_bound
   set B : ℂ := (Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * qC)
   set C : ℂ := (504 : ℂ) * (Δ z - qC)
   have hterm3 : ‖C‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) := by
-    rw [show ‖C‖ = 504 * ‖Δ z - qC‖ by simp [C]]
-    linarith [mul_le_mul_of_nonneg_left hΔ2err (by norm_num : (0:ℝ) ≤ 504)]
+    rw [show ‖C‖ = 504 * ‖Δ z - qC‖ by simp [C]]; linarith [mul_le_mul_of_nonneg_left hΔ2err
+      (by norm_num : (0:ℝ) ≤ 504)]
   calc ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖
         = ‖A - B - C‖ := by congr 1; simp only [A, B, C]; ring
     _ ≤ ‖A‖ + ‖B‖ + ‖C‖ := (norm_sub_le _ C).trans (by linarith [norm_sub_le A B])
@@ -168,12 +167,11 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   rcases exists_Delta_sub_q_bound with ⟨CΔq, hCΔq_pos, hΔq⟩
   rcases exists_Delta_sub_q_sub_neg24_qsq_bound with ⟨CΔ3, hCΔ3_pos, hΔ3⟩
   let A : ℝ := max (1 : ℝ) AΔ
-  have hA1 : 1 ≤ A := le_max_left _ _
   let q1 : ℝ := Real.exp (-2 * π)
-  have hq1_lt_one : q1 < 1 := by simpa [q1] using exp_neg_two_pi_lt_one
   let B240 : ℝ := 1 + 240 * q1
-  let C : ℝ := 1 + CΔinv *
-      ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
+  let C : ℝ := 1 + CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
+  have hA1 : 1 ≤ A := le_max_left _ _
+  have hq1_lt_one : q1 < 1 := by simpa [q1] using exp_neg_two_pi_lt_one
   refine ⟨C, A, by positivity, hA1, ?_⟩
   intro t ht0 htA
   have ht1 : 1 ≤ t := le_trans hA1 htA
@@ -191,16 +189,14 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       ‖(E₄ z) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ))‖ ≤
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ) := by
     set e : ℂ := E₄ z - ((1 : ℂ) + (240 : ℂ) * (q : ℂ))
-    have he : ‖e‖ ≤ CE4 * q ^ (2 : ℕ) := by
-      simpa [e, sub_eq_add_neg, add_assoc] using hE4err
+    have he : ‖e‖ ≤ CE4 * q ^ (2 : ℕ) := by simpa [e, sub_eq_add_neg, add_assoc] using hE4err
     have hE : E₄ z = ((1 : ℂ) + (240 : ℂ) * (q : ℂ)) + e := by
       simp [e, sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
     have hbase_norm : ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ B240 := by
       have := norm_add_le ((1 : ℂ)) ((240 : ℂ) * (q : ℂ))
       simp [abs_of_nonneg hq_nonneg, B240] at this ⊢; linarith [hq_le_q1]
-    simpa [hE.symm] using
-      norm_base_add_e_sq_sub_one_sub_480q_le (q := q) (CE4 := CE4) (B240 := B240)
-        hq_nonneg hq_le_one he hbase_norm
+    simpa [hE.symm] using norm_base_add_e_sq_sub_one_sub_480q_le (q := q) (CE4 := CE4)
+      (B240 := B240) hq_nonneg hq_le_one he hbase_norm
   have hΔ3err : ‖Δ z - ((q : ℂ) + (-24 : ℂ) * ((q : ℂ) ^ (2 : ℕ)))‖ ≤ CΔ3 * q ^ (3 : ℕ) := by
     simpa [z, q, pow_two] using hΔ3 t ht0 ht1
   have hExpq : (Real.exp (2 * π * t)) * q = 1 := by rw [← Real.exp_add]; simp
@@ -219,8 +215,8 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
     rw [show E * Δ z - ((1 : ℂ) + (-24 : ℂ) * qC) = E * (Δ z - approx) by rw [mul_sub, happ],
       norm_mul, show ‖E‖ = Real.exp (2 * π * t) from norm_ofReal_exp _]
     calc Real.exp (2*π*t) * ‖Δ z - approx‖
-        ≤ Real.exp (2*π*t) * (CΔ3 * q ^ (3 : ℕ)) :=
-          mul_le_mul_of_nonneg_left (by simpa [approx, qC] using hΔ3err) (Real.exp_pos _).le
+        ≤ Real.exp (2*π*t) * (CΔ3 * q ^ (3 : ℕ)) := mul_le_mul_of_nonneg_left
+            (by simpa [approx, qC] using hΔ3err) (Real.exp_pos _).le
       _ = CΔ3 * q ^ (2 : ℕ) := by linear_combination CΔ3 * hExpq3
   have hrew : φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ) =
       ((E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)) / (Δ z) := by
@@ -233,9 +229,8 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
     calc ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖
           = ‖(E₄ z)^2 - (Real.exp (2*π*t) : ℂ) * Δ z - (504:ℂ) * Δ z‖ * ‖(Δ z)⁻¹‖ := by
             rw [hrew, norm_div, div_eq_mul_inv, norm_inv]
-      _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp (2 * π * t)) :=
-          mul_le_mul (phi4_numerator_bound hE4sq hExpΔ (hΔq t ht0 ht1)) hΔinv'
-            (norm_nonneg _) (by positivity)
+      _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp (2 * π * t)) := mul_le_mul
+          (phi4_numerator_bound hE4sq hExpΔ (hΔq t ht0 ht1)) hΔinv' (norm_nonneg _) (by positivity)
       _ = (CΔinv * K) * q := by linear_combination (CΔinv * K) * hq2
   exact this.trans (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg)
 
