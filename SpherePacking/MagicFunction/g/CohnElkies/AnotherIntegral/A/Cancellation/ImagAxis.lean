@@ -194,12 +194,11 @@ private lemma exists_sub_partialSum_bound
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
 public lemma exists_E4_sub_one_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
-      ‖E₄ (zI t ht) - (1 : ℂ)‖ ≤ C * Real.exp (-2 * π * t) := by
-  obtain ⟨C, hCpos, hC⟩ := exists_sub_partialSum_bound
-    (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4) hΓ1 1
-  exact ⟨C, hCpos, fun t ht0 ht1 => by
-    simpa [qExpansionFormalMultilinearSeries_partialSum_one (f := E₄), E4_q_exp_zero]
-      using hC t ht0 ht1⟩
+      ‖E₄ (zI t ht) - (1 : ℂ)‖ ≤ C * Real.exp (-2 * π * t) :=
+  (exists_sub_partialSum_bound (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4) hΓ1 1).imp
+    fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
+      simpa [qExpansionFormalMultilinearSeries_partialSum_one (f := E₄), E4_q_exp_zero]
+        using hC t ht0 ht1⟩
 
 /--
 Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, where
@@ -208,12 +207,11 @@ Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, wher
 public lemma exists_E4_sub_one_sub_240q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖E₄ (zI t ht) - ((1 : ℂ) + (240 : ℂ) * (Real.exp (-2 * π * t) : ℂ))‖ ≤
-        C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-  obtain ⟨C, hCpos, hC⟩ := exists_sub_partialSum_bound
-    (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4) hΓ1 2
-  exact ⟨C, hCpos, fun t ht0 ht1 => by
-    simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := E₄), E4_q_exp_zero,
-      E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
+        C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) :=
+  (exists_sub_partialSum_bound (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4) hΓ1 2).imp
+    fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
+      simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := E₄), E4_q_exp_zero,
+        E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
 lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
   simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1,
@@ -229,10 +227,9 @@ Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`,
 public lemma exists_Delta_sub_q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) - (Real.exp (-2 * π * t) : ℂ)‖ ≤
-        C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-  obtain ⟨C, hCpos, hC⟩ := exists_sub_partialSum_bound
-    (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12) hΓ1 2
-  exact ⟨C, hCpos, fun t ht0 ht1 => by
+        C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) :=
+  (exists_sub_partialSum_bound (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12)
+      hΓ1 2).imp fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
     simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := Delta), Delta_q_exp_zero,
       Delta_q_one_term, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
@@ -244,10 +241,9 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) -
           ((Real.exp (-2 * π * t) : ℂ) + (-24 : ℂ) * ((Real.exp (-2 * π * t)) ^ (2 : ℕ) : ℂ))‖ ≤
-        C * (Real.exp (-2 * π * t)) ^ (3 : ℕ) := by
-  obtain ⟨C, hCpos, hC⟩ := exists_sub_partialSum_bound
-    (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12) hΓ1 3
-  exact ⟨C, hCpos, fun t ht0 ht1 => by
+        C * (Real.exp (-2 * π * t)) ^ (3 : ℕ) :=
+  (exists_sub_partialSum_bound (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12)
+      hΓ1 3).imp fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
     simpa [qExpansionFormalMultilinearSeries_partialSum_three (f := Delta), Delta_q_exp_zero,
       Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
