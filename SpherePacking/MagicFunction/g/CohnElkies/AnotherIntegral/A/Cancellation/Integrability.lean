@@ -108,7 +108,6 @@ lemma exists_phi0_cancellation_bound :
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
             ((12 / π : ℝ) : ℂ) * t * φ₂' z +
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * φ₄' z := by
-      have h0 := φ₀_S_transform_mul_sq z
       have hneg' :
           (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
             (t : ℂ) * ((t : ℂ) * φ₀ z) +
@@ -117,7 +116,7 @@ lemma exists_phi0_cancellation_bound :
         have h0' : φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
             φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) -
               (12 * Complex.I) / π * (z : ℂ) * φ₂' z - 36 / (π ^ 2) * φ₄' z := by
-          simpa [hzsq] using h0
+          simpa [hzsq] using φ₀_S_transform_mul_sq z
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
           mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
           mul_neg, neg_neg] using congrArg (fun w : ℂ => -w) <|
