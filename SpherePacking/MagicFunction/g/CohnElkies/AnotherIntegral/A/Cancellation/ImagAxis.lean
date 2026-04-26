@@ -95,8 +95,7 @@ public lemma norm_φ₀_imag_le :
   have ht0 : 0 < t := zero_lt_one.trans_le ht
   simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
     simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
-    zI_im t ht0] using
-    hC (zI t ht0) (by simpa [zI_im t ht0] using (show (1/2 : ℝ) < 1 by norm_num).trans_le ht)
+    zI_im t ht0] using hC (zI t ht0) (by simpa [zI_im t ht0] using by linarith)
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
@@ -124,12 +123,11 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have hcoeff_nat : m * (σ 3 m) ≤ M ^ 5 := by
-    refine (?_ : m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)
-    simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
-      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)
-  calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by simp
-    _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
+  have hcoeff_nat : m * (σ 3 m) ≤ M ^ 5 :=
+    (by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
+      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
+      m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)
+  simpa using (by exact_mod_cast hcoeff_nat : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
 
 section partialSum
 variable {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -335,12 +333,12 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   have hmain :
       ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
         (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
-    have hrew : (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) = (720 : ℂ) * (∑' n : ℕ, f n) := by
-      rw [E₂_mul_E₄_sub_E₆ z,
-        ← show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
-          ∑' n : ℕ, f n by simpa [hqexp] using hsplit]
-      ring
-    rw [hrew, norm_mul, show ‖(720 : ℂ)‖ = 720 by simp, mul_assoc]
+    rw [show (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) = (720 : ℂ) * (∑' n : ℕ, f n) by
+        rw [E₂_mul_E₄_sub_E₆ z,
+          ← show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
+            ∑' n : ℕ, f n by simpa [hqexp] using hsplit]
+        ring,
+      norm_mul, show ‖(720 : ℂ)‖ = 720 by simp, mul_assoc]
     gcongr
     exact (norm_tsum_le_tsum_norm hnorm_summ).trans <|
       (hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left _)).trans_eq tsum_mul_left
