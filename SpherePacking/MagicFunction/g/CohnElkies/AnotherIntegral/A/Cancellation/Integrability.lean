@@ -63,7 +63,7 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
       C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
   have hexp_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
     (Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA (by nlinarith [Real.pi_pos])).trans <| by
-      simpa [one_mul] using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
+      simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
         (Real.exp_pos _).le
   have hscale : M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
     simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
@@ -100,8 +100,8 @@ lemma exists_phi0_cancellation_bound :
     intro t ht0
     let z : ℍ := zI t ht0
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) from
-        by simpa [z] using modular_S_smul_zI t ht0]
+      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
+        simpa [z] using modular_S_smul_zI t ht0]
       simp [zI, div_eq_mul_inv]
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; rw [mul_pow]; simp
@@ -142,7 +142,7 @@ lemma exists_phi0_cancellation_bound :
         (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
           (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
             (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
-      simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) from by
+      simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) by
         simpa using congrArg φ₀'' hcoe.symm] using hST'
     push_cast; linear_combination hSTpow
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
@@ -219,7 +219,7 @@ lemma exists_phi0_cancellation_bound :
       rw [show (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' from by
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' by
         simpa [x, y, z'] using hrewrite ht0]
       refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])).trans
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
@@ -283,13 +283,12 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
       simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nn]
         using mul_le_mul_of_nonneg_left hφ0'' ht2nn
     have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
-      rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) from by
+      rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
         simp [-Complex.ofReal_exp, B]]
       exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2]))
         (norm_nonneg _)
     have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
-      rw [show ‖Cc‖ = ‖((8640 / π : ℝ) : ℂ)‖ * t from by
-        simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]]
+      simp only [Cc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]
       simpa using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
     grind only
   have hmul : ‖aAnotherIntegrand u t‖ ≤
@@ -298,8 +297,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
             ((8640 / π : ℝ) : ℂ) * t -
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
     have h1 : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
-      rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
-        simpa using norm_ofReal_exp (-π * u * t)]; exact hexp_le_one
+      rw [norm_ofReal_exp]; exact hexp_le_one
     simpa [aAnotherIntegrand, norm_mul, mul_assoc] using
       mul_le_mul_of_nonneg_left h1 (norm_nonneg _)
   nlinarith [hmul.trans hbr, mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le]
@@ -348,9 +346,7 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
 /-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
 public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ) from by
-    ext t; refine ⟨fun ht => (le_total t 1).imp (fun h1 => ⟨ht, h1⟩) id, ?_⟩
-    rintro (ht | ht) <;> [exact ht.1; exact lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht]]
+  rw [← Set.Ioc_union_Ici_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_lt_one]
   exact (aAnotherIntegrand_integrableOn_Ioc hu).union (aAnotherIntegrand_integrableOn_Ici hu)
 
 end
