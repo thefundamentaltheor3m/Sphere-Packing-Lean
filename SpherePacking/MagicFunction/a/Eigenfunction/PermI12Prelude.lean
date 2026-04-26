@@ -80,10 +80,9 @@ lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
   have hw0 : w ≠ 0 := fun h => absurd (show w.im = 0 by simp [h]) hw.ne'
   have hw' : 0 < (w - 1).im := by simpa using hw
   have hw1 : w - 1 ≠ 0 := fun h => absurd (show (w - 1).im = 0 by simp [h]) hw'.ne'
-  have harg : (-1 / ((-1 / w) + 1) : ℂ) = (-1 / (w - 1)) - 1 := by grind only
-  have hφ : φ₀'' (-1 / ((-1 / w) + 1)) = φ₀'' (-1 / (w - 1)) := by
-    rw [harg]; exact φ₀''_sub_one (z := -1 / (w - 1)) (neg_one_div_sub_one_im_pos w hw)
-  rw [mul_assoc, one_sub_inv_sq_mul_sq w hw0, hφ]
+  rw [mul_assoc, one_sub_inv_sq_mul_sq w hw0,
+    show (-1 / ((-1 / w) + 1) : ℂ) = (-1 / (w - 1)) - 1 by grind only,
+    φ₀''_sub_one (z := -1 / (w - 1)) (neg_one_div_sub_one_im_pos w hw)]
 
 lemma I_div_neg_one_div_pow_four_mul_one_div_sq (w : ℂ) :
     ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (1 / w ^ (2 : ℕ)) = w ^ (2 : ℕ) := by

@@ -127,17 +127,16 @@ lemma exists_bound_norm_ψI'_z₅' :
   have htle : t ≤ 1 := le_of_lt ht.2
   have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ M :=
     hM (1 / t) (by simpa using one_div_le_one_div_of_le ht0 htle)
-  have hψIle : ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
-    have hEq := ψI'_z₅'_eq (t := t) ⟨ht.1, htle⟩; simp_all
-  calc ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
+  calc ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
+        have hEq := ψI'_z₅'_eq (t := t) ⟨ht.1, htle⟩; simp_all
     _ ≤ M := by
       simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht0.le htle)
         ((norm_nonneg _).trans hψS)
 
 lemma exists_bound_norm_hf :
-    ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
-  rcases exists_bound_norm_ψI'_z₅' with ⟨M, hM⟩
-  exact ⟨M, fun t ht => by simpa [hf] using hM t ht⟩
+    ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M :=
+  let ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
+  ⟨M, fun t ht => by simpa [hf] using hM t ht⟩
 
 def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
 
@@ -162,9 +161,8 @@ public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
     contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I) (fun n x => by
       simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
   -- `simp` normalizes `(-2) * f` to `-(2 * f)`, so match that normal form.
-  have hEq : (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' :=
-    funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm
-  simpa [hEq] using hmul
+  simpa [show (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' from
+    funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm] using hmul
 
 /-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`.
 
@@ -188,10 +186,6 @@ public theorem decay_J₅' :
       (SpherePacking.Integration.integrable_const_mul_pow_muIoo01
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   let Kn : ℝ := ∫ t, bound t ∂μ
-  have hKn_nonneg : 0 ≤ Kn := by
-    simpa [Kn, bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
-      (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hiterI : iteratedDeriv n (fun y : ℝ => I 0 y) = fun y : ℝ ↦ I n y :=
     SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
@@ -238,8 +232,6 @@ public theorem decay_J₅' :
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
-  have hpoly : x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B := by
-    simpa [mul_assoc] using hB x hx
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖
         = x ^ k * ‖iteratedDeriv n J₅' x‖ := by
@@ -250,7 +242,10 @@ public theorem decay_J₅' :
     _ ≤ x ^ k * (2 * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
     _ = (2 * Kn) * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
     _ ≤ (2 * Kn) * B := by
-      simpa using mul_le_mul_of_nonneg_left hpoly (by positivity : (0 : ℝ) ≤ 2 * Kn)
+      simpa using mul_le_mul_of_nonneg_left
+        (by simpa [mul_assoc] using hB x hx :
+          x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B)
+        (by positivity : (0 : ℝ) ≤ 2 * Kn)
 
 end
 
