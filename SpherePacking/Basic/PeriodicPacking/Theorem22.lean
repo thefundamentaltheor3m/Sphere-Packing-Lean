@@ -33,8 +33,7 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
   simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
     (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
       ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) <| by
-    have : ‖x‖ < R - L := by simpa [mem_ball_zero_iff] using hx
-    linarith [hL _ (by simpa using hg : g.val + x ∈ D)]
+    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx]
 
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
@@ -209,17 +208,17 @@ open Asymptotics Filter ENNReal EuclideanSpace
 
 lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  suffices Filter.Tendsto
-      (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) by
-    rw [ENNReal.tendsto_atTop (by simp)] at this
-    obtain ⟨k, hk⟩ := this ε hε
-    refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
-    obtain ⟨hk₀, hk₁⟩ := max_le_iff.mp hk'
-    have := hk k' hk₁
-    rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
-      ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
-  exact Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
-    tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
+  have htend : Filter.Tendsto
+      (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) :=
+    Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
+      tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
+  rw [ENNReal.tendsto_atTop (by simp)] at htend
+  obtain ⟨k, hk⟩ := htend ε hε
+  refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
+  obtain ⟨hk₀, hk₁⟩ := max_le_iff.mp hk'
+  have := hk k' hk₁
+  rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
+    ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
 
 lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
@@ -267,11 +266,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
         / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)))) ?_ ?_
   · rw [EventuallyEq, eventually_atTop]
-    refine ⟨1, fun R hR => ?_⟩
-    rw [ENNReal.div_div_div_cancel_left
+    exact ⟨1, fun R hR => by rw [ENNReal.div_div_div_cancel_left
       (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
       (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]⟩
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
