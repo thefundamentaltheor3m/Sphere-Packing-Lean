@@ -129,7 +129,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt'.const_mul ((π ^ n) * C₀)
   refine Integrable.mono' hbound_int (aestronglyMeasurable_gN (n := n) (r := r)) <|
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
-  have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
+  have ht0 : 0 ≤ t := zero_le_one.trans ht
   have hcoeff : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by
     simpa using (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le
   calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
@@ -144,16 +144,11 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
       (∫ t in Ici (1 : ℝ), gN (n + 1) r₀ t) r₀ := by
   let μ : Measure ℝ := μIciOne
-  have hF_meas : ∀ᶠ r in 𝓝 r₀, AEStronglyMeasurable (gN n r) μ :=
-    .of_forall fun r ↦ by simpa [μ] using aestronglyMeasurable_gN (n := n) (r := r)
-  have hF_int : Integrable (gN n r₀) μ := integrable_gN (n := n) (r := r₀) hr₀
-  have hF'_meas : AEStronglyMeasurable (gN (n + 1) r₀) μ :=
-    aestronglyMeasurable_gN (n := n + 1) (r := r₀)
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
   let bound : ℝ → ℝ := fun t ↦ (π ^ (n + 1)) * (t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) * C₀
   have h_bound : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r t‖ ≤ bound t := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht r hr ↦ ?_
-    have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
+    have ht0 : 0 ≤ t := zero_le_one.trans ht
     have hr_lower : r₀ - 1 ≤ r := by
       have hball : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
       nlinarith [abs_lt.1 hball |>.1]
@@ -190,7 +185,9 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
   exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
     (F := fun r t ↦ gN n r t) (x₀ := r₀) (s := Metric.ball r₀ (1 : ℝ))
     (hs := by simpa using Metric.ball_mem_nhds r₀ (by norm_num))
-    (hF_meas := hF_meas) (hF_int := hF_int) (hF'_meas := hF'_meas)
+    (hF_meas := .of_forall fun r ↦ by simpa [μ] using aestronglyMeasurable_gN (n := n) (r := r))
+    (hF_int := integrable_gN (n := n) (r := r₀) hr₀)
+    (hF'_meas := aestronglyMeasurable_gN (n := n + 1) (r := r₀))
     (h_bound := h_bound) (bound_integrable := bound_integrable) (h_diff := h_diff)).2
 
 lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
@@ -199,12 +196,12 @@ lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
   | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
   | succ n hn =>
     intro r hr
-    have hEv : (iteratedDeriv n I₆') =ᶠ[𝓝 r]
-        (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) := by
-      filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx
     calc
       iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by simp [iteratedDeriv_succ]
-      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r := by simpa using hEv.deriv_eq
+      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r := by
+        simpa using (show (iteratedDeriv n I₆') =ᶠ[𝓝 r]
+            (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) from by
+          filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx).deriv_eq
       _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
         simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
 
@@ -221,31 +218,29 @@ lemma iteratedDeriv_bound (n : ℕ) :
   have hA_nonneg : 0 ≤ A :=
     MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ))
       measurableSet_Ici fun t ht ↦ by
-        have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
-        simp only [B]; positivity
+        have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
   have hExp : ∀ t ∈ Ici (1 : ℝ), rexp (-π * r * t) ≤ rexp (-π * r) := fun t ht ↦
     Real.exp_le_exp.2 (by nlinarith [Real.pi_pos,
       mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
-  have hpoint : ∀ t ∈ Ici (1 : ℝ), ‖gN n r t‖ ≤ B t * rexp (-π * r) := fun t ht ↦ by
-    have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
-    calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
-      _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
-        mul_le_mul (by simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0)
-          (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) (by positivity))
-          (by positivity) (by positivity)
-      _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
   simpa [mul_assoc, mul_left_comm, mul_comm] using show
       ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) from calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
       rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']; simp
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
       gcongr
-      exact (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
+      refine (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
         (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := r) hr').norm)
         (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
-        measurableSet_Ici fun t ht ↦ by simpa using hpoint t ht
+        measurableSet_Ici fun t ht ↦ by
+        have ht0 : 0 ≤ t := zero_le_one.trans ht
+        calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
+          _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
+            mul_le_mul (by simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0)
+              (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) (by positivity))
+              (by positivity) (by positivity)
+          _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
     _ = 2 * (A * rexp (-π * r)) := by
       rw [show (∫ t in Ici (1 : ℝ), B t * rexp (-π * r)) =
         (∫ t in Ici (1 : ℝ), B t) * rexp (-π * r) from by
