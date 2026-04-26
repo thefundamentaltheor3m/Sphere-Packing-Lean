@@ -42,9 +42,8 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) :
     2 * r ≤ dist x y := by
   by_contra hlt
-  have hlt' : dist x y < 2 * r := lt_of_not_ge hlt
   let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
-  have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith
+  have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith [lt_of_not_ge hlt]
   have hmx : m ∈ ball x r := by
     simpa [Metric.mem_ball, dist_comm, m] using (show dist m x < r by simpa [m] using hhalf)
   have hmy : m ∈ ball y r := by
@@ -170,17 +169,14 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
   · specialize hx i
     refine ⟨?_, ?_⟩
     · have : 0 ≤ (L * L⁻¹) * x.ofLp i := by
-        have := mul_nonneg (le_of_lt hL) hx.1
-        simpa [mul_assoc] using this
+        simpa [mul_assoc] using mul_nonneg hL.le hx.1
       simpa [mul_inv_cancel₀ hLne] using this
     · have : (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1 := by
-        have := mul_lt_mul_of_pos_left hx.2 hL
-        simpa [mul_assoc] using this
+        simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL
       simpa [mul_inv_cancel₀ hLne] using this
   · specialize hx i
-    refine ⟨mul_nonneg (le_of_lt hLinv) hx.1, ?_⟩
-    have : (L⁻¹ : ℝ) * x.ofLp i < (L⁻¹ : ℝ) * L := mul_lt_mul_of_pos_left hx.2 hLinv
-    simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using this
+    refine ⟨mul_nonneg hLinv.le hx.1, ?_⟩
+    simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using mul_lt_mul_of_pos_left hx.2 hLinv
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) :
@@ -243,11 +239,7 @@ public lemma volume_coordCube (L : ℝ) :
     volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
   have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) :=
     MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico
-  rw [show volume (coordCube d L) =
-      volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) by
-    simpa [coordCube_eq_preimage_ofLp (d := d) (L := L)] using
-      volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) hmeas,
-    volume_pi, Measure.pi_pi]
+  rw [coordCube_eq_preimage_ofLp, volume_preimage_ofLp _ hmeas, volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
 
 public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
@@ -261,11 +253,7 @@ public lemma volume_coordCubeInner (L r : ℝ) :
     volume (coordCubeInner d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
   have hmeas : MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) :=
     MeasurableSet.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc
-  rw [show volume (coordCubeInner d L r) =
-      volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) by
-    simpa [coordCubeInner_eq_preimage_ofLp (d := d) (L := L) (r := r)] using
-      volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) hmeas,
-    volume_pi, Measure.pi_pi]
+  rw [coordCubeInner_eq_preimage_ofLp, volume_preimage_ofLp _ hmeas, volume_pi, Measure.pi_pi]
   simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
 
 public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
@@ -301,10 +289,10 @@ public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < 
     ball x r ⊆ v +ᵥ coordCube d L := by
   have hx' : (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x ∈ coordCubeInner d L r := by
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx
-  have h := ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
-    (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r)
-    (ball_subset_coordCube_of_mem_inner hx')
-  simpa [add_vadd, Submodule.vadd_def, vadd_eq_add, add_assoc, add_comm] using h
+  simpa [add_vadd, Submodule.vadd_def, vadd_eq_add, add_assoc, add_comm] using
+    ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
+      (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r)
+      (ball_subset_coordCube_of_mem_inner hx')
 
 public lemma coordCube_subset_ball (L : ℝ) (hL : 0 < L) :
     ∃ C : ℝ, coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
@@ -317,9 +305,9 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     simpa [cubeLattice] using
       (ZSpan.setFinite_inter (b := cubeBasis d L hL)
         (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)
-  let f : cubeLattice d L hL ↪ EuclideanSpace ℝ (Fin d) :=
-    ⟨fun g => (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩
-  exact (Set.Finite.preimage_embedding f hfinE).subset fun g hg => ⟨hg, g.property⟩
+  refine (Set.Finite.preimage_embedding (f := ⟨fun g : cubeLattice d L hL =>
+    (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩) hfinE).subset fun g hg => ?_
+  exact ⟨hg, g.property⟩
 
 end PeriodicConstantApprox
 
