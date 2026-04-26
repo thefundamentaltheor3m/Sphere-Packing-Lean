@@ -158,10 +158,8 @@ lemma exp_div_continuousOn (r : ℝ) :
       ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ))).cexp
 
 lemma g_continuousOn (r : ℝ) : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : ℝ)) :=
-  show ContinuousOn (fun s : ℝ ↦ (-I : ℂ) * φ₀'' (I * (s : ℂ)) * ((s : ℂ) ^ (-4 : ℤ)) *
-      cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ))) (Ici (1 : ℝ)) from
-    (((continuousOn_const.mul φ₀''_I_mul_continuousOn).mul
-      zpow_neg_four_continuousOn).mul continuousOn_const).mul (exp_div_continuousOn (r := r))
+  (((continuousOn_const.mul φ₀''_I_mul_continuousOn).mul zpow_neg_four_continuousOn).mul
+    continuousOn_const).mul (exp_div_continuousOn (r := r))
 
 lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) μ := by
   simpa [μ, SpherePacking.Integration.μIciOne] using
