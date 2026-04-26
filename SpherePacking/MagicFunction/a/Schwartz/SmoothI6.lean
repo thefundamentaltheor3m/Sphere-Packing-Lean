@@ -44,37 +44,36 @@ def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
 lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) (μ) := by
   refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ici
-  have hcoeff : Continuous (fun t : ℝ ↦ (coeff t) ^ n) := by unfold coeff; fun_prop
-  have hg : ContinuousOn (g r) (Ici (1 : ℝ)) :=
-    (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr fun t ht ↦ by
-      dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
-      rw [MagicFunction.Parametrisations.z₆'_eq_of_mem ht,
-        show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
-          ring_nf; simp [I_sq]]
-      ac_rfl
-  simpa [gN] using hcoeff.continuousOn.mul hg
+  simpa [gN] using
+    (show Continuous (fun t : ℝ ↦ (coeff t) ^ n) by unfold coeff; fun_prop).continuousOn.mul
+      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr fun t ht ↦ by
+        dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
+        rw [MagicFunction.Parametrisations.z₆'_eq_of_mem ht,
+          show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
+            ring_nf; simp [I_sq]]
+        ac_rfl)
 
 lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ) := by
   obtain ⟨C₀, _, hC₀⟩ := g_norm_bound_uniform
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
   have hbound_int : Integrable bound (μ) := by
-    have hInt : Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) (μ) := by
-      simpa [IntegrableOn, μ, SpherePacking.Integration.μIciOne] using
-        SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
-          (mul_pos Real.pi_pos (by linarith))
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((π ^ n) * C₀)
+    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
+      (show Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) (μ) by
+        simpa [IntegrableOn, μ, SpherePacking.Integration.μIciOne] using
+          SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
+            (mul_pos Real.pi_pos (by linarith))).const_mul ((π ^ n) * C₀)
   refine Integrable.mono' hbound_int (gN_measurable n r) <|
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
   have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-  have hexp : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
-    rw [← Real.exp_add]; ring_nf
   calc
     ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN, norm_pow]
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by
           have : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by simp [norm_coeff_of_nonneg ht0]
           gcongr
           exact hC₀ r t ht
-    _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by rw [← hexp]; ring
+    _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by
+          rw [show rexp (-(π * (r + 2)) * t) = rexp (-2 * π * t) * rexp (-π * r * t) from by
+            rw [← Real.exp_add]; ring_nf]; ring
 
 end MagicFunction.a.Schwartz.I6Deriv
 
@@ -107,20 +106,17 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
   have hbound_hf :
       ∃ C, ∀ t : ℝ, 1 ≤ t → ‖hφ t‖ ≤ C * Real.exp (-(Real.pi * (2 : ℝ)) * t) := by
     refine ⟨C₀, fun t ht ↦ ?_⟩
-    have hexp : rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) := by
-      rw [← Real.exp_add]; ring_nf
-    simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, hexp, mul_comm] using
-      hC₀ 0 t (by simpa using ht)
-  have h :=
-    SpherePacking.Integration.SmoothIntegralIciOne.hasDerivAt_integral_gN
-      (hf := hφ) (shift := (2 : ℝ))
-      (exists_bound_norm_hf := hbound_hf)
-      (gN_measurable := fun n x =>
-        (aestronglyMeasurable_congr (.of_forall (gN_eq_sharedGN n x))).mp (gN_measurable n x))
-      (n := n) (x := r₀) hr₀
-      (hF_int :=
-        (integrable_congr (.of_forall (gN_eq_sharedGN n r₀))).mp (gN_integrable n r₀ hr₀))
-  convert h using 1
+    simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, mul_comm,
+      show rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) from by
+        rw [← Real.exp_add]; ring_nf] using hC₀ 0 t (by simpa using ht)
+  convert SpherePacking.Integration.SmoothIntegralIciOne.hasDerivAt_integral_gN
+    (hf := hφ) (shift := (2 : ℝ))
+    (exists_bound_norm_hf := hbound_hf)
+    (gN_measurable := fun n x =>
+      (aestronglyMeasurable_congr (.of_forall (gN_eq_sharedGN n x))).mp (gN_measurable n x))
+    (n := n) (x := r₀) hr₀
+    (hF_int :=
+      (integrable_congr (.of_forall (gN_eq_sharedGN n r₀))).mp (gN_integrable n r₀ hr₀)) using 1
   · funext r
     exact integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
       .of_forall fun t _ ↦ gN_eq_sharedGN n r t)
