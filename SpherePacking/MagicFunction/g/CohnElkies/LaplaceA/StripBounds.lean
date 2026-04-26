@@ -95,7 +95,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
     (by simpa [IntegrableOn, mul_assoc] using
       ((exp_neg_integrableOn_Ioi 1 hb).const_mul C₀ :
         IntegrableOn (fun t : ℝ => C₀ * Real.exp (-b * t)) (Set.Ioi (1 : ℝ)) volume))
-    (((MagicFunction.a.ComplexIntegrands.Φ₆'_contDiffOn_ℂ (r := u)).continuousOn.comp
+    (((Φ₆'_contDiffOn_ℂ (r := u)).continuousOn.comp
       (by fun_prop) (fun t ht => by simpa using lt_trans zero_lt_one ht :
         Set.MapsTo (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi (1 : ℝ))
           {z : ℂ | 0 < z.im})).aestronglyMeasurable measurableSet_Ioi) ?_
@@ -106,7 +106,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
       (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
     rw [show Φ₆' u ((t : ℂ) * Complex.I) = φ₀'' ((t : ℂ) * Complex.I) *
         cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) by
-      simp [MagicFunction.a.ComplexIntegrands.Φ₆']]
+      simp [Φ₆']]
     refine norm_mul_le_of_le (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) by
       simpa [φ₀''_coe_upperHalfPlane, hz_im] using
         hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)) ?_
@@ -128,8 +128,8 @@ public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
 /-- Integrability of `Φ₂'` on the imaginary-axis bounded interval `(1,A]`. -/
 lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioc (1 : ℝ) A) volume :=
-  (((MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp
-    (by fun_prop) (fun t ht => by simpa using lt_of_lt_of_le zero_lt_one ht.1 :
+  (((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
+    (fun t ht => by simpa using lt_of_lt_of_le zero_lt_one ht.1 :
       Set.MapsTo (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A)
         {z : ℂ | 0 < z.im})).integrableOn_compact isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
 
@@ -137,7 +137,7 @@ lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
 lemma aestronglyMeasurable_Φ₂'_imag_axis_Ioi (u A : ℝ) (hA0 : 0 < A) :
     AEStronglyMeasurable (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I))
       (volume.restrict (Set.Ioi A)) :=
-  ((MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
+  ((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
     fun t ht => by simpa using lt_trans hA0 ht).aestronglyMeasurable measurableSet_Ioi
 
 /-- Modular-growth bound for `‖φ₀(S•w)‖‖w‖^2` depending only on `t = Im w`. -/
@@ -211,21 +211,19 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
   have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := (norm_add_le (_ : ℂ) _).trans <| by
     rw [norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
       Real.norm_of_nonneg ht0.le, norm_one]; linarith
-  have hdef : Φ₂' u ((t : ℂ) * I) =
-      (φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
-        cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) := by
-    rw [show Φ₂' u ((t : ℂ) * I) =
-          (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
-            cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) by
-        simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
-          mul_assoc],
-      show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl, show φ₀ (ModularGroup.S • wH) =
-        φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
-      show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
-        simpa using ModularGroup.coe_S_smul (z := wH)]
   calc ‖Φ₂' u ((t : ℂ) * I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-        rw [hdef, norm_mul, show ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ =
+        rw [show Φ₂' u ((t : ℂ) * I) =
+            (φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
+              cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) by
+            rw [show Φ₂' u ((t : ℂ) * I) =
+                  (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
+                    cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) by simp [Φ₂', Φ₁', mul_assoc],
+              show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl, show φ₀ (ModularGroup.S • wH) =
+                φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
+              show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
+                simpa using ModularGroup.coe_S_smul (z := wH)],
+          norm_mul, show ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ =
             Real.exp (-π * u * t) by
           rw [show cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
               (Real.exp (-π * u * t) : ℂ) by ring_nf; simp [Complex.ofReal_exp],
