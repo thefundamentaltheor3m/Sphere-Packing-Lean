@@ -165,12 +165,10 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     ext i; rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
     linear_combination - 2⁻¹ * hy' i⟩
   rw [← SetLike.mem_coe, coe_evenLattice]
-  refine ⟨by simp, ?_⟩
-  simp only [LinearMap.intCast_apply]
   simp_rw [show ∀ i, x i = z i + 2⁻¹ from fun i => by linear_combination - 2⁻¹ * hy' i,
     Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
     nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
-  exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
+  exact ⟨by simp, by simpa using (AddCommGroup.add_nsmul_modEq _).symm.trans hx'⟩
 
 section E8_basis
 
