@@ -57,10 +57,9 @@ private lemma I₃'_eq_exp_mul_I₁' :
   ext x
   rw [I₃'_eq, I₁'_eq, ← intervalIntegral.integral_const_mul]
   refine intervalIntegral.integral_congr fun t _ => ?_
-  rw [show cexp (2 * ↑π * I * ↑x) * (-I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 * cexp (-↑π * I * ↑x) *
-        cexp (-↑π * ↑x * ↑t)) = -I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 *
-        (cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x)) * cexp (-↑π * ↑x * ↑t) from by ring,
-      ← Complex.exp_add, show 2 * (↑π : ℂ) * I * ↑x + -↑π * I * ↑x = ↑π * I * ↑x from by ring]
+  rw [show cexp (↑π * I * ↑x) =
+    cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x) by rw [← Complex.exp_add]; ring_nf]
+  ring
 
 public theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' :=
   I₃'_eq_exp_mul_I₁' ▸ (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
@@ -71,14 +70,13 @@ public theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' :=
 private lemma I₅'_eq_mul_exp_mul_I₁' :
     RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * cexp (π * I * x) * RealIntegrals.I₁' x := by
   ext x
-  let f : ℝ → ℂ :=
-    fun t => (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)
-  have hI1 : RealIntegrals.I₁' x = (∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x) := by
+  let f : ℝ → ℂ := fun t => (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)
+  rw [show RealIntegrals.I₁' x = (∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x) by
     rw [show RealIntegrals.I₁' x = ∫ t in (0 : ℝ)..1, f t * cexp (-π * I * x) by
       simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₁'_eq (r := x))]
-    simp [intervalIntegral.integral_mul_const]
-  rw [show RealIntegrals.I₅' x = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t by
-      simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₅'_eq (r := x)), hI1]
+    simp [intervalIntegral.integral_mul_const],
+    show RealIntegrals.I₅' x = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t by
+      simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₅'_eq (r := x))]
   linear_combination (2 * ∫ t in (0 : ℝ)..1, f t) *
     (by simp [← Complex.exp_add] : cexp (π * I * x) * cexp (-π * I * x) = 1)
 
