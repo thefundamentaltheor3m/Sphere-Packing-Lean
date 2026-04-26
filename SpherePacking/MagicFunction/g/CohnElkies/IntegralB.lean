@@ -198,11 +198,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     field_simp; rw [Complex.I_sq]; ring
   have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
     field_simp; rw [Complex.I_sq]; ring
-  have hIexp : (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ) :=
-    integral_exp_neg_pi_mul_Ioi_complex hx
-  have hItExp : (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
-      ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) :=
-    integral_mul_exp_neg_pi_mul_Ioi_complex hx
   have hAterm :
       ((↑π * I) / 8640 : ℂ) * a' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -232,17 +227,16 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
               (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
               (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
-    simpa [show (∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) = IA from by
-      simp [IA, aAnotherIntegrand],
-      show (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) = IB from by
-      simp [IB, bAnotherIntegrand]] using IntegralB.integral_B_mul_exp_decomp hx
+    simpa [IA, IB, aAnotherIntegrand, bAnotherIntegrand]
+      using IntegralB.integral_B_mul_exp_decomp hx
   have hBscaled :
       (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         (-(π / 2160 : ℂ)) * IA +
           (1 / (60 * π) : ℂ) * IB +
           (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
             (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-    rw [hBdecomp, hItExp, hIexp]
+    rw [hBdecomp, integral_mul_exp_neg_pi_mul_Ioi_complex hx,
+      integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
   have hBracket :
       (-(π / 2160 : ℂ)) *
@@ -293,9 +287,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
         (by simpa [useq] using lt_trans (by norm_num) (huseq_gt2 n))
         (by simpa [useq] using ne_of_gt (huseq_gt2 n))
     -- Show the RHS tends to `0` by bounding the `B`-integral uniformly and using `sin^2 → 0`.
-    let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
-    let M : ℝ :=
-      ∫ t : ℝ, ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ ∂μ
+    let M : ℝ := ∫ t in Set.Ioi (0 : ℝ), ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖
     have hInt_bound :
         ∀ n : ℕ,
           ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤ M := fun n =>
