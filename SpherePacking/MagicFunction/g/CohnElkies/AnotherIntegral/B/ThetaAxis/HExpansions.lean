@@ -285,22 +285,15 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
         Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
       have hq3_le : Real.exp (-(3 : ℝ) * Real.pi * t) ≤ Real.exp (-Real.pi * t) :=
         Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
-      have htri := norm_add_le ((8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ))
-        ((24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-      have h1 : ‖(8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ = 8 * Real.exp (-Real.pi * t) := by
-        simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-      have h2 : ‖(24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ =
-          24 * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-        simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-      have htri' := norm_add_le
-        (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-        ((8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-      rw [show (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) +
-          ((8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) =
+      set u : ℂ := (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
+      set v : ℂ := (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
+      have htri := norm_add_le u v
+      have h1 : ‖u‖ = 8 * Real.exp (-Real.pi * t) := by
+        simp [u, abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
+      have h2 : ‖v‖ = 24 * Real.exp (-(2 : ℝ) * Real.pi * t) := by
+        simp [v, abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
+      have htri' := norm_add_le (H₃.resToImagAxis t - (1 : ℂ) - u - v) (u + v)
+      rw [show (H₃.resToImagAxis t - (1 : ℂ) - u - v) + (u + v) =
         H₃.resToImagAxis t - (1 : ℂ) by ring] at htri'
       nlinarith [htri, htri', h1, h2, mul_le_mul_of_nonneg_left hq3_le hC30, hC3 t ht, hq2_le]
   have hnorm_H3_ge_one : ∀ t : ℝ, 1 ≤ t → (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht => by
