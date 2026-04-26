@@ -99,11 +99,10 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
     have hcore :
         ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ ≤
           Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|)) := by
-      have hn : ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
-          Real.exp (-Real.pi * (t * ((n ^ 2 : ℤ) : ℝ) + t * (n : ℝ))) := by
+      rw [show ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
+          Real.exp (-Real.pi * (t * ((n ^ 2 : ℤ) : ℝ) + t * (n : ℝ))) by
         simp [norm_jacobiTheta₂_term, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-        ring_nf
-      rw [hn]
+        ring_nf]
       have hdiff_nonneg : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := sub_nonneg.2 <| by
         exact_mod_cast (by simpa [Int.natCast_natAbs] using Int.natAbs_le_self_sq n :
           (|n| : ℤ) ≤ n ^ 2)
@@ -229,7 +228,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
           norm_Theta2_term_resToImagAxis (n := (n + 2 : ℕ)) (t := t) htpos
       grind only
     have hbase : ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t ≥ (25 / 4 : ℝ) * t + n := by
-      have ht0 : 0 ≤ t := le_trans (by norm_num : (0:ℝ) ≤ 1) ht
+      have ht0 : 0 ≤ t := by linarith
       nlinarith [ht, ht0, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)),
         mul_le_mul_of_nonneg_right
           (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith) ht0]
@@ -321,11 +320,11 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
   set a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
   obtain ⟨hjac, hshift⟩ := jacobiTheta_setup (τ := τ) (by simpa [τ] using htpos)
   have ha0 : a 0 = - (Real.exp (-Real.pi * t) : ℂ) := by
-    have hI_mul : (Complex.I : ℂ) * ((Complex.I : ℂ) * t) = -(t : ℂ) := by
-      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     have hτ_eq : (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) := by
       rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
-            (Real.pi : ℂ) * ((Complex.I : ℂ) * ((Complex.I : ℂ) * t)) from by ring, hI_mul]
+            (Real.pi : ℂ) * ((Complex.I : ℂ) * ((Complex.I : ℂ) * t)) from by ring,
+        show (Complex.I : ℂ) * ((Complex.I : ℂ) * t) = -(t : ℂ) by
+          rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
       push_cast; ring
     calc a 0 = Complex.exp (Real.pi * Complex.I * τ) := by
           simp [a, pow_two, mul_assoc, mul_left_comm, mul_comm]
