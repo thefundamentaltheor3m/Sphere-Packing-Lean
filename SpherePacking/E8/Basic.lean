@@ -158,9 +158,8 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
   choose y hy hy' using hx
   choose z hz using hy
   simp only [hz, Int.cast_add, Int.cast_mul, Int.cast_one, Int.cast_ofNat] at *
-  clear y hz
-  have hspan : span ℤ (evenLattice R 8) = evenLattice R 8 := by simp
-  rw [← hspan, sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, hspan]
+  rw [show (evenLattice R 8 : Submodule ℤ (Fin 8 → R)) = span ℤ (evenLattice R 8) by simp,
+    sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, span_eq]
   refine ⟨1, LinearMap.intCast R z, ?_, by
     ext i; rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
     linear_combination - 2⁻¹ * hy' i⟩
