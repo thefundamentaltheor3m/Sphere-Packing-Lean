@@ -46,8 +46,7 @@ public lemma norm_A_E_coeff_le (n : ℕ) :
   calc ‖A_E_coeff n‖
       = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
         simpa using norm_A_E_coeff (n := n)
-    _ ≤ (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 4 := by gcongr
-    _ = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 := by ring
+    _ ≤ (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 := by nlinarith [hσ, Nat.zero_le n]
 
 public lemma norm_A_E_coeff_le_of_le {n m : ℕ} (hn : n ≤ m) :
     ‖A_E_coeff n‖ ≤ (720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5 :=
@@ -69,7 +68,7 @@ public lemma norm_A_E_sq_coeff_le (m : ℕ) :
     _ ≤ ∑ _p ∈ Finset.antidiagonal m, (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 :=
         Finset.sum_le_sum hterm
     _ = (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 11 := by
-        simp [Finset.sum_const, nsmul_eq_mul, Finset.Nat.card_antidiagonal]; ring
+        simp [Finset.Nat.card_antidiagonal]; ring
 
 public lemma A_E_sq_eq_tsum (z : ℍ) :
     (A_E z) ^ 2 =
