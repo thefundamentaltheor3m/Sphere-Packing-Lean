@@ -95,19 +95,18 @@ private lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤ ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
   have hw_ne : w ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hw_norm_ge)
   have hid : w⁻¹ - (2 - w) = (w - 1) ^ (2 : ℕ) * w⁻¹ := by field_simp; ring
-  have hquad : ‖w⁻¹ - (2 - w)‖ ≤ (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) :=
-    calc ‖w⁻¹ - (2 - w)‖ = ‖w - 1‖ ^ (2 : ℕ) * ‖w⁻¹‖ := by simp [hid, norm_pow]
+  have htri : ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
+      ‖w⁻¹ - (2 - w)‖ + ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ := by
+    rw [show w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
+      (w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) from by ring]; exact norm_sub_le _ _
+  nlinarith [htri, hw_tail, calc ‖w⁻¹ - (2 - w)‖
+        = ‖w - 1‖ ^ (2 : ℕ) * ‖w⁻¹‖ := by simp [hid, norm_pow]
       _ ≤ ‖w - 1‖ ^ (2 : ℕ) := by
           simpa using mul_le_mul_of_nonneg_left hw_inv (by positivity : 0 ≤ ‖w - 1‖ ^ (2 : ℕ))
       _ ≤ ((8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) :=
           pow_le_pow_left₀ (norm_nonneg _) hw_one 2
       _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-          rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
-  have htri : ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
-      ‖w⁻¹ - (2 - w)‖ + ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ := by
-    rw [show w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
-      (w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) from by ring]; exact norm_sub_le _ _
-  nlinarith [htri, hquad, hw_tail]
+          rw [mul_pow, ← Real.exp_nat_mul]; ring_nf]
 
 private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     (hx_err :
