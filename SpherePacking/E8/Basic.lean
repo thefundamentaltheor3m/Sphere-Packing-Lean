@@ -190,8 +190,7 @@ public lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
       Fin.forall_fin_succ]⟩
   revert i
   simp [Fin.forall_fin_succ, E8Matrix, Submodule.mem_evenLattice, Fin.sum_univ_eight,
-    show ∃ n : ℤ, (n : R) = 2 from ⟨2, by simp⟩,
-    show ∃ n : ℤ, (n : R) = -1 from ⟨-1, by simp⟩]
+    show ∃ n : ℤ, (n : R) = 2 from ⟨2, by simp⟩, show ∃ n : ℤ, (n : R) = -1 from ⟨-1, by simp⟩]
 
 lemma E8Matrix_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Matrix R = (E8Matrix ℚ).map (Rat.castHom R) := by
@@ -259,7 +258,7 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
     (hw : ∑ i, w i = 0) :
     ∃ c : ℤ, c = ∑ i, v i * w i := by
-  obtain ⟨(hv' | hv'), _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
+  obtain ⟨hv' | hv', _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
   exacts [⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩,
     ⟨∑ i, v' i * w i, by simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
       Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
@@ -277,15 +276,15 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]; ring
     obtain ⟨h0, h1⟩ := Submodule.mem_E8.1 hv
     obtain ⟨a, ha⟩ := AddCommGroup.modEq_iff_zsmul'.1 h1.symm
-    simp only [sub_zero, zsmul_eq_mul] at ha
-    rw [ha, mul_inv_cancel_right₀ (NeZero.ne 2)] at h0'
+    rw [(by simpa [sub_zero, zsmul_eq_mul] using ha : ∑ i, v i = a * 2),
+      mul_inv_cancel_right₀ (NeZero.ne 2)] at h0'
     obtain h0 | h0 := h0 <;> obtain ⟨n, hn⟩ := h0 7
     exacts [⟨a - 4 * n, by simp [hn, h0']⟩,
       ⟨a - 2 * n, by norm_num [hn, h0', mul_add, add_comm, ← mul_assoc]⟩]
   obtain ⟨c7, hc7⟩ : ∃ n : ℤ, (n : R) = c' 7 := by
     have hc7' : c' 7 = 2 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse, mul_comm]
-    obtain ⟨(h0 | h0), _⟩ := Submodule.mem_E8''.1 hv <;> obtain ⟨n, hn⟩ := h0 7
+    obtain ⟨h0 | h0, _⟩ := Submodule.mem_E8''.1 hv <;> obtain ⟨n, hn⟩ := h0 7
     exacts [⟨2 * n, by simp [hn, hc7']⟩, ⟨2 * n + 1, by simp [← hn, hc7', mul_add]⟩]
   obtain ⟨c1, hc1⟩ := aux ![0, 1, 1, 1, 1, 1, 1, -6] rfl 1
     (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
