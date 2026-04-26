@@ -187,9 +187,9 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
   have h_diff : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ),
       HasDerivAt (fun r : ℝ ↦ gN n r t) (gN (n + 1) r t) r := ae_of_all _ fun t r _ ↦ by
     let A : ℂ := I * φ₀'' (I * t)
-    have hg_fun (y : ℝ) : g y t = A * cexp ((y : ℂ) * coeff t) := by
-      simp [A, g, coeff, mul_assoc, mul_left_comm, mul_comm]
-    simpa [gN, hg_fun, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+    simpa [gN, show ∀ y : ℝ, g y t = A * cexp ((y : ℂ) * coeff t) from fun y => by
+      simp [A, g, coeff, mul_assoc, mul_left_comm, mul_comm], pow_succ,
+      mul_assoc, mul_left_comm, mul_comm] using
       SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := A) (c := coeff t)
         (n := n) (x := r)
   exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
@@ -237,34 +237,28 @@ lemma iteratedDeriv_bound (n : ℕ) :
         mul_le_mul_of_nonpos_left hrt (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0))
   have hpoint : ∀ t ∈ Ici (1 : ℝ), ‖gN n r t‖ ≤ B t * rexp (-π * r) := fun t ht ↦ by
     have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
-    have hcoeff_le : ‖coeff t‖ ^ n ≤ (π ^ n) * (t ^ n) := by
-      simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0
-    have hg1 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r) :=
-      le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) (by positivity)
     calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
       _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
-        mul_le_mul hcoeff_le hg1 (by positivity) (by positivity)
+        mul_le_mul (by simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0)
+          (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) (by positivity))
+          (by positivity) (by positivity)
       _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
-  have hInt_norm_gN : IntegrableOn (fun t : ℝ ↦ ‖gN n r t‖) (Ici (1 : ℝ)) volume := by
-    simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := r) hr').norm
-  have hB_int' : IntegrableOn (fun t : ℝ ↦ B t * rexp (-π * r)) (Ici (1 : ℝ)) volume := by
-    simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r))
-  have hmono : (∫ t in Ici (1 : ℝ), ‖gN n r t‖) ≤ ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) :=
-    setIntegral_mono_on hInt_norm_gN hB_int' measurableSet_Ici fun t ht ↦ by
-      simpa using hpoint t ht
-  have hmul : (∫ t in Ici (1 : ℝ), B t * rexp (-π * r)) =
-      (∫ t in Ici (1 : ℝ), B t) * rexp (-π * r) := by
-    simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))
-      (r := rexp (-π * r)) (f := fun t : ℝ ↦ B t)
-  have hnorm : ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) := calc
+  simpa [mul_assoc, mul_left_comm, mul_comm] using show
+      ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) from calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
       rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']; simp
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
       gcongr
-      exact (norm_integral_le_integral_norm (gN n r)).trans hmono
-    _ = 2 * (A * rexp (-π * r)) := by rw [hmul]
+      exact (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
+        (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := r) hr').norm)
+        (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
+        measurableSet_Ici fun t ht ↦ by simpa using hpoint t ht
+    _ = 2 * (A * rexp (-π * r)) := by
+      rw [show (∫ t in Ici (1 : ℝ), B t * rexp (-π * r)) =
+        (∫ t in Ici (1 : ℝ), B t) * rexp (-π * r) from by
+          simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))
+            (r := rexp (-π * r)) (f := fun t : ℝ ↦ B t)]
     _ ≤ (2 * (A + 1)) * rexp (-π * r) := by nlinarith [hA_nonneg, Real.exp_pos (-π * r)]
-  simpa [mul_assoc, mul_left_comm, mul_comm] using hnorm
 
 /--
 Schwartz-style decay estimate for `I₆'`: all iterated derivatives decay faster than any power.
