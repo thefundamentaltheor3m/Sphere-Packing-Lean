@@ -121,10 +121,9 @@ open scoped Pointwise
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) where
-  toFun := Quotient.lift (fun s ↦
-      let g := Classical.choose (hD_unique_covers s.val)
-      ⟨g.val + s.val, S.lattice_action g.prop s.prop,
-        (Classical.choose_spec (hD_unique_covers s.val)).left⟩) <| by
+  toFun := Quotient.lift (fun s ↦ ⟨(Classical.choose (hD_unique_covers s.val)).val + s.val,
+      S.lattice_action (Classical.choose (hD_unique_covers s.val)).prop s.prop,
+      (Classical.choose_spec (hD_unique_covers s.val)).left⟩) <| by
     rintro ⟨u, hu⟩ ⟨v, hv⟩ ⟨⟨y, hy⟩, hy'⟩
     obtain rfl : y + v = u := Subtype.ext_iff.mp hy'
     have hv' := (Classical.choose_spec (hD_unique_covers v)).right
@@ -177,12 +176,10 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ⟨fract (b.ofZLatticeBasis ℝ _) u, by rw [fract]; exact hact _ u hu_centers,
        fract_mem_fundamentalDomain _ _⟩
     left_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
-      simp_rw [Subtype.mk.injEq, sub_eq_add_neg,
-        fract_add_ZSpan _ _ (neg_mem (Submodule.coe_mem _))]
-      exact fract_eq_self.mpr hu_fd
+      simpa [sub_eq_add_neg, fract_add_ZSpan _ _ (neg_mem (Submodule.coe_mem _))]
+        using fract_eq_self.mpr hu_fd
     right_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
-      simp_rw [Subtype.mk.injEq]
-      rw [← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
+      rw [Subtype.mk.injEq, ← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
       have hu_fd' : u - v ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
         rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd
       ext i
@@ -332,8 +329,7 @@ public theorem PeriodicSpherePacking.aux_ge
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
     Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
-  convert henc.ge
-  rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+  simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc.ge
 
 private theorem aux'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
@@ -361,7 +357,6 @@ public theorem PeriodicSpherePacking.aux_le
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
     Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
-  convert henc
-  rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+  simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc
 
 end theorem_2_3
