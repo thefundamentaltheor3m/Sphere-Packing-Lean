@@ -103,33 +103,13 @@ lemma integral_permJ2Kernel_x (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
 lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     Integrable (permJ2Kernel w)
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01) := by
+  have hψ : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₂line p.2) :=
+    continuous_ψT'_z₂line.comp continuous_snd
+  have hzline : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => z₂line p.2 :=
+    continuous_z₂line.comp continuous_snd
   have hcont : Continuous (permJ2Kernel w) := by
-    have hphase :
-        Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-          cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) := by
-      have hinner : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (⟪p.1, w⟫ : ℝ) := by
-        simpa using (continuous_fst.inner continuous_const)
-      have harg :
-          Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-              (↑(-2 * (π * ⟪p.1, w⟫)) : ℂ) * I :=
-        (Complex.continuous_ofReal.comp
-              (continuous_const.mul (continuous_const.mul hinner))).mul continuous_const
-      simpa using harg.cexp
-    have hψ : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₂line p.2) :=
-      continuous_ψT'_z₂line.comp continuous_snd
-    have hgauss :
-        Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-          cexp ((π : ℂ) * I * ((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₂line p.2)) := by
-      have hnormsq : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (‖p.1‖ ^ 2 : ℝ) :=
-        continuous_fst.norm.pow 2
-      have hz : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => z₂line p.2 :=
-        continuous_z₂line.comp continuous_snd
-      have harg' :
-          Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-            (π : ℂ) * I * (((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₂line p.2)) :=
-        continuous_const.mul ((continuous_ofReal.comp hnormsq).mul hz)
-      simpa [mul_assoc] using Complex.continuous_exp.comp harg'
-    exact hphase.mul (hψ.mul hgauss)
+    unfold permJ2Kernel
+    fun_prop
   have hmeas := hcont.aestronglyMeasurable
     (μ := ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01))
   rcases exists_bound_norm_ψT'_z₂' with ⟨Mψ, hMψ'⟩
