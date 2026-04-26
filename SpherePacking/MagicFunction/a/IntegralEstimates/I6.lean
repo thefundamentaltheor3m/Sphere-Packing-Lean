@@ -101,12 +101,11 @@ lemma g_eq_Φ₆ (r : ℝ) : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r
 
 private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
-  have hcoeff : Continuous coeff := by unfold coeff; fun_prop
-  have hg : ContinuousOn (g r) (Ici (1 : ℝ)) :=
-    ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.mono
-      fun _ hx ↦ hx).congr (g_eq_Φ₆ (r := r))
   simpa [gN, μIciOne] using
-    ContinuousOn.aestronglyMeasurable ((hcoeff.pow n).continuousOn.mul hg) measurableSet_Ici
+    ContinuousOn.aestronglyMeasurable
+      (((show Continuous coeff by unfold coeff; fun_prop).pow n).continuousOn.mul
+        (((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.mono
+          fun _ hx ↦ hx).congr (g_eq_Φ₆ (r := r)))) measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
 public lemma g_norm_bound_uniform :
@@ -134,12 +133,12 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
   have hcoeff : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by
     simpa using (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le
-  have hexp : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
-    rw [← Real.exp_add]; ring_nf
   calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
-      have : (π * t) ^ n = (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
+      have h1 : (π * t) ^ n = (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
+      have h2 : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
+        rw [← Real.exp_add]; ring_nf
       grind only
 
 private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
@@ -157,22 +156,20 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
   have h_bound : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r t‖ ≤ bound t := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht r hr ↦ ?_
     have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
-    have hcoeff : ‖coeff t‖ ^ (n + 1) ≤ (π * t) ^ (n + 1) := by
-      simpa using (coeff_norm_pow_of_nonneg (n := n + 1) (t := t) ht0).le
     have hr_lower : r₀ - 1 ≤ r := by
       have hball : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
       nlinarith [abs_lt.1 hball |>.1]
     have hexp_r : rexp (-π * r * t) ≤ rexp (-π * (r₀ - 1) * t) := by
       apply Real.exp_le_exp.2
-      have hrt : (r₀ - 1) * t ≤ r * t := mul_le_mul_of_nonneg_right hr_lower ht0
       simpa [mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg] using
-        mul_le_mul_of_nonpos_left hrt (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0)
-    have hg'' : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) :=
-      le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) hexp_r (by positivity)
+        mul_le_mul_of_nonpos_left
+          (mul_le_mul_of_nonneg_right hr_lower ht0 : (r₀ - 1) * t ≤ r * t)
+          (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0)
     calc ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
       _ ≤ (π * t) ^ (n + 1) * (C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t)) :=
-        mul_le_mul hcoeff hg'' (by positivity)
-          (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
+        mul_le_mul (by simpa using (coeff_norm_pow_of_nonneg (n := n + 1) (t := t) ht0).le)
+          (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) hexp_r (by positivity))
+          (by positivity) (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
       _ = bound t := by
         have : (π * t) ^ (n + 1) = (π ^ (n + 1)) * (t ^ (n + 1)) := by simp [mul_pow, mul_comm]
         have : rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by

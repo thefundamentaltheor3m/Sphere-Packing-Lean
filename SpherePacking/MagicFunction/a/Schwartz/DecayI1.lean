@@ -87,16 +87,15 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
 
 lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 * π := by
   have hs1 : (1 : ℝ) ≤ s := hs
-  have hinv : ‖(1 / (s : ℂ))‖ ≤ 1 := by
-    simpa [one_div, Complex.norm_real] using inv_le_one_of_one_le₀
-      (by simpa [abs_of_nonneg (zero_le_one.trans hs1)] using hs1 : (1 : ℝ) ≤ |s|)
   calc
     ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
     _ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
         rw [show ‖(-π : ℂ)‖ = (π : ℝ) by
           simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
         gcongr; exact norm_add_le _ _
-    _ ≤ (π : ℝ) * (1 + 1) := by gcongr; simp
+    _ ≤ (π : ℝ) * (1 + 1) := by
+        gcongr <;> [simp; simpa [one_div, Complex.norm_real] using inv_le_one_of_one_le₀
+          (by simpa [abs_of_nonneg (zero_le_one.trans hs1)] using hs1)]
     _ = 2 * π := by ring
 
 lemma gN_norm_bound (n : ℕ) (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
@@ -262,11 +261,10 @@ lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
 lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 ≤ s)
     {Cpow : ℝ} (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
     x ^ k * rexp (-π * x / s) ≤ (π ^ k)⁻¹ * Cpow * s ^ k := by
-  have hs0 : s ≠ 0 := (lt_of_lt_of_le (by norm_num) hs).ne'
   set u : ℝ := (π * x) / s
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
-    simp [show x = u * s / π from
-      CancelDenoms.cancel_factors_eq_div (id (div_mul_cancel₀ (π * x) hs0).symm) Real.pi_ne_zero,
+    simp [show x = u * s / π from CancelDenoms.cancel_factors_eq_div
+      (id (div_mul_cancel₀ (π * x) (lt_of_lt_of_le (by norm_num) hs).ne').symm) Real.pi_ne_zero,
       mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
   calc x ^ k * rexp (-π * x / s)
       = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
