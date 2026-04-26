@@ -121,9 +121,9 @@ For `r` in a unit ball around `r₀`, compare `rexp (-π * r)` to `rexp (-π * r
 public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ : ℝ}
     (hr : r ∈ Metric.ball r₀ (1 : ℝ)) :
     rexp (-π * r) ≤ rexp (π) * rexp (-π * r₀) := by
-  have habs : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
+  have : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
   simpa [Real.exp_add] using Real.exp_le_exp.2
-    (by nlinarith [Real.pi_pos, abs_lt.1 habs |>.1] : (-π * r : ℝ) ≤ π + (-π * r₀))
+    (by nlinarith [Real.pi_pos, abs_lt.1 this |>.1] : (-π * r : ℝ) ≤ π + (-π * r₀))
 
 /--
 Almost-everywhere bound for `‖(coeff t) ^ n * g r t‖` which is uniform in `r` on `Metric.ball r₀ 1`.
@@ -185,16 +185,14 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
       (∫ t, (coeff t) ^ (n + 1) * g x₀ t ∂μ) x₀ := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := hg_bound
   let K : ℝ := (2 * π) ^ (n + 1) * (C₀ * rexp (-π) * 2) * rexp (π) * rexp (-π * x₀)
-  have h_bound :
-      ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ),
-        ‖(coeff t) ^ (n + 1) * g x t‖ ≤ K := by
-    simpa [hμ, K, mul_assoc, mul_left_comm, mul_comm] using
-      ae_forall_mem_ball_norm_pow_mul_mul_le (n := n + 1) (r₀ := x₀) (C₀ := C₀)
-        hC₀_pos.le hcoeff hC₀
   simpa [K] using
     hasDerivAt_integral_gN_of_dominated_ball_one (μ := μ)
-      (gN := fun n x t ↦ (coeff t) ^ n * g x t) (n := n) (x₀ := x₀) (C := K)
-      hmeas hint h_bound (integrable_const K) <| ae_of_all _ fun t x _hx => by
+      (gN := fun n x t ↦ (coeff t) ^ n * g x t) (n := n) (x₀ := x₀) (C := K) hmeas hint
+      (show ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ), ‖(coeff t) ^ (n + 1) * g x t‖ ≤ K by
+        simpa [hμ, K, mul_assoc, mul_left_comm, mul_comm] using
+          ae_forall_mem_ball_norm_pow_mul_mul_le (n := n + 1) (r₀ := x₀) (C₀ := C₀)
+            hC₀_pos.le hcoeff hC₀)
+      (integrable_const K) <| ae_of_all _ fun t x _hx => by
         simpa [hg_repr, mul_assoc, mul_left_comm, mul_comm] using
           SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
             (a := A t) (c := coeff t) (n := n) (x := x)
@@ -245,13 +243,11 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
       ((hcoeff_cont.pow n).continuousOn.mul (hg_cont r)) measurableSet_Ioo
   have hint (n : ℕ) (r : ℝ) : Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ :=
     integrable_pow_mul_of_volume_restrict_Ioo01 (hmeas n r) hcoeff hg_bound
-  have hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
-      HasDerivAt (fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t)
-        (∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g r₀ t) r₀ :=
-    hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one rfl hg_bound hcoeff hg_repr hmeas hint
   intro n
   induction n with
   | zero => funext r; simp [hI]
-  | succ n hn => funext r; simp [iteratedDeriv_succ, hn, (hasDerivAt_integral_gN n r).deriv]
+  | succ n hn => funext r; simp [iteratedDeriv_succ, hn,
+      (hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one (n := n) (x₀ := r)
+        rfl hg_bound hcoeff hg_repr hmeas hint).deriv]
 
 end MagicFunction.a.IntegralEstimates
