@@ -57,9 +57,7 @@ meta structure Atom where
   codTy : Expr
   deriving Inhabited
 
--- ══════════════════════════════════════════════════════════════
--- Goal and hypothesis parsing
--- ══════════════════════════════════════════════════════════════
+/-! ### Goal and hypothesis parsing -/
 
 /-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
 private meta def matchTendsto? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
@@ -82,15 +80,12 @@ private meta def parseGoal (goal : Expr) : MetaM (Expr × Expr × Expr) := do
   return (goalFn, l, domTy)
 
 /-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
-private meta def matchTendstoNhds? (e : Expr) :
-    MetaM (Option (Expr × Expr × Expr × Expr)) := do
+private meta def matchTendstoNhds? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr)) := do
   let some (_α, codTy, f, l, tgt) ← matchTendsto? e | return none
   let some a ← matchNhds? tgt | return none
   return some (codTy, f, l, a)
 
--- ══════════════════════════════════════════════════════════════
--- Atom discovery
--- ══════════════════════════════════════════════════════════════
+/-! ### Atom discovery -/
 
 /-- Check if `e` equals `cand.fn bvar` for some candidate atom,
     using `isDefEq` to handle coercions and implicit arguments. -/
@@ -163,9 +158,7 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
             `{cand.limit}` for the same function"
   return (candidates, atoms)
 
--- ══════════════════════════════════════════════════════════════
--- Product type / limit / proof builders
--- ══════════════════════════════════════════════════════════════
+/-! ### Product type / limit / proof builders -/
 
 /-- Fold atoms right-associatively using `combine` on the given per-atom field. -/
 private meta def foldRightAssoc (atoms : Array Atom) (field : Atom → Expr)
@@ -200,9 +193,7 @@ private meta def buildProjection (p : Expr) (n i : Nat) :
   return e
 
 
--- ══════════════════════════════════════════════════════════════
--- Body abstraction
--- ══════════════════════════════════════════════════════════════
+/-! ### Body abstraction -/
 
 /-- Replace `fᵢ(bvar)` with `projᵢ(p)` in the body. -/
 private meta partial def abstractBody (body : Expr) (bvar : FVarId)
@@ -221,43 +212,30 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
   | .proj s i e => return .proj s i (← go e)
   | _ => return body
 
--- ══════════════════════════════════════════════════════════════
--- Limit reconciliation
--- ══════════════════════════════════════════════════════════════
+/-! ### Limit reconciliation -/
 
 /-- Close a goal using a proof whose limit may differ from the stated one
     (e.g. `1 + 2` vs `3`, or `b + a` vs `a + b`).
     Uses `convert using 1` then `congr 1; norm_num <;> ring`. -/
-private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
-    TacticM Unit := do
-  let proofTy ← inferType proof
+private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit := do
   let keyName := `_tendsto_cont_key
-  let goal1 ← goal.define keyName proofTy proof
+  let goal1 ← goal.define keyName (← inferType proof) proof
   let (_, goal2) ← goal1.intro keyName
   let keyId : Ident := mkIdent keyName
   let remaining ← Elab.Tactic.run goal2
-    (Elab.Tactic.evalTactic
-      (← `(tactic| convert ($keyId) using 1)))
+    (Elab.Tactic.evalTactic (← `(tactic| convert ($keyId) using 1)))
   for g in remaining do
     try
-      let r ← Elab.Tactic.run g
-        (Elab.Tactic.evalTactic
-          (← `(tactic| first
-            | rfl
-            | (congr 1; norm_num <;> ring))))
+      let r ← Elab.Tactic.run g (Elab.Tactic.evalTactic
+        (← `(tactic| first | rfl | (congr 1; norm_num <;> ring))))
       unless r.isEmpty do
-        let subgoalTy ← g.getType
         throwError m!"tendsto_cont: subgoal not closed \
-          by `rfl`, `norm_num`, or `ring`:\n{subgoalTy}"
+          by `rfl`, `norm_num`, or `ring`:\n{← g.getType}"
     catch e =>
-      let subgoalTy ← g.getType
-      throwError m!"tendsto_cont: failed to close \
-        subgoal after convert:\n{subgoalTy}\n\
-        {← e.toMessageData.format}"
+      throwError m!"tendsto_cont: failed to close subgoal after convert:\n\
+        {← g.getType}\n{← e.toMessageData.format}"
 
--- ══════════════════════════════════════════════════════════════
--- Main tactic
--- ══════════════════════════════════════════════════════════════
+/-! ### Main tactic -/
 
 /-- Build the continuity-based proof for a non-constant body with atoms. -/
 private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
@@ -274,52 +252,39 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
       let _ ← Elab.Tactic.run contMVar.mvarId!
         (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
     catch e =>
-      throwError m!"tendsto_cont: `fun_prop` failed:\
-        \n{← e.toMessageData.format}\n\
-        goal: {contGoalTy}"
+      throwError m!"tendsto_cont: `fun_prop` failed:\n\
+        {← e.toMessageData.format}\ngoal: {contGoalTy}"
     mkAppM ``tendsto_continuousAt_comp #[contMVar, prodMkProof]
 
 /-- Core implementation of the `tendsto_cont` tactic. -/
 private meta def tendstoCont : TacticM Unit := withMainContext do
   let goal ← getMainGoal
   let goalTy ← goal.getType >>= instantiateMVars
-
   let (goalFn, goalFilter, domTy) ← parseGoal goalTy
-
   let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
-    | _ => throwError
-      "tendsto_cont: goal function is not a lambda.\n\
-       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
-       or `unfold ...`"
-
+    | _ => throwError "tendsto_cont: goal function is not a lambda.\n\
+      Hint: try `show Tendsto (fun z => ...) _ (nhds _)` or `unfold ...`"
   let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
     let bvar := zVar.fvarId!
     let (candidates, atoms) ← collectAtoms body bvar goalFilter
-
     if atoms.size == 0 then
       if body.containsFVar bvar then
         if candidates.size == 0 then
-          let filterFmt ← ppExpr goalFilter
           throwError m!"tendsto_cont: no `Tendsto` hypotheses \
-            found for filter `{filterFmt}`"
+            found for filter `{← ppExpr goalFilter}`"
         else
-          let candFns ← candidates.mapM fun c => ppExpr c.fn
-          throwError m!"tendsto_cont: body references the \
-            bound variable but no candidate matched.\n\
-            Available candidates: {candFns}"
+          throwError m!"tendsto_cont: body references the bound variable \
+            but no candidate matched.\nAvailable candidates: \
+            {← candidates.mapM fun c => ppExpr c.fn}"
       try
         let _ ← Elab.Tactic.run goal
-          (Elab.Tactic.evalTactic
-            (← `(tactic| exact tendsto_const_nhds)))
+          (Elab.Tactic.evalTactic (← `(tactic| exact tendsto_const_nhds)))
         return none
       catch _ =>
-        throwError "tendsto_cont: constant body but \
-          `tendsto_const_nhds` failed"
-
+        throwError "tendsto_cont: constant body but `tendsto_const_nhds` failed"
     some <$> buildContinuityProof body bvar atoms
-
   match proof? with
   | none => return
   | some proof => reconcileLimits goal proof
