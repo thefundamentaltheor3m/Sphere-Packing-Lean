@@ -80,9 +80,8 @@ public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero 
       (by simpa [evenLatticeInt] using hf : (∑ i, f i : ℤ) ≡ 0 [PMOD 2]).intCast (G := R)
   choose w hw using hv
   refine ⟨w, ?_, by ext i; simpa using hw i⟩
-  simpa [evenLatticeInt] using
-    (AddCommGroup.intCast_modEq_intCast' (G := R) (a := ∑ i, w i) (b := 0) (n := 2)).1
-      (by simpa [← hw, Int.cast_sum] using hv')
+  simpa [evenLatticeInt] using (AddCommGroup.intCast_modEq_intCast' (G := R)
+    (a := ∑ i, w i) (b := 0) (n := 2)).1 (by simpa [← hw, Int.cast_sum] using hv')
 
 /-- Membership in `evenLattice` (as a proposition). -/
 public lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ) {v : Fin n → R} :
@@ -267,8 +266,7 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
   have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8)
       (hk : c' k = ∑ i, v i * w i := by
         simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) : ∃ n : ℤ, (n : R) = c' k :=
-    let ⟨n, hn⟩ := exists_cast_eq_vecMul_E8Inverse_aux (R := R) v w hv hw
-    ⟨n, hn.trans hk.symm⟩
+    (exists_cast_eq_vecMul_E8Inverse_aux (R := R) v w hv hw).imp fun _ hn => hn.trans hk.symm
   obtain ⟨c0, hc0⟩ : ∃ n : ℤ, (n : R) = c' 0 := by
     have h0' : c' 0 = (∑ i, v i) * 2⁻¹ - 4 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]; ring
