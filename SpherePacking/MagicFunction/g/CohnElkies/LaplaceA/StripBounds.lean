@@ -117,9 +117,8 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
 /-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`, via `aLaplaceIntegrand`. -/
 public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume :=
-  (show IntegrableOn (fun t : ℝ => -aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) volume from
-    ((aLaplaceIntegral_convergent (u := u) hu).mono_set
-      fun _ ht => lt_trans (by norm_num : (0:ℝ) < 1) ht).neg).congr_fun
+  IntegrableOn.congr_fun (((aLaplaceIntegral_convergent (u := u) hu).mono_set
+    fun _ ht => lt_trans (by norm_num : (0:ℝ) < 1) ht).neg)
     (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)).symm)
     measurableSet_Ioi
 
