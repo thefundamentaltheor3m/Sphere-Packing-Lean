@@ -85,28 +85,20 @@ lemma volume_real_fundamentalDomain_stdBasis :
   have hf : MeasurePreserving (fun x : E => (f x)) volume volume := by
     simpa [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv] using
       PiLp.volume_preserving_ofLp (ι := Fin d)
-  have himage :
-      f.toLinearEquiv '' ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) =
-        ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d)) := by
-    simpa [show ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).map f.toLinearEquiv =
-        Pi.basisFun ℝ (Fin d) from rfl] using
-      ZSpan.map_fundamentalDomain
-        (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) f.toLinearEquiv
   have hpre :
       f ⁻¹' (ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d))) =
         ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) := by
-    simpa
-        [Set.preimage_image_eq (f := fun x : E => f x)
-          (s := ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))
-          f.injective]
-      using congrArg (fun s => (fun x : E => f x) ⁻¹' s) himage.symm
-  have hcube : (volume : Measure (Fin d → ℝ)).real
-      (ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d))) = 1 := by
-    simp [ZSpan.volume_real_fundamentalDomain,
-      show (Matrix.of (Pi.basisFun ℝ (Fin d)) : Matrix (Fin d) (Fin d) ℝ) = 1 by
-        ext i j
-        simp [Matrix.of_apply, Matrix.one_apply, Pi.basisFun_apply, Pi.single_apply, eq_comm]]
-  simpa [hpre, hcube] using hf.measureReal_preimage
+    rw [show ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d)) =
+        f.toLinearEquiv '' ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)
+      from by simpa [show ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).map f.toLinearEquiv =
+          Pi.basisFun ℝ (Fin d) from rfl] using
+        (ZSpan.map_fundamentalDomain
+          (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) f.toLinearEquiv).symm]
+    exact Set.preimage_image_eq _ f.injective
+  simpa [hpre, ZSpan.volume_real_fundamentalDomain,
+    show (Matrix.of (Pi.basisFun ℝ (Fin d)) : Matrix (Fin d) (Fin d) ℝ) = 1 by
+      ext; simp [Matrix.of_apply, Matrix.one_apply, Pi.basisFun_apply, Pi.single_apply, eq_comm]]
+    using hf.measureReal_preimage
     (ZSpan.fundamentalDomain_measurableSet (b := (Pi.basisFun ℝ (Fin d)))).nullMeasurableSet
 
 end FundamentalDomain
@@ -151,15 +143,15 @@ lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
 
 lemma Bₗ_comp_Aadjₗ :
     (Bₗ (d := d) L ∘ₗ Aadjₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
-  have h : (Aₗ (d := d) (L := L)).toLinearMap ∘ₗ
-      (Aₗ (d := d) (L := L)).symm.toLinearMap = LinearMap.id := by ext x; simp
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, h]
+  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
+    show (Aₗ (d := d) (L := L)).toLinearMap ∘ₗ
+      (Aₗ (d := d) (L := L)).symm.toLinearMap = LinearMap.id from by ext x; simp]
 
 lemma Aadjₗ_comp_Bₗ :
     (Aadjₗ (d := d) L ∘ₗ Bₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
-  have h : (Aₗ (d := d) (L := L)).symm.toLinearMap ∘ₗ
-      (Aₗ (d := d) (L := L)).toLinearMap = LinearMap.id := by ext x; simp
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, h]
+  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
+    show (Aₗ (d := d) (L := L)).symm.toLinearMap ∘ₗ
+      (Aₗ (d := d) (L := L)).toLinearMap = LinearMap.id from by ext x; simp]
 
 noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E :=
   { toLinearMap := Bₗ (d := d) L
