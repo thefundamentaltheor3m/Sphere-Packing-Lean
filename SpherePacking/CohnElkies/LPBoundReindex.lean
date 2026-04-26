@@ -11,7 +11,6 @@ public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 public import SpherePacking.CohnElkies.LPBoundAux
 import SpherePacking.CohnElkies.LPBoundSummability
 
-
 /-!
 # Reindexing periodic sums for the LP bound
 
@@ -37,19 +36,10 @@ variable {d : ℕ}
     (↑(P.centers ∩ D) × P.lattice) ≃ P.centers := by
   have hcover :
       ∀ x : P.centers, ∃! g : P.lattice, g +ᵥ (x : EuclideanSpace ℝ (Fin d)) ∈ P.centers ∩ D :=
-    fun x =>
-      PeriodicSpherePacking.unique_covers_of_centers (d := d) (S := P) (D := D) hD_unique_covers x
+    PeriodicSpherePacking.unique_covers_of_centers (d := d) (S := P) (D := D) hD_unique_covers
   let cover : P.centers → P.lattice := fun x => Classical.choose (hcover x)
-  have cover_spec :
-      ∀ x : P.centers, ((cover x) +ᵥ (x : EuclideanSpace ℝ (Fin d))) ∈ P.centers ∩ D :=
-    fun x => (Classical.choose_spec (hcover x)).1
-  have cover_unique :
-      ∀ x : P.centers,
-        ∀ g : P.lattice,
-          (g +ᵥ (x : EuclideanSpace ℝ (Fin d))) ∈ P.centers ∩ D → g = cover x :=
-    fun x g hg => (Classical.choose_spec (hcover x)).2 g hg
   let repr : P.centers → ↑(P.centers ∩ D) := fun x =>
-    ⟨(cover x) +ᵥ (x : EuclideanSpace ℝ (Fin d)), cover_spec x⟩
+    ⟨(cover x) +ᵥ (x : EuclideanSpace ℝ (Fin d)), (Classical.choose_spec (hcover x)).1⟩
   let toCenter : ↑(P.centers ∩ D) × P.lattice → P.centers := fun p =>
     ⟨p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d)),
       P.lattice_action p.2.property (p.1.property).1⟩
@@ -62,7 +52,8 @@ variable {d : ℕ}
       right_inv := ?_ }
   · intro p
     have hcover : cover (toCenter p) = -p.2 :=
-      (cover_unique (toCenter p) (-p.2) (by simp [toCenter, p.1.property])).symm
+      ((Classical.choose_spec (hcover (toCenter p))).2 (-p.2)
+        (by simp [toCenter, p.1.property])).symm
     refine Prod.ext ?_ ?_
     · exact Subtype.ext (by simp [toPair, repr, toCenter, hcover])
     · simp [toPair, hcover]
@@ -83,9 +74,8 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
         (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
           (ℓ : EuclideanSpace ℝ (Fin d)))).re := by
-  have hfinite : Finite (↑(P.centers ∩ D)) :=
-    finite_centers_inter_of_isBounded P D hD_isBounded hd
-  letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite (↑(P.centers ∩ D))
+  haveI : Finite (↑(P.centers ∩ D)) := finite_centers_inter_of_isBounded P D hD_isBounded hd
+  letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite _
   let e : (↑(P.centers ∩ D) × P.lattice) ≃ P.centers :=
     centersInterProdEquiv (P := P) (D := D) hD_unique_covers
   have he_sub (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice) :
