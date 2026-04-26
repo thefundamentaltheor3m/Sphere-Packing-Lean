@@ -262,17 +262,14 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
   obtain ⟨C3, hC3⟩ := exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one
   obtain ⟨C4, hC4⟩ := exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one
   refine ⟨C3 + C4, fun t ht => ?_⟩
-  have hcong := norm_add_le
-    (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-      (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-    (H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-      (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-  rw [show (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) +
-    (H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) =
-    (H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
-    (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by ring] at hcong
+  set A : ℂ := H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
+  set B : ℂ := H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
+  have hsum : A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
+      (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) := by simp [A, B]; ring
+  have hcong : ‖A + B‖ ≤ ‖A‖ + ‖B‖ := norm_add_le _ _
+  rw [hsum] at hcong
   linarith [hC3 t ht, hC4 t ht]
 
 /-- Crude inverse-square bound for `H₃(it)` on `t ≥ 1`. -/
