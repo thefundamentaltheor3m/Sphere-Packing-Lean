@@ -267,7 +267,9 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
     ∃ c : Fin 8 → ℤ, LinearMap.intCast R c = Matrix.vecMul v (E8Inverse R) := by
   set c' := Matrix.vecMul v (E8Inverse R)
-  have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8) (hk : c' k = ∑ i, v i * w i) :
+  have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8)
+      (hk : c' k = ∑ i, v i * w i := by
+        simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) :
       ∃ n : ℤ, (n : R) = c' k :=
     let ⟨n, hn⟩ := exists_cast_eq_vecMul_E8Inverse_aux (R := R) v w hv hw
     ⟨n, hn.trans hk.symm⟩
@@ -287,17 +289,11 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     obtain ⟨h0 | h0, _⟩ := Submodule.mem_E8''.1 hv <;> obtain ⟨n, hn⟩ := h0 7
     exacts [⟨2 * n, by simp [hn, hc7']⟩, ⟨2 * n + 1, by simp [← hn, hc7', mul_add]⟩]
   obtain ⟨c1, hc1⟩ := aux ![0, 1, 1, 1, 1, 1, 1, -6] rfl 1
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c2, hc2⟩ := aux ![0, 0, 1, 1, 1, 1, 1, -5] rfl 2
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c3, hc3⟩ := aux ![0, 0, 0, 1, 1, 1, 1, -4] rfl 3
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c4, hc4⟩ := aux ![0, 0, 0, 0, 1, 1, 1, -3] rfl 4
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c5, hc5⟩ := aux ![0, 0, 0, 0, 0, 1, 1, -2] rfl 5
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   obtain ⟨c6, hc6⟩ := aux ![0, 0, 0, 0, 0, 0, 1, -1] rfl 6
-    (by simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse])
   exact ⟨![c0, c1, c2, c3, c4, c5, c6, c7], by rw [funext_iff]; simp [Fin.forall_fin_succ, *]⟩
 
 /-- The `E8` lattice is the `ℤ`-span of the rows of `E8Matrix`. -/
