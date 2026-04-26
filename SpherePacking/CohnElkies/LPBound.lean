@@ -96,9 +96,7 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
 omit [Nonempty ↑P.centers] in
 include hD_isBounded in
-/-- Helper summability fact used in `calc_steps_part2`: the series
-`∑ m, (𝓕 f m).re * ‖∑ x, exp (2 π I ⟪x, m⟫)‖²` indexed over the dual lattice
-is summable, because `‖∑ x, ...‖ ≤ |P.centers ∩ D|` is uniform in `m`. -/
+/-- Summability of `∑ m, (𝓕 f m).re * ‖∑ x, exp (2 π I ⟪x, m⟫)‖²` over the dual lattice. -/
 private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
