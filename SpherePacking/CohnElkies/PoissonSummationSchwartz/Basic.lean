@@ -33,8 +33,8 @@ open UnitAddTorus
       simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
         congrArg (fun x : E => x i) hab',
     fun ℓ => by
-      rcases SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
-        (x := (ℓ : E)) ℓ.property with ⟨n, hn⟩
+      obtain ⟨n, hn⟩ := SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
+        (d := d) (x := (ℓ : E)) ℓ.property
       exact ⟨n, Subtype.ext (by simpa using hn.symm)⟩⟩
 
 /-- Coercion lemma for `equivIntVec`. -/
@@ -74,9 +74,8 @@ public lemma finite_norm_le_lattice (r : ℝ) :
     Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
       Metric.isBounded_closedBall AddSubgroup.isClosed_of_discrete
   let e : Λ ↪ E := ⟨fun ℓ => (ℓ : E), Subtype.coe_injective⟩
-  have hfin_pre : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))).Finite := by
-    simpa using Set.Finite.preimage_embedding e (by
-      simpa [Submodule.coe_toAddSubgroup] using hfinE)
+  have hfin_pre : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))).Finite :=
+    Set.Finite.preimage_embedding e (by simpa [Submodule.coe_toAddSubgroup] using hfinE)
   exact hfin_pre.subset fun ℓ hℓ => by
     simpa [e, Metric.mem_closedBall, dist_eq_norm] using hℓ
 
@@ -110,10 +109,9 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
       simpa [add_comm] using (by nlinarith : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E) + x‖)
     have hpow_pos : 0 < ‖(x + (ℓ : E))‖ ^ k :=
       pow_pos ((by positivity : 0 < (1 / 2 : ℝ) * ‖(ℓ : E)‖).trans_le hnorm_ge) _
-    have hpow_ge : ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k ≤ ‖(x + (ℓ : E))‖ ^ k :=
-      pow_le_pow_left₀ (by positivity) hnorm_ge _
     have hinv : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-      have := one_div_le_one_div_of_le (pow_pos (mul_pos (by positivity) hnorm_pos) _) hpow_ge
+      have := one_div_le_one_div_of_le (pow_pos (mul_pos (by positivity) hnorm_pos) _)
+        (pow_le_pow_left₀ (by positivity) hnorm_ge k)
       simpa [one_div, mul_pow, inv_pow, mul_inv_rev, mul_comm] using this
     calc ‖(translate (d := d) f ℓ) (⟨x, hxK⟩ : K)‖
         = ‖f (x + (ℓ : E))‖ := by simp [translate]
@@ -133,9 +131,9 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
 /-- Pointwise formula for `periodized`. -/
 public lemma periodized_apply (x : E) :
     periodized (d := d) f x = ∑' ℓ : Λ, f (x + (ℓ : E)) := by
-  have hsum := ContinuousMap.summable_of_locally_summable_norm
-    (summable_norm_translate_restrict (d := d) f)
-  simpa [periodized, translate_apply] using (ContinuousMap.tsum_apply hsum x).symm
+  simpa [periodized, translate_apply] using
+    (ContinuousMap.tsum_apply (ContinuousMap.summable_of_locally_summable_norm
+      (summable_norm_translate_restrict (d := d) f)) x).symm
 
 @[simp] lemma periodized_vadd_eq (x : E) (ℓ₀ : Λ) :
     periodized (d := d) f (x + ℓ₀) = periodized (d := d) f x := by
@@ -149,20 +147,19 @@ public lemma periodized_apply (x : E) :
 
 /-- `coeFunEC` is a quotient map. -/
 public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) := by
-  let h := PoissonSummation.Standard.isOpenQuotientMap_coeFunE (d := d)
-  simpa [coeFunEC] using h.isQuotientMap
+  simpa [coeFunEC] using
+    (PoissonSummation.Standard.isOpenQuotientMap_coeFunE (d := d)).isQuotientMap
 
 /-- The periodization is invariant under lattice translates, so it factors through the torus. -/
 public lemma periodized_factorsThrough :
     Function.FactorsThrough (periodized (d := d) f) (coeFunEC (d := d)) := fun x y hxy => by
-  rcases PoissonSummation.Standard.exists_intVec_eq_sub_of_coeFunE_eq (d := d) (x := x) (y := y)
-      (by simpa [coeFunEC] using hxy) with ⟨n, hn⟩
+  obtain ⟨n, hn⟩ := PoissonSummation.Standard.exists_intVec_eq_sub_of_coeFunE_eq
+    (d := d) (x := x) (y := y) (by simpa [coeFunEC] using hxy)
   have hx : x = y + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using congrArg (fun t => t + y) hn
-  simpa [hx] using
-    (periodized_vadd_eq (d := d) (f := f) y
+  simpa [hx] using periodized_vadd_eq (d := d) (f := f) y
       ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
-        SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩)
+        SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩
 
 /--
 The descended function on the torus `(ℝ/ℤ)^d`, obtained by quotient-lifting the periodization.
@@ -184,7 +181,6 @@ public lemma descended_comp (x : E) :
 public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) =
       (𝐞 (-(inner ℝ x (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))) : ℂ) := by
-  -- Expand both sides as complex exponentials.
   simp [PoissonSummation.Standard.coeFunE, UnitAddTorus.mFourier_apply_coeFun_ofLp,
     Real.fourierChar_apply, SchwartzMap.PoissonSummation.Standard.intVec, PiLp.inner_apply,
     Finset.sum_neg_distrib, mul_assoc, mul_comm]
@@ -197,7 +193,6 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 lemma mFourier_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (PoissonSummation.Standard.coeFunE (d := d) x) =
       (𝐞 (inner ℝ x (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) : ℂ) := by
-  -- Reduce to the `(-n)`-formula and simplify the signs.
   simpa [intVec_neg (d := d) (n := n), inner_neg_right, neg_neg] using
     (mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x))
 
@@ -207,12 +202,8 @@ public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
       Complex.exp
         (2 * Real.pi * Complex.I *
           ⟪x, SchwartzMap.PoissonSummation.Standard.intVec (d := d) n⟫_[ℝ]) := by
-  have hinner :
-      inner ℝ x (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n) =
-        RCLike.wInner (𝕜 := ℝ) 1 x.ofLp
-          (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n).ofLp :=
-    RCLike.inner_eq_wInner_one x (intVec n)
-  simpa [Real.fourierChar_apply, mul_assoc, mul_comm, hinner] using
+  simpa [Real.fourierChar_apply, mul_assoc, mul_comm,
+    RCLike.inner_eq_wInner_one x (intVec n)] using
     (mFourier_apply_coeFunE (d := d) (n := n) (x := x))
 
 /-- `mFourier (-n) ∘ coeFunE` is invariant under adding an element of the standard lattice. -/
@@ -220,8 +211,8 @@ public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ)
     (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) =
       UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) := by
-  rcases PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E))
-    ℓ.property with ⟨m, hm⟩
+  obtain ⟨m, hm⟩ := PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
+    (d := d) (x := (ℓ : E)) ℓ.property
   simp [hm]
 
 /-- The fundamental cube `iocCube` is contained in the closed ball of radius `sqrt d`. -/
@@ -232,10 +223,10 @@ public lemma iocCube_subset_closedBall :
     have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := fun i => by
       have hi : x i ∈ Set.Ioc (0 : ℝ) 1 := hx i
       have hxle : ‖x i‖ ≤ (1 : ℝ) := by
-        simpa [Real.norm_eq_abs, abs_of_nonneg (le_of_lt hi.1)] using hi.2
+        simpa [Real.norm_eq_abs, abs_of_nonneg hi.1.le] using hi.2
       simpa [pow_two] using mul_le_mul hxle hxle (norm_nonneg _) (by positivity)
     simpa using (Finset.sum_le_sum fun i _ => hterm i).trans_eq (by simp)
-  simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using (Real.sqrt_le_sqrt hsum)
+  simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using Real.sqrt_le_sqrt hsum
 
 /-- The fundamental cube `iocCube` has finite Lebesgue measure. -/
 public lemma volume_iocCube_lt_top :
@@ -282,6 +273,5 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
           ‖f (x + (ℓ : E))‖ := by simp
     _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by simpa using hsup
-
 
 end SchwartzMap.PoissonSummation.Standard
