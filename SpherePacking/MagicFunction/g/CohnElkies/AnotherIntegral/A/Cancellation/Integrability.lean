@@ -67,9 +67,8 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
     simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
       field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
       (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
-  have := mul_le_mul_of_nonneg_right hCle
-    (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))
-  grind only
+  nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right hCle
+    (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
 
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, 0 < C ∧
