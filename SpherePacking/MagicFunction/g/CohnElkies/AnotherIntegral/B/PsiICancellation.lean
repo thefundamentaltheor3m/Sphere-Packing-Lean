@@ -93,8 +93,6 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   have ht0' : 0 ≤ t := ht0.le
-  have hres : ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t :=
-    psiI'_mul_I_eq_resToImagAxis t ht0
   have hψI := psiI_resToImagAxis_eq t ht0
   set e : ℝ := Real.exp (2 * Real.pi * t)
   set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
@@ -131,10 +129,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have hx0_bound : ‖x0‖ ≤ 50 := by
     have hu : 0 ≤ u := (Real.exp_pos _).le
     have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
-    have hx0_le : ‖x0‖ ≤ 2 + 48 * u := calc
-      ‖x0‖ = ‖(2 : ℂ) + (48 : ℂ) * (u : ℂ)‖ := by simp [x0]
-      _ ≤ ‖(2 : ℂ)‖ + ‖(48 : ℂ) * (u : ℂ)‖ := norm_add_le _ _
-      _ = 2 + 48 * u := by simp [abs_of_nonneg hu]
+    have hx0_le : ‖x0‖ ≤ 2 + 48 * u := by
+      simpa [x0, abs_of_nonneg hu] using norm_add_le (2 : ℂ) ((48 : ℂ) * (u : ℂ))
     linarith
   have hy0_bound : ‖y0‖ ≤ (e / 256) + (1 / 32) := by
     have he : 0 ≤ e := (Real.exp_pos _).le
@@ -183,18 +179,14 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
     have hz : z - 1 = (H₄.resToImagAxis t - 1) - H₂.resToImagAxis t := by dsimp [z]; ring
     calc ‖z - 1‖ = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by rw [hz]
       _ ≤ ‖H₄.resToImagAxis t - 1‖ + ‖H₂.resToImagAxis t‖ := norm_sub_le _ _
-      _ ≤ (CH4 + 32) * Real.exp (-Real.pi * t) + (CH2 + 80) * Real.exp (-Real.pi * t) :=
-          add_le_add hH4_bd hH2_bd
-      _ = (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by ring
+      _ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by linarith [hH4_bd, hH2_bd]
   have hw_bd : ‖w‖ ≤ Cinv3 + 2 := by
     have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
     have hterm : Cinv3 * Real.exp (-Real.pi * t) ≤ Cinv3 := by
       simpa using mul_le_mul_of_nonneg_left hexp_le hCinv3
-    have hw_le : ‖w‖ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := calc
-      ‖w‖ = ‖(w - 1) + 1‖ := by congr 1; ring
-      _ ≤ ‖w - 1‖ + ‖(1 : ℂ)‖ := norm_add_le _ _
-      _ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := by simpa using hw1
+    have hw_le : ‖w‖ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := by
+      have := norm_add_le (w - 1) (1 : ℂ); simp at this; linarith [hw1]
     linarith
   have hdecomp :
       (128 : ℂ) * (x * y + z * w) - (e : ℂ) - (144 : ℂ) =
@@ -291,7 +283,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   calc ‖ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t) : ℝ) : ℂ)‖
       = ‖((128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)) +
           ((128 : ℂ) * (z * w) - (128 : ℂ))‖ := by
-        rw [show ((Real.exp (2 * π * t) : ℝ) : ℂ) = (e : ℂ) from rfl, hres, hψI', ← hdecomp]
+        rw [show ((Real.exp (2 * π * t) : ℝ) : ℂ) = (e : ℂ) from rfl,
+            psiI'_mul_I_eq_resToImagAxis t ht0, hψI', ← hdecomp]
         congr 1; ring
     _ ≤ ‖(128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)‖ + ‖(128 : ℂ) * (z * w) - (128 : ℂ)‖ :=
         norm_add_le _ _
