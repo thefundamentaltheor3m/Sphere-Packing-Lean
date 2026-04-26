@@ -232,8 +232,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hJ2_top : J₂' u =
       ∫ (x : ℝ) in (0 : ℝ)..1,
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
-    dsimp [J₂']
-    refine intervalIntegral.integral_congr fun x hx => ?_
+    dsimp [J₂']; refine intervalIntegral.integral_congr fun x hx => ?_
     simp [bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
       show z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 by
         have h := z₂'_eq_of_mem (t := x) (hmem_Icc hx); push_cast at h; linear_combination h]
@@ -249,11 +248,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       intervalIntegral.integral_congr fun t ht => by
         simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
           show z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I by
-            push_cast
-            linear_combination (by
-              simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-                (z₄'_eq_of_mem (t := t) (hmem_Icc ht)) :
-              z₄' t = (1 : ℂ) - (t : ℂ) + (I : ℂ))]]
+            have h := z₄'_eq_of_mem (t := t) (hmem_Icc ht)
+            push_cast at h ⊢; linear_combination h]]
     rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
       simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t from by norm_num,
         (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
@@ -294,8 +290,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simp [bContourIntegrandI, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
           show z₅' t = I * (t : ℂ) by simpa using z₅'_eq_of_mem (t := t) (hmem_Icc ht)]]
     simp only [neg_mul, intervalIntegral.integral_neg, intervalIntegral.integral_const_mul,
-      mul_neg, neg_neg]
-    rw [intervalIntegral.integral_of_le zero_le_one]; ring
+      mul_neg, neg_neg]; rw [intervalIntegral.integral_of_le zero_le_one]; ring
   have hJ6_set : J₆' u =
       (-2 : ℂ) * (I : ℂ) *
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
@@ -306,8 +301,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
         simp [bContourIntegrandS, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
           show z₆' t = I * (t : ℂ) by simpa using z₆'_eq_of_mem (t := t) ht],
-      MeasureTheory.integral_Ici_eq_integral_Ioi]
-    simp [MeasureTheory.integral_const_mul, mul_assoc]
+      MeasureTheory.integral_Ici_eq_integral_Ioi, MeasureTheory.integral_const_mul, mul_assoc]
   have hShift_point : ∀ (a : ℂ) (_ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
       (t : ℝ), 0 < t →
       bContourIntegrandT u (a + I * (t : ℂ)) =
