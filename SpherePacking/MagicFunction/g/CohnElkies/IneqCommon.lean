@@ -62,8 +62,7 @@ public lemma phi0''_re_I_div (t : ℝ) (ht : 0 < t) :
     _ = ((F z) / (Δ z)).re := by simp [φ₀, F]
     _ = ((FReal s : ℂ) / (Δ.resToImagAxis s)).re := by simp [hF, hΔ]
     _ = ((FReal s : ℂ) / ((Δ.resToImagAxis s).re : ℂ)).re := by rw [hΔof]; rfl
-    _ = (FReal s) / (Δ.resToImagAxis s).re := by
-      rw [(Complex.ofReal_div (FReal s) (Δ.resToImagAxis s).re).symm]; simp
+    _ = (FReal s) / (Δ.resToImagAxis s).re := by rw [← Complex.ofReal_div]; simp
     _ = (FReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re := by simp [s]
 
 /-- Real part of `ψS` on the imaginary axis, written using `GReal` and `Δ`. -/
@@ -92,27 +91,25 @@ public lemma ψI'_re_mul_I (t : ℝ) (ht : 0 < t) :
   have hs : 0 < s := one_div_pos.2 ht
   have hψI' : ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t := by
     simp [ψI', ResToImagAxis, ht]
-  have hs' : (1 / s) = t := by simp [s]
   have hψS' : ψS.resToImagAxis s = ((-(s ^ (2 : ℕ)) : ℝ) : ℂ) * ψI.resToImagAxis t := by
-    simpa [hs', zpow_ofNat, pow_two, mul_assoc, mul_left_comm, mul_comm] using
+    simpa [show (1 / s) = t by simp [s], zpow_ofNat, pow_two,
+      mul_assoc, mul_left_comm, mul_comm] using
       (ResToImagAxis.SlashActionS (F := ψI) (k := (-2 : ℤ)) (t := s) hs)
   have hts : (t ^ (2 : ℕ)) * (s ^ (2 : ℕ)) = (1 : ℝ) := by
     simp [s, ht.ne', pow_two, div_eq_mul_inv, mul_assoc, mul_comm]
   have hψIaxis : ψI.resToImagAxis t = ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s := by
-    have hmul := congrArg (fun w : ℂ => ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * w) hψS'
     calc ψI.resToImagAxis t
-          = (1 : ℂ) * ψI.resToImagAxis t := (one_mul _).symm
-      _ = ((t ^ (2 : ℕ) * s ^ (2 : ℕ) : ℝ) : ℂ) * ψI.resToImagAxis t := by simp [hts]
+          = ((t ^ (2 : ℕ) * s ^ (2 : ℕ) : ℝ) : ℂ) * ψI.resToImagAxis t := by simp [hts]
       _ = ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s := by
-            simpa [mul_assoc, mul_left_comm, mul_comm] using hmul.symm
+            simpa [mul_assoc, mul_left_comm, mul_comm] using
+              (congrArg (fun w : ℂ => ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * w) hψS').symm
   calc
     (ψI' ((Complex.I : ℂ) * (t : ℂ))).re
         = (ψI.resToImagAxis t).re := by simpa using congrArg Complex.re hψI'
     _ = (-(t ^ (2 : ℕ)) : ℝ) * (ψS.resToImagAxis s).re := by
-      rw [hψIaxis]
-      simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
-    _ = -(t ^ (2 : ℕ)) * (ψS.resToImagAxis (1 / t)).re := by
-          simp [s]
+      rw [hψIaxis]; simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+        sub_zero]
+    _ = -(t ^ (2 : ℕ)) * (ψS.resToImagAxis (1 / t)).re := by simp [s]
 
 /-- Rewrite `A t` as a quotient involving `FReal`, `GReal`, and `Δ` on the imaginary axis. -/
 public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
@@ -137,8 +134,7 @@ public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
           simp [A, hφ, hψI']
     _ = (-(t ^ (2 : ℕ))) * ((FReal s + c * GReal s) / Δr) := by
           rw [hψS]; field_simp [hΔr]; ring
-    _ =
-        (-(t ^ (2 : ℕ))) *
+    _ = (-(t ^ (2 : ℕ))) *
           ((FReal (1 / t) + c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by
           simp [s, Δr, Function.resToImagAxis]
 
@@ -165,8 +161,7 @@ public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
           simp [B, hφ, hψI']
     _ = (-(t ^ (2 : ℕ))) * ((FReal s - c * GReal s) / Δr) := by
           rw [hψS]; field_simp [hΔr]; ring
-    _ =
-        (-(t ^ (2 : ℕ))) *
+    _ = (-(t ^ (2 : ℕ))) *
           ((FReal (1 / t) - c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by
           simp [s, Δr, Function.resToImagAxis]
 
