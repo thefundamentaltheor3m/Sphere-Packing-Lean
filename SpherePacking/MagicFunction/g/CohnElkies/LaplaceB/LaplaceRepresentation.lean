@@ -27,10 +27,9 @@ private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (hf : IntegrableOn f (Set.Ioi (0 : ℝ)) (μ := (volume : Measure ℝ))) :
     (∫ t in Set.Ioi (0 : ℝ), f t) =
       (∫ t in Set.Ioc (0 : ℝ) 1, f t) + (∫ t in Set.Ioi (1 : ℝ), f t) := by
-  simpa [Set.Ioc_union_Ioi_eq_Ioi zero_le_one] using
-    MeasureTheory.setIntegral_union (μ := (volume : Measure ℝ)) (f := f) Set.Ioc_disjoint_Ioi_same
-      measurableSet_Ioi (hf.mono_set fun _ ht => ht.1)
-      (hf.mono_set (Set.Ioi_subset_Ioi zero_le_one))
+  simpa [Set.Ioc_union_Ioi_eq_Ioi zero_le_one] using MeasureTheory.setIntegral_union
+    (μ := (volume : Measure ℝ)) (f := f) Set.Ioc_disjoint_Ioi_same measurableSet_Ioi
+    (hf.mono_set fun _ ht => ht.1) (hf.mono_set (Set.Ioi_subset_Ioi zero_le_one))
 
 /-- Main lemma for blueprint proposition `prop:b-double-zeros`. -/
 public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
@@ -365,10 +364,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
       (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
-  have hw1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
-    simp [bContourWeight, mul_left_comm, mul_comm]
-  have hw2 : bContourWeight u (-1 : ℂ) = Complex.exp (-(((π * u : ℝ) : ℂ) * I)) := by
-    simp [bContourWeight, mul_left_comm, mul_comm]
-  simpa [hw1, hw2, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
+  simpa [show bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) by
+      simp [bContourWeight, mul_left_comm, mul_comm],
+    show bContourWeight u (-1 : ℂ) = Complex.exp (-(((π * u : ℝ) : ℂ) * I)) by
+      simp [bContourWeight, mul_left_comm, mul_comm],
+    sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
 
 end MagicFunction.g.CohnElkies.IntegralReps
