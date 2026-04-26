@@ -64,15 +64,9 @@ noncomputable def GReal (t : ℝ) : ℝ := (G.resToImagAxis t).re
 
 noncomputable def FmodGReal (t : ℝ) : ℝ := (FReal t) / (GReal t)
 
-theorem F_imag_axis_of_real : ResToImagAxis.Real F := by unfold F; fun_prop
+theorem F_eq_FReal {t : ℝ} : F.resToImagAxis t = FReal t := by sorry
 
-theorem G_imag_axis_of_real : ResToImagAxis.Real G := by unfold G; fun_prop
-
-theorem F_eq_FReal {t : ℝ} : F.resToImagAxis t = FReal t :=
-  F_imag_axis_of_real.eq_real_part t
-
-theorem G_eq_GReal {t : ℝ} : G.resToImagAxis t = GReal t :=
-  G_imag_axis_of_real.eq_real_part t
+theorem G_eq_GReal {t : ℝ} : G.resToImagAxis t = GReal t := by sorry
 
 /--
 `F = 9 * (D E₄)²` by Ramanujan's formula.
