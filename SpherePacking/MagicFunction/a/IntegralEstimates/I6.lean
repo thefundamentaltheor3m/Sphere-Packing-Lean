@@ -120,13 +120,12 @@ lemma gN_norm (n : ℕ) (r t : ℝ) :
 
 private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
-  have hb : 0 < π * (r + 2) := mul_pos Real.pi_pos (by linarith)
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
   have hbound_int : Integrable bound μIciOne := by
     have hInt' : Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) μIciOne := by
       simpa [IntegrableOn, μIciOne] using
         SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
-          (by simpa [mul_assoc] using hb)
+          (mul_pos Real.pi_pos (by linarith))
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt'.const_mul ((π ^ n) * C₀)
   refine Integrable.mono' hbound_int (aestronglyMeasurable_gN (n := n) (r := r)) <|
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
@@ -151,7 +150,6 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
   have hF'_meas : AEStronglyMeasurable (gN (n + 1) r₀) μ :=
     aestronglyMeasurable_gN (n := n + 1) (r := r₀)
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
-  have hb : 0 < π * (r₀ + 1) := mul_pos Real.pi_pos (by linarith)
   let bound : ℝ → ℝ := fun t ↦ (π ^ (n + 1)) * (t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) * C₀
   have h_bound : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r t‖ ≤ bound t := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht r hr ↦ ?_
@@ -179,7 +177,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     have hInt' : Integrable (fun t : ℝ ↦ t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) μ := by
       simpa [IntegrableOn, μ, μIciOne] using
         SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n + 1)
-          (b := π * (r₀ + 1)) (by simpa [mul_assoc] using hb)
+          (b := π * (r₀ + 1)) (mul_pos Real.pi_pos (by linarith))
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt'.const_mul ((π ^ (n + 1)) * C₀)
   have h_diff : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ),
       HasDerivAt (fun r : ℝ ↦ gN n r t) (gN (n + 1) r t) r := ae_of_all _ fun t r _ ↦ by
@@ -227,11 +225,9 @@ lemma iteratedDeriv_bound (n : ℕ) :
         simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
-  have hExp : ∀ t ∈ Ici (1 : ℝ), rexp (-π * r * t) ≤ rexp (-π * r) := fun t ht ↦ by
-    have hrt : r ≤ r * t := by simpa [mul_one] using mul_le_mul_of_nonneg_left ht hr
-    simpa [mul_assoc] using Real.exp_le_exp.2
-      (by simpa [mul_assoc] using
-        mul_le_mul_of_nonpos_left hrt (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0))
+  have hExp : ∀ t ∈ Ici (1 : ℝ), rexp (-π * r * t) ≤ rexp (-π * r) := fun t ht ↦
+    Real.exp_le_exp.2 (by nlinarith [Real.pi_pos,
+      mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
   have hpoint : ∀ t ∈ Ici (1 : ℝ), ‖gN n r t‖ ≤ B t * rexp (-π * r) := fun t ht ↦ by
     have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
     calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
