@@ -180,8 +180,6 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         using fract_eq_self.mpr hu_fd
     right_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
       rw [Subtype.mk.injEq, ← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
-      have hu_fd' : u - v ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
-        rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd
       ext i
       set b' := b.ofZLatticeBasis ℝ _
       calc _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - floor b' u - v)) i := rfl
@@ -190,7 +188,9 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         _ = b'.repr u i := by
           rw [show b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋)
             = b'.repr u i - ⌊b'.repr (u - v) i⌋ by abel_nf, sub_eq_self,
-            ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp hu_fd']; simp }
+            ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp (by
+              rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd)]
+          simp }
 
 instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
 instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
@@ -232,8 +232,7 @@ public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
   rw [numReps]
-  convert Finset.card_eq_of_equiv_fintype ?_
-  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv D hD_unique_covers).symm
+  exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
 
 public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
@@ -326,9 +325,9 @@ public theorem PeriodicSpherePacking.aux_ge
       S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard := by
   have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers
     (aux S (b.ofZLatticeBasis ℝ _) hL R)
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
-    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
-  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+  simp_rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
+    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b),
+    S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc.ge
 
 private theorem aux'
@@ -354,9 +353,9 @@ public theorem PeriodicSpherePacking.aux_le
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
   have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers (aux' S b hL R)
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
-    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
-  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+  simp_rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
+    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b),
+    S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc
 
 end theorem_2_3
