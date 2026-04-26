@@ -110,20 +110,15 @@ public lemma nullMeasurableSet_iocCube : NullMeasurableSet (iocCube (d := d)) :=
 public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
     ∃! n : Fin d → ℤ, x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n ∈
       iocCube (d := d) := by
-  have hxcoord :
-      ∀ i : Fin d, ∃! m : ℤ, (x i : ℝ) + m • (1 : ℝ) ∈ Set.Ioc (0 : ℝ) 1 := fun i => by
+  choose n hn hn_unique using fun i : Fin d => by
     simpa [one_smul, add_assoc] using
-      (existsUnique_add_zsmul_mem_Ioc (G := ℝ) (ha := zero_lt_one) (b := (x i : ℝ))
-        (c := (0 : ℝ)))
-  choose n hn hn_unique using hxcoord
+      (existsUnique_add_zsmul_mem_Ioc (G := ℝ) (ha := zero_lt_one) (b := (x i : ℝ)) (c := (0 : ℝ)))
   refine ⟨n, fun i => by
-    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, iocCube, zsmul_one] using hn i, ?_⟩
-  intro n' hn'
-  funext i
-  exact hn_unique i (n' i) (by
-    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using
-      (show ∀ j : Fin d, (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') j ∈
-        Set.Ioc (0:ℝ) 1 from by simpa [iocCube] using hn') i)
+    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, iocCube, zsmul_one] using hn i,
+    fun n' hn' => funext fun i => hn_unique i (n' i) (by
+      simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using
+        (show ∀ j : Fin d, (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') j ∈
+          Set.Ioc (0:ℝ) 1 from by simpa [iocCube] using hn') i)⟩
 
 /-! #### Elements of the standard lattice are integer vectors -/
 
@@ -132,11 +127,8 @@ public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
     (hx : x ∈ SchwartzMap.standardLattice d) :
     ∃ n : Fin d → ℤ, x = SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
   let b : OrthonormalBasis (Fin d) ℝ E := EuclideanSpace.basisFun (Fin d) ℝ
-  have hx_span :
-      x ∈ Submodule.span ℤ (Set.range fun j : Fin d => (b.toBasis j : E)) := by
-    simpa [SchwartzMap.standardLattice, standardLattice] using hx
-  choose n hn using
-    (Module.Basis.mem_span_iff_repr_mem (R := ℤ) (b := b.toBasis) x).1 hx_span
+  choose n hn using (Module.Basis.mem_span_iff_repr_mem (R := ℤ) (b := b.toBasis) x).1
+    (by simpa [SchwartzMap.standardLattice, standardLattice] using hx)
   refine ⟨n, ?_⟩
   ext i
   simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, b] using (hn i).symm
@@ -161,9 +153,9 @@ public lemma dualSubmodule_standardLattice_eq :
       SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n
   · rcases exists_intVec_eq_of_mem_standardLattice (d := d) x hx with ⟨n, rfl⟩
     rcases exists_intVec_eq_of_mem_standardLattice (d := d) y hy with ⟨m, rfl⟩
-    refine Submodule.mem_one.mpr ⟨∑ i : Fin d, n i * m i, ?_⟩
-    simp [innerₗ_apply_apply, SchwartzMap.PoissonSummation.Standard.intVec,
-      PiLp.inner_apply, map_sum, Int.cast_mul, mul_comm]
+    exact Submodule.mem_one.mpr ⟨∑ i : Fin d, n i * m i, by
+      simp [innerₗ_apply_apply, SchwartzMap.PoissonSummation.Standard.intVec,
+        PiLp.inner_apply, map_sum, Int.cast_mul, mul_comm]⟩
 
 end SchwartzMap.PoissonSummation.Standard
 namespace SchwartzMap
