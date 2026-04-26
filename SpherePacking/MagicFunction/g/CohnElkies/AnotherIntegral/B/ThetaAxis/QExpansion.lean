@@ -185,8 +185,6 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       funext fun n => by simp [Θ₂_term_as_jacobiTheta₂_term, mul_assoc]] using
       ((summable_jacobiTheta₂_term_iff (z := (τ : ℂ) / 2) (τ := (τ : ℂ))).2
         (by simpa using τ.im_pos)).mul_left (Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4))
-  have hsymmZ : ∀ n : ℤ, Θ₂_term (-n - 1) τ = Θ₂_term n τ := fun n => by
-    unfold Θ₂_term; grind only
   have hTheta2_nat :
       Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n := by
     rw [show Θ₂.resToImagAxis t = Θ₂ τ from by
@@ -195,8 +193,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       ← tsum_mul_left]
     refine tsum_congr fun n => ?_
     rw [show Θ₂_term (-(n + 1 : ℤ)) τ = Θ₂_term (n : ℤ) τ by
-      simpa [show (-(n + 1 : ℤ)) = -(n : ℤ) - 1 from by ring, sub_eq_add_neg, add_assoc]
-        using hsymmZ (n := (n : ℤ)), two_mul]
+      unfold Θ₂_term; grind only, two_mul]
   have hf : Summable f := hsumZ.comp_injective Nat.cast_injective
   have hshift : (∑' n : ℕ, f n) - (f 0 + f 1) = ∑' n : ℕ, f (n + 2) :=
     (sub_eq_iff_eq_add).2 <| by
