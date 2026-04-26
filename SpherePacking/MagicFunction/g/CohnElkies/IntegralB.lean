@@ -94,14 +94,6 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
           ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
-  change (∫ t : ℝ, (B t : ℂ) * Real.exp (-π * u * t) ∂μ) =
-      -(∫ t : ℝ, aAnotherIntegrand u t ∂μ) +
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-          (∫ t : ℝ, bAnotherIntegrand u t ∂μ) +
-        ((8640 / π : ℝ) : ℂ) *
-            (∫ t : ℝ, (t : ℂ) * (Real.exp (-π * u * t) : ℂ) ∂μ) -
-          ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-            (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μ)
   let f1 : ℝ → ℂ := fun t => -(aAnotherIntegrand u t)
   let f2 : ℝ → ℂ := fun t => ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t
   let f3 : ℝ → ℂ := fun t =>
@@ -279,22 +271,12 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
         (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   by_cases hx2 : ‖x‖ ^ 2 = 2
-  · have hRHS :
-        (π / 2160 : ℂ) *
-            (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
-              (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) = 0 := by
-      simp [show Real.sin (π * (‖x‖ ^ 2) / 2) = 0 by rw [hx2]; simp]
-    let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
+  · let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
     let xseq : ℕ → ℝ⁸ := fun n => (c n) • x
-    have hc : Filter.Tendsto c Filter.atTop (𝓝 (1 : ℝ)) := by
-      simpa [c] using tendsto_const_nhds.add
-        (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
     have hxseq : Filter.Tendsto xseq Filter.atTop (𝓝 x) := by
-      simpa [xseq] using hc.smul_const x
-    have hFseq :
-        Filter.Tendsto (fun n : ℕ => (𝓕 g : 𝓢(ℝ⁸, ℂ)) (xseq n)) Filter.atTop
-          (𝓝 ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x)) :=
-      ((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq
+      simpa [xseq] using (show Filter.Tendsto c Filter.atTop (𝓝 (1 : ℝ)) by
+        simpa [c] using tendsto_const_nhds.add
+          (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))).smul_const x
     let useq : ℕ → ℝ := fun n => ‖xseq n‖ ^ 2
     have huseq_gt2 : ∀ n : ℕ, 2 < useq n := fun n => by
       rw [show useq n = (c n) ^ (2 : ℕ) * (‖x‖ ^ 2) by
@@ -349,10 +331,10 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
             (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) by
           simpa [pow_two] using Complex.norm_of_nonneg (sq_nonneg (Real.sin (π * (useq n) / 2))),
         mul_right_comm]
-      gcongr
-      exact hInt_bound n
-    rw [tendsto_nhds_unique hFseq ((Filter.tendsto_congr hEqseq).mpr hRHSseq0)]
-    exact hRHS.symm
+      gcongr; exact hInt_bound n
+    rw [tendsto_nhds_unique (((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq)
+      ((Filter.tendsto_congr hEqseq).mpr hRHSseq0)]
+    simp [show Real.sin (π * (‖x‖ ^ 2) / 2) = 0 by simp [hx2]]
   · exact fourier_g_eq_integral_B_of_ne_two (x := x) hx hx2
 
 end MagicFunction.g.CohnElkies
