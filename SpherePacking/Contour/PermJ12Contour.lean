@@ -133,9 +133,8 @@ private lemma perm_J12_contour_h_aux
     (Path.segment p0 p1).map' continuousOn_mobiusInv_segment
   let δ : Path q0 q1 := Path.segment q0 q1
   let I01 : Set ℝ := unitInterval
-  let φ : (γ : C(I01, ℂ)).Homotopy δ := ContinuousMap.Homotopy.affine (γ : C(I01, ℂ)) δ
-  have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := by
-    intro a ha b hb
+  let φ : (γ : C(I01, ℂ)).Homotopy δ := .affine (γ : C(I01, ℂ)) δ
+  have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := fun a ha b hb => by
     simpa [φ, γ, δ, Path.map', Path.segment_apply] using
       (homotopy_mem_wedgeSet (x := (a : ℝ)) (y := (b : ℝ)) ha hb)
   have hcontdiff : ContDiffOn ℝ 2
@@ -201,12 +200,10 @@ public lemma perm_J12_contour_h1
       (∫ᶜ z in Path.segment (mobiusInv (-1 : ℂ)) (1 : ℂ), scalarOneForm (Ψ₁' r) z) = 0 := by
     rw [h.hyp.mobiusInv_neg_one]; simp [Path.segment_same]
   simpa [add_assoc, hstart] using
-    perm_J12_contour_h_aux (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁')
-      (wedgeSet := wedgeSet) h.closed_ω_wedgeSet
+    perm_J12_contour_h_aux h.closed_ω_wedgeSet
       (-1 : ℂ) ((-1 : ℂ) + Complex.I) (1 : ℂ) ((1 : ℂ) + Complex.I)
-      h.hyp.continuousOn_mobiusInv_segment_z₁
-      (fun hx hy => by simpa using h.hyp.homotopy_mem_wedgeSet hx hy)
-      (by simpa using h.hyp.contDiffOn_homotopy) r
+      h.hyp.continuousOn_mobiusInv_segment_z₁ (@h.hyp.homotopy_mem_wedgeSet)
+      h.hyp.contDiffOn_homotopy r
 
 /--
 Contour deformation identity for the second segment in the `perm_J12` argument.
@@ -233,11 +230,9 @@ public lemma perm_J12_contour_h2
           scalarOneForm (Ψ₁' r) z) = 0 := by
     rw [h.hyp.mobiusInv_I]; simp [Path.segment_same]
   simpa [add_assoc, add_left_comm, add_comm, hend] using
-    perm_J12_contour_h_aux (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁')
-      (wedgeSet := wedgeSet) h.closed_ω_wedgeSet
+    perm_J12_contour_h_aux h.closed_ω_wedgeSet
       (((-1 : ℂ) + Complex.I)) Complex.I (((1 : ℂ) + Complex.I)) Complex.I
-      h.hyp.continuousOn_mobiusInv_segment_z₂
-      (fun hx hy => by simpa using h.hyp.homotopy_mem_wedgeSet hx hy)
-      (by simpa using h.hyp.contDiffOn_homotopy) r
+      h.hyp.continuousOn_mobiusInv_segment_z₂ (@h.hyp.homotopy_mem_wedgeSet)
+      h.hyp.contDiffOn_homotopy r
 
 end SpherePacking.Contour
