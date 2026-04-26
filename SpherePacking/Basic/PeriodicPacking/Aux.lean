@@ -77,9 +77,7 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   refine Set.finite_coe_iff.2 <| finite_of_bounded_iUnion_of_volume_lower_bound
       (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))
-      (hc := by
-        simpa using Metric.measure_ball_pos volume (0 : EuclideanSpace ℝ (Fin d))
-          (by nlinarith [S.separation_pos]))
+      (hc := by simpa using Metric.measure_ball_pos volume _ (by linarith [S.separation_pos]))
       (h_measurable := fun _ _ => measurableSet_ball)
       (h_bounded := isBounded_iUnion_ball_centers_inter S D hD_isBounded)
       (h_volume := fun _ _ => by simp [Measure.addHaar_ball_center])
@@ -137,7 +135,6 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       (Classical.choose_spec (hD_unique_covers (y + v))).left
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
   left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ Quotient.eq.2 <| by
-    change (S.addAction.orbitRel).r _ _
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
@@ -180,10 +177,9 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ⟨fract (b.ofZLatticeBasis ℝ _) u, by rw [fract]; exact hact _ u hu_centers,
        fract_mem_fundamentalDomain _ _⟩
     left_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
-      simp_rw [Subtype.mk.injEq]
-      rw [sub_eq_add_neg, fract_add_ZSpan]
-      · exact fract_eq_self.mpr hu_fd
-      · exact neg_mem (Submodule.coe_mem _)
+      simp_rw [Subtype.mk.injEq, sub_eq_add_neg,
+        fract_add_ZSpan _ _ (neg_mem (Submodule.coe_mem _))]
+      exact fract_eq_self.mpr hu_fd
     right_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
       simp_rw [Subtype.mk.injEq]
       rw [← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
@@ -208,7 +204,7 @@ public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
   · exact Quotient.finite _
   let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
   haveI := finite_centers_inter_fundamentalDomain S b hd
-  exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
+  exact .of_equiv _ (S.addActionOrbitRelEquiv' b).symm
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
@@ -331,10 +327,10 @@ public theorem PeriodicSpherePacking.aux_ge
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard ≥
       S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard := by
-  have hsub := Set.inter_subset_inter_right S.centers (aux S (b.ofZLatticeBasis ℝ _) hL R)
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
-  have henc := Set.encard_mono hsub
-  rw [Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
+  have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers
+    (aux S (b.ofZLatticeBasis ℝ _) hL R)
+  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
+    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   convert henc.ge
   rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
@@ -361,10 +357,9 @@ public theorem PeriodicSpherePacking.aux_le
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
-  have hsub := Set.inter_subset_inter_right S.centers (aux' S b hL R)
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
-  have henc := Set.encard_mono hsub
-  rw [Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
+  have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers (aux' S b hL R)
+  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
+    Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b)] at henc
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   convert henc
   rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
