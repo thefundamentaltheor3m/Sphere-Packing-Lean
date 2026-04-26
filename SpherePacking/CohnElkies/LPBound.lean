@@ -281,14 +281,6 @@ theorem calc_steps (hd : 0 < d) :
     hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
       hD_isBounded hd)
 
-end Fundamental_Domain_Dependent
-
-section Main_Theorem_For_One_Packing
-
-variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
-variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
-
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
@@ -342,7 +334,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
 
-end Main_Theorem_For_One_Packing
+end Fundamental_Domain_Dependent
 
 section Main_Theorem
 
