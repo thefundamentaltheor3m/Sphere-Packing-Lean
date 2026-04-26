@@ -25,7 +25,7 @@ variable {d : ℕ}
 section DensityEqFdDensity
 
 variable
-  {d : ℕ} {S : PeriodicSpherePacking d}
+  {S : PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
 lemma PeriodicSpherePacking.tendsto_finiteDensity
@@ -129,10 +129,6 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
     Basis (Fin d) ℤ ↥S.lattice :=
   ((ZLattice.module_free ℝ S.lattice).chooseBasis).reindex S.basis_index_equiv
 
-/- Here's a version of `PeriodicSpherePacking.density_eq` that
-1. does not require the `hL` hypothesis that the original one does
-2. uses `ZLattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
--/
 /-- A basis-free variant of `PeriodicSpherePacking.density_eq`, stated using `ZLattice.covolume`. -/
 @[simp] public theorem PeriodicSpherePacking.density_eq'
   (S : PeriodicSpherePacking d) (hd : 0 < d) : S.density =
@@ -141,12 +137,12 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
   Real.toNNReal (ZLattice.covolume S.lattice) := by
   let b : Basis (Fin d) ℤ ↥S.lattice := S.defaultBasis
   obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
-  rw [Real.toNNReal_of_nonneg (LT.lt.le (ZLattice.covolume_pos S.lattice volume)),
+  rw [Real.toNNReal_of_nonneg (ZLattice.covolume_pos S.lattice volume).le,
     S.density_eq b hL hd]
   simp only [ENat.toENNReal_coe]
   refine congrArg _ ((ENNReal.toReal_eq_toReal_iff' ?_ ENNReal.coe_ne_top).mp ?_)
-  · exact (lt_top_iff_ne_top).mp
-      (IsBounded.measure_lt_top (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)))
+  · exact (IsBounded.measure_lt_top
+      (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))).ne
   · rw [ENNReal.coe_toReal, NNReal.coe_mk]
     exact (ZLattice.covolume_eq_measure_fundamentalDomain S.lattice volume
       (ZLattice.isAddFundamentalDomain b volume)).symm
@@ -168,7 +164,6 @@ public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpher
   simp only [Set.toFinset_card, ENat.toENNReal_coe, ENNReal.div_eq_zero_iff, mul_eq_zero,
     Nat.cast_eq_zero, ENNReal.coe_ne_top, or_false]
   left
-  letI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
   haveI : IsEmpty (↥(S.centers ∩ D)) := ⟨fun x => instEmpty.false ⟨x.1, x.2.1⟩⟩
   simp
 
