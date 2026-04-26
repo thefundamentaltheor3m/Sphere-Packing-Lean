@@ -194,31 +194,28 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     unfold Θ₂_term; grind only
   have hTheta2_nat :
       Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n := by
-    have hsymm : ∀ n : ℕ, Θ₂_term (-(n + 1 : ℤ)) τ = Θ₂_term (n : ℤ) τ := fun n => by
-      simpa [show (-(n + 1 : ℤ)) = -(n : ℤ) - 1 from by ring, sub_eq_add_neg, add_assoc]
-        using hsymmZ (n := (n : ℤ))
     rw [show Θ₂.resToImagAxis t = Θ₂ τ from by
         simp [Function.resToImagAxis, ResToImagAxis, htpos, τ],
       Θ₂, (tsum_nat_add_neg_add_one (f := fun n : ℤ ↦ Θ₂_term n τ) hsumZ).symm,
       ← tsum_mul_left]
-    exact tsum_congr fun n => by rw [hsymm n]; exact (two_mul (f n)).symm
+    refine tsum_congr fun n => ?_
+    rw [show Θ₂_term (-(n + 1 : ℤ)) τ = Θ₂_term (n : ℤ) τ by
+      simpa [show (-(n + 1 : ℤ)) = -(n : ℤ) - 1 from by ring, sub_eq_add_neg, add_assoc]
+        using hsymmZ (n := (n : ℤ)), two_mul]
   have hf : Summable f := hsumZ.comp_injective Nat.cast_injective
   have hshift : (∑' n : ℕ, f n) - (f 0 + f 1) = ∑' n : ℕ, f (n + 2) :=
     (sub_eq_iff_eq_add).2 <| by
       simpa [Finset.range_add_one, add_comm, add_left_comm, add_assoc] using
         (Summable.sum_add_tsum_nat_add (k := 2) hf).symm
-  have hf0 : f 0 = (Real.exp (-Real.pi * t / 4) : ℂ) := by
-    unfold f Θ₂_term
-    rw [Complex.ofReal_exp (-Real.pi * t / 4)]
-    refine congrArg Complex.exp ?_
-    simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf
-    simp [div_eq_mul_inv]
-  have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) := by
-    unfold f Θ₂_term
-    rw [Complex.ofReal_exp (-(9 / 4 : ℝ) * Real.pi * t)]
-    refine congrArg Complex.exp ?_
-    simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf
-    simp [div_eq_mul_inv]
+  have hf_eq (c : ℝ) (n : ℕ) (h : Real.pi * Complex.I * (((n : ℂ) + 1 / 2) ^ 2 * (τ : ℂ)) =
+      ((c : ℝ) : ℂ)) : f n = (Real.exp c : ℂ) := by
+    unfold f Θ₂_term; rw [Complex.ofReal_exp c]; refine congrArg Complex.exp ?_
+    simpa [mul_assoc] using h
+  have hf0 : f 0 = (Real.exp (-Real.pi * t / 4) : ℂ) := hf_eq (-Real.pi * t / 4) 0 (by
+    simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
+  have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) :=
+    hf_eq (-(9 / 4 : ℝ) * Real.pi * t) 1 (by
+      simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
   rw [show Θ₂.resToImagAxis t
           - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
           - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
@@ -308,9 +305,8 @@ public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one 
   set a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
   obtain ⟨hjac, hshift⟩ := jacobiTheta_setup (τ := τ) (by simpa [τ] using htpos)
   have ha0 : a 0 = (Real.exp (-Real.pi * t) : ℂ) := by
-    have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
-      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
-    simp [a, τ, pow_two, mul_assoc, mul_left_comm, mul_comm, hI_mul, Complex.ofReal_exp]
+    simp [a, τ, pow_two, mul_assoc, mul_left_comm, mul_comm, Complex.ofReal_exp,
+      show ∀ z : ℂ, I * (I * z) = -z from fun z => by rw [← mul_assoc, I_mul_I, neg_one_mul]]
   rw [show Θ₃.resToImagAxis t - (1 : ℂ) - (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) =
       (2 : ℂ) * ∑' n : ℕ, a (n + 1) from by
     rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
