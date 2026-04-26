@@ -300,8 +300,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by simp [f, mul_assoc]
       _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by
             gcongr
-            · have h := norm_mul_sigma_le (n + 2) (n + 2) le_rfl
-              push_cast at h ⊢; exact h
+            · exact_mod_cast norm_mul_sigma_le (n + 2) (n + 2) le_rfl
             · simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
                 norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
       _ = q ^ (2 : ℕ) * b n := by simp [b]; ring
@@ -315,19 +314,18 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ := by simp [g, mul_assoc]
       _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by
             gcongr
-            · have h := norm_mul_sigma_le (n + 1) (n + 2) (by omega)
-              push_cast at h ⊢; exact h
+            · exact_mod_cast norm_mul_sigma_le (n + 1) (n + 2) (by omega)
             · simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
                 norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
       _ = q * b n := by simp [b]; ring
   have hsplit :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =
         ∑' n : ℕ, f n := by
-    have h0 : (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) = ∑' n : ℕ, g n := by
-      simpa [g, mul_assoc, mul_left_comm, mul_comm] using
-        tsum_pnat_eq_tsum_succ
-          (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z))
-    rw [h0, show cexp (2 * π * Complex.I * z) = g 0 by simp [g]]
+    rw [show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) = ∑' n : ℕ, g n from by
+        simpa [g, mul_assoc, mul_left_comm, mul_comm] using
+          tsum_pnat_eq_tsum_succ
+            (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)),
+      show cexp (2 * π * Complex.I * z) = g 0 by simp [g]]
     refine (sub_eq_iff_eq_add).2 ?_
     rw [show (∑' n : ℕ, f n) + g 0 = g 0 + ∑' n : ℕ, g (n + 1) by
       grind only [tsum_eq_tsum_of_ne_zero_bij]]
