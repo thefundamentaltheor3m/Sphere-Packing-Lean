@@ -102,15 +102,14 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
   refine (ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => ?_
   let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa using lt_trans zero_lt_one ht⟩
   have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-  have hφ₀'' : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
-    simpa [φ₀''_coe_upperHalfPlane, hz_im] using
-      hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)
   refine (show ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
       (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
     rw [show Φ₆' u ((t : ℂ) * Complex.I) = φ₀'' ((t : ℂ) * Complex.I) *
         cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) by
       simp [MagicFunction.a.ComplexIntegrands.Φ₆']]
-    refine norm_mul_le_of_le (by simpa [zH] using hφ₀'') ?_
+    refine norm_mul_le_of_le (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) by
+      simpa [φ₀''_coe_upperHalfPlane, hz_im] using
+        hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)) ?_
     rw [show cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
         (Real.exp (-π * u * t) : ℂ) by ring_nf; simp [Complex.ofReal_exp],
       Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]).trans ?_
