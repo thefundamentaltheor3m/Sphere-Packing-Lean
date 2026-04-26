@@ -162,8 +162,7 @@ lemma calc_steps' (hd : 0 < d) :
     (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
       (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
-include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
-omit hne_zero hReal hCohnElkies₂ in
+include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
 theorem calc_steps_part1 (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
       (1 / ZLattice.covolume P.lattice volume) *
@@ -228,8 +227,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
         congr 1; push_cast; congr! 3 with m
         rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
 
-include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
-omit hne_zero hReal hRealFourier hCohnElkies₁ hP [Nonempty ↑P.centers] in
+include d f hCohnElkies₂ in
+omit [Nonempty ↑P.centers] in
 theorem calc_steps_part2 (hd : 0 < d) :
     (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
@@ -274,8 +273,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
         (α := ℝ) (c := ZLattice.covolume P.lattice volume)
         (a := (𝓕 ⇑f 0).re) (b := (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2)
 
-include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
-omit hne_zero hReal in
+include d f hP hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
 theorem calc_steps (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
       (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
@@ -306,8 +304,6 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     rw [hP]; rw [ge_iff_le] at hCalc
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
-    have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
-      measure_ball_lt_top.ne
     rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
     · rw [h𝓕f, zero_re, ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero,
         ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
@@ -324,7 +320,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         nonempty_quotient_iff _ |>.2 ‹_›
       simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero
     rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
-      ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero vol_ne_top,
+      ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero measure_ball_lt_top.ne,
       ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
       div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
       ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
