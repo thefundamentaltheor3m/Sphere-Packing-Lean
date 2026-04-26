@@ -92,9 +92,8 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
     refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hg
     have hexp : ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ ≤ r ^ (n + 1) := by
       rw [show ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ =
-          rexp (-2 * π * ((n + 1 : ℕ) : ℝ) * z.im) from by
+          rexp (((n + 1 : ℕ) : ℝ) * (-2 * π * z.im)) from by
         simp [Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm],
-        show (-2 * π * ((n + 1 : ℕ) : ℝ) * z.im) = ((n + 1 : ℕ) : ℝ) * (-2 * π * z.im) by ring,
         Real.exp_nat_mul]
     calc ‖t n‖ = ‖A_E_coeff n‖ * ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ := by
           simp [t, A_E_term]
@@ -122,10 +121,8 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := Finset.sum_congr rfl hmul
       _ = A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
           simp [Finset.sum_mul, A_E_sq_coeff, mul_assoc]
-  calc (A_E z) ^ 2 = (∑' n : ℕ, t n) * (∑' n : ℕ, t n) := by simp [hA, pow_two]
-    _ = ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2 := hprod
-    _ = ∑' m : ℕ, A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) :=
-        tsum_congr hanti
+  rw [show (A_E z) ^ 2 = (∑' n : ℕ, t n) * (∑' n : ℕ, t n) from by simp [hA, pow_two], hprod]
+  exact tsum_congr hanti
 
 /-!
 ### Converting to `fouterm` coefficients
@@ -141,20 +138,19 @@ public noncomputable def A_E_sq_fourierCoeff : ℤ → ℂ
   | (Int.negSucc _) => 0
 
 public lemma A_E_sq_fourierCoeff_four_ne_zero : A_E_sq_fourierCoeff 4 ≠ 0 := by
-  have hcond : 4 ≤ (4 : ℕ) ∧ Even (4 : ℕ) := by decide
-  simp [A_E_sq_fourierCoeff, hcond, A_E_sq_coeff, A_E_coeff, show (720 : ℂ) ≠ 0 by norm_num]
+  simp [A_E_sq_fourierCoeff, show 4 ≤ (4 : ℕ) ∧ Even (4 : ℕ) by decide, A_E_sq_coeff, A_E_coeff,
+    show (720 : ℂ) ≠ 0 by norm_num]
 
 public lemma norm_A_E_sq_fourierCoeff_ofNat_le (j : ℕ) (hj : 4 ≤ j) :
     ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := by
   by_cases hjEven : Even j
   · have hcond : 4 ≤ j ∧ Even j := ⟨hj, hjEven⟩
-    have hpow : ((j / 2 - 2 + 1 : ℕ) : ℝ) ^ 11 ≤ (j : ℝ) ^ 11 :=
-      pow_le_pow_left₀ (by positivity) (by exact_mod_cast (by omega : j / 2 - 2 + 1 ≤ j)) 11
     calc ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ = ‖A_E_sq_coeff (j / 2 - 2)‖ := by
           simp [A_E_sq_fourierCoeff, hcond]
       _ ≤ (720 : ℝ) ^ 2 * ((j / 2 - 2 + 1 : ℕ) : ℝ) ^ 11 := by
           simpa using norm_A_E_sq_coeff_le (m := (j / 2 - 2))
-      _ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := mul_le_mul_of_nonneg_left hpow (by positivity)
+      _ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := by
+          gcongr; exact_mod_cast (by omega : j / 2 - 2 + 1 ≤ j)
   · have hcond : ¬(4 ≤ j ∧ Even j) := fun h => hjEven h.2
     simp [A_E_sq_fourierCoeff, hcond, show 0 ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 by positivity]
 
@@ -162,7 +158,7 @@ public lemma A_E_sq_fourierCoeff_isBigO :
     A_E_sq_fourierCoeff =O[atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
   simp only [isBigO_iff, eventually_atTop, ge_iff_le]
   refine ⟨(720 : ℝ) ^ 2, (4 : ℤ), fun n hn => ?_⟩
-  rcases Int.eq_ofNat_of_zero_le (le_trans (by decide : (0 : ℤ) ≤ 4) hn) with ⟨j, rfl⟩
+  obtain ⟨j, rfl⟩ := Int.eq_ofNat_of_zero_le (le_trans (by decide : (0 : ℤ) ≤ 4) hn)
   simpa using norm_A_E_sq_fourierCoeff_ofNat_le j (Int.ofNat_le.mp (by simpa using hn))
 
 public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
@@ -183,9 +179,8 @@ public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
     norm_A_E_sq_fourierCoeff_ofNat_le (j := n + 4) (by omega)
   have hexp : ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ ≤ r ^ (n + 4) := by
     rw [show ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ =
-        Real.exp (-Real.pi * ((n + 4 : ℕ) : ℝ) * z.im) from by
-      simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm],
-      show -Real.pi * ((n + 4 : ℕ) : ℝ) * z.im = (-Real.pi * ((n + 4 : ℕ) : ℝ)) * z.im by ring]
+        Real.exp ((-Real.pi * ((n + 4 : ℕ) : ℝ)) * z.im) from by
+      simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
     refine (Real.exp_le_exp.2 (mul_le_mul_of_nonpos_left hz.le
       (by nlinarith [Real.pi_pos]))).trans_eq ?_
     rw [show (-Real.pi * ((n + 4 : ℕ) : ℝ)) * (1 / 2 : ℝ) =
@@ -214,10 +209,8 @@ public lemma A_E_sq_series_summable (x : ℍ) :
     (hg2.mul_left ((720 : ℝ) ^ 2))
   have hexp : ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ ≤ r ^ (m + 2) := by
     rw [show ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ =
-        Real.exp (-2 * Real.pi * ((m + 2 : ℕ) : ℝ) * x.im) from by
-      simp [Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm],
-      show (-2 * Real.pi * ((m + 2 : ℕ) : ℝ) * x.im) =
-        ((m + 2 : ℕ) : ℝ) * (-2 * Real.pi * x.im) by ring, Real.exp_nat_mul]
+        Real.exp (((m + 2 : ℕ) : ℝ) * (-2 * Real.pi * x.im)) from by
+      simp [Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm], Real.exp_nat_mul]
   calc ‖A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖
       = ‖A_E_sq_coeff m‖ * ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ := by simp
     _ ≤ ((720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 11) * (r ^ (m + 2)) :=
