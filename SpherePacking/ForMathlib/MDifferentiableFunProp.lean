@@ -1,15 +1,20 @@
-import Mathlib.Geometry.Manifold.MFDeriv.Defs
-import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
-import Mathlib.Tactic.FunProp
+module
 
-import SpherePacking.ModularForms.Eisenstein
+public import Mathlib.Geometry.Manifold.MFDeriv.Defs
+public import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
+public import Mathlib.Geometry.Manifold.Notation
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.Tactic.FunProp
+
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 open scoped Manifold UpperHalfPlane EisensteinSeries
 
-theorem E₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₄.toFun := E₄.holo'
+theorem E₄_MDifferentiable : MDiff E₄.toFun := E₄.holo'
 
-theorem E₆_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₆.toFun := E₆.holo'
+theorem E₆_MDifferentiable : MDiff E₆.toFun := E₆.holo'
 
 /-
 Register `MDifferentiable` as a `fun_prop` so that we can use it in `fun_prop`-based proofs.

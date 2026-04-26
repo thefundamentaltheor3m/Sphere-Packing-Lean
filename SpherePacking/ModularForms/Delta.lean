@@ -1,16 +1,21 @@
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.ResToImagAxis
-import Mathlib.NumberTheory.ModularForms.QExpansion
-import SpherePacking.Tactic.NormNumI
+module
 
-import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.ModularForms.clog_arg_lems
+public import SpherePacking.ModularForms.eta
+public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.ResToImagAxis
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.Tactic.NormNumI
+
+public import SpherePacking.ForMathlib.Cusps
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat ModularForm
 
 open ArithmeticFunction
 
@@ -32,19 +37,25 @@ lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z
 
 
 lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
-  rw [η, Δ, mul_pow]
+  have hm : Multipliable (fun n : ℕ => 1 - ModularForm.eta_q n z) := by
+    refine (MultipliableEtaProductExpansion z).congr ?_
+    intro n
+    simp [ModularForm.eta_q_eq_cexp]
+  rw [ModularForm.eta, Δ, mul_pow, tprod_pow (f := fun n : ℕ => 1 - ModularForm.eta_q n z)
+    hm 24]
   congr
-  · rw [← Complex.exp_nat_mul]
+  · rw [Periodic.qParam]
+    rw [← Complex.exp_nat_mul]
     congr 1
     simp [field]
-  rw [tprod_pow]
-  apply MultipliableEtaProductExpansion
+  · ext n
+    simp [ModularForm.eta_q_eq_cexp]
 
 
 /-This should be easy from the definition and the Mulitpliable bit. -/
 lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
   rw [Delta_eq_eta_pow]
-  simpa using eta_nonzero_on_UpperHalfPlane z
+  exact pow_ne_zero 24 (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
 
 /-This one is easy.-/
 lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
@@ -67,20 +78,20 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
   ext z
   rw [ modular_slash_S_apply, Delta_eq_eta_pow, Delta_eq_eta_pow]
   have he := eta_equality z.2
-  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, UpperHalfPlane.coe_mk,
+  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul,
     Int.reduceNeg, zpow_neg] at *
   have hi : -1/(z.1 : ℂ) = (-(z : ℂ))⁻¹ := by
     rw [neg_div]
     rw [← neg_inv]
-    simp [UpperHalfPlane.coe]
+    simp
   rw [hi] at he
   rw [he, mul_pow, mul_pow, inv_pow, csqrt_I]
-  simp only [inv_one, one_mul, UpperHalfPlane.coe]
+  simp only [inv_one, one_mul]
   rw [mul_comm]
   have hzz := csqrt_pow_24 z.1 (ne_zero z)
   rw [hzz, ← mul_assoc]
   have hz := ne_zero z
-  simp only [UpperHalfPlane.coe, ne_eq] at hz
+  simp only [ne_eq] at hz
   norm_cast
   field_simp
 
@@ -103,25 +114,6 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
   simp only [ModularGroup.denom_S, zpow_neg] at h
   field_simp [ne_zero z] at h
   rw [h, mul_comm]
-
-instance : atImInfty.NeBot := by
-  rw [atImInfty, Filter.comap_neBot_iff ]
-  simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
-  intro t x hx
-  have := ENNReal.nhdsGT_ofNat_neBot
-  let z : ℂ := Complex.mk (0 : ℝ) (|x| + 1)
-  have h0 : 0 ≤ |x| := by
-    apply abs_nonneg
-  have hz : 0 < z.im := by
-    positivity
-  use ⟨z, hz⟩
-  apply hx
-  simp only [UpperHalfPlane.im, coe_mk_subtype]
-  have : x ≤ |x| := by
-    apply le_abs_self
-  apply le_trans this
-  simp only [le_add_iff_nonneg_right, zero_le_one, z]
-
 
 lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
   rw [atImInfty_mem]
@@ -320,18 +312,17 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   holo' := by
     rw [mdifferentiable_iff]
     simp only [SlashInvariantForm.coe_mk]
-    have := eta_DifferentiableAt_UpperHalfPlane
     have he2 : DifferentiableOn ℂ (fun z => (η z) ^ 24) {z | 0 < z.im} := by
       apply DifferentiableOn.pow
       intro x hx
       apply DifferentiableAt.differentiableWithinAt
-      exact this ⟨x, hx⟩
+      simpa using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
     rw [Discriminant_SIF]
     simp only [SlashInvariantForm.coe_mk]
     apply he2.congr
     intro z hz
     have := Delta_eq_eta_pow (⟨z, hz⟩ : ℍ)
-    simp only [coe_mk_subtype, comp_apply] at *
+    simp only [comp_apply] at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
   zero_at_cusps' hc := zero_at_cusps_of_zero_at_infty hc Discriminant_zeroAtImInfty

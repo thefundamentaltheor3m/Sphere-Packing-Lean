@@ -1,4 +1,8 @@
-import SpherePacking.Basic.E8
+module
+
+public import SpherePacking.Basic.E8
+
+@[expose] public section
 
 open SpherePacking E8
 

@@ -5,12 +5,16 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.MeasureTheory.Integral.IntegralEqImproper
-import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Separation.CompletelyRegular
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Complex.CauchyIntegral
+public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Separation.CompletelyRegular
+
+@[expose] public section
 
 /-! # Deforming Paths of Integration for Open Contours
 
@@ -47,7 +51,7 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
   wlog hne : x₁ ≠ x₂
   · rw [ne_eq, Decidable.not_not] at hne
     simp only [hne, integral_same, tendsto_const_nhds_iff]
-  simp only [NormedAddCommGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
+  simp only [NormedAddGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
   intro ε hε
   obtain ⟨M, hM⟩ := htendsto ((1 / 2) * (ε / |x₂ - x₁|)) <| by
     simp only [one_div, gt_iff_lt, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left]
