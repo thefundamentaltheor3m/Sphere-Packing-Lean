@@ -50,9 +50,7 @@ public noncomputable def E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) 
 public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   refine ⟨1, by norm_num, ?_⟩
-  rintro ⟨x, hx⟩ hx'
-  simp only [Submodule.mk_eq_zero]
-  obtain ⟨v, hv, rfl⟩ := hx
+  rintro ⟨_, ⟨v, hv, rfl⟩⟩ hx'
   suffices v = 0 by simpa using congrArg (WithLp.toLp 2) this
   refine (E8_norm_lower_bound v hv).resolve_right
     (not_le_of_gt (((by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx' :
@@ -65,10 +63,10 @@ lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ
 
 lemma span_E8_eq_top' :
     Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
-  set e := (WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap
-  change Submodule.span ℝ (e '' (Submodule.E8 ℝ : Set _)) = ⊤
+  change Submodule.span ℝ
+    ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
   rw [Submodule.span_image, span_E8_eq_top]
-  simp [e]
+  simp
 
 lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
@@ -95,8 +93,7 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
     exact (linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp)]
     simp only [Submodule.map_top, Submodule.range_subtype]
-    rw [Submodule.map_span, ← Set.range_comp]
-    exact span_E8Matrix_eq_E8Lattice.ge
+    rw [Submodule.map_span, ← Set.range_comp]; exact span_E8Matrix_eq_E8Lattice.ge
 
 lemma coe_E8_ℤBasis_apply (i : Fin 8) :
     E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
@@ -113,10 +110,7 @@ open scoped Real
   centers := E8Lattice
   centers_dist := by
     simp only [Pairwise, E8Lattice, ne_eq, Subtype.forall, Subtype.mk.injEq]
-    intro a ha b hb hab
-    rw [SetLike.mem_coe, Submodule.mem_map] at ha hb
-    obtain ⟨a', ha', rfl⟩ := ha
-    obtain ⟨b', hb', rfl⟩ := hb
+    rintro _ ⟨a', ha', rfl⟩ _ ⟨b', hb', rfl⟩ hab
     have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr (by contrapose! hab; simp [hab])
     simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
     convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left hne' using 2
@@ -127,9 +121,7 @@ lemma E8Packing_numReps : E8Packing.numReps = 1 :=
 
 lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
   simp [E8Basis, E8Matrix, EuclideanSpace.norm_eq, Fin.forall_fin_succ, Fin.sum_univ_eight]
-  norm_num [show (√2 : ℝ) ≤ 2 by
-    rw [Real.sqrt_le_iff]
-    norm_num]
+  norm_num [show (√2 : ℝ) ≤ 2 by rw [Real.sqrt_le_iff]; norm_num]
 
 lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
   simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using fun i => E8Basis_apply_norm i
@@ -159,16 +151,13 @@ lemma same_domain :
     (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
       fundamentalDomain (E8Basis ℝ) := by
   rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
-  congr! 1
-  ext i : 1
-  simp [E8_ℤBasis, E8Basis_apply]
+  congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
 
 open MeasureTheory ZSpan in
 lemma E8_Basis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
   rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).symm.measure_preimage_equiv]
-  erw [same_domain]
-  rw [E8Basis_volume]
+  erw [same_domain]; rw [E8Basis_volume]
 
 open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
@@ -177,9 +166,8 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
   · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, finrank_euclideanSpace,
       Fintype.card_fin, Nat.cast_ofNat]
     simp only [E8Packing]
-    have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := calc
-      √x ^ 8 = (√x ^ 2) ^ 4 := by rw [← pow_mul]
-      _ = x ^ 4 := by rw [Real.sq_sqrt hx]
+    have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := by
+      rw [show (8 : ℕ) = 2 * 4 from rfl, pow_mul, Real.sq_sqrt hx]
     rw [← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, div_pow, this, this, ← mul_div_assoc,
       div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
     · norm_num [Nat.factorial, mul_one_div]
@@ -193,7 +181,6 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
     · rw [← fract_eq_self.mpr hx]
       convert norm_fract_le (K := ℝ) _ _
       simp; rfl
-    · refine (Finset.sum_le_sum (fun i hi ↦ E8_ℤBasis_apply_norm i)).trans ?_
-      norm_num
+    · exact (Finset.sum_le_sum (fun i _ ↦ E8_ℤBasis_apply_norm i)).trans (by norm_num)
 
 end Packing
