@@ -86,14 +86,6 @@ The prime indicates we have extended a parametrisation on `Ici 1` to all real `t
 -/
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
-/-- The imaginary part of `z₂'` is always positive (in fact, it is equal to `1`). -/
-public lemma im_z₂'_pos_all (t : ℝ) : 0 < (z₂' t).im := by
-  simp [z₂', Set.IccExtend_apply, z₂]
-
-/-- The imaginary part of `z₄'` is always positive (in fact, it is equal to `1`). -/
-public lemma im_z₄'_pos_all (t : ℝ) : 0 < (z₄' t).im := by
-  simp [z₄', Set.IccExtend_apply, z₄]
-
 /-- The imaginary part of `z₂'` is constantly equal to `1`. -/
 public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by
   simp [z₂', Set.IccExtend_apply, z₂]
@@ -102,23 +94,27 @@ public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by
 public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by
   simp [z₄', Set.IccExtend_apply, z₄]
 
+/-- The imaginary part of `z₂'` is always positive. -/
+public lemma im_z₂'_pos_all (t : ℝ) : 0 < (z₂' t).im := by simp [im_z₂'_eq_one]
+
+/-- The imaginary part of `z₄'` is always positive. -/
+public lemma im_z₄'_pos_all (t : ℝ) : 0 < (z₄' t).im := by simp [im_z₄'_eq_one]
+
 /-- The extended parametrisation `z₅'` stays in the closed unit disk. -/
 public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖z₅' t‖ = u := by
     simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]
-  simpa [hnorm] using hu1
+  simpa [hnorm] using (by simp [hu] : u ≤ 1)
 
 /-- The extended parametrisation `z₁'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
-  have hz : z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) := by simp [z₁', Set.IccExtend_apply, z₁, hu]
-  calc ‖z₁' t‖ = ‖(-1 : ℂ) + (I : ℂ) * (u : ℂ)‖ := by simp [hz]
-    _ ≤ ‖(-1 : ℂ)‖ + ‖(I : ℂ) * (u : ℂ)‖ := norm_add_le _ _
-    _ ≤ 2 := by simp [Complex.norm_real, abs_of_nonneg hu0]; linarith
+  rw [show z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) from by simp [z₁', Set.IccExtend_apply, z₁, hu]]
+  refine (norm_add_le _ _).trans ?_
+  simp [Complex.norm_real, abs_of_nonneg hu0]; linarith
 
 /-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
@@ -128,10 +124,9 @@ public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
     rw [show ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| from by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using Complex.norm_real (u - 1)]
     grind only [= max_def, = min_def, = abs.eq_1]
-  have hz : z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) := by simp [z₂', Set.IccExtend_apply, z₂, hu]
-  calc ‖z₂' t‖ = ‖((-1 : ℂ) + (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
-    _ ≤ ‖(-1 : ℂ) + (u : ℂ)‖ + ‖(I : ℂ)‖ := norm_add_le _ _
-    _ ≤ 2 := by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
+  rw [show z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) from by simp [z₂', Set.IccExtend_apply, z₂, hu]]
+  refine (norm_add_le _ _).trans ?_
+  linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
 
 /-- The extended parametrisation `z₄'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
@@ -142,11 +137,10 @@ public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
     rw [show ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| from by simpa using Complex.norm_real (1 - u),
       abs_of_nonneg (sub_nonneg.mpr hu1)]
     linarith
-  have hz : z₄' t = ((1 : ℂ) - (u : ℂ)) + (I : ℂ) := by
-    simp [z₄', Set.IccExtend_apply, z₄, hu, sub_eq_add_neg]
-  calc ‖z₄' t‖ = ‖((1 : ℂ) - (u : ℂ)) + (I : ℂ)‖ := by simp [hz]
-    _ ≤ ‖(1 : ℂ) - (u : ℂ)‖ + ‖(I : ℂ)‖ := norm_add_le _ _
-    _ ≤ 2 := by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
+  rw [show z₄' t = ((1 : ℂ) - (u : ℂ)) + (I : ℂ) from by
+    simp [z₄', Set.IccExtend_apply, z₄, hu, sub_eq_add_neg]]
+  refine (norm_add_le _ _).trans ?_
+  linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
 
 end Parametrisations
 
