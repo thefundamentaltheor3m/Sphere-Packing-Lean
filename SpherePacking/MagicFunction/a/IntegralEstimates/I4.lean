@@ -83,9 +83,9 @@ lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im := by
   intro t ht
-  have him : (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) := by
-    simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)
-  simpa [him] using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
+  simpa [show (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) from by
+    simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)]
+    using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
 end Bounding_Integrand
 
@@ -155,7 +155,7 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
         cexp (π * I * r * (z₄' t : ℂ)) =
           cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
       simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
-        rw [← hz_coeff]; ring] using (exp_r_mul_coeff (r := r) (t := t))
+        rw [← hz_coeff]; ring] using exp_r_mul_coeff (r := r) (t := t)
     simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
       MagicFunction.a.ComplexIntegrands.Φ₃', g,
       show z₄' t - 1 = (-t : ℂ) + I by simp [hz, sub_eq_add_neg, add_assoc, add_comm], hexp']
@@ -163,11 +163,10 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
   let A : ℝ → ℂ := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by
     rw [exp_r_mul_coeff]; simp [A, g]; ring
-  simpa [gN] using
-    (iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
-      (I := I₄') (coeff := coeff) (g := g) (A := A) (hI := I₄'_eq_integral_g_Ioo)
-      (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont) (hg_bound := g_norm_bound_uniform)
-      (hcoeff := coeff_norm_le) (hg_repr := hg_repr) n)
+  simpa [gN] using iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
+    (I := I₄') (coeff := coeff) (g := g) (A := A) (hI := I₄'_eq_integral_g_Ioo)
+    (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont) (hg_bound := g_norm_bound_uniform)
+    (hcoeff := coeff_norm_le) (hg_repr := hg_repr) n
 
 /--
 Schwartz-style decay estimate for `I₄'`: all iterated derivatives decay faster than any power.
