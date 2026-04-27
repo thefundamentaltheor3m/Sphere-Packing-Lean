@@ -66,9 +66,6 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
           ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) := by
     simp [bLaplaceIntegrand, bAnotherIntegrand, bAnotherBase, sub_eq_add_neg, add_assoc,
       add_left_comm, add_comm, mul_left_comm, mul_comm, mul_add]
-  have hLapInt :
-      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
-    bLaplaceIntegral_convergent (u := u) hu
   have hExpInt :
       IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
     integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu0
@@ -82,21 +79,19 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
         (fun t : ℝ =>
           ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t))
         (Set.Ioi (0 : ℝ)) := by
-    refine ((hExpInt.const_mul (144 : ℂ)).add h2ExpInt).congr ?_
-    refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_
-    intro t _
+    refine ((hExpInt.const_mul (144 : ℂ)).add h2ExpInt).congr <|
+      MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t _ => ?_
     simp [-Complex.ofReal_exp, add_mul, mul_assoc]
   have hAnotherInt :
       IntegrableOn (fun t : ℝ => bAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-    have hEq :
-        (fun t : ℝ => bAnotherIntegrand u t) =
-          fun t : ℝ =>
-            bLaplaceIntegrand u t -
-              ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) := by
-      funext t
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (eq_sub_of_add_eq (hpoint t).symm)
-    simpa [hEq] using hLapInt.sub hCorrInt
+    simpa [show (fun t : ℝ => bAnotherIntegrand u t) =
+        fun t : ℝ =>
+          bLaplaceIntegrand u t -
+            ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) from
+      funext fun t => by
+        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+          (eq_sub_of_add_eq (hpoint t).symm)] using
+      (bLaplaceIntegral_convergent (u := u) hu).sub hCorrInt
   have hLapInt_decomp :
       (∫ t in Set.Ioi (0 : ℝ), bLaplaceIntegrand u t) =
         (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) +
@@ -117,36 +112,27 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
         (144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) := by
     let f : ℝ → ℂ := fun t => (144 : ℂ) * (Real.exp (-π * u * t) : ℂ)
     let g : ℝ → ℂ := fun t => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)
-    have hf : Integrable f μ0 := hIntegrable f (hExpInt.const_mul (144 : ℂ))
-    have hg : Integrable g μ0 := hIntegrable g h2ExpInt
     have hfg :
         (fun t : ℝ =>
             ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) =
           fun t => f t + g t := by
-      funext t
-      simp [-Complex.ofReal_exp, f, g, add_mul, mul_assoc]
-    have hIexpμ :
-        (∫ t, (Real.exp (-π * u * t) : ℂ) ∂μ0) = ((1 / (π * u) : ℝ) : ℂ) := by
-      simpa [μ0] using integral_exp_neg_pi_mul_Ioi_complex (u := u) hu0
-    have hI2expμ :
-        (∫ t, (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) ∂μ0) =
-          ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-      simpa [μ0] using integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu
+      funext t; simp [-Complex.ofReal_exp, f, g, add_mul, mul_assoc]
     change
       (∫ t,
           ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) ∂μ0) = _
-    rw [hfg, MeasureTheory.integral_add hf hg]
-    have hf_eval :
-        (∫ t, f t ∂μ0) = (144 : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-      dsimp [f]
-      rw [show (∫ t, (144 : ℂ) * (Real.exp (-π * u * t) : ℂ) ∂μ0) =
-            (144 : ℂ) * ∫ t, (Real.exp (-π * u * t) : ℂ) ∂μ0 from by
-          simpa [-Complex.ofReal_exp, mul_assoc] using
-            (MeasureTheory.integral_const_mul (μ := μ0) (144 : ℂ)
-              (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))), hIexpμ]
-    have hg_eval : (∫ t, g t ∂μ0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-      simpa [g] using hI2expμ
-    rw [hf_eval, hg_eval]
+    rw [hfg, MeasureTheory.integral_add (hIntegrable f (hExpInt.const_mul (144 : ℂ)))
+      (hIntegrable g h2ExpInt),
+      show (∫ t, f t ∂μ0) = (144 : ℂ) * ((1 / (π * u) : ℝ) : ℂ) from by
+        dsimp [f]
+        rw [show (∫ t, (144 : ℂ) * (Real.exp (-π * u * t) : ℂ) ∂μ0) =
+              (144 : ℂ) * ∫ t, (Real.exp (-π * u * t) : ℂ) ∂μ0 from by
+            simpa [-Complex.ofReal_exp, mul_assoc] using
+              (MeasureTheory.integral_const_mul (μ := μ0) (144 : ℂ)
+                (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))),
+          show (∫ t, (Real.exp (-π * u * t) : ℂ) ∂μ0) = ((1 / (π * u) : ℝ) : ℂ) from by
+            simpa [μ0] using integral_exp_neg_pi_mul_Ioi_complex (u := u) hu0],
+      show (∫ t, g t ∂μ0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) from by
+        simpa [g, μ0] using integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu]
     simp [div_eq_mul_inv]
   rw [hLap', hLapInt_decomp, hCorr_eval]
   ring_nf
