@@ -50,13 +50,10 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
     simp [gRadial, sub_eq_add_neg, SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul]
   have hcoefA :
       ((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ)) = -(π / 2160 : ℂ) := by
-    have : ((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ)) = -(↑π / 2160 : ℂ) := by
-      ring_nf; simp; ring
-    simpa using this
+    ring_nf; simp; ring
   have hcoefB :
       (-(Complex.I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ)) = -(1 / (60 * π) : ℂ) := by
-    have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    field_simp [hπ]; ring_nf; simp
+    field_simp [show (π : ℂ) ≠ 0 from by exact_mod_cast Real.pi_ne_zero]; ring_nf; simp
   have hA_integral :
       (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) =
         -IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB := by
@@ -94,36 +91,17 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
             -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
                 Real.exp (-π * u * t)) +
               c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) := by
-      funext t
-      have hneg :
-          (-(t ^ (2 : ℕ) : ℂ)) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t) =
-            -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
-                Real.exp (-π * u * t)) := by
-        simp [mul_assoc]
-      grind only
+      funext t; grind only [Complex.ofReal_pow]
     rw [hsplit]
-    have hIntA0 :
-        Integrable
-            (fun t : ℝ =>
-              ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
-                Real.exp (-π * u * t))
-            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-      simpa [IntegrableOn] using hIntA
     have hIntA'' : Integrable (fun t : ℝ =>
         -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
             Real.exp (-π * u * t)))
-        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntA0.neg
-    have hIntB0 :
-        Integrable
-            (fun t : ℝ =>
-              ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t))
-            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-      simpa [IntegrableOn] using hIntB
+        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntA.neg
     have hIntB'' :
         Integrable
             (fun t : ℝ =>
               c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)))
-            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntB0.const_mul c
+            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntB.const_mul c
     change
         (∫ t : ℝ,
             -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
@@ -141,20 +119,10 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
         (π / 2160 : ℂ) *
           (Real.sin (π * u / 2)) ^ (2 : ℕ) *
             (-IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB) := by
-    change
-        ((↑π * Complex.I) / 8640 : ℂ) *
-              ((4 * (Complex.I : ℂ)) *
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA) +
-            (-(Complex.I / (240 * (↑π)) : ℂ)) *
-              ((-4 * (Complex.I : ℂ)) *
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) =
-          (π / 2160 : ℂ) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) *
-            (-IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB)
     have h36 :
         (π / 2160 : ℂ) * (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) = (-(1 / (60 * π)) : ℂ) := by
-      have h36R : (π / 2160 : ℝ) * (-(36 / (π ^ (2 : ℕ)) : ℝ)) = -(1 / (60 * π)) := by
+      exact_mod_cast show (π / 2160 : ℝ) * (-(36 / (π ^ (2 : ℕ)) : ℝ)) = -(1 / (60 * π)) by
         field_simp [Real.pi_ne_zero]; norm_num
-      exact_mod_cast h36R
     grind only
   simp_all
 
