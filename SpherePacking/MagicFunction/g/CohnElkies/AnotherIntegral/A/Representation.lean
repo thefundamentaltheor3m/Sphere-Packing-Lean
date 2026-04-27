@@ -98,20 +98,9 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
     hG2, hG1, hG0, hc36, hc8640, hc18144]
   have hu2ne : (u - 2 : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hu)
   have hune : (u : ℝ) ≠ 0 := ne_of_gt hu0
-  have hπne : (π : ℝ) ≠ 0 := Real.pi_ne_zero
   push_cast [Complex.ofReal_div, Complex.ofReal_mul]
   field_simp
   ring
-
-lemma assemble_another_integral {u : ℝ} {corr : ℝ → ℂ} {E : ℂ}
-    (hLap' : a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t))
-    (hLapInt_decomp : (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) =
-      (∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) + (∫ t in Set.Ioi (0 : ℝ), corr t))
-    (hCorr_eval : (∫ t in Set.Ioi (0 : ℝ), corr t) = E) :
-    a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      (E + ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) := by
-  simpa [hLapInt_decomp, hCorr_eval, add_assoc, add_left_comm, add_comm] using hLap'
 
 lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
     a' u =
@@ -175,11 +164,8 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
         (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) :=
     corrIntegral_eval hu0 hu hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt h2ExpInt
-  set E : ℂ := (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-      (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) with hE
-  simpa [aAnotherIntegral, hE, add_assoc] using
-    assemble_another_integral (u := u) (corr := corr) (E := E) hLap' hLapInt_decomp
-      (by simpa [hE] using hCorr_eval)
+  simpa [aAnotherIntegral, hLapInt_decomp, hCorr_eval, add_assoc, add_left_comm, add_comm]
+    using hLap'
 
 lemma aRadial_eq_another_integral_analytic_continuation {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
     a' u =
@@ -207,7 +193,6 @@ public theorem aRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u 
                         ((8640 / π : ℝ) : ℂ) * t -
                         ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
                     Real.exp (-π * u * t))) := by
-  -- Final wrapper: unfold `aAnotherIntegrand` and apply analytic-continuation lemma.
   simpa [aAnotherIntegrand] using aRadial_eq_another_integral_analytic_continuation (u := u) hu hu2
 
 end MagicFunction.g.CohnElkies.IntegralReps
