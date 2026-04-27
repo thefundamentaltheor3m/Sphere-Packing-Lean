@@ -52,10 +52,8 @@ public lemma bContourWeight_add (u : ℝ) (z w : ℂ) :
 /-- Evaluate `bContourWeight` on the imaginary axis: `bContourWeight u (I * t) = exp(-π u t)`. -/
 public lemma bContourWeight_mul_I (u t : ℝ) :
     bContourWeight u ((Complex.I : ℂ) * (t : ℂ)) = (Real.exp (-π * u * t) : ℂ) := by
-  have hI :
-      (π : ℂ) * (Complex.I : ℂ) * (u : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) =
-        (-(π : ℂ) * (u : ℂ) * (t : ℂ)) := by ring_nf; simp [pow_two, Complex.I_mul_I]
-  simp [bContourWeight, hI]
+  simp [bContourWeight, show (π : ℂ) * (Complex.I : ℂ) * (u : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) =
+    (-(π : ℂ) * (u : ℂ) * (t : ℂ)) by ring_nf; simp [pow_two, Complex.I_mul_I]]
 
 private lemma bContourIntegrandI_mul_I (u t : ℝ) :
     bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) =
@@ -76,9 +74,8 @@ public lemma bContourIntegrandT_mul_I (u t : ℝ) :
 /-- Translate `ψT'` into `ψI'` by adding `1` in the upper half-plane. -/
 public lemma ψT'_eq_ψI'_add_one (z : ℂ) (hz : 0 < z.im) :
     ψT' z = ψI' (z + (1 : ℂ)) := by
-  have htrans : ((1 : ℝ) +ᵥ ⟨z, hz⟩ : ℍ) = ⟨z + (1 : ℂ), by simpa using hz⟩ := by
-    ext1; simp; ring_nf
-  simp [ψT', ψI', hz, ψT, modular_slash_T_apply, htrans]
+  simp [ψT', ψI', hz, ψT, modular_slash_T_apply,
+    show ((1 : ℝ) +ᵥ ⟨z, hz⟩ : ℍ) = ⟨z + (1 : ℂ), by simpa using hz⟩ by ext1; simp; ring_nf]
 
 /-- Specialize `ψT'_eq_ψI'_add_one` at `z = -1 + I * t`. -/
 public lemma ψT'_neg_one_add_I_mul (t : ℝ) (ht : 0 < t) :
@@ -90,17 +87,12 @@ public lemma ψT'_neg_one_add_I_mul (t : ℝ) (ht : 0 < t) :
 public lemma ψT'_one_add_I_mul (t : ℝ) (ht : 0 < t) :
     ψT' ((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) = ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
   have hz0 : 0 < (((Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa using ht
-  have hz1 : 0 < (((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by
-    simpa [mul_assoc] using ht
+  have hz1 : 0 < (((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa [mul_assoc] using ht
   have htrans :
       ((1 : ℝ) +ᵥ ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩ : ℍ) =
         ⟨(1 : ℂ) + (Complex.I : ℂ) * (t : ℂ), hz1⟩ := by ext1; simp
-  have hEq :
-      ψT ⟨(1 : ℂ) + (Complex.I : ℂ) * (t : ℂ), hz1⟩ =
-        ψI ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩ := by
-    simpa [modular_slash_T_apply, htrans] using
-      congrArg (fun F : ℍ → ℂ => F ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩) ψT_slash_T
-  simpa [ψT', ψI', ht] using hEq
+  simpa [ψT', ψI', ht, modular_slash_T_apply, htrans] using
+    congrArg (fun F : ℍ → ℂ => F ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩) ψT_slash_T
 
 /-- Specialize `ψT'_eq_ψI'_add_one` at `z = I * t`. -/
 public lemma ψT'_I_mul (t : ℝ) (ht : 0 < t) :
@@ -119,36 +111,10 @@ private lemma differentiableOn_ψT_ofComplex :
   have hH4 :
       DifferentiableOn ℂ (fun z : ℂ => H₄ (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} :=
     (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-  have hleft :
-      DifferentiableOn ℂ
-        (fun z : ℂ =>
-          (H₃ (UpperHalfPlane.ofComplex z) + H₄ (UpperHalfPlane.ofComplex z)) /
-            (H₂ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))
-        {z : ℂ | 0 < z.im} :=
-    (hH3.add hH4).div (hH2.pow 2) fun z _ => pow_ne_zero 2 (H₂_ne_zero _)
-  have hright :
-      DifferentiableOn ℂ
-        (fun z : ℂ =>
-          (H₂ (UpperHalfPlane.ofComplex z) + H₃ (UpperHalfPlane.ofComplex z)) /
-            (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))
-        {z : ℂ | 0 < z.im} :=
-    (hH2.add hH3).div (hH4.pow 2) fun z _ => pow_ne_zero 2 (H₄_ne_zero _)
-  have hExpr :
-      DifferentiableOn ℂ
-        (fun z : ℂ =>
-          (128 : ℂ) *
-            (((H₃ (UpperHalfPlane.ofComplex z) + H₄ (UpperHalfPlane.ofComplex z)) /
-                  (H₂ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ)) +
-              ((H₂ (UpperHalfPlane.ofComplex z) + H₃ (UpperHalfPlane.ofComplex z)) /
-                  (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))))
-        {z : ℂ | 0 < z.im} := by
-    simpa [mul_assoc] using (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ))
-  refine hExpr.congr fun z _ => ?_
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  simpa [hh2, hh3, hh4] using
-    congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
+  have hleft := (hH3.add hH4).div (hH2.pow 2) fun _ _ => pow_ne_zero 2 (H₂_ne_zero _)
+  have hright := (hH2.add hH3).div (hH4.pow 2) fun _ _ => pow_ne_zero 2 (H₄_ne_zero _)
+  refine (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ)).congr fun z _ => ?_
+  simpa [mul_assoc] using congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
 
 /-- Holomorphy of `bContourIntegrandT` on the open upper half-plane. -/
 public lemma differentiableOn_bContourIntegrandT (u : ℝ) :
