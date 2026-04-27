@@ -126,13 +126,12 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
         exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
-        = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
-          simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
+      = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
+        simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
     _ ≤ ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * (n ^ 2) :=
-        mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg A) hA_le 2) (norm_nonneg _)
-    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) :=
-        mul_le_mul_of_nonneg_right
-          (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
+      mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg A) hA_le 2) (norm_nonneg _)
+    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := mul_le_mul_of_nonneg_right
+      (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
     _ ≤ g' m := by simp [g']
 
 include hP hCohnElkies₁ in
@@ -347,10 +346,10 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   refine iSup_le fun P => iSup_le fun hP => ?_
   rcases isEmpty_or_nonempty ↑P.centers with _ | _
   · simp [P.density_of_centers_empty hd]
-  · let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
-      (PeriodicSpherePacking.basis_index_equiv P)
-    exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-      (ZSpan.fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-      (PeriodicSpherePacking.fundamental_domain_unique_covers (S := P) b) hd
+  let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
+    (PeriodicSpherePacking.basis_index_equiv P)
+  exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+    (ZSpan.fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
+    (PeriodicSpherePacking.fundamental_domain_unique_covers (S := P) b) hd
 
 end Main_Theorem
