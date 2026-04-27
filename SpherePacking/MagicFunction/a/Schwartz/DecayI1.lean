@@ -170,22 +170,20 @@ lemma integrable_exp_neg_two_pi : Integrable (fun s : ℝ ↦ rexp (-(2 * π) * 
 lemma exp_neg_pi_mul_div_le_exp_pi_abs (r s : ℝ) (hs : 1 ≤ s) :
     rexp (-π * r / s) ≤ rexp (π * |r|) :=
   Real.exp_le_exp.2 <| by
+    have : (-r / s : ℝ) ≤ |r| / s := by
+      simpa [abs_div, abs_neg, abs_of_nonneg (zero_le_one.trans hs)] using le_abs_self (-r / s)
     simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using
-      mul_le_mul_of_nonneg_left ((by
-        simpa [abs_div, abs_neg, abs_of_nonneg (zero_le_one.trans hs)] using
-          le_abs_self (-r / s) : (-r / s : ℝ) ≤ |r| / s).trans (div_le_self (abs_nonneg r) hs))
-        Real.pi_pos.le
+      mul_le_mul_of_nonneg_left (this.trans (div_le_self (abs_nonneg r) hs)) Real.pi_pos.le
 
 lemma integrable_gN (n : ℕ) (r : ℝ) : Integrable (gN n r) μ := by
   let K : ℝ := (2 * π) ^ n * (Cφ * rexp (π * |r|))
   refine (integrable_exp_neg_two_pi.const_mul K).mono' (gN_measurable (n := n) (r := r)) ?_
   refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
+  refine (gN_norm_bound (n := n) (r := r) (s := s) hs).trans ?_
   have hExp : rexp (-π * r / s) ≤ rexp (π * |r|) :=
     exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs
-  refine (gN_norm_bound (n := n) (r := r) (s := s) hs).trans ?_
-  have hcoef0 : 0 ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s)) :=
-    mul_nonneg (by positivity) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le)
-  have hmul := mul_le_mul_of_nonneg_left hExp hcoef0
+  have hmul := mul_le_mul_of_nonneg_left hExp (show 0 ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s)) from
+    mul_nonneg (by positivity) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le))
   grind only
 
 lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
