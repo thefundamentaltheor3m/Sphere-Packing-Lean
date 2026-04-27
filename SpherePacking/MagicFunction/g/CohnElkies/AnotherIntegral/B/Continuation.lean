@@ -47,8 +47,6 @@ lemma bAnotherRHS_analyticOnNhd :
   have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := fun u hu h0 =>
     (ne_of_gt (by simpa [rightHalfPlane] using hu.1)) (by simp [h0])
-  have hI : AnalyticOnNhd ℂ bAnotherIntegralC ACDomain :=
-    bAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1
   have hterm1 :
       AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain :=
     analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id)
@@ -62,7 +60,8 @@ lemma bAnotherRHS_analyticOnNhd :
         (fun u : ℂ =>
           (144 : ℂ) / ((π : ℂ) * u) + (1 : ℂ) / ((π : ℂ) * (u - 2)) + bAnotherIntegralC u)
         ACDomain := by
-    simpa [add_assoc] using (hterm1.add hterm2).add hI
+    simpa [add_assoc] using
+      (hterm1.add hterm2).add (bAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1)
   unfold bAnotherRHS
   exact analyticOnNhd_sinSq_prefactor_mul (sign := (-4 * (Complex.I : ℂ))) hinner
 
@@ -83,9 +82,9 @@ lemma exists_b'_analytic_extension :
     ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
       (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = b' u) := by
   refine ⟨bPrimeC, bPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => ?_⟩
-  have hb' : MagicFunction.b.RealIntegrals.b' u = b' u := by
-    simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm
-  simpa [hb'] using bPrimeC_ofReal u
+  simpa [show MagicFunction.b.RealIntegrals.b' u = b' u by
+    simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm]
+    using bPrimeC_ofReal u
 
 /-!
 ## Final wrapper theorem
@@ -110,15 +109,9 @@ public theorem bRadial_eq_another_integral_analytic_continuation_of_gt2
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
             ∫ t in Set.Ioi (0 : ℝ),
-              bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) := by
-  let rhsR := fun r : ℝ =>
-    (-4 * (Complex.I : ℂ)) *
-      (Real.sin (π * r / 2)) ^ (2 : ℕ) *
-        ((144 : ℂ) / (π * r) + (1 : ℂ) / (π * (r - 2)) +
-          ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * r * t) : ℂ))
-  have h_rhs_eq : ∀ u : ℝ, bAnotherRHS (u : ℂ) = rhsR u := bAnotherRHS_ofReal
-  exact analytic_continuation_of_gt2 exists_b'_analytic_extension bAnotherRHS_analyticOnNhd
-    h_rhs_eq h_gt2 hu hu2
+              bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) :=
+  analytic_continuation_of_gt2 exists_b'_analytic_extension bAnotherRHS_analyticOnNhd
+    bAnotherRHS_ofReal h_gt2 hu hu2
 
 end
 
