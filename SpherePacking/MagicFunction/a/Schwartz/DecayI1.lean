@@ -12,7 +12,6 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-
 import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import SpherePacking.ForMathlib.DerivHelpers
@@ -73,13 +72,12 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
   have hnorm : ‖MagicFunction.a.IntegralEstimates.I₃.g r s‖ = ‖g r s‖ := by
     let A : ℂ := (-I) * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
     simp [show ‖cexp (π * I * r)‖ = (1 : ℝ) by
-            simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r),
+        simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r),
       show ‖cexp (-(π * I * r))‖ = (1 : ℝ) by
-            simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r),
+        simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r),
       show MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) by
         simp [MagicFunction.a.IntegralEstimates.I₃.g, A, mul_assoc, mul_left_comm, mul_comm],
-      show g r s = A * cexp (-π * I * r) by
-        simp [g, A, mul_assoc, mul_left_comm, mul_comm]]
+      show g r s = A * cexp (-π * I * r) by simp [g, A, mul_assoc, mul_left_comm, mul_comm]]
   refine ((by simpa [hnorm] using
     MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := r) s hs :
     ‖g r s‖ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * r / s))).trans ?_
