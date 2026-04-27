@@ -192,15 +192,12 @@ lemma E8Matrix_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Matrix R = (E8Matrix ℚ).map (Rat.castHom R) := by
   rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Matrix]
 
-lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
-    (E8Matrix R).BlockTriangular OrderDual.toDual := by
-  simp [Matrix.BlockTriangular, E8Matrix, Fin.forall_fin_succ]
-
 /-- The determinant of `E8Matrix` is `1`. -/
 public theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] :
     (E8Matrix R).det = 1 := by
-  rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]; simp [E8Matrix,
-    Fin.prod_univ_eight, NeZero.ne (2 : R)]
+  rw [Matrix.det_of_lowerTriangular _ (by simp [Matrix.BlockTriangular, E8Matrix,
+    Fin.forall_fin_succ] : (E8Matrix R).BlockTriangular OrderDual.toDual)]
+  simp [E8Matrix, Fin.prod_univ_eight, NeZero.ne (2 : R)]
 
 lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
@@ -240,15 +237,12 @@ def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R 
      2⁻¹, 1, 1, 1, 1, 0, 0, 0; 2⁻¹, 1, 1, 1, 1, 1, 0, 0;
      2⁻¹, 1, 1, 1, 1, 1, 1, 0; -7 * 2⁻¹, -6, -5, -4, -3, -2, -1, 2]
 
-lemma E8Inverse_eq_cast (R : Type*) [Field R] [CharZero R] :
-    E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) := by
-  rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse]
-
-lemma E8Inverse_mul_E8Matrix_rat : E8Inverse ℚ * E8Matrix ℚ = 1 := by decide +kernel
-
 lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
     E8Inverse R * E8Matrix R = 1 := by
-  rw [E8Matrix_eq_cast, E8Inverse_eq_cast, ← Matrix.map_mul, E8Inverse_mul_E8Matrix_rat]; simp
+  rw [E8Matrix_eq_cast,
+    show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
+      rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse],
+    ← Matrix.map_mul, show E8Inverse ℚ * E8Matrix ℚ = 1 by decide +kernel]; simp
 
 lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
@@ -307,13 +301,11 @@ def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
      0, 0, 0, -1, 2, -1, 0, 0; 0, 0, 0, 0, -1, 2, -1, 0;
      0, 0, 0, 0, 0, -1, 2, 0; 1, 0, 0, 0, 0, 0, 0, 2]
 
-lemma E8Matrix_mul_E8Matrix_transpose_rat :
-    E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) := by decide +kernel
-
 lemma E8Matrix_mul_E8Matrix_transpose [Field R] [CharZero R] :
     E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
   rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
-    E8Matrix_mul_E8Matrix_transpose_rat, Matrix.map_map]; ext; simp
+    show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
+    Matrix.map_map]; ext; simp
 
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by
