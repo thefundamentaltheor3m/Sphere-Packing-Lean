@@ -57,8 +57,7 @@ lemma qParam_zI (t : ℝ) (ht : 0 < t) :
 
 lemma qParam_zI_norm (t : ℝ) (ht : 0 < t) :
     ‖Periodic.qParam (1 : ℝ) (zI t ht)‖ = Real.exp (-2 * π * t) := by
-  simpa [zI, mul_comm, div_one] using
-    Periodic.norm_qParam (h := (1 : ℝ)) (z := ((zI t ht : ℍ) : ℂ))
+  simpa [zI, mul_comm, div_one] using Periodic.norm_qParam (h := (1 : ℝ)) (z := (zI t ht : ℂ))
 
 /-- The imaginary part of `(Complex.I : ℂ) / t` is `t⁻¹` (as a real number). -/
 public lemma imag_I_div (t : ℝ) : ((Complex.I : ℂ) / (t : ℂ)).im = t⁻¹ := by
@@ -100,7 +99,6 @@ public lemma norm_φ₀_imag_le :
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
 open scoped ComplexConjugate
-open SlashInvariantFormClass ModularFormClass
 
 lemma exp_neg_pi_lt_one : Real.exp (-π) < 1 :=
   Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)
@@ -123,11 +121,11 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have hcoeff_nat : m * (σ 3 m) ≤ M ^ 5 :=
+  have : m * (σ 3 m) ≤ M ^ 5 :=
     (by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
       Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
       m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)
-  simpa using (by exact_mod_cast hcoeff_nat : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
+  simpa using (by exact_mod_cast this : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
 
 section partialSum
 variable {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -150,7 +148,6 @@ lemma qExpansionFormalMultilinearSeries_partialSum_three (q : ℂ) :
         (qExpansion (1 : ℝ) f).coeff 2 * q ^ (2 : ℕ) := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
-
 end partialSum
 
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
@@ -158,11 +155,6 @@ end partialSum
 private lemma hh : (0 : ℝ) < (1 : ℝ) := by norm_num
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
-
-private lemma qParam_zI_mem_ball {t : ℝ} (ht : 0 < t) (ht1 : 1 ≤ t) :
-    Periodic.qParam (1 : ℝ) (zI t ht) ∈ Metric.ball (0 : ℂ) (r0 : ℝ) := by
-  simp only [Metric.mem_ball, dist_zero_right, r0, qParam_zI_norm t ht]
-  exact Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])
 
 private lemma exists_sub_partialSum_bound
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -181,14 +173,16 @@ private lemma exists_sub_partialSum_bound
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
   have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
+  have hmem : q ∈ Metric.ball (0 : ℂ) (r0 : ℝ) := by
+    simp only [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht]
+    exact Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])
   have hmain :
       ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
     simpa [show cuspFunction (1 : ℝ) f q = f z by
         simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
       show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
-      hbound q (by simpa [q, z] using qParam_zI_mem_ball (t := t) ht ht1) n
+        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using hbound q hmem n
   simpa [z, q, hqnorm] using hmain
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
@@ -214,11 +208,11 @@ public lemma exists_E4_sub_one_sub_240q_bound :
         E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
 lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
-  simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1,
-    show valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) by
-      simpa using
-        (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1).symm.trans
-          (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1)]
+  have hval : valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) := by
+    simpa using
+      (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1).symm.trans
+        (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1)
+  simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1, hval]
 
 /--
 Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`, valid for all
