@@ -113,18 +113,10 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   set A : ℂ := ∑' x : ↑(P.centers ∩ D),
     exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  have hnexp : ∀ x : ↑(P.centers ∩ D),
-      ‖exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := fun x => by
-    simpa [show (2 * π * I * (⟪(x : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ)) = ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I from by simp [mul_assoc, mul_comm]]
-      using Complex.norm_exp_ofReal_mul_I
-        (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hA_le : ‖A‖ ≤ n := by
-    simpa [A, tsum_fintype, hnexp, n] using
-      norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
-        exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
+    simpa [A, tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
+        n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
+      exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
       = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
         simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
