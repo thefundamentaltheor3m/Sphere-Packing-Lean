@@ -198,29 +198,6 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
             (a := A t) (c := coeff t) (n := n) (x := x)
 
 /--
-Variant of `hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one` for set integrals over
-`Ioo (0, 1)`.
--/
-public lemma hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one
-    {μ : Measure ℝ} [IsFiniteMeasure μ]
-    {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ} {A : ℝ → ℂ} {n : ℕ} {x₀ : ℝ}
-    (hμ : μ = (volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1))
-    (hg_bound :
-      ∃ C₀ > 0, ∀ r : ℝ, ∀ t : ℝ, t ∈ Ioo (0 : ℝ) 1 →
-        ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r))
-    (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
-    (hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t))
-    (hmeas :
-      ∀ n : ℕ, ∀ x : ℝ,
-        AEStronglyMeasurable (fun t : ℝ ↦ (coeff t) ^ n * g x t) μ)
-  (hint :
-      ∀ n : ℕ, ∀ x : ℝ, Integrable (fun t : ℝ ↦ (coeff t) ^ n * g x t) μ) :
-    HasDerivAt (fun x : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g x t)
-      (∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g x₀ t) x₀ := by
-  simpa [hμ] using hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one hμ hg_bound hcoeff
-    hg_repr hmeas hint
-
-/--
 Express iterated derivatives of `I` as set integrals of `(coeff t) ^ n * g r t`, under uniform
 bounds that allow differentiation under the integral sign.
 -/
@@ -247,7 +224,9 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
   induction n with
   | zero => funext r; simp [hI]
   | succ n hn => funext r; simp [iteratedDeriv_succ, hn,
-      (hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one (n := n) (x₀ := r)
-        rfl hg_bound hcoeff hg_repr hmeas hint).deriv]
+      (show HasDerivAt (fun x : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g x t)
+            (∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g r t) r from by
+        simpa [μ] using hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one (μ := μ)
+          (n := n) (x₀ := r) rfl hg_bound hcoeff hg_repr hmeas hint).deriv]
 
 end MagicFunction.a.IntegralEstimates
