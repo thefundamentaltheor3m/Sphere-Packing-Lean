@@ -20,16 +20,15 @@ variable {d : ℕ} (S : PeriodicSpherePacking d)
 theorem hD_isAddFundamentalDomain
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
     IsAddFundamentalDomain S.lattice D :=
-  MeasureTheory.IsAddFundamentalDomain.mk' (μ := volume) hD_measurable.nullMeasurableSet
-    hD_unique_covers
+  .mk' (μ := volume) hD_measurable.nullMeasurableSet hD_unique_covers
 
 private theorem ball_subset_iUnion_lattice_inter_ball_vadd
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
     ball 0 (R - L) ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) := by
   intro x hx
-  rcases hD_unique_covers x with ⟨g, hg, -⟩
+  obtain ⟨g, hg, -⟩ := hD_unique_covers x
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
-  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, (Set.mem_vadd_set_iff_neg_vadd_mem).2 (by simpa using hg)⟩⟩
+  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
   simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
     (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
       ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) <| by
@@ -63,22 +62,21 @@ theorem PeriodicSpherePacking.aux2_ge
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)) / volume D := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [ge_iff_le, ENNReal.div_le_iff]
-  · rw [← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-    exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
-  · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-  · exact lt_top_iff_ne_top.mp <|
-      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
+  rw [ge_iff_le, ENNReal.div_le_iff
+    ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
+    (lt_top_iff_ne_top.mp <|
+      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)),
+    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+  exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
 
 private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) ⊆ ball 0 (R + L) := by
   intro x hx
-  rw [mem_ball_zero_iff]
-  rcases (by simpa [Set.mem_iUnion, exists_prop, Set.mem_inter_iff] using hx) with
-    ⟨i, ⟨-, hi_ball⟩, hi_mem⟩
+  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
+  obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
   calc ‖x‖ = ‖i + (-i + x)‖ := by congr; abel
     _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
-    _ < R + L := add_lt_add_of_lt_of_le (by simpa [mem_ball_zero_iff] using hi_ball)
+    _ < R + L := add_lt_add_of_lt_of_le hi_ball
         (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem))
 
 /-- Theorem 2.2, upper bound. -/
@@ -88,12 +86,11 @@ theorem PeriodicSpherePacking.aux2_le
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [ENNReal.le_div_iff_mul_le]
-  · rw [← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-    exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
-  · exact Or.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-  · exact Or.inl <| lt_top_iff_ne_top.mp <|
-      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
+  rw [ENNReal.le_div_iff_mul_le (.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero
+    (NeZero.ne volume)) (.inl <| lt_top_iff_ne_top.mp <|
+      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)),
+    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+  exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
 
 open ZSpan
 
@@ -222,7 +219,7 @@ lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
 
 lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  simpa using aux_bhavik (d := d) (Nat.cast_nonneg _) hε
+  simpa using aux_bhavik (Nat.cast_nonneg d) hε
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 R) / volume (ball 0 (R + C))` tends to `1` (for `C ≥ 0`).
