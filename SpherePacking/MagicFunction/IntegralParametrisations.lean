@@ -103,9 +103,8 @@ public lemma im_z₄'_pos_all (t : ℝ) : 0 < (z₄' t).im := by simp [im_z₄'_
 /-- The extended parametrisation `z₅'` stays in the closed unit disk. -/
 public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hnorm : ‖z₅' t‖ = u := by
-    simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]
-  simpa [hnorm] using (by simp [hu] : u ≤ 1)
+  simpa [show ‖z₅' t‖ = u from by simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]]
+    using (by simp [hu] : u ≤ 1)
 
 /-- The extended parametrisation `z₁'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
@@ -119,7 +118,6 @@ public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
 /-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖(-1 : ℂ) + (u : ℂ)‖ ≤ 1 := by
     rw [show ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| from by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using Complex.norm_real (u - 1)]
