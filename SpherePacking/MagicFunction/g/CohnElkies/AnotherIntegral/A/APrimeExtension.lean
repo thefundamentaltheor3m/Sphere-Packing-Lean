@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
-
 /-!
 # Complex analytic extension of `a'` (`aPrimeC`)
 
@@ -81,19 +80,14 @@ public def aPrimeC (u : ℂ) : ℂ :=
 
 @[simp] lemma I₁'C_ofReal (u : ℝ) : I₁'C (u : ℂ) = I₁' u := by
   simp [I₁'C, MagicFunction.a.RadialFunctions.I₁'_eq]
-
 @[simp] lemma I₂'C_ofReal (u : ℝ) : I₂'C (u : ℂ) = I₂' u := by
   simp [I₂'C, MagicFunction.a.RadialFunctions.I₂'_eq]
-
 @[simp] lemma I₃'C_ofReal (u : ℝ) : I₃'C (u : ℂ) = I₃' u := by
   simp [I₃'C, MagicFunction.a.RadialFunctions.I₃'_eq]
-
 @[simp] lemma I₄'C_ofReal (u : ℝ) : I₄'C (u : ℂ) = I₄' u := by
   simp [I₄'C, MagicFunction.a.RadialFunctions.I₄'_eq]
-
 @[simp] lemma I₅'C_ofReal (u : ℝ) : I₅'C (u : ℂ) = I₅' u := by
   simp [I₅'C, MagicFunction.a.RadialFunctions.I₅'_eq]
-
 @[simp] lemma I₆'C_ofReal (u : ℝ) : I₆'C (u : ℂ) = I₆' u := by
   simp [I₆'C, MagicFunction.a.RadialFunctions.I₆'_eq]
 
@@ -117,8 +111,9 @@ lemma neg_one_div_I_mul_eq_arg₁ (t : ℝ) :
     (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) = arg₁ t := by
   rcases eq_or_ne t 0 with rfl | ht
   · simp [arg₁]
-  · have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht
-    simp only [arg₁]; field_simp [ht', Complex.I_ne_zero]; simp [Complex.I_sq]
+  · simp only [arg₁]
+    field_simp [show (t : ℂ) ≠ 0 by exact_mod_cast ht, Complex.I_ne_zero]
+    simp [Complex.I_sq]
 
 def base₁ (t : ℝ) : ℂ := (-Complex.I) * φ₀'' (arg₁ t) * (t ^ (2 : ℕ) : ℝ)
 def k₁ (t : ℝ) : ℂ := (-π * (Complex.I : ℂ)) + (-π * (t : ℂ))
@@ -334,25 +329,23 @@ private lemma base_pow_diffAt_of
         _ = 4 * Cφ := by ring) hk_bound
 
 lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
-  have hbase_cont : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
-    unfold base₂ arg₂; exact phi_div_pow_continuousOn (by fun_prop) (fun _ => by simp)
   simpa [funext I₂'C_eq] using
     base_pow_diffAt_of arg₂ (fun t => (t : ℂ) + (Complex.I : ℂ)) u0
-      (fun t => by simp [base₂]) hbase_cont
+      (fun t => by simp [base₂])
+      (by unfold base₂ arg₂; exact phi_div_pow_continuousOn (by fun_prop) (fun _ => by simp))
       (fun t => by simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ)))
       (fun t htIoo => by
         simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
       (by unfold k₂; fun_prop) k₂_bound
 
 lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
-  have hbase_cont : ContinuousOn base₄ (Ι (0 : ℝ) 1) :=
-    (show (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) = base₄
-      from funext fun _ => by simp [base₄, arg₄]) ▸
-    continuousOn_const.mul (phi_div_pow_continuousOn
-      (d := fun t : ℝ => -(t : ℂ) + (Complex.I : ℂ)) (by fun_prop) (fun _ => by simp))
   simpa [funext I₄'C_eq] using
     base_pow_diffAt_of arg₄ (fun t => -(t : ℂ) + (Complex.I : ℂ)) u0
-      (fun t => by simp [base₄]) hbase_cont
+      (fun t => by simp [base₄])
+      ((show (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t:ℂ) + (Complex.I:ℂ)) ^ (2:ℕ))) = base₄
+        from funext fun _ => by simp [base₄, arg₄]) ▸
+        continuousOn_const.mul (phi_div_pow_continuousOn
+          (d := fun t : ℝ => -(t : ℂ) + (Complex.I : ℂ)) (by fun_prop) (fun _ => by simp)))
       (fun t => (norm_add_le _ _).trans (by simp))
       (fun t htIoo => by
         simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
@@ -389,11 +382,10 @@ lemma integrable_mul_exp_neg_mul_Ici {C b : ℝ} (hb : 0 < b) :
       (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
         (hs := by linarith) (hp := le_rfl) (b := b) hb) :
       MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ioi (0:ℝ))
-        MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num : (0:ℝ) ≤ 1))
+        MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
   simpa [MeasureTheory.IntegrableOn] using
     (integrableOn_Ici_iff_integrableOn_Ioi (f := fun t : ℝ => C * t * Real.exp (-b * t))
-      (b := (1 : ℝ)) (by finiteness)).2
-      (by simpa [mul_assoc] using hIoi1.const_mul C)
+      (b := (1 : ℝ)) (by finiteness)).2 (by simpa [mul_assoc] using hIoi1.const_mul C)
 
 lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     DifferentiableAt ℂ I₆'C u0 := by
