@@ -102,14 +102,12 @@ lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) :=
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
   rw [summable_norm_iff]
-  have h := Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum
-  simp only [fouterm] at h
-  refine h.congr fun i => ?_
+  refine ((Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => ?_)
   have hsplit : cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
       cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) := by
     rw [← Complex.exp_add]; congr 1; push_cast; ring
   have hne := Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
-  grind only
+  simp only [fouterm, hsplit]; grind only
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
@@ -126,11 +124,11 @@ lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod (fun i ↦ by simp_all)]
   · exact Real.exp_pos _
-  have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
-    simpa [mul_assoc, mul_comm, mul_left_comm] using
-      (Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)
   simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable ((by simpa using hnat.comp_injective PNat.coe_injective :
+    (Real.summable_log_one_add_of_summable ((by
+      simpa [mul_assoc, mul_comm, mul_left_comm] using
+        ((Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)).comp_injective
+          PNat.coe_injective :
       Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
