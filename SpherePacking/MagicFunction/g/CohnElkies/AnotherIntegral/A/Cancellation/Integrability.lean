@@ -16,15 +16,10 @@ large-imaginary-part bounds for `φ₂'` and `φ₄'`.
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
-open scoped BigOperators Topology MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
-open scoped ArithmeticFunction.sigma
-
-open Real Complex MeasureTheory Filter Function
-open ArithmeticFunction
-
+open scoped Topology
+open Real Complex MeasureTheory Filter
 open MagicFunction.FourierEigenfunctions
-open UpperHalfPlane ModularForm EisensteinSeries
-open SlashInvariantFormClass ModularFormClass
+open UpperHalfPlane
 
 noncomputable section
 
@@ -208,8 +203,8 @@ lemma exists_phi0_cancellation_bound :
         Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       set x : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z
       set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
-      set z' : ℂ :=
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
+      set z' : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+        (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
       rw [show (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
@@ -271,11 +266,11 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
       rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
         simp [-Complex.ofReal_exp, B]]
-      exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2]))
-        (norm_nonneg _)
+      exact mul_le_mul_of_nonneg_left
+        (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2])) (norm_nonneg _)
     have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
-      simpa [Cc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]
-        using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
+      simpa [Cc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le] using
+        mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
     linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
       (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
   have hmul : ‖aAnotherIntegrand u t‖ ≤
@@ -296,9 +291,9 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := fun t ht => by
     rw [show C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) =
       (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
-      rw [mul_assoc (C * _), ← Real.exp_add]; ring_nf]
-    simpa [-Complex.ofReal_exp, aAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm]
-      using mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
+        rw [mul_assoc (C * _), ← Real.exp_add]; ring_nf]
+    simpa [-Complex.ofReal_exp, aAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm] using
+      mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
   have ha : 0 < (2 * π + π * u) / 2 := by positivity
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
@@ -314,9 +309,9 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
         (fun t => by rw [← Real.exp_add]; simp)).isBigO
     have hO :
         (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
-          fun t : ℝ => Real.exp (-b * t) := by
-      refine ((hfacBig.mul hExpRef).congr_left (fun t => ?_)).congr_right (fun _ => by ring)
-      rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf
+          fun t : ℝ => Real.exp (-b * t) :=
+      ((hfacBig.mul hExpRef).congr_left fun t => by
+        rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf).congr_right fun _ => by ring
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
         (b := (1 : ℝ))).2 <| integrable_of_isBigO_exp_neg (a := 1) (b := b) ha
         (by simpa [Set.Ici] using (by fun_prop :
