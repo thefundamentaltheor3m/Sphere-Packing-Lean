@@ -38,15 +38,10 @@ the real restriction lemma `bPrimeC_ofReal` and analyticity `bPrimeC_analyticOnN
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators Interval Topology
-
 open MeasureTheory Real Complex Filter Set
 open SpherePacking.Integration (μIciOne)
-
-open SpherePacking
-
-open intervalIntegral
-open MagicFunction.b.RealIntegrals
-open MagicFunction.Parametrisations
+open SpherePacking intervalIntegral
+open MagicFunction.b.RealIntegrals MagicFunction.Parametrisations
 
 noncomputable section
 
@@ -118,11 +113,11 @@ lemma exists_bound_norm_ψI'_z₅' :
   obtain ⟨M, hM⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
   refine ⟨M, fun t ht => ?_⟩
   have htIoc : t ∈ Ioc (0 : ℝ) 1 := mem_Ioc_of_mem_uIoc ht
-  have hM0 : 0 ≤ M := (norm_nonneg (ψS.resToImagAxis 1)).trans (hM 1 (by norm_num))
   refine (norm_modular_rewrite_Ioc_bound 2 ψS ψI' z₅' b.Schwartz.J5Smooth.ψI'_z₅'_eq htIoc
     (hM (1 / t) (by simpa using (one_le_div htIoc.1).2 htIoc.2))).trans ?_
   simpa [mul_one] using mul_le_mul_of_nonneg_left
-    (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ)) hM0
+    (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ))
+    ((norm_nonneg (ψS.resToImagAxis 1)).trans (hM 1 (by norm_num)))
 
 lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
   obtain ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
