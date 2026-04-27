@@ -153,8 +153,7 @@ open Real
   lattice_isZLattice := by
     use ?_
     rw [← S.lattice_isZLattice.span_top]
-    ext v
-    simp_rw [Submodule.mem_span]
+    ext v; simp_rw [Submodule.mem_span]
     refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
     · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
       simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
@@ -242,7 +241,7 @@ lemma biUnion_inter_balls_subset_biUnion_balls_inter
     ⋃ x ∈ X ∩ ball 0 R, ball x r ⊆ (⋃ x ∈ X, ball x r) ∩ ball 0 (R + r) := fun x hx => by
   simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right] at hx ⊢
   obtain ⟨y, hy₁, hy₂⟩ := hx
-  exact ⟨⟨y, hy₁.left, hy₂⟩, (norm_le_norm_add_norm_sub' x y).trans_lt (by gcongr <;> tauto)⟩
+  exact ⟨⟨y, hy₁.1, hy₂⟩, (norm_le_norm_add_norm_sub' x y).trans_lt (by gcongr <;> tauto)⟩
 
 lemma biUnion_balls_inter_subset_biUnion_inter_balls
     (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
@@ -261,8 +260,7 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
   have : Countable ↑(S.centers ∩ ball 0 R) :=
     Set.Countable.mono Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
   refine measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball ?_) fun _ ↦ measurableSet_ball
-  simp_rw [ne_eq, Subtype.mk.injEq] at h
-  linarith [S.centers_dist' x y hx.left hy.left h]
+  linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]
 
 /-- An upper bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
