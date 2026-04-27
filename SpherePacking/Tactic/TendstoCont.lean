@@ -92,10 +92,8 @@ private meta def matchTendstoNhds? (e : Expr) : MetaM (Option (Expr × Expr × E
 private meta def matchAtom? (e : Expr) (bvar : FVarId)
     (candidates : Array Atom) : MetaM (Option Atom) := do
   unless e.containsFVar bvar do return none
-  let bvarExpr := Expr.fvar bvar
   for cand in candidates do
-    let candApplied := mkApp cand.fn bvarExpr
-    if ← withNewMCtxDepth (isDefEq e candApplied) then
+    if ← withNewMCtxDepth (isDefEq e (mkApp cand.fn (.fvar bvar))) then
       return some cand
   return none
 
@@ -118,8 +116,7 @@ private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
   if !e.containsFVar bvar then return
   match ← matchAtom? e bvar candidates with
   | some cand =>
-    let usedFns ← fnsRef.get
-    let alreadyRecorded ← usedFns.anyM fun usedFn =>
+    let alreadyRecorded ← (← fnsRef.get).anyM fun usedFn =>
       withNewMCtxDepth (isDefEq usedFn cand.fn)
     unless alreadyRecorded do
       atomsRef.modify (·.push cand)
@@ -132,12 +129,10 @@ private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
     Returns `(candidates, usedAtoms)` — candidates for diagnostics. -/
 private meta def collectAtoms (body : Expr) (bvar : FVarId)
     (goalFilter : Expr) : TacticM (Array Atom × Array Atom) := do
-  let ctx ← getLCtx
   let mut candidates : Array Atom := #[]
-  for decl in ctx do
+  for decl in ← getLCtx do
     if decl.isImplementationDetail then continue
-    let ty ← instantiateMVars decl.type
-    match ← matchTendstoNhds? ty with
+    match ← matchTendstoNhds? (← instantiateMVars decl.type) with
     | some (codTy, f, l, a) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
         candidates := candidates.push
@@ -188,10 +183,8 @@ private meta def buildProjection (p : Expr) (n i : Nat) :
   let mut e := p
   for _ in [:i] do
     e ← mkAppM ``Prod.snd #[e]
-  if i < n - 1 then
-    e ← mkAppM ``Prod.fst #[e]
+  if i < n - 1 then e ← mkAppM ``Prod.fst #[e]
   return e
-
 
 /-! ### Body abstraction -/
 
@@ -199,9 +192,8 @@ private meta def buildProjection (p : Expr) (n i : Nat) :
 private meta partial def abstractBody (body : Expr) (bvar : FVarId)
     (pVar : Expr) (atoms : Array Atom) : MetaM Expr := do
   if !body.containsFVar bvar then return body
-  let bvarExpr := Expr.fvar bvar
   for i in [:atoms.size] do
-    if ← withNewMCtxDepth (isDefEq body (mkApp atoms[i]!.fn bvarExpr)) then
+    if ← withNewMCtxDepth (isDefEq body (mkApp atoms[i]!.fn (.fvar bvar))) then
       return ← buildProjection pVar atoms.size i
   let go := (abstractBody · bvar pVar atoms)
   match body with
@@ -221,9 +213,8 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit :
   let keyName := `_tendsto_cont_key
   let goal1 ← goal.define keyName (← inferType proof) proof
   let (_, goal2) ← goal1.intro keyName
-  let keyId : Ident := mkIdent keyName
   let remaining ← Elab.Tactic.run goal2
-    (Elab.Tactic.evalTactic (← `(tactic| convert ($keyId) using 1)))
+    (Elab.Tactic.evalTactic (← `(tactic| convert ($(mkIdent keyName)) using 1)))
   for g in remaining do
     try
       let r ← Elab.Tactic.run g (Elab.Tactic.evalTactic
@@ -240,13 +231,9 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit :
 /-- Build the continuity-based proof for a non-constant body with atoms. -/
 private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     (atoms : Array Atom) : TacticM Expr := do
-  let prodTy ← buildProdType atoms
-  let limitPt ← buildLimitPoint atoms
-  let prodMkProof ← buildProdMkNhds atoms
-  withLocalDecl `p .default prodTy fun pVar => do
-    let abstracted ← abstractBody body bvar pVar atoms
-    let contFn ← mkLambdaFVars #[pVar] abstracted
-    let contGoalTy ← mkAppM ``ContinuousAt #[contFn, limitPt]
+  withLocalDecl `p .default (← buildProdType atoms) fun pVar => do
+    let contFn ← mkLambdaFVars #[pVar] (← abstractBody body bvar pVar atoms)
+    let contGoalTy ← mkAppM ``ContinuousAt #[contFn, ← buildLimitPoint atoms]
     let contMVar ← mkFreshExprMVar contGoalTy
     try
       let _ ← Elab.Tactic.run contMVar.mvarId!
@@ -254,13 +241,12 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     catch e =>
       throwError m!"tendsto_cont: `fun_prop` failed:\n\
         {← e.toMessageData.format}\ngoal: {contGoalTy}"
-    mkAppM ``tendsto_continuousAt_comp #[contMVar, prodMkProof]
+    mkAppM ``tendsto_continuousAt_comp #[contMVar, ← buildProdMkNhds atoms]
 
 /-- Core implementation of the `tendsto_cont` tactic. -/
 private meta def tendstoCont : TacticM Unit := withMainContext do
   let goal ← getMainGoal
-  let goalTy ← goal.getType >>= instantiateMVars
-  let (goalFn, goalFilter, domTy) ← parseGoal goalTy
+  let (goalFn, goalFilter, domTy) ← parseGoal (← goal.getType >>= instantiateMVars)
   let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
     | _ => throwError "tendsto_cont: goal function is not a lambda.\n\
@@ -274,10 +260,9 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
         if candidates.size == 0 then
           throwError m!"tendsto_cont: no `Tendsto` hypotheses \
             found for filter `{← ppExpr goalFilter}`"
-        else
-          throwError m!"tendsto_cont: body references the bound variable \
-            but no candidate matched.\nAvailable candidates: \
-            {← candidates.mapM fun c => ppExpr c.fn}"
+        throwError m!"tendsto_cont: body references the bound variable \
+          but no candidate matched.\nAvailable candidates: \
+          {← candidates.mapM fun c => ppExpr c.fn}"
       try
         let _ ← Elab.Tactic.run goal
           (Elab.Tactic.evalTactic (← `(tactic| exact tendsto_const_nhds)))
@@ -285,9 +270,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
       catch _ =>
         throwError "tendsto_cont: constant body but `tendsto_const_nhds` failed"
     some <$> buildContinuityProof body bvar atoms
-  match proof? with
-  | none => return
-  | some proof => reconcileLimits goal proof
+  if let some proof := proof? then reconcileLimits goal proof
 
 elab "tendsto_cont" : tactic => TendstoCont.tendstoCont
 
