@@ -1,8 +1,12 @@
-import Mathlib.Algebra.Field.ZMod
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
-import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import Mathlib.NumberTheory.ModularForms.SlashActions
+module
+
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
+public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+public import Mathlib.NumberTheory.ModularForms.SlashActions
+
+@[expose] public section
 
 /-!
 # Auxiliary theorems for the slash actions groups SL(2, ℤ) and Γ(2)

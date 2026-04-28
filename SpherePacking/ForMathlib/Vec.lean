@@ -1,4 +1,8 @@
-import Mathlib.Data.Fin.VecNotation
+module
+
+public import Mathlib.Data.Fin.VecNotation
+
+@[expose] public section
 
 variable {m : ℕ} {α : Type*}
 

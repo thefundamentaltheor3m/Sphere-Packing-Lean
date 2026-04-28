@@ -5,9 +5,13 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.MagicFunction.IntegralParametrisations
+
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.MagicFunction.IntegralParametrisations
+
+@[expose] public section
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -212,7 +216,7 @@ lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
     * t ^ 2
     * cexp (-π * I * r)
     * cexp (-π * r * t) := by
-  simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
+  rw [I₁'_eq, integral_of_le zero_le_one]
 
 lemma I₁'_eq'_Ioc (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
       φ₀'' (-1 / (I * t))
@@ -288,14 +292,14 @@ lemma I₃'_eq_Ioc (r : ℝ) : I₃' r = ∫ (t : ℝ) in Ioc 0 1, -I
   * t ^ 2
   * cexp (π * I * r)
   * cexp (-π * r * t) := by
-    simp [I₃'_eq, intervalIntegral_eq_integral_uIoc]
+    rw [I₃'_eq, integral_of_le zero_le_one]
 
 lemma I₃'_eq'_Ioc (r : ℝ) : I₃' r = -I * ∫ (t : ℝ) in Ioc 0 1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (π * I * r)
     * cexp (-π * r * t) := by
-  simp [I₃'_eq', intervalIntegral_eq_integral_uIoc]
+  rw [I₃'_eq', integral_of_le zero_le_one]
 
 lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
     * φ₀'' (-1 / (-t + I))
@@ -355,13 +359,13 @@ lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
     * φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * r * t) := by
-  simp [I₅'_eq, intervalIntegral_eq_integral_uIoc]
+  rw [I₅'_eq, integral_of_le zero_le_one]
 
 lemma I₅'_eq'_Ioc (r : ℝ) : I₅' r = 2 * I * ∫ (t : ℝ) in Ioc 0 1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * r * t) := by
-  simp [I₅'_eq', intervalIntegral_eq_integral_uIoc]
+  rw [I₅'_eq', integral_of_le zero_le_one]
 
 lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * φ₀'' (I * t)

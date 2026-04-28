@@ -3,27 +3,30 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.ModularForms.FG
 
-import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.ModularForms.FG
+
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+
+@[expose] public section
 
 /-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
 In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
 `I₁`-`I₆` are holomorphic on the upper half-plane.
 
-## Main Results:
+## Main Results
 
-This file includes the following (families of) theorems:
-
-* [PROVED] `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
-* [PROVED] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
-* [PROVED] `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
-* [PROVED] `φ₀''_continuous`: `φ₀''` is continuous on `Set.univ ×ℂ Ioi 0`.
+* `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
+* `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
+* `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
+* `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
+* `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
+* `φ₀''_continuous`: `φ₀''` is continuous on the upper half-plane.
+* `φ₀_continuous`: `φ₀ : ℍ → ℂ` is continuous.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
@@ -44,16 +47,6 @@ section Helpers
 
 namespace UpperHalfPlane
 
-theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
-  ext z
-  rw [mem_range]
-  constructor <;> intro hz
-  · obtain ⟨y, hy⟩ := hz
-    rw [← hy]
-    exact y.2
-  · use ⟨z, hz⟩
-    exact coe_mk_subtype hz
-
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 
 end UpperHalfPlane
@@ -71,8 +64,9 @@ section Holo_Lemmas
 theorem φ₀''_holo : Holo(φ₀'') := by
   have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
   have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
-  have h_eq : EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z)
-      ℍ₀ := fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
+  have h_eq :
+      EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z) ℍ₀ :=
+    fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
   refine DifferentiableOn.congr ?_ h_eq
   exact hF.div hΔ fun z hz => by
     simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
@@ -164,17 +158,23 @@ section ContDiffOn_Real
 
 /-! # Real Differentiability -/
 
-theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars ℝ
+private theorem ContDiffOn.restrict_scalars_complex {s : Set ℂ} {f : ℂ → ℂ} {n : WithTop ℕ∞}
+    (h : ContDiffOn ℂ n f s) : ContDiffOn ℝ n f s := by
+  intro x hx
+  exact @ContDiffWithinAt.restrict_scalars ℝ _ ℂ _ _ ℂ _ _ s f x n ℂ _ _ _
+    IsScalarTower.right _ IsScalarTower.right (h x hx)
 
-theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars_complex
+
+theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars_complex
 
 end ContDiffOn_Real
 
@@ -190,6 +190,12 @@ theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Io
 /-- φ₀'' is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
   φ₀''_differentiable.continuousOn
+
+/-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
+theorem φ₀_continuous : Continuous φ₀ := by
+  have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
+  rw [h_eq]
+  exact φ₀''_holo.continuousOn.comp_continuous continuous_induced_dom fun z => z.2
 
 end Corollaries
 

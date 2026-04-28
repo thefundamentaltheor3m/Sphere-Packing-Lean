@@ -5,9 +5,13 @@ Authors: Sidharth Hariharan
 
 The contents of this file should eventually be moved to Mathlib/Analysis/SpecificLimits/Normed.lean
 -/
+module
 
-import Mathlib.Analysis.SpecificLimits.Normed
-import Mathlib.Analysis.Complex.Basic
+
+public import Mathlib.Analysis.SpecificLimits.Normed
+public import Mathlib.Analysis.Complex.Basic
+
+@[expose] public section
 
 open Filter
 
@@ -22,4 +26,3 @@ theorem summable_real_norm_mul_geometric_of_norm_lt_one {k : ℕ} {r : ℂ}
     · push_cast at hu
       simp [hu]
     · apply Asymptotics.isBigO_refl
-

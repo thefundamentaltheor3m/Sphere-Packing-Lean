@@ -46,16 +46,21 @@ jobs:
       - name: Don't 'import Mathlib', don't "#check"
         run: |
           ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^import Mathlib$' {} +)
+          ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^public import Mathlib$' {} +)
           ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^#check' {} +)
 
       - name: Build the project
         uses: leanprover/lean-action@c544e89643240c6b398f14a431bcdc6309e36b3e # v1.4.0
         with:
           use-github-cache: false
-          mk_all-check: true
+      - name: "lake exe mk_all --check --module"
+        run: |
+          set -e
+          lake exe mk_all --check --module
 
       - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+        # workaround for https://github.com/leanprover-community/docgen-action/issues/28
+        uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
           blueprint: true
           homepage: home_page
