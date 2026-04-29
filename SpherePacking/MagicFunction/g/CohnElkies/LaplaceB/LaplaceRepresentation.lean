@@ -130,10 +130,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have hintT_left := hintT_shift (-1 : ℂ) fun t ht0 ↦
-    by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
-  have hintT_right := hintT_shift (1 : ℂ) fun t ht0 ↦
-    by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
@@ -187,7 +183,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
               (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z))
         (show IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
           simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-            mul_assoc, mul_comm, mul_left_comm] using hintT_left)
+            mul_assoc, mul_comm, mul_left_comm] using hintT_shift (-1 : ℂ) fun t ht0 ↦
+              by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
         (show IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
           simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
             mul_assoc, mul_comm, mul_left_comm] using hintT_center)
@@ -209,7 +206,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
             (Set.Ioi (1 : ℝ)) volume by
           simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-            hintT_right)
+            hintT_shift (1 : ℂ) fun t ht0 ↦
+              by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
         (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
             (Set.Ioi (1 : ℝ)) volume by
           simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
