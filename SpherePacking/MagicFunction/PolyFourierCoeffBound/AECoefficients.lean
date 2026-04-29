@@ -41,12 +41,10 @@ public def A_E_sq_coeff (m : ℕ) : ℂ :=
 
 public lemma norm_A_E_coeff_le (n : ℕ) :
     ‖A_E_coeff n‖ ≤ (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 := by
-  have hσ : (σ 3 (n + 1) : ℝ) ≤ ((n + 1 : ℕ) : ℝ) ^ 4 :=
-    mod_cast sigma_bound 3 (n + 1)
-  calc ‖A_E_coeff n‖
-      = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
-        simpa using norm_A_E_coeff (n := n)
-    _ ≤ (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 := by nlinarith [hσ, Nat.zero_le n]
+  have hσ : (σ 3 (n + 1) : ℝ) ≤ ((n + 1 : ℕ) : ℝ) ^ 4 := mod_cast sigma_bound 3 (n + 1)
+  have h : ‖A_E_coeff n‖ = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
+    simpa using norm_A_E_coeff (n := n)
+  nlinarith [h, hσ, Nat.zero_le n]
 
 public lemma norm_A_E_coeff_le_of_le {n m : ℕ} (hn : n ≤ m) :
     ‖A_E_coeff n‖ ≤ (720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5 :=
@@ -57,11 +55,9 @@ public lemma norm_A_E_sq_coeff_le (m : ℕ) :
   have hterm (p : ℕ × ℕ) (hp : p ∈ Finset.antidiagonal m) :
       ‖A_E_coeff p.1 * A_E_coeff p.2‖ ≤ (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 := by
     have hsum : p.1 + p.2 = m := by simpa [Finset.mem_antidiagonal] using hp
-    rw [norm_mul]
-    calc ‖A_E_coeff p.1‖ * ‖A_E_coeff p.2‖
-        ≤ ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) * ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) := by
-          gcongr <;> exact norm_A_E_coeff_le_of_le (by omega)
-      _ = (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 := by ring
+    rw [norm_mul, show (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 =
+      ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) * ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) from by ring]
+    gcongr <;> exact norm_A_E_coeff_le_of_le (by omega)
   calc ‖A_E_sq_coeff m‖
       = ‖∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2‖ := by simp [A_E_sq_coeff]
     _ ≤ ∑ p ∈ Finset.antidiagonal m, ‖A_E_coeff p.1 * A_E_coeff p.2‖ := norm_sum_le _ _
@@ -82,11 +78,9 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
         nlinarith [Real.pi_pos, UpperHalfPlane.im_pos z] : (-2 * Real.pi * z.im) < 0)
     let g : ℕ → ℝ := fun n => (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 * r ^ (n + 1)
     have hg : Summable g := by
-      have hs' : Summable (fun n : ℕ => ((n + 1 : ℕ) : ℝ) ^ 5 * r ^ (n + 1)) := by
-        simpa [Nat.cast_add, Nat.cast_one] using (summable_nat_add_iff (f := fun n : ℕ =>
-          ((n : ℝ) ^ 5 : ℝ) * r ^ n) 1).2
-          (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr)
-      simpa [g, mul_assoc, mul_left_comm, mul_comm] using hs'.mul_left (720 : ℝ)
+      simpa [g, mul_assoc, mul_left_comm, mul_comm, Nat.cast_add, Nat.cast_one] using
+        ((summable_nat_add_iff (f := fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) 1).2
+          (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr)).mul_left (720 : ℝ)
     refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hg
     have hexp : ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ ≤ r ^ (n + 1) := by
       rw [show ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ =
@@ -110,8 +104,8 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
       have hexp : cexp (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)) *
           cexp (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)) =
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-        rw [← Complex.exp_add]; congr 1
-        push_cast [← (show (p.1 + 1 : ℕ) + (p.2 + 1 : ℕ) = m + 2 from by omega)]; ring
+        rw [← Complex.exp_add]
+        congr 1; push_cast [← (show (p.1 + 1 : ℕ) + (p.2 + 1 : ℕ) = m + 2 from by omega)]; ring
       dsimp [t, A_E_term]; exact CancelDenoms.mul_subst rfl hexp rfl
     calc (∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2)
         = ∑ p ∈ Finset.antidiagonal m, (A_E_coeff p.1 * A_E_coeff p.2) *
@@ -194,11 +188,9 @@ public lemma A_E_sq_series_summable (x : ℍ) :
     simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
       nlinarith [Real.pi_pos, UpperHalfPlane.im_pos x] : (-2 * Real.pi * x.im) < 0)
   have hg2 : Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 2)) := by
-    have hg1 : Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 1)) := by
-      simpa [Nat.cast_add, Nat.cast_one] using
-        (summable_nat_add_iff (f := fun m : ℕ => ((m : ℝ) ^ 11) * r ^ m) 1).2
-        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 hr)
-    simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm] using hg1.mul_right r
+    simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm, Nat.cast_add, Nat.cast_one] using
+      ((summable_nat_add_iff (f := fun m : ℕ => ((m : ℝ) ^ 11) * r ^ m) 1).2
+        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 hr)).mul_right r
   refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
     (hg2.mul_left ((720 : ℝ) ^ 2))
   have hexp : ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ ≤ r ^ (m + 2) := by
@@ -239,8 +231,7 @@ public lemma A_E_sq_fourierCoeff_hf (x : ℍ) :
           (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ)) by push_cast; ring)
     dsimp [f, g, fouterm]
     rw [show (2 * (m : ℤ) + 4 : ℤ) = i from by dsimp [i], hc, hexp]
-  have ho : Summable (fun m : ℕ => f (2 * m + 1)) := by
-    simp [funext fun m => hodd_term m]
+  have ho : Summable (fun m : ℕ => f (2 * m + 1)) := by simp [funext hodd_term]
   have he : Summable (fun m : ℕ => f (2 * m)) :=
     (summable_congr heven_term).mpr (by simpa [g] using A_E_sq_series_summable (x := x))
   have hsplit : (∑' m : ℕ, f (2 * m)) + (∑' m : ℕ, f (2 * m + 1)) = ∑' n : ℕ, f n :=
