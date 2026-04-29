@@ -59,7 +59,6 @@ public lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ
 
 end Setup
 
-
 section Bounding
 
 section Bounding_Integrand
@@ -106,11 +105,9 @@ section Higher_iteratedFDerivs
 
 open scoped Topology
 
-/--
-The coefficient appearing in the exponent when rewriting `g r t` as
-`A t * cexp ((r : ℂ) * coeff t)`. This is the specialization of `I24Common.coeff`
-to `shift = fun t => (1 : ℂ) - (t : ℂ)`.
--/
+/-- The coefficient appearing in the exponent when rewriting `g r t` as
+`A t * cexp ((r : ℂ) * coeff t)`. Specialization of `I24Common.coeff` to
+`shift = fun t => (1 : ℂ) - (t : ℂ)`. -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (1 : ℂ) - (t : ℂ))
 
 /-- Continuity of `coeff`. -/
@@ -123,18 +120,15 @@ public lemma coeff_eq_sum (t : ℝ) :
   simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
 
 /-- The integrand for the `n`-th derivative, obtained by multiplying `g` by `(coeff t) ^ n`. -/
-@[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ :=
-  (coeff t) ^ n * g r t
+@[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
 /-- Uniform bound `‖coeff t‖ ≤ 2 * π` for `t ∈ Ioo (0, 1)`. -/
-public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    ‖coeff t‖ ≤ 2 * π :=
+public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) : ‖coeff t‖ ≤ 2 * π :=
   I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ))
     (fun t ht => by
       change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
       rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real]
-      exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1))
-    t ht
+      exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1)) t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
 public lemma exp_r_mul_coeff (r t : ℝ) :
@@ -149,11 +143,9 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
       (fun _ hx => mem_Icc_of_Ioo hx)).congr fun t ht => ?_
     have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
     have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
-      simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
-        add_left_comm, add_comm]
-    have hexp' :
-        cexp (π * I * r * (z₄' t : ℂ)) =
-          cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
+      simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
+    have hexp' : cexp (π * I * r * (z₄' t : ℂ)) =
+        cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
       simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
         rw [← hz_coeff]; ring] using exp_r_mul_coeff (r := r) (t := t)
     simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
@@ -168,11 +160,8 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont) (hg_bound := g_norm_bound_uniform)
     (hcoeff := coeff_norm_le) (hg_repr := hg_repr) n
 
-/--
-Schwartz-style decay estimate for `I₄'`: all iterated derivatives decay faster than any power.
-
-The prime in the name indicates that this result is about the auxiliary integral `I₄'`.
--/
+/-- Schwartz-style decay estimate for `I₄'`: all iterated derivatives decay faster than any power.
+The prime indicates this is about the auxiliary integral `I₄'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.decay_of_iteratedDeriv_eq_integral_pow_mul
