@@ -59,18 +59,16 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
 public lemma Theta3_eq_jacobiTheta (τ : ℍ) : Θ₃ τ = jacobiTheta (τ : ℂ) := by
   simp [Θ₃, Θ₃_term, jacobiTheta]
 
-lemma exp_pi_I_mul_sq_int (n : ℤ) :
-    Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) = (-1 : ℂ) ^ n := by
-  rw [show (Real.pi * Complex.I * (n : ℂ) ^ 2 : ℂ) = (n ^ 2 : ℤ) * (Real.pi * Complex.I) by
-    push_cast; ring, Complex.exp_int_mul, Complex.exp_pi_mul_I]
-  simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
-    simpa using Int.even_pow' (m := n) (n := 2) two_ne_zero]
-
 lemma Theta4_eq_jacobiTheta_add_one (τ : ℍ) : Θ₄ τ = jacobiTheta ((τ : ℂ) + 1) := by
   refine tsum_congr fun n => ?_
+  have hpiI : Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) = (-1 : ℂ) ^ n := by
+    rw [show (Real.pi * Complex.I * (n : ℂ) ^ 2 : ℂ) = (n ^ 2 : ℤ) * (Real.pi * Complex.I) by
+      push_cast; ring, Complex.exp_int_mul, Complex.exp_pi_mul_I]
+    simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
+      simpa using Int.even_pow' (m := n) (n := 2) two_ne_zero]
   rw [show Θ₄_term n τ = Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ)) *
         Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) from by
-      simp [Θ₄_term, mul_assoc, mul_comm, (exp_pi_I_mul_sq_int n).symm],
+      simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm],
     ← Complex.exp_add]
   congr 1; ring
 
@@ -136,20 +134,6 @@ private lemma norm_jacobiTheta_I_mul_add_real_sub_one_le (a : ℝ) {t : ℝ} (ht
     mul_le_mul_of_nonneg_right (two_div_one_sub_exp_pi_mul_le t ht) (by positivity)
   simpa using norm_jacobiTheta_sub_one_le (τ := ((Complex.I : ℂ) * (t : ℂ)) + a)
     (by simpa using lt_of_lt_of_le zero_lt_one ht)
-
-private lemma exp_neg_pi_mul_sq_add_two_mul_le_geom (t : ℝ) (ht : 1 ≤ t) (n : ℕ) :
-    Real.exp (-Real.pi * (((n : ℝ) + 2) ^ 2 * t)) ≤
-      Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
-  have hrhs : Real.exp ((-Real.pi) * ((4 : ℝ) * t + (n : ℝ))) =
-      Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
-    rw [show (-Real.pi) * ((4 : ℝ) * t + (n : ℝ)) =
-        (-(4 : ℝ) * Real.pi * t) + ((n : ℝ) * (-Real.pi)) from by ring, Real.exp_add,
-      show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) by
-        simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm]
-  simpa [mul_assoc] using (Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left
-    (by nlinarith [sq_nonneg (n : ℝ), ht] :
-      ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
-    (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq hrhs
 
 /-- Exponential bound for `Θ₃(it) - 1` on `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_Ici_one :
@@ -264,7 +248,19 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
           simpa using norm_jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ, hτim,
         show ((n + 2 : ℤ) : ℝ) = (n : ℝ) + 2 from by norm_cast]
       simp; ring_nf
-    simpa [hnorm, b, r, pow_two] using exp_neg_pi_mul_sq_add_two_mul_le_geom t ht n
+    have hgeom_le : Real.exp (-Real.pi * (((n : ℝ) + 2) ^ 2 * t)) ≤
+        Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
+      have hrhs : Real.exp ((-Real.pi) * ((4 : ℝ) * t + (n : ℝ))) =
+          Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
+        rw [show (-Real.pi) * ((4 : ℝ) * t + (n : ℝ)) =
+            (-(4 : ℝ) * Real.pi * t) + ((n : ℝ) * (-Real.pi)) from by ring, Real.exp_add,
+          show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) by
+            simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm]
+      simpa [mul_assoc] using (Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left
+        (by nlinarith [sq_nonneg (n : ℝ), ht] :
+          ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
+        (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq hrhs
+    simpa [hnorm, b, r, pow_two] using hgeom_le
   have hsumNorm : Summable (fun n : ℕ ↦ ‖a (n + 1)‖) :=
     .of_nonneg_of_le (fun _ ↦ norm_nonneg _) hterm hb_summable
   have htail : ‖∑' n : ℕ, a (n + 1)‖ ≤ Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
