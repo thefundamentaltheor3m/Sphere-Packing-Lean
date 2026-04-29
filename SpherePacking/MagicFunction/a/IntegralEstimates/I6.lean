@@ -77,18 +77,9 @@ def coeff (t : ℝ) : ℂ := (-π * t : ℂ)
 
 def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
-lemma coeff_norm (t : ℝ) : ‖coeff t‖ = |π * t| := by simp [coeff]
-
-lemma coeff_norm_of_nonneg {t : ℝ} (ht : 0 ≤ t) : ‖coeff t‖ = π * t := by
-  simp [coeff_norm, abs_of_nonneg (mul_nonneg Real.pi_pos.le ht)]
-
 lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
     ‖coeff t‖ ^ n = (π * t) ^ n := by
-  simp [coeff_norm_of_nonneg (t := t) ht]
-
-lemma coeff_norm_pow_le_pi_mul (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
-    ‖coeff t‖ ^ n ≤ (π ^ n) * (t ^ n) := by
-  simp [coeff_norm_pow_of_nonneg (n := n) (t := t) ht, mul_pow]
+  simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht]
 
 lemma g_eq_Φ₆ (r : ℝ) : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r := r))
     (Ici (1 : ℝ)) := by
@@ -162,8 +153,8 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
                 (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0)) (by positivity))
           (by positivity) (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
       _ = bound t := by
-        have : (π * t) ^ (n + 1) = (π ^ (n + 1)) * (t ^ (n + 1)) := by simp [mul_pow, mul_comm]
-        have : rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by
+        have h1 : (π * t) ^ (n + 1) = (π ^ (n + 1)) * (t ^ (n + 1)) := by simp [mul_pow, mul_comm]
+        have h2 : rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by
           rw [← Real.exp_add]; ring_nf
         grind only
   have bound_integrable : Integrable bound μ := by
@@ -232,7 +223,8 @@ lemma iteratedDeriv_bound (n : ℕ) :
         have ht0 : 0 ≤ t := zero_le_one.trans ht
         calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
           _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
-            mul_le_mul (by simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0)
+            mul_le_mul (by simpa [mul_pow] using
+                (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le)
               (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (Real.exp_le_exp.2 <| by
                 nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
                 (by positivity)) (by positivity) (by positivity)
