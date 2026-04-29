@@ -62,16 +62,15 @@ lemma J₁'_J₃_eq_neg_J₅'_zero : J₁' (0 : ℝ) + J₃' 0 = -J₅' 0 := by
   simp [hJ1, hJ3, show J₅' (0 : ℝ) = (-2 : ℂ) *
     ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * ψI' (z₅' t) by simp [J₅']]; ring
 
-private def addIφ (t : ℝ) : ℍ := ⟨(t : ℂ) + Complex.I, by simp⟩
-
-private lemma continuous_addIφ : Continuous addIφ :=
+private lemma continuous_addIφ :
+    Continuous fun t : ℝ => (⟨(t : ℂ) + Complex.I, by simp⟩ : ℍ) :=
   Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
 
 lemma continuous_ψI'_add_I : Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I) := by
-  simpa [ψI', addIφ] using MagicFunction.b.PsiBounds.continuous_ψI.comp continuous_addIφ
+  simpa [ψI'] using MagicFunction.b.PsiBounds.continuous_ψI.comp continuous_addIφ
 
 lemma continuous_ψT'_add_I : Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I) := by
-  simpa [ψT', addIφ] using MagicFunction.b.PsiBounds.continuous_ψT.comp continuous_addIφ
+  simpa [ψT'] using MagicFunction.b.PsiBounds.continuous_ψT.comp continuous_addIφ
 
 lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ψT' (z₂' t) = ψI' ((t : ℂ) + Complex.I) := by
@@ -229,16 +228,12 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
       (-2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) := by
     rw [show J₆' (0 : ℝ) = (-2 : ℂ) *
         ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) from by simp [J₆']]
-    have hIci : (∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t)) =
-        ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) :=
-      MeasureTheory.integral_Ici_eq_integral_Ioi
-    have hparam : (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t)) =
-        ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (t * Complex.I) :=
-      MeasureTheory.integral_congr_ae
+    rw [MeasureTheory.integral_Ici_eq_integral_Ioi,
+      MeasureTheory.integral_congr_ae (g := fun t : ℝ => (Complex.I : ℂ) * ψS' (t * Complex.I))
         (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
           simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t)
-            (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])
-    simp [hIci, hparam, MeasureTheory.integral_const_mul, smul_eq_mul]
+            (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])]
+    simp [MeasureTheory.integral_const_mul, smul_eq_mul]
   have htail : (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) + J₆' (0 : ℝ) = 0 := by
     simp [show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) =
         (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) from by
@@ -246,12 +241,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
   exact hJ24.trans (eq_neg_of_add_eq_zero_left htail)
 
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
-  rw [b_zero_reduction]
-  have h246 : J₂' (0 : ℝ) + J₄' 0 + J₆' 0 = 0 := by
-    simpa [add_assoc] using congrArg (fun z : ℂ => z + J₆' (0 : ℝ)) J₂'_J₄_eq_neg_J₆'_zero
-  have h135 : J₁' (0 : ℝ) + J₃' 0 + J₅' 0 = 0 := by
-    simpa [add_assoc] using congrArg (fun z : ℂ => z + J₅' (0 : ℝ)) J₁'_J₃_eq_neg_J₅'_zero
-  linear_combination h246 + h135
+  rw [b_zero_reduction]; linear_combination J₂'_J₄_eq_neg_J₆'_zero + J₁'_J₃_eq_neg_J₅'_zero
 
 end MagicFunction.b.SpecialValuesProof.Zero
 
