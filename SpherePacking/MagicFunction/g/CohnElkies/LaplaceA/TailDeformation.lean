@@ -225,10 +225,9 @@ lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) := by
   rw [I₂'_eq_intervalIntegral_bottom (u := u)]
+  have hΦ₁' := MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₂' u)
-    (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ))
-    (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
-    ((MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).differentiableOn (by simp))
+    (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ)) hΦ₁'.continuousOn (hΦ₁'.differentiableOn (by simp))
     (by simpa [show (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
         fun t : ℝ => Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
           Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₁'_shift_left (u := u) (t := t)]
@@ -242,10 +241,9 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         ((∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
   rw [I₄'_eq_intervalIntegral_bottom (u := u)]
+  have hΦ₃' := MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn_ℂ (r := u)
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₄' u)
-    (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
-    (MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn_ℂ (r := u)).continuousOn
-    ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn_ℂ (r := u)).differentiableOn (by simp))
+    (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ)) hΦ₃'.continuousOn (hΦ₃'.differentiableOn (by simp))
     (by simpa [show (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
         fun t : ℝ => Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
           Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₃'_shift_right (u := u) (t := t)]
