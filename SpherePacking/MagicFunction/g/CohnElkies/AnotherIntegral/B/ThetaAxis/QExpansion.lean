@@ -48,12 +48,11 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
   set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
   have hr : (n + (2⁻¹ : ℂ) : ℂ) = (r : ℂ) := by refine Complex.ext ?_ ?_ <;> simp [r]
-  have h : ‖Θ₂_term n τ‖ = Real.exp (-(Real.pi * r ^ 2 * t)) := by
-    simp_rw [Θ₂_term, div_eq_mul_inv, one_mul]
-    rw [show (Real.pi * Complex.I * (n + (2⁻¹ : ℂ) : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
-        ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by simp [τ, hr]; ring_nf; simp]
-    exact Complex.norm_exp_ofReal _
-  simpa [r] using h
+  simp_rw [Θ₂_term, div_eq_mul_inv, one_mul]
+  rw [show (Real.pi * Complex.I * (n + (2⁻¹ : ℂ) : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
+      ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by simp [τ, hr]; ring_nf; simp,
+    Complex.norm_exp_ofReal]
+  simp [r]
 
 /-- Rewrite `Θ₃` in terms of the one-variable Jacobi theta function `jacobiTheta`. -/
 public lemma Theta3_eq_jacobiTheta (τ : ℍ) : Θ₃ τ = jacobiTheta (τ : ℂ) := by
@@ -185,8 +184,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
         (Summable.sum_add_tsum_nat_add (k := 2) hf).symm
   have hf_eq (c : ℝ) (n : ℕ) (h : Real.pi * Complex.I * (((n : ℂ) + 1 / 2) ^ 2 * (τ : ℂ)) =
       ((c : ℝ) : ℂ)) : f n = (Real.exp c : ℂ) := by
-    unfold f Θ₂_term; rw [Complex.ofReal_exp c]; refine congrArg Complex.exp ?_
-    simpa [mul_assoc] using h
+    unfold f Θ₂_term; rw [Complex.ofReal_exp c]
+    exact congrArg Complex.exp (by simpa [mul_assoc] using h)
   have hf0 : f 0 = (Real.exp (-Real.pi * t / 4) : ℂ) := hf_eq (-Real.pi * t / 4) 0 (by
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
   have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) :=
@@ -204,15 +203,14 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   have hterm :
       ∀ n : ℕ, ‖f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) := fun n => by
     have hnorm : ‖f (n + 2)‖ = Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t) := by
-      have h0 : ‖f (n + 2)‖ = Real.exp (-Real.pi * ((↑n + 2 + (2 : ℝ)⁻¹) ^ 2) * t) := by
+      have : ‖f (n + 2)‖ = Real.exp (-Real.pi * ((↑n + 2 + (2 : ℝ)⁻¹) ^ 2) * t) := by
         simpa [f, τ, Nat.cast_add, add_assoc, add_left_comm, add_comm] using
           norm_Theta2_term_resToImagAxis (n := (n + 2 : ℕ)) (t := t) htpos
       grind only
     have hbase : ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t ≥ (25 / 4 : ℝ) * t + n := by
-      have ht0 : 0 ≤ t := by linarith
-      nlinarith [ht, ht0, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)),
+      nlinarith [ht, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)),
         mul_le_mul_of_nonneg_right
-          (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith) ht0]
+          (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith) (by linarith : (0:ℝ) ≤ t)]
     rw [hnorm, show Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) =
       Real.exp (-(25 / 4 : ℝ) * Real.pi * t + n * (-Real.pi)) from by
         rw [Real.exp_add, show r ^ n = Real.exp (n * (-Real.pi)) by
@@ -248,19 +246,16 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
           simpa using norm_jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ, hτim,
         show ((n + 2 : ℤ) : ℝ) = (n : ℝ) + 2 from by norm_cast]
       simp; ring_nf
-    have hgeom_le : Real.exp (-Real.pi * (((n : ℝ) + 2) ^ 2 * t)) ≤
+    have hrhs : Real.exp ((-Real.pi) * ((4 : ℝ) * t + (n : ℝ))) =
         Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
-      have hrhs : Real.exp ((-Real.pi) * ((4 : ℝ) * t + (n : ℝ))) =
-          Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
-        rw [show (-Real.pi) * ((4 : ℝ) * t + (n : ℝ)) =
-            (-(4 : ℝ) * Real.pi * t) + ((n : ℝ) * (-Real.pi)) from by ring, Real.exp_add,
-          show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) by
-            simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm]
-      simpa [mul_assoc] using (Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left
-        (by nlinarith [sq_nonneg (n : ℝ), ht] :
-          ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
-        (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq hrhs
-    simpa [hnorm, b, r, pow_two] using hgeom_le
+      rw [show (-Real.pi) * ((4 : ℝ) * t + (n : ℝ)) =
+          (-(4 : ℝ) * Real.pi * t) + ((n : ℝ) * (-Real.pi)) from by ring, Real.exp_add,
+        show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) by
+          simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm]
+    simpa [hnorm, b, r, pow_two, mul_assoc] using (Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left
+      (by nlinarith [sq_nonneg (n : ℝ), ht] :
+        ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
+      (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq hrhs
   have hsumNorm : Summable (fun n : ℕ ↦ ‖a (n + 1)‖) :=
     .of_nonneg_of_le (fun _ ↦ norm_nonneg _) hterm hb_summable
   have htail : ‖∑' n : ℕ, a (n + 1)‖ ≤ Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
