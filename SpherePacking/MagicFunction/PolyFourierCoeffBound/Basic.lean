@@ -95,9 +95,6 @@ end summable_aux
 
 section calc_aux
 
-lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) :=
-  (le_abs_self _).trans (by simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp x))
-
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
   rw [summable_norm_iff]
@@ -133,13 +130,10 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
   simpa [mul_assoc, mul_left_comm, mul_comm] using
     aux_tprod_one_sub_rexp_pow_24_pos (c := 2 * π * z.im) (by positivity)
 
-lemma aux_9 (i : ℕ) :
-    ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [norm_mul, show (↑π * I * (i : ℂ) * z) = I * ((↑π * i) * z) by ring, Complex.norm_exp]; simp
-
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simpa only [← aux_9] using aux_3 z c n₀ hcsum
+  refine (aux_3 z c n₀ hcsum).congr fun i => ?_
+  rw [norm_mul, show (↑π * I * (i : ℂ) * z) = I * ((↑π * i) * z) by ring, Complex.norm_exp]; simp
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   simpa using aux_tprod_one_sub_rexp_pow_24_pos (c := π) pi_pos
@@ -207,7 +201,8 @@ lemma step_10 :
   · simp only [neg_mul]; gcongr
     · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
     · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
-      exact aux_2 (2 * π * I * n * z)
+      exact (le_abs_self _).trans <| by
+        simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp (2 * π * I * n * z))
   · simpa [mul_assoc, mul_left_comm, mul_comm] using
       step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
 
