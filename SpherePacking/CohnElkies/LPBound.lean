@@ -57,10 +57,6 @@ section Nonnegativity
 
 theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) := (FT f).integrable
 
-include hne_zero in
-theorem fourier_ne_zero : 𝓕 f ≠ 0 := fun h => hne_zero <|
-  (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 h
-
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion, fourierInv_eq]
@@ -81,7 +77,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have hfun : (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) = 0 :=
     (Continuous.integral_zero_iff_zero_of_nonneg (Complex.continuous_re.comp (𝓕 f).continuous)
       hIntegrable.re hCohnElkies₂).1 (by simpa using hintRe)
-  refine fourier_ne_zero hne_zero ?_
+  refine (fun h : 𝓕 f = 0 => hne_zero <|
+    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 h) ?_
   ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrArg (fun g => g x) hfun] using
     (hRealFourier x).symm
 
@@ -262,14 +259,6 @@ theorem calc_steps_part2 (hd : 0 < d) :
     _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
       SpherePacking.CohnElkies.one_div_mul_mul_eq_mul_mul_div _ _ _
 
-include d f hP hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
-theorem calc_steps (hd : 0 < d) :
-    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
-      (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
-  ge_trans (calc_steps_part1 (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
-    hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
-      hD_isBounded hd)
-
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
@@ -321,7 +310,9 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl,
       ENNReal.coe_le_coe]
     exact Real.toNNReal_le_toNNReal hCalc
-  exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
+  exact ge_trans (calc_steps_part1 (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
+    hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+      hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
 
