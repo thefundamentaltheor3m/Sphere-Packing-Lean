@@ -57,9 +57,8 @@ private lemma I₃'_eq_exp_mul_I₁' :
   ext x
   rw [I₃'_eq, I₁'_eq, ← intervalIntegral.integral_const_mul]
   refine intervalIntegral.integral_congr fun t _ => ?_
-  rw [show cexp (↑π * I * ↑x) =
-    cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x) by rw [← Complex.exp_add]; ring_nf]
-  ring
+  rw [show cexp (↑π * I * ↑x) = cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x) by
+    rw [← Complex.exp_add]; ring_nf]; ring
 
 public theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' :=
   I₃'_eq_exp_mul_I₁' ▸ (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
