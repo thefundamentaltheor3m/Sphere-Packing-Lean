@@ -144,64 +144,58 @@ end MagicFunction.a.SchwartzProperties
 
 namespace MagicFunction.a.SchwartzIntegrals
 
-open RadialSchwartz.Bridge
+open RadialSchwartz.Bridge MagicFunction.a.SchwartzProperties
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₁'`. -/
-@[expose] public def I₁' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁')
-  MagicFunction.a.SchwartzProperties.I₁'_smooth' MagicFunction.a.SchwartzProperties.I₁'_decay'
+@[expose] public def I₁' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁') I₁'_smooth' I₁'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₂'`. -/
-@[expose] public def I₂' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂')
-  MagicFunction.a.SchwartzProperties.I₂'_smooth' MagicFunction.a.SchwartzProperties.I₂'_decay'
+@[expose] public def I₂' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂') I₂'_smooth' I₂'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₃'`. -/
-@[expose] public def I₃' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃')
-  MagicFunction.a.SchwartzProperties.I₃'_smooth' MagicFunction.a.SchwartzProperties.I₃'_decay'
+@[expose] public def I₃' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃') I₃'_smooth' I₃'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₄'`. -/
-@[expose] public def I₄' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄')
-  MagicFunction.a.SchwartzProperties.I₄'_smooth' MagicFunction.a.SchwartzProperties.I₄'_decay'
+@[expose] public def I₄' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄') I₄'_smooth' I₄'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₅'`. -/
-@[expose] public def I₅' : 𝓢(ℝ, ℂ) := fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅')
-  MagicFunction.a.SchwartzProperties.I₅'_smooth' MagicFunction.a.SchwartzProperties.I₅'_decay'
+@[expose] public def I₅' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅') I₅'_smooth' I₅'_decay'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `I₆'`.
 
 `I₆'` requires the cutoff variant because its smoothness is only provided on `(-1, ∞)`. -/
 @[expose] public def I₆' : 𝓢(ℝ, ℂ) where
   toFun := RadialSchwartz.Bridge.fCut MagicFunction.a.RealIntegrals.I₆'
-  smooth' := by
-    simpa [RadialSchwartz.Bridge.fCut] using MagicFunction.a.SchwartzProperties.I₆'_smooth'
+  smooth' := by simpa [RadialSchwartz.Bridge.fCut] using I₆'_smooth'
   decay' := by
     simpa using RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
-      (f := MagicFunction.a.RealIntegrals.I₆')
-      (hg_smooth := MagicFunction.a.SchwartzProperties.I₆'_smooth')
-      MagicFunction.a.SchwartzProperties.I₆'_decay'
+      (f := MagicFunction.a.RealIntegrals.I₆') (hg_smooth := I₆'_smooth') I₆'_decay'
+
+public abbrev liftSchwartz (f : 𝓢(ℝ, ℂ)) : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
+  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) f
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₁'`. -/
-@[expose] public def I₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₁'
+@[expose] public def I₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₁'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₂'`. -/
-@[expose] public def I₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₂'
+@[expose] public def I₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₂'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₃'`. -/
-@[expose] public def I₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₃'
+@[expose] public def I₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₃'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₄'`. -/
-@[expose] public def I₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₄'
+@[expose] public def I₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₄'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₅'`. -/
-@[expose] public def I₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₅'
+@[expose] public def I₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₅'
 
 /-- The Schwartz function on `EuclideanSpace ℝ (Fin 8)` induced from the radial profile `I₆'`. -/
-@[expose] public def I₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₆'
+@[expose] public def I₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₆'
 
 @[simp] public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r := fCut_apply_of_nonneg _ hr
