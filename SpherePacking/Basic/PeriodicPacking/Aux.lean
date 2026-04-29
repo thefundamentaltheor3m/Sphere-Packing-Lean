@@ -41,11 +41,6 @@ private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
   exact (norm_le_norm_add_norm_sub' x y).trans <|
     add_le_add (hL y hy.2) (by simpa [mem_ball, dist_eq_norm] using hx.le)
 
-private lemma pairwiseDisjoint_ball_centers_inter (D : Set (EuclideanSpace ℝ (Fin d))) :
-    Set.PairwiseDisjoint (S.centers ∩ D) (fun x ↦ ball x (S.separation / 2)) :=
-  fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
-    simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy
-
 private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
     [Fintype τ] [NoAtoms (volume : Measure (EuclideanSpace ℝ τ))]
@@ -79,7 +74,8 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
       (h_measurable := fun _ _ => measurableSet_ball)
       (h_bounded := isBounded_iUnion_ball_centers_inter S D hD_isBounded)
       (h_volume := fun _ _ => by simp [Measure.addHaar_ball_center])
-      (h_disjoint := by simpa using pairwiseDisjoint_ball_centers_inter S D)
+      (h_disjoint := fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
+        simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy)
 
 /-- A periodic packing has finitely many centers in a fundamental domain of its lattice. -/
 public lemma finite_centers_inter_fundamentalDomain {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
@@ -329,8 +325,8 @@ private theorem aux'
     exact ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ = ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by
         simp [fract]).le.trans (norm_sub_le _ _)).trans_lt
       (add_lt_add_of_lt_of_le hx (hL _ (fract_mem_fundamentalDomain _ _)))
-  · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]; exact
-      fract_mem_fundamentalDomain _ x
+  · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]
+    exact fract_mem_fundamentalDomain _ x
 
 /-- Theorem 2.3, upper bound. -/
 public theorem PeriodicSpherePacking.aux_le
