@@ -111,13 +111,10 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
     exp_neg_scaled_pi_le 5 (by norm_num) ht0'
   have hu_le : u ≤ Real.exp (-Real.pi * t) := hle2
   have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
-  have hxy0_mainR :
-      (128 : ℝ) * ((2 + 48 * u) * (e / 256 - 1 / 32)) = e + 16 - 192 * u := by
-    linear_combination 24 * heu
   have hxy0_main :
       (128 : ℂ) * (x0 * y0) = (e : ℂ) + (16 : ℂ) - (192 : ℂ) * (u : ℂ) := by
-    have := congrArg (fun r : ℝ => (r : ℂ)) hxy0_mainR
-    simp [x0, y0] at this ⊢; linear_combination this
+    have heuC : (e : ℂ) * (u : ℂ) = 1 := by exact_mod_cast heu
+    simp [x0, y0]; linear_combination 24 * heuC
   have hx0_bound : ‖x0‖ ≤ 50 := by
     have hu : 0 ≤ u := (Real.exp_pos _).le
     have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
@@ -165,11 +162,9 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have hw_bd : ‖w‖ ≤ Cinv3 + 2 := by
     have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
-    have hterm : Cinv3 * Real.exp (-Real.pi * t) ≤ Cinv3 := by
-      simpa using mul_le_mul_of_nonneg_left hexp_le hCinv3
-    have hw_le : ‖w‖ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := by
-      have := norm_add_le (w - 1) (1 : ℂ); simp at this; linarith [hw1]
-    linarith
+    have := norm_add_le (w - 1) (1 : ℂ)
+    simp at this
+    nlinarith [mul_le_mul_of_nonneg_left hexp_le hCinv3, hw1]
   have hdecomp :
       (128 : ℂ) * (x * y + z * w) - (e : ℂ) - (144 : ℂ) =
         ((128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)) +
@@ -205,9 +200,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
     have hdxdy :
         ‖(x - x0) * (y - y0)‖ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) := by
       have hExp : Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t) =
-          Real.exp (-(5 : ℝ) * Real.pi * t) := by
-        rw [← Real.exp_add]; congr 1; ring
-      have h0 : 0 ≤ Csum * Cinv2 := mul_nonneg hCsum hCinv2
+          Real.exp (-(5 : ℝ) * Real.pi * t) := by rw [← Real.exp_add]; congr 1; ring
       calc ‖(x - x0) * (y - y0)‖ = ‖x - x0‖ * ‖y - y0‖ := by simp
         _ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) *
               (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) :=
@@ -217,7 +210,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
                 (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) = (Csum * Cinv2) *
                   (Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t)) by
               ring, hExp]
-        _ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) := mul_le_mul_of_nonneg_left hle5 h0
+        _ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) :=
+            mul_le_mul_of_nonneg_left hle5 (mul_nonneg hCsum hCinv2)
     have hu_term : ‖(192 : ℂ) * (u : ℂ)‖ ≤ (192 : ℝ) * Real.exp (-Real.pi * t) := by
       simpa [abs_of_nonneg (by positivity : (0:ℝ) ≤ u)] using
         mul_le_mul_of_nonneg_left hu_le (by norm_num : (0:ℝ) ≤ 192)
