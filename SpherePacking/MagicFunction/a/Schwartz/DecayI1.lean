@@ -101,36 +101,26 @@ lemma gN_norm_bound (n : ℕ) (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le (s := s) hs) n)
       (g_norm_bound (r := r) (s := s) hs) (norm_nonneg _) (by positivity)
 
-lemma exp_r_mul_coeff (r s : ℝ) :
-    cexp ((r : ℂ) * coeff s) =
-      cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ)) := by
-  rw [← Complex.exp_add]; congr 1; simp [coeff]; ring
-
-lemma hasDerivAt_g (r s : ℝ) :
-    HasDerivAt (fun r : ℝ ↦ g r s) (coeff s * g r s) r := by
-  simpa [g, exp_r_mul_coeff, mul_assoc, mul_left_comm, mul_comm] using
-    SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-      (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
-
 lemma hasDerivAt_gN (n : ℕ) (r s : ℝ) :
     HasDerivAt (fun r : ℝ ↦ gN n r s) (gN (n + 1) r s) r := by
-  simpa [gN, pow_succ, mul_assoc] using (hasDerivAt_g r s).const_mul (coeff s ^ n)
-
-lemma Φ₆_zero_eq_I_mul_φ₀'' (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
-    MagicFunction.a.RealIntegrands.Φ₆ (r := (0 : ℝ)) s = I * φ₀'' (I * (s : ℂ)) := by
-  simp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆',
-    MagicFunction.Parametrisations.z₆'_eq_of_mem hs, mul_comm]
+  have hg : HasDerivAt (fun r : ℝ ↦ g r s) (coeff s * g r s) r := by
+    simpa [g, show ∀ r : ℝ, cexp ((r : ℂ) * coeff s) =
+        cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ)) from fun r => by
+        rw [← Complex.exp_add]; congr 1; simp [coeff]; ring,
+      mul_assoc, mul_left_comm, mul_comm] using
+      SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+        (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
+  simpa [gN, pow_succ, mul_assoc] using hg.const_mul (coeff s ^ n)
 
 /-- Continuity of `s ↦ φ₀'' (I * s)` on `Ici 1`. -/
 public lemma φ₀''_I_mul_continuousOn :
-    ContinuousOn (fun s : ℝ ↦ φ₀'' (I * (s : ℂ))) (Ici (1 : ℝ)) := by
-  have hΦ' :
-      ContinuousOn (fun s : ℝ ↦ (-I) * MagicFunction.a.RealIntegrands.Φ₆ (r := (0 : ℝ)) s)
-        (Ici (1 : ℝ)) :=
-    continuousOn_const.mul
-      (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := (0 : ℝ))).continuousOn
-  refine hΦ'.congr fun s hs => ?_
-  rw [Φ₆_zero_eq_I_mul_φ₀'' (s := s) hs, ← mul_assoc]; simp
+    ContinuousOn (fun s : ℝ ↦ φ₀'' (I * (s : ℂ))) (Ici (1 : ℝ)) :=
+  (continuousOn_const.mul
+    (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := (0 : ℝ))).continuousOn :
+    ContinuousOn (fun s : ℝ ↦ (-I) * MagicFunction.a.RealIntegrands.Φ₆ (r := (0 : ℝ)) s)
+      (Ici (1 : ℝ))).congr fun s hs => by
+    simp [MagicFunction.a.ComplexIntegrands.Φ₆',
+      MagicFunction.Parametrisations.z₆'_eq_of_mem hs, ← mul_assoc, mul_comm]
 
 /-- Continuity of `s ↦ (s : ℂ) ^ (-4 : ℤ)` on `Ici 1`. -/
 public lemma zpow_neg_four_continuousOn :
@@ -138,29 +128,23 @@ public lemma zpow_neg_four_continuousOn :
   Complex.continuous_ofReal.continuousOn.zpow₀ (-4 : ℤ) fun s hs =>
     Or.inl (by exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne')
 
-private lemma ofReal_inv_continuousOn_Ici_one :
-    ContinuousOn (fun s : ℝ ↦ (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
-  Complex.continuous_ofReal.continuousOn.inv₀ fun s hs => by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
-
-lemma coeff_continuousOn : ContinuousOn coeff (Ici (1 : ℝ)) :=
-  (continuousOn_const.mul (continuousOn_const.add ofReal_inv_continuousOn_Ici_one) :
-    ContinuousOn (fun s : ℝ ↦ (-π : ℂ) * ((I : ℂ) + (s : ℂ)⁻¹)) (Ici (1 : ℝ))).congr
-    fun s _ => by simp [coeff, one_div]
-
-lemma exp_div_continuousOn (r : ℝ) :
-    ContinuousOn (fun s : ℝ ↦ cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ))) (Ici (1 : ℝ)) := by
-  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-    (continuousOn_const.mul ofReal_inv_continuousOn_Ici_one :
-      ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ))).cexp
-
-lemma g_continuousOn (r : ℝ) : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : ℝ)) :=
-  (((continuousOn_const.mul φ₀''_I_mul_continuousOn).mul zpow_neg_four_continuousOn).mul
-    continuousOn_const).mul (exp_div_continuousOn (r := r))
-
 lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) μ := by
+  have hinv : ContinuousOn (fun s : ℝ ↦ (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
+    Complex.continuous_ofReal.continuousOn.inv₀ fun s hs => by
+      exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
+  have hcoeff : ContinuousOn coeff (Ici (1 : ℝ)) :=
+    (continuousOn_const.mul (continuousOn_const.add hinv) :
+      ContinuousOn (fun s : ℝ ↦ (-π : ℂ) * ((I : ℂ) + (s : ℂ)⁻¹)) (Ici (1 : ℝ))).congr
+      fun s _ => by simp [coeff, one_div]
+  have hexp : ContinuousOn (fun s : ℝ ↦ cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ))) (Ici (1 : ℝ)) := by
+    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+      (continuousOn_const.mul hinv :
+        ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ))).cexp
+  have hg : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : ℝ)) :=
+    (((continuousOn_const.mul φ₀''_I_mul_continuousOn).mul zpow_neg_four_continuousOn).mul
+      continuousOn_const).mul hexp
   simpa [μ, SpherePacking.Integration.μIciOne] using
-    ((by simpa [gN] using (coeff_continuousOn.pow n).mul (g_continuousOn (r := r)) :
+    ((by simpa [gN] using (hcoeff.pow n).mul hg :
       ContinuousOn (fun s : ℝ ↦ gN n r s) (Ici (1 : ℝ))).aestronglyMeasurable measurableSet_Ici)
 
 lemma integrable_exp_neg_two_pi : Integrable (fun s : ℝ ↦ rexp (-(2 * π) * s)) μ := by
