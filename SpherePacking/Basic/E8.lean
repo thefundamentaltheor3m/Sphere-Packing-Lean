@@ -104,12 +104,10 @@ lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
     exact hm
   · simpa [funext_iff]
 
-lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
-    {v : Fin n → R} :
+lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ) {v : Fin n → R} :
     v ∈ Submodule.evenLattice R n ↔
       (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  rw [← SetLike.mem_coe, Submodule.coe_evenLattice]
-  rfl
+  rw [← SetLike.mem_coe, Submodule.coe_evenLattice]; rfl
 
 -- TODO (BM): this shouldn't be noncomputable... check with @zwarich
 noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
@@ -177,16 +175,13 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     · rw [← Finset.mul_sum, ← zsmul_eq_mul]
       exact has.zsmul'.trans (by simp)
 
-lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  rw [E8]
-  simp
+  simp [E8]
 
-lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 • v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -195,8 +190,7 @@ lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
      fun ⟨n, hn⟩ ↦ ⟨2 * n, ⟨even_two_mul n, by simp [hn]⟩⟩⟩
   simp_rw [this, mem_E8]
 
-lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, n + 2⁻¹ = v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -319,11 +313,10 @@ noncomputable def E8Basis (R : Type*) [Field R] [NeZero (2 : R)] : Basis (Fin 8)
 
 lemma E8Basis_apply [Field R] [NeZero (2 : R)] (i : Fin 8) :
     E8Basis R i = (E8Matrix R).row i := by
-  rw [E8Basis, Basis.coe_mk, Matrix.row]
+  rw [E8Basis, Basis.coe_mk]
 
 lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
-  simp only [E8Basis, Basis.coe_mk]
-  rfl
+  simp only [E8Basis, Basis.coe_mk]; rfl
 
 theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
     Set.range (E8Matrix R).row ⊆ Submodule.E8 R := by
@@ -487,8 +480,8 @@ theorem E8_integral {R : Type*} [Field R] [CharZero R] (v w : Fin 8 → R)
   rw [← span_E8Matrix, Submodule.mem_span_range_iff_exists_fun] at hv hw
   obtain ⟨c, rfl⟩ := hv
   obtain ⟨d, rfl⟩ := hw
-  simp_rw [sum_dotProduct, dotProduct_sum, dotProduct_smul, smul_dotProduct, dotProduct_eq_inn]
-  simp only [zsmul_eq_mul]
+  simp_rw [sum_dotProduct, dotProduct_sum, dotProduct_smul, smul_dotProduct, dotProduct_eq_inn,
+    zsmul_eq_mul]
   norm_cast
   simp
 
@@ -511,8 +504,7 @@ end E8_basis
 
 open InnerProductSpace RCLike
 
-lemma E8_norm_eq_sqrt_even
-    (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
+lemma E8_norm_eq_sqrt_even (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
   rw [← real_inner_self_eq_norm_sq]
   change ∃ n : ℤ, Even n ∧ n = v ⬝ᵥ v
@@ -574,7 +566,7 @@ lemma span_E8Matrix_eq_E8Lattice :
   rw [heq, hcoe, ← Submodule.map_span, span_E8Matrix ℝ]
 
 instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
-  span_top := by rw [span_E8_eq_top']
+  span_top := span_E8_eq_top'
 
 lemma Submodule.span_restrict {ι M : Type*}
     [AddCommMonoid M] [Module ℤ M]
@@ -650,34 +642,18 @@ lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
   intro i
   simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using E8Basis_apply_norm i
 
-section hack
-
-def Matrix.myDet {n : Type*} [DecidableEq n] [Fintype n] {R : Type*} [CommRing R]
-    (M : Matrix n n R) : R := M.det
-
-lemma E8Matrix_myDet_eq_one (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).myDet = 1 :=
-  E8Matrix_unimodular R
-
-open MeasureTheory ZSpan
-
-lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (b : Basis ι ℝ (ι → ℝ)) :
-    volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| :=
-  volume_fundamentalDomain b
-
+open MeasureTheory ZSpan in
 lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
-  rw [volume_fundamentalDomain', of_basis_eq_matrix, E8Matrix_myDet_eq_one]
-  simp
+  rw [volume_fundamentalDomain, of_basis_eq_matrix, E8Matrix_unimodular]; simp
 
-end hack
-
-lemma test'' {ι : Type*} [Fintype ι] (s : Set (EuclideanSpace ℝ ι)) :
+private lemma volume_preimage_toLp_symm {ι : Type*} [Fintype ι]
+    (s : Set (EuclideanSpace ℝ ι)) :
     MeasureTheory.volume ((WithLp.equiv 2 _).symm ⁻¹' s) = MeasureTheory.volume s := by
   rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp ι).symm.measure_preimage_equiv]
   rfl
 
 open MeasureTheory ZSpan in
-lemma same_domain :
+private lemma preimage_fundamentalDomain_E8_ℤBasis :
     (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
       fundamentalDomain (E8Basis ℝ) := by
   rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
@@ -686,10 +662,10 @@ lemma same_domain :
   simp [E8_ℤBasis, E8Basis_apply]
 
 open MeasureTheory ZSpan in
-lemma E8_Basis_volume :
+lemma E8_ℤBasis_ofZLatticeBasis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
-  rw [← test'']
-  erw [same_domain]
+  rw [← volume_preimage_toLp_symm]
+  erw [preimage_fundamentalDomain_E8_ℤBasis]
   rw [E8Basis_volume]
 
 open MeasureTheory ZSpan in
@@ -705,7 +681,7 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
       div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
     · norm_num [Nat.factorial, mul_one_div]
       convert div_one _
-      · rw [E8_Basis_volume]
+      · rw [E8_ℤBasis_ofZLatticeBasis_volume]
       · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
     · positivity
     · positivity
