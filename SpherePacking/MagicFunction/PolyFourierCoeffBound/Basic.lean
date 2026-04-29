@@ -246,8 +246,7 @@ bounded coefficients, in terms of `DivDiscBound` and an exponential factor depen
 public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
   _ = norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
-      (cexp (2 * π * I * z) * ∏' (n : ℕ+),
-      (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
+      (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
         simp [DiscriminantProductFormula, hf, fouterm]
   _ = norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
