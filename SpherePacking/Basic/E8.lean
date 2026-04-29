@@ -654,8 +654,9 @@ private lemma volume_preimage_toLp_symm {ι : Type*} [Fintype ι]
 
 open MeasureTheory ZSpan in
 private lemma preimage_fundamentalDomain_E8_ℤBasis :
-    (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
+    (WithLp.equiv 2 _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
       fundamentalDomain (E8Basis ℝ) := by
+  change (WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm ⁻¹' _ = _
   rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
   congr! 1
   ext i : 1
@@ -664,9 +665,7 @@ private lemma preimage_fundamentalDomain_E8_ℤBasis :
 open MeasureTheory ZSpan in
 lemma E8_ℤBasis_ofZLatticeBasis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
-  rw [← volume_preimage_toLp_symm]
-  erw [preimage_fundamentalDomain_E8_ℤBasis]
-  rw [E8Basis_volume]
+  rw [← volume_preimage_toLp_symm, preimage_fundamentalDomain_E8_ℤBasis, E8Basis_volume]
 
 open MeasureTheory ZSpan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
