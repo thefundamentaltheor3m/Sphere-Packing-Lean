@@ -143,15 +143,13 @@ lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
 
 lemma Bₗ_comp_Aadjₗ :
     (Bₗ (d := d) L ∘ₗ Aadjₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-    show (Aₗ (d := d) (L := L)).toLinearMap ∘ₗ
-      (Aₗ (d := d) (L := L)).symm.toLinearMap = LinearMap.id from by ext x; simp]
+  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, show (Aₗ (d := d) (L := L)).toLinearMap ∘ₗ
+    (Aₗ (d := d) (L := L)).symm.toLinearMap = LinearMap.id from by ext x; simp]
 
 lemma Aadjₗ_comp_Bₗ :
     (Aadjₗ (d := d) L ∘ₗ Bₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-    show (Aₗ (d := d) (L := L)).symm.toLinearMap ∘ₗ
-      (Aₗ (d := d) (L := L)).toLinearMap = LinearMap.id from by ext x; simp]
+  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, show (Aₗ (d := d) (L := L)).symm.toLinearMap ∘ₗ
+    (Aₗ (d := d) (L := L)).toLinearMap = LinearMap.id from by ext x; simp]
 
 noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E :=
   { toLinearMap := Bₗ (d := d) L
@@ -203,17 +201,6 @@ noncomputable def equivStandardLatticeToDual :
 noncomputable def equivIntVecToDual : (Fin d → ℤ) ≃ dualLattice (d := d) L :=
   (PoissonSummation.Standard.equivIntVec (d := d)).trans
     (equivStandardLatticeToDual (d := d) L).toEquiv
-
-@[simp]
-lemma equivStandardLatticeToDual_apply (x : SchwartzMap.standardLattice d) :
-    ((equivStandardLatticeToDual (d := d) L x : dualLattice (d := d) L) : E) =
-      (Bₗ (d := d) L) x := by simp [equivStandardLatticeToDual, adjointSymmEquiv]
-
-@[simp]
-lemma equivIntVecToDual_coe (n : Fin d → ℤ) :
-    ((equivIntVecToDual (d := d) L n : dualLattice (d := d) L) : E) =
-      (Bₗ (d := d) L) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n) := by
-  simp [equivIntVecToDual]
 
 /--
 Poisson summation over a full-rank `ℤ`-lattice `L`.
