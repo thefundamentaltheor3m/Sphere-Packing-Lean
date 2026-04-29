@@ -117,10 +117,9 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
       = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
         simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
-    _ ≤ ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * (n ^ 2) :=
-      mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg A) hA_le 2) (norm_nonneg _)
-    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := mul_le_mul_of_nonneg_right
-      (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
+    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := by
+        gcongr
+        simpa [Real.norm_eq_abs] using abs_re_le_norm _
     _ ≤ g' m := by simp [g']
 
 include hP hCohnElkies₁ in
@@ -144,11 +143,11 @@ lemma calc_steps' (hd : 0 < d) :
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   haveI : Finite ↑(P.centers ∩ D) := finite_centers_inter_of_isBounded P D hD_isBounded hd
   rw [re_tsum Summable.of_finite]
-  refine tsum_congr fun x => ?_
-  rw [re_tsum Summable.of_finite]
-  exact tsum_congr fun y => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-    (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
-      (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
+  exact tsum_congr fun x => by
+    rw [re_tsum Summable.of_finite]
+    exact tsum_congr fun y => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
+        (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
 theorem calc_steps_part1 (hd : 0 < d) :
@@ -239,11 +238,10 @@ theorem calc_steps_part2 (hd : 0 < d) :
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) +
         (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         (norm (∑' x : ↑(P.centers ∩ D),
-        exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-        refine congrArg ((1 / ZLattice.covolume P.lattice volume) * ·)
+        exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) :=
+        congrArg ((1 / ZLattice.covolume P.lattice volume) * ·)
           ((Summable.tsum_eq_add_tsum_ite (summable_fourier_mul_norm_exp_sq (f := f) (P := P)
-            (D := D) (hD_isBounded := hD_isBounded) hd) 0).trans ?_)
-        ac_rfl
+            (D := D) (hD_isBounded := hD_isBounded) hd) 0).trans (by ac_rfl))
     _ ≥ (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
