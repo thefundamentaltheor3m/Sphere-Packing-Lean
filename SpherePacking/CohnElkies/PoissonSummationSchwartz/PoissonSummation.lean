@@ -33,12 +33,12 @@ lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ)
   have hmFourier :
       ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ 1 := by
     simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-      (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-        (PoissonSummation.Standard.coeFunE (d := d) x))
+      ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
+        (PoissonSummation.Standard.coeFunE (d := d) x)
   have hsup : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by
     simpa [translate_apply, ContinuousMap.restrict_apply] using
-      (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
-        ⟨x, (iocCube_subset_closedBall (d := d)) hx⟩)
+      ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
+        ⟨x, (iocCube_subset_closedBall (d := d)) hx⟩
   calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
           f (x + (ℓ : E))‖
       = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
@@ -67,7 +67,7 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
         ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ :=
     ae_restrict_of_forall_mem
       (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d))
-      fun x hx => norm_mFourier_mul_translate_le (d := d) (f := f) n ℓ x hx
+      (norm_mFourier_mul_translate_le (d := d) (f := f) n ℓ)
   have hle' :
       (∫ x, ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
               f (x + (ℓ : E))‖ ∂μ) ≤
@@ -165,21 +165,12 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
                 f (x + (ℓ : E)) ∂(volume : Measure E) := fun ℓ => by
       refine integral_congr_ae <| ae_restrict_of_forall_mem
-        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x hx => ?_
+        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x _ => ?_
       have hper' :
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) =
-            UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) := by
-        simpa using
-          (mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x))
-      calc g (ℓ +ᵥ x)
-          = UnitAddTorus.mFourier (-n)
-              (PoissonSummation.Standard.coeFunE (d := d) ((ℓ : E) + x)) *
-            f ((ℓ : E) + x) := by simp [g, Submodule.vadd_def, vadd_eq_add]
-        _ = UnitAddTorus.mFourier (-n)
-              (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) *
-            f (x + (ℓ : E)) := by simp [add_comm]
-        _ = UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-            f (x + (ℓ : E)) := by simp [hper']
+            UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) :=
+        mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)
+      simp [g, Submodule.vadd_def, vadd_eq_add, add_comm, hper']
     simpa [g, hterm] using hmain.symm
   calc
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n
@@ -247,11 +238,8 @@ lemma summable_mFourierCoeff_descended :
         lt_trans (by positivity) (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)
       simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
         (le_div_iff₀' (pow_pos hnorm_pos _)).2 (hC' (ℓ : E))
-    have : Summable (fun n : Fin d → ℤ =>
-        ‖𝓕 (fun y : E => f y) ((PoissonSummation.Standard.equivIntVec (d := d) n : Λ) : E)‖) := by
-      simpa using hsum_lattice.comp_injective
-        (PoissonSummation.Standard.equivIntVec (d := d)).injective
-    simpa [PoissonSummation.Standard.coe_equivIntVec] using this
+    simpa [PoissonSummation.Standard.coe_equivIntVec] using
+      hsum_lattice.comp_injective (PoissonSummation.Standard.equivIntVec (d := d)).injective
   exact Summable.of_norm (by simpa [mFourierCoeff_descended (d := d) (f := f)] using hsum_norm)
 
 /-- Poisson summation for Schwartz functions over the standard lattice `ℤ^d`. -/
