@@ -27,13 +27,11 @@ open UnitAddTorus
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩)
     ⟨fun a b hab => funext fun i => by
       simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
-        congrArg (fun x : E => x i) (by simpa using congrArg Subtype.val hab :
-          SchwartzMap.PoissonSummation.Standard.intVec (d := d) a =
-            SchwartzMap.PoissonSummation.Standard.intVec (d := d) b),
+        congrArg (fun x : E => x i) (congrArg Subtype.val hab),
     fun ℓ => by
       obtain ⟨n, hn⟩ := SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
         (d := d) (x := (ℓ : E)) ℓ.property
-      exact ⟨n, Subtype.ext (by simpa using hn.symm)⟩⟩
+      exact ⟨n, Subtype.ext hn.symm⟩⟩
 
 /-- Coercion lemma for `equivIntVec`. -/
 @[simp] public lemma coe_equivIntVec (n : Fin d → ℤ) :
@@ -107,9 +105,9 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
     have hpow_pos : 0 < ‖(x + (ℓ : E))‖ ^ k :=
       pow_pos ((by positivity : 0 < (1 / 2 : ℝ) * ‖(ℓ : E)‖).trans_le hnorm_ge) _
     have hinv : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-      have := one_div_le_one_div_of_le (pow_pos (mul_pos (by positivity) hnorm_pos) _)
-        (pow_le_pow_left₀ (by positivity) hnorm_ge k)
-      simpa [one_div, mul_pow, inv_pow, mul_inv_rev, mul_comm] using this
+      simpa [one_div, mul_pow, inv_pow, mul_inv_rev, mul_comm] using
+        one_div_le_one_div_of_le (pow_pos (mul_pos (by positivity) hnorm_pos) _)
+          (pow_le_pow_left₀ (by positivity) hnorm_ge k)
     calc ‖(translate (d := d) f ℓ) (⟨x, hxK⟩ : K)‖
         = ‖f (x + (ℓ : E))‖ := by simp [translate]
       _ ≤ C / (‖(x + (ℓ : E))‖ ^ k) := (le_div_iff₀' hpow_pos).2 (hC' (x + (ℓ : E)))
@@ -143,9 +141,8 @@ public lemma periodized_apply (x : E) :
     PoissonSummation.Standard.continuous_coeFunE (d := d)⟩
 
 /-- `coeFunEC` is a quotient map. -/
-public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) := by
-  simpa [coeFunEC] using
-    (PoissonSummation.Standard.isOpenQuotientMap_coeFunE (d := d)).isQuotientMap
+public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) :=
+  (PoissonSummation.Standard.isOpenQuotientMap_coeFunE (d := d)).isQuotientMap
 
 /-- The periodization is invariant under lattice translates, so it factors through the torus. -/
 public lemma periodized_factorsThrough :
@@ -190,8 +187,7 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 lemma mFourier_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (PoissonSummation.Standard.coeFunE (d := d) x) =
       (𝐞 (inner ℝ x (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) : ℂ) := by
-  simpa [intVec_neg (d := d) (n := n), inner_neg_right, neg_neg] using
-    (mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x))
+  simpa [inner_neg_right] using mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
 
 /-- The same character evaluation as `mFourier_apply_coeFunE`, written with `Complex.exp`. -/
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
@@ -200,8 +196,7 @@ public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
         (2 * Real.pi * Complex.I *
           ⟪x, SchwartzMap.PoissonSummation.Standard.intVec (d := d) n⟫_[ℝ]) := by
   simpa [Real.fourierChar_apply, mul_assoc, mul_comm,
-    RCLike.inner_eq_wInner_one x (intVec n)] using
-    (mFourier_apply_coeFunE (d := d) (n := n) (x := x))
+    RCLike.inner_eq_wInner_one x (intVec n)] using mFourier_apply_coeFunE (d := d) (n := n) (x := x)
 
 /-- `mFourier (-n) ∘ coeFunE` is invariant under adding an element of the standard lattice. -/
 public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ)
@@ -220,7 +215,7 @@ public lemma iocCube_subset_closedBall :
     have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := fun i => by
       have hxle : ‖x i‖ ≤ (1 : ℝ) := by
         simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2
-      simpa [pow_two] using mul_le_mul hxle hxle (norm_nonneg _) (by positivity)
+      nlinarith [norm_nonneg (x i)]
     simpa using (Finset.sum_le_sum fun i _ => hterm i).trans_eq (by simp)
   simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using Real.sqrt_le_sqrt hsum
 
