@@ -210,35 +210,24 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     linear_combination
       ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
         ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) * hcoefB
-  have hBdecomp :
-      (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
-        -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
-          ((8640 / π : ℝ) : ℂ) *
-              (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-            ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-              (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
-    simpa [IA, IB, aAnotherIntegrand, bAnotherIntegrand]
-      using IntegralB.integral_B_mul_exp_decomp hx
   have hBscaled :
       (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         (-(π / 2160 : ℂ)) * IA +
           (1 / (60 * π) : ℂ) * IB +
           (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
             (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-    rw [hBdecomp, integral_mul_exp_neg_pi_mul_Ioi_complex hx,
-      integral_exp_neg_pi_mul_Ioi_complex hx]
+    rw [show (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
+        -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
+          ((8640 / π : ℝ) : ℂ) *
+              (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
+            ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+              (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) from by
+        simpa [IA, IB, aAnotherIntegrand, bAnotherIntegrand]
+          using IntegralB.integral_B_mul_exp_decomp hx,
+      integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
-  have hBracket :
-      (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          (1 / (60 * π) : ℂ) *
-              ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) :=
-    (bracket_arith u IA IB (by exact_mod_cast Real.pi_ne_zero)
-        (by exact_mod_cast ne_of_gt hx)
-        (by exact_mod_cast sub_ne_zero.2 hx2)).trans hBscaled.symm
+  have hBracket := (bracket_arith u IA IB (by exact_mod_cast Real.pi_ne_zero)
+      (by exact_mod_cast ne_of_gt hx) (by exact_mod_cast sub_ne_zero.2 hx2)).trans hBscaled.symm
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
