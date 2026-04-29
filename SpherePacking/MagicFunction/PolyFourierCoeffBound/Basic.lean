@@ -63,11 +63,10 @@ section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  have h_shift : (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) := by
+  refine (show (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) by
     simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
     obtain ⟨C, m, hCa⟩ := hpoly
-    exact ⟨C, (m - n₀).toNat, fun n _ ↦ hCa (n + n₀) (by grind)⟩
-  refine h_shift.trans ?_
+    exact ⟨C, (m - n₀).toNat, fun n _ ↦ hCa (n + n₀) (by grind)⟩).trans ?_
   simp only [isBigO_iff, eventually_atTop]
   refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
   simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg, ← mul_pow]
@@ -213,7 +212,7 @@ lemma step_11 :
   gcongr ?_ * ?_ / _
   · exact (aux_8 z).le
   refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left
-    (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (by simpa using aux_10 z c n₀ hcsum)
+    (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (aux_10 z c n₀ hcsum)
     (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
     neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
