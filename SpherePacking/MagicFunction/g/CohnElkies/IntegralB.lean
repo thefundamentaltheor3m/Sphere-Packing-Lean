@@ -66,23 +66,14 @@ private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
 
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
-  let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
-  let rhs : ℝ → ℂ := fun t =>
-    ((-(aAnotherIntegrand u t) +
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t) +
-        ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))) -
-      ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hAe : (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) =ᵐ[μ] rhs :=
-    MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-      simpa [rhs, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        IntegralB.B_mul_exp_eq_decomp (t := t) ht
-  have hRHS : Integrable rhs μ := by
-    simpa [rhs] using ((((aAnotherIntegrand_integrable_of_pos hu).neg.add
-      ((integrable_bAnother hu).const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).add
-        ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul ((8640 / π : ℝ) : ℂ))).sub
-      ((integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul
-        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)))
-  simpa [MeasureTheory.IntegrableOn, μ] using hRHS.congr hAe.symm
+  refine (((((aAnotherIntegrand_integrable_of_pos hu).neg.add
+    ((integrable_bAnother hu).const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).add
+      ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul ((8640 / π : ℝ) : ℂ))).sub
+    ((integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul
+      ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).congr ?_).symm.symm
+  exact MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (IntegralB.B_mul_exp_eq_decomp (t := t) ht).symm
 
 lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
@@ -96,8 +87,7 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
   let f1 : ℝ → ℂ := fun t => -(aAnotherIntegrand u t)
   let f2 : ℝ → ℂ := fun t => ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t
-  let f3 : ℝ → ℂ := fun t =>
-    ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
+  let f3 : ℝ → ℂ := fun t => ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
   let f4 : ℝ → ℂ := fun t =>
     -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
   have hf1 : Integrable f1 μ := (aAnotherIntegrand_integrable_of_pos hu).neg
@@ -279,11 +269,9 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
       nlinarith [sq_nonneg (c n - 1), (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1))]
     have hEqseq (n : ℕ) : ((𝓕 g : 𝓢(ℝ⁸, ℂ)) (xseq n)) =
         (π / 2160 : ℂ) * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)) := by
-      simpa [useq] using fourier_g_eq_integral_B_of_ne_two (x := xseq n)
-        (by simpa [useq] using (by norm_num : (0:ℝ) < 2).trans (huseq_gt2 n))
-        (by simpa [useq] using (huseq_gt2 n).ne')
-    -- Show the RHS tends to `0` by bounding the `B`-integral uniformly and using `sin^2 → 0`.
+          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)) :=
+      fourier_g_eq_integral_B_of_ne_two (x := xseq n)
+        ((by norm_num : (0:ℝ) < 2).trans (huseq_gt2 n)) (huseq_gt2 n).ne'
     let M : ℝ := ∫ t in Set.Ioi (0 : ℝ), ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖
     have hInt_bound (n : ℕ) :
         ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤ M :=
