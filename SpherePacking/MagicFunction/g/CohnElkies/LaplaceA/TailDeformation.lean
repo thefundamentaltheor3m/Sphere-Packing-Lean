@@ -19,10 +19,8 @@ definition of `a'`. The deformation is carried out on the rectangle strip `t ≥
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators UpperHalfPlane Topology intervalIntegral
-open MeasureTheory Real Complex Filter
-open UpperHalfPlane
-open MagicFunction.FourierEigenfunctions
-open MagicFunction.a.ComplexIntegrands
+open MeasureTheory Real Complex Filter UpperHalfPlane
+  MagicFunction.FourierEigenfunctions MagicFunction.a.ComplexIntegrands
 
 local notation "c12π" => ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
