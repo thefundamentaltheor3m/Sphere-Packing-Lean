@@ -35,55 +35,37 @@ noncomputable section Parametrisations
 /-- Parametrisation `t ↦ -1 + i t` of the vertical segment from `-1` to `-1 + i`. -/
 @[expose] public def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 + I * t
 
-/-- Extension of `z₁` to a map `ℝ → ℂ` via `IccExtend`.
-
-The prime indicates we have extended a parametrisation on `Icc (0, 1)` to all real `t`.
--/
+/-- Extension of `z₁` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t
 
 /-- Parametrisation `t ↦ -1 + t + i` of the horizontal segment from `-1 + i` to `i`. -/
 @[expose] public def z₂ (t : Icc (0 : ℝ) 1) : ℂ := -1 + t + I
 
-/-- Extension of `z₂` to a map `ℝ → ℂ` via `IccExtend`.
-
-The prime indicates we have extended a parametrisation on `Icc (0, 1)` to all real `t`.
--/
+/-- Extension of `z₂` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t
 
 /-- Parametrisation `t ↦ 1 + i t` of the vertical segment from `1` to `1 + i`. -/
 @[expose] public def z₃ (t : Icc (0 : ℝ) 1) : ℂ := 1 + I * t
 
-/-- Extension of `z₃` to a map `ℝ → ℂ` via `IccExtend`.
-
-The prime indicates we have extended a parametrisation on `Icc (0, 1)` to all real `t`.
--/
+/-- Extension of `z₃` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t
 
 /-- Parametrisation `t ↦ 1 - t + i` of the horizontal segment from `1 + i` to `i`. -/
 @[expose] public def z₄ (t : Icc (0 : ℝ) 1) : ℂ := 1 - t + I
 
-/-- Extension of `z₄` to a map `ℝ → ℂ` via `IccExtend`.
-
-The prime indicates we have extended a parametrisation on `Icc (0, 1)` to all real `t`.
--/
+/-- Extension of `z₄` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t
 
 /-- Parametrisation `t ↦ i t` of the vertical segment from `0` to `i`. -/
 @[expose] public def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
 
-/-- Extension of `z₅` to a map `ℝ → ℂ` via `IccExtend`.
-
-The prime indicates we have extended a parametrisation on `Icc (0, 1)` to all real `t`.
--/
+/-- Extension of `z₅` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t
 
 /-- Parametrisation `t ↦ i t` of the ray `i * Ici 1`. -/
 @[expose] public def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
 
-/-- Extension of `z₆` to a map `ℝ → ℂ` via `IciExtend`.
-
-The prime indicates we have extended a parametrisation on `Ici 1` to all real `t`.
--/
+/-- Extension of `z₆` to a map `ℝ → ℂ` via `IciExtend`. The prime indicates extension to all `t`. -/
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
 /-- The imaginary part of `z₂'` is constantly equal to `1`. -/
@@ -109,11 +91,10 @@ public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
 /-- The extended parametrisation `z₁'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu0 : 0 ≤ u := by simp [hu]
-  have hu1 : u ≤ 1 := by simp [hu]
   rw [show z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) from by simp [z₁', Set.IccExtend_apply, z₁, hu]]
   refine (norm_add_le _ _).trans ?_
-  simp [Complex.norm_real, abs_of_nonneg hu0]; linarith
+  simp [Complex.norm_real, abs_of_nonneg (by simp [hu] : (0 : ℝ) ≤ u)]
+  linarith [show u ≤ 1 by simp [hu]]
 
 /-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
@@ -123,22 +104,18 @@ public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using Complex.norm_real (u - 1)]
     grind only [= max_def, = min_def, = abs.eq_1]
   rw [show z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) from by simp [z₂', Set.IccExtend_apply, z₂, hu]]
-  refine (norm_add_le _ _).trans ?_
-  linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
+  exact (norm_add_le _ _).trans (by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp])
 
 /-- The extended parametrisation `z₄'` stays in the closed ball of radius `2` centered at `0`. -/
 public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
-  have hu0 : 0 ≤ u := by simp [hu]
-  have hu1 : u ≤ 1 := by simp [hu]
   have hnorm : ‖(1 : ℂ) - (u : ℂ)‖ ≤ 1 := by
     rw [show ‖(1 : ℂ) - (u : ℂ)‖ = |1 - u| from by simpa using Complex.norm_real (1 - u),
-      abs_of_nonneg (sub_nonneg.mpr hu1)]
-    linarith
+      abs_of_nonneg (sub_nonneg.mpr (by simp [hu] : u ≤ 1))]
+    linarith [show (0 : ℝ) ≤ u by simp [hu]]
   rw [show z₄' t = ((1 : ℂ) - (u : ℂ)) + (I : ℂ) from by
     simp [z₄', Set.IccExtend_apply, z₄, hu, sub_eq_add_neg]]
-  refine (norm_add_le _ _).trans ?_
-  linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp]
+  exact (norm_add_le _ _).trans (by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp])
 
 end Parametrisations
 
