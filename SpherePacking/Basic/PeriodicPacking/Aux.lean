@@ -178,9 +178,6 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
               rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd)]
           simp }
 
-instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
-instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
-
 public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) := by
   rcases Nat.eq_zero_or_pos d with rfl | hd
