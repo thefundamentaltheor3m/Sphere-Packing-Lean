@@ -13,7 +13,6 @@ public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ZLattice
 
-
 /-!
 # Periodic packings: auxiliary finiteness and disjointness lemmas
 
@@ -38,8 +37,8 @@ private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
   obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1 hD_isBounded
   refine isBounded_iff_forall_norm_le.2 ⟨L + S.separation / 2, fun x hx ↦ ?_⟩
   obtain ⟨y, hy, hx⟩ := Set.mem_iUnion₂.1 hx
-  exact (norm_le_norm_add_norm_sub' x y).trans <|
-    add_le_add (hL y hy.2) (by simpa [mem_ball, dist_eq_norm] using hx.le)
+  exact (norm_le_norm_add_norm_sub' x y).trans
+    (add_le_add (hL y hy.2) (by simpa [mem_ball, dist_eq_norm] using hx.le))
 
 private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
@@ -138,11 +137,11 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
-    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
-  refine S.addActionOrbitRelEquiv _ fun x ↦ ?_
-  obtain ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  refine ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv, fun s hs => ?_⟩
-  rw [← hv' ⟨s, (S.mem_basis_Z_span b _).2 s.prop⟩ hs]
+    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
+  S.addActionOrbitRelEquiv _ fun x ↦ by
+    obtain ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+    exact ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv,
+      fun s hs => by rw [← hv' ⟨s, (S.mem_basis_Z_span b _).2 s.prop⟩ hs]⟩
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -202,8 +201,8 @@ variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (F
 public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) :
     S.numReps = 1 := by
   haveI : Subsingleton (Quotient S.addAction.orbitRel) :=
-    (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
-      rw [hS] at hx hy; exact ⟨⟨y - x, sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
+    (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦
+      ⟨⟨y - x, by rw [hS] at hx hy; exact sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
   exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, (Subsingleton.elim · _)⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
@@ -227,8 +226,8 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_vadd_fundamentalDomain S b hd v
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
-  rw [numReps]
-  exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
+  rw [numReps]; exact card_eq_of_equiv_fintype
+    (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
 
 theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -291,10 +290,9 @@ private theorem disjoint_vadd_fundamentalDomain
 private lemma pairwiseDisjoint_centers_inter_vadd
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {C : Set (EuclideanSpace ℝ (Fin d))} :
     Set.univ.PairwiseDisjoint fun i : (↑S.lattice ∩ C : Set _) ↦
-      S.centers ∩ (i.val +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
-  fun ⟨_, hx⟩ _ ⟨_, hy⟩ _ hxy ↦ Set.disjoint_left.2 fun _ hux huy ↦ Set.disjoint_left.1
-    (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
-    hux.right huy.right
+      S.centers ∩ (i.val +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) := fun ⟨_, hx⟩ _ ⟨_, hy⟩ _
+  hxy ↦ Set.disjoint_left.2 fun _ hux huy ↦ Set.disjoint_left.1
+    (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h)) hux.right huy.right
 
 /-- Theorem 2.3, lower bound. -/
 public theorem PeriodicSpherePacking.aux_ge
