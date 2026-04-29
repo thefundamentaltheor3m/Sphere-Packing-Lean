@@ -131,23 +131,12 @@ section partialSum
 variable {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
   [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]
 
-lemma qExpansionFormalMultilinearSeries_partialSum_one (q : ℂ) :
-    (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 1 q =
-      (qExpansion (1 : ℝ) f).coeff 0 := by
-  simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum]
-
 lemma qExpansionFormalMultilinearSeries_partialSum_two (q : ℂ) :
     (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 2 q =
       (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
 
-lemma qExpansionFormalMultilinearSeries_partialSum_three (q : ℂ) :
-    (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 3 q =
-      (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q +
-        (qExpansion (1 : ℝ) f).coeff 2 * q ^ (2 : ℕ) := by
-  simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
-    Finset.sum_range_succ, mul_comm]
 end partialSum
 
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
@@ -191,7 +180,7 @@ public lemma exists_E4_sub_one_bound :
       ‖E₄ (zI t ht) - (1 : ℂ)‖ ≤ C * Real.exp (-2 * π * t) :=
   (exists_sub_partialSum_bound (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4) hΓ1 1).imp
     fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
-      simpa [qExpansionFormalMultilinearSeries_partialSum_one (f := E₄), E4_q_exp_zero]
+      simpa [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum, E4_q_exp_zero]
         using hC t ht0 ht1⟩
 
 /--
@@ -238,7 +227,8 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
         C * (Real.exp (-2 * π * t)) ^ (3 : ℕ) :=
   (exists_sub_partialSum_bound (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12)
       hΓ1 3).imp fun _ ⟨hCpos, hC⟩ => ⟨hCpos, fun t ht0 ht1 => by
-    simpa [qExpansionFormalMultilinearSeries_partialSum_three (f := Delta), Delta_q_exp_zero,
+    simpa [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
+      Finset.sum_range_succ, mul_comm, Delta_q_exp_zero,
       Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
 /-! ### Bounding `E₂E₄ - E₆` on the imaginary axis. -/
