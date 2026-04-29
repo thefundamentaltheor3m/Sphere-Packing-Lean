@@ -50,10 +50,6 @@ private lemma ofReal_exp_neg_pi_pow_eq (t : ℝ) (N : ℕ) :
     (Real.exp (-Real.pi * t) : ℂ) ^ N = (Real.exp (-(N : ℝ) * Real.pi * t) : ℂ) := by
   rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf
 
-private lemma norm_ofReal_exp_neg_pi_pow (t : ℝ) (N : ℕ) :
-    ‖(Real.exp (-Real.pi * t) : ℂ) ^ N‖ = Real.exp (-(N : ℝ) * Real.pi * t) := by
-  rw [ofReal_exp_neg_pi_pow_eq]; simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-
 private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α] {a : α} {C r : ℝ}
     (h : ‖a‖ ≤ C * Real.exp r) : 0 ≤ C :=
   nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
@@ -61,9 +57,6 @@ private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
 private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C := by
   linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
     simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
-
-private lemma norm_pow4_le_pow3 {q : ℂ} (hq : ‖q‖ ≤ 1) : ‖q ^ (4 : ℕ)‖ ≤ ‖q ^ (3 : ℕ)‖ := by
-  simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q ^ (3 : ℕ)))
 
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
@@ -190,14 +183,18 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
   have hy4 : ‖y ^ (4 : ℕ) - (1 : ℂ) - σ * (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
         48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
     have hq3' : ‖q' ^ (3 : ℕ)‖ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
-      simpa [q'] using norm_ofReal_exp_neg_pi_pow t 3
+      rw [show (q' ^ (3 : ℕ) : ℂ) = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by
+        simpa [q'] using ofReal_exp_neg_pi_pow_eq t 3]
+      simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
     have htri := norm_add_le ((32 : ℂ) * σ ^ 3 * (q' ^ (3 : ℕ))) ((16 : ℂ) * (q' ^ (4 : ℕ)))
     simp only [norm_mul, Complex.norm_ofNat,
       show ‖σ ^ 3‖ = 1 by rw [norm_pow, hσ_norm]; ring, mul_one] at htri
     rw [show y ^ (4 : ℕ) - (1 : ℂ) - σ * (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ)) =
       (32 : ℂ) * σ ^ 3 * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ)) by
       rcases hσ with rfl | rfl <;> simp [y] <;> ring]
-    nlinarith [htri, norm_pow4_le_pow3 hq, hq3', norm_nonneg (q' ^ (3 : ℕ))]
+    have hq43 : ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ := by
+      simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q' ^ (3 : ℕ)))
+    nlinarith [htri, hq43, hq3', norm_nonneg (q' ^ (3 : ℕ))]
   rw [hHj t ht0,
     show (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
       (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) from (ofReal_exp_neg_pi_pow_eq t 2).symm]
