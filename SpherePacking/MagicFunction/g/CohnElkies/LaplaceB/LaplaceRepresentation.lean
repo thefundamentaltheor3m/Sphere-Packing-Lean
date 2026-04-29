@@ -22,6 +22,7 @@ namespace MagicFunction.g.CohnElkies.IntegralReps
 open scoped BigOperators Topology UpperHalfPlane intervalIntegral
 open MeasureTheory Real Complex Filter
 open MagicFunction.FourierEigenfunctions MagicFunction.Parametrisations
+  MagicFunction.g.CohnElkies.Trig
 
 private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (hf : IntegrableOn f (Set.Ioi (0 : ℝ)) (μ := (volume : Measure ℝ))) :
@@ -59,10 +60,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       rw [hLap, show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
             Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
             ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
-        simpa using
-          (MagicFunction.g.CohnElkies.Trig.two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
-            (congrArg (fun r : ℝ => (r : ℂ))
-              (MagicFunction.g.CohnElkies.Trig.two_sub_two_cos_eq_four_sin_sq u))]
+        simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
+          (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
       dsimp [VI]; simp [mul_assoc, mul_comm]]
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz ↦
     lt_of_lt_of_le zero_lt_one (by simpa [Set.mem_Ici] using hz.2)
