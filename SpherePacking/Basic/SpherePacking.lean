@@ -25,8 +25,7 @@ the sphere packing centers.
 We also define the *density* of the configuration, and basic notions for periodic packings.
 -/
 
-open MeasureTheory Metric Filter
-open Module
+open MeasureTheory Metric Filter Module
 
 open scoped BigOperators ENNReal Pointwise
 
@@ -222,12 +221,8 @@ public theorem constant_eq_constant_normalized {d : ℕ} :
 end DensityLemmas.SpherePacking
 section BasicResults
 open scoped ENNReal
-open EuclideanSpace
 
 variable {d : ℕ} (S : SpherePacking d)
-
-/- In this section we establish basic results about FiniteDensity and Density of different types of
-packings. -/
 
 lemma biUnion_inter_balls_subset_biUnion_balls_inter
     (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
