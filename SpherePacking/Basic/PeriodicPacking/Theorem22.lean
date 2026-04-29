@@ -53,7 +53,7 @@ private lemma measure_biUnion_lattice_inter_ball_vadd
         hD_unique_covers (fun h => hij <|
           Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h :
           (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩)
-  · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
+  · exact fun i => hD_measurable.const_vadd i.1
 
 /-- Theorem 2.2, lower bound. -/
 theorem PeriodicSpherePacking.aux2_ge
@@ -209,17 +209,12 @@ lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
       (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) :=
     Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
       tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
-  rw [ENNReal.tendsto_atTop (by simp)] at htend
-  obtain ⟨k, hk⟩ := htend ε hε
+  obtain ⟨k, hk⟩ := (ENNReal.tendsto_atTop (by simp)).mp htend ε hε
   refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
   obtain ⟨hk₀, hk₁⟩ := max_le_iff.mp hk'
   have := hk k' hk₁
   rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
     ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
-
-lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
-    ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  simpa using aux_bhavik (Nat.cast_nonneg d) hε
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 R) / volume (ball 0 (R + C))` tends to `1` (for `C ≥ 0`).
@@ -242,7 +237,9 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
         mul_div_mul_right] <;> positivity
     rw [ENNReal.tendsto_atTop (by decide)]
     intro ε hε
-    obtain ⟨k, _, hk₂⟩ := aux_bhavik' (d := d) hε
+    obtain ⟨k, _, hk₂⟩ : ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k,
+        ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
+      simpa using aux_bhavik (Nat.cast_nonneg d) hε
     refine ⟨k * C, fun n hn => ?_⟩
     rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
     convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
@@ -290,10 +287,9 @@ public theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd :
   refine (Filter.map_add_atTop_eq' (f := fun R ↦
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)) /
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) (max (-C) (-C')) _).mpr ?_
-  simpa [add_assoc] using
-    volume_ball_ratio_tendsto_nhds_one' (d := d) (C := max (-C) (-C') + C)
-      (C' := max (-C) (-C') + C') hd (by linarith [le_max_left (-C) (-C')])
-        (by linarith [le_max_right (-C) (-C')])
+  simpa [add_assoc] using volume_ball_ratio_tendsto_nhds_one' (d := d)
+    (C := max (-C) (-C') + C) (C' := max (-C) (-C') + C') hd
+    (by linarith [le_max_left (-C) (-C')]) (by linarith [le_max_right (-C) (-C')])
 
 end VolumeBallRatio
 end finiteDensity_limit
