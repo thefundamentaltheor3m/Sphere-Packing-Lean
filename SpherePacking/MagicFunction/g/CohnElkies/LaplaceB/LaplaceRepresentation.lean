@@ -286,18 +286,17 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simp [bContourIntegrandS, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
           show z₆' t = I * (t : ℂ) by simpa using z₆'_eq_of_mem (t := t) ht],
       MeasureTheory.integral_Ici_eq_integral_Ioi, MeasureTheory.integral_const_mul, mul_assoc]
-  have hShift_point : ∀ (a : ℂ) (_ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
-      (t : ℝ), 0 < t →
-      bContourIntegrandT u (a + I * (t : ℂ)) =
-        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := fun a hψa t ht => by
+  have hShift_point (a : ℂ) (hψa : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
+      (t : ℝ) (ht : 0 < t) : bContourIntegrandT u (a + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := by
     simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, mul_assoc,
       show bContourWeight u (a + I * (t : ℂ)) =
-        bContourWeight u (I * (t : ℂ)) * bContourWeight u a by
+        bContourWeight u (I * (t : ℂ)) * bContourWeight u a from by
       simpa [add_assoc, add_left_comm, add_comm] using bContourWeight_add (u := u) (I * (t : ℂ)) a]
-  have hITS : ∀ z : ℂ, 0 < z.im →
-      bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := fun z hz ↦ by
+  have hITS (z : ℂ) (hz : 0 < z.im) :
+      bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
     simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, add_mul,
-      show ψI' z = ψT' z + ψS' z by
+      show ψI' z = ψT' z + ψS' z from by
         simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ ↦ F ⟨z, hz⟩) ψI_eq_add_ψT_ψS]
   have hCenter_split : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
       -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
@@ -317,23 +316,20 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (Complex.I : ℂ) *
         (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
     rw [hJ2_ray, hJ4_ray, hJ1_set, hJ3_set, hJ5_set, hJ6_set]
-    have hsplitW (w : ℂ) :
-        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) +
-            (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) =
-          (∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) :=
-      Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi (by simpa [mul_assoc] using hintI.mul_const w))
-    have hfull : ∀ (a : ℂ) (_hpt : ∀ t : ℝ, 0 < t →
+    have hfull (a : ℂ) (hpt : ∀ t : ℝ, 0 < t →
         bContourIntegrandT u (a + I * (t : ℂ)) =
-          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
+          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) :
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) +
             (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
-          (-VI) * bContourWeight u a := fun a hpt => by
+          (-VI) * bContourWeight u a := by
       rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
         MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
           hpt t (lt_trans (by norm_num) ht)]
-      simpa [mul_assoc, mul_left_comm, mul_comm, VI] using (hsplitW (-bContourWeight u a)).trans
-        (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-          (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
+      simpa [mul_assoc, mul_left_comm, mul_comm, VI] using
+        (Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi
+          (by simpa [mul_assoc] using hintI.mul_const (-bContourWeight u a)))).trans
+          (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
+            (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
     have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
     have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
     have hCenterVI : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
