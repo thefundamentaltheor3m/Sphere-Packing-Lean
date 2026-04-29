@@ -37,8 +37,8 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
-    VAddInvariantMeasure s E μ where
-  measure_preimage_vadd _ _ _ := by simp [Submodule.vadd_def, measure_preimage_add]
+    VAddInvariantMeasure s E μ :=
+  ⟨fun _ _ _ => by simp [Submodule.vadd_def, measure_preimage_add]⟩
 
 private lemma measure_biUnion_lattice_inter_ball_vadd
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
@@ -262,11 +262,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
         / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)))) ?_ ?_
-  · rw [EventuallyEq, eventually_atTop]
-    exact ⟨1, fun R hR => by rw [ENNReal.div_div_div_cancel_left
+  · exact eventually_atTop.mpr ⟨1, fun R hR => ENNReal.div_div_div_cancel_left
       (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
       (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]⟩
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne⟩
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
