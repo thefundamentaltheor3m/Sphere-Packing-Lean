@@ -53,8 +53,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
   have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
   have hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q := by simpa [z, q] using hE4 t ht0 ht1
   have hE4norm : ‖E₄ z‖ ≤ E4B := by
-    have htri : ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 := by
-      simpa using norm_add_le (E₄ z - (1 : ℂ)) (1 : ℂ)
+    have htri : ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 := by simpa using norm_add_le (E₄ z - (1 : ℂ)) 1
     simp only [E4B]; linarith [hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le)]
   have hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ) := by
     simpa [z, q] using hΔq t ht0 ht1
@@ -65,11 +64,11 @@ public lemma exists_phi2'_sub_720_bound_ge :
     have h1 : ‖(E₄ z - (1 : ℂ)) * (q : ℂ)‖ ≤ CE4 * q ^ (2 : ℕ) := by
       rw [norm_mul, show ‖(q : ℂ)‖ = q from by simp [abs_of_nonneg hq_nonneg], pow_two, ← mul_assoc]
       exact mul_le_mul_of_nonneg_right hE4sub hq_nonneg
+    have h2 : ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ) := by simpa [norm_sub_rev] using hΔerr
     calc ‖E₄ z * (q : ℂ) - Δ z‖
           = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ := by congr 1; ring
       _ ≤ _ + _ := norm_add_le _ _
-      _ ≤ _ := by linarith [(by simpa [norm_sub_rev] using hΔerr :
-              ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ))]
+      _ ≤ _ := by linarith
   have hrew : φ₂' z - (720 : ℂ) =
       ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)) / (Δ z) := by
     dsimp [φ₂']; field_simp [Δ_ne_zero z]
@@ -103,7 +102,7 @@ lemma norm_base240_sq_sub_target480_eq {q : ℝ} :
     ‖(((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ)))‖ =
       (240 ^ 2 : ℝ) * q ^ (2 : ℕ) := by
   rw [show ((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ)) =
-    (240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ) from by ring]; simp
+    (240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ) by ring]; simp
 
 lemma norm_base_add_e_sq_sub_one_sub_480q_le
     {q CE4 B240 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le_one : q ≤ 1) {e : ℂ}
@@ -135,11 +134,9 @@ lemma norm_base_add_e_sq_sub_one_sub_480q_le
 
 lemma phi4_numerator_bound
     {t q : ℝ} {z : ℍ} {B240 CE4 CΔ3 CΔq : ℝ}
-    (hE4sq :
-      ‖(E₄ z) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ))‖ ≤
+    (hE4sq : ‖(E₄ z) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ))‖ ≤
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ))
-    (hExpΔ :
-      ‖(Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * (q : ℂ))‖ ≤
+    (hExpΔ : ‖(Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * (q : ℂ))‖ ≤
         CΔ3 * q ^ (2 : ℕ))
     (hΔ2err : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ)) :
     ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖ ≤
@@ -149,8 +146,8 @@ lemma phi4_numerator_bound
   set B : ℂ := (Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * qC)
   set C : ℂ := (504 : ℂ) * (Δ z - qC)
   have hterm3 : ‖C‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) := by
-    rw [show ‖C‖ = 504 * ‖Δ z - qC‖ by simp [C]]; linarith [mul_le_mul_of_nonneg_left hΔ2err
-      (by norm_num : (0:ℝ) ≤ 504)]
+    rw [show ‖C‖ = 504 * ‖Δ z - qC‖ by simp [C]]
+    linarith [mul_le_mul_of_nonneg_left hΔ2err (by norm_num : (0:ℝ) ≤ 504)]
   calc ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖
         = ‖A - B - C‖ := by congr 1; simp only [A, B, C]; ring
     _ ≤ ‖A‖ + ‖B‖ + ‖C‖ := (norm_sub_le _ C).trans (by linarith [norm_sub_le A B])
@@ -210,8 +207,8 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
     have hExpqC : E * qC = (1 : ℂ) := by
       simpa [E, qC, Complex.ofReal_mul] using congrArg (fun x : ℝ => (x : ℂ)) hExpq
     have happ : E * approx = (1 : ℂ) + (-24 : ℂ) * qC := by
-      have hE2 : E * (qC ^ 2) = qC := by linear_combination qC * hExpqC
-      simp only [approx, mul_add]; linear_combination hExpqC + (-24 : ℂ) * hE2
+      simp only [approx, mul_add]
+      linear_combination hExpqC + (-24 : ℂ) * (qC * hExpqC)
     rw [show E * Δ z - ((1 : ℂ) + (-24 : ℂ) * qC) = E * (Δ z - approx) by rw [mul_sub, happ],
       norm_mul, show ‖E‖ = Real.exp (2 * π * t) from norm_ofReal_exp _]
     calc Real.exp (2*π*t) * ‖Δ z - approx‖
