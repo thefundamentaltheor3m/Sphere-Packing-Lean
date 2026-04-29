@@ -179,14 +179,10 @@ open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
 /-- An explicit integral expression for `I₁'` after rewriting `Φ₁` and the parametrization `z₁'`. -/
 public lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
-    * φ₀'' (-1 / (I * t))
-    * t ^ 2
-    * cexp (-π * I * r)
-    * cexp (-π * r * t) := by
-  simp only [I₁', Φ₁, Φ₁']
+    * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * I * r) * cexp (-π * r * t) := by
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
-  rw [z₁'_eq_of_mem ht, show ((-1 : ℂ) + I * t + 1) = I * t by ring, mul_pow, I_sq,
+  simp only [Φ₁, Φ₁', z₁'_eq_of_mem ht, show ((-1 : ℂ) + I * t + 1) = I * t by ring, mul_pow, I_sq,
     show ((π : ℂ) * I * r * (-1 + I * t)) = -π * I * r + -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]; ring
 
@@ -198,51 +194,35 @@ public lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
     * cexp (-π * r * t) := by simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
 
 /-- An explicit integral expression for `I₂'` after rewriting `Φ₂` and the parametrization `z₂'`. -/
-public lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
-    φ₀'' (-1 / (t + I))
-    * (t + I) ^ 2
-    * cexp (-π * I * r)
-    * cexp (π * I * r * t)
-    * cexp (-π * r) := by
-  simp only [I₂', Φ₂, Φ₂', Φ₁']
+public lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1, φ₀'' (-1 / (t + I))
+    * (t + I) ^ 2 * cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r) := by
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
-  rw [z₂'_eq_of_mem ht, show (-1 + (t : ℂ) + I + 1) = t + I from by ring,
+  simp only [Φ₂, Φ₂', Φ₁', z₂'_eq_of_mem ht, show (-1 + (t : ℂ) + I + 1) = t + I from by ring,
     show ((π : ℂ) * I * r * (-1 + t + I)) = -π * I * r + π * I * r * t + -π * r by
-      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add, Complex.exp_add]; ring
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]; ring
 
 /-- An explicit integral expression for `I₃'` after rewriting `Φ₃` and the parametrization `z₃'`. -/
 public lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
-    * φ₀'' (-1 / (I * t))
-    * t ^ 2
-    * cexp (π * I * r)
-    * cexp (-π * r * t) := by
-  simp only [I₃', Φ₃, Φ₃']
+    * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (π * I * r) * cexp (-π * r * t) := by
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
-  rw [z₃'_eq_of_mem ht, show (1 + I * (t : ℂ) - 1) = I * t from by ring, mul_pow, I_sq,
-    show ((π : ℂ) * I * r * (1 + I * t)) = π * I * r + -π * r * t by
+  simp only [Φ₃, Φ₃', z₃'_eq_of_mem ht, show (1 + I * (t : ℂ) - 1) = I * t from by ring, mul_pow,
+    I_sq, show ((π : ℂ) * I * r * (1 + I * t)) = π * I * r + -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]; ring
 
 /-- An explicit integral expression for `I₄'` after rewriting `Φ₄` and the parametrization `z₄'`. -/
-public lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
-    * φ₀'' (-1 / (-t + I))
-    * (-t + I) ^ 2
-    * cexp (π * I * r)
-    * cexp (-π * I * r * t)
-    * cexp (-π * r) := by
-  simp only [I₄', Φ₄, Φ₄', Φ₃']
+public lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1 * φ₀'' (-1 / (-t + I))
+    * (-t + I) ^ 2 * cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r) := by
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
-  rw [z₄'_eq_of_mem ht, show ((1 : ℂ) - t + I - 1) = -t + I from by ring,
+  simp only [Φ₄, Φ₄', Φ₃', z₄'_eq_of_mem ht, show ((1 : ℂ) - t + I - 1) = -t + I from by ring,
     show ((π : ℂ) * I * r * (1 - t + I)) = π * I * r + -π * I * r * t + -π * r by
-      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add, Complex.exp_add]; ring
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]; ring
 
 /-- An explicit integral expression for `I₅'` after rewriting `Φ₅` and the parametrization `z₅'`. -/
 public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
-    * φ₀'' (-1 / (I * t))
-    * t ^ 2
-    * cexp (-π * r * t) := by
+    * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * r * t) := by
   simp only [I₅', Φ₅, Φ₅']; congr 1
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
@@ -251,14 +231,12 @@ public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
 
 /-- Rewrite `I₅'` as an integral over `Ioc 0 1`. -/
 public lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
-    * φ₀'' (-1 / (I * t))
-    * t ^ 2
-    * cexp (-π * r * t) := by simp [I₅'_eq, intervalIntegral_eq_integral_uIoc]
+    * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * r * t) := by
+  simp [I₅'_eq, intervalIntegral_eq_integral_uIoc]
 
 /-- An explicit integral expression for `I₆'` after rewriting `Φ₆` and the parametrization `z₆'`. -/
 public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
-    * φ₀'' (I * t)
-    * cexp (-π * r * t) := by
+    * φ₀'' (I * t) * cexp (-π * r * t) := by
   simp only [I₆', Φ₆, Φ₆']; congr 1
   refine MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => ?_
   rw [z₆'_eq_of_mem ht, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
