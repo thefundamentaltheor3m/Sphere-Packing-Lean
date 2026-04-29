@@ -63,8 +63,8 @@ public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpac
     {F : Set (EuclideanSpace ℝ (Fin d))} {x y : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ Λ) (hy : y ∈ periodizedCenters (d := d) Λ F) :
     x + y ∈ periodizedCenters (d := d) Λ F := by
-  rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := y)).1 hy with ⟨g, f, hf, rfl⟩
-  exact (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)).2
+  rcases mem_periodizedCenters_iff.1 hy with ⟨g, f, hf, rfl⟩
+  exact mem_periodizedCenters_iff.2
     ⟨(⟨x, hx⟩ : Λ) + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
 
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
@@ -102,10 +102,8 @@ along a lattice `Λ`.
       lattice_isZLattice := inferInstance }
   · intro a b hab
     change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
-    rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)
-      (x := (a : EuclideanSpace ℝ (Fin d)))).1 a.property with ⟨ga, fa, hfa, ha⟩
-    rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)
-      (x := (b : EuclideanSpace ℝ (Fin d)))).1 b.property with ⟨gb, fb, hfb, hb⟩
+    rcases mem_periodizedCenters_iff.1 a.property with ⟨ga, fa, hfa, ha⟩
+    rcases mem_periodizedCenters_iff.1 b.property with ⟨gb, fb, hfb, hb⟩
     by_cases hgg : ga = gb
     · subst hgg
       have hne : fa ≠ fb := fun h => hab <| Subtype.ext <| by simp [ha, hb, h]
@@ -115,7 +113,7 @@ along a lattice `Λ`.
         dist_le_of_disjoint_ball_subsets
           (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
           (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
-  · exact fun _ _ hx hy => periodizedCenters_lattice_action hx hy
+  · exact fun _ _ ↦ periodizedCenters_lattice_action
 
 end PeriodicConstantAux
 
@@ -152,12 +150,11 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
     Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
   have hLne : (L : ℝ) ≠ 0 := ne_of_gt hL
   refine ⟨fun hx i => ?_, fun hx i => ?_⟩ <;> specialize hx i
-  · refine ⟨?_, ?_⟩
-    · simpa [mul_inv_cancel₀ hLne] using
-        (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i)
-    · simpa [mul_inv_cancel₀ hLne] using
+  · exact ⟨by simpa [mul_inv_cancel₀ hLne] using
+        (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i),
+      by simpa [mul_inv_cancel₀ hLne] using
         (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
-          (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)
+          (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
   · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
       simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using
         mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
@@ -172,11 +169,9 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
   refine ⟨?_, fun hxF =>
-    ⟨(mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).2 ⟨0, x, hxF, by simp⟩,
-      hF_sub hxF⟩⟩
+    ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, by simp⟩, hF_sub hxF⟩⟩
   rintro ⟨hxPer, hxD⟩
-  rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).1 hxPer with
-    ⟨g, f, hfF, rfl⟩
+  rcases mem_periodizedCenters_iff.1 hxPer with ⟨g, f, hfF, rfl⟩
   obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
   simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
 
@@ -253,7 +248,7 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
-  exact ⟨g + v, (hvadd (a := g + v)).2 (by simpa using hg),
+  exact ⟨g + v, (hvadd _).2 (by simpa using hg),
     fun a ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd a).1 ha))⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
