@@ -142,8 +142,6 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
   let fnsRef ← IO.mkRef (α := Array Expr) #[]
   findAtomsAux body bvar candidates atomsRef fnsRef
   let atoms ← atomsRef.get
-  -- Ambiguity detection: check if any used atom's fn matches a
-  -- candidate with a different limit
   for atom in atoms do
     for cand in candidates do
       if ← withNewMCtxDepth (isDefEq atom.fn cand.fn) then
