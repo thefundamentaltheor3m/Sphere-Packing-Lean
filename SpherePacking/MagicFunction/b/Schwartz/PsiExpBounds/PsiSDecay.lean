@@ -40,28 +40,20 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     (hEv H₄ H₄_tendsto_atImInfty))) with ⟨T0, hT0⟩
   let T : ℝ := max T0 1
   have hT1 : 1 ≤ T := le_max_right _ _
-  -- Nonvanishing on the imaginary axis.
   have hH_ne (H : ℍ → ℂ) (hne : ∀ z : ℍ, H z ≠ 0) :
-      ∀ t : ℝ, 1 ≤ t → H.resToImagAxis t ≠ (0 : ℂ) := by
-    intro t ht
+      ∀ t : ℝ, 1 ≤ t → H.resToImagAxis t ≠ (0 : ℂ) := fun t ht ↦ by
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
     simpa [Function.resToImagAxis, ResToImagAxis, ht0] using hne ⟨Complex.I * t, by simp [ht0]⟩
-  let φ : Icc 1 T → ℍ :=
-    fun t =>
-      ⟨(Complex.I : ℂ) * (t : ℝ), by
-        have : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
-        simp [this]⟩
-  have hφ : Continuous φ := by fun_prop
+  let φ : Icc 1 T → ℍ := fun t ↦ ⟨(Complex.I : ℂ) * (t : ℝ), by
+    have : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1; simp [this]⟩
   have hcont_norm_resToImagAxis (H : ℍ → ℂ) (hH : Continuous H) :
-      ContinuousOn (fun t : ℝ => ‖ResToImagAxis H t‖) (Icc 1 T) := by
-    refine (continuousOn_iff_continuous_restrict).2 ?_
-    have hEq :
-        ((Icc 1 T).restrict fun t : ℝ => ‖ResToImagAxis H t‖) =
-          fun t : Icc 1 T => ‖H (φ t)‖ := by
-      funext t
-      have ht0 : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
-      simp [Set.restrict, ResToImagAxis, ht0, φ]
-    simpa [hEq] using (hH.comp hφ).norm
+      ContinuousOn (fun t : ℝ => ‖ResToImagAxis H t‖) (Icc 1 T) :=
+    (continuousOn_iff_continuous_restrict).2 <| by
+      simpa [show ((Icc 1 T).restrict fun t : ℝ ↦ ‖ResToImagAxis H t‖) =
+        fun t : Icc 1 T ↦ ‖H (φ t)‖ from funext fun t ↦ by
+          have ht0 : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
+          simp [Set.restrict, ResToImagAxis, ht0, φ]] using
+        (hH.comp (by fun_prop : Continuous φ)).norm
   have hcontH3 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₃ t‖) (Icc 1 T) :=
     hcont_norm_resToImagAxis H₃ mdifferentiable_H₃.continuous
   have hcontH4 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₄ t‖) (Icc 1 T) :=
@@ -76,38 +68,27 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       (hab := hT1) (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
       with ⟨M4Icc, hM4Icc⟩
   let M4 : ℝ := max M4Icc 2
-  have half_le_norm_of_norm_sub_one_le_half {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) :
-      (1 / 2 : ℝ) ≤ ‖x‖ := by
-    have h' : ‖(1 : ℂ)‖ - ‖(1 : ℂ) - x‖ ≤ ‖x‖ :=
-      (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' 1 x)
-    have hdiff : (1 : ℝ) - ‖x - (1 : ℂ)‖ ≤ ‖x‖ := by
-      simpa [norm_one, norm_sub_rev] using h'
-    linarith
-  have norm_le_three_halves_of_norm_sub_one_le_half {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) :
-      ‖x‖ ≤ (3 / 2 : ℝ) := by
-    have hx : ‖x‖ ≤ ‖x - (1 : ℂ)‖ + 1 := by
-      simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc, norm_one] using
-        norm_add_le (x - (1 : ℂ)) (1 : ℂ)
-    linarith
-  have hH3_lower : ∀ t : ℝ, 1 ≤ t → min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := by
-    intro t ht
+  have half_le_norm {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) : (1 / 2 : ℝ) ≤ ‖x‖ := by
+    have := (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' (1 : ℂ) x)
+    simp [norm_sub_rev] at this; linarith
+  have hH3_lower : ∀ t : ℝ, 1 ≤ t → min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm3le t ⟨ht, htT⟩)
-    · have htT0 : T0 ≤ t := le_trans (le_max_left _ _) (le_of_not_ge htT)
-      exact inf_le_of_right_le (half_le_norm_of_norm_sub_one_le_half (hT0 t htT0).1)
-  have hH4_lower : ∀ t : ℝ, 1 ≤ t → min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ := by
-    intro t ht
+    · exact inf_le_of_right_le (half_le_norm (hT0 t (le_trans (le_max_left _ _)
+        (le_of_not_ge htT))).1)
+  have hH4_lower : ∀ t : ℝ, 1 ≤ t → min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm4le t ⟨ht, htT⟩)
-    · have htT0 : T0 ≤ t := le_trans (le_max_left _ _) (le_of_not_ge htT)
-      exact inf_le_of_right_le (half_le_norm_of_norm_sub_one_le_half (hT0 t htT0).2)
-  have hH4_upper : ∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4 := by
-    intro t ht
+    · exact inf_le_of_right_le (half_le_norm (hT0 t (le_trans (le_max_left _ _)
+        (le_of_not_ge htT))).2)
+  have hH4_upper : ∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4 := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact (hM4Icc t ⟨ht, htT⟩).trans (le_max_left _ _)
-    · have htT0 : T0 ≤ t := le_trans (le_max_left _ _) (le_of_not_ge htT)
-      have h32 : ‖H₄.resToImagAxis t‖ ≤ (3 / 2 : ℝ) :=
-        norm_le_three_halves_of_norm_sub_one_le_half (x := H₄.resToImagAxis t) (hT0 t htT0).2
+    · have hx : ‖H₄.resToImagAxis t‖ ≤ ‖H₄.resToImagAxis t - (1 : ℂ)‖ + 1 := by
+        simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc, norm_one] using
+          norm_add_le (H₄.resToImagAxis t - (1 : ℂ)) (1 : ℂ)
+      have h32 : ‖H₄.resToImagAxis t‖ ≤ (3 / 2 : ℝ) := by
+        linarith [(hT0 t (le_trans (le_max_left _ _) (le_of_not_ge htT))).2]
       exact h32.trans ((show (3 / 2 : ℝ) ≤ 2 by norm_num).trans (le_max_right _ _))
   -- Bound the polynomial factor in `ψS_apply_eq_factor`.
   let P : ℝ := 2 * (CH2' ^ 2) + 5 * CH2' * M4 + 5 * (M4 ^ 2)
