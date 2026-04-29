@@ -110,11 +110,10 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have hle5 : Real.exp (-(5 : ℝ) * Real.pi * t) ≤ Real.exp (-Real.pi * t) :=
     exp_neg_scaled_pi_le 5 (by norm_num) ht0'
   have hu_le : u ≤ Real.exp (-Real.pi * t) := hle2
-  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
+  have heu : (e : ℂ) * (u : ℂ) = 1 := by exact_mod_cast (by simp [e, u, ← Real.exp_add] : e * u = 1)
   have hxy0_main :
       (128 : ℂ) * (x0 * y0) = (e : ℂ) + (16 : ℂ) - (192 : ℂ) * (u : ℂ) := by
-    have heuC : (e : ℂ) * (u : ℂ) = 1 := by exact_mod_cast heu
-    simp [x0, y0]; linear_combination 24 * heuC
+    simp [x0, y0]; linear_combination 24 * heu
   have hx0_bound : ‖x0‖ ≤ 50 := by
     have hu : 0 ≤ u := (Real.exp_pos _).le
     have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
@@ -155,8 +154,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       _ = (32 : ℝ) * Real.exp (-Real.pi * t) := by ring
     exact norm_le_err_plus_main (by ring) hCH4 (by norm_num : (1 : ℝ) ≤ 3) ht0' herr hmain
   have hz1 : ‖z - 1‖ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by
-    have hz : z - 1 = (H₄.resToImagAxis t - 1) - H₂.resToImagAxis t := by dsimp [z]; ring
-    calc ‖z - 1‖ = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by rw [hz]
+    calc ‖z - 1‖ = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by dsimp [z]; ring_nf
       _ ≤ ‖H₄.resToImagAxis t - 1‖ + ‖H₂.resToImagAxis t‖ := norm_sub_le _ _
       _ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by linarith [hH4_bd, hH2_bd]
   have hw_bd : ‖w‖ ≤ Cinv3 + 2 := by
