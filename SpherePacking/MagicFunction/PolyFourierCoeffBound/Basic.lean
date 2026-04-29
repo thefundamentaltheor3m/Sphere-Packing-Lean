@@ -81,15 +81,14 @@ section summable_aux
 include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
     Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) := by
-  let r : ℂ := cexp (-(π : ℂ) / 2)
-  have hr : ‖r‖ < 1 := by
-    simpa [r, Complex.norm_exp] using
+  have hr : ‖cexp (-(π : ℂ) / 2)‖ < 1 := by
+    simpa [Complex.norm_exp] using
       Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)
-  refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := r) hr
+  refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := cexp (-(π : ℂ) / 2)) hr
     (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)).congr fun n => ?_
   rw [norm_mul, norm_pow,
-    show ‖r‖ = rexp (-(π : ℝ) / 2) by simp [r, Complex.norm_exp, div_eq_mul_inv],
-    ← Real.exp_nat_mul]
+    show ‖cexp (-(π : ℂ) / 2)‖ = rexp (-(π : ℝ) / 2) by
+      simp [Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
   congr 2; ring
 
 end summable_aux
@@ -103,11 +102,10 @@ include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
   rw [summable_norm_iff]
   refine ((Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => ?_)
-  have hsplit : cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
-      cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) := by
-    rw [← Complex.exp_add]; congr 1; push_cast; ring
   have hne := Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
-  simp only [fouterm, hsplit]; grind only
+  simp only [fouterm, show cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
+      cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) by
+    rw [← Complex.exp_add]; congr 1; push_cast; ring]; grind only
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
@@ -123,13 +121,13 @@ lemma aux_7 (a : ℤ) : norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod (fun i ↦ by simp_all)]
-  · exact Real.exp_pos _
-  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable ((by
-      simpa [mul_assoc, mul_comm, mul_left_comm] using
-        ((Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)).comp_injective
-          PNat.coe_injective :
-      Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
+  exacts [Real.exp_pos _,
+    by simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using
+      Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable ((by
+        simpa [mul_assoc, mul_comm, mul_left_comm] using
+          ((Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)).comp_injective
+            PNat.coe_injective :
+        Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))]
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -159,11 +157,11 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
   refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
   · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
     nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
-  have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
-    simpa [mul_assoc, mul_comm, mul_left_comm] using
-      (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
   simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable ((by simpa using hnat.comp_injective PNat.coe_injective :
+    (Real.summable_log_one_add_of_summable ((by
+      simpa [mul_assoc, mul_comm, mul_left_comm] using
+        ((Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)).comp_injective
+          PNat.coe_injective :
       Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
 
 lemma step_7 :
@@ -261,8 +259,8 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
         simp [DiscriminantProductFormula, hf, fouterm]
   _ = norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        congr; rw [← tsum_mul_left]; congr; ext n; ring_nf
-        rw [mul_assoc (c (n + n₀)) (cexp _), ← Complex.exp_add]; congr 2; ring
+        congr; rw [← tsum_mul_left]; refine tsum_congr fun n => ?_
+        rw [mul_left_comm, ← Complex.exp_add]; congr 2; ring
   _ = norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
