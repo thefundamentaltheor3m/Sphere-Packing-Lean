@@ -294,12 +294,8 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       fun n => by
         simp [f, show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ)
             = (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) by
-          rw [show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ)
-              = (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * ((Complex.I : ℂ) * τ) by ac_rfl,
-            show τ = Complex.I * (t : ℂ) from rfl,
-            show (Complex.I : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) = -(t : ℂ) by
-              rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
-          push_cast; ring]
+          rw [show τ = Complex.I * (t : ℂ) from rfl]; push_cast
+          linear_combination (Complex.I_mul_I) * (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * (t : ℂ)]
     have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
       rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
         simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ],
