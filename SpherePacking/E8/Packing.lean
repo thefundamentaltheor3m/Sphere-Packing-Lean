@@ -39,8 +39,8 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   have hn2 : 2 ≤ n := by
     have : 0 ≤ n := by exact_mod_cast (by simp [hn'] : (0 : ℝ) ≤ (n : ℝ))
     obtain ⟨k, rfl⟩ := hn; omega
-  apply le_of_sq_le_sq _ (by simp)
-  simpa [hn', Real.sq_sqrt zero_le_two] using (show (2 : ℝ) ≤ n from mod_cast hn2)
+  exact le_of_sq_le_sq (by simpa [hn', Real.sq_sqrt zero_le_two] using
+    (show (2 : ℝ) ≤ n from mod_cast hn2)) (by simp)
 
 /-- The `E8` lattice as a `ℤ`-submodule of `EuclideanSpace ℝ (Fin 8)`. -/
 public noncomputable def E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
@@ -52,9 +52,8 @@ public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   refine ⟨1, by norm_num, ?_⟩
   rintro ⟨_, ⟨v, hv, rfl⟩⟩ hx'
   suffices v = 0 by simpa using congrArg (WithLp.toLp 2) this
-  refine (E8_norm_lower_bound v hv).resolve_right
-    (not_le_of_gt (((by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx' :
-      ‖WithLp.toLp 2 v‖ < (1 : ℝ))).trans Real.one_lt_sqrt_two))
+  exact (E8_norm_lower_bound v hv).resolve_right (not_le_of_gt (lt_trans
+    (by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx') Real.one_lt_sqrt_two))
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   refine (eq_top_iff).2 ?_
@@ -65,8 +64,7 @@ lemma span_E8_eq_top' :
     Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   change Submodule.span ℝ
     ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
-  rw [Submodule.span_image, span_E8_eq_top]
-  simp
+  rw [Submodule.span_image, span_E8_eq_top]; simp
 
 lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
@@ -89,11 +87,11 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
       (v := fun i ↦ ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
   · exact Submodule.mem_map_of_mem (E8Matrix_row_mem_E8 i)
   · refine LinearIndependent.of_comp (Submodule.subtype _) ?_
-    refine LinearIndependent.of_comp (M' := (Fin 8 → ℝ)) (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)) ?_
-    exact (linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ
-  · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp)]
-    simp only [Submodule.map_top, Submodule.range_subtype]
-    rw [Submodule.map_span, ← Set.range_comp]; exact span_E8Matrix_eq_E8Lattice.ge
+    exact LinearIndependent.of_comp (M' := (Fin 8 → ℝ)) (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ))
+      ((linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ)
+  · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp),
+      Submodule.map_top, Submodule.range_subtype, Submodule.map_span, ← Set.range_comp]
+    exact span_E8Matrix_eq_E8Lattice.ge
 
 lemma coe_E8_ℤBasis_apply (i : Fin 8) :
     E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
@@ -111,9 +109,9 @@ open scoped Real
   centers_dist := by
     simp only [Pairwise, E8Lattice, ne_eq, Subtype.forall, Subtype.mk.injEq]
     rintro _ ⟨a', ha', rfl⟩ _ ⟨b', hb', rfl⟩ hab
-    have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr (by contrapose! hab; simp [hab])
     simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
-    convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left hne' using 2
+    convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left
+      (sub_ne_zero.mpr (by contrapose! hab; simp [hab])) using 2
   lattice_action x y := add_mem
 
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=
@@ -157,7 +155,7 @@ open MeasureTheory ZSpan in
 lemma E8_Basis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
   rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).symm.measure_preimage_equiv]
-  erw [same_domain]; rw [E8Basis_volume]
+  erw [same_domain, E8Basis_volume]
 
 open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
