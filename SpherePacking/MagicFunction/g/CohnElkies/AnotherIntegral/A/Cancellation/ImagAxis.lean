@@ -64,8 +64,7 @@ public lemma imag_I_div (t : ℝ) : ((Complex.I : ℂ) / (t : ℂ)).im = t⁻¹ 
   simp [Complex.div_im, Complex.normSq]
 
 /-- Norm of a real exponential viewed in `ℂ`. -/
-public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x := by
-  simp
+public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x := by simp
 
 /-- Action of the modular matrix `S` on the imaginary-axis point `zI t ht`. -/
 public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
@@ -94,7 +93,7 @@ public lemma norm_φ₀_imag_le :
   have ht0 : 0 < t := zero_lt_one.trans_le ht
   simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
     simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
-    zI_im t ht0] using hC (zI t ht0) (by simpa [zI_im t ht0] using by linarith)
+    zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
@@ -107,13 +106,12 @@ lemma exp_neg_pi_lt_one : Real.exp (-π) < 1 :=
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
     ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
+  have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
   rw [show ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) by
-      rw [show cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) =
-          (cexp (2 * π * Complex.I * z)) ^ (j + k) by
+      rw [show cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) = (q : ℂ) ^ (j + k) by
+        rw [← hqexp]
         simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)),
-        show cexp (2 * π * Complex.I * z) = (q : ℂ) by
-          simpa [Periodic.qParam] using hqC]
+          Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)]
       simp [abs_of_nonneg hq_nonneg], pow_add]
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
@@ -121,23 +119,19 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have : m * (σ 3 m) ≤ M ^ 5 :=
+  have h : m * (σ 3 m) ≤ M ^ 5 :=
     (by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
       Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
       m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)
-  simpa using (by exact_mod_cast this : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
+  simpa using (by exact_mod_cast h : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
 
-section partialSum
-variable {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
-  [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]
-
-lemma qExpansionFormalMultilinearSeries_partialSum_two (q : ℂ) :
+lemma qExpansionFormalMultilinearSeries_partialSum_two
+    {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
+    [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ] (q : ℂ) :
     (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum 2 q =
       (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
-
-end partialSum
 
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
 
@@ -163,8 +157,8 @@ private lemma exists_sub_partialSum_bound
   let q : ℂ := Periodic.qParam (1 : ℝ) z
   have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
   have hmem : q ∈ Metric.ball (0 : ℂ) (r0 : ℝ) := by
-    simp only [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht]
-    exact Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])
+    simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
+      Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])
   have hmain :
       ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
