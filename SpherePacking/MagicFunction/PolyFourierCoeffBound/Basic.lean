@@ -81,13 +81,11 @@ section summable_aux
 include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
     Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) := by
-  have hr : ‖cexp (-(π : ℂ) / 2)‖ < 1 := by
-    simpa [Complex.norm_exp] using
-      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)
-  refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := cexp (-(π : ℂ) / 2)) hr
+  refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := cexp (-(π : ℂ) / 2))
+    (by simpa [Complex.norm_exp] using
+      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0))
     (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)).congr fun n => ?_
-  rw [norm_mul, norm_pow,
-    show ‖cexp (-(π : ℂ) / 2)‖ = rexp (-(π : ℝ) / 2) by
+  rw [norm_mul, norm_pow, show ‖cexp (-(π : ℂ) / 2)‖ = rexp (-(π : ℝ) / 2) by
       simp [Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
   congr 2; ring
 
@@ -263,11 +261,8 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
         rw [mul_sub, sub_mul, ← Complex.exp_sub]; congr 6; ac_rfl
-  _ = norm (cexp (π * I * (n₀ - 2) * z)) *
-      norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by simp
   _ = norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
+      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by simp [← aux_5 z]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_7 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
