@@ -42,29 +42,6 @@ private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ 
 
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
-lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤ A)
-    (hbound :
-      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤ M)
-    (hCle : M / Real.exp (-2 * π * A) ≤ C) :
-    ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-      C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-  have hexp_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
-    (Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA (by nlinarith [Real.pi_pos])).trans <| by
-      simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
-        (Real.exp_pos _).le
-  have hscale : M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
-    simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
-      field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
-      (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
-  nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right hCle
-    (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
-
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ t : ℝ, 1 ≤ t →
@@ -213,8 +190,19 @@ lemma exists_phi0_cancellation_bound :
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
     exact htri.trans (by gcongr; exact le_max_left _ _)
-  · exact phi0Cancellation_compact_case (M := M) (A := A) (C := C) (t := t) ht1
-      (le_of_not_ge htA) (hM t ht1 (le_of_not_ge htA)) (le_max_right _ _)
+  · have htA' : t ≤ A := le_of_not_ge htA
+    have hbound := hM t ht1 htA'
+    have hCle : M / Real.exp (-2 * π * A) ≤ C := le_max_right _ _
+    have hexp_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
+      (Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA' (by nlinarith [Real.pi_pos])).trans <| by
+        simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
+          (Real.exp_pos _).le
+    have hscale : M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
+      simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
+        field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
+        (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
+    nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right hCle
+      (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
 
 /-! ## Integrability of the "another integrand" for `0 < u`. -/
 
