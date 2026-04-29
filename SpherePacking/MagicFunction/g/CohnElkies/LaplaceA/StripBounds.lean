@@ -58,11 +58,10 @@ public lemma exists_phi2'_phi4'_bound_exp :
   have hzE6 : AE6 ≤ z.im :=
     (((le_max_right _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
   have hΔz : ‖(Δ z)⁻¹‖ ≤ CΔ * Real.exp (2 * π * z.im) := hΔ z ((le_max_left _ _).trans hzA)
-  have hexp_pos : 0 ≤ Real.exp (2 * π * z.im) := (Real.exp_pos _).le
-  have hcore : ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE2 * CE4 + CE6 := calc
-    ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ ‖E₂ z‖ * ‖E₄ z‖ + ‖E₆ z‖ := by
-      simpa [norm_mul] using norm_sub_le ((E₂ z) * (E₄ z)) (E₆ z)
-    _ ≤ CE2 * CE4 + CE6 := by gcongr <;> [exact hE2 z hzE2; exact hE4 z hzE4; exact hE6 z hzE6]
+  have hcore : ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE2 * CE4 + CE6 :=
+    (by simpa [norm_mul] using norm_sub_le ((E₂ z) * (E₄ z)) (E₆ z) :
+      ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ ‖E₂ z‖ * ‖E₄ z‖ + ‖E₆ z‖).trans <| by
+        gcongr <;> [exact hE2 z hzE2; exact hE4 z hzE4; exact hE6 z hzE6]
   have hφ2 : ‖φ₂' z‖ ≤ (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := calc
     ‖φ₂' z‖ = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) * (Δ z)⁻¹‖ := by
       simp [φ₂', div_eq_mul_inv, mul_assoc]
@@ -75,9 +74,9 @@ public lemma exists_phi2'_phi4'_bound_exp :
     _ ≤ CE4 ^ 2 * (CΔ * Real.exp (2 * π * z.im)) := by gcongr; exact hE4 z hzE4
     _ = _ := by ring
   exact ⟨hφ2.trans <| mul_le_mul_of_nonneg_right
-      ((le_max_right _ _).trans (le_max_right _ _)) hexp_pos,
+      ((le_max_right _ _).trans (le_max_right _ _)) (Real.exp_pos _).le,
     hφ4.trans <| mul_le_mul_of_nonneg_right
-      ((le_max_left _ _).trans (le_max_right _ _)) hexp_pos⟩
+      ((le_max_left _ _).trans (le_max_right _ _)) (Real.exp_pos _).le⟩
 
 /-- A convenient form of `φ₀_S_transform`, clearing the denominators by multiplying by `z^2`. -/
 public lemma φ₀_S_transform_mul_sq (w : ℍ) :
@@ -164,8 +163,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
             (norm_nonneg _) hC₀_pos.le)
       _ = (4 * C₀) * t ^ 2 := by ring
       _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
-          gcongr; nlinarith [sq_nonneg t,
-            Real.one_le_exp_iff.2 (show (0 : ℝ) ≤ 2 * π * t by positivity)]
+          gcongr; nlinarith [sq_nonneg t, Real.one_le_exp_iff.2 (by positivity : (0:ℝ) ≤ 2*π*t)]
   have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
       (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
     calc ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖
@@ -199,8 +197,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
   let wH : ℍ := ⟨(t : ℂ) * I + 1, by simpa using ht0⟩
   have hwH_im : wH.im = t := by simp [wH, UpperHalfPlane.im]
   have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := (norm_add_le (_ : ℂ) _).trans <| by
-    rw [norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
-      Real.norm_of_nonneg ht0.le, norm_one]; linarith
+    simpa [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0.le] using by linarith
   calc ‖Φ₂' u ((t : ℂ) * I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
         rw [show Φ₂' u ((t : ℂ) * I) =
@@ -251,11 +248,10 @@ public lemma integrableOn_Φ₂'_imag_axis {u : ℝ} (hu : 2 < u) :
   obtain ⟨Cφ, Aφ, _, hφbd⟩ := exists_phi2'_phi4'_bound_exp
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   let A : ℝ := max 1 Aφ
-  have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
-  simpa [(Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm] using
+  simpa [(Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_left _ _)).symm] using
     (integrableOn_Φ₂'_imag_axis_Ioc u A).union
       (integrableOn_Φ₂'_imag_axis_Ioi (u := u) hu (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀) (A := A)
-        hC₀_pos hC₀ hφbd hA1 (le_max_right _ _))
+        hC₀_pos hC₀ hφbd (le_max_left _ _) (le_max_right _ _))
 
 /--
 Integrability of `Φ₄'` on the imaginary-axis tail `t > 1`, via the finite-difference identity.
@@ -291,7 +287,7 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
             (∫ t in (0 : ℝ)..1, Φ₅' u ((t : ℂ) * I))) := by
   let V0 : ℂ := ∫ t in (0 : ℝ)..1, Φ₅' u ((t : ℂ) * I)
   have hmem : ∀ {t : ℝ}, t ∈ Set.uIcc (0 : ℝ) 1 → t ∈ Set.Icc (0 : ℝ) 1 := fun ht ↦ by
-    simpa [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using ht
+    simpa [Set.uIcc_of_le zero_le_one] using ht
   have hIshift : ∀ (sign : ℂ) (zp : ℝ → ℂ) (Φⱼ : ℝ → ℂ → ℂ)
       (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = sign + (t : ℂ) * I)
       (_ : ∀ t : ℝ, Φⱼ u (sign + (t : ℂ) * I) =
