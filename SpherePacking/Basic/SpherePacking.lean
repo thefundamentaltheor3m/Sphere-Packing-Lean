@@ -57,12 +57,6 @@ public theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : Euclidea
   simpa using S.centers_dist (Subtype.coe_ne_coe.mp (by simpa using hxy) :
     (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩)
 
-public instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
-    DiscreteTopology S.lattice := S.lattice_discrete
-
-public instance PeriodicSpherePacking.instIsZLattice (S : PeriodicSpherePacking d) :
-    IsZLattice ℝ S.lattice := S.lattice_isZLattice
-
 public instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
     DiscreteTopology S.centers := .of_forall_le_dist S.separation_pos S.centers_dist
 
@@ -158,12 +152,11 @@ open Real
     · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
       simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
         Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
-    specialize h (c⁻¹ • p) (by
-      rw [Submodule.coe_pointwise_smul] at *
-      simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
-        Set.smul_set_mono (a := c⁻¹) hp)
-    simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
-      Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
+    · specialize h (c⁻¹ • p) (by rw [Submodule.coe_pointwise_smul] at *
+                                 simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
+                                   Set.smul_set_mono (a := c⁻¹) hp)
+      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
+        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
 }
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -201,9 +194,9 @@ public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc :
   have hball : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
     simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
       (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
-  rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm]
-  repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
-  rw [ENNReal.mul_div_mul_left _ _ ?_ ENNReal.ofReal_ne_top, finiteDensity]
+  rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm,
+    Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
+    ENNReal.mul_div_mul_left _ _ ?_ ENNReal.ofReal_ne_top, finiteDensity]
   rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]; positivity
 
 @[simp]
@@ -256,11 +249,11 @@ lemma biUnion_balls_inter_subset_biUnion_inter_balls
 theorem SpherePacking.volume_iUnion_balls_eq_tsum
     (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
     volume (⋃ x : ↑(S.centers ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
-      = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') := by
+      = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') :=
   have : Countable ↑(S.centers ∩ ball 0 R) :=
     Set.Countable.mono Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
-  refine measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball ?_) fun _ ↦ measurableSet_ball
-  linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]
+  measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball <| by
+    linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
 /-- An upper bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
@@ -289,12 +282,11 @@ theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
 
 public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
     Finite ↑(S.centers ∩ ball 0 R) := by
-  refine Set.encard_lt_top_iff.mp ?_
   rcases eq_or_ne d 0 with rfl | hd
-  · exact Set.encard_lt_top_iff.2 <| .of_subsingleton (S.centers ∩ ball 0 R)
+  · exact Finite.Set.subset _ Set.inter_subset_right
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp (Nat.pos_of_ne_zero hd)
-  exact ENat.toENNReal_lt.mp <| (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <|
-    ENNReal.div_lt_top
+  refine Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
+    (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <| ENNReal.div_lt_top
       ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
       (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
