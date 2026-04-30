@@ -193,8 +193,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   have hgeom : HasSum (fun n : ℕ ↦ r ^ n) ((1 - r)⁻¹) :=
     hasSum_geometric_of_lt_one (Real.exp_pos _).le <| by
       simpa [r, Real.exp_lt_one_iff] using (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) < 0)
-  have hterm :
-      ∀ n : ℕ, ‖f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) := fun n => by
+  have hterm : ∀ n : ℕ, ‖f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) := fun n => by
     have hnorm : ‖f (n + 2)‖ = Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t) := by
       have : ‖f (n + 2)‖ = Real.exp (-Real.pi * ((↑n + 2 + (2 : ℝ)⁻¹) ^ 2) * t) := by
         simpa [f, τ, Nat.cast_add, add_assoc, add_left_comm, add_comm] using
@@ -209,8 +208,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
         rw [Real.exp_add, show r ^ n = Real.exp (n * (-Real.pi)) by
           simpa [r] using (Real.exp_nat_mul (-Real.pi) n).symm]]
     exact Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos])
-  have htail :
-      ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
+  have htail : ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
     tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) hterm
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - r)) * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) =
@@ -233,9 +231,8 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
       rw [show a (n + 1) = jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ from by
           simp [a, jacobiTheta₂_term, mul_assoc, mul_left_comm, mul_comm, add_left_comm,
             add_comm, pow_two, one_add_one_eq_two],
-        show ‖jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ‖ =
-            Real.exp (-Real.pi * ((n + 2 : ℤ) : ℝ) ^ 2 * τ.im
-                - 2 * Real.pi * ((n + 2 : ℤ) : ℝ) * (0 : ℂ).im) from by
+        show ‖jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ‖ = Real.exp (-Real.pi *
+            ((n + 2 : ℤ) : ℝ) ^ 2 * τ.im - 2 * Real.pi * ((n + 2 : ℤ) : ℝ) * (0 : ℂ).im) by
           simpa using norm_jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ, hτim,
         show ((n + 2 : ℤ) : ℝ) = (n : ℝ) + 2 from by norm_cast]
       simp; ring_nf
