@@ -135,7 +135,6 @@ lemma qExpansionFormalMultilinearSeries_partialSum_two
 
 /-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
 
-private lemma hh : (0 : ℝ) < (1 : ℝ) := by norm_num
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
 
@@ -149,7 +148,7 @@ private lemma exists_sub_partialSum_bound
             (Periodic.qParam (1 : ℝ) (zI t ht))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ n := by
   obtain ⟨a, ha, C, hCpos, hbound⟩ := (ModularFormClass.hasFPowerSeries_cuspFunction
-    (f := f) (h := (1 : ℝ)) hh hΓ).uniform_geometric_approx' (r' := r0)
+    (f := f) (h := (1 : ℝ)) zero_lt_one hΓ).uniform_geometric_approx' (r' := r0)
     (by simpa using ENNReal.coe_lt_one_iff.2 exp_neg_pi_lt_one)
   refine ⟨C * (a / (r0 : ℝ)) ^ n,
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
@@ -189,11 +188,11 @@ public lemma exists_E4_sub_one_sub_240q_bound :
         E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
 lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
-  have hval : valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) := by
-    simpa using
-      (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1).symm.trans
-        (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1)
-  simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1, hval]
+  simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1,
+    show valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) from by
+      simpa using (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ))
+          zero_lt_one hΓ1).symm.trans
+        (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1)]
 
 /--
 Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`, valid for all
