@@ -119,11 +119,11 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have h : m * (σ 3 m) ≤ M ^ 5 :=
-    (by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
-      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
-      m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)
-  simpa using (by exact_mod_cast h : (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
+  simpa using (by exact_mod_cast
+    ((by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
+        Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
+        m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)) :
+      (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
 
 lemma qExpansionFormalMultilinearSeries_partialSum_two
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -156,16 +156,15 @@ private lemma exists_sub_partialSum_bound
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
   have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
-  have hmem : q ∈ Metric.ball (0 : ℂ) (r0 : ℝ) := by
-    simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
-      Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])
   have hmain :
       ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
     simpa [show cuspFunction (1 : ℝ) f q = f z by
         simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
       show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using hbound q hmem n
+        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
+      hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
+        Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])) n
   simpa [z, q, hqnorm] using hmain
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
@@ -313,8 +312,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             ∑' n : ℕ, f n by simpa [hqexp] using hsplit]
         ring,
       norm_mul, show ‖(720 : ℂ)‖ = 720 by simp, mul_assoc]
-    gcongr
-    exact (norm_tsum_le_tsum_norm hnorm_summ).trans <|
+    gcongr; exact (norm_tsum_le_tsum_norm hnorm_summ).trans <|
       (hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left _)).trans_eq tsum_mul_left
   simpa [z, q] using (show ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
         ((720 : ℝ) * (∑' n : ℕ, b n)) * (Real.exp (-2 * π * t)) ^ (2 : ℕ) by
