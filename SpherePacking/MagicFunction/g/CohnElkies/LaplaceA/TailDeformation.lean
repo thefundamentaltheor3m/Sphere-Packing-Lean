@@ -178,17 +178,16 @@ lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
       ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + Complex.I) := by
   dsimp [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄]
   let g : ℝ → ℂ := fun x : ℝ => Φ₄' u ((x : ℂ) + Complex.I)
-  calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)
-      = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) :=
-        intervalIntegral.integral_congr fun t ht => by
-          simp [g, sub_eq_add_neg,
-            show MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) by
-              simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t)
-                (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
-    _ = -∫ t in (0 : ℝ)..1, g t := by simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) =
-          ∫ t in (0 : ℝ)..1, g t by norm_num]
-    _ = ∫ t in (1 : ℝ)..0, g t := by
-        simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
+  rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)) =
+      ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) from
+    intervalIntegral.integral_congr fun t ht => by
+      simp [g, sub_eq_add_neg,
+        show MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) by
+          simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t)
+            (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)],
+    intervalIntegral.integral_const_mul,
+    show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num]
+  simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
 
 private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ : ℝ}
     (hcontU : ContinuousOn f {z : ℂ | 0 < z.im})
@@ -252,18 +251,6 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) -
             2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
               ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
-  have hI6 : MagicFunction.a.RealIntegrals.I₆' u =
-      (2 : ℂ) *
-        ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := by
-    dsimp [MagicFunction.a.RealIntegrals.I₆', MagicFunction.a.RealIntegrands.Φ₆]
-    rw [show (∫ t in Set.Ici (1 : ℝ),
-              (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
-          ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) from
-      MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
-        simp [show MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) from by
-          simpa [mul_assoc, mul_comm, mul_left_comm] using
-            MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht, mul_comm],
-      MeasureTheory.integral_Ici_eq_integral_Ioi]
   let μ : Measure ℝ := volume.restrict (Set.Ioi (1 : ℝ))
   let f2 : ℝ → ℂ := fun t => Φ₂' u ((t : ℂ) * Complex.I)
   let f5 : ℝ → ℂ := fun t => Φ₅' u ((t : ℂ) * Complex.I)
@@ -271,7 +258,15 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
   have hf2 : Integrable f2 μ := integrableOn_Φ₂'_imag_axis (u := u) hu
   have hf5 : Integrable f5 μ := integrableOn_Φ₅'_imag_axis (u := u) hu
   have hf4 : Integrable f4 μ := integrableOn_Φ₄'_imag_axis (u := u) hu
-  rw [hI6,
+  dsimp [MagicFunction.a.RealIntegrals.I₆', MagicFunction.a.RealIntegrands.Φ₆]
+  rw [show (∫ t in Set.Ici (1 : ℝ),
+            (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
+        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
+        simp [show MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) from by
+          simpa [mul_assoc, mul_comm, mul_left_comm] using
+            MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht, mul_comm],
+    MeasureTheory.integral_Ici_eq_integral_Ioi,
     (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
       (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
     MeasureTheory.setIntegral_congr_fun measurableSet_Ioi (fun t ht => by
@@ -317,7 +312,6 @@ public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) 
       (G := fun t => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
       (E := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I))
       fun t _ => by simpa [mul_assoc] using Φ₃'_shift_right (u := u) (t := t)]
-  simp [smul_eq_mul, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_comm]
-  ring
+  simp [smul_eq_mul, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_comm]; ring
 
 end MagicFunction.g.CohnElkies.IntegralReps
