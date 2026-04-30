@@ -70,12 +70,10 @@ public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin 
     {D : Set (EuclideanSpace ℝ (Fin d))} {r : ℝ} {g : Λ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : ball x r ⊆ D) :
     ball (g +ᵥ x) r ⊆ g +ᵥ D := fun y hy =>
-  Set.mem_vadd_set.2 ⟨(-g : Λ) +ᵥ y, hx <| by
-    simpa [Metric.vadd_ball, add_vadd, Submodule.vadd_def, vadd_eq_add] using
-      (Set.mem_vadd_set.2 ⟨y, by simpa [Submodule.vadd_def, vadd_eq_add] using hy, rfl⟩ :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-          (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ ball (g +ᵥ x) r),
-    by simp [Submodule.vadd_def, vadd_eq_add]⟩
+  ⟨(- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y, hx <| by
+    simpa [Metric.mem_ball, dist_eq_norm, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
+      add_assoc, add_comm, add_left_comm] using hy,
+    by simp [vadd_eq_add]⟩
 
 /--
 Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
@@ -167,8 +165,7 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
   ext x
   refine ⟨?_, fun hxF =>
     ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, by simp⟩, hF_sub hxF⟩⟩
-  rintro ⟨hxPer, hxD⟩
-  rcases mem_periodizedCenters_iff.1 hxPer with ⟨g, f, hfF, rfl⟩
+  rintro ⟨⟨_, ⟨g, rfl⟩, ⟨f, hfF, rfl⟩⟩, hxD⟩
   obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
   simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
 
