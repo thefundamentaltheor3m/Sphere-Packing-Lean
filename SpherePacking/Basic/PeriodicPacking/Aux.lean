@@ -199,8 +199,8 @@ public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hd : 0 < d) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
-  rw [numReps]
-  exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
+  rw [numReps]; exact card_eq_of_equiv_fintype
+    (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
 
 public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
