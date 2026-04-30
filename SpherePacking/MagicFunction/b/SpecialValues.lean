@@ -107,19 +107,14 @@ lemma integrableOn_ψS'_vertical_left :
   let C : ℝ := max C0 0
   have hC : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ C * Real.exp (-Real.pi * t) :=
     fun t ht => (hC0 t ht).trans (by gcongr; exact le_max_left _ _)
-  have hgi : MeasureTheory.IntegrableOn (fun t : ℝ => C * Real.exp (-Real.pi * t)) (Ioi (1 : ℝ))
-      MeasureTheory.volume := by
-    simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-      ((exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := Real.pi) Real.pi_pos).const_mul C)
   have hEq : ∀ t : ℝ, 0 < t → ψS' (t * Complex.I) = ψS.resToImagAxis t := fun t ht0 => by
     simp [ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
-  have hmeas : MeasureTheory.AEStronglyMeasurable (fun t : ℝ => ψS' (t * Complex.I))
-      (MeasureTheory.volume.restrict (Ioi (1 : ℝ))) :=
-    (((Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
-        MagicFunction.b.PsiBounds.continuous_ψS).mono Set.Ioi_subset_Ici_self).congr
-      fun t ht => hEq t (lt_trans (by norm_num) ht)).aestronglyMeasurable measurableSet_Ioi
   refine MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Ioi (1 : ℝ)))
-    (by simpa [MeasureTheory.IntegrableOn] using hgi) hmeas <|
+    (by simpa [mul_assoc] using
+      ((exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := Real.pi) Real.pi_pos).const_mul C))
+    ((((Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
+          MagicFunction.b.PsiBounds.continuous_ψS).mono Set.Ioi_subset_Ici_self).congr
+        fun t ht => hEq t (lt_trans (by norm_num) ht)).aestronglyMeasurable measurableSet_Ioi) <|
     MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
       simpa [hEq t (lt_trans (by norm_num) ht)] using hC t ht.le
 
@@ -160,13 +155,11 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
       exact sub_eq_of_eq_add' <| by
         simpa [ψI', ψT', ψS', hz] using
           congrArg (fun F : ℍ → ℂ => F ⟨(t : ℂ) + Complex.I, hz⟩) ψI_eq_add_ψT_ψS
-    have hInt : (∫ t in (0 : ℝ)..1, ψI' ((t : ℂ) + Complex.I)) -
-        ∫ t in (0 : ℝ)..1, ψT' ((t : ℂ) + Complex.I) =
-          ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
-      have := intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
-        (continuous_ψI'_add_I.intervalIntegrable _ _) (continuous_ψT'_add_I.intervalIntegrable _ _)
-      simp_all
-    simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hInt
+    simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
+        (continuous_ψI'_add_I.intervalIntegrable _ _)
+          (continuous_ψT'_add_I.intervalIntegrable _ _)).symm.trans
+        (intervalIntegral.integral_congr fun t _ => hrel t)
   have hdiffψS :
       DifferentiableOn ℂ (fun z : ℂ => ψS (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
     have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
@@ -227,18 +220,17 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
   have hJ6 : J₆' (0 : ℝ) =
       (-2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) := by
     rw [show J₆' (0 : ℝ) = (-2 : ℂ) *
-        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) from by simp [J₆']]
-    rw [MeasureTheory.integral_Ici_eq_integral_Ioi,
+        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) from by simp [J₆'],
+      MeasureTheory.integral_Ici_eq_integral_Ioi,
       MeasureTheory.integral_congr_ae (g := fun t : ℝ => (Complex.I : ℂ) * ψS' (t * Complex.I))
         (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
           simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t)
             (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])]
     simp [MeasureTheory.integral_const_mul, smul_eq_mul]
-  have htail : (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) + J₆' (0 : ℝ) = 0 := by
+  exact hJ24.trans (eq_neg_of_add_eq_zero_left (by
     simp [show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) =
         (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) from by
-      simpa [sub_eq_zero] using hhor, hJ6]
-  exact hJ24.trans (eq_neg_of_add_eq_zero_left htail)
+      simpa [sub_eq_zero] using hhor, hJ6]))
 
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
   rw [b_zero_reduction]; linear_combination J₂'_J₄_eq_neg_J₆'_zero + J₁'_J₃_eq_neg_J₅'_zero
