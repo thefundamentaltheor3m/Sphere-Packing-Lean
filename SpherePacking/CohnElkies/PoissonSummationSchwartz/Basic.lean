@@ -29,8 +29,9 @@ open UnitAddTorus
       simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
         congrArg (fun x : E => x i) (congrArg Subtype.val hab),
     fun ℓ => by
-      obtain ⟨n, hn⟩ := SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
-        (d := d) (x := (ℓ : E)) ℓ.property
+      obtain ⟨n, hn⟩ :=
+        SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
+          (d := d) (x := (ℓ : E)) ℓ.property
       exact ⟨n, Subtype.ext hn.symm⟩⟩
 
 /-- Coercion lemma for `equivIntVec`. -/
@@ -149,9 +150,9 @@ public lemma periodized_factorsThrough :
     Function.FactorsThrough (periodized (d := d) f) (coeFunEC (d := d)) := fun x y hxy => by
   obtain ⟨n, hn⟩ := PoissonSummation.Standard.exists_intVec_eq_sub_of_coeFunE_eq
     (d := d) (x := x) (y := y) (by simpa [coeFunEC] using hxy)
-  have hx : x = y + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using congrArg (fun t => t + y) hn
-  simpa [hx] using periodized_vadd_eq (d := d) (f := f) y
+  simpa [show x = y + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n by
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using congrArg (fun t => t + y) hn]
+    using periodized_vadd_eq (d := d) (f := f) y
       ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩
 
@@ -211,13 +212,12 @@ public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ)
 public lemma iocCube_subset_closedBall :
     SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆
       Metric.closedBall (0 : E) (Real.sqrt d) := fun x hx => by
-  have hsum : (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) := by
-    have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := fun i => by
-      have hxle : ‖x i‖ ≤ (1 : ℝ) := by
-        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2
-      nlinarith [norm_nonneg (x i)]
-    simpa using (Finset.sum_le_sum fun i _ => hterm i).trans_eq (by simp)
-  simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using Real.sqrt_le_sqrt hsum
+  refine (by simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using
+    Real.sqrt_le_sqrt (show (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) by
+      simpa using (Finset.sum_le_sum fun i _ => show ‖x i‖ ^ 2 ≤ (1 : ℝ) by
+        have hxle : ‖x i‖ ≤ (1 : ℝ) := by
+          simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2
+        nlinarith [norm_nonneg (x i)]).trans_eq (by simp)))
 
 /-- The fundamental cube `iocCube` has finite Lebesgue measure. -/
 public lemma volume_iocCube_lt_top :
@@ -239,8 +239,6 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
         (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) (volume : Measure E) := by
   let K : TopologicalSpace.Compacts E :=
     ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
-  have hK : SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆ (K : Set E) :=
-    iocCube_subset_closedBall (d := d)
   refine Measure.integrableOn_of_bounded (μ := (volume : Measure E))
       (s := SchwartzMap.PoissonSummation.Standard.iocCube (d := d))
       (s_finite := (volume_iocCube_lt_top (d := d)).ne)
@@ -261,6 +259,7 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
           (PoissonSummation.Standard.coeFunE (d := d) x)
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
       simpa [translate_apply, ContinuousMap.restrict_apply] using
-        ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩
+        ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
+          ⟨x, iocCube_subset_closedBall (d := d) hx⟩
 
 end SchwartzMap.PoissonSummation.Standard
