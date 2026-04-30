@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.StripBounds
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 
-
 /-!
 # Tail deformation for `a'`
 
@@ -24,7 +23,6 @@ open MeasureTheory Real Complex Filter UpperHalfPlane
 
 local notation "c12π" => ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
-
 
 /-- Integrability of `Φ₅'` on the full ray `t > 0` (via `aLaplaceIntegrand`). -/
 public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
@@ -135,11 +133,11 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
       (by simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a) ha :
         Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0))
   refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) htend
-  have hm1 : (1 : ℝ) ≤ m := (le_max_left _ _).trans hm
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
     (f := fun x : ℝ => F ((x : ℂ) + (m : ℂ) * Complex.I))
     (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m)))
-    (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx hm1 ((le_max_right _ _).trans hm))).trans ?_
+    (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx ((le_max_left _ _).trans hm)
+      ((le_max_right _ _).trans hm))).trans ?_
   nlinarith [hlen, show 0 ≤ K * (m ^ (2 : ℕ) * Real.exp (-a * m)) by positivity]
 
 /-- Top-edge decay needed for the left rectangle deformation (`Φ₂'`). -/
@@ -205,17 +203,16 @@ private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ :
       (Complex.I : ℂ) •
         ((∫ t in Set.Ioi (1 : ℝ), f ((x₁ : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), f ((x₂ : ℂ) + (t : ℂ) * Complex.I)) := by
-  have hcont : ContinuousOn f (Set.uIcc x₁ x₂ ×ℂ Set.Ici (1 : ℝ)) :=
-    hcontU.mono fun z hz => show 0 < z.im from
-      lt_of_lt_of_le zero_lt_one (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ici (1 : ℝ)).2
-  have hdiff : ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi (1 : ℝ)),
-      DifferentiableAt ℂ f z := fun z hz =>
-    have hz0 : 0 < z.im := lt_trans zero_lt_one
-      (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
-    (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0)
   simpa [smul_eq_mul, mul_sub, one_mul] using eq_sub_of_add_eq (by
     simpa [one_mul] using sub_eq_zero.mp <| Complex.rect_deform_of_tendsto_top (f := f)
-      (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ)) hcont hdiff hint₁ hint₂ htop)
+      (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ))
+      (hcontU.mono fun z hz => show 0 < z.im from lt_of_lt_of_le zero_lt_one
+        (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ici (1 : ℝ)).2)
+      (fun z hz =>
+        have hz0 : 0 < z.im := lt_trans zero_lt_one
+          (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
+        (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0))
+      hint₁ hint₂ htop)
 
 lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
     MagicFunction.a.RealIntegrals.I₂' u =
