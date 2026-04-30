@@ -39,12 +39,7 @@ lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ)
     simpa [translate_apply, ContinuousMap.restrict_apply] using
       ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
         ⟨x, (iocCube_subset_closedBall (d := d)) hx⟩
-  calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-          f (x + (ℓ : E))‖
-      = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
-          ‖f (x + (ℓ : E))‖ := by simp
-    _ ≤ 1 * ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by gcongr
-    _ = _ := one_mul _
+  simpa using (mul_le_mul hmFourier hsup (norm_nonneg _) (by norm_num)).trans (one_mul _).le
 
 lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) :
     Summable
@@ -68,14 +63,9 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
     ae_restrict_of_forall_mem
       (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d))
       (norm_mFourier_mul_translate_le (d := d) (f := f) n ℓ)
-  have hle' :
-      (∫ x, ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-              f (x + (ℓ : E))‖ ∂μ) ≤
-        μ.real Set.univ * ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by
-    simpa [MeasureTheory.integral_const (μ := μ), smul_eq_mul, mul_comm] using
-      integral_mono_of_nonneg (ae_of_all _ fun _ => by positivity)
-        (integrable_const ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖) hle_ae
-  simpa [μ, s, mul_comm, mul_left_comm, mul_assoc] using hle'
+  simpa [μ, s, MeasureTheory.integral_const (μ := μ), smul_eq_mul, mul_comm, mul_left_comm,
+    mul_assoc] using integral_mono_of_nonneg (ae_of_all _ fun _ => by positivity)
+      (integrable_const ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖) hle_ae
 
 lemma mFourierCoeff_descended (n : Fin d → ℤ) :
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
@@ -103,21 +93,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
             UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
               f (x + (ℓ : E)) ∂(volume : Measure E) := by
     let s : Set E := SchwartzMap.PoissonSummation.Standard.iocCube (d := d)
-    have hInt :
-        ∀ ℓ : Λ,
-          Integrable
-              (fun x : E =>
-                UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-                  f (x + (ℓ : E)))
-              ((volume : Measure E).restrict s) := fun ℓ => by
-      simpa [IntegrableOn, s] using
-        (integrableOn_mFourier_mul_translate_iocCube (d := d) (f := f) n ℓ)
-    have hSum :
-        Summable (fun ℓ : Λ =>
-          ∫ x, ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-                f (x + (ℓ : E))‖ ∂((volume : Measure E).restrict s)) := by
-      simpa [s] using
-        (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n)
     simpa [s, tsum_mul_left, mul_assoc] using
       (MeasureTheory.integral_tsum_of_summable_integral_norm
           (μ := (volume : Measure E).restrict s)
@@ -125,7 +100,11 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
             fun x : E =>
               UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
                 f (x + (ℓ : E)))
-          hInt hSum).symm
+          (fun ℓ => by
+            simpa [IntegrableOn, s] using
+              (integrableOn_mFourier_mul_translate_iocCube (d := d) (f := f) n ℓ))
+          (by simpa [s] using
+            (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n))).symm
   have hint :
       Integrable
           (fun x : E =>
@@ -163,14 +142,11 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               ∂(volume : Measure E)) =
             ∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
               UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-                f (x + (ℓ : E)) ∂(volume : Measure E) := fun ℓ => by
-      refine integral_congr_ae <| ae_restrict_of_forall_mem
-        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x _ => ?_
-      have hper' :
-          UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) =
-            UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) :=
-        mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)
-      simp [g, Submodule.vadd_def, vadd_eq_add, add_comm, hper']
+                f (x + (ℓ : E)) ∂(volume : Measure E) := fun ℓ =>
+      integral_congr_ae <| ae_restrict_of_forall_mem
+        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x _ => by
+      simp [g, Submodule.vadd_def, vadd_eq_add, add_comm,
+        mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)]
     simpa [g, hterm] using hmain.symm
   calc
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n
