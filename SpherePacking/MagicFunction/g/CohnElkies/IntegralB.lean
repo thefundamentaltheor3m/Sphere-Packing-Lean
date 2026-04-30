@@ -93,9 +93,8 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
   have hf1 : Integrable f1 μ := (aAnotherIntegrand_integrable_of_pos hu).neg
   have hf2 : Integrable f2 μ := (integrable_bAnother hu).const_mul _
   have hf3 : Integrable f3 μ := (integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul _
-  have hf4 : Integrable f4 μ := by
-    simpa [f4, mul_assoc] using (integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul
-      (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
+  have hf4 : Integrable f4 μ := by simpa [f4, mul_assoc] using
+    (integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
   have hf23 : Integrable (fun t => f2 t + f3 t) μ := hf2.add hf3
   have hf234 : Integrable (fun t => (f2 t + f3 t) + f4 t) μ := hf23.add hf4
   rw [show (∫ t : ℝ, (B t : ℂ) * Real.exp (-π * u * t) ∂μ) =
