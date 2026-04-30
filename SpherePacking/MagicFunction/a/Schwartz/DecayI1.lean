@@ -85,8 +85,7 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
 
 lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 * π := by
   have hs1 : (1 : ℝ) ≤ s := hs
-  calc
-    ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
+  calc ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
     _ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
         rw [show ‖(-π : ℂ)‖ = (π : ℝ) by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
         gcongr; exact norm_add_le _ _
