@@ -23,10 +23,8 @@ local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
 noncomputable section defs
 
-/- We begin by defining the `h` function. The `ψ` functions are defined in terms of `h`
-via slash actions. -/
-
-/-- Auxiliary function used to define the `ψ`-functions. -/
+/-- Auxiliary function used to define the `ψ`-functions (the `ψ`s are defined in terms of `h`
+via slash actions). -/
 @[expose] public def h : ℍ → ℂ := 128 • (H₃_MF + H₄_MF) / (H₂_MF ^ 2)
 
 /-- The function `ψI`, defined from `h` and its slash transform by `S * T` (weight `-2`). -/
@@ -57,21 +55,12 @@ end defs
 
 section eq
 
-/- It is possible to express ψI, ψT, ψS in terms of `H`-functions directly. -/
-
-/- We first prove some auxiliary results. -/
-
 section aux
 
 lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := fun hz =>
   lt_irrefl (0 : ℝ) (by simpa [hz] using (by simpa using z.2 : 0 < (z + 1 : ℂ).im))
 
-lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
-    F (S • z) * (z : ℂ) ^ (-2 : ℤ) := by simp [SL_slash_apply, S, denom]
-
-/-- Slash-action formula for `S` in weight `-2`.
-
-The prime in `slashS'` indicates the `k = -2` specialization (compare `slashS`). -/
+/-- Slash-action formula for `S` in weight `-2`. -/
 public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [SL_slash_apply, S, denom]; simp [zpow_two, pow_two]
@@ -79,7 +68,8 @@ public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
 lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   simpa [mul_assoc, zpow_neg, zpow_two, pow_two, UpperHalfPlane.ne_zero z] using
-    congrArg (fun w => w * (z : ℂ) ^ (2 : ℕ)) (slashS z F).symm
+    congrArg (fun w => w * (z : ℂ) ^ (2 : ℕ)) (show (F ∣[(2 : ℤ)] (S)) (z) =
+      F (S • z) * (z : ℂ) ^ (-2 : ℤ) by simp [SL_slash_apply, S, denom]).symm
 
 lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
@@ -87,17 +77,7 @@ lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T
 lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) =  (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
 
-private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]⟩ := by
-  ext (i : Fin 2) (j : Fin 2)
-  fin_cases i <;> fin_cases j <;> simp [S, T]
-
-lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
-    F ((S * T) • z ) * (z + 1 : ℂ) ^ (-2 : ℤ) := by
-  simp [SL_slash_apply, ModularGroup.S_mul_T, denom]
-
-/-- Slash-action formula for `S * T` in weight `-2`.
-
-The prime in `slashST'` indicates the `k = -2` specialization (compare `slashST`). -/
+/-- Slash-action formula for `S * T` in weight `-2`. -/
 public lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, sl_moeb, zpow_two, pow_two]
@@ -105,13 +85,14 @@ public lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)
 lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   simpa [mul_assoc, zpow_neg, zpow_two, pow_two, z_plus_one_nonzero z] using
-    congrArg (fun w => w * (z + 1 : ℂ) ^ (2 : ℕ)) (slashST z F).symm
+    congrArg (fun w => w * (z + 1 : ℂ) ^ (2 : ℕ)) (show (F ∣[(2 : ℤ)] (S * T)) (z) =
+      F ((S * T) • z) * (z + 1 : ℂ) ^ (-2 : ℤ) by
+        simp [SL_slash_apply, ModularGroup.S_mul_T, denom]).symm
 
 end aux
 
-/- We can now prove the main results of this section. Namely Lemma 7.16 in the blueprint -/
-
-/-- Explicit formula for `ψI` in terms of the Jacobi theta functions `H₂`, `H₃`, and `H₄`. -/
+/-- Explicit formula for `ψI` in terms of the Jacobi theta functions `H₂`, `H₃`, and `H₄`
+(Lemma 7.16 in the blueprint). -/
 public lemma ψI_eq :
     ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H₂_MF) / H₃_MF ^ 2) := by
   rw [ψI, h]
@@ -212,9 +193,8 @@ public lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [ψS, ψT, ← slash_mul, ← mul_assoc, ModularGroup.modular_S_sq]
   simp [show Even (-2 : ℤ) from ⟨-1, by ring⟩]
 
-
--- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
--- absolute value, but point is that this way the Js look even more similar to the Is!
+-- The `-` sign on `ψS` is missing in Maryna's paper. Since we bound integrals in absolute value
+-- the difference is irrelevant; it makes the `J`s look more similar to the `I`s.
 /-- Modular relation: `ψS ∣[-2] T = -ψS`. -/
 public lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
