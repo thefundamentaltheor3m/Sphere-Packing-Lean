@@ -242,8 +242,7 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
-  exact ⟨g + v, (hvadd _).2 (by simpa using hg),
-    fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd _).1 ha))⟩
+  exact ⟨g + v, (hvadd _).2 (by simpa), fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd _).1 ha))⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
