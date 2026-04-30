@@ -59,7 +59,7 @@ public def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
-section hpoly_aux
+section summable_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
@@ -72,10 +72,6 @@ theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (
   simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg, ← mul_pow]
   refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
   norm_cast; cases abs_cases (n + n₀ : ℤ) <;> grind
-
-end hpoly_aux
-
-section summable_aux
 
 include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
@@ -95,22 +91,18 @@ section calc_aux
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
   rw [summable_norm_iff]
-  refine ((Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => ?_)
-  have hne := Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
+  refine (Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => ?_
   simp only [fouterm, show cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
       cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) by
-    rw [← Complex.exp_add]; congr 1; push_cast; ring]; grind only
+    rw [← Complex.exp_add]; congr 1; push_cast; ring]
+  field_simp [Complex.exp_ne_zero]
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simpa [← norm_pow] using Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z)
 
 lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  simp [← aux_5 z]
-
-lemma aux_7 (a : ℤ) : norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    (Complex.norm_exp (I * (↑π * (a * z)))).le
+  rw [← aux_5 z]; positivity
 
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
@@ -135,10 +127,6 @@ lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   simpa using aux_tprod_one_sub_rexp_pow_24_pos (c := π) pi_pos
 
-end calc_aux
-
-section calc_steps
-
 lemma multipliable_pow {ι : Type*} (f : ι → ℝ) (hf : Multipliable f) (n : ℕ) :
     Multipliable (fun i => f i ^ n) := by
   induction n with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul hf
@@ -162,7 +150,8 @@ lemma step_7 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · exact_mod_cast aux_7 z (n₀ - 2)
+  · exact_mod_cast (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+      (Complex.norm_exp (I * (↑π * ((n₀ - 2 : ℤ) * z)))).le)
 
 include hcsum in
 lemma step_8 :
@@ -181,10 +170,8 @@ lemma step_9 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
-  · exact aux_6 z
-  · simpa [norm_mul] using aux_3 z c n₀ hcsum
-  · exact aux_10 z c n₀ hcsum
-  · simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
+  exacts [aux_6 z, by simpa [norm_mul] using aux_3 z c n₀ hcsum, aux_10 z c n₀ hcsum,
+    by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
 
 lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -223,20 +210,20 @@ lemma step_12 :
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
     (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
-  gcongr
-  · exact aux_11
   have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
     sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
-  refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n => ?_)
+  gcongr
+  · exact aux_11
+  refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n =>
+    pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 (by
+      simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
+        neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
+          (by positivity : 0 ≤ (π : ℝ) * (n : ℝ))))) 1) 24)
     (step_12a pi_pos)
     (by simpa [mul_assoc, mul_left_comm, mul_comm] using
       step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
-  refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 ?_) 1) 24
-  simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
-    neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
-      (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
 
-end calc_steps
+end calc_aux
 
 section main_theorem
 
@@ -276,10 +263,6 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
       simp [DivDiscBound, mul_div_assoc, mul_comm, mul_assoc]
 
-end main_theorem
-
-section positivity
-
 include hpoly hcn₀ in
 public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
@@ -288,7 +271,7 @@ public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     (fun _ => by positivity) 0 ?_) aux_11
   simpa using norm_pos_iff.2 hcn₀
 
-end positivity
+end main_theorem
 
 end
 
