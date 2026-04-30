@@ -74,13 +74,12 @@ theorem f_zero_pos : 0 < (f 0).re := by
     simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re
         (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion)
-  have hfun : (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) = 0 :=
-    (Continuous.integral_zero_iff_zero_of_nonneg (Complex.continuous_re.comp (𝓕 f).continuous)
-      hIntegrable.re hCohnElkies₂).1 (by simpa using hintRe)
+  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
+    (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1
+      (by simpa using hintRe)
   refine (fun h : 𝓕 f = 0 => hne_zero <|
     (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 h) ?_
-  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrArg (fun g => g x) hfun] using
-    (hRealFourier x).symm
+  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 end Nonnegativity
 
@@ -127,13 +126,13 @@ theorem calc_aux_1 (hd : 0 < d)
     (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
     ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re
       ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := by
+  letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
   rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
     (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd]
-  letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
   simp_rw [tsum_fintype]
-  refine (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
-    CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans ?_
-  simp [PeriodicSpherePacking.numReps']
+  exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
+    CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
+    (by simp [PeriodicSpherePacking.numReps'])
 
 omit [Nonempty ↑P.centers] in
 include hD_isBounded in
@@ -269,7 +268,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
     rw [hP]; rw [ge_iff_le] at hCalc
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
-      (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
+      (Metric.measure_ball_pos (μ := volume) _ one_half_pos).ne'
     rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
     · rw [h𝓕f, zero_re, ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero,
         ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
