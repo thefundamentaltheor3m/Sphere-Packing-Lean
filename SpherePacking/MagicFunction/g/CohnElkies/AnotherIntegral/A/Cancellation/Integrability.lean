@@ -43,8 +43,7 @@ private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ 
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
 lemma exists_phi0_cancellation_bound :
-    ∃ C : ℝ, 0 < C ∧
-      ∀ t : ℝ, 1 ≤ t →
+    ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
         ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
               ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
               ((8640 / π : ℝ) : ℂ) * t -
@@ -81,10 +80,6 @@ lemma exists_phi0_cancellation_bound :
             (t : ℂ) * ((t : ℂ) * φ₀ z) +
               (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
                 (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
-        have h0' : φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
-            φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) -
-              (12 * Complex.I) / π * (z : ℂ) * φ₂' z - 36 / (π ^ 2) * φ₄' z := by
-          simpa [hzsq] using φ₀_S_transform_mul_sq z
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
           mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
           mul_neg, neg_neg] using congrArg (fun w : ℂ => -w) <|
@@ -92,7 +87,8 @@ lemma exists_phi0_cancellation_bound :
               φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) +
                 (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
                 (-(36 / (π ^ 2) * φ₄' z)) by
-            simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using h0'
+            simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, hzsq]
+              using φ₀_S_transform_mul_sq z
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_left_comm, mul_comm, pow_two] using
         (by simpa [show (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
@@ -125,7 +121,7 @@ lemma exists_phi0_cancellation_bound :
       isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩ hg_cont
     exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
-  refine ⟨C, lt_of_lt_of_le (by dsimp [Clarge]; positivity) (le_max_left _ _), ?_⟩
+  refine ⟨C, ?_⟩
   intro t ht1
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
   by_cases htA : A ≤ t
@@ -269,7 +265,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
 
 lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ici (1 : ℝ)) := by
-  rcases exists_phi0_cancellation_bound with ⟨C, _, hC⟩
+  rcases exists_phi0_cancellation_bound with ⟨C, hC⟩
   have hbound : ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ‖aAnotherIntegrand u t‖ ≤
       C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := fun t ht => by
     rw [show C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) =
