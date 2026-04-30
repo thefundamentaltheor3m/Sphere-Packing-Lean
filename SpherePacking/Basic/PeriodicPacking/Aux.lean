@@ -98,9 +98,8 @@ variable {d : ℕ}
 /-- If a set `D` meets each orbit of the lattice action in exactly one point, then distinct
 lattice translates of `D` are disjoint. -/
 public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
-    {D : Set (EuclideanSpace ℝ (Fin d))}
-    (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) {g h : Λ} (hgh : g ≠ h) :
-    Disjoint (g +ᵥ D) (h +ᵥ D) :=
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D)
+    {g h : Λ} (hgh : g ≠ h) : Disjoint (g +ᵥ D) (h +ᵥ D) :=
   Set.disjoint_left.2 fun x hxg hxh ↦ hgh <| neg_injective <| (hD_unique_covers x).unique
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh)
