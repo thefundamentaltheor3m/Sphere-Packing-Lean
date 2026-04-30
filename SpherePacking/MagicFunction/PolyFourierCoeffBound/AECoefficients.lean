@@ -68,17 +68,16 @@ public lemma norm_A_E_sq_coeff_le (m : ℕ) :
 public lemma A_E_sq_eq_tsum (z : ℍ) :
     (A_E z) ^ 2 =
       ∑' m : ℕ, A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-  have hA : A_E z = ∑' n : ℕ, A_E_term z n := A_E_eq_tsum (z := z)
   have ht_norm : Summable (fun n : ℕ => ‖A_E_term z n‖) := by
     set r : ℝ := Real.exp (-2 * Real.pi * z.im)
-    have hr : ‖r‖ < 1 := by
-      simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
-        nlinarith [Real.pi_pos, UpperHalfPlane.im_pos z] : (-2 * Real.pi * z.im) < 0)
     let g : ℕ → ℝ := fun n => (720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5 * r ^ (n + 1)
     have hg : Summable g := by
       simpa [g, mul_assoc, mul_left_comm, mul_comm, Nat.cast_add, Nat.cast_one] using
         ((summable_nat_add_iff (f := fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) 1).2
-          (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr)).mul_left (720 : ℝ)
+          (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 (by
+            simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
+              nlinarith [Real.pi_pos, UpperHalfPlane.im_pos z] :
+                (-2 * Real.pi * z.im) < 0)))).mul_left (720 : ℝ)
     refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hg
     have hexp : ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ ≤ r ^ (n + 1) := by
       rw [show ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ =
@@ -105,7 +104,7 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
       dsimp [A_E_term]; exact CancelDenoms.mul_subst rfl hexp rfl]
     simp [Finset.sum_mul, A_E_sq_coeff, mul_assoc]
   rw [show (A_E z) ^ 2 = (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) from by
-    rw [← hA]; ring,
+    rw [← A_E_eq_tsum (z := z)]; ring,
     (by simpa using tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm ht_norm ht_norm :
       (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) =
         ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2)]
@@ -150,13 +149,12 @@ public lemma A_E_sq_fourierCoeff_isBigO :
 public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
     Summable (fun i : ℕ ↦ fouterm A_E_sq_fourierCoeff z (i + 4)) := by
   set r : ℝ := Real.exp (-Real.pi / 2)
-  have hr : ‖r‖ < 1 := by
-    simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using
-      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-Real.pi / 2 : ℝ) < 0)
   let g : ℕ → ℝ := fun m => ((m : ℝ) ^ 11) * r ^ m
   have hshift : Summable (fun n : ℕ => g (n + 4)) := by
     simpa [g] using (summable_nat_add_iff (f := g) 4).2
-      (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 hr)
+      (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 (by
+        simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using
+          Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-Real.pi / 2 : ℝ) < 0)))
   refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_)
     (hshift.mul_left ((720 : ℝ) ^ 2))
   have hexp : ‖cexp (↑π * I * (Int.ofNat (n + 4)) * z)‖ ≤ r ^ (n + 4) := by
@@ -178,13 +176,13 @@ public lemma A_E_sq_series_summable (x : ℍ) :
     Summable (fun m : ℕ =>
       A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))) := by
   set r : ℝ := Real.exp (-2 * Real.pi * x.im)
-  have hr : ‖r‖ < 1 := by
-    simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
-      nlinarith [Real.pi_pos, UpperHalfPlane.im_pos x] : (-2 * Real.pi * x.im) < 0)
   have hg2 : Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 2)) := by
     simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm, Nat.cast_add, Nat.cast_one] using
       ((summable_nat_add_iff (f := fun m : ℕ => ((m : ℝ) ^ 11) * r ^ m) 1).2
-        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 hr)).mul_right r
+        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 11 (by
+          simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
+            nlinarith [Real.pi_pos, UpperHalfPlane.im_pos x] :
+              (-2 * Real.pi * x.im) < 0)))).mul_right r
   refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
     (hg2.mul_left ((720 : ℝ) ^ 2))
   have hexp : ‖cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))‖ ≤ r ^ (m + 2) := by
