@@ -31,12 +31,6 @@ public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
     (show Integrable (fun t : ℝ => aLaplaceIntegrand u t) (volume.restrict (Set.Ioi (0 : ℝ))) from
       by simpa [IntegrableOn] using aLaplaceIntegral_convergent (u := u) hu).neg'
 
-private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : ℂ)‖ ≤ (1 : ℝ))
-    (ht : (1 : ℝ) ≤ t) :
-    ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
-  have : ‖(t : ℂ) * Complex.I‖ = t := by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
-  linarith [norm_add_le ((a : ℝ) : ℂ) ((t : ℂ) * Complex.I)]
-
 /-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
 `F (x + t*I) = (φ₀''(-1/w) * w^2) * exp(π*I*u*(x + t*I))` where `w = s + t*I` with `|s| ≤ 1`,
 bound `‖F (x + t*I)‖` by the standard envelope. -/
@@ -73,9 +67,12 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
                 Complex.norm_exp]
               simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
-          mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ
-            (norm_real_add_mul_I_le_two_mul (a := s) (t := t)
-              (by simpa [Complex.norm_real] using hs) ht1)) (Real.exp_pos _).le
+          mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ <| by
+            have hs' : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by simpa [Complex.norm_real] using hs
+            have : ‖(t : ℂ) * Complex.I‖ = t := by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
+            change ‖(wH : ℂ)‖ ≤ 2 * t
+            simp only [w, wH]
+            linarith [norm_add_le ((s : ℝ) : ℂ) ((t : ℂ) * Complex.I)]) (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
@@ -128,11 +125,11 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   set a : ℝ := π * (u - 2)
   have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
-  have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) := by
+  refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) (by
     simpa [mul_zero] using tendsto_const_nhds.mul
       (by simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a) ha :
-        Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0))
-  refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) htend
+        Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0)) :
+      Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0))
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
     (f := fun x : ℝ => F ((x : ℂ) + (m : ℂ) * Complex.I))
     (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m)))
