@@ -47,7 +47,7 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
       Real.exp (-Real.pi * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
   set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ) : ℂ) = (r : ℂ) := by refine Complex.ext ?_ ?_ <;> simp [r]
+  have hr : (n + (2⁻¹ : ℂ) : ℂ) = (r : ℂ) := by push_cast [r]; ring
   simp_rw [Θ₂_term, div_eq_mul_inv, one_mul]
   rw [show (Real.pi * Complex.I * (n + (2⁻¹ : ℂ) : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
       ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by simp [τ, hr]; ring_nf; simp,
@@ -81,8 +81,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
     simpa [majorant, pow_zero, one_mul] using
       (summable_pow_mul_jacobiTheta₂_term_bound (S := (1 / 2 : ℝ)) (T := (1 : ℝ))
         (by positivity) 0).mul_left (Real.exp (-Real.pi / 4))
-  refine ⟨∑' n : ℤ, majorant n, ?_⟩
-  intro t ht
+  refine ⟨∑' n : ℤ, majorant n, fun t ht => ?_⟩
   have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
   have hterm : ∀ n : ℤ, ‖Θ₂_term n τ‖ ≤ majorant n := by
@@ -100,12 +99,11 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
           Real.exp (-Real.pi * (t * ((n ^ 2 : ℤ) : ℝ) + t * (n : ℝ))) by
         simp [norm_jacobiTheta₂_term, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
         ring_nf]
-      have hdiff_nonneg : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := sub_nonneg.2 <| by
-        exact_mod_cast (by simpa [Int.natCast_natAbs] using Int.natAbs_le_self_sq n :
-          (|n| : ℤ) ≤ n ^ 2)
       have hbase : t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ)) ≥ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := by
-        nlinarith [(mod_cast neg_abs_le n : (-(|n| : ℝ)) ≤ (n : ℝ)),
-          htpos.le, hdiff_nonneg, ht]
+        have hdiff : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := sub_nonneg.2 <| by
+          exact_mod_cast (by simpa [Int.natCast_natAbs] using Int.natAbs_le_self_sq n :
+            (|n| : ℤ) ≤ n ^ 2)
+        nlinarith [(mod_cast neg_abs_le n : (-(|n| : ℝ)) ≤ (n : ℝ)), htpos.le, hdiff, ht]
       simpa [mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg] using
         Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos] :
           -Real.pi * (t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ))) ≤
@@ -118,10 +116,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
 
 private lemma two_div_one_sub_exp_pi_mul_le (t : ℝ) (ht : 1 ≤ t) :
     2 / (1 - Real.exp (-Real.pi * t)) ≤ 2 / (1 - Real.exp (-Real.pi)) := by
-  have hden_pos : 0 < (1 - Real.exp (-Real.pi)) :=
-    sub_pos.2 <| Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos])
   have hInv : (1 / (1 - Real.exp (-Real.pi * t))) ≤ (1 / (1 - Real.exp (-Real.pi))) :=
-    one_div_le_one_div_of_le hden_pos
+    one_div_le_one_div_of_le (sub_pos.2 <| Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos]))
       (by linarith [Real.exp_le_exp.2 (show (-Real.pi * t : ℝ) ≤ -Real.pi from by
         nlinarith [Real.pi_pos, ht])])
   simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2)
