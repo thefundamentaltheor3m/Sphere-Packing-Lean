@@ -93,13 +93,10 @@ lemma exists_phi0_cancellation_bound :
                 (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
                 (-(36 / (π ^ 2) * φ₄' z)) by
             simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using h0'
-      have hcoeffTerm :
-          (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
-            -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z)) := by
-        dsimp [z, zI]; ring_nf; simp
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_left_comm, mul_comm, pow_two] using
-        (by simpa [hcoeffTerm] using hneg' :
+        (by simpa [show (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
+            -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z)) by dsimp [z, zI]; ring_nf; simp] using hneg' :
           (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
             (t : ℂ) * ((t : ℂ) * φ₀ z) +
               (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z + -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z))))
