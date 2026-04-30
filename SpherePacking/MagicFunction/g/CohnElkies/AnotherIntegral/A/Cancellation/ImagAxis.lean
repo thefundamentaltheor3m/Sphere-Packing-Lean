@@ -156,16 +156,15 @@ private lemma exists_sub_partialSum_bound
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
   have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
-  have hmain :
-      ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
-        (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
-    simpa [show cuspFunction (1 : ℝ) f q = f z by
-        simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
-      show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
-      hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
-        Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])) n
-  simpa [z, q, hqnorm] using hmain
+  simpa [z, q, hqnorm] using
+    (show ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
+        (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
+      simpa [show cuspFunction (1 : ℝ) f q = f z by
+          simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
+        show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
+          simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
+        hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
+          Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])) n)
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
 public lemma exists_E4_sub_one_bound :
