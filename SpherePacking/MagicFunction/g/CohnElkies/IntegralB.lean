@@ -111,38 +111,6 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
 
 end IntegralB
 
-lemma factor_sin_sq (u : ℝ) (IA IB I : ℂ)
-    (hBracket :
-      (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (π / 2160 : ℂ) * I) :
-    (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (1 / (60 * π) : ℂ) *
-            ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-      (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * I := by
-  grind only
-
-lemma bracket_arith (u : ℝ) (IA IB : ℂ)
-    (hπ : (π : ℂ) ≠ 0) (huC : (u : ℂ) ≠ 0) (hu2C : (u - 2 : ℂ) ≠ 0) :
-    (-(π / 2160 : ℂ)) *
-          ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-            (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-            (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-        (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-      (-(π / 2160 : ℂ)) * IA +
-        (1 / (60 * π) : ℂ) * IB +
-        (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
-          (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-  push_cast; field_simp; ring
-
 theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     (hx2 : ‖x‖ ^ 2 ≠ 2) :
     ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
@@ -226,16 +194,31 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           using IntegralB.integral_B_mul_exp_decomp hx,
       integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
-  have hBracket := (bracket_arith u IA IB (by exact_mod_cast Real.pi_ne_zero)
-      (by exact_mod_cast ne_of_gt hx) (by exact_mod_cast sub_ne_zero.2 hx2)).trans hBscaled.symm
+  have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  have huC : (u : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hx
+  have hu2C : (u - 2 : ℂ) ≠ 0 := by exact_mod_cast sub_ne_zero.2 hx2
+  have hBracket :
+      (-(π / 2160 : ℂ)) *
+            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
+          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
+        (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
+    rw [show (-(π / 2160 : ℂ)) *
+            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
+          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
+        (-(π / 2160 : ℂ)) * IA + (1 / (60 * π) : ℂ) * IB +
+          (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
+          (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) by push_cast; field_simp; ring]
+    exact hBscaled.symm
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
           (Real.sin (π * u / 2)) ^ (2 : ℕ) *
             (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) from by
-      rw [hFourier, hAterm, hBterm]
-      exact factor_sin_sq u IA IB
-        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) hBracket)
+      rw [hFourier, hAterm, hBterm]; grind only)
 
 /-- Integral representation of `𝓕 g` in terms of `B(t)` (for `0 < ‖x‖ ^ 2`). -/
 public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
