@@ -86,15 +86,12 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
   set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
   have hterm : ∀ n : ℤ, ‖Θ₂_term n τ‖ ≤ majorant n := by
     intro n
-    have hpref :
-        ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ ≤ Real.exp (-Real.pi / 4) := by
-      rw [show ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ =
-          Real.exp (-Real.pi * t / 4) from by
+    have hpref : ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ ≤ Real.exp (-Real.pi / 4) := by
+      rw [show ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ = Real.exp (-Real.pi * t / 4) by
         simp [Complex.norm_exp, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]]
       exact Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
-    have hcore :
-        ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ ≤
-          Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|)) := by
+    have hcore : ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ ≤
+        Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|)) := by
       rw [show ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
           Real.exp (-Real.pi * (t * ((n ^ 2 : ℤ) : ℝ) + t * (n : ℝ))) by
         simp [norm_jacobiTheta₂_term, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
