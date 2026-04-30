@@ -272,8 +272,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
         mul_right_comm]
       gcongr; exact hInt_bound n
     rw [tendsto_nhds_unique (((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq)
-      ((Filter.tendsto_congr hEqseq).mpr hRHSseq0)]
-    simp [show Real.sin (π * (‖x‖ ^ 2) / 2) = 0 by simp [hx2]]
+      ((Filter.tendsto_congr hEqseq).mpr hRHSseq0)]; simp [hx2]
   · exact fourier_g_eq_integral_B_of_ne_two (x := x) hx hx2
 
 end MagicFunction.g.CohnElkies
