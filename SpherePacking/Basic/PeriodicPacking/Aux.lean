@@ -76,17 +76,6 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
       (h_disjoint := fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
         simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy)
 
-/-- A periodic packing has finitely many centers in a fundamental domain of its lattice. -/
-public lemma finite_centers_inter_fundamentalDomain {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
-    (hd : 0 < d) : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
-  finite_centers_inter_of_isBounded S _ (ZSpan.fundamentalDomain_isBounded _) hd
-
-open scoped Pointwise in
-lemma finite_centers_inter_vadd_fundamentalDomain
-    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
-    Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
-  finite_centers_inter_of_isBounded S _ ((ZSpan.fundamentalDomain_isBounded _).vadd v) hd
-
 end aux_lemmas
 
 section Pointwise
@@ -181,7 +170,8 @@ public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
   rcases Nat.eq_zero_or_pos d with rfl | hd
   · exact Quotient.finite _
   let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
-  haveI := finite_centers_inter_fundamentalDomain S b hd
+  haveI := finite_centers_inter_of_isBounded S _ (ZSpan.fundamentalDomain_isBounded
+    (b.ofZLatticeBasis ℝ _)) hd
   exact .of_equiv _ (S.addActionOrbitRelEquiv' b).symm
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) := Fintype.ofFinite _
@@ -220,7 +210,8 @@ public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
 
 theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
-    haveI := @Fintype.ofFinite _ <| finite_centers_inter_vadd_fundamentalDomain S b hd v
+    haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S _
+      ((ZSpan.fundamentalDomain_isBounded (b.ofZLatticeBasis ℝ _)).vadd v) hd
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
   rw [numReps]; exact card_eq_of_equiv_fintype
     (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
