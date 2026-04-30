@@ -121,16 +121,16 @@ lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     (qExpansion 1 (E k hk)).coeff 0 = 1 :=
   EisensteinSeries.E_qExpansion_coeff_zero (mod_cast hk) hk2
 
-private lemma E4_eq_mathlib :
+private lemma E4_eq' :
     (E₄ : ℍ → ℂ) = (ModularForm.E (k := 4) (by norm_num) : ℍ → ℂ) := rfl
 
-private lemma E6_eq_mathlib :
+private lemma E6_eq' :
     (E₆ : ℍ → ℂ) = (ModularForm.E (k := 6) (by norm_num) : ℍ → ℂ) := rfl
 
 lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
     fun m => if m = 0 then 1 else (240 : ℂ) * (σ 3 m) := by
   ext m
-  rw [E4_eq_mathlib, EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
+  rw [E4_eq', EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
   split
   · rfl
   · simp [bernoulli, bernoulli'_four]; ring
@@ -148,7 +148,7 @@ private lemma bernoulli'_six : bernoulli' 6 = 1 / 42 := by
 lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff m) =
     fun m => if m = 0 then 1 else -(504 : ℂ) * (σ 5 m) := by
   ext m
-  rw [E6_eq_mathlib, EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
+  rw [E6_eq', EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
   split
   · rfl
   · simp only [bernoulli, bernoulli'_six]; push_cast; ring
