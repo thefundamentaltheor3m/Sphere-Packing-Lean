@@ -46,8 +46,7 @@ lemma B_as_complex {t : ℝ} (ht : 0 < t) :
     (B t : ℂ) =
       (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
         ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
-  apply Complex.ext <;>
-    simp [B, φ₀''_imag_axis_div_im (t := t) ht, ψI'_imag_axis_im (t := t) ht]
+  apply Complex.ext <;> simp [B, φ₀''_imag_axis_div_im (t := t) ht, ψI'_imag_axis_im (t := t) ht]
 
 lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
     (B t : ℂ) * Real.exp (-π * u * t) =
