@@ -28,9 +28,8 @@ lemma abs_coord_sub_lt_of_mem_ball {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ} 
 lemma ball_subset_coordCube {x : EuclideanSpace ℝ (Fin d)} {r L : ℝ}
     (hx : ∀ i : Fin d, x i ∈ Set.Icc r (L - r)) :
     ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, y i ∈ Set.Ico (0 : ℝ) L} :=
-  fun y hy i =>
-  have hsub := abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)
-  ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
+  fun y hy i => ⟨by linarith [(hx i).1, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).1],
+    by linarith [(hx i).2, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).2]⟩
 
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
@@ -42,9 +41,8 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
     2 * r ≤ dist x y := by
   by_contra hlt
   have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith [lt_of_not_ge hlt]
-  let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
-  refine Set.disjoint_left.1 hAB (hx (a := m) ?_) (hy (a := m) ?_) <;>
-    simpa [Metric.mem_ball, dist_comm, m] using hhalf
+  refine Set.disjoint_left.1 hAB (hx (a := midpoint ℝ x y) ?_) (hy (a := midpoint ℝ x y) ?_) <;>
+    simpa [Metric.mem_ball, dist_comm] using hhalf
 
 open scoped Pointwise in
 /-- The union of all lattice translates of a set `F` of representatives. -/
@@ -106,9 +104,9 @@ along a lattice `Λ`.
     rcases mem_periodizedCenters_iff.1 b.property with ⟨gb, fb, hfb, hb⟩
     by_cases hgg : ga = gb
     · subst hgg
-      have hne : fa ≠ fb := fun h => hab <| Subtype.ext <| by simp [ha, hb, h]
       simpa [ha, hb] using (dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb).symm ▸
-        S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
+        S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb)
+          (fun h => hab <| Subtype.ext <| by simp [ha, hb, h])
     · simpa [ha, hb, two_mul, add_halves] using
         dist_le_of_disjoint_ball_subsets
           (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
@@ -148,15 +146,14 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
   ext x
   simp only [ZSpan.mem_fundamentalDomain, coordCube, cubeBasis, Module.Basis.repr_isUnitSMul,
     Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
-  have hLne : (L : ℝ) ≠ 0 := ne_of_gt hL
   refine ⟨fun hx i => ?_, fun hx i => ?_⟩ <;> specialize hx i
-  · exact ⟨by simpa [mul_inv_cancel₀ hLne] using
+  · exact ⟨by simpa [mul_inv_cancel₀ hL.ne'] using
         (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i),
-      by simpa [mul_inv_cancel₀ hLne] using
+      by simpa [mul_inv_cancel₀ hL.ne'] using
         (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
           (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
   · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
-      simpa [mul_assoc, inv_mul_cancel₀ hLne, one_mul] using
+      simpa [mul_assoc, inv_mul_cancel₀ hL.ne', one_mul] using
         mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
@@ -249,7 +246,7 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
   exact ⟨g + v, (hvadd _).2 (by simpa using hg),
-    fun a ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd a).1 ha))⟩
+    fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd _).1 ha))⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
