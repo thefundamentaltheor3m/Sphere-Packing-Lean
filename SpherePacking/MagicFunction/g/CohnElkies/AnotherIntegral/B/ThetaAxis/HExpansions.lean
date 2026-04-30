@@ -163,7 +163,7 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
       (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hC10
   have hσ_norm : ‖σ‖ = 1 := by rcases hσ with rfl | rfl <;> simp
   have hy : ‖y‖ ≤ 3 := by
-    have h : ‖y‖ ≤ 1 + 1 * 2 * ‖q'‖ := by
+    have : ‖y‖ ≤ 1 + 1 * 2 * ‖q'‖ := by
       simpa [y, norm_mul, hσ_norm] using norm_add_le (1 : ℂ) (σ * (2 : ℂ) * q')
     linarith
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
@@ -305,20 +305,18 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       pow_le_pow_left₀ (by positivity : (0 : ℝ) ≤ 1) hnormΘ₃ 4
   refine ⟨C0 * (C0 + 2), fun t ht => ?_⟩
   set x : ℂ := H₃.resToImagAxis t
-  have hxge : (1 : ℝ) ≤ ‖x‖ := hnorm_H3_ge_one t ht
   have hx_inv : ‖(x ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
-    simpa [norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ hxge)
-  have hxsub : ‖x - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := hsub1 t ht
+    simpa [norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ (hnorm_H3_ge_one t ht))
   have hx_le : ‖x‖ + 1 ≤ C0 + 2 := by
-    nlinarith [norm_le_one_add_of_sub_one x hxsub,
+    nlinarith [norm_le_one_add_of_sub_one x (hsub1 t ht),
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht] : -Real.pi * t ≤ 0)]
   have hx2sub :
       ‖x ^ (2 : ℕ) - (1 : ℂ)‖ ≤ (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by
     rw [show x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) by ring, norm_mul, mul_comm]
-    gcongr
-    exact ((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le
-  have hx0 : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hxge)
+    gcongr ?_ * ?_
+    exacts [((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le, hsub1 t ht]
   have hinv_le : ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
+    have : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one (hnorm_H3_ge_one t ht))
     rw [show (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ by
       field_simp, norm_mul, norm_sub_rev]
     simpa using mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
