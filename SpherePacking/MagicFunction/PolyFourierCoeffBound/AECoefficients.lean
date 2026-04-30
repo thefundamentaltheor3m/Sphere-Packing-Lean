@@ -68,9 +68,8 @@ public lemma norm_A_E_sq_coeff_le (m : ℕ) :
 public lemma A_E_sq_eq_tsum (z : ℍ) :
     (A_E z) ^ 2 =
       ∑' m : ℕ, A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-  let t : ℕ → ℂ := fun n => A_E_term z n
-  have hA : A_E z = ∑' n : ℕ, t n := by simpa [t] using A_E_eq_tsum (z := z)
-  have ht_norm : Summable (fun n : ℕ => ‖t n‖) := by
+  have hA : A_E z = ∑' n : ℕ, A_E_term z n := A_E_eq_tsum (z := z)
+  have ht_norm : Summable (fun n : ℕ => ‖A_E_term z n‖) := by
     set r : ℝ := Real.exp (-2 * Real.pi * z.im)
     have hr : ‖r‖ < 1 := by
       simpa [r, Real.norm_of_nonneg (Real.exp_pos _).le] using Real.exp_lt_one_iff.2 (by
@@ -86,32 +85,30 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
           rexp (((n + 1 : ℕ) : ℝ) * (-2 * π * z.im)) from by
         simp [Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm],
         Real.exp_nat_mul]
-    calc ‖t n‖ = ‖A_E_coeff n‖ * ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ := by
-          simp [t, A_E_term]
+    calc ‖A_E_term z n‖
+        = ‖A_E_coeff n‖ * ‖cexp (2 * π * I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))‖ := by simp [A_E_term]
       _ ≤ ((720 : ℝ) * ((n + 1 : ℕ) : ℝ) ^ 5) * (r ^ (n + 1)) :=
           mul_le_mul (norm_A_E_coeff_le n) hexp (norm_nonneg _) (by positivity)
       _ = g n := by simp [g, mul_assoc, mul_comm]
-  have hprod : (∑' n : ℕ, t n) * (∑' n : ℕ, t n) =
-      ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2 := by
-    simpa using tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm ht_norm ht_norm
-  have hanti (m : ℕ) : (∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2) =
-      A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-    have hmul (p : ℕ × ℕ) (hp : p ∈ Finset.antidiagonal m) :
-        t p.1 * t p.2 = (A_E_coeff p.1 * A_E_coeff p.2) *
-            cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
+  have hanti (m : ℕ) :
+      (∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2) =
+        A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
+    rw [show (∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2) =
+        ∑ p ∈ Finset.antidiagonal m, (A_E_coeff p.1 * A_E_coeff p.2) *
+            cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) from Finset.sum_congr rfl fun p hp => by
       have hsum : p.1 + p.2 = m := by simpa [Finset.mem_antidiagonal] using hp
       have hexp : cexp (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)) *
           cexp (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)) =
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
         rw [← Complex.exp_add]
         congr 1; push_cast [← (show (p.1 + 1 : ℕ) + (p.2 + 1 : ℕ) = m + 2 from by omega)]; ring
-      dsimp [t, A_E_term]; exact CancelDenoms.mul_subst rfl hexp rfl
-    calc (∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2)
-        = ∑ p ∈ Finset.antidiagonal m, (A_E_coeff p.1 * A_E_coeff p.2) *
-            cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := Finset.sum_congr rfl hmul
-      _ = A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-          simp [Finset.sum_mul, A_E_sq_coeff, mul_assoc]
-  rw [show (A_E z) ^ 2 = (∑' n : ℕ, t n) * (∑' n : ℕ, t n) from by simp [hA, pow_two], hprod]
+      dsimp [A_E_term]; exact CancelDenoms.mul_subst rfl hexp rfl]
+    simp [Finset.sum_mul, A_E_sq_coeff, mul_assoc]
+  rw [show (A_E z) ^ 2 = (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) from by
+    rw [← hA]; ring,
+    (by simpa using tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm ht_norm ht_norm :
+      (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) =
+        ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2)]
   exact tsum_congr hanti
 
 /-!
@@ -212,11 +209,10 @@ public lemma A_E_sq_fourierCoeff_hf (x : ℍ) :
       A_E_sq_fourierCoeff, if_neg (show ¬(4 ≤ (2 * m + 5) ∧ Even (2 * m + 5)) by
         grind only [= Nat.even_iff]), zero_mul]
   have heven_term (m : ℕ) : f (2 * m) = g m := by
-    have hcond : 4 ≤ (2 * m + 4) ∧ Even (2 * m + 4) := ⟨by omega, by simp [parity_simps]⟩
-    have hdiv : (2 * m + 4) / 2 - 2 = m := by
-      rw [show 2 * m + 4 = 2 * (m + 2) from by ring]; simp
     have hc : A_E_sq_fourierCoeff (Int.ofNat (2 * m + 4)) = A_E_sq_coeff m := by
-      simp [A_E_sq_fourierCoeff, hcond, hdiv]
+      simp [A_E_sq_fourierCoeff,
+        show 4 ≤ (2 * m + 4) ∧ Even (2 * m + 4) from ⟨by omega, by simp [parity_simps]⟩,
+        show (2 * m + 4) / 2 - 2 = m by rw [show 2 * m + 4 = 2 * (m + 2) from by ring]; simp]
     have hexp : cexp (π * I * ((Int.ofNat (2 * m + 4) : ℂ)) * (x : ℂ)) =
         cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ)) :=
       congrArg Complex.exp
