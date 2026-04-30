@@ -166,8 +166,6 @@ public theorem decay_J₁' :
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
       (by simpa using hCψ 1 le_rfl)
-  have hμmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 := by
-    simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01
   let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
   have hA : 0 ≤ ((2 * Real.pi) ^ n) * Cψ := by positivity [hCψ0]
   have hbound_int : Integrable bound μ := by
@@ -180,15 +178,11 @@ public theorem decay_J₁' :
       (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
   refine ⟨Kn * B, fun x hx => ?_⟩
-  have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
-  have hnorm_iter : ‖iteratedFDeriv ℝ n J₁' x‖ = ‖iteratedDeriv n J₁' x‖ :=
-    norm_iteratedFDeriv_eq_norm_iteratedDeriv
-  have hiterJ : iteratedDeriv n J₁' x = I n x :=
-    congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-      filter_upwards [hμmem] with t ht
+      filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+        simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
       have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
       have hcoeff : ‖coeff t‖ ^ n ≤ (2 * Real.pi) ^ n :=
         pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
@@ -220,8 +214,9 @@ public theorem decay_J₁' :
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
-        = x ^ k * ‖iteratedDeriv n J₁' x‖ := by simp [hxabs, hnorm_iter]
-    _ = x ^ k * ‖I n x‖ := by simp [hiterJ]
+        = x ^ k * ‖I n x‖ := by
+          simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+            congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
     _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
     _ ≤ Kn * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx) hKn_nonneg
