@@ -127,9 +127,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) + (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)
     set r : ℂ := x - main
     have hr : ‖r‖ ≤ CH2 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      simpa [x, show r = x - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
-        (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) from by
-          simp [r, main, sub_eq_add_neg, add_assoc, add_comm]] using hx_err
+      simpa [r, main, x, sub_eq_add_neg, add_assoc, add_comm] using hx_err
     have hmain_norm : ‖main‖ ≤ 80 * Real.exp (-Real.pi * t) := by
       nlinarith [show ‖main‖ ≤
           16 * Real.exp (-Real.pi * t) + 64 * Real.exp (-(3 : ℝ) * Real.pi * t) by
@@ -187,7 +185,7 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         ≤ (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) +
             (160 * Real.exp (-Real.pi * t)) * (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) +
             (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2 := by
-      have htri := norm_add_le (x ^ (2 : ℕ) - main ^ (2 : ℕ))
+      have := norm_add_le (x ^ (2 : ℕ) - main ^ (2 : ℕ))
         (main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ))
       grind only
     have he6 : e * Real.exp (-(6 : ℝ) * Real.pi * t) = Real.exp (-(4 : ℝ) * Real.pi * t) := by
@@ -258,8 +256,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
       simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
         congrArg (fun r : ℝ ↦ (r : ℂ))
           (show (e / 256) * (8 * u) = (1 / 32 : ℝ) by linear_combination (8 / 256 : ℝ) * heu)
-    rw [show (x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)
-        = A * w⁻¹ - A + A * ((8 * u : ℝ) : ℂ) from by rw [hAw, hA8u]]; ring
+    linear_combination -hAw - hA8u
   have hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [w, A, x, e, u, C0] using
       (hw_tail_bound (t := t) (ht := ht) (CH2 := CH2) (by simpa [x] using hH2 t ht))
