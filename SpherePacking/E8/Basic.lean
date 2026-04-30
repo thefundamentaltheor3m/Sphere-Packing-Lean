@@ -97,8 +97,8 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
   add_mem' := by
     simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
     rintro a b ha has hb hbs
-    refine ⟨?_, by rw [Finset.sum_add_distrib]
-                   exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)⟩
+    refine ⟨?_, by simpa [Finset.sum_add_distrib] using
+      ((has.add_right _).trans (hbs.add_left _)).trans (by simp)⟩
     obtain ha | ha := ha
     · refine hb.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha⟩ := ha i
       · exact let ⟨b', hb⟩ := hb i; ⟨a' + b', by simp [ha, hb]⟩
@@ -106,11 +106,10 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
         ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
     refine hb.symm.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha', ha⟩ := ha i
     · obtain ⟨b', hb', hb⟩ := hb i
-      use (a' + b') / 2
-      rw [Int.cast_div _ (by simpa using NeZero.ne 2), Int.cast_add, add_div (K := R), ha, hb,
-        Int.cast_ofNat, mul_div_cancel_left₀ _ (NeZero.ne 2),
-        mul_div_cancel_left₀ _ (NeZero.ne _)]
-      rw [← even_iff_two_dvd]; exact ha'.add_odd hb'
+      refine ⟨(a' + b') / 2, ?_⟩
+      rw [Int.cast_div ((even_iff_two_dvd ..).1 (ha'.add_odd hb')) (by simpa using NeZero.ne 2),
+        Int.cast_add, add_div (K := R), ha, hb, Int.cast_ofNat,
+        mul_div_cancel_left₀ _ (NeZero.ne 2), mul_div_cancel_left₀ _ (NeZero.ne _)]
     exact let ⟨b', hb⟩ := hb i
       ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
   zero_mem' := ⟨.inl fun _ => ⟨0, by simp⟩, by simp⟩
@@ -239,8 +238,7 @@ def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R 
 
 lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
     E8Inverse R * E8Matrix R = 1 := by
-  rw [E8Matrix_eq_cast,
-    show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
+  rw [E8Matrix_eq_cast, show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
       rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse],
     ← Matrix.map_mul, show E8Inverse ℚ * E8Matrix ℚ = 1 by decide +kernel]; simp
 
