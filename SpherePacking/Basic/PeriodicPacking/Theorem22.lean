@@ -205,11 +205,11 @@ open Asymptotics Filter ENNReal EuclideanSpace
 
 lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  have htend : Filter.Tendsto
-      (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) :=
-    Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
-      tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
-  obtain ⟨k, hk⟩ := (ENNReal.tendsto_atTop (by simp)).mp htend ε hε
+  obtain ⟨k, hk⟩ := (ENNReal.tendsto_atTop (by simp)).mp
+    (Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
+      tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id) :
+      Filter.Tendsto (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop
+        (𝓝 (ENNReal.ofReal (1 - 0) ^ d))) ε hε
   refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
   obtain ⟨hk₀, hk₁⟩ := max_le_iff.mp hk'
   have := hk k' hk₁
@@ -258,13 +258,13 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
         / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)))) ?_ ?_
-  · exact eventually_atTop.mpr ⟨1, fun R hR => ENNReal.div_div_div_cancel_left
+          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))))
+    (eventually_atTop.mpr ⟨1, fun R hR => ENNReal.div_div_div_cancel_left
       (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
       (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne⟩
-  · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
-      (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne⟩) ?_
+  convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
+    (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
 /--
 Shifting the argument by a constant does not change convergence to `atTop`.
