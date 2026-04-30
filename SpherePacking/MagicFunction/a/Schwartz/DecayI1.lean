@@ -225,13 +225,12 @@ lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
       simp [iteratedDeriv_eq_integral_gN (n := n)]
     _ ≤ ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by
       simpa [μ, SpherePacking.Integration.μIciOne] using norm_integral_le_integral_norm (gN n x)
-    _ ≤ ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) :=
-        setIntegral_mono_on
-          (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
-          (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-              ((MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn
-                (r := x) (C₀ := Cφ)).const_mul ((2 * π) ^ n)))
-          measurableSet_Ici fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
+    _ ≤ _ := setIntegral_mono_on
+        (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
+        (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+          ((MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn
+            (r := x) (C₀ := Cφ)).const_mul ((2 * π) ^ n)))
+        measurableSet_Ici fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
 
 lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 ≤ s)
     {Cpow : ℝ} (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
