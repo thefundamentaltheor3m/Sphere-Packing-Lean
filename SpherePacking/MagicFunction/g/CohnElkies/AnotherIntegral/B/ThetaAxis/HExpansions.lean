@@ -285,7 +285,6 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
   have hnorm_H3_ge_one : ∀ t : ℝ, 1 ≤ t → (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht => by
     have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
     set τ : ℂ := (Complex.I : ℂ) * (t : ℂ)
-    have hτ : 0 < τ.im := by simpa [τ] using ht0
     let f : ℕ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + 1) ^ 2) * t)
     have hterm : ∀ n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ) = (f n : ℂ) :=
       fun n => by
@@ -297,7 +296,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
         simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ],
         show jacobiTheta τ = ((1 + 2 * (∑' n : ℕ, f n) : ℝ) : ℂ) by
-          rw [jacobiTheta_eq_tsum_nat (τ := τ) hτ, show
+          rw [jacobiTheta_eq_tsum_nat (τ := τ) (by simpa [τ] using ht0), show
             (∑' n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ))
               = (↑(∑' n : ℕ, f n) : ℂ) by simp [Complex.ofReal_tsum, hterm]]
           push_cast; ring,
