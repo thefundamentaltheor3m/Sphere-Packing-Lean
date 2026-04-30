@@ -138,9 +138,9 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
-  S.addActionOrbitRelEquiv _ fun x ↦ by
-    obtain ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-    exact ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv,
+  S.addActionOrbitRelEquiv _ fun x ↦
+    let ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+    ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv,
       fun s hs => by rw [← hv' ⟨s, (S.mem_basis_Z_span b _).2 s.prop⟩ hs]⟩
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
@@ -206,21 +206,18 @@ public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice)
   exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, (Subsingleton.elim · _)⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
-    (hD_isBounded : IsBounded D)
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
+    (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
     (hd : 0 < d) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
-  rw [numReps]; exact card_eq_of_equiv_fintype
-    (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
+  rw [numReps]
+  exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
 
 public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
-    (hD_isBounded : IsBounded D)
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
-    (hd : 0 < d) :
-    (S.centers ∩ D).encard = S.numReps := by
-  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]; convert
-    Set.encard_eq_coe_toFinset_card _
+    (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
+    (hd : 0 < d) : (S.centers ∩ D).encard = S.numReps := by
+  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
+  convert Set.encard_eq_coe_toFinset_card _
 
 theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -265,8 +262,7 @@ variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (F
 
 open scoped Pointwise
 
-private theorem aux
-    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
+private theorem aux {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
       x +ᵥ (fundamentalDomain b : Set (EuclideanSpace ℝ (Fin d)))
@@ -307,11 +303,9 @@ public theorem PeriodicSpherePacking.aux_ge
     S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc.ge
 
-private theorem aux'
-    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
+private theorem aux' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
-    ball 0 R
-      ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
+    ball 0 R ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
         x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
   letI : Fintype ι := Fintype.ofFinite ι
   refine fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x, ⟨?_, ?_⟩, ?_⟩
