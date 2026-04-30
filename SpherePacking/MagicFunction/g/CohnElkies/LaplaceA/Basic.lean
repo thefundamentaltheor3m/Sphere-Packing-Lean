@@ -56,11 +56,9 @@ lemma aestronglyMeasurable_phi0''_div_Ioi :
 public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) := by
   have hb : 0 < a / 2 := half_pos ha
-  have hmul : (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) =O[atTop]
-        fun t : ℝ => Real.exp ((a / 2) * t) * Real.exp (-a * t) :=
-    (isLittleO_pow_exp_pos_mul_atTop (k := 2) hb).isBigO.mul (Asymptotics.isBigO_refl _ _)
   refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) hb (by fun_prop)
-    (hmul.congr_right fun t => ?_)
+    (((isLittleO_pow_exp_pos_mul_atTop (k := 2) hb).isBigO.mul
+      (Asymptotics.isBigO_refl _ _)).congr_right fun t => ?_)
   rw [← Real.exp_add]; congr 1; ring
 
 lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
@@ -102,12 +100,11 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       simpa [Complex.norm_real] using
         pow_le_one₀ (n := 2) (abs_nonneg t) (by simpa [abs_of_pos ht0] using ht1)
     have hexp_le : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
-      have harg : (-π * u * t) ≤ 0 := by
-        have : 0 ≤ π * u * t := by positivity [Real.pi_pos.le, hu0.le, ht0.le]
-        linarith
       rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
         simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))]
-      exact Real.exp_le_one_iff.2 harg
+      exact Real.exp_le_one_iff.2 <| by
+        have : 0 ≤ π * u * t := by positivity [Real.pi_pos.le, hu0.le, ht0.le]
+        linarith
     calc ‖aLaplaceIntegrand u t‖
           ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
             ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
@@ -158,22 +155,14 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hzpos : 0 < (((Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa using ht0
         let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), hzpos⟩
         have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-        have hAΔ : AΔ ≤ A := by dsimp [A]; exact le_max_of_le_right (le_max_left _ _)
-        have hA2 : A2 ≤ A := by
-          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right (le_max_left _ _)
-        have hA4 : A4 ≤ A := by
-          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
-            le_max_of_le_right (le_max_left _ _)
-        have hA6 : A6 ≤ A := by
-          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
-            le_max_of_le_right (le_max_right _ _)
         have htAim : A ≤ zH.im := hz_im ▸ htA
-        have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hA4.trans htAim)
+        have hAle : AΔ ≤ A ∧ A2 ≤ A ∧ A4 ≤ A ∧ A6 ≤ A := by dsimp [A]; simp
+        have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hAle.2.2.1.trans htAim)
         have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
-          simpa [hz_im] using hΔinv zH (hAΔ.trans htAim)
+          simpa [hz_im] using hΔinv zH (hAle.1.trans htAim)
         have hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA :=
-          norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH (hA2.trans htAim)) hE4)
-            (hB6 zH (hA6.trans htAim))
+          norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH (hAle.2.1.trans htAim)) hE4)
+            (hB6 zH (hAle.2.2.2.trans htAim))
         have hBA_nonneg : 0 ≤ BA := le_trans (norm_nonneg _) hAterm
         have hB4_nonneg : 0 ≤ B4 := le_trans (norm_nonneg _) hE4
         have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
@@ -190,11 +179,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           rw [show ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by simp [φ₄', div_eq_mul_inv]]
           refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
           simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
-        have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) :=
-          (ModularGroup.coe_S_smul (z := zH)).trans (by
-            simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])
         have hphiS : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • zH) :=
-          (congrArg φ₀'' hScoe.symm).trans (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • zH))
+          (congrArg φ₀'' ((ModularGroup.coe_S_smul (z := zH)).trans
+            (by simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])).symm).trans
+            (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • zH))
         have hz_norm : ‖(zH : ℂ)‖ = t := by simp [zH, abs_of_pos ht0]
         have hz_inv : ‖(zH : ℂ)⁻¹‖ ≤ 1 := by
           simpa [norm_inv] using inv_le_one_of_one_le₀ (by simpa [hz_norm] using ht1)
