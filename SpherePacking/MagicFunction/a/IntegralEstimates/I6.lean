@@ -59,18 +59,15 @@ lemma I₆'_bounding_aux_2' (C₀ : ℝ)
     ∀ t ∈ Ici (1 : ℝ), ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   intro t ht
   have ht1 : (1 : ℝ) ≤ t := ht
-  have htpos : 0 < t := one_pos.trans_le ht1
-  have hpos : 0 < (I * t).im := by simpa using htpos
+  have hpos : 0 < (I * t).im := by simpa using one_pos.trans_le ht1
   rw [I₆'_bounding_aux_1 r t ht]
   gcongr
-  simpa [φ₀'', hpos, htpos] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
+  simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
 
 noncomputable section Schwartz_Decay
 
 open SchwartzMap
-
 open scoped Topology
-
 open SpherePacking.Integration (μIciOne)
 
 def coeff (t : ℝ) : ℂ := (-π * t : ℂ)
@@ -92,11 +89,10 @@ lemma g_eq_Φ₆ (r : ℝ) : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r
 
 private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
-  simpa [gN, μIciOne] using
-    ContinuousOn.aestronglyMeasurable
-      (((show Continuous coeff by unfold coeff; fun_prop).pow n).continuousOn.mul
-        (((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.mono
-          fun _ hx ↦ hx).congr (g_eq_Φ₆ (r := r)))) measurableSet_Ici
+  simpa [gN, μIciOne] using ContinuousOn.aestronglyMeasurable
+    (((by unfold coeff; fun_prop : Continuous coeff).pow n).continuousOn.mul
+      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr
+        (g_eq_Φ₆ (r := r)))) measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
 public lemma g_norm_bound_uniform :
@@ -106,8 +102,7 @@ public lemma g_norm_bound_uniform :
   ⟨C₀, hC₀_pos, fun r t ht ↦ by simpa using I₆'_bounding_aux_2' (C₀ := C₀) hC₀ r t ht⟩
 
 lemma gN_norm (n : ℕ) (r t : ℝ) :
-    ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by
-  simp [gN]
+    ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
 
 private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
@@ -126,10 +121,9 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
-      have h1 : (π * t) ^ n = (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
       have h2 : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
         rw [← Real.exp_add]; ring_nf
-      grind only
+      simp only [bound, mul_pow, ← h2]; ring
 
 private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
@@ -141,8 +135,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht r hr ↦ ?_
     have ht0 : 0 ≤ t := zero_le_one.trans ht
     have hr_lower : r₀ - 1 ≤ r := by
-      have : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
-      nlinarith [abs_lt.1 this |>.1]
+      nlinarith [abs_lt.1 (by simpa [Metric.mem_ball, dist_eq_norm] using hr : |r - r₀| < 1) |>.1]
     calc ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
       _ ≤ (π * t) ^ (n + 1) * (C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t)) :=
         mul_le_mul (by simpa using (coeff_norm_pow_of_nonneg (n := n + 1) (t := t) ht0).le)
@@ -153,10 +146,9 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
                 (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0)) (by positivity))
           (by positivity) (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
       _ = bound t := by
-        have h1 : (π * t) ^ (n + 1) = (π ^ (n + 1)) * (t ^ (n + 1)) := by simp [mul_pow, mul_comm]
         have h2 : rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by
           rw [← Real.exp_add]; ring_nf
-        grind only
+        simp only [bound, mul_pow, ← h2]; ring
   have bound_integrable : Integrable bound μ := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (show Integrable (fun t : ℝ ↦ t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) μ by
@@ -210,8 +202,8 @@ lemma iteratedDeriv_bound (n : ℕ) :
         have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
-  simpa [mul_assoc, mul_left_comm, mul_comm] using show
-      ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) from calc
+  simpa [mul_assoc, mul_left_comm, mul_comm]
+    using show ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) from calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
       rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']; simp
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
