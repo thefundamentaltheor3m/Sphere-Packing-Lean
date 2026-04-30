@@ -54,8 +54,6 @@ lemma exists_phi0_cancellation_bound :
   rcases exists_phi2'_sub_720_bound_ge with ⟨C₂, A₂, hC₂pos, hA₂, hφ₂⟩
   rcases exists_phi4'_sub_exp_sub_504_bound_ge with ⟨C₄, A₄, hC₄pos, hA₄, hφ₄⟩
   let A : ℝ := max A₂ A₄
-  have hA₂' : A₂ ≤ A := le_max_left _ _
-  have hA₄' : A₄ ≤ A := le_max_right _ _
   have hrewrite :
       ∀ {t : ℝ} (ht0 : 0 < t),
         (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -126,7 +124,8 @@ lemma exists_phi0_cancellation_bound :
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
       simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
         (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
-    obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans hA₂'⟩ hg_cont
+    obtain ⟨t₀, _, ht₀max⟩ :=
+      isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩ hg_cont
     exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, lt_of_lt_of_le (by dsimp [Clarge]; positivity) (le_max_left _ _), ?_⟩
@@ -138,9 +137,9 @@ lemma exists_phi0_cancellation_bound :
       simpa [show φ₀'' ((Complex.I : ℂ) * (t : ℂ)) = φ₀ z by
         simpa [z, zI] using (φ₀''_coe_upperHalfPlane z)] using hφ₀ t ht1
     have hφ₂z : ‖φ₂' z - (720 : ℂ)‖ ≤ C₂ * Real.exp (-2 * π * t) := by
-      simpa [z] using hφ₂ t ht0 (hA₂'.trans htA)
+      simpa [z] using hφ₂ t ht0 ((le_max_left _ _).trans htA)
     have hφ₄z : ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤ C₄ * Real.exp (-2 * π * t) := by
-      simpa [z] using hφ₄ t ht0 (hA₄'.trans htA)
+      simpa [z] using hφ₄ t ht0 ((le_max_right _ _).trans htA)
     have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
@@ -192,7 +191,6 @@ lemma exists_phi0_cancellation_bound :
     exact htri.trans (by gcongr; exact le_max_left _ _)
   · have htA' : t ≤ A := le_of_not_ge htA
     have hbound := hM t ht1 htA'
-    have hCle : M / Real.exp (-2 * π * A) ≤ C := le_max_right _ _
     have hexp_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
       (Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA' (by nlinarith [Real.pi_pos])).trans <| by
         simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
@@ -201,7 +199,7 @@ lemma exists_phi0_cancellation_bound :
       simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
         field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
         (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
-    nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right hCle
+    nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right (le_max_right Clarge _ : _ ≤ C)
       (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
 
 /-! ## Integrability of the "another integrand" for `0 < u`. -/
@@ -295,16 +293,13 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
         (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop]
           fun t : ℝ => Real.exp (b * t)).mul_isBigO hExpRef).congr_right
         (fun t => by rw [← Real.exp_add]; simp)).isBigO
-    have hO :
-        (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
-          fun t : ℝ => Real.exp (-b * t) :=
-      ((hfacBig.mul hExpRef).congr_left fun t => by
-        rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf).congr_right fun _ => by ring
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
         (b := (1 : ℝ))).2 <| integrable_of_isBigO_exp_neg (a := 1) (b := b) ha
         (by simpa [Set.Ici] using (by fun_prop :
           ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-            (Set.Ici (1 : ℝ)))) hO
+            (Set.Ici (1 : ℝ))))
+        (((hfacBig.mul hExpRef).congr_left fun t => by
+          rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf).congr_right fun _ => by ring)
   exact MeasureTheory.Integrable.mono' hdom.integrable
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi
       (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici)
