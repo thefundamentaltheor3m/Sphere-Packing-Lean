@@ -42,10 +42,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
                 Real.exp (-π * u * t)) := by
   open MagicFunction.b.RealIntegrals in
   rw [MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (by linarith : 0 ≤ u)]
-  have hLap :
-      (∫ t in Set.Ioi (0 : ℝ),
-          ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
-        -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
+  have hLap : (∫ t in Set.Ioi (0 : ℝ),
+        ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
+      -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
     rw [← MeasureTheory.integral_neg, MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ))
       measurableSet_Ioi (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
       (fun t _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc])]
@@ -75,9 +74,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
       (bLaplaceIntegral_convergent (u := u) hu).neg
     simpa [bContourIntegrandI_mul_I_eq_bLaplaceIntegrand] using hneg
-  have hintT_center :
-      IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
-        (Set.Ioi (1 : ℝ)) := by
+  have hintT_center : IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
+      (Set.Ioi (1 : ℝ)) := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
     let A : ℝ := max 1 Aψ
     let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
@@ -109,19 +107,15 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       have hg : Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
           (volume.restrict (Set.Ioi A)) := by
         simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-          ((by
-              simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
-                (mul_pos Real.pi_pos (sub_pos.2 hu)) :
-            IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A)).const_mul Cψ)
+          (exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
+            (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cψ
       simpa [MeasureTheory.IntegrableOn] using
         hg.mono' (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
           (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
           measurableSet_Ioi)
           (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht))
-  have hintT_shift (a : ℂ)
-      (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
-      IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ)))
-        (Set.Ioi (1 : ℝ)) := by
+  have hintT_shift (a : ℂ) (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
+      IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ))) (Set.Ioi (1 : ℝ)) := by
     refine (show IntegrableOn (fun t : ℝ =>
         (-bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u a) (Set.Ioi (1 : ℝ)) by
       simpa [mul_assoc] using
@@ -129,8 +123,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have htendstoT :
-      ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
+  have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
     have hc : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     intro ε hε
@@ -291,8 +284,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := by
     simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, mul_assoc,
       show bContourWeight u (a + I * (t : ℂ)) =
-        bContourWeight u (I * (t : ℂ)) * bContourWeight u a from by
-      simpa [add_assoc, add_left_comm, add_comm] using bContourWeight_add (u := u) (I * (t : ℂ)) a]
+        bContourWeight u (I * (t : ℂ)) * bContourWeight u a by
+        simpa [add_assoc, add_left_comm, add_comm] using
+          bContourWeight_add (u := u) (I * (t : ℂ)) a]
   have hITS (z : ℂ) (hz : 0 < z.im) :
       bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
     simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, add_mul,
