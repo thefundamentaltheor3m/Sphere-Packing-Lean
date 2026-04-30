@@ -72,14 +72,10 @@ lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := 
   simpa [gN] using (hcoeff.pow n).continuousOn.mul hg
 
 lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ := by
-  have hx' : -1 < x := hx
-  have hmeas : AEStronglyMeasurable (gN_J6_integrand ψS.resToImagAxis n x)
-      ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) :=
-    gN_measurable (n := n) (x := x)
   simpa [μ, μIciOne] using
     (integrable_gN_J6 (f := ψS.resToImagAxis)
       (hBound := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
-      (n := n) (x := x) hx' (hmeas := hmeas))
+      (n := n) (x := x) hx (hmeas := gN_measurable (n := n) (x := x)))
 
 lemma coeff_norm (t : ℝ) (ht : t ∈ Ici (1 : ℝ)) : ‖coeff t‖ = π * t := by
   simpa [coeff] using SmoothIntegralIciOne.coeff_norm (t := t) ht
@@ -95,14 +91,11 @@ def G (n : ℕ) (x : ℝ) : ℂ := (-2 : ℂ) * F n x
 
 lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
     HasDerivAt (fun y : ℝ => F n y) (F (n + 1) x) x := by
-  have exists_bound :
-      ∃ C, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤
-        C * Real.exp (-(Real.pi * (1 : ℝ)) * t) := by
-    simpa [one_mul, mul_assoc] using exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   simpa [F, μ] using
     (SmoothIntegralIciOne.hasDerivAt_integral_gN
       (hf := ψS.resToImagAxis) (shift := (1 : ℝ))
-      (exists_bound_norm_hf := exists_bound)
+      (exists_bound_norm_hf := by
+        simpa [one_mul, mul_assoc] using exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
       (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
       (n := n) (x := x) hx (hF_int := by simpa [μ] using gN_integrable (n := n) (x := x) hx))
 
@@ -179,43 +172,35 @@ public theorem decay_J₆' :
       (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht =>
         by have ht0 : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hx_s : x ∈ s := lt_of_lt_of_le (by norm_num) hx
-  have hiter : iteratedDeriv n RealIntegrals.J₆' x = G n x := by
-    simpa [show RealIntegrals.J₆' = G 0 from funext J₆'_eq_G0] using
-      (iteratedDeriv_G_eq (n := n) (m := 0)) hx_s
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
-    have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := by
-      have hnorm : ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
-        have hEq : F n x = ∫ t, gN n x t ∂μ := by simp [F, μ, μIciOne]
-        simpa [hEq] using (norm_integral_le_integral_norm (μ := μ) (f := gN n x))
-      have hbound_ae :
-          ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-Real.pi * x) := by
-        refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
-        intro t ht
-        have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-        have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by simp [coeff_norm t ht]
-        have hψ : ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t) := hCψ t ht
-        have hg : ‖g x t‖ ≤ ‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t) :=
-          g_norm_bound (x := x) (t := t)
-        have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
-          SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
-            (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
-        calc
-          ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
-                simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
-          _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by gcongr
-          _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
-                gcongr
-          _ = bound t * Real.exp (-Real.pi * x) := by ring
-      have hbound_int' : Integrable (fun t ↦ bound t * Real.exp (-Real.pi * x)) μ := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          hbound_int.mul_const (Real.exp (-Real.pi * x))
-      have hle : ∫ t, ‖gN n x t‖ ∂μ ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ :=
-        integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
-          hbound_int' hbound_ae
-      calc ‖F n x‖
-          ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ := hnorm.trans hle
-        _ = Kn * Real.exp (-Real.pi * x) := by
+    have hbound_ae :
+        ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-Real.pi * x) := by
+      refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
+      intro t ht
+      have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
+      have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by simp [coeff_norm t ht]
+      have hψ : ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t) := hCψ t ht
+      have hg : ‖g x t‖ ≤ ‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t) :=
+        g_norm_bound (x := x) (t := t)
+      have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
+        SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
+          (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
+      calc
+        ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
+              simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
+        _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by gcongr
+        _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
+              gcongr
+        _ = bound t * Real.exp (-Real.pi * x) := by ring
+    have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := calc
+      ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
+            simpa [show F n x = ∫ t, gN n x t ∂μ by simp [F, μ, μIciOne]] using
+              (norm_integral_le_integral_norm (μ := μ) (f := gN n x))
+      _ ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ :=
+            integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
+              (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+                hbound_int.mul_const (Real.exp (-Real.pi * x))) hbound_ae
+      _ = Kn * Real.exp (-Real.pi * x) := by
             simpa [Kn] using
               (integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound))
     calc ‖G n x‖
@@ -223,14 +208,18 @@ public theorem decay_J₆' :
           simpa [G, norm_mul, mul_assoc] using
             mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
       _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
-  have hpoly : x ^ k * Real.exp (-Real.pi * x) ≤ B := hB x hx
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖
         = x ^ k * ‖G n x‖ := by
-          simp [Real.norm_of_nonneg hx, hiter, norm_iteratedFDeriv_eq_norm_iteratedDeriv]
+          simp [Real.norm_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+            show iteratedDeriv n RealIntegrals.J₆' x = G n x by
+              simpa [show RealIntegrals.J₆' = G 0 from funext J₆'_eq_G0] using
+                (iteratedDeriv_G_eq (n := n) (m := 0))
+                  (lt_of_lt_of_le (by norm_num) hx : x ∈ s)]
     _ ≤ x ^ k * (2 * Kn * Real.exp (-Real.pi * x)) := by gcongr
     _ = (2 * Kn) * (x ^ k * Real.exp (-Real.pi * x)) := by ring_nf
-    _ ≤ (2 * Kn) * B := by simpa using mul_le_mul_of_nonneg_left hpoly (by positivity : 0 ≤ 2 * Kn)
+    _ ≤ (2 * Kn) * B := by
+      simpa using mul_le_mul_of_nonneg_left (hB x hx) (by positivity : 0 ≤ 2 * Kn)
     _ = 2 * Kn * B := by ring
 
 end
