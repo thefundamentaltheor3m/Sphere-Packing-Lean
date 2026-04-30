@@ -38,17 +38,9 @@ lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : 
 section Definitions
 
 /- The Eisenstein Series E₄ and E₆ -/
+def E₄ := E 4 (by norm_num)
 
-def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) standardcongruencecondition /-they need 1/2 for the
-    normalization to match up (since the sum here is taken over coprime integers).-/
-
-def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) standardcongruencecondition
-
-lemma E4_eq : E₄ = E 4 (by norm_num) := rfl
-
-lemma E6_eq : E₆ = E 6 (by norm_num) := rfl
+def E₆ := E 6 (by norm_num)
 
 lemma E4_apply (z : ℍ) : E₄ z = E 4 (by norm_num) z := rfl
 
