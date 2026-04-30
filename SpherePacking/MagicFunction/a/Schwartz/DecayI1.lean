@@ -106,9 +106,8 @@ lemma hasDerivAt_gN (n : ℕ) (r s : ℝ) :
   have hg : HasDerivAt (fun r : ℝ ↦ g r s) (coeff s * g r s) r := by
     simpa [g, show ∀ r : ℝ, cexp ((r : ℂ) * coeff s) =
         cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ)) from fun r => by
-        rw [← Complex.exp_add]; congr 1; simp [coeff]; ring,
-      mul_assoc, mul_left_comm, mul_comm] using
-      SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+        rw [← Complex.exp_add]; congr 1; simp [coeff]; ring, mul_assoc, mul_left_comm, mul_comm]
+      using SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
         (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
   simpa [gN, pow_succ, mul_assoc] using hg.const_mul (coeff s ^ n)
 
@@ -136,13 +135,12 @@ lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) μ := by
     (continuousOn_const.mul (continuousOn_const.add hinv) :
       ContinuousOn (fun s : ℝ ↦ (-π : ℂ) * ((I : ℂ) + (s : ℂ)⁻¹)) (Ici (1 : ℝ))).congr
       fun s _ => by simp [coeff, one_div]
-  have hexp : ContinuousOn (fun s : ℝ ↦ cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ))) (Ici (1 : ℝ)) := by
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-      (continuousOn_const.mul hinv :
-        ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ))).cexp
   have hg : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : ℝ)) :=
     (((continuousOn_const.mul φ₀''_I_mul_continuousOn).mul zpow_neg_four_continuousOn).mul
-      continuousOn_const).mul hexp
+      continuousOn_const).mul <| by
+      simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+        (continuousOn_const.mul hinv :
+          ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ))).cexp
   simpa [μ, SpherePacking.Integration.μIciOne] using
     ((by simpa [gN] using (hcoeff.pow n).mul hg :
       ContinuousOn (fun s : ℝ ↦ gN n r s) (Ici (1 : ℝ))).aestronglyMeasurable measurableSet_Ici)
@@ -160,8 +158,8 @@ lemma exp_neg_pi_mul_div_le_exp_pi_abs (r s : ℝ) (hs : 1 ≤ s) :
       mul_le_mul_of_nonneg_left (this.trans (div_le_self (abs_nonneg r) hs)) Real.pi_pos.le
 
 lemma integrable_gN (n : ℕ) (r : ℝ) : Integrable (gN n r) μ := by
-  let K : ℝ := (2 * π) ^ n * (Cφ * rexp (π * |r|))
-  refine (integrable_exp_neg_two_pi.const_mul K).mono' (gN_measurable (n := n) (r := r)) ?_
+  refine (integrable_exp_neg_two_pi.const_mul ((2 * π) ^ n * (Cφ * rexp (π * |r|)))).mono'
+    (gN_measurable (n := n) (r := r)) ?_
   refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
   refine (gN_norm_bound (n := n) (r := r) (s := s) hs).trans ?_
   have hExp : rexp (-π * r / s) ≤ rexp (π * |r|) :=
@@ -256,10 +254,6 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
       x ^ k * (∫ s in Ici (1 : ℝ), rexp (-2 * π * s) * rexp (-π * x / s)) ≤
         ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)) := by
   intro x hx
-  have hInt : IntegrableOn (fun s : ℝ ↦ s ^ k * rexp (-2 * π * s)) (Ici (1 : ℝ)) volume := by
-    simpa [mul_assoc] using
-      SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := k) (b := 2 * π)
-        (by positivity)
   let f : ℝ → ℝ := fun s ↦ x ^ k * (rexp (-2 * π * s) * rexp (-π * x / s))
   let g : ℝ → ℝ := fun s ↦ ((π ^ k)⁻¹ * Cpow) * (s ^ k * rexp (-2 * π * s))
   have hf_int : IntegrableOn f (Ici (1 : ℝ)) volume := by
@@ -267,11 +261,14 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
       (MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := (1 : ℝ))).const_mul
         (x ^ k)
   have hg_int : IntegrableOn g (Ici (1 : ℝ)) volume := by
-    simpa [g, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((π ^ k)⁻¹ * Cpow)
+    simpa [g, mul_assoc, mul_left_comm, mul_comm] using
+      ((show IntegrableOn (fun s : ℝ ↦ s ^ k * rexp (-2 * π * s)) (Ici (1 : ℝ)) volume by
+        simpa [mul_assoc] using
+          SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := k) (b := 2 * π)
+            (by positivity))).const_mul ((π ^ k)⁻¹ * Cpow)
   have hmono : ∀ s ∈ Ici (1 : ℝ), f s ≤ g s := fun s hs => by
     have hpt := xpow_mul_exp_neg_pi_div_le (k := k) (x := x) (s := s) hx hs (Cpow := Cpow) hCpow
-    calc f s
-        = rexp (-2 * π * s) * (x ^ k * rexp (-π * x / s)) := by simp [f, mul_assoc, mul_comm]
+    calc f s = rexp (-2 * π * s) * (x ^ k * rexp (-π * x / s)) := by simp [f, mul_assoc, mul_comm]
       _ ≤ rexp (-2 * π * s) * (((π ^ k)⁻¹ * Cpow) * s ^ k) := by gcongr
       _ = g s := by simp [g, mul_assoc, mul_left_comm, mul_comm]
   simpa [show (∫ s in Ici (1 : ℝ), f s) =
@@ -303,10 +300,10 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
         mul_le_mul_of_nonneg_left (norm_iteratedDeriv_le (n := n) (x := x)) (by positivity)
     _ = ((2*π) ^ n * Cφ) * (x ^ k * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s))) := by
         rw [show (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) =
-          ((2 * π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s)) by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
-              ((2 * π) ^ n * Cφ) (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s))]; ring
+          ((2 * π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s)) from by
+          simpa [mul_assoc, mul_left_comm, mul_comm] using MeasureTheory.integral_const_mul
+            (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))) ((2 * π) ^ n * Cφ)
+            (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s))]; ring
     _ ≤ ((2 * π) ^ n * Cφ) * (((π ^ k)⁻¹ * Cpow) * I) := mul_le_mul_of_nonneg_left
         (xpow_integral_le_of_Cpow (k := k) (Cpow := Cpow) hCpow x hx)
         (mul_nonneg (by positivity) Cφ_pos.le)
