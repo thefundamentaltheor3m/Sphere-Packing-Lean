@@ -118,8 +118,7 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
         simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
     _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := by
-        gcongr
-        simpa [Real.norm_eq_abs] using abs_re_le_norm _
+        gcongr; simpa [Real.norm_eq_abs] using abs_re_le_norm _
     _ ≤ g' m := by simp [g']
 
 include hP hCohnElkies₁ in
@@ -246,8 +245,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
         (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
         rw [ge_iff_le, ← tsub_nonpos, mul_assoc, ← mul_sub (1 / _) _ _]
-        simp only [sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
-        exact mul_nonneg (one_div_nonneg.mpr (ZLattice.covolume_pos P.lattice volume).le)
+        simpa using mul_nonneg (one_div_nonneg.mpr (ZLattice.covolume_pos P.lattice volume).le)
           (SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
             (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
