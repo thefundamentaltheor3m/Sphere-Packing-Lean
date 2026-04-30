@@ -98,12 +98,10 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
         (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by
     have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-      rw [show a = ((Real.exp (-Real.pi * t / 4) : ℝ) : ℂ) from rfl, ← Complex.ofReal_pow,
-        ← Real.exp_nat_mul]; push_cast; ring_nf
+      rw [show a = _ from rfl, ← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf
     have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-      rw [show a = ((Real.exp (-Real.pi * t / 4) : ℝ) : ℂ) from rfl, show b =
-        ((Real.exp (-(9/4 : ℝ) * Real.pi * t) : ℝ) : ℂ) from rfl, ← Complex.ofReal_pow,
-        ← Complex.ofReal_mul, ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf
+      rw [show a = _ from rfl, show b = _ from rfl, ← Complex.ofReal_pow, ← Complex.ofReal_mul,
+        ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf
     grind only
   have hy_tail : ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
         (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
