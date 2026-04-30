@@ -78,12 +78,6 @@ public lemma exists_phi2'_phi4'_bound_exp :
     hφ4.trans <| mul_le_mul_of_nonneg_right
       ((le_max_left _ _).trans (le_max_right _ _)) (Real.exp_pos _).le⟩
 
-/-- A convenient form of `φ₀_S_transform`, clearing the denominators by multiplying by `z^2`. -/
-public lemma φ₀_S_transform_mul_sq (w : ℍ) :
-    φ₀ (ModularGroup.S • w) * ((w : ℂ) ^ (2 : ℕ)) =
-        φ₀ w * ((w : ℂ) ^ (2 : ℕ)) - (12 * Complex.I) / π * (w : ℂ) * φ₂' w -
-          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' w := by simpa using _root_.φ₀_S_transform_mul_sq w
-
 /-- Integrability of `Φ₆'` on the imaginary axis tail `t > 1`. -/
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
@@ -145,12 +139,11 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
   have hCφ_nonneg : 0 ≤ Cφ :=
     le_of_mul_le_mul_right (by simpa using (norm_nonneg _).trans hφ2) (Real.exp_pos _)
   have htri : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-      ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
-        ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
-          ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
+      ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ + ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
+        ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
     rw [show φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) =
         φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) - (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH -
-          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH by simpa using φ₀_S_transform_mul_sq (w := wH)]
+          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH by simpa using _root_.φ₀_S_transform_mul_sq wH]
     exact (norm_sub_le _ _).trans <| by gcongr; exact norm_sub_le _ _
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
@@ -258,17 +251,13 @@ Integrability of `Φ₄'` on the imaginary-axis tail `t > 1`, via the finite-dif
 -/
 public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₄' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
-  have h6 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I))
-      (Set.Ioi (1 : ℝ)) volume := by
+  have h6 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
     simpa [mul_assoc] using (integrableOn_Φ₆'_imag_axis (u := u) hu).const_mul (2 : ℂ)
-  have h5 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₅' u ((t : ℂ) * I))
-      (Set.Ioi (1 : ℝ)) volume := by
+  have h5 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₅' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
     simpa [mul_assoc] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul (2 : ℂ)
   have hcomb : IntegrableOn
-      (fun t : ℝ =>
-        (2 : ℂ) * Φ₆' u ((t : ℂ) * I) - Φ₂' u ((t : ℂ) * I) +
-          (2 : ℂ) * Φ₅' u ((t : ℂ) * I))
-      (Set.Ioi (1 : ℝ)) volume :=
+      (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I) - Φ₂' u ((t : ℂ) * I) +
+        (2 : ℂ) * Φ₅' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume :=
     (h6.sub (integrableOn_Φ₂'_imag_axis (u := u) hu)).add h5
   refine hcomb.congr_fun (fun t ht => ?_) measurableSet_Ioi
   have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht)
