@@ -63,7 +63,7 @@ public noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpher
     AddAction S.lattice S.centers where
   vadd x y := ⟨↑x + ↑y, S.lattice_action x.prop y.prop⟩
   zero_vadd y := Subtype.ext (zero_add y.val)
-  add_vadd u v p := Subtype.ext (add_assoc u.val v.val p.val)
+  add_vadd u v p := Subtype.ext (add_assoc ..)
 
 alias PeriodicSpherePacking.instAddAction := PeriodicSpherePacking.addAction
 
@@ -255,7 +255,6 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R le_rfl,
@@ -279,8 +278,7 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
     Finite ↑(S.centers ∩ ball 0 R) := by
   rcases eq_or_ne d 0 with rfl | hd
   · exact Finite.Set.subset _ Set.inter_subset_right
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp (Nat.pos_of_ne_zero hd)
-  refine Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
+  exact Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
     (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <| ENNReal.div_lt_top
       ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
       (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
@@ -290,7 +288,6 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
       ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
@@ -302,7 +299,6 @@ public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
       ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.div_le_iff_le_mul
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
