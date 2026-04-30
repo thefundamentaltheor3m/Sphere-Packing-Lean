@@ -42,15 +42,6 @@ open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions Schwa
 
 section Integral_Permutations
 
-lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
-    [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
-    FourierTransform.fourierCLE ℂ (SchwartzMap V E)
-        (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = fun x => f (-x) := by
-  ext x; simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using congrFun
-    (f.continuous.fourierInv_fourier_eq f.integrable
-      (by simpa using (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f).integrable)) (-x)
-
 /-- If `f` is an even Schwartz function, then applying the Fourier transform twice gives back `f`.
 
 This is used to invert permutation identities for radial (hence even) functions. -/
@@ -59,20 +50,10 @@ public lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSp
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) (hf : Function.Even f) :
     FourierTransform.fourierCLE ℂ (SchwartzMap V E)
         (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = f := by
-  ext x; simpa [hf x] using congrFun (fourier_involution (V:=V) (E:=E) f) x
-
-lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
-  simpa using (MagicFunction.a.SpecialValues.φ₀''_add_one (z := z - 1) (by simpa using hz)).symm
-
-lemma neg_one_div_sub_one_im_pos (w : ℂ) (hw : 0 < w.im) :
-    0 < (-1 / (w - 1)).im := by
-  have hw' : 0 < (w - 1).im := by simpa using hw
-  have hne : w - 1 ≠ 0 := fun h => absurd (by simp [h] : (w - 1).im = 0) hw'.ne'
-  simpa [div_eq_mul_inv, sub_eq_add_neg, Complex.inv_im] using
-    div_pos hw' (Complex.normSq_pos.2 hne)
-
-lemma one_sub_inv_sq_mul_sq (w : ℂ) (hw : w ≠ 0) :
-    ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 := by field_simp [hw]; ring
+  ext x
+  simpa [hf x, Real.fourierInv_eq_fourier_neg, neg_neg] using congrFun
+    (f.continuous.fourierInv_fourier_eq f.integrable
+      (by simpa using (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f).integrable)) (-x)
 
 lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
     φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 * w ^ 2 =
@@ -80,23 +61,23 @@ lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
   have hw0 : w ≠ 0 := fun h => absurd (show w.im = 0 by simp [h]) hw.ne'
   have hw' : 0 < (w - 1).im := by simpa using hw
   have hw1 : w - 1 ≠ 0 := fun h => absurd (show (w - 1).im = 0 by simp [h]) hw'.ne'
-  rw [mul_assoc, one_sub_inv_sq_mul_sq w hw0,
+  have hzpos : 0 < (-1 / (w - 1)).im := by
+    simpa [div_eq_mul_inv, sub_eq_add_neg, Complex.inv_im] using
+      div_pos hw' (Complex.normSq_pos.2 hw1)
+  rw [mul_assoc, show ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 by field_simp [hw0]; ring,
     show (-1 / ((-1 / w) + 1) : ℂ) = (-1 / (w - 1)) - 1 by grind only,
-    φ₀''_sub_one (z := -1 / (w - 1)) (neg_one_div_sub_one_im_pos w hw)]
-
-lemma I_div_neg_one_div_pow_four_mul_one_div_sq (w : ℂ) :
-    ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (1 / w ^ (2 : ℕ)) = w ^ (2 : ℕ) := by
-  rcases eq_or_ne w 0 with rfl | hw
-  · simp
-  · field_simp; simp [Complex.I_pow_four]
+    show φ₀'' ((-1 / (w - 1)) - 1) = φ₀'' (-1 / (w - 1)) by
+      simpa using (MagicFunction.a.SpecialValues.φ₀''_add_one
+        (z := -1 / (w - 1) - 1) (by simpa using hzpos)).symm]
 
 lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
     φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 *
         (((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹) =
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
-  simpa [show ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) from by
-    simpa [div_eq_mul_inv] using I_div_neg_one_div_pow_four_mul_one_div_sq (w := w)] using
-    φ₀''_inv_add_one_mul_sq (w := w) hw
+  simpa [show ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) by
+    rcases eq_or_ne w 0 with rfl | hw0
+    · simp
+    · field_simp; simp [Complex.I_pow_four]] using φ₀''_inv_add_one_mul_sq (w := w) hw
 
 section CurveIntegral
 open scoped Interval
