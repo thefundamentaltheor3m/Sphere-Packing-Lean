@@ -65,13 +65,13 @@ private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     bAnotherBase_integrable_exp hu
 
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
-  refine (((((aAnotherIntegrand_integrable_of_pos hu).neg.add
+    IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) :=
+  ((((aAnotherIntegrand_integrable_of_pos hu).neg.add
     ((integrable_bAnother hu).const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).add
       ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul ((8640 / π : ℝ) : ℂ))).sub
     ((integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul
-      ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).congr ?_).symm.symm
-  exact MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+      ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).congr <|
+  MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       (IntegralB.B_mul_exp_eq_decomp (t := t) ht).symm
 
@@ -194,9 +194,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           using IntegralB.integral_B_mul_exp_decomp hx,
       integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
-  have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-  have huC : (u : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hx
-  have hu2C : (u - 2 : ℂ) ≠ 0 := by exact_mod_cast sub_ne_zero.2 hx2
   have hBracket :
       (-(π / 2160 : ℂ)) *
             ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
