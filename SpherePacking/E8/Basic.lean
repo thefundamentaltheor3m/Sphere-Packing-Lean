@@ -299,16 +299,13 @@ def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
      0, 0, 0, -1, 2, -1, 0, 0; 0, 0, 0, 0, -1, 2, -1, 0;
      0, 0, 0, 0, 0, -1, 2, 0; 1, 0, 0, 0, 0, 0, 0, 2]
 
-lemma E8Matrix_mul_E8Matrix_transpose [Field R] [CharZero R] :
-    E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
-  rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
-    show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
-    Matrix.map_map]; ext; simp
-
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by
-  simpa [Matrix.mul_apply', Matrix.col_transpose]
-    using congrArg (· i j) (E8Matrix_mul_E8Matrix_transpose (R := R))
+  have : E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
+    rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
+      show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
+      Matrix.map_map]; ext; simp
+  simpa [Matrix.mul_apply', Matrix.col_transpose] using congrArg (· i j) this
 
 /-- The squared norm of a vector in `E8` is an even integer. -/
 public theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
