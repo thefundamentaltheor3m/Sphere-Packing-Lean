@@ -31,15 +31,6 @@ private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
       fun t ht => by exact_mod_cast (hs t ht).ne')
     fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
 
-private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
-    ContinuousOn (fun t : ℝ =>
-        (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s :=
-  ((((by fun_prop : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s).mul
-    (continuousOn_phi0''_Idiv hs)).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
-
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
 lemma exists_phi0_cancellation_bound :
@@ -115,8 +106,12 @@ lemma exists_phi0_cancellation_bound :
           ((8640 / π : ℝ) : ℂ) * t -
           ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
-      simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
-        (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
+      have hs : ∀ t ∈ Set.Icc (1 : ℝ) A, 0 < t :=
+        fun t ht => lt_of_lt_of_le (by norm_num) ht.1
+      simpa [g] using (((((by fun_prop :
+        ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
+        (continuousOn_phi0''_Idiv hs)).sub (by fun_prop)).add (by fun_prop)).sub
+        (by fun_prop)).norm
     obtain ⟨t₀, _, ht₀max⟩ :=
       isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩ hg_cont
     exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
@@ -278,20 +273,19 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
     set b : ℝ := (2 * π + π * u) / 2
-    have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
-        fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
     have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
         fun _t : ℝ => (1 : ℝ) :=
       ((((isLittleO_pow_exp_pos_mul_atTop 2 ha).const_mul_left C :
         (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop]
-          fun t : ℝ => Real.exp (b * t)).mul_isBigO hExpRef).congr_right
+          fun t : ℝ => Real.exp (b * t)).mul_isBigO (Asymptotics.isBigO_refl _ _)).congr_right
         (fun t => by rw [← Real.exp_add]; simp)).isBigO
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
         (b := (1 : ℝ))).2 <| integrable_of_isBigO_exp_neg (a := 1) (b := b) ha
         (by simpa [Set.Ici] using (by fun_prop :
           ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
             (Set.Ici (1 : ℝ))))
-        (((hfacBig.mul hExpRef).congr_left fun t => by
+        (((hfacBig.mul (Asymptotics.isBigO_refl
+          (fun t : ℝ => Real.exp (-b * t)) atTop)).congr_left fun t => by
           rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf).congr_right fun _ => by ring)
   exact MeasureTheory.Integrable.mono' hdom.integrable
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi
