@@ -39,15 +39,12 @@ theorem split_zero : (0 : ℂ) = ⟨0, 0⟩ := rfl
 theorem split_one : (1 : ℂ) = ⟨1, 0⟩ := rfl
 
 /-- Split an addition into componentwise addition in `Complex.mk` form. -/
-theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ}
-    (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ :=
-  Ring.add_congr h₁ h₂ rfl
+theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
+    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := Ring.add_congr h₁ h₂ rfl
 
 /-- Split a multiplication into real and imaginary parts in `Complex.mk` form. -/
 theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ :=
-  Ring.mul_congr h₁ h₂ rfl
+    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ := Ring.mul_congr h₁ h₂ rfl
 
 /-- Split an inverse into real and imaginary parts in `Complex.mk` form. -/
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
@@ -106,8 +103,7 @@ partial def parse (z : Q(ℂ)) :
     let args := z.getAppArgs
     let a : Q(ℝ) := args[0]!
     let b : Q(ℝ) := args[1]!
-    let pf ← mkEqRefl z
-    return ⟨a, b, (show Q($z = ⟨$a, $b⟩) from pf)⟩
+    return ⟨a, b, (show Q($z = ⟨$a, $b⟩) from ← mkEqRefl z)⟩
   match z with
   /- parse an addition: `z₁ + z₂` -/
   | ~q($z₁ + $z₂) =>
@@ -138,13 +134,11 @@ partial def parse (z : Q(ℂ)) :
   /- parse an integer power: `w ^ (n : ℤ)` when `n` is a numeral -/
   | ~q(@HPow.hPow ℂ ℤ ℂ instHPow $w (-$n)) =>
     let ⟨a, b, pf⟩ ← parse q(($w ^ $n)⁻¹)
-    let hpow : Q($w ^ (-$n) = ($w ^ $n)⁻¹) := q(zpow_neg (a := $w) $n)
-    return ⟨a, b, q(Eq.trans $hpow $pf)⟩
+    return ⟨a, b, q(Eq.trans (zpow_neg (a := $w) $n) $pf)⟩
   | ~q(@HPow.hPow ℂ ℤ ℂ instHPow $w (@OfNat.ofNat ℤ $n (@instOfNat $n))) =>
     let ⟨a, b, pf⟩ ← parse q($w ^ $n)
     let hpow : Q($w ^ (@OfNat.ofNat ℤ $n (@instOfNat $n)) = $w ^ $n) := q(by
-      dsimp [OfNat.ofNat, instOfNat]
-      exact zpow_natCast (a := $w) $n)
+      dsimp [OfNat.ofNat, instOfNat]; exact zpow_natCast (a := $w) $n)
     return ⟨a, b, q(Eq.trans $hpow $pf)⟩
   | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n) =>
     let some k := n.nat? <|> n.rawNatLit? |
@@ -188,14 +182,12 @@ def getComplexLhs : TacticM Q(ℂ) := do
 
 /-- Conv tactic: rewrite a complex expression into `Complex.mk` form and simplify by `norm_num`. -/
 elab "norm_numI" : conv => do
-  let z ← getComplexLhs
-  let ⟨a, b, pf⟩ ← normalize z
+  let ⟨a, b, pf⟩ ← normalize (← getComplexLhs)
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
 /-- Conv tactic: rewrite a complex expression into `Complex.mk` form using `parse` only. -/
 elab "norm_numI_parse" : conv => do
-  let z ← getComplexLhs
-  let ⟨a, b, pf⟩ ← parse z
+  let ⟨a, b, pf⟩ ← parse (← getComplexLhs)
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
 end NormNumI
@@ -231,8 +223,7 @@ such that `norm_num` successfully recognises the real part of `z`.
   have z : Q(ℂ) := z
   haveI' : $e =Q (Complex.re $z) := ⟨⟩
   let ⟨a, _, pf⟩ ← NormNumI.parse z
-  let r ← derive q($a)
-  return r.eqTrans q(NormNumI.re_eq_of_eq $pf)
+  return (← derive q($a)).eqTrans q(NormNumI.re_eq_of_eq $pf)
 
 /-- The `norm_num` extension which identifies expressions of the form `Complex.im (z : ℂ)`,
 such that `norm_num` successfully recognises the imaginary part of `z`.
@@ -243,14 +234,12 @@ such that `norm_num` successfully recognises the imaginary part of `z`.
   have z : Q(ℂ) := z
   haveI' : $e =Q (Complex.im $z) := ⟨⟩
   let ⟨_, b, pf⟩ ← NormNumI.parse z
-  let r ← derive q($b)
-  return r.eqTrans q(NormNumI.im_eq_of_eq $pf)
+  return (← derive q($b)).eqTrans q(NormNumI.im_eq_of_eq $pf)
 
 end Mathlib.Meta.NormNum
 open Lean Elab Tactic in
 /-- `norm_num1` conv tactic for complex numbers. -/
 @[tactic Mathlib.Tactic.normNum1Conv] def normNum1ConvComplex : Tactic :=
   fun _ => withMainContext do
-  let z ← Mathlib.Meta.NormNumI.getComplexLhs
-  let ⟨a, b, pf⟩ ← Mathlib.Meta.NormNumI.normalize z
+  let ⟨a, b, pf⟩ ← Mathlib.Meta.NormNumI.normalize (← Mathlib.Meta.NormNumI.getComplexLhs)
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
