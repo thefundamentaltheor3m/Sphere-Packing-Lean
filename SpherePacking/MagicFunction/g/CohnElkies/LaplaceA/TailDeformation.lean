@@ -68,11 +68,11 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
               simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
           mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ <| by
-            have hs' : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by simpa [Complex.norm_real] using hs
-            have : ‖(t : ℂ) * Complex.I‖ = t := by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
-            change ‖(wH : ℂ)‖ ≤ 2 * t
             simp only [w, wH]
-            linarith [norm_add_le ((s : ℝ) : ℂ) ((t : ℂ) * Complex.I)]) (Real.exp_pos _).le
+            linarith [norm_add_le ((s : ℝ) : ℂ) ((t : ℂ) * Complex.I),
+              (by simpa [Complex.norm_real] using hs : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ)),
+              (by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)] :
+                ‖(t : ℂ) * Complex.I‖ = t)]) (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
@@ -205,8 +205,8 @@ private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ :
       (hcontU.mono fun z hz => show 0 < z.im from lt_of_lt_of_le zero_lt_one
         (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ici (1 : ℝ)).2)
       (fun z hz =>
-        have hz0 : 0 < z.im := lt_trans zero_lt_one
-          (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
+        have hz0 : 0 < z.im :=
+          lt_trans zero_lt_one (by simpa [mem_reProdIm] using hz : _ ∧ z.im ∈ Set.Ioi (1 : ℝ)).2
         (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0))
       hint₁ hint₂ htop)
 
@@ -259,29 +259,29 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
   rw [show (∫ t in Set.Ici (1 : ℝ),
             (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
         ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) from
-      MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
+      setIntegral_congr_fun measurableSet_Ici fun t ht => by
         simp [show MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) from by
           simpa [mul_assoc, mul_comm, mul_left_comm] using
             MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht, mul_comm],
-    MeasureTheory.integral_Ici_eq_integral_Ioi,
-    (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
+    integral_Ici_eq_integral_Ioi,
+    (integral_const_mul (μ := μ) (r := (2 : ℂ))
       (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
-    MeasureTheory.setIntegral_congr_fun measurableSet_Ioi (fun t ht => by
+    setIntegral_congr_fun measurableSet_Ioi (fun t ht => by
       simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
         sub_eq_add_neg] using (congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
         (Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht))).symm :
       ∀ t ∈ Set.Ioi (1 : ℝ),
       (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
         (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t)),
-    MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
+    integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
       (f := fun t => f2 t - 2 * f5 t + f4 t)]
   calc (Complex.I : ℂ) * (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
       = (Complex.I : ℂ) * ((∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
         simpa using congrArg ((Complex.I : ℂ) * ·)
-          (MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4)
+          (integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4)
     _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
-        rw [MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2),
-          MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
+        rw [integral_sub (μ := μ) hf2 (hf5.const_mul 2),
+          integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
 
 /-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
 `Ioi 1` equals `E` times the central ray integral. -/
@@ -289,7 +289,7 @@ private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E :
     (hG : ∀ t, 1 < t → G t = E * Φ₅' u ((t : ℂ) * Complex.I)) :
     (∫ t in Set.Ioi (1 : ℝ), G t) =
       E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
-  rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hG, MeasureTheory.integral_const_mul]
+  rw [setIntegral_congr_fun measurableSet_Ioi hG, integral_const_mul]
 
 /-- Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`. -/
 public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) :
