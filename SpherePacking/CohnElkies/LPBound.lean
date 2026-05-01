@@ -176,9 +176,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-        congr! 9 with m x y
-        simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm,
-          RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
+        congr! 9 with m x y; simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
+          mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
@@ -186,8 +185,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
       (∑' y : ↑(P.centers ∩ D),
       exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re := by
         simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
-        congr! 9 with m x y
-        simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
+        congr! 9 with m x y; simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
@@ -195,8 +193,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
       conj (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
         simp_rw [conj_tsum]
-        congr! 7 with m x
-        exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
+        congr! 7 with m x; exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
         (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
