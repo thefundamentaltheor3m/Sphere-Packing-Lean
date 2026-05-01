@@ -250,11 +250,12 @@ private theorem disjoint_vadd_fundamentalDomain
     Disjoint (x +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))
       (y +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
   let b' := b.ofZLatticeBasis ℝ _
-  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) := Submodule.span ℤ (Set.range b')
-  simpa [Λ] using disjoint_vadd_of_unique_covers (Λ := Λ) (D := fundamentalDomain b')
+  simpa using disjoint_vadd_of_unique_covers (Λ := Submodule.span ℤ (Set.range b'))
+    (D := fundamentalDomain b')
     (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain b' u)
-    fun h ↦ hxy <| congrArg Subtype.val (h : (⟨x, by simpa [Λ, b', S.basis_Z_span] using hx⟩ : Λ) =
-      ⟨y, by simpa [Λ, b', S.basis_Z_span] using hy⟩)
+    fun h ↦ hxy <| congrArg Subtype.val
+      (h : (⟨x, by simpa [b', S.basis_Z_span] using hx⟩ : Submodule.span ℤ (Set.range b')) =
+        ⟨y, by simpa [b', S.basis_Z_span] using hy⟩)
 
 private lemma pairwiseDisjoint_centers_inter_vadd
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {C : Set (EuclideanSpace ℝ (Fin d))} :
