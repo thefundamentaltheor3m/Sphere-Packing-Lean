@@ -82,11 +82,10 @@ public lemma exists_phi2'_phi4'_bound_exp :
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
   obtain ⟨C₀, _, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  set b : ℝ := π * (u + 2)
-  have hb : 0 < b := mul_pos Real.pi_pos (by linarith)
+  set b : ℝ := π * (u + 2) with hb_def
   refine MeasureTheory.Integrable.mono'
     (by simpa [IntegrableOn, mul_assoc] using
-      ((exp_neg_integrableOn_Ioi 1 hb).const_mul C₀ :
+      ((exp_neg_integrableOn_Ioi 1 (hb_def ▸ mul_pos Real.pi_pos (by linarith))).const_mul C₀ :
         IntegrableOn (fun t : ℝ => C₀ * Real.exp (-b * t)) (Set.Ioi (1 : ℝ)) volume))
     (((Φ₆'_contDiffOn_ℂ (r := u)).continuousOn.comp
       (by fun_prop) (fun t ht => by simpa using lt_trans zero_lt_one ht :
@@ -251,14 +250,13 @@ Integrability of `Φ₄'` on the imaginary-axis tail `t > 1`, via the finite-dif
 -/
 public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₄' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
-  have h6 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
-    simpa [mul_assoc] using (integrableOn_Φ₆'_imag_axis (u := u) hu).const_mul (2 : ℂ)
-  have h5 : IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₅' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
-    simpa [mul_assoc] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul (2 : ℂ)
   have hcomb : IntegrableOn
       (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I) - Φ₂' u ((t : ℂ) * I) +
         (2 : ℂ) * Φ₅' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume :=
-    (h6.sub (integrableOn_Φ₂'_imag_axis (u := u) hu)).add h5
+    ((show IntegrableOn (fun t : ℝ => (2 : ℂ) * Φ₆' u ((t : ℂ) * I)) (Set.Ioi (1:ℝ)) volume by
+        simpa [mul_assoc] using (integrableOn_Φ₆'_imag_axis (u := u) hu).const_mul (2:ℂ)).sub
+      (integrableOn_Φ₂'_imag_axis (u := u) hu)).add <| by
+        simpa [mul_assoc] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul (2:ℂ)
   refine hcomb.congr_fun (fun t ht => ?_) measurableSet_Ioi
   have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht)
   grind only
