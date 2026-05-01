@@ -56,10 +56,6 @@ noncomputable section
 @[expose] public def aAnotherIntegralC (u : ℂ) : ℂ :=
   ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrandC u t
 
-@[simp]
-lemma aAnotherIntegrandC_eq (u : ℂ) (t : ℝ) :
-    aAnotherIntegrandC u t = aAnotherBase t * Complex.exp (-(π : ℂ) * u * (t : ℂ)) := rfl
-
 lemma aAnotherIntegrand_eq (u t : ℝ) :
     aAnotherIntegrand u t = aAnotherBase t * Real.exp (-π * u * t) := by
   simp [aAnotherIntegrand, aAnotherBase, mul_assoc]
@@ -77,35 +73,25 @@ public lemma aAnotherIntegralC_ofReal (u : ℝ) :
 
 /-- Continuity of `aAnotherBase` on `(0, ∞)`. -/
 lemma continuousOn_aAnotherBase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) := by
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) upperHalfPlaneSet := by
-    simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ Set.Ioi (0 : ℝ), (t : ℂ) ≠ 0 :=
-    fun t ht => by exact_mod_cast ne_of_gt ht
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ)) :=
-    continuous_const.continuousOn.div continuous_ofReal.continuousOn hden0
-  have hmaps :
-      Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ))
-        upperHalfPlaneSet := fun t ht => by
-    change 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
-    rw [imag_I_div t]; exact inv_pos.2 (by simpa using ht)
+    continuous_const.continuousOn.div continuous_ofReal.continuousOn fun t ht => by
+      exact_mod_cast ne_of_gt ht
   have hφcomp : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
-    hcontφ.comp hcontIdiv hmaps
+    (by simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn :
+      ContinuousOn (fun z : ℂ => φ₀'' z) upperHalfPlaneSet).comp hcontIdiv fun t ht => by
+        change 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
+        rw [imag_I_div t]; exact inv_pos.2 (by simpa using ht)
   have hpowC : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
   have hexp2C : Continuous fun t : ℝ => ((Real.exp (2 * π * t)) : ℂ) := by fun_prop
   exact (((hpowC.continuousOn.mul hφcomp).sub (continuousOn_const.mul hexp2C.continuousOn)).add
     (continuousOn_const.mul continuous_ofReal.continuousOn)).sub continuousOn_const
 
-/-- Integrability of `t ↦ aAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
-lemma aAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => aAnotherBase t * (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
-  (aAnotherIntegrand_integrable_of_pos hu).congr <|
-    Filter.Eventually.of_forall fun t => by simp [aAnotherIntegrand_eq]
-
 /-- `aAnotherIntegralC` is analytic on the right half-plane. -/
 public lemma aAnotherIntegralC_analyticOnNhd :
     AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by
   convert analyticOnNhd_integral_base_exp (base := aAnotherBase)
-    continuousOn_aAnotherBase (fun u hu => aAnotherBase_integrable_exp (u := u) hu) using 1
+    continuousOn_aAnotherBase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
+      Filter.Eventually.of_forall fun t => by simp [aAnotherIntegrand_eq]) using 1
 
 end
 
