@@ -110,14 +110,11 @@ public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
       show SpecialLinearGroup.toGL ((SpecialLinearGroup.map (Int.castRingHom ℝ)) S) • z =
         (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) by simpa using hsmul]
   have hzcoe : (z : ℂ) = (Complex.I : ℂ) * (t : ℂ) := by simp [z, hz5]
-  have hψI : ψI z = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-    have hslash : (ψS ∣[(-2 : ℤ)] S) z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-      simpa using slashS' (z := z) (F := ψS)
-    have hrel : ψI z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) :=
-      (congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S).symm.trans hslash
-    simpa [hψS', hzcoe] using hrel
-  have hψI' : ψI' (z₅' t) = ψI z := by simp [ψI', hz_im, z]
-  simpa [hψI'] using hψI
+  have hslash : (ψS ∣[(-2 : ℤ)] S) z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by
+    simpa using slashS' (z := z) (F := ψS)
+  simpa [show ψI' (z₅' t) = ψI z from by simp [ψI', hz_im, z], hψS', hzcoe] using
+    ((congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S).symm.trans hslash :
+      ψI z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ))
 
 lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
