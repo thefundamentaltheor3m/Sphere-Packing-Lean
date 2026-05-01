@@ -113,12 +113,8 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     simpa [A, tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
         n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
-      = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
-        simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
-    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := by
-        gcongr; simpa [Real.norm_eq_abs] using abs_re_le_norm _
-    _ ≤ g' m := by simp [g']
+  simp only [g', norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
+  gcongr; simpa [Real.norm_eq_abs] using abs_re_le_norm _
 
 include hP hCohnElkies₁ in
 open Classical in
