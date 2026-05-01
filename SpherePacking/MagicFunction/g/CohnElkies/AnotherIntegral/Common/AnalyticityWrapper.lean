@@ -75,9 +75,6 @@ public theorem analyticOnNhd_integral_base_exp
       (hbase_cont.aestronglyMeasurable measurableSet_Ioi).mul
         ((by fun_prop : Continuous fun t : ℝ =>
           Complex.exp (-(π : ℂ) * z * (t : ℂ))).aestronglyMeasurable)
-    have hF'_meas : AEStronglyMeasurable (F' u) μ :=
-      ((by fun_prop : Continuous fun t : ℝ =>
-        (-(π : ℂ) * (t : ℂ))).aestronglyMeasurable).mul (hF_meas u)
     have hε2 : 0 < ε / 2 := by positivity
     have hBase_ε2 :
         Integrable (fun t : ℝ => base t * (Real.exp (-π * (ε / 2) * t) : ℂ)) μ := by
@@ -90,16 +87,14 @@ public theorem analyticOnNhd_integral_base_exp
         (g := fun t : ℝ => ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖)
         hBase_ε2.norm (hF_meas u) ?_
       filter_upwards [hmem_Ioi] with t ht
-      have ht0 : 0 ≤ t := le_of_lt ht
-      have hExp_norm : ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ ≤ Real.exp (-π * (ε / 2) * t) :=
-        norm_exp_le_of_re_ge ht0 (by dsimp [ε]; linarith : (ε / 2 : ℝ) ≤ u.re)
-      have hnormExp : ‖(Real.exp (-π * (ε / 2) * t) : ℂ)‖ = Real.exp (-π * (ε / 2) * t) :=
-        Complex.norm_of_nonneg (Real.exp_nonneg _)
       calc
         ‖F u t‖ = ‖base t‖ * ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ := by simp [F]
         _ ≤ ‖base t‖ * Real.exp (-π * (ε / 2) * t) :=
-          mul_le_mul_of_nonneg_left hExp_norm (norm_nonneg _)
-        _ = ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖ := by rw [norm_mul, hnormExp]
+          mul_le_mul_of_nonneg_left
+            (norm_exp_le_of_re_ge ht.le (by dsimp [ε]; linarith : (ε / 2 : ℝ) ≤ u.re))
+            (norm_nonneg _)
+        _ = ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖ := by
+          rw [norm_mul, Complex.norm_of_nonneg (Real.exp_nonneg _)]
     let bound : ℝ → ℝ :=
       fun t => (2 / ε) * ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖
     have hbound_int : Integrable bound μ := by
@@ -116,8 +111,6 @@ public theorem analyticOnNhd_integral_base_exp
             lt_of_le_of_lt (abs_re_le_norm (z - u))
               (by simpa [Metric.mem_ball] using hz : ‖z - u‖ < ε)
         dsimp [ε] at hlt ⊢; nlinarith [(abs_lt.mp hlt).1]
-      have hExp : ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * ε * t) :=
-        norm_exp_le_of_re_ge ht0 hzre
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
         have h1 := mul_le_mul_of_nonneg_left
@@ -131,7 +124,7 @@ public theorem analyticOnNhd_integral_base_exp
       have hbase_nonneg : 0 ≤ ‖base t‖ := norm_nonneg _
       have hnorm_integ : ‖F z t‖ ≤ ‖base t‖ * Real.exp (-π * ε * t) := by
         simpa [F, norm_mul, mul_assoc, mul_left_comm, mul_comm] using
-          mul_le_mul_of_nonneg_left hExp hbase_nonneg
+          mul_le_mul_of_nonneg_left (norm_exp_le_of_re_ge ht0 hzre) hbase_nonneg
       have hnorm_base_exp :
           ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖ =
             ‖base t‖ * Real.exp (-π * (ε / 2) * t) := by
@@ -163,11 +156,10 @@ public theorem analyticOnNhd_integral_base_exp
         (s := Metric.ball u ε) (Metric.ball_mem_nhds u hε) (x₀ := u)
         (F := F) (F' := F') (bound := bound)
         (hF_meas := Filter.Eventually.of_forall hF_meas)
-        (hF_int := hF_int) (hF'_meas := hF'_meas)
+        (hF_int := hF_int)
+        (hF'_meas := ((by fun_prop : Continuous fun t : ℝ =>
+            (-(π : ℂ) * (t : ℂ))).aestronglyMeasurable).mul (hF_meas u))
         (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2
-    change DifferentiableWithinAt ℂ
-        (fun z : ℂ => ∫ t in Set.Ioi (0 : ℝ), base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)))
-        rightHalfPlane u
     exact hDeriv.differentiableAt.differentiableWithinAt
   exact hDiff.analyticOnNhd rightHalfPlane_isOpen
 
