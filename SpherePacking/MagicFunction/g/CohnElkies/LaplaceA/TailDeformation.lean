@@ -49,12 +49,12 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
-  let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
-  have hw_im : w.im = t := by simp [w]
-  let wH : ℍ := ⟨w, by simpa [hw_im] using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
+  let wH : ℍ := ⟨((s : ℝ) : ℂ) + (t : ℂ) * Complex.I, by
+    simpa using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
+  have hw_im : (wH : ℂ).im = t := by simp [wH]
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-          rw [hdef, show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) =
+          rw [hdef, show φ₀'' ((-1 : ℂ) / (wH : ℂ)) * ((wH : ℂ) ^ 2) =
               φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) by
             rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
               show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) by
@@ -68,7 +68,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
               simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
           mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ <| by
-            simp only [w, wH]
+            simp only [wH]
             linarith [norm_add_le ((s : ℝ) : ℂ) ((t : ℂ) * Complex.I),
               (by simpa [Complex.norm_real] using hs : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ)),
               (by simp [abs_of_nonneg (by linarith : (0:ℝ) ≤ t)] :
@@ -113,8 +113,7 @@ lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := -1) (x₂ := 0) (by norm_num)
     fun _ _ _ x t h1 h2 h3 hx h4 h5 =>
-      have hx' : x ∈ Set.Ioc (-1 : ℝ) 0 := by
-        simpa [Set.uIoc_of_le (show (-1:ℝ) ≤ 0 by norm_num)] using hx
+      have hx' : x ∈ Set.Ioc (-1 : ℝ) 0 := Set.uIoc_of_le (by norm_num : (-1:ℝ) ≤ 0) ▸ hx
       norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) h1 h2 h3
         (by rw [abs_of_nonneg (by linarith [hx'.1.le] : (0:ℝ) ≤ x + 1)]; linarith [hx'.2])
         h4 h5 <| by
@@ -128,8 +127,7 @@ lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := 1) (x₂ := 0) (by norm_num)
     fun _ _ _ x t h1 h2 h3 hx h4 h5 =>
-      have hx' : x ∈ Set.Ioc (0 : ℝ) 1 := by
-        simpa [Set.uIoc_of_ge (show (0:ℝ) ≤ 1 by norm_num)] using hx
+      have hx' : x ∈ Set.Ioc (0 : ℝ) 1 := Set.uIoc_of_ge (by norm_num : (0:ℝ) ≤ 1) ▸ hx
       norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) h1 h2 h3
         (by rw [abs_sub_comm, abs_of_nonneg (by linarith [hx'.2] : (0:ℝ) ≤ 1 - x)]
             linarith [hx'.1.le]) h4 h5 <| by
