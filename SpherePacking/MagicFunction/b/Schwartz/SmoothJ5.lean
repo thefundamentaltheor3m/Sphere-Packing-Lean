@@ -177,15 +177,14 @@ public theorem decay_J₅' :
         (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
-    calc iteratedDeriv n J₅' x
-        = iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by
-          simp [show J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) from funext fun y => by
-            simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)]
-      _ = (-2 : ℂ) • iteratedDeriv n (fun y : ℝ => I 0 y) x := by simp
-      _ = (-2 : ℂ) * I n x := by
-          simp [SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
-            (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
+  have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := calc
+    iteratedDeriv n J₅' x = iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by
+      simp [show J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) from funext fun y => by
+        simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)]
+    _ = (-2 : ℂ) • iteratedDeriv n (fun y : ℝ => I 0 y) x := by simp
+    _ = (-2 : ℂ) * I n x := by
+        simp [SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
+          (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
