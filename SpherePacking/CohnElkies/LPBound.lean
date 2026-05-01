@@ -106,11 +106,10 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right (n ^ 2)
-  set A : ℂ := ∑' x : ↑(P.centers ∩ D),
-    exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
-      (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  have hA_le : ‖A‖ ≤ n := by
-    simpa [A, tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
+  have hA_le : ‖∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
+        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ ≤ n := by
+    simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
         n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   simp only [g', norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
@@ -275,14 +274,14 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
     haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
       nonempty_quotient_iff _ |>.2 ‹_›
-    have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
-      simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero
     rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
       ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero measure_ball_lt_top.ne,
       ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
       div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
       ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
-      ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right hnRaux₁
+      ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right (by
+        simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
+        ENat.toENNReal (P.numReps : ENat) ≠ 0)
         (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
       ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
