@@ -31,8 +31,8 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
   refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
   simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
     (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
-      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) <| by
-    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx]
+      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
+    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
 
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
@@ -64,8 +64,7 @@ theorem PeriodicSpherePacking.aux2_ge
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [ge_iff_le, ENNReal.div_le_iff
     ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
-    (lt_top_iff_ne_top.mp <|
-      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)),
+    (Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne,
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
 
@@ -85,8 +84,8 @@ theorem PeriodicSpherePacking.aux2_le
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [ENNReal.le_div_iff_mul_le (.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero
-    (NeZero.ne volume)) (.inl <| lt_top_iff_ne_top.mp <|
-      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)),
+    (NeZero.ne volume)) (.inl <| (Bornology.IsBounded.measure_lt_top
+      (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne),
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
 
@@ -221,21 +220,21 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
       simp [add_zero, ENNReal.div_self (Metric.measure_ball_pos volume _
         (by linarith)).ne.symm (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]⟩)
       tendsto_const_nhds
-  · have hfmt (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
-          = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
-      rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
-        ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos,
-        mul_div_mul_right] <;> positivity
-    rw [ENNReal.tendsto_atTop (by decide)]
-    intro ε hε
-    obtain ⟨k, _, hk₂⟩ : ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k,
-        ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-      simpa using aux_bhavik (Nat.cast_nonneg d) hε
-    refine ⟨k * C, fun n hn => ?_⟩
-    rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
-    convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
-    rw [div_add_one, div_div_div_cancel_right₀, div_pow] <;> positivity
+  have hfmt (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
+        = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
+    rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
+      ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos,
+      mul_div_mul_right] <;> positivity
+  rw [ENNReal.tendsto_atTop (by decide)]
+  intro ε hε
+  obtain ⟨k, _, hk₂⟩ : ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k,
+      ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
+    simpa using aux_bhavik (Nat.cast_nonneg d) hε
+  refine ⟨k * C, fun n hn => ?_⟩
+  rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
+  convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
+  rw [div_add_one, div_div_div_cancel_right₀, div_pow] <;> positivity
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`
@@ -253,20 +252,17 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))))
     (eventually_atTop.mpr ⟨1, fun R hR => ENNReal.div_div_div_cancel_left
       (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne⟩) ?_
+      measure_ball_lt_top.ne measure_ball_lt_top.ne⟩) ?_
   convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
     (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
-/--
-Shifting the argument by a constant does not change convergence to `atTop`.
--/
+/-- Shifting the argument by a constant does not change convergence to `atTop`. -/
 public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
     Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
     simpa using Filter.map_add_atTop_eq (α := ℝ) (k := C)
-  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]), fun hf => by simpa [hmap] using
-    (tendsto_map'_iff.mpr hf : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)⟩
+  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
+    fun hf => by simpa [hmap] using tendsto_map'_iff.mpr hf⟩
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,
