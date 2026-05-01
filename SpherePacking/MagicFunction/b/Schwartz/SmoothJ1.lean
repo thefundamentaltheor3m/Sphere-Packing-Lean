@@ -85,8 +85,7 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
       congrArg (fun w : ℂ => w + (1 : ℂ)) (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
   have hsmul : (S * T) • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
-    calc
-      (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := coe_ST_smul (z := z)
+    calc (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := coe_ST_smul (z := z)
       _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [hzplus]
       _ = (Complex.I : ℂ) * (1 / t) := by
           field_simp [show (t : ℂ) ≠ 0 by exact_mod_cast ne_of_gt ht0, Complex.I_ne_zero]; simp
@@ -166,16 +165,15 @@ public theorem decay_J₁' :
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
       (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
-  have hA : 0 ≤ ((2 * Real.pi) ^ n) * Cψ := by positivity [hCψ0]
   have hbound_int : Integrable bound μ := by
     simpa [bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
       (SpherePacking.Integration.integrable_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 hA)
+        (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   have hKn_nonneg : 0 ≤ Kn := by
     simpa [Kn, bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
       (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 hA)
+        (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   refine ⟨Kn * B, fun x hx => ?_⟩
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
