@@ -27,18 +27,11 @@ This file proves special values for Viazovska's magic function `b`, notably the 
 namespace MagicFunction.b.SpecialValuesProof
 
 open scoped UpperHalfPlane Topology
-
-open Set SchwartzMap Real Complex Filter UpperHalfPlane
-
-open MagicFunction.FourierEigenfunctions
-open MagicFunction.b.RealIntegrals
-open MagicFunction.b.RadialFunctions
-open MagicFunction.Parametrisations
-open ModularForm
+open Set SchwartzMap Real Complex Filter UpperHalfPlane ModularForm
+  MagicFunction.FourierEigenfunctions MagicFunction.b.RealIntegrals
+  MagicFunction.b.RadialFunctions MagicFunction.Parametrisations
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-section Zero
 
 lemma b_zero_reduction :
     MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) =
@@ -143,11 +136,10 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
             simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
           simp [show z₄' t = (1 - (t : ℂ)) + Complex.I from by simpa using z₄'_eq_of_mem htIcc]
       let f : ℝ → ℂ := fun u => ψT' ((u : ℂ) + Complex.I)
-      have h2 : (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) =
-          ∫ t in (0 : ℝ)..1, f (1 - t) :=
-        intervalIntegral.integral_congr fun t _ => by
-          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) from by push_cast; ring]
-      rw [hEq, intervalIntegral.integral_const_mul, h2,
+      rw [hEq, intervalIntegral.integral_const_mul,
+        (intervalIntegral.integral_congr fun t _ => by
+          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) from by push_cast; ring] :
+            (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
         (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
     have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
           ψS' ((t : ℂ) + Complex.I) := fun t => by
@@ -165,19 +157,16 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
     have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
     have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-    have hExpr :
-        DifferentiableOn ℂ
-          (fun z : ℂ => (128 : ℂ) *
+    refine (show DifferentiableOn ℂ (fun z : ℂ => (128 : ℂ) *
             (((H₄ (UpperHalfPlane.ofComplex z) - H₂ (UpperHalfPlane.ofComplex z)) /
                   (H₃ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ)) -
               ((H₂ (UpperHalfPlane.ofComplex z) + H₃ (UpperHalfPlane.ofComplex z)) /
                   (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))))
-          {z : ℂ | 0 < z.im} := by
+          {z : ℂ | 0 < z.im} by
       simpa [mul_assoc] using (DifferentiableOn.const_mul
         (((hH4.sub hH2).div (hH3.pow 2) (fun _ _ => pow_ne_zero 2 (H₃_ne_zero _))).sub
           ((hH2.add hH3).div (hH4.pow 2) (fun _ _ => pow_ne_zero 2 (H₄_ne_zero _))))
-        (128 : ℂ))
-    refine hExpr.congr fun z _ => ?_
+        (128 : ℂ))).congr fun z _ => ?_
     simpa [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
       show (H₄_MF : ℍ → ℂ) = H₄ from rfl] using
       congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψS_eq'
@@ -235,16 +224,14 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
   rw [b_zero_reduction]; linear_combination J₂'_J₄_eq_neg_J₆'_zero + J₁'_J₃_eq_neg_J₅'_zero
 
-end MagicFunction.b.SpecialValuesProof.Zero
+end MagicFunction.b.SpecialValuesProof
 
 namespace MagicFunction.b.SpecialValues
 
-open SchwartzMap Real Complex MagicFunction.FourierEigenfunctions
-
-section Zero
+open MagicFunction.FourierEigenfunctions
 
 /-- The magic function `b` vanishes at the origin. -/
 public theorem b_zero : b 0 = 0 := by
   simpa using MagicFunction.b.SpecialValuesProof.b_zero
 
-end MagicFunction.b.SpecialValues.Zero
+end MagicFunction.b.SpecialValues
