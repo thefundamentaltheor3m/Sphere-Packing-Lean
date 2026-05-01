@@ -76,36 +76,6 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
-/-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/
-lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
-    (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (hφbd : ∀ z : ℍ, Aφ ≤ z.im → ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
-      ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
-    (hx0 : -1 ≤ x) (hx1 : x ≤ 0) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
-    ‖Φ₂' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
-      (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
-        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) :=
-  norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) hC₀_pos hC₀ hφbd
-    (by rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ x + 1)]; linarith) ht1 htAφ <| by
-  simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
-    show (x : ℂ) + (t : ℂ) * Complex.I + 1 =
-      ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
-
-/-- Uniform strip bound for `Φ₄' u (x + tI)` with `x ∈ [0,1]` and `t ≥ 1`. -/
-lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
-    (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (hφbd : ∀ z : ℍ, Aφ ≤ z.im → ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
-      ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
-    (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
-    ‖Φ₄' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
-      (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
-        (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) :=
-  norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) hC₀_pos hC₀ hφbd
-    (by rw [abs_sub_comm, abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - x)]; linarith) ht1 htAφ <| by
-  simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
-    show (x : ℂ) + (t : ℂ) * Complex.I - 1 =
-      ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
-
 /-- Generic top-edge decay: reduces a `tendsto` statement on an interval integral to a pointwise
 strip bound. -/
 private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u) {F : ℂ → ℂ}
@@ -142,20 +112,30 @@ lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
     Tendsto (fun m : ℝ => ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := -1) (x₂ := 0) (by norm_num)
-    fun _ _ _ x _ h1 h2 h3 hx h4 h5 =>
+    fun _ _ _ x t h1 h2 h3 hx h4 h5 =>
       have hx' : x ∈ Set.Ioc (-1 : ℝ) 0 := by
         simpa [Set.uIoc_of_le (show (-1:ℝ) ≤ 0 by norm_num)] using hx
-      norm_Φ₂'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5
+      norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) h1 h2 h3
+        (by rw [abs_of_nonneg (by linarith [hx'.1.le] : (0:ℝ) ≤ x + 1)]; linarith [hx'.2])
+        h4 h5 <| by
+        simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
+          show (x : ℂ) + (t : ℂ) * Complex.I + 1 = ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I by
+            push_cast; ring, mul_assoc]
 
 /-- Top-edge decay needed for the right rectangle deformation (`Φ₄'`). -/
 lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
     Tendsto (fun m : ℝ => ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
       atTop (𝓝 0) :=
   tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := 1) (x₂ := 0) (by norm_num)
-    fun _ _ _ x _ h1 h2 h3 hx h4 h5 =>
+    fun _ _ _ x t h1 h2 h3 hx h4 h5 =>
       have hx' : x ∈ Set.Ioc (0 : ℝ) 1 := by
         simpa [Set.uIoc_of_ge (show (0:ℝ) ≤ 1 by norm_num)] using hx
-      norm_Φ₄'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5
+      norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) h1 h2 h3
+        (by rw [abs_sub_comm, abs_of_nonneg (by linarith [hx'.2] : (0:ℝ) ≤ 1 - x)]
+            linarith [hx'.1.le]) h4 h5 <| by
+        simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
+          show (x : ℂ) + (t : ℂ) * Complex.I - 1 = ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I by
+            push_cast; ring, mul_assoc]
 
 lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' u =
