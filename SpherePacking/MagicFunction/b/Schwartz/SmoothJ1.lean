@@ -61,9 +61,6 @@ def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₁' t
 
 def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψT' (z₁' t)
 
-def g (x t : ℝ) : ℂ :=
-  SpherePacking.Integration.DifferentiationUnderIntegral.g (coeff := coeff) (hf := hf) x t
-
 def gN (n : ℕ) (x t : ℝ) : ℂ :=
   SpherePacking.Integration.DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
 
@@ -98,11 +95,6 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
   simpa [hzplus] using hψT
 
 
-lemma J₁'_eq_integral_g_Ioo (x : ℝ) : J₁' x = ∫ t in Ioo (0 : ℝ) 1, g x t := by
-  simp [RealIntegrals.J₁', g, hf, coeff, SpherePacking.Integration.DifferentiationUnderIntegral.g,
-    mul_assoc, mul_left_comm, mul_comm,
-    intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
-
 lemma continuous_coeff : Continuous coeff := by
   simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₁'
 
@@ -132,9 +124,10 @@ lemma hasDerivAt_integral_gN (n : ℕ) (x₀ : ℝ) :
 
 private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
   funext x
-  simpa [I, μ, SpherePacking.Integration.μIoo01, gN,
-    SpherePacking.Integration.DifferentiationUnderIntegral.gN] using
-    (J₁'_eq_integral_g_Ioo x).symm
+  simp [RealIntegrals.J₁', I, μ, SpherePacking.Integration.μIoo01, gN, hf, coeff,
+    SpherePacking.Integration.DifferentiationUnderIntegral.g,
+    SpherePacking.Integration.DifferentiationUnderIntegral.gN, mul_assoc, mul_left_comm, mul_comm,
+    intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
 
 lemma iteratedDeriv_J₁'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n J₁' = fun x : ℝ ↦ I n x := by
