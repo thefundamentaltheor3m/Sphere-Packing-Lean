@@ -96,10 +96,9 @@ public lemma norm_φ₀_imag_le :
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
     ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
-  have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
   rw [show ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) by
       rw [show cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) = (q : ℂ) ^ (j + k) by
-        rw [← hqexp]
+        rw [← (by simpa [Periodic.qParam] using hqC : cexp (2 * π * Complex.I * z) = (q : ℂ))]
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)]
       simp [abs_of_nonneg hq_nonneg], pow_add]
@@ -145,14 +144,15 @@ private lemma exists_sub_partialSum_bound
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
-  simpa [z, q, show ‖q‖ = Real.exp (-2 * π * t) from by simpa [q, z] using qParam_zI_norm t ht] using
+  have hqn : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
+  simpa [z, q, hqn] using
     (show ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
       simpa [show cuspFunction (1 : ℝ) f q = f z by
           simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
         show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
           simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
-        hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, qParam_zI_norm t ht] using
+        hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, hqn] using
           Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])) n)
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
@@ -177,11 +177,11 @@ public lemma exists_E4_sub_one_sub_240q_bound :
       simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := E₄), E4_q_exp_zero,
         E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
-lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
+private lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
   simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1,
-    show valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) from by
+    show valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) by
       simpa using (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ))
-          zero_lt_one hΓ1).symm.trans
+        zero_lt_one hΓ1).symm.trans
         (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1)]
 
 /--
@@ -238,11 +238,9 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     refine Summable.of_nonneg_of_le
       (f := fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n))
       (g := b) (fun n => by positivity) (fun n => ?_) (hsummA.mul_left (512 : ℝ))
-    have hpow : ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
-      have hbase := add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
-      simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
-      nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5]
-    nlinarith [hpow, pow_nonneg hq1_nonneg n]
+    have hbase := add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
+    simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
+    nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5, pow_nonneg hq1_nonneg n]
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
   intro t ht0 ht1
   let z : ℍ := zI t ht0
@@ -290,9 +288,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     simpa [Finset.range_one] using (hg_summ.sum_add_tsum_nat_add 1).symm
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
     .of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
-  have hmain :
-      ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
-        (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
+  have hmain : ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
+      (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
     rw [show (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) = (720 : ℂ) * (∑' n : ℕ, f n) by
         rw [E₂_mul_E₄_sub_E₆ z,
           ← show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
