@@ -145,8 +145,7 @@ private lemma exists_sub_partialSum_bound
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
-  have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
-  simpa [z, q, hqnorm] using
+  simpa [z, q, show ‖q‖ = Real.exp (-2 * π * t) from by simpa [q, z] using qParam_zI_norm t ht] using
     (show ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
       simpa [show cuspFunction (1 : ℝ) f q = f z by
