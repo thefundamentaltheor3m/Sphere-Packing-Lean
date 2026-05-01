@@ -166,12 +166,13 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) *
       (by field_simp; rw [Complex.I_sq]; ring :
         (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ))
-  have hBscaled :
-      (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
-        (-(π / 2160 : ℂ)) * IA +
-          (1 / (60 * π) : ℂ) * IB +
-          (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
-            (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
+  have hBracket :
+      (-(π / 2160 : ℂ)) *
+            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
+          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
+        (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
     rw [show (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
           ((8640 / π : ℝ) : ℂ) *
@@ -182,21 +183,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           using IntegralB.integral_B_mul_exp_decomp hx,
       integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
-  have hBracket :
-      (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
-    rw [show (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (-(π / 2160 : ℂ)) * IA + (1 / (60 * π) : ℂ) * IB +
-          (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
-          (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) by push_cast; field_simp; ring, ← hBscaled]
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
