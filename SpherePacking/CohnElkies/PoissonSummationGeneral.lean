@@ -73,9 +73,11 @@ lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLatt
       simpa [rBasis] using
         Module.Basis.ofZLatticeBasis_span (K := ℝ) (L := L) (b := zBasis (d := d) L)
 
-section FundamentalDomain
+section CovolumeDet
 
-lemma volume_real_fundamentalDomain_stdBasis :
+variable (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L] [IsZLattice ℝ L]
+
+private lemma volume_real_fundamentalDomain_stdBasis :
     (volume : Measure E).real
         (ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) = 1 := by
   let f : E ≃L[ℝ] (Fin d → ℝ) := EuclideanSpace.equiv (Fin d) ℝ
@@ -95,12 +97,6 @@ lemma volume_real_fundamentalDomain_stdBasis :
         PiLp.volume_preserving_ofLp (ι := Fin d)).measureReal_preimage
     (ZSpan.fundamentalDomain_measurableSet (b := (Pi.basisFun ℝ (Fin d)))).nullMeasurableSet
 
-end FundamentalDomain
-
-section CovolumeDet
-
-variable (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L] [IsZLattice ℝ L]
-
 lemma covolume_eq_abs_det_A :
     ZLattice.covolume L =
       abs ((LinearMap.det : (E →ₗ[ℝ] E) →* ℝ) ((A L).toLinearMap)) := by
@@ -119,82 +115,74 @@ section PoissonSummationLattices
 
 variable (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L] [IsZLattice ℝ L]
 
-noncomputable def Aₗ : E ≃ₗ[ℝ] E := A (d := d) L
+noncomputable def Aₗ : E ≃ₗ[ℝ] E := A L
 
-noncomputable def Bₗ : E →ₗ[ℝ] E := ((Aₗ (d := d) (L := L)).symm.toLinearMap).adjoint
+noncomputable def Bₗ : E →ₗ[ℝ] E := (Aₗ L).symm.toLinearMap.adjoint
 
-noncomputable def Aadjₗ : E →ₗ[ℝ] E := ((Aₗ (d := d) (L := L)).toLinearMap).adjoint
+noncomputable def Aadjₗ : E →ₗ[ℝ] E := (Aₗ L).toLinearMap.adjoint
 
 noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[ℤ] L :=
-  (LinearEquiv.restrictScalars ℤ (Aₗ (d := d) (L := L))).ofSubmodules
-    (SchwartzMap.standardLattice d) L
+  (LinearEquiv.restrictScalars ℤ (Aₗ L)).ofSubmodules (SchwartzMap.standardLattice d) L
     (by simpa [LinearEquiv.restrictScalars_apply] using map_standardLattice_eq (d := d) L)
 
 @[simp]
 lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
-    ((equivStandardLattice (d := d) L x : L) : E) = (Aₗ (d := d) (L := L)) x := by
+    ((equivStandardLattice (d := d) L x : L) : E) = (Aₗ L) x := by
   simp [equivStandardLattice]
 
 lemma Bₗ_comp_Aadjₗ :
-    (Bₗ (d := d) L ∘ₗ Aadjₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, show (Aₗ (d := d) (L := L)).toLinearMap ∘ₗ
-    (Aₗ (d := d) (L := L)).symm.toLinearMap = LinearMap.id from by ext x; simp]
+    (Bₗ L ∘ₗ Aadjₗ L) = (LinearMap.id : E →ₗ[ℝ] E) := by
+  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, show (Aₗ L).toLinearMap ∘ₗ
+    (Aₗ L).symm.toLinearMap = LinearMap.id from by ext x; simp]
 
-noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E :=
-  { toLinearMap := Bₗ (d := d) L
-    invFun := Aadjₗ (d := d) L
-    left_inv := fun x => by
-      simpa using congrArg (fun f : E →ₗ[ℝ] E => f x)
-        (show (Aadjₗ (d := d) L ∘ₗ Bₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) by
-          simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-            show (Aₗ (d := d) (L := L)).symm.toLinearMap ∘ₗ
-              (Aₗ (d := d) (L := L)).toLinearMap = LinearMap.id from by ext x; simp])
-    right_inv := fun x => by
-      simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ (d := d) (L := L)) }
+noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E where
+  toLinearMap := Bₗ L
+  invFun := Aadjₗ L
+  left_inv x := by
+    simpa using congrArg (fun f : E →ₗ[ℝ] E => f x)
+      (show (Aadjₗ L ∘ₗ Bₗ L) = (LinearMap.id : E →ₗ[ℝ] E) by
+        simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
+          show (Aₗ L).symm.toLinearMap ∘ₗ (Aₗ L).toLinearMap = LinearMap.id
+          from by ext x; simp])
+  right_inv x := by simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ L)
 
 lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
-    Submodule.map ((Bₗ (d := d) L).restrictScalars ℤ) (standardLattice d) =
-      dualLattice (d := d) L := by
+    Submodule.map ((Bₗ L).restrictScalars ℤ) (standardLattice d) = dualLattice (d := d) L := by
   ext x
   have hdualStd : dualLattice (d := d) (standardLattice d) = standardLattice d := by
     simpa [dualLattice] using PoissonSummation.Standard.dualSubmodule_standardLattice_eq (d := d)
-  refine ⟨?_, fun hx => ?_⟩
+  refine ⟨?_, fun hx => ⟨(Aadjₗ L) x, ?_, ?_⟩⟩
   · rintro ⟨y, hy, rfl⟩ z hz
     obtain ⟨w, hw, rfl⟩ : (z : E) ∈
-        Submodule.map ((Aₗ (d := d) L).toLinearMap.restrictScalars ℤ) (standardLattice d) := by
+        Submodule.map ((Aₗ L).toLinearMap.restrictScalars ℤ) (standardLattice d) := by
       simpa [Aₗ, map_standardLattice_eq (d := d) L] using hz
-    have hydual : y ∈ dualLattice (d := d) (standardLattice d) := by simpa [hdualStd] using hy
     simpa [dualLattice, innerₗ_apply_apply,
-      show inner ℝ ((Bₗ (d := d) L) y) ((Aₗ (d := d) (L := L)) w) = inner ℝ y w from by
-        simpa [Bₗ, Aₗ] using
-          LinearMap.adjoint_inner_left ((Aₗ (d := d) (L := L)).symm.toLinearMap)
-            ((Aₗ (d := d) (L := L)) w) y] using hydual w hw
-  · refine ⟨(Aadjₗ (d := d) L) x, ?_, ?_⟩
-    · have hydual : (Aadjₗ (d := d) L) x ∈ dualLattice (d := d) (standardLattice d) := by
-        intro w hw
-        have hwL : (Aₗ (d := d) (L := L)) w ∈ L := by
-          have : (Aₗ (d := d) (L := L)) w ∈
-              Submodule.map (((Aₗ (d := d) (L := L)).toLinearMap).restrictScalars ℤ)
-                (standardLattice d) := ⟨w, hw, rfl⟩
-          simpa [Aₗ, map_standardLattice_eq (d := d) L] using this
-        simpa [dualLattice, innerₗ_apply_apply,
-          show inner ℝ ((Aadjₗ (d := d) L) x) w = inner ℝ x ((Aₗ (d := d) (L := L)) w) from by
-            simpa [Aadjₗ, Aₗ] using
-              LinearMap.adjoint_inner_left ((Aₗ (d := d) (L := L)).toLinearMap) w x] using
-          hx ((Aₗ (d := d) (L := L)) w) hwL
+      show inner ℝ ((Bₗ L) y) ((Aₗ L) w) = inner ℝ y w from by
+        simpa [Bₗ, Aₗ] using LinearMap.adjoint_inner_left
+          ((Aₗ L).symm.toLinearMap) ((Aₗ L) w) y] using
+      (by simpa [hdualStd] using hy : y ∈ dualLattice (d := d) (standardLattice d)) w hw
+  · suffices hydual : (Aadjₗ L) x ∈ dualLattice (d := d) (standardLattice d) by
       simpa [hdualStd] using hydual
-    · simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ (d := d) (L := L))
+    intro w hw
+    have hwL : (Aₗ L) w ∈ L := by
+      have : (Aₗ L) w ∈ Submodule.map ((Aₗ L).toLinearMap.restrictScalars ℤ)
+          (standardLattice d) := ⟨w, hw, rfl⟩
+      simpa [Aₗ, map_standardLattice_eq (d := d) L] using this
+    simpa [dualLattice, innerₗ_apply_apply,
+      show inner ℝ ((Aadjₗ L) x) w = inner ℝ x ((Aₗ L) w) from by
+        simpa [Aadjₗ, Aₗ] using LinearMap.adjoint_inner_left ((Aₗ L).toLinearMap) w x] using
+      hx ((Aₗ L) w) hwL
+  · simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ L)
 
 noncomputable def equivStandardLatticeToDual :
     SchwartzMap.standardLattice d ≃ₗ[ℤ] dualLattice (d := d) L :=
-  (LinearEquiv.restrictScalars ℤ (adjointSymmEquiv (d := d) (L := L))).ofSubmodules
+  (LinearEquiv.restrictScalars ℤ (adjointSymmEquiv L)).ofSubmodules
     (SchwartzMap.standardLattice d) (dualLattice (d := d) L) <| by
       simpa [LinearEquiv.restrictScalars_apply] using
         map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)
 
 noncomputable def equivIntVecToDual : (Fin d → ℤ) ≃ dualLattice (d := d) L :=
-  (PoissonSummation.Standard.equivIntVec (d := d)).trans
-    (equivStandardLatticeToDual (d := d) L).toEquiv
+  (PoissonSummation.Standard.equivIntVec (d := d)).trans (equivStandardLatticeToDual L).toEquiv
 
 /--
 Poisson summation over a full-rank `ℤ`-lattice `L`.
@@ -207,7 +195,7 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
       (1 / ZLattice.covolume L) *
         ∑' m : dualLattice (d := d) L,
           (𝓕 (fun x : E => f x) m) * Complex.exp (2 * π * Complex.I * ⟪v, m⟫_[ℝ]) := by
-  let A : E ≃ₗ[ℝ] E := Aₗ (d := d) (L := L)
+  let A : E ≃ₗ[ℝ] E := Aₗ L
   let g : SchwartzMap E ℂ :=
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A.toContinuousLinearEquiv f
   have hlhs :
@@ -233,14 +221,14 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     let detA : ℝ := (LinearMap.det : (E →ₗ[ℝ] E) →* ℝ) (A : E →ₗ[ℝ] E)
     let cC : ℂ := ((abs detA)⁻¹ : ℝ)
     have hfourier (w : E) : 𝓕 (fun x : E => g x) w =
-        cC * 𝓕 (fun x : E => f x) ((Bₗ (d := d) L) w) := by
+        cC * 𝓕 (fun x : E => f x) ((Bₗ L) w) := by
       simpa [g, A, Bₗ, detA, cC, Complex.real_smul] using
         SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
           (A := A) (f := fun x : E => f x) w
     have hexp (w : E) :
         Complex.exp (2 * π * Complex.I * ⟪A.symm v, w⟫_[ℝ]) =
-          Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ (d := d) L) w⟫_[ℝ]) := by
-      simp [show ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ (d := d) L) w⟫_[ℝ] by
+          Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ L) w⟫_[ℝ]) := by
+      simp [show ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ L) w⟫_[ℝ] by
         simpa [RCLike.inner_eq_wInner_one, A, Bₗ] using
           (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm]
     have hsum :
@@ -250,7 +238,7 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
                 (2 * π * Complex.I *
                   ⟪A.symm v, SchwartzMap.PoissonSummation.Standard.intVec (d := d) n⟫_[ℝ])) =
           cC * ∑' m : dualLattice (d := d) L, F m := by
-      rw [← (equivIntVecToDual (d := d) L).tsum_eq (f := F), ← tsum_mul_left]
+      rw [← (equivIntVecToDual L).tsum_eq (f := F), ← tsum_mul_left]
       refine tsum_congr fun n ↦ ?_
       simpa [F, mul_assoc] using
         congrArg₂ (· * ·)
