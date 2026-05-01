@@ -93,11 +93,7 @@ public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace 
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh)
 
-end Pointwise
-
-section instances
 variable {d : ℕ} (S : PeriodicSpherePacking d)
-open scoped Pointwise
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
@@ -114,7 +110,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
       (Classical.choose_spec (hD_unique_covers (y + v))).1
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.1⟩⟧
-  left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ Quotient.eq.2 <| by
+  left_inv := Quotient.ind fun _ ↦ Quotient.eq.2 <| by
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
@@ -174,23 +170,18 @@ public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) := Fintype.ofFinite _
 
-end instances
-
-section numReps
-open scoped Pointwise
 open Finset Set
-
-variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+variable (D : Set (EuclideanSpace ℝ (Fin d)))
 
 @[expose] public noncomputable def PeriodicSpherePacking.numReps : ℕ :=
   Fintype.card (Quotient S.addAction.orbitRel)
 
 public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) :
-    S.numReps = 1 := by
+    S.numReps = 1 :=
   haveI : Subsingleton (Quotient S.addAction.orbitRel) :=
     (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦
       ⟨⟨y - x, by rw [hS] at hx hy; exact sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
-  exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, (Subsingleton.elim · _)⟩
+  Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, (Subsingleton.elim · _)⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
@@ -219,11 +210,6 @@ theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
   rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]; convert Set.encard_eq_coe_toFinset_card _
 
-end numReps
-
-section numReps_aux
-variable {d : ℕ}
-
 public noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
     (S : PeriodicSpherePacking d) (hd : 0 < d)
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
@@ -242,11 +228,11 @@ public theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePack
   simpa [PeriodicSpherePacking.numReps', Set.toFinset_card] using
     (S.card_centers_inter_isFundamentalDomain (D := D) hD_isBounded hD_unique_covers hd).symm
 
-end numReps_aux
+end Pointwise
 
 section theorem_2_3
 
-variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+variable {d : ℕ} (S : PeriodicSpherePacking d)
 
 open scoped Pointwise
 
