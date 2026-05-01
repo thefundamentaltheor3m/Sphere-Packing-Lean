@@ -127,14 +127,12 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
     fun z hzcl hdistz => ?_⟩
   by_cases hz1 : z = (1 : ℂ)
-  · subst hz1
-    simpa [h.Ψ₁'_eq, h.ψT'_one] using hε
+  · subst hz1; simpa [h.Ψ₁'_eq, h.ψT'_one] using hε
   have hz_im_pos : 0 < z.im := by
     simpa [UpperHalfPlane.upperHalfPlaneSet] using
       (h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1)
   let zH : UpperHalfPlane := ⟨z, hz_im_pos⟩
-  have hexpZ : expNorm r z ≤ M :=
-    hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _))
+  have hexpZ : expNorm r z ≤ M := hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _))
   have hdist_min := lt_of_lt_of_le hdistz (min_le_right _ _)
   have hdist_lt := lt_of_lt_of_le hdist_min (min_le_left _ _)
   have hdist_lt_one : dist z (1 : ℂ) < 1 := lt_of_lt_of_le hdist_lt (min_le_left _ _)
@@ -142,31 +140,26 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     (by simpa [pow_one] using pow_le_pow_of_le_one dist_nonneg hdist_lt_one.le h.hk
       : (dist z (1 : ℂ)) ^ k ≤ dist z (1 : ℂ)).trans_lt
         (lt_of_lt_of_le hdist_lt (min_le_right _ _))
-  have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) :=
-    lt_of_lt_of_le hdist_min (min_le_right _ _)
+  have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) := lt_of_lt_of_le hdist_min (min_le_right _ _)
   have hA_le_im : A ≤ (gAct zH).im := by
-    have hz_im_lt : z.im < 1 / (2 * A) :=
-      lt_of_le_of_lt
-        (by simpa [abs_of_nonneg (le_of_lt hz_im_pos)] using Complex.abs_im_le_norm (z - 1))
-        (by simpa [dist_eq_norm] using hdist_im)
-    have hA_lt : A < (1 : ℝ) / (2 * z.im) :=
-      (lt_div_iff₀ (by positivity)).2 (by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (lt_div_iff₀ (by positivity)).1 hz_im_lt)
-    have := hA_lt.trans_le (one_div_two_im_le_im_div_normSq_sub_one (z := z) hz_im_pos hz1
-      (h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl))
-    simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using this.le
-  have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ := by
-    have hψ : ψT' z = -ψS (gAct zH) * (z - 1) ^ k := by
-      simpa [zH] using (h.ψT'_eq_neg_ψS_mul (z := z) (hz := hz_im_pos))
-    calc ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by simp [hψ, norm_neg]
+    have hz_im_lt : z.im < 1 / (2 * A) := lt_of_le_of_lt
+      (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1))
+      (by simpa [dist_eq_norm] using hdist_im)
+    simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using ((lt_div_iff₀
+      (by positivity : (0:ℝ) < 2 * z.im)).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (lt_div_iff₀ (by positivity : (0:ℝ) < 2 * A)).1 hz_im_lt)).trans_le
+        (one_div_two_im_le_im_div_normSq_sub_one (z := z) hz_im_pos hz1
+          (h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl)) |>.le
+  have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ :=
+    calc ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by
+            simp [show ψT' z = -ψS (gAct zH) * (z - 1) ^ k by
+              simpa [zH] using h.ψT'_eq_neg_ψS_mul (z := z) (hz := hz_im_pos), norm_neg]
       _ ≤ 1 * ‖(z - 1) ^ k‖ := mul_le_mul_of_nonneg_right (hA _ hA_le_im) (norm_nonneg _)
       _ = _ := by simp
-  have hmain : ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M := by
-    have hcexp : ‖cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)‖ = expNorm r z := by
-      simp [expNorm, show ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
-        z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) by ac_rfl]
-    calc ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by simp [h.Ψ₁'_eq, hcexp]
+  have hmain : ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M :=
+    calc ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by
+            simp [h.Ψ₁'_eq, expNorm, show ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
+              z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) by ac_rfl]
       _ ≤ ‖(z - 1) ^ k‖ * expNorm r z :=
           mul_le_mul_of_nonneg_right hψT_norm (by simp [expNorm])
       _ ≤ ‖(z - 1) ^ k‖ * M := mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
