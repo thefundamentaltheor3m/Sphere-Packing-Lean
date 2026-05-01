@@ -56,16 +56,6 @@ private theorem Delta_ofComplex_ne_zero :
 
 section Holo_Lemmas
 
-private lemma differentiableOn_E₂_E₄_E₆_Delta :
-    DifferentiableOn ℂ (E₂ ∘ UpperHalfPlane.ofComplex) ℍ₀ ∧
-      DifferentiableOn ℂ ((E₄ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ ∧
-        DifferentiableOn ℂ ((E₆ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ ∧
-          DifferentiableOn ℂ ((Δ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ :=
-  ⟨(mdifferentiable_iff (f := E₂)).1 E₂_holo',
-    (mdifferentiable_iff (f := (E₄ : ℍ → ℂ))).1 E₄.holo',
-    (mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo',
-    differentiableOn_Delta_ofComplex⟩
-
 private lemma mapsTo_smulAux' (g : GL (Fin 2) ℝ) :
     MapsTo (UpperHalfPlane.smulAux' g) ℍ₀ ℍ₀ := fun z hz => by
   simpa [upperHalfPlaneSet, UpperHalfPlane.smulAux] using
@@ -85,8 +75,10 @@ public theorem φ₀''_holo : Holo(φ₀'') := by
 
 /-- `φ₂''` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem φ₂''_holo : Holo(φ₂'') := by
-  obtain ⟨hE₂, hE₄, hE₆, hΔ⟩ := differentiableOn_E₂_E₄_E₆_Delta
-  refine ((hE₄.mul ((hE₂.mul hE₄).sub hE₆)).div hΔ Delta_ofComplex_ne_zero).congr fun z hz => ?_
+  have hE₄ := (mdifferentiable_iff (f := (E₄ : ℍ → ℂ))).1 E₄.holo'
+  refine ((hE₄.mul (((mdifferentiable_iff (f := E₂)).1 E₂_holo').mul hE₄ |>.sub
+      ((mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo'))).div differentiableOn_Delta_ofComplex
+    Delta_ofComplex_ne_zero).congr fun z hz => ?_
   have hz' : 0 < z.im := by simpa [upperHalfPlaneSet] using hz
   simp [φ₂'', φ₂', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
 
@@ -95,14 +87,11 @@ public theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.add_const 1).pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div
-    · exact differentiableOn_id.add_const 1
-    · exact fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 1]) (!![1, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    exact MapsTo.congr (mapsTo_smulAux' g) fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ]
+  refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.add_const 1)
+    fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)) ?_
+  let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 1]) (!![1, 1; -1, 0])
+    (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
+  exact MapsTo.congr (mapsTo_smulAux' g) fun _ _ ↦ by simp [smulAux', g, num, denom, σ]
 
 /-- The integrand `Φ₁' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₁'_contDiffOn_ℂ :
@@ -114,14 +103,12 @@ public theorem Φ₃'_holo : Holo(Φ₃' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.sub_const 1).pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div
-    · exact differentiableOn_id.sub_const 1
-    · exact fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, -1]) (!![-1, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    exact MapsTo.congr (mapsTo_smulAux' g) fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
+  refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.sub_const 1)
+    fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)) ?_
+  let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, -1]) (!![-1, 1; -1, 0])
+    (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
+  exact MapsTo.congr (mapsTo_smulAux' g) fun _ _ ↦ by
+    simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
 
 /-- The integrand `Φ₃' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₃'_contDiffOn_ℂ :
