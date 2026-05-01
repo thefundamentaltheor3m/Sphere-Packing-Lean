@@ -219,18 +219,19 @@ lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A :
       ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
     (hA1 : (1 : ℝ) ≤ A) (hAA : Aφ ≤ A) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioi A) volume := by
-  set a : ℝ := π * (u - 2)
-  set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   refine MeasureTheory.Integrable.mono' (μ := volume.restrict (Set.Ioi A))
     (by simpa [IntegrableOn, mul_assoc] using
-      ((integrableOn_sq_mul_exp_neg A a (mul_pos Real.pi_pos (sub_pos.mpr hu))).const_mul K :
-        IntegrableOn (fun t : ℝ => K * (t ^ (2 : ℕ) * Real.exp (-a * t))) (Set.Ioi A) volume))
+      ((integrableOn_sq_mul_exp_neg A (π * (u - 2))
+          (mul_pos Real.pi_pos (sub_pos.mpr hu))).const_mul
+        (4 * C₀ + (2 * c12π + c36π2) * Cφ) :
+        IntegrableOn (fun t : ℝ => (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
+          (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t))) (Set.Ioi A) volume))
     (((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
       (fun t ht ↦ by simpa using lt_trans (lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) hA1) ht :
         Set.MapsTo (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi A)
           {z : ℂ | 0 < z.im})).aestronglyMeasurable measurableSet_Ioi)
-    ((ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => by
-      simpa [K, a] using norm_Φ₂'_imag_axis_le (u := u) hC₀_pos hC₀ hφbd
+    ((ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht =>
+      norm_Φ₂'_imag_axis_le (u := u) hC₀_pos hC₀ hφbd
         (le_trans hA1 ht.le) (le_trans hAA ht.le))
 
 /-- Integrability of `Φ₂'` on the imaginary-axis tail `t > 1`. -/
