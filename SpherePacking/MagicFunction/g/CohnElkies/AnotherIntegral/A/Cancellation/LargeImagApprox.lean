@@ -26,10 +26,6 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
-lemma exp_neg_two_pi_pow_two_mul_exp_two_pi (t : ℝ) :
-    Real.exp (-2 * π * t) ^ (2 : ℕ) * Real.exp (2 * π * t) = Real.exp (-2 * π * t) := by
-  rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf
-
 /-- For large `t`, `φ₂' (it)` differs from `720` by `O(exp (-2π t))`. -/
 public lemma exists_phi2'_sub_720_bound_ge :
     ∃ C A : ℝ, 0 < C ∧ 1 ≤ A ∧
@@ -87,7 +83,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
       _ ≤ _ + _ := norm_add_le _ _
       _ ≤ _ := by linarith
   have hq2 : q ^ (2 : ℕ) * Real.exp (2 * π * t) = q := by
-    simpa [q] using exp_neg_two_pi_pow_two_mul_exp_two_pi (t := t)
+    simp only [q]; rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf
   have : ‖φ₂' z - (720 : ℂ)‖ ≤ (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q := by
     set K : ℝ := E4B * CA + 720 * (CE4 + CΔq)
     calc ‖φ₂' z - (720 : ℂ)‖
@@ -142,7 +138,7 @@ lemma phi4_numerator_bound
   have hterm3 : ‖C‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) := by
     rw [show ‖C‖ = 504 * ‖Δ z - qC‖ by simp [C]]; nlinarith [hΔ2err]
   calc ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖
-        = ‖A - B - C‖ := by congr 1; simp only [A, B, C]; ring
+        = ‖A - B - C‖ := by simp only [A, B, C]; ring_nf
     _ ≤ ‖A‖ + ‖B‖ + ‖C‖ := (norm_sub_le _ C).trans (by linarith [norm_sub_le A B])
     _ ≤ _ := by linarith
 
@@ -161,7 +157,6 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   let B240 : ℝ := 1 + 240 * q1
   let C : ℝ := 1 + CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
   have hA1 : 1 ≤ A := le_max_left _ _
-  have hq1_lt_one : q1 < 1 := by simpa [q1] using exp_neg_two_pi_lt_one
   refine ⟨C, A, by positivity, hA1, ?_⟩
   intro t ht0 htA
   have ht1 : 1 ≤ t := le_trans hA1 htA
@@ -169,7 +164,8 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
-  have hq_le_one : q ≤ 1 := hq_le_q1.trans hq1_lt_one.le
+  have hq_le_one : q ≤ 1 :=
+    hq_le_q1.trans (by simpa [q1] using exp_neg_two_pi_lt_one.le)
   have hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := by
     simpa [z, zI_im t ht0] using hΔinv z
       (by simpa [z, zI_im t ht0] using (le_max_right _ _ : AΔ ≤ A).trans htA)
@@ -209,7 +205,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       ((E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)) / (Δ z) := by
     dsimp [φ₄']; field_simp [Δ_ne_zero z]
   have hq2 : q ^ (2 : ℕ) * Real.exp (2 * π * t) = q := by
-    simpa [q] using exp_neg_two_pi_pow_two_mul_exp_two_pi (t := t)
+    simp only [q]; rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf
   have : ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤
       (CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)) * q := by
     set K : ℝ := (240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq
