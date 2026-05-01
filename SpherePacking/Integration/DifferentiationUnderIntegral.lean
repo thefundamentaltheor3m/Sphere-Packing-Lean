@@ -74,40 +74,32 @@ public lemma hasDerivAt_integral_gN_Ioo
           ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01)
         (∫ t, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t ∂μIoo01)
         x₀ := by
-  let μ : Measure ℝ := μIoo01
-  have hμmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 := by
-    simpa [μ, μIoo01] using
+  have hμmem : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := by
+    simpa [μIoo01] using
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_hf
-  let K : ℝ := (2 * Real.pi) ^ (n + 1) * (Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))
-  haveI : IsFiniteMeasure μ := ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
-  have hF_int : Integrable (gN (coeff := coeff) (hf := hf) n x₀) μ :=
-    Integrable.of_bound (by
-      simpa [μ, μIoo01] using aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x₀) _
+  haveI : IsFiniteMeasure μIoo01 :=
+    ⟨by simp [μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
+  exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μIoo01)
+    (s := Metric.ball x₀ (1 : ℝ))
+    (F := fun x t ↦ gN (coeff := coeff) (hf := hf) n x t)
+    (F' := fun x t ↦ gN (coeff := coeff) (hf := hf) (n + 1) x t)
+    (bound := fun _ : ℝ ↦
+      (2 * Real.pi) ^ (n + 1) * (Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi))))
+    (x₀ := x₀) (Metric.ball_mem_nhds x₀ (by norm_num))
+    (Filter.Eventually.of_forall (fun x => aestronglyMeasurable_gN_Ioo
+      continuousOn_hf continuous_coeff n x))
+    (Integrable.of_bound (aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x₀) _
       (hμmem.mono fun t ht =>
-        norm_gN_le_const coeff_norm_le (Metric.mem_ball_self (by norm_num)) (hMh t ht) n)
-  have h_bound : ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ),
-      ‖gN (coeff := coeff) (hf := hf) (n + 1) x t‖ ≤ K := by
-    filter_upwards [hμmem] with t ht x hx
-    exact norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1)
-  simpa [μ] using
-    (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
-        (s := Metric.ball x₀ (1 : ℝ))
-        (F := fun x t ↦ gN (coeff := coeff) (hf := hf) n x t)
-        (F' := fun x t ↦ gN (coeff := coeff) (hf := hf) (n + 1) x t)
-        (bound := fun _ : ℝ ↦ K)
-        (x₀ := x₀) (Metric.ball_mem_nhds x₀ (by norm_num))
-        (Filter.Eventually.of_forall (fun x => by
-          simpa [μ, μIoo01] using
-            aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x))
-        hF_int
-        (by simpa [μ, μIoo01] using
-          aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff (n + 1) x₀)
-        h_bound (integrable_const _)
-        (ae_of_all _ fun t x _ => by
-          simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-            ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-                (a := hf t) (c := coeff t) x).const_mul ((coeff t) ^ n)))).2
+        norm_gN_le_const coeff_norm_le (Metric.mem_ball_self (by norm_num)) (hMh t ht) n))
+    (aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff (n + 1) x₀)
+    (by filter_upwards [hμmem] with t ht x hx
+        exact norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1))
+    (integrable_const _)
+    (ae_of_all _ fun t x _ => by
+      simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+        ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+            (a := hf t) (c := coeff t) x).const_mul ((coeff t) ^ n)))).2
 
 /-- Smoothness of `x ↦ ∫_{(0,1)} g(x,t)` packaged from `hasDerivAt_integral_gN_Ioo`. -/
 public theorem contDiff_integral_g_Ioo
@@ -134,36 +126,29 @@ public lemma hasDerivAt_integral_gN_of_continuous
     (n : ℕ) (x₀ : ℝ) :
     HasDerivAt (fun x : ℝ ↦ ∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) n x t)
       (∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t) x₀ := by
-  let μ : Measure ℝ := (volume : Measure ℝ).restrict (Ι (0 : ℝ) 1)
+  set μ : Measure ℝ := (volume : Measure ℝ).restrict (Ι (0 : ℝ) 1)
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
-  let bound : ℝ → ℝ :=
-    fun _ => (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi))
-  have hμmem : ∀ᵐ t ∂μ, t ∈ Ι (0 : ℝ) 1 := by
-    simpa [μ] using
-      (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := (Ι (0 : ℝ) 1)) (by measurability))
+  have hμmem : ∀ᵐ t ∂μ, t ∈ Ι (0 : ℝ) 1 :=
+    ae_restrict_mem (μ := (volume : Measure ℝ)) (s := (Ι (0 : ℝ) 1)) (by measurability)
   have continuous_gN : ∀ n : ℕ, ∀ x : ℝ,
       Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := fun n x => by
     simpa [gN, g] using (continuous_coeff.pow n).mul
       (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
-  have hbound :
-      ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ 1,
-        ‖gN (coeff := coeff) (hf := hf) (n + 1) x t‖ ≤ bound t := by
-    filter_upwards [hμmem] with t ht x hx
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
-      (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx (hMh t ht) (n := n + 1))
-  have hint : Integrable (gN (coeff := coeff) (hf := hf) n x₀) μ := by
-    simpa [μ] using (continuous_gN n x₀).integrableOn_uIoc
-      (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
         (μ := μ) (s := Metric.ball x₀ (1 : ℝ)) (x₀ := x₀)
         (F := fun x t => gN (coeff := coeff) (hf := hf) n x t)
         (F' := fun x t => gN (coeff := coeff) (hf := hf) (n + 1) x t)
-        (bound := bound) (Metric.ball_mem_nhds x₀ (by norm_num))
+        (bound := fun _ : ℝ ↦
+          (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))
+        (Metric.ball_mem_nhds x₀ (by norm_num))
         (Filter.Eventually.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
-        hint (continuous_gN (n + 1) x₀).aestronglyMeasurable hbound
+        ((continuous_gN n x₀).integrableOn_uIoc (μ := (volume : Measure ℝ)) (a := 0) (b := 1))
+        (continuous_gN (n + 1) x₀).aestronglyMeasurable
+        (by filter_upwards [hμmem] with t ht x hx
+            simpa [mul_assoc, mul_left_comm, mul_comm] using
+              norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1))
         (integrable_const _)
         (ae_of_all _ fun t x _ => by
           simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
