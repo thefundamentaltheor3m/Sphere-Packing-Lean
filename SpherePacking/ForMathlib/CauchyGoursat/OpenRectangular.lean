@@ -49,16 +49,12 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
   have hx : 0 < |x₂ - x₁| := abs_sub_pos.mpr (ne_comm.mp h)
   obtain ⟨M, hM⟩ :=
     htendsto ((1 / 2 : ℝ) * (ε / |x₂ - x₁|)) (mul_pos (by norm_num) (div_pos hε hx))
-  use M
-  intro m hm
+  refine ⟨M, fun m hm => ?_⟩
   calc ‖∫ (x : ℝ) in x₁..x₂, f (x + m * I)‖
   _ ≤ ((1 / 2) * (ε / |x₂ - x₁|)) * |x₂ - x₁| :=
-      intervalIntegral.norm_integral_le_of_norm_le_const <| by
-      intro x hx'
-      exact le_of_lt <| hM (x + m * I) (by simpa using hm)
-  _ = (1 / 2) * ε := by
-      field_simp [mul_assoc, (show (|x₂ - x₁| : ℝ) ≠ 0 from ne_of_gt hx)]
-  _ < ε := by linarith
+      intervalIntegral.norm_integral_le_of_norm_le_const fun x _ =>
+        (hM (x + m * I) (by simpa using hm)).le
+  _ < ε := by field_simp [hx.ne']; linarith
 
 end Tendsto_Zero
 
@@ -70,27 +66,22 @@ lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ
     (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
       + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) - (I • ∫ (t : ℝ) in y..m, f (x₁ + t * I))
     = 0 := by
-  simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using
+  simpa using
     Complex.integral_boundary_rect_eq_zero_of_differentiable_on_off_countable f (x₁ + y * I)
       (x₂ + m * I) s hs
       (hcont.mono (by
         rw [reProdIm_subset_iff]
         gcongr
         · simp
-        · simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I, uIcc_of_le hm] using
-            (Icc_subset_Ici_self : Icc y m ⊆ Ici y)))
+        · simpa [uIcc_of_le hm] using (Icc_subset_Ici_self : Icc y m ⊆ Ici y)))
       (fun z hz => by
         obtain ⟨hz, hzns⟩ : z ∈ Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Ioo (min y m) (max y m) ∧ z ∉ s := by
-          simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using hz
+          simpa using hz
         refine hdiff z ⟨?_, hzns⟩
         rw [mem_reProdIm] at hz ⊢
         exact ⟨hz.1, by simpa [min_eq_left hm] using (mem_Ioo.1 hz.2).1⟩)
 
 end Eventually_Eq_Zero
-
-section Contour_Deformation_Tensdsto
-
-end Contour_Deformation_Tensdsto
 
 section Contour_Deformation_of_Integrable_along_BOTH
 
@@ -163,17 +154,14 @@ public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
                 (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) =ᶠ[atTop]
         fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I) := by
     filter_upwards [eventually_ge_atTop y] with m hm
-    have hdiff' :
-        ∀ z ∈ ((Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi y) \ (∅ : Set ℂ)),
-          DifferentiableAt ℂ f z :=
-      fun z hz => hdiff z (by simpa using hz.1)
     have hr := Complex.hzero (f := f) (x₁ := x₁) (x₂ := x₂) (y := y) hcont (s := (∅ : Set ℂ))
-      (hs := by simp) hdiff' m hm
+      (hs := by simp) (fun z hz => hdiff z (by simpa using hz.1)) m hm
     grind only
-  have hV₁ := (intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id).const_smul I
-  have hV₂ := (intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id).const_smul I
   simpa using tendsto_nhds_unique
-    ((tendsto_const_nhds.add hV₂).sub hV₁) ((tendsto_congr' hEq).2 htop)
+    ((tendsto_const_nhds.add ((intervalIntegral_tendsto_integral_Ioi y hint₂
+      tendsto_id).const_smul I)).sub
+      ((intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id).const_smul I))
+    ((tendsto_congr' hEq).2 htop)
 
 end Contour_Deformation_Tendsto_Top
 
