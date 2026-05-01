@@ -138,18 +138,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     ∫ t in Set.Ioi (0 : ℝ),
       (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
         Real.exp (-π * u * t)
-  have haEq' : a' u =
-      (4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-            (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-            (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
-    simpa [IA] using aRadial_eq_another_integral_main hx hx2
-  have hbEq' : b' u =
-      (-4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
-    simpa [IB] using bRadial_eq_another_integral_main hx hx2
   have hAterm :
       ((↑π * I) / 8640 : ℂ) * a' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -157,7 +145,10 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
             ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
               (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
               (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
-    rw [haEq']
+    rw [show a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) from by
+      simpa [IA] using aRadial_eq_another_integral_main hx hx2]
     linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
       ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
         (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) *
@@ -168,7 +159,9 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           (1 / (60 * π) : ℂ) *
             ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
-    rw [hbEq']
+    rw [show b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) from by
+      simpa [IB] using bRadial_eq_another_integral_main hx hx2]
     linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
       ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) *
       (by field_simp; rw [Complex.I_sq]; ring :
