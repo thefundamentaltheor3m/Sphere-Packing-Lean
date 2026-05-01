@@ -41,9 +41,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hLap : (∫ t in Set.Ioi (0 : ℝ),
         ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
       -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-    rw [← MeasureTheory.integral_neg, MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
-      (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-      fun _ _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]]
+    rw [← MeasureTheory.integral_neg]
+    exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
+      simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
   rw [MagicFunction.b.RealIntegrals.b',
     show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -140,8 +140,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       simpa [UpperHalfPlane.im, add_assoc] using hψbd _ (by
         simpa [UpperHalfPlane.im, add_assoc] using
           (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im) :
-        Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ))) (Real.exp_pos _).le).trans (le_of_eq ?_)
-    rw [mul_assoc, ← Real.exp_add]; ring_nf
+        Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ))) (Real.exp_pos _).le).trans
+      (le_of_eq (by rw [mul_assoc, ← Real.exp_add]; ring_nf))
   have hRectLeft :
       (∫ (x : ℝ) in (0 : ℝ)..1,
             bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1)) +
