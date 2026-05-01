@@ -25,17 +25,9 @@ namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators Topology
 
-open MeasureTheory Real Complex
-
-open SpherePacking
-
-open MagicFunction.FourierEigenfunctions
+open MeasureTheory Real Complex SpherePacking MagicFunction.FourierEigenfunctions
 
 noncomputable section
-
-/-!
-## Analytic RHS function on `ℂ`
--/
 
 def bAnotherRHS (u : ℂ) : ℂ :=
   (-4 * (Complex.I : ℂ)) *
@@ -45,25 +37,19 @@ def bAnotherRHS (u : ℂ) : ℂ :=
 lemma bAnotherRHS_analyticOnNhd :
     AnalyticOnNhd ℂ bAnotherRHS ACDomain := by
   have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-  have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := fun u hu h0 =>
-    (ne_of_gt (by simpa [rightHalfPlane] using hu.1)) (by simp [h0])
   have hterm1 :
       AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id)
-      fun u hu => mul_ne_zero hπ (hu_ne0 u hu)
+    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) fun u hu =>
+      mul_ne_zero hπ fun h0 =>
+        (ne_of_gt (by simpa [rightHalfPlane] using hu.1)) (by simp [h0])
   have hterm2 :
       AnalyticOnNhd ℂ (fun u : ℂ => (1 : ℂ) / ((π : ℂ) * (u - 2))) ACDomain :=
     analyticOnNhd_const.div (analyticOnNhd_const.mul (analyticOnNhd_id.sub analyticOnNhd_const))
       fun u hu => mul_ne_zero hπ (sub_ne_zero.2 (by simpa [Set.mem_singleton_iff] using hu.2))
-  have hinner :
-      AnalyticOnNhd ℂ
-        (fun u : ℂ =>
-          (144 : ℂ) / ((π : ℂ) * u) + (1 : ℂ) / ((π : ℂ) * (u - 2)) + bAnotherIntegralC u)
-        ACDomain := by
+  unfold bAnotherRHS
+  exact analyticOnNhd_sinSq_prefactor_mul (sign := (-4 * (Complex.I : ℂ))) <| by
     simpa [add_assoc] using
       (hterm1.add hterm2).add (bAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1)
-  unfold bAnotherRHS
-  exact analyticOnNhd_sinSq_prefactor_mul (sign := (-4 * (Complex.I : ℂ))) hinner
 
 lemma bAnotherRHS_ofReal (u : ℝ) :
     bAnotherRHS (u : ℂ) =
@@ -73,22 +59,6 @@ lemma bAnotherRHS_ofReal (u : ℝ) :
             ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) := by
   simp [bAnotherRHS, bAnotherIntegralC_ofReal, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
     mul_assoc]
-
-/-!
-## Analytic extension of `b'`
--/
-
-lemma exists_b'_analytic_extension :
-    ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
-      (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = b' u) := by
-  refine ⟨bPrimeC, bPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => ?_⟩
-  simpa [show MagicFunction.b.RealIntegrals.b' u = b' u by
-    simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm]
-    using bPrimeC_ofReal u
-
-/-!
-## Final wrapper theorem
--/
 
 /--
 Analytic-continuation step: extend the "another integral" identity for `b'` from `u > 2` to all
@@ -110,8 +80,12 @@ public theorem bRadial_eq_another_integral_analytic_continuation_of_gt2
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
             ∫ t in Set.Ioi (0 : ℝ),
               bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) :=
-  analytic_continuation_of_gt2 exists_b'_analytic_extension bAnotherRHS_analyticOnNhd
-    bAnotherRHS_ofReal h_gt2 hu hu2
+  analytic_continuation_of_gt2
+    ⟨bPrimeC, bPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => by
+      simpa [show MagicFunction.b.RealIntegrals.b' u = b' u by
+        simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm]
+        using bPrimeC_ofReal u⟩
+    bAnotherRHS_analyticOnNhd bAnotherRHS_ofReal h_gt2 hu hu2
 
 end
 
