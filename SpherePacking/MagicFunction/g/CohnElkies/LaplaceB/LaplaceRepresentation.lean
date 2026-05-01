@@ -64,11 +64,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       dsimp [VI]; simp [mul_assoc, mul_comm]]
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz ↦
     lt_of_lt_of_le zero_lt_one (by simpa [Set.mem_Ici] using hz.2)
-  have hdiffT : ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
-      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz ↦
-    have hzpos : 0 < z.im := lt_trans zero_lt_one (by simpa [Set.mem_Ioi] using hz.2)
-    (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
-      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       (Set.Ioi (0 : ℝ)) := by
     have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
@@ -192,8 +187,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
         (by simpa [Set.uIcc_comm] using
           (continuousOn_bContourIntegrandT (u := u)).mono hStrip0) (s := (∅ : Set ℂ)) (by simp)
-        (fun z hz ↦ hdiffT z (by
-          simpa [min_eq_right zero_le_one, max_eq_left zero_le_one] using hz.1))
+        (fun z hz ↦
+          have hzpos : 0 < z.im := lt_trans zero_lt_one (by
+            simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
+          (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
+            (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos))
         (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
             (Set.Ioi (1 : ℝ)) volume by
           simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
