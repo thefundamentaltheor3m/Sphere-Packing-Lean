@@ -170,8 +170,6 @@ end Scaling
 
 noncomputable section Density
 
-variable {d : ℕ} (S : SpherePacking d)
-
 /-- The `PeriodicSpherePackingConstant` in dimension d is the supremum of the density of all
 periodic packings. -/
 @[expose] public def PeriodicSpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
@@ -195,19 +193,18 @@ public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc :
       (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
   rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm,
     Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
-    ENNReal.mul_div_mul_left _ _ ?_ ENNReal.ofReal_ne_top, finiteDensity]
-  rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]; positivity
+    ENNReal.mul_div_mul_left _ _ (by simp; positivity) ENNReal.ofReal_ne_top, finiteDensity]
 
 @[simp]
 public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity R = S.finiteDensity (R / c) := by
-  simpa [mul_div_assoc', hc.ne.symm] using scale_finiteDensity (S := S) hc (R := R / c)
+  simpa [mul_div_assoc', hc.ne.symm] using S.scale_finiteDensity hc (R := R / c)
 
 /-- Density of a scaled packing. -/
 public lemma scale_density {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   simpa [density, Function.comp, map_div_atTop_eq c hc] using
-    (limsup_congr (.of_forall fun R => scale_finiteDensity' (S := S) hc R)).trans
+    (limsup_congr (.of_forall fun R => S.scale_finiteDensity' hc R)).trans
       (Filter.limsup_comp (u := S.finiteDensity) (v := (· / c)) (f := atTop))
 
 public theorem constant_eq_constant_normalized {d : ℕ} :
@@ -261,7 +258,7 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   rwa [← ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)] at h
+    (.inl MeasureTheory.measure_ball_lt_top.ne)] at h
 
 /-- A lower bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
@@ -280,7 +277,7 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
   · exact Finite.Set.subset _ Set.inter_subset_right
   exact Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
     (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <| ENNReal.div_lt_top
-      ((volume.mono Set.inter_subset_right).trans_lt MeasureTheory.measure_ball_lt_top).ne
+      ((volume.mono Set.inter_subset_right).trans_lt measure_ball_lt_top).ne
       (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
 public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
@@ -291,7 +288,7 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
+    (.inl MeasureTheory.measure_ball_lt_top.ne)).1 <| by
       simpa [sub_add_cancel] using S.inter_ball_encard_le hd (R - S.separation / 2)) _
 
 public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
@@ -302,7 +299,7 @@ public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.div_le_iff_le_mul
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <| by
+    (.inl MeasureTheory.measure_ball_lt_top.ne)).1 <| by
       simpa [add_sub_cancel_right] using S.inter_ball_encard_ge (R + S.separation / 2)) _
 
 end BasicResults
