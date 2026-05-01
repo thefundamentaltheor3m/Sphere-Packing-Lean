@@ -149,9 +149,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
               bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) = 0 := by
     let f : ℂ → ℂ := fun z : ℂ => bContourIntegrandT u (z - 1)
-    simpa [min_eq_left zero_le_one, max_eq_right zero_le_one,
-        f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-        mul_assoc, mul_comm, mul_left_comm] using
+    simpa [min_eq_left zero_le_one, max_eq_right zero_le_one, f, sub_eq_add_neg, add_assoc,
+      add_left_comm, add_comm, mul_assoc, mul_comm, mul_left_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := f) (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ))
         ((continuousOn_bContourIntegrandT (u := u)).comp
@@ -164,12 +163,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             hzpos').differentiableAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')).comp
             z (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z))
         (show IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
-          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-            mul_assoc, mul_comm, mul_left_comm] using hintT_shift (-1 : ℂ) fun t ht0 ↦
+          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+            mul_left_comm] using hintT_shift (-1 : ℂ) fun t ht0 ↦
               by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
         (show IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
-          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-            mul_assoc, mul_comm, mul_left_comm] using hintT_center)
+          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+            mul_left_comm] using hintT_center)
         (fun ε hε => let ⟨M, hM⟩ := htendstoT ε hε
           ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩)
   have hRectRight :
@@ -177,8 +176,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
             (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
               bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
-    simpa [min_eq_right zero_le_one, max_eq_left zero_le_one,
-        mul_assoc, mul_comm, mul_left_comm, add_assoc, add_left_comm, add_comm] using
+    simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, mul_assoc, mul_comm, mul_left_comm,
+      add_assoc, add_left_comm, add_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
         (by simpa [Set.uIcc_comm] using
@@ -195,8 +194,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
               by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
         (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
             (Set.Ioi (1 : ℝ)) volume by
-          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-            hintT_center) htendstoT
+          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
+            using hintT_center) htendstoT
   have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 :=
     fun hx => by simpa [Set.uIcc_of_le zero_le_one] using hx
   have hJ2_top : J₂' u =
@@ -211,9 +210,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
     dsimp [J₄']
     let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
-    rw [show (∫ t in (0 : ℝ)..1,
-            (-1 : ℂ) * ψT' (z₄' t) *
-              cexp (π * (Complex.I : ℂ) * (u : ℂ) * z₄' t)) =
+    rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) *
+            cexp (π * (Complex.I : ℂ) * (u : ℂ) * z₄' t)) =
           ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) from
       intervalIntegral.integral_congr fun t ht => by
         simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
