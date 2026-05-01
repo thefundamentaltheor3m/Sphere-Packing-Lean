@@ -24,9 +24,9 @@ hypotheses in `re z`.
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped UpperHalfPlane Topology intervalIntegral
-open MeasureTheory Real Complex Filter
-open MagicFunction.FourierEigenfunctions
-open MagicFunction.a.ComplexIntegrands
+open MeasureTheory Real Complex Filter MagicFunction.FourierEigenfunctions
+  MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrals
+  MagicFunction.a.RealIntegrands MagicFunction.Parametrisations
 
 local notation "c12π" => ‖(12 * (I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
@@ -81,7 +81,7 @@ public lemma exists_phi2'_phi4'_bound_exp :
 /-- Integrability of `Φ₆'` on the imaginary axis tail `t > 1`. -/
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  obtain ⟨C₀, _, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   set b : ℝ := π * (u + 2)
   have hb : 0 < b := mul_pos Real.pi_pos (by linarith)
   refine MeasureTheory.Integrable.mono'
@@ -268,8 +268,7 @@ Rewrite the vertical-segment part `I₁' + I₃' + I₅'` as the imaginary-axis 
 `Φ₅'`.
 -/
 public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
-    MagicFunction.a.RealIntegrals.I₁' u + MagicFunction.a.RealIntegrals.I₃' u +
-        MagicFunction.a.RealIntegrals.I₅' u =
+    I₁' u + I₃' u + I₅' u =
       (I : ℂ) *
         ((Complex.exp (((π * u : ℝ) : ℂ) * I) +
               Complex.exp (-(((π * u : ℝ) : ℂ) * I)) - (2 : ℂ)) *
@@ -287,25 +286,20 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
       (Complex.exp (sign * (((π * u : ℝ) : ℂ) * I)) * Φ₅' u ((t : ℂ) * I)))
       fun t ht ↦ by simp [hzp (hmem ht), hΦ, mul_assoc]]
     simp [V0, mul_assoc]
-  have hI1 : MagicFunction.a.RealIntegrals.I₁' u =
-      (I : ℂ) * Complex.exp (-(((π * u : ℝ) : ℂ) * I)) * V0 := by
-    simpa [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁, mul_assoc,
-      neg_mul, one_mul] using hIshift (-1 : ℂ) MagicFunction.Parametrisations.z₁' Φ₁'
-      (fun ht ↦ by simpa [mul_comm] using MagicFunction.Parametrisations.z₁'_eq_of_mem ht)
+  have hI1 : I₁' u = (I : ℂ) * Complex.exp (-(((π * u : ℝ) : ℂ) * I)) * V0 := by
+    simpa [I₁', Φ₁, mul_assoc, neg_mul, one_mul] using hIshift (-1 : ℂ) z₁' Φ₁'
+      (fun ht ↦ by simpa [mul_comm] using z₁'_eq_of_mem ht)
       (fun t ↦ by simpa [neg_mul, one_mul, mul_comm] using Φ₁'_shift_left (u := u) (t := t))
-  have hI3 : MagicFunction.a.RealIntegrals.I₃' u =
-      (I : ℂ) * Complex.exp (((π * u : ℝ) : ℂ) * I) * V0 := by
-    simpa [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃, mul_assoc,
-      one_mul] using hIshift (1 : ℂ) MagicFunction.Parametrisations.z₃' Φ₃'
-      (fun ht ↦ by simpa [mul_comm] using MagicFunction.Parametrisations.z₃'_eq_of_mem ht)
+  have hI3 : I₃' u = (I : ℂ) * Complex.exp (((π * u : ℝ) : ℂ) * I) * V0 := by
+    simpa [I₃', Φ₃, mul_assoc, one_mul] using hIshift (1 : ℂ) z₃' Φ₃'
+      (fun ht ↦ by simpa [mul_comm] using z₃'_eq_of_mem ht)
       (fun t ↦ by simpa [one_mul, mul_comm] using Φ₃'_shift_right (u := u) (t := t))
-  have hI5 : MagicFunction.a.RealIntegrals.I₅' u = (-2 : ℂ) * (I : ℂ) * V0 := by
-    simpa [MagicFunction.a.RealIntegrals.I₅', MagicFunction.a.RealIntegrands.Φ₅, mul_assoc]
-      using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z) (by
-        rw [intervalIntegral.integral_congr (g := fun t ↦ (I : ℂ) * Φ₅' u ((t : ℂ) * I)) fun t ht ↦
-          by simp [MagicFunction.Parametrisations.z₅'_eq_of_mem (hmem ht), mul_comm]]
-        simp [V0] :
-        (∫ t in (0 : ℝ)..1, (I : ℂ) * Φ₅' u (MagicFunction.Parametrisations.z₅' t)) = (I : ℂ) * V0)
+  have hI5 : I₅' u = (-2 : ℂ) * (I : ℂ) * V0 := by
+    simpa [I₅', Φ₅, mul_assoc] using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z) (by
+      rw [intervalIntegral.integral_congr (g := fun t ↦ (I : ℂ) * Φ₅' u ((t : ℂ) * I)) fun t ht ↦
+        by simp [z₅'_eq_of_mem (hmem ht), mul_comm]]
+      simp [V0] :
+      (∫ t in (0 : ℝ)..1, (I : ℂ) * Φ₅' u (z₅' t)) = (I : ℂ) * V0)
   rw [hI1, hI3, hI5]; ring
 
 end MagicFunction.g.CohnElkies.IntegralReps
