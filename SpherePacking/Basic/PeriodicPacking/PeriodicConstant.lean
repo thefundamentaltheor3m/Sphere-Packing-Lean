@@ -25,12 +25,6 @@ lemma abs_coord_sub_lt_of_mem_ball {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ} 
   lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i)
     (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy)
 
-lemma ball_subset_coordCube {x : EuclideanSpace ℝ (Fin d)} {r L : ℝ}
-    (hx : ∀ i : Fin d, x i ∈ Set.Icc r (L - r)) :
-    ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, y i ∈ Set.Ico (0 : ℝ) L} :=
-  fun y hy i => ⟨by linarith [(hx i).1, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).1],
-    by linarith [(hx i).2, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).2]⟩
-
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
 `2 * r ≤ dist x y`.
@@ -155,8 +149,10 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
         mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := by
-  simpa [coordCube, coordCubeInner] using ball_subset_coordCube (x := x) (r := r) (L := L) hx
+    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L :=
+  fun y hy i =>
+    ⟨by linarith [(hx i).1, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).1],
+      by linarith [(hx i).2, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).2]⟩
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
