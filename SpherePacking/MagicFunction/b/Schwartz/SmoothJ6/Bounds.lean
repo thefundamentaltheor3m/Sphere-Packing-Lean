@@ -61,15 +61,13 @@ lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := 
   have hcoeff : Continuous coeff := by
     simpa [coeff] using (continuous_const.mul Complex.continuous_ofReal : Continuous fun t : ℝ =>
       (-Real.pi : ℂ) * (t : ℂ))
-  have hψ : ContinuousOn (fun t : ℝ ↦ (ψS.resToImagAxis t)) (Ici (1 : ℝ)) :=
-    Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS
-  have hexp : ContinuousOn (fun t : ℝ ↦ cexp ((x : ℂ) * coeff t)) (Ici (1 : ℝ)) :=
-    ((continuous_const.mul hcoeff).cexp).continuousOn
-  have hg : ContinuousOn (g x) (Ici (1 : ℝ)) := by
-    simpa [g, mul_assoc] using (continuousOn_const.mul (hψ.mul hexp))
   refine (ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ))
     (s := Ici (1 : ℝ)) ?_ measurableSet_Ici).mono_measure (by simp [μ, μIciOne])
-  simpa [gN] using (hcoeff.pow n).continuousOn.mul hg
+  simpa [gN] using (hcoeff.pow n).continuousOn.mul
+    (by simpa [g, mul_assoc] using (continuousOn_const.mul
+      ((Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS).mul
+        ((continuous_const.mul hcoeff).cexp).continuousOn)) :
+      ContinuousOn (g x) (Ici (1 : ℝ)))
 
 lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ := by
   simpa [μ, μIciOne] using
@@ -119,21 +117,17 @@ private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hz : z₆' t = (Complex.I : ℂ) * t := z₆'_eq_of_mem ht
-  have hψ : ψS' (z₆' t) = ψS.resToImagAxis t := by
-    simp [ψS', Function.resToImagAxis, ResToImagAxis, hz, ht0, mul_comm]
-  have hcexp :
-      cexp ((π : ℂ) * (Complex.I : ℂ) * (x : ℂ) * (z₆' t)) = cexp ((x : ℂ) * coeff t) := by
-    refine congrArg cexp ?_
-    simp [coeff, SmoothIntegralIciOne.coeff, hz]; ring_nf; simp
   dsimp
-  rw [hψ, hcexp]
+  rw [show ψS' (z₆' t) = ψS.resToImagAxis t by
+    simp [ψS', Function.resToImagAxis, ResToImagAxis, hz, ht0, mul_comm],
+    show cexp ((π : ℂ) * (Complex.I : ℂ) * (x : ℂ) * (z₆' t)) = cexp ((x : ℂ) * coeff t) from
+      congrArg cexp (by simp [coeff, SmoothIntegralIciOne.coeff, hz]; ring_nf; simp)]
   simp [g, SmoothIntegralIciOne.g, Function.resToImagAxis, ResToImagAxis, mul_assoc]
 
 private lemma J₆'_eq_G0 (x : ℝ) : RealIntegrals.J₆' x = G 0 x := by
-  have hEq : RealIntegrals.J₆' x = (-2 : ℂ) * ∫ t in Ici (1 : ℝ), g x t := by
-    simpa [RealIntegrals.J₆', mul_assoc, mul_left_comm, mul_comm] using
-      congrArg (fun J : ℂ => (-2 : ℂ) * J) (integral_J6_integrand_eq_integral_g (x := x))
-  simpa [G, F, gN, SmoothIntegralIciOne.gN, g] using hEq
+  simpa [G, F, gN, SmoothIntegralIciOne.gN, g, RealIntegrals.J₆', mul_assoc, mul_left_comm,
+    mul_comm] using
+    congrArg (fun J : ℂ => (-2 : ℂ) * J) (integral_J6_integrand_eq_integral_g (x := x))
 
 /-- Smoothness of `RealIntegrals.J₆'` on the open half-line `Ioi (-1)`. -/
 public theorem contDiffOn_J₆'_Ioi_neg1 :
@@ -142,8 +136,8 @@ public theorem contDiffOn_J₆'_Ioi_neg1 :
     simpa using
       (SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt (F := F) (s := s) isOpen_s
         (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)
-  have hG0 : ContDiffOn ℝ ∞ (G 0) s := by simpa [G] using (contDiffOn_const.mul hF0)
-  exact hG0.congr (fun x _ => J₆'_eq_G0 x)
+  exact (by simpa [G] using contDiffOn_const.mul hF0 :
+    ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 
 /-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`.
 
