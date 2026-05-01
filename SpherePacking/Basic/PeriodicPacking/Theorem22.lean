@@ -92,8 +92,6 @@ theorem PeriodicSpherePacking.aux2_le
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
 
-open ZSpan
-
 variable (b : Basis ι ℤ S.lattice)
 
 private lemma fundamentalDomain_unique_covers (x : EuclideanSpace ℝ (Fin d)) :
@@ -120,7 +118,7 @@ public theorem PeriodicSpherePacking.aux2_le'
 
 section finiteDensity_limit
 
-open MeasureTheory Measure Metric ZSpan
+open Measure
 
 variable
   {d : ℕ} {S : PeriodicSpherePacking d}
@@ -158,8 +156,7 @@ public theorem aux_big_le
             * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L * 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← add_assoc, ← ENNReal.mul_div_right_comm,
-      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
-    congr 3; rw [mul_comm]
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]; congr 3; rw [mul_comm]
 
 /--
 Lower bound for `S.finiteDensity R` in terms of a fundamental domain, up to a ball-volume ratio.
@@ -193,15 +190,13 @@ public theorem aux_big_ge
             * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L * 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← sub_sub, ← ENNReal.mul_div_right_comm,
-      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
-    congr 3; rw [mul_comm]
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]; congr 3; rw [mul_comm]
 
 open Filter Topology
 
 section VolumeBallRatio
 
-open scoped Topology NNReal
-open Asymptotics Filter ENNReal EuclideanSpace
+open ENNReal
 
 lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
