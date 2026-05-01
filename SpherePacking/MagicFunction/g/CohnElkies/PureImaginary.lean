@@ -75,14 +75,9 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
     Complex.im_pow_eq_zero_of_im_eq_zero (by simp) 3
   have hu2Im : ((u : ℂ) ^ (2 : ℕ)).im = 0 :=
     Complex.im_pow_eq_zero_of_im_eq_zero (by simp) 2
-  have hfrac36 : ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2))).im = 0 := by
-    simp [Complex.div_im, Complex.mul_im, hpi3Im]
-  have hfrac8640 : ((8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ))).im = 0 := by
-    simp [Complex.div_im, Complex.mul_im, hpi3Im, hu2Im]
-  have hfrac18144 : ((18144 : ℂ) / (π ^ (3 : ℕ) * u)).im = 0 := by
-    simp [Complex.div_im, Complex.mul_im, hpi3Im]
   have hEim : E.im = 0 := by
-    simp [E, Complex.add_im, Complex.sub_im, hIterm, hfrac36, hfrac8640, hfrac18144]
+    simp [E, Complex.add_im, Complex.sub_im, hIterm,
+      Complex.div_im, Complex.mul_im, hpi3Im, hu2Im]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
       (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
   have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
@@ -100,7 +95,6 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
   have hEq' : b' u =
       (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
     simpa [E, Iterm, IntegralReps.bAnotherIntegrand, mul_assoc] using hEq
-  have hψI : ∀ t : ℝ, 0 < t → (ψI' ((Complex.I : ℂ) * (t : ℂ))).im = 0 := ψI'_imag_axis_im
   have hIterm : Iterm.im = 0 := by
     let innerR : ℝ → ℝ := fun t =>
       (ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) - Real.exp (2 * π * t)
@@ -111,23 +105,19 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
       intro t (ht : 0 < t)
       have hψ : ψI' ((Complex.I : ℂ) * (t : ℂ)) =
             ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) := by
-        apply Complex.ext <;> simp [hψI t ht]
+        apply Complex.ext <;> simp [ψI'_imag_axis_im t ht]
       simp only []; rw [hψ]; push_cast [innerR]; ring
     have hReal :
         (∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ)).im = 0 := by
       simpa using
         (setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t)))
     simpa [hcongr] using hReal
-  have hfrac144 : ((144 : ℂ) / (π * u)).im = 0 := by
-    simp [Complex.div_im, Complex.mul_im]
   have hEim : E.im = 0 := by
-    simp [E, Complex.add_im, hIterm, hfrac144]
+    simp [E, Complex.add_im, hIterm, Complex.div_im, Complex.mul_im]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
       (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
-  have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
-    Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
   have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
-    rw [Complex.mul_im, hEim, hsinIm]; simp
+    rw [Complex.mul_im, hEim, Complex.ofReal_im]; simp
   rw [show (-4 * (Complex.I : ℂ)) * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E =
     (-4 * (Complex.I : ℂ)) * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E) by ring,
     Complex.mul_re, hprodIm]; simp
@@ -144,10 +134,10 @@ private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuou
     refine (IsClosed.closure_subset_iff hclosed).2 hsubset ?_
     rw [Metric.mem_closure_iff]
     intro ε hε
-    have hpos : 0 < ε / 2 := by linarith
     refine ⟨2 + ε / 2, ⟨show (0 : ℝ) < 2 + ε / 2 by positivity, fun h => by
       linarith [show (2 + ε / 2 : ℝ) = 2 by simpa using h]⟩, ?_⟩
-    rw [Real.dist_eq, show (2 : ℝ) - (2 + ε / 2) = -(ε/2) by ring, abs_neg, abs_of_pos hpos]
+    rw [Real.dist_eq, show (2 : ℝ) - (2 + ε / 2) = -(ε/2) by ring, abs_neg,
+      abs_of_pos (by linarith : (0:ℝ) < ε / 2)]
     linarith
   · exact h hu hu2
 
