@@ -196,10 +196,8 @@ public lemma perm_J12_contour_h1
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z =
       ∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Ψ₁' r) z := by
-  have hstart :
-      (∫ᶜ z in Path.segment (mobiusInv (-1 : ℂ)) (1 : ℂ), scalarOneForm (Ψ₁' r) z) = 0 := by
-    rw [h.hyp.mobiusInv_neg_one]; simp [Path.segment_same]
-  simpa [add_assoc, hstart] using
+  simpa [add_assoc, show (∫ᶜ z in Path.segment (mobiusInv (-1 : ℂ)) (1 : ℂ),
+      scalarOneForm (Ψ₁' r) z) = 0 by rw [h.hyp.mobiusInv_neg_one]; simp [Path.segment_same]] using
     perm_J12_contour_h_aux h.closed_ω_wedgeSet
       (-1 : ℂ) ((-1 : ℂ) + Complex.I) (1 : ℂ) ((1 : ℂ) + Complex.I)
       h.hyp.continuousOn_mobiusInv_segment_z₁ (@h.hyp.homotopy_mem_wedgeSet)
@@ -225,12 +223,9 @@ public lemma perm_J12_contour_h2
             scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z := by
-  have hend :
-      (∫ᶜ z in Path.segment (mobiusInv Complex.I) Complex.I,
-          scalarOneForm (Ψ₁' r) z) = 0 := by
-    rw [h.hyp.mobiusInv_I]; simp [Path.segment_same]
-  simpa [add_assoc, add_left_comm, add_comm, hend] using
-    perm_J12_contour_h_aux h.closed_ω_wedgeSet
+  simpa [add_assoc, add_left_comm, add_comm, show (∫ᶜ z in Path.segment (mobiusInv Complex.I)
+      Complex.I, scalarOneForm (Ψ₁' r) z) = 0 by rw [h.hyp.mobiusInv_I]; simp [Path.segment_same]]
+    using perm_J12_contour_h_aux h.closed_ω_wedgeSet
       (((-1 : ℂ) + Complex.I)) Complex.I (((1 : ℂ) + Complex.I)) Complex.I
       h.hyp.continuousOn_mobiusInv_segment_z₂ (@h.hyp.homotopy_mem_wedgeSet)
       h.hyp.contDiffOn_homotopy r
