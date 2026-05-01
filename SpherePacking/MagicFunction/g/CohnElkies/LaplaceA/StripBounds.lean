@@ -187,7 +187,6 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
   let wH : ℍ := ⟨(t : ℂ) * I + 1, by simpa using ht0⟩
-  have hwH_im : wH.im = t := by simp [wH, UpperHalfPlane.im]
   have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := (norm_add_le (_ : ℂ) _).trans <| by
     simpa [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0.le] using by linarith
   calc ‖Φ₂' u ((t : ℂ) * I)‖
@@ -208,8 +207,8 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
               (Real.exp (-π * u * t) : ℂ) by ring_nf; simp [Complex.ofReal_exp],
             Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
-        mul_le_mul_of_nonneg_right
-          (norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm) (Real.exp_pos _).le
+        mul_le_mul_of_nonneg_right (norm_phi0S_mul_sq_le wH (by simp [wH, UpperHalfPlane.im])
+          hC₀_pos hC₀ hφbd ht1 htAφ hw_norm) (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
         rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
