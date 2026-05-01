@@ -16,7 +16,6 @@ term `exp (2π t) / 256` and the constant correction `-1/32`, and bound the rema
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
 open scoped UpperHalfPlane
-
 open Real Complex
 
 noncomputable section
@@ -29,11 +28,11 @@ private lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
     hw_tail.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
       (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
         (abs_nonneg C))
-  have h8u : ‖((8 * u : ℝ) : ℂ)‖ = 8 * u := by
-    simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]
   linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
     simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring] using
-      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ), htail', h8u.ge]
+      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ), htail',
+    show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u by
+      simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
 
 private lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
@@ -239,23 +238,21 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   have hCH2 : 0 ≤ CH2 :=
     nonneg_of_mul_nonneg_left ((norm_nonneg _).trans (hH2 1 le_rfl)) (Real.exp_pos _)
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
-  have hC0 : 0 ≤ C0 := by positivity
   have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
   have hmain_id :
       ((x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)) = A * (w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))) := by
     have hA0 : A ≠ 0 := ofReal_ne_zero.mpr (div_ne_zero (ne_of_gt (Real.exp_pos _)) (by norm_num))
-    have hAw : A * w⁻¹ = (x ^ (2 : ℕ))⁻¹ := by
-      simp [w, mul_inv_rev, hA0, mul_comm, mul_left_comm]
     have hA8u : A * ((8 * u : ℝ) : ℂ) = ((1 / 32 : ℝ) : ℂ) := by
       simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
         congrArg (fun r : ℝ ↦ (r : ℂ))
           (show (e / 256) * (8 * u) = (1 / 32 : ℝ) by linear_combination (8 / 256 : ℝ) * heu)
-    linear_combination -hAw - hA8u
+    linear_combination -(by simp [w, mul_inv_rev, hA0, mul_comm, mul_left_comm] :
+      A * w⁻¹ = (x ^ (2 : ℕ))⁻¹) - hA8u
   have hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [w, A, x, e, u, C0] using
       (hw_tail_bound (t := t) (ht := ht) (CH2 := CH2) (by simpa [x] using hH2 t ht))
   have hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    simpa [u, abs_of_nonneg hC0] using
+    simpa [u, abs_of_nonneg (show (0:ℝ) ≤ C0 by positivity)] using
       norm_sub_one_le_of_norm_sub_one_sub w u C0 (Real.exp_pos _).le
         (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])) (by
           simpa [show u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
