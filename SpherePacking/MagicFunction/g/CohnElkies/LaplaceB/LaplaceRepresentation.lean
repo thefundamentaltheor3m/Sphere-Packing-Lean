@@ -10,11 +10,7 @@ import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 /-!
 # Laplace representation for `b'`
 
-This file proves the main Laplace representation for the radial profile `b'`, used in the
-blueprint proposition `prop:b-double-zeros`.
-
-## Main statements
-* `MagicFunction.g.CohnElkies.IntegralReps.bRadial_eq_laplace_psiI_main`
+Main lemma `bRadial_eq_laplace_psiI_main` for blueprint `prop:b-double-zeros`.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -45,9 +41,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hLap : (∫ t in Set.Ioi (0 : ℝ),
         ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
       -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-    rw [← MeasureTheory.integral_neg, MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ))
-      measurableSet_Ioi (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-      (fun t _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc])]
+    rw [← MeasureTheory.integral_neg, MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
+      (g := fun t : ℝ => -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
+      fun _ _ => by simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
   rw [MagicFunction.b.RealIntegrals.b',
     show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -62,7 +58,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
           (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
       dsimp [VI]; simp [mul_assoc, mul_comm]]
-  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz ↦
+  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun _ hz =>
     lt_of_lt_of_le zero_lt_one (by simpa [Set.mem_Ici] using hz.2)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       (Set.Ioi (0 : ℝ)) := by
@@ -201,8 +197,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (Set.Ioi (1 : ℝ)) volume by
           simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
             hintT_center) htendstoT
-  have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx ↦ by
-    simpa [Set.uIcc_of_le zero_le_one] using hx
+  have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 :=
+    fun hx => by simpa [Set.uIcc_of_le zero_le_one] using hx
   have hJ2_top : J₂' u =
       ∫ (x : ℝ) in (0 : ℝ)..1,
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
@@ -223,8 +219,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
           show z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I by
             have h := z₄'_eq_of_mem (t := t) (hmem_Icc ht)
-            push_cast at h ⊢; linear_combination h]]
-    rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
+            push_cast at h ⊢; linear_combination h],
+      show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
       simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num,
         (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
   have hJ2_ray : J₂' u =
@@ -327,8 +323,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
       (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
-  have hbcw : ∀ s : ℂ, bContourWeight u s = Complex.exp (((π * u : ℝ) : ℂ) * (s * Complex.I)) := by
-    intro s; simp [bContourWeight, mul_left_comm, mul_comm]
+  have hbcw : ∀ s : ℂ, bContourWeight u s = Complex.exp (((π * u : ℝ) : ℂ) * (s * Complex.I)) :=
+    fun s => by simp [bContourWeight, mul_left_comm, mul_comm]
   simpa [hbcw, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
 
 end MagicFunction.g.CohnElkies.IntegralReps
