@@ -10,13 +10,8 @@ import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 /-!
 # Cancellation estimate for `ψI'(it)` (AnotherIntegral.B)
 
-This file combines the theta-function bounds from the `ThetaAxis` files into the cancellation
-estimate for `ψI'` on the positive imaginary axis: after subtracting the main terms `exp (2π t)`
-and `144`, the remainder decays like `O(exp (-π t))`.
-
-## Main statements
-* `psiI'_mul_I_eq_resToImagAxis`
-* `exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one`
+After subtracting the main terms `exp (2π t)` and `144`, the remainder decays like
+`O(exp (-π t))`.
 -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation
@@ -74,13 +69,13 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   obtain ⟨Cinv3, hinv3⟩ := exists_bound_norm_inv_H3_sq_sub_one_Ici_one
   obtain ⟨CH2, hH2⟩ := exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one
   obtain ⟨CH4, hH4⟩ := exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one
-  have nonneg_of_bound {C : ℝ} {x : ℂ} {a : ℝ} (h : ‖x‖ ≤ C * Real.exp a) : 0 ≤ C :=
-    nonneg_of_mul_nonneg_left ((norm_nonneg x).trans h) (Real.exp_pos a)
-  have hCsum := nonneg_of_bound (hsum 1 le_rfl)
-  have hCinv2 := nonneg_of_bound (hinv2 1 le_rfl)
-  have hCinv3 := nonneg_of_bound (hinv3 1 le_rfl)
-  have hCH2 := nonneg_of_bound (hH2 1 le_rfl)
-  have hCH4 := nonneg_of_bound (hH4 1 le_rfl)
+  have nn : ∀ {C : ℝ} {x : ℂ} {a : ℝ}, ‖x‖ ≤ C * Real.exp a → 0 ≤ C := fun h =>
+    nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
+  have hCsum := nn (hsum 1 le_rfl)
+  have hCinv2 := nn (hinv2 1 le_rfl)
+  have hCinv3 := nn (hinv3 1 le_rfl)
+  have hCH2 := nn (hH2 1 le_rfl)
+  have hCH4 := nn (hH4 1 le_rfl)
   refine ⟨(128 : ℝ) *
       (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
         ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192, ?_⟩
@@ -166,20 +161,17 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       ‖(128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)‖ ≤
         ((128 : ℝ) * ((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) + 192) *
           Real.exp (-Real.pi * t) := by
+    have he : e * Real.exp (-(3 : ℝ) * Real.pi * t) = Real.exp (-Real.pi * t) := by
+      simp only [e, ← Real.exp_add]; congr 1; ring
     have hxdy :
-        ‖(x - x0) * y0‖ ≤ (Csum + Csum / 256) * Real.exp (-Real.pi * t) := by
-      have hy0' : ‖y0‖ ≤ (e / 256) + 1 := by linarith
-      have he : e * Real.exp (-(3 : ℝ) * Real.pi * t) = Real.exp (-Real.pi * t) := by
-        simp only [e, ← Real.exp_add]; congr 1; ring
-      calc ‖(x - x0) * y0‖ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) * ((e / 256) + 1) :=
-            norm_mul_le_of_le hx hy0'
-        _ = (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) * (e / 256) +
-              (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) := by ring
-        _ = (Csum / 256) * Real.exp (-Real.pi * t) +
-              (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) := by linear_combination (Csum / 256) * he
-        _ ≤ (Csum / 256) * Real.exp (-Real.pi * t) + (Csum * Real.exp (-Real.pi * t)) := by
-              linarith [mul_le_mul_of_nonneg_left hle3 hCsum]
-        _ = (Csum + Csum / 256) * Real.exp (-Real.pi * t) := by ring
+        ‖(x - x0) * y0‖ ≤ (Csum + Csum / 256) * Real.exp (-Real.pi * t) := calc
+      _ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) * ((e / 256) + 1) :=
+            norm_mul_le_of_le hx (by linarith)
+      _ = (Csum / 256) * Real.exp (-Real.pi * t) +
+            (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) := by linear_combination (Csum / 256) * he
+      _ ≤ (Csum / 256) * Real.exp (-Real.pi * t) + (Csum * Real.exp (-Real.pi * t)) := by
+            linarith [mul_le_mul_of_nonneg_left hle3 hCsum]
+      _ = (Csum + Csum / 256) * Real.exp (-Real.pi * t) := by ring
     have hx0dy : ‖x0 * (y - y0)‖ ≤ (50 * Cinv2) * Real.exp (-Real.pi * t) := by
       have h0 : (0 : ℝ) ≤ 50 * Cinv2 := mul_nonneg (by linarith) hCinv2
       calc ‖x0 * (y - y0)‖ ≤ ‖x0‖ * ‖y - y0‖ := by simp
@@ -187,18 +179,18 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
             mul_le_mul hx0_bound hy (norm_nonneg _) (by linarith)
         _ ≤ (50 * Cinv2) * Real.exp (-Real.pi * t) := by
             simpa [mul_assoc] using mul_le_mul_of_nonneg_left hle2 h0
+    have hExp : Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t) =
+        Real.exp (-(5 : ℝ) * Real.pi * t) := by rw [← Real.exp_add]; congr 1; ring
     have hdxdy :
-        ‖(x - x0) * (y - y0)‖ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) := by
-      have hExp : Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t) =
-          Real.exp (-(5 : ℝ) * Real.pi * t) := by rw [← Real.exp_add]; congr 1; ring
-      calc ‖(x - x0) * (y - y0)‖ = ‖x - x0‖ * ‖y - y0‖ := by simp
-        _ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) *
-              (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) :=
-            mul_le_mul hx hy (norm_nonneg _) (mul_nonneg hCsum (Real.exp_pos _).le)
-        _ = (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-            linear_combination (Csum * Cinv2) * hExp
-        _ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) :=
-            mul_le_mul_of_nonneg_left hle5 (mul_nonneg hCsum hCinv2)
+        ‖(x - x0) * (y - y0)‖ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) := calc
+      _ = ‖x - x0‖ * ‖y - y0‖ := by simp
+      _ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) *
+            (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) :=
+          mul_le_mul hx hy (norm_nonneg _) (mul_nonneg hCsum (Real.exp_pos _).le)
+      _ = (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) := by
+          linear_combination (Csum * Cinv2) * hExp
+      _ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) :=
+          mul_le_mul_of_nonneg_left hle5 (mul_nonneg hCsum hCinv2)
     have hu_term : ‖(192 : ℂ) * (u : ℂ)‖ ≤ (192 : ℝ) * Real.exp (-Real.pi * t) := by
       simpa [abs_of_nonneg (by positivity : (0:ℝ) ≤ u)] using
         mul_le_mul_of_nonneg_left hu_le (by norm_num : (0:ℝ) ≤ 192)
@@ -240,15 +232,10 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
             psiI'_mul_I_eq_resToImagAxis t ht0, show ψI.resToImagAxis t =
               (128 : ℂ) * (x * y + z * w) from psiI_resToImagAxis_eq t ht0, ← hdecomp]
         congr 1; ring
-    _ ≤ ‖(128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)‖ + ‖(128 : ℂ) * (z * w) - (128 : ℂ)‖ :=
-        norm_add_le _ _
-    _ ≤ ((128 : ℝ) * ((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) + 192) *
-          Real.exp (-Real.pi * t) +
-        (128 : ℝ) * ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t) :=
-        add_le_add hA hB
+    _ ≤ _ + _ := norm_add_le _ _
     _ ≤ ((128 : ℝ) * (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
-          ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) :=
-        le_of_eq (by ring)
+          ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) := by
+        nlinarith [hA, hB, Real.exp_pos (-Real.pi * t)]
 
 end
 
