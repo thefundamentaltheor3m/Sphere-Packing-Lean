@@ -74,8 +74,6 @@ open MagicFunction.a.ComplexIntegrands
 /-- The sixth real-variable integrand, obtained from `Φ₆'` by the parametrization `z₆'`. -/
 @[expose] public def Φ₆ : ℝ → ℂ := fun t ↦ I * Φ₆' r (z₆' t)
 
-section Def
-
 /-- Unfolding lemma for `Φ₁`. -/
 @[simp] public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
 
@@ -93,8 +91,6 @@ section Def
 
 /-- Unfolding lemma for `Φ₆`. -/
 @[simp] public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) := rfl
-
-end Def
 
 end MagicFunction.a.RealIntegrands
 
@@ -151,8 +147,6 @@ namespace MagicFunction.a.RadialFunctions
 @[expose] public def a : V → ℂ := fun x ↦ a' (‖x‖ ^ 2)
 
 open intervalIntegral
-
-section Eq
 
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
@@ -227,7 +221,7 @@ public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
   refine integral_congr fun t ht => ?_
   rw [uIcc_of_le zero_le_one] at ht
   rw [z₅'_eq_of_mem ht, mul_pow, I_sq, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
-      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]; ring
+    linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]; ring
 
 /-- Rewrite `I₅'` as an integral over `Ioc 0 1`. -/
 public lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
@@ -242,6 +236,6 @@ public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
   rw [z₆'_eq_of_mem ht, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]; ring
 
-end MagicFunction.a.RadialFunctions.Eq
+end MagicFunction.a.RadialFunctions
 
 end
