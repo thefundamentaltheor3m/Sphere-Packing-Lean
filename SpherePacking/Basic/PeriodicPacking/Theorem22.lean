@@ -74,10 +74,8 @@ private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, �
   intro x hx
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
   obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
-  calc ‖x‖ = ‖i + (-i + x)‖ := by congr; abel
-    _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
-    _ < R + L := add_lt_add_of_lt_of_le hi_ball
-        (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem))
+  exact lt_of_le_of_lt ((show ‖x‖ = ‖i + (-i + x)‖ by congr; abel).le.trans (norm_add_le _ _))
+    (add_lt_add_of_lt_of_le hi_ball (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)))
 
 /-- Theorem 2.2, upper bound. -/
 theorem PeriodicSpherePacking.aux2_le
@@ -156,7 +154,7 @@ public theorem aux_big_le
             * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L * 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← add_assoc, ← ENNReal.mul_div_right_comm,
-      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]; congr 3; rw [mul_comm]
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc, mul_comm (volume _) (volume _)]
 
 /--
 Lower bound for `S.finiteDensity R` in terms of a fundamental domain, up to a ball-volume ratio.
@@ -190,7 +188,7 @@ public theorem aux_big_ge
             * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L * 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← sub_sub, ← ENNReal.mul_div_right_comm,
-      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]; congr 3; rw [mul_comm]
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc, mul_comm (volume _) (volume _)]
 
 open Filter Topology
 
@@ -219,11 +217,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rcases le_iff_eq_or_lt.mp hC with (rfl | hC)
-  · refine Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
-    rw [EventuallyEq, eventually_atTop]
-    exact ⟨1, fun b hb => by
-      rw [add_zero, ENNReal.div_self (Metric.measure_ball_pos volume _ (by linarith)).ne.symm
-        (MeasureTheory.measure_ball_lt_top (μ := volume)).ne, Pi.one_apply]⟩
+  · exact Tendsto.congr' (f₁ := 1) (eventually_atTop.mpr ⟨1, fun b hb => by
+      simp [add_zero, ENNReal.div_self (Metric.measure_ball_pos volume _
+        (by linarith)).ne.symm (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]⟩)
+      tendsto_const_nhds
   · have hfmt (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
           = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
@@ -265,12 +262,11 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
 Shifting the argument by a constant does not change convergence to `atTop`.
 -/
 public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
-    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α :=
+    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
     simpa using Filter.map_add_atTop_eq (α := ℝ) (k := C)
-  ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
-    fun hf => by simpa [hmap] using (tendsto_map'_iff.mpr hf :
-      Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)⟩
+  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]), fun hf => by simpa [hmap] using
+    (tendsto_map'_iff.mpr hf : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)⟩
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,

@@ -66,19 +66,16 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  refine lt_of_le_of_ne (f_nonneg_at_zero (f := f) hCohnElkies₂) fun hf0re => ?_
-  have hintRe : ∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re = 0 := by
-    rw [show (∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re) =
+  refine lt_of_le_of_ne (f_nonneg_at_zero (f := f) hCohnElkies₂) fun hf0re => hne_zero <|
+    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 ?_
+  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
+    (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1 (by
+    rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
         (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
     simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re
-        (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion)
-  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
-    (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1
-      (by simpa using hintRe)
-  refine (fun h : 𝓕 f = 0 => hne_zero <|
-    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 h) ?_
+        (congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion))
   ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 end Nonnegativity
