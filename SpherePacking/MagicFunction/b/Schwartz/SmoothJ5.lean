@@ -85,9 +85,6 @@ lemma continuous_coeff : Continuous coeff := by
 lemma continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1) := by
   simpa [hf] using continuousOn_const.mul continuousOn_ψI'_z₅'
 
-lemma coe_S_smul (z : ℍ) : (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := by
-  simpa using ModularGroup.coe_S_smul z
-
 /-- Modular rewrite for `ψI' (z₅' t)` in terms of `ψS.resToImagAxis (1 / t)`. -/
 public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
@@ -100,7 +97,7 @@ public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
   have htne : (t : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt ht0)
   have hsmul : S • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
-    calc (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := coe_S_smul (z := z)
+    calc (↑(S • z) : ℂ) = (-1 : ℂ) / (z : ℂ) := by simpa using ModularGroup.coe_S_smul z
       _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [z, hz5]
       _ = (Complex.I : ℂ) * (1 / t) := by field_simp [htne, Complex.I_ne_zero]; simp
   have hψS' :
@@ -110,10 +107,9 @@ public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
       show SpecialLinearGroup.toGL ((SpecialLinearGroup.map (Int.castRingHom ℝ)) S) • z =
         (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) by simpa using hsmul]
   have hzcoe : (z : ℂ) = (Complex.I : ℂ) * (t : ℂ) := by simp [z, hz5]
-  have hslash : (ψS ∣[(-2 : ℤ)] S) z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-    simpa using slashS' (z := z) (F := ψS)
   simpa [show ψI' (z₅' t) = ψI z from by simp [ψI', hz_im, z], hψS', hzcoe] using
-    ((congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S).symm.trans hslash :
+    ((congrArg (fun f : ℍ → ℂ => f z) ψS_slash_S).symm.trans
+      (by simpa using slashS' (z := z) (F := ψS)) :
       ψI z = ψS (S • z) * (z : ℂ) ^ (2 : ℕ))
 
 lemma exists_bound_norm_ψI'_z₅' :
@@ -175,11 +171,10 @@ public theorem decay_J₅' :
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
       (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
-  have hA : 0 ≤ ((2 * Real.pi) ^ n) * Cψ := by positivity [hCψ0]
   have hbound_int : Integrable bound μ := by
     simpa [bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
       (SpherePacking.Integration.integrable_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 hA)
+        (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
