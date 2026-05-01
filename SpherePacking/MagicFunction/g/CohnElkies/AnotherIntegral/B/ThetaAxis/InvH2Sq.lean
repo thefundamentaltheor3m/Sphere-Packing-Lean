@@ -15,10 +15,9 @@ term `exp (2π t) / 256` and the constant correction `-1/32`, and bound the rema
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
-open scoped BigOperators UpperHalfPlane
+open scoped UpperHalfPlane
 
-open Real Complex Filter Topology
-open Set
+open Real Complex
 
 noncomputable section
 
@@ -91,8 +90,7 @@ private lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     (hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) :
     ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤ ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
   have hid : w⁻¹ - (2 - w) = (w - 1) ^ (2 : ℕ) * w⁻¹ := by
-    have : w ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hw_norm_ge)
-    field_simp; ring
+    have : w ≠ 0 := norm_pos_iff.1 (zero_lt_one.trans_le hw_norm_ge); field_simp; ring
   nlinarith [show ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
       ‖w⁻¹ - (2 - w)‖ + ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ by
         rw [show w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
@@ -200,16 +198,12 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         (160 / 256) * CH2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
       linear_combination (160 / 256 : ℝ) * CH2 * he15
     have h3 : (e / 256) * ((CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2) ≤
-        (CH2 ^ 2) / 256 * Real.exp (-(4 : ℝ) * Real.pi * t) :=
-      calc (e / 256) * ((CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2)
-          = (CH2 ^ 2) / 256 * (e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2) := by ring
-        _ = (CH2 ^ 2) / 256 * Real.exp (-(8 : ℝ) * Real.pi * t) := by
-            rw [show e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
-                Real.exp (-(8 : ℝ) * Real.pi * t) by
-              simp only [e, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring]
-        _ ≤ (CH2 ^ 2) / 256 * Real.exp (-(4 : ℝ) * Real.pi * t) :=
-            mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr
-              (by nlinarith [Real.pi_pos, ht])) (by positivity)
+        (CH2 ^ 2) / 256 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
+      have he8 : e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
+          Real.exp (-(8 : ℝ) * Real.pi * t) := by
+        simp only [e, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
+      nlinarith [he8, Real.exp_le_exp.mpr (show -(8 : ℝ) * Real.pi * t ≤ -(4 : ℝ) * Real.pi * t by
+        nlinarith [Real.pi_pos, ht]), sq_nonneg CH2]
     calc
       ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖
           = ‖A‖ * ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ := by
