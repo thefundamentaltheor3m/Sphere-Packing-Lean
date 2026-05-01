@@ -150,10 +150,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
     simpa [IB] using bRadial_eq_another_integral_main hx hx2
-  have hcoefA : (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
-    field_simp; rw [Complex.I_sq]; ring
-  have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
-    field_simp; rw [Complex.I_sq]; ring
   have hAterm :
       ((↑π * I) / 8640 : ℂ) * a' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -162,20 +158,21 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
               (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
               (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
     rw [haEq']
-    linear_combination
-      ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
-        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-          (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) * hcoefA
+    linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
+      ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+        (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) *
+      (by field_simp; rw [Complex.I_sq]; ring :
+        (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ))
   have hBterm :
       (I / (240 * (↑π)) : ℂ) * b' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           (1 / (60 * π) : ℂ) *
             ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
     rw [hbEq']
-    linear_combination
-      ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
-        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) * hcoefB
+    linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
+      ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) *
+      (by field_simp; rw [Complex.I_sq]; ring :
+        (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ))
   have hBscaled :
       (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         (-(π / 2160 : ℂ)) * IA +
@@ -206,8 +203,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
         (-(π / 2160 : ℂ)) * IA + (1 / (60 * π) : ℂ) * IB +
           (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
-          (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) by push_cast; field_simp; ring]
-    exact hBscaled.symm
+          (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) by push_cast; field_simp; ring, ← hBscaled]
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
@@ -262,9 +258,8 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
       refine (tendsto_zero_iff_norm_tendsto_zero).2 <|
         squeeze_zero (fun _ => norm_nonneg _) (fun n => ?_)
           ((tendsto_const_nhds.mul hsin_tendsto).trans (by simp) :
-            Filter.Tendsto (fun n : ℕ =>
-              (‖(π / 2160 : ℂ)‖ * M) * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ))
-              Filter.atTop (𝓝 (0 : ℝ)))
+            Filter.Tendsto (fun n : ℕ => (‖(π / 2160 : ℂ)‖ * M) *
+              (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop (𝓝 (0 : ℝ)))
       rw [norm_mul, norm_mul,
         show ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
             (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) by
