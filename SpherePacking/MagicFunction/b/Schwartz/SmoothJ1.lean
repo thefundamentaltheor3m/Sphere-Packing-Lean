@@ -78,19 +78,18 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
   have hz_im : 0 < (z₁' t).im := im_z₁'_pos (t := t) ht
   let z : ℍ := ⟨z₁' t, hz_im⟩
   have hψT : ψT z = ψS ((S * T) • z) * (z + 1 : ℂ) ^ (2 : ℕ) := by
-    have h1 : (ψS ∣[(-2 : ℤ)] (S * T)) z = ψT z := by
-      simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_slash_ST
-    simpa using h1.symm.trans (by simpa using (slashST' (z := z) (F := ψS)))
+    simpa using ((by simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_slash_ST :
+      (ψS ∣[(-2 : ℤ)] (S * T)) z = ψT z).symm.trans (by simpa using slashST' (z := z) (F := ψS)))
   have hzplus : (z + 1 : ℂ) = (Complex.I : ℂ) * (t : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm, add_left_comm, add_comm] using
       congrArg (fun w : ℂ => w + (1 : ℂ)) (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
-  have htne : (t : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ht0
   have hsmul : (S * T) • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
     calc
       (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := coe_ST_smul (z := z)
       _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [hzplus]
-      _ = (Complex.I : ℂ) * (1 / t) := by field_simp [htne, Complex.I_ne_zero]; simp
+      _ = (Complex.I : ℂ) * (1 / t) := by
+          field_simp [show (t : ℂ) ≠ 0 by exact_mod_cast ne_of_gt ht0, Complex.I_ne_zero]; simp
   have hψT' : ψT' (z₁' t) = ψT z := by simp [ψT', hz_im, z]
   have hψS' : ψS ((S * T) • z) = ψS.resToImagAxis (1 / t) := by
     rw [hsmul]; simp [Function.resToImagAxis, ResToImagAxis, ht0]
