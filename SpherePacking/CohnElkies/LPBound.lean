@@ -51,11 +51,11 @@ variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 →
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
 local notation "conj" => starRingEnd ℂ
-local notation "FT" => FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
 
 section Nonnegativity
 
-theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) := (FT f).integrable
+theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
+  (FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
@@ -99,10 +99,9 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   letI : Fintype (↑(P.centers ∩ D)) :=
     @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded P D hD_isBounded hd
   let n : ℝ := (Fintype.card (↑(P.centers ∩ D)) : ℝ)
-  let g' : ↥(SchwartzMap.dualLattice (d := d) P.lattice) → ℝ := fun m =>
-    ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2)
-  refine Summable.of_norm_bounded (g := g') ?_ fun m => ?_
-  · simpa [g', SchwartzMap.fourier_coe] using
+  refine Summable.of_norm_bounded (g := fun m =>
+    ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2)) ?_ fun m => ?_
+  · simpa [SchwartzMap.fourier_coe] using
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right (n ^ 2)
@@ -112,7 +111,7 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
         n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  simp only [g', norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
+  simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
   gcongr; simpa [Real.norm_eq_abs] using abs_re_le_norm _
 
 include hP hCohnElkies₁ in
