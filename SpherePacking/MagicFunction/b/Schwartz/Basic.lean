@@ -31,119 +31,55 @@ This file builds Schwartz functions from the radial integrals `J₁', ..., J₆'
 
 noncomputable section
 
-namespace MagicFunction.b.SchwartzProperties
-
-open scoped ContDiff Topology
-
-open MagicFunction MagicFunction.b MagicFunction.b.RealIntegrals
-open Set Complex Real
-
-section Smooth
-
-open RealIntegrals
-
-/-! ### Smoothness
-
-Smoothness of the radial integrals is proved in the `SmoothJ*` modules by differentiating under the
-integral sign. Here we only repackage those results. -/
-
-theorem J₁'_smooth' : ContDiff ℝ ∞ J₁' := Schwartz.J1Smooth.contDiff_J₁'
-
-theorem J₂'_smooth' : ContDiff ℝ ∞ J₂' := Schwartz.J2Smooth.contDiff_J₂'
-
-theorem J₃'_smooth' : ContDiff ℝ ∞ J₃' := Schwartz.J3Smooth.contDiff_J₃'
-
-theorem J₄'_smooth' : ContDiff ℝ ∞ J₄' := Schwartz.J4Smooth.contDiff_J₄'
-
-theorem J₅'_smooth' : ContDiff ℝ ∞ J₅' := Schwartz.J5Smooth.contDiff_J₅'
-
-theorem J₆'_smooth' :
-    ContDiff ℝ ∞ (fun r ↦ RadialSchwartz.cutoffC r * RealIntegrals.J₆' r) := by
-  simpa using (RadialSchwartz.contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1
-    (f := RealIntegrals.J₆') MagicFunction.b.Schwartz.J6Smooth.contDiffOn_J₆'_Ioi_neg1)
-
-end Smooth
-
-section Decay
-
-/-! ### One-sided decay bounds
-
-The required Schwartz-type bounds on `0 ≤ r` are proved in the `SmoothJ*` modules; we only repackage
-them here. -/
-
-theorem J₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₁' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J1Smooth.decay_J₁'
-
-theorem J₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₂' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J2Smooth.decay_J₂'
-
-theorem J₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₃' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J3Smooth.decay_J₃'
-
-theorem J₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₄' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J4Smooth.decay_J₄'
-
-theorem J₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₅' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J5Smooth.decay_J₅'
-
-theorem J₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C :=
-  MagicFunction.b.Schwartz.J6Smooth.decay_J₆'
-
-end Decay
-
-end MagicFunction.b.SchwartzProperties
-
 namespace MagicFunction.b.SchwartzIntegrals
 
-open SchwartzMap
-open RadialSchwartz.Bridge
+open scoped ContDiff Topology
+open MagicFunction MagicFunction.b MagicFunction.b.RealIntegrals
+open Set Complex Real SchwartzMap RadialSchwartz.Bridge
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₁'`. -/
 public def J₁' : 𝓢(ℝ, ℂ) :=
   RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₁')
-    MagicFunction.b.SchwartzProperties.J₁'_smooth'
-    MagicFunction.b.SchwartzProperties.J₁'_decay'
+    MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁'
+    MagicFunction.b.Schwartz.J1Smooth.decay_J₁'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₂'`. -/
 public def J₂' : 𝓢(ℝ, ℂ) :=
   RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₂')
-    MagicFunction.b.SchwartzProperties.J₂'_smooth'
-    MagicFunction.b.SchwartzProperties.J₂'_decay'
+    MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂'
+    MagicFunction.b.Schwartz.J2Smooth.decay_J₂'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₃'`. -/
 public def J₃' : 𝓢(ℝ, ℂ) :=
   RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₃')
-    MagicFunction.b.SchwartzProperties.J₃'_smooth'
-    MagicFunction.b.SchwartzProperties.J₃'_decay'
+    MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃'
+    MagicFunction.b.Schwartz.J3Smooth.decay_J₃'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₄'`. -/
 public def J₄' : 𝓢(ℝ, ℂ) :=
   RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₄')
-    MagicFunction.b.SchwartzProperties.J₄'_smooth'
-    MagicFunction.b.SchwartzProperties.J₄'_decay'
+    MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄'
+    MagicFunction.b.Schwartz.J4Smooth.decay_J₄'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₅'`. -/
 public def J₅' : 𝓢(ℝ, ℂ) :=
   RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₅')
-    MagicFunction.b.SchwartzProperties.J₅'_smooth'
-    MagicFunction.b.SchwartzProperties.J₅'_decay'
+    MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
+    MagicFunction.b.Schwartz.J5Smooth.decay_J₅'
+
+private theorem J₆'_smooth_aux :
+    ContDiff ℝ ∞ (fun r ↦ RadialSchwartz.cutoffC r * RealIntegrals.J₆' r) := by
+  simpa using (RadialSchwartz.contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1
+    (f := RealIntegrals.J₆') MagicFunction.b.Schwartz.J6Smooth.contDiffOn_J₆'_Ioi_neg1)
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₆'`. -/
 public def J₆' : 𝓢(ℝ, ℂ) where
   toFun := RadialSchwartz.Bridge.fCut MagicFunction.b.RealIntegrals.J₆'
-  smooth' := by
-    simpa [RadialSchwartz.Bridge.fCut] using MagicFunction.b.SchwartzProperties.J₆'_smooth'
+  smooth' := by simpa [RadialSchwartz.Bridge.fCut] using J₆'_smooth_aux
   decay' := by
     simpa using (RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
-      (f := MagicFunction.b.RealIntegrals.J₆')
-      (hg_smooth := MagicFunction.b.SchwartzProperties.J₆'_smooth')
-      MagicFunction.b.SchwartzProperties.J₆'_decay')
+      (f := MagicFunction.b.RealIntegrals.J₆') (hg_smooth := J₆'_smooth_aux)
+      MagicFunction.b.Schwartz.J6Smooth.decay_J₆')
 
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₁'`. -/
 @[expose] public def J₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
