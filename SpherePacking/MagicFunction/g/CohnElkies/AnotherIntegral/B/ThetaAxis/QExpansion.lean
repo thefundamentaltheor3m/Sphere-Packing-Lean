@@ -47,10 +47,10 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
       Real.exp (-Real.pi * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
   set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ) : ℂ) = (r : ℂ) := by push_cast [r]; ring
   simp_rw [Θ₂_term, div_eq_mul_inv, one_mul]
   rw [show (Real.pi * Complex.I * (n + (2⁻¹ : ℂ) : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
-      ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by simp [τ, hr]; ring_nf; simp,
+      ((-(Real.pi * r ^ 2 * t) : ℝ) : ℂ) from by
+        simp [τ, show (n + (2⁻¹ : ℂ) : ℂ) = (r : ℂ) by push_cast [r]; ring]; ring_nf; simp,
     Complex.norm_exp_ofReal]
   simp [r]
 
@@ -111,19 +111,17 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
   simpa [Function.resToImagAxis, ResToImagAxis, htpos, Θ₂, τ] using
     tsum_of_norm_bounded hmajorant.hasSum hterm
 
-private lemma two_div_one_sub_exp_pi_mul_le (t : ℝ) (ht : 1 ≤ t) :
-    2 / (1 - Real.exp (-Real.pi * t)) ≤ 2 / (1 - Real.exp (-Real.pi)) := by
-  have hInv : (1 / (1 - Real.exp (-Real.pi * t))) ≤ (1 / (1 - Real.exp (-Real.pi))) :=
-    one_div_le_one_div_of_le (sub_pos.2 <| Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos]))
-      (by linarith [Real.exp_le_exp.2 (show (-Real.pi * t : ℝ) ≤ -Real.pi from by
-        nlinarith [Real.pi_pos, ht])])
-  simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2)
-
 private lemma norm_jacobiTheta_I_mul_add_real_sub_one_le (a : ℝ) {t : ℝ} (ht : 1 ≤ t) :
     ‖jacobiTheta (((Complex.I : ℂ) * (t : ℂ)) + a) - 1‖ ≤
       (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-Real.pi * t) := by
   refine (?_ : _ ≤ (2 / (1 - Real.exp (-Real.pi * t))) * Real.exp (-Real.pi * t)).trans <|
-    mul_le_mul_of_nonneg_right (two_div_one_sub_exp_pi_mul_le t ht) (by positivity)
+    mul_le_mul_of_nonneg_right (by
+      have hInv : (1 / (1 - Real.exp (-Real.pi * t))) ≤ (1 / (1 - Real.exp (-Real.pi))) :=
+        one_div_le_one_div_of_le (sub_pos.2 <| Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos]))
+          (by linarith [Real.exp_le_exp.2 (show (-Real.pi * t : ℝ) ≤ -Real.pi from by
+            nlinarith [Real.pi_pos, ht])])
+      simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2))
+      (by positivity)
   simpa using norm_jacobiTheta_sub_one_le (τ := ((Complex.I : ℂ) * (t : ℂ)) + a)
     (by simpa using lt_of_lt_of_le zero_lt_one ht)
 
@@ -298,17 +296,18 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
   set a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
   obtain ⟨hjac, hshift⟩ := jacobiTheta_setup (τ := τ) (by simpa [τ] using htpos)
   have ha0 : a 0 = - (Real.exp (-Real.pi * t) : ℂ) := by
-    have hτ_eq : (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) := by
-      rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
-            (Real.pi : ℂ) * ((Complex.I : ℂ) * ((Complex.I : ℂ) * t)) from by ring,
-        show (Complex.I : ℂ) * ((Complex.I : ℂ) * t) = -(t : ℂ) by
-          rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
-      push_cast; ring
     calc a 0 = Complex.exp (Real.pi * Complex.I * ((Complex.I : ℂ) * t)) *
             Complex.exp (Real.pi * Complex.I) := by
           rw [← Complex.exp_add]
           simp [a, pow_two, τ, mul_assoc, mul_left_comm, mul_comm]; ring_nf
-      _ = - (Real.exp (-Real.pi * t) : ℂ) := by rw [hτ_eq, Complex.exp_pi_mul_I]; simp
+      _ = - (Real.exp (-Real.pi * t) : ℂ) := by
+          rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
+            ((-Real.pi * t : ℝ) : ℂ) by
+            rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
+              (Real.pi : ℂ) * ((Complex.I : ℂ) * ((Complex.I : ℂ) * t)) by ring,
+              show (Complex.I : ℂ) * ((Complex.I : ℂ) * t) = -(t : ℂ) by
+                rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
+            push_cast; ring, Complex.exp_pi_mul_I]; simp
   rw [show Θ₄.resToImagAxis t - (1 : ℂ) + (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) =
       (2 : ℂ) * ∑' n : ℕ, a (n + 1) from by
     rw [show Θ₄.resToImagAxis t = jacobiTheta τ by
