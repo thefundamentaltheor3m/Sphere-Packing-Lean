@@ -106,11 +106,10 @@ lemma exists_phi0_cancellation_bound :
           ((8640 / π : ℝ) : ℂ) * t -
           ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
-      have hs : ∀ t ∈ Set.Icc (1 : ℝ) A, 0 < t :=
-        fun t ht => lt_of_lt_of_le (by norm_num) ht.1
       simpa [g] using (((((by fun_prop :
         ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
-        (continuousOn_phi0''_Idiv hs)).sub (by fun_prop)).add (by fun_prop)).sub
+        (continuousOn_phi0''_Idiv fun t ht =>
+          lt_of_lt_of_le (by norm_num) ht.1)).sub (by fun_prop)).add (by fun_prop)).sub
         (by fun_prop)).norm
     obtain ⟨t₀, _, ht₀max⟩ :=
       isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩ hg_cont
@@ -177,15 +176,14 @@ lemma exists_phi0_cancellation_bound :
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
     exact htri.trans (by gcongr; exact le_max_left _ _)
-  · have htA' : t ≤ A := le_of_not_ge htA
-    have hbound := hM t ht1 htA'
-    have hexp_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
-      (Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA' (by nlinarith [Real.pi_pos])).trans <| by
-        simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
-          (Real.exp_pos _).le
+  · have hbound := hM t ht1 (le_of_not_ge htA)
     have hscale : M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
       simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
-        field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left hexp_le
+        field_simp [Real.exp_ne_zero]] using mul_le_mul_of_nonneg_left
+        ((Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left (le_of_not_ge htA)
+          (by nlinarith [Real.pi_pos])).trans <| by
+          simpa using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
+            (Real.exp_pos _).le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))
         (div_nonneg (le_trans (norm_nonneg _) hbound) (Real.exp_pos (-2 * π * A)).le)
     nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right (le_max_right Clarge _ : _ ≤ C)
       (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
