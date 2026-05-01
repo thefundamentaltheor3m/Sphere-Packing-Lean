@@ -97,11 +97,6 @@ public lemma norm_φ₀_imag_le :
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
-open scoped ComplexConjugate
-
-lemma exp_neg_pi_lt_one : Real.exp (-π) < 1 :=
-  Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)
-
 /-- Helper: bound `‖cexp(2π i m z)‖` by `q^j * q1^k` whenever `m = j + k`. -/
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
@@ -149,7 +144,8 @@ private lemma exists_sub_partialSum_bound
         C * (Real.exp (-2 * π * t)) ^ n := by
   obtain ⟨a, ha, C, hCpos, hbound⟩ := (ModularFormClass.hasFPowerSeries_cuspFunction
     (f := f) (h := (1 : ℝ)) zero_lt_one hΓ).uniform_geometric_approx' (r' := r0)
-    (by simpa using ENNReal.coe_lt_one_iff.2 exp_neg_pi_lt_one)
+    (by simpa using (ENNReal.coe_lt_one_iff.2
+      (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos))))
   refine ⟨C * (a / (r0 : ℝ)) ^ n,
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
