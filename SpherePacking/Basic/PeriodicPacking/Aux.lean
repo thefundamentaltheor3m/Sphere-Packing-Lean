@@ -136,25 +136,23 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     Quotient S.addAction.orbitRel ≃
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   letI : Fintype ι := Fintype.ofFinite ι
+  set b' := b.ofZLatticeBasis ℝ _
   have hact : ∀ (w u : EuclideanSpace ℝ (Fin d)), u ∈ S.centers →
-      u - floor (b.ofZLatticeBasis ℝ _) w ∈ S.centers := fun w u hu ↦ by
+      u - floor b' w ∈ S.centers := fun w u hu ↦ by
     rw [sub_eq_neg_add]; exact S.lattice_action (Submodule.neg_mem _ <|
       (mem_basis_Z_span ..).mp <| Submodule.coe_mem _) hu
   refine (S.addActionOrbitRelEquiv' b).trans {
     toFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦
-      ⟨u - floor (b.ofZLatticeBasis ℝ _) (u - v), hact _ u hu_centers, Set.mem_vadd_set.2
-        ⟨fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, by
-          rw [fract, vadd_eq_add]; abel⟩⟩
+      ⟨u - floor b' (u - v), hact _ u hu_centers, Set.mem_vadd_set.2
+        ⟨fract b' (u - v), fract_mem_fundamentalDomain _ _, by rw [fract, vadd_eq_add]; abel⟩⟩
     invFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦
-      ⟨fract (b.ofZLatticeBasis ℝ _) u, by rw [fract]; exact hact _ u hu_centers,
-       fract_mem_fundamentalDomain _ _⟩
+      ⟨fract b' u, by rw [fract]; exact hact _ u hu_centers, fract_mem_fundamentalDomain _ _⟩
     left_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
       simpa [sub_eq_add_neg, fract_add_ZSpan _ _ (neg_mem (Submodule.coe_mem _))]
         using fract_eq_self.mpr hu_fd
     right_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
-      rw [Subtype.mk.injEq, ← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
+      rw [Subtype.mk.injEq, ← EmbeddingLike.apply_eq_iff_eq b'.repr, map_sub]
       ext i
-      set b' := b.ofZLatticeBasis ℝ _
       calc _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - floor b' u - v)) i := rfl
         _ = b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) := by
           rw [show u - floor b' u - v = u - v - floor b' u by abel]; simp
@@ -265,13 +263,12 @@ private theorem disjoint_vadd_fundamentalDomain
     {x y : EuclideanSpace ℝ (Fin d)} (hx : x ∈ S.lattice) (hy : y ∈ S.lattice) (hxy : x ≠ y) :
     Disjoint (x +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))
       (y +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
-    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _))
-  simpa [Λ] using disjoint_vadd_of_unique_covers (d := d) (Λ := Λ)
-    (D := fundamentalDomain (b.ofZLatticeBasis ℝ _))
-    (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u)
-    fun h ↦ hxy <| congrArg Subtype.val (h : (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) =
-      ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩)
+  let b' := b.ofZLatticeBasis ℝ _
+  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) := Submodule.span ℤ (Set.range b')
+  simpa [Λ] using disjoint_vadd_of_unique_covers (Λ := Λ) (D := fundamentalDomain b')
+    (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain b' u)
+    fun h ↦ hxy <| congrArg Subtype.val (h : (⟨x, by simpa [Λ, b', S.basis_Z_span] using hx⟩ : Λ) =
+      ⟨y, by simpa [Λ, b', S.basis_Z_span] using hy⟩)
 
 private lemma pairwiseDisjoint_centers_inter_vadd
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {C : Set (EuclideanSpace ℝ (Fin d))} :
