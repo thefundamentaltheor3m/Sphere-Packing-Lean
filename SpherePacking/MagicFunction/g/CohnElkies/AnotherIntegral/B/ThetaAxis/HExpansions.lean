@@ -128,14 +128,11 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       (by simp : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖)]
   rw [show H₂.resToImagAxis t = x ^ (4 : ℕ) by
     simp [x, H₂, Function.resToImagAxis, ResToImagAxis, ht0]]
-  have htri := norm_add_le (x ^ (4 : ℕ) - y ^ (4 : ℕ))
+  linarith [hpow', hy_tail, (show x ^ (4 : ℕ) - y ^ (4 : ℕ) +
     (y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-      (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ))
-  rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) + (y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)) = x ^ (4 : ℕ) -
+      (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)) = x ^ (4 : ℕ) -
     (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by ring] at htri
-  linarith [htri, hpow', hy_tail]
+    (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by ring) ▸ norm_add_le _ _]
 
 /-- Generic `H_j(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`, parametrized by sign.
 The sign `σ = +1` gives the H₃ case (`y = 1 + 2q`), `σ = -1` gives H₄ (`y = 1 - 2q`). -/
@@ -192,15 +189,11 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
   rw [hHj t ht0,
     show (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
       (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) from (ofReal_exp_neg_pi_pow_eq t 2).symm]
-  have htri := norm_add_le (x ^ (4 : ℕ) - y ^ (4 : ℕ))
-    (y ^ (4 : ℕ) - (1 : ℂ) - σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-      (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ)))
-  rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) + (y ^ (4 : ℕ) - (1 : ℂ) -
+  linarith [hpow', hy4, (show x ^ (4 : ℕ) - y ^ (4 : ℕ) + (y ^ (4 : ℕ) - (1 : ℂ) -
     σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))) = x ^ (4 : ℕ) - (1 : ℂ) -
     σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ)) by ring] at htri
-  linarith [htri, hpow', hy4]
+    (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ)) by ring) ▸ norm_add_le _ _]
 
 /-- `H₃(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
 lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
