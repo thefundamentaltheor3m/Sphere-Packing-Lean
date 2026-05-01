@@ -120,13 +120,13 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     obtain ⟨CΔ, AΔ, hCΔpos, hΔinv⟩ := exists_inv_Delta_bound_exp
     let A : ℝ := max (1 : ℝ) (max AΔ (max A2 (max A4 A6)))
     have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
-    have hmid : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) := by
-      have hcontIoi : ContinuousOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-        have ht2 : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
-        have hexp : Continuous fun t : ℝ => (Real.exp (-π * u * t) : ℂ) := by fun_prop
-        simpa [aLaplaceIntegrand, mul_assoc] using
-          (ht2.continuousOn.mul continuousOn_phi0''_div_Ioi).mul hexp.continuousOn
-      exact ((hcontIoi.mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
+    have hmid : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
+      (((show ContinuousOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) by
+          simpa [aLaplaceIntegrand, mul_assoc] using
+            (((by fun_prop : Continuous fun t : ℝ =>
+                ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul continuousOn_phi0''_div_Ioi).mul
+              (by fun_prop : Continuous fun t : ℝ => (Real.exp (-π * u * t) : ℂ)).continuousOn)
+        ).mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
         (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
       let a : ℝ := π * (u - 2)
@@ -206,15 +206,11 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
             _ ≤ C4 * 1 := by gcongr
             _ = C4 := by simp
         have hphi_bound : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ * Real.exp (2 * π * t) := by
-          have htri :
-              ‖φ₀ (ModularGroup.S • zH)‖ ≤
-                ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * (zH : ℂ)) * φ₂' zH‖ +
-                  ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
-            have hEq : φ₀ (ModularGroup.S • zH) =
-                  φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
-                    - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH := by
-              simpa using φ₀_S_transform zH
-            rw [hEq]
+          have htri : ‖φ₀ (ModularGroup.S • zH)‖ ≤
+              ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * (zH : ℂ)) * φ₂' zH‖ +
+                ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
+            rw [show φ₀ (ModularGroup.S • zH) = φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
+                - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH by simpa using φ₀_S_transform zH]
             exact (norm_sub_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
           have h2 := norm_mul_le_of_le hcoeff2 hφ2
           have h4 := norm_mul_le_of_le hcoeff4 hφ4
@@ -231,10 +227,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                   show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
                     simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]]
                 gcongr
-          _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-                rw [show (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) =
-                  Cφ * ((t ^ (2 : ℕ)) * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by
-                    ring, hExpRew]
+          _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by rw [← hExpRew]; ring
       simpa [IntegrableOn] using
         MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
           hdomReal hMeasA hdom
