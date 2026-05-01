@@ -54,8 +54,7 @@ private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
   nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
 
 private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C := by
-  linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
-    simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
+  linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by simpa [sub_add_cancel] using norm_add_le (x - 1) (1 : ℂ)]
 
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
@@ -251,10 +250,8 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
     (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
   set B : ℂ := H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
-  have hcong : ‖A + B‖ ≤ ‖A‖ + ‖B‖ := norm_add_le _ _
-  rw [show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
-    (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring] at hcong
-  linarith [hC3 t ht, hC4 t ht]
+  linarith [hC3 t ht, hC4 t ht, (show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
+    (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring) ▸ norm_add_le A B]
 
 /-- Crude inverse-square bound for `H₃(it)` on `t ≥ 1`. -/
 public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
