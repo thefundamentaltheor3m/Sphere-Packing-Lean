@@ -89,20 +89,20 @@ end summable_aux
 section calc_aux
 
 include hcsum in
-lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
-  rw [summable_norm_iff]
-  refine (Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => ?_
-  simp only [fouterm, show cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
-      cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) by
-    rw [← Complex.exp_add]; congr 1; push_cast; ring]
-  field_simp [Complex.exp_ne_zero]
+lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ :=
+  summable_norm_iff.mpr <|
+    (Summable.mul_right (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ hcsum).congr fun i => by
+      simp only [fouterm, show cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) =
+          cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z) by
+        rw [← Complex.exp_add]; congr 1; push_cast; ring]
+      field_simp [Complex.exp_ne_zero]
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simpa [← norm_pow] using Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z)
 
-lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  rw [← aux_5 z]; positivity
+lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 :=
+  (aux_5 z).symm ▸ norm_nonneg _
 
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
@@ -142,36 +142,6 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
         ((Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)).comp_injective
           PNat.coe_injective :
       Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
-
-lemma step_7 :
-    norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
-    rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-  gcongr
-  · exact aux_6 z
-  · exact_mod_cast (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (Complex.norm_exp (I * (↑π * ((n₀ - 2 : ℤ) * z)))).le)
-
-include hcsum in
-lemma step_8 :
-    rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-  gcongr
-  · exact aux_6 z
-  · simpa [norm_mul] using norm_tsum_le_tsum_norm (aux_3 z c n₀ hcsum)
-
-include hcsum in
-lemma step_9 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
-    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-  gcongr
-  exacts [aux_6 z, by simpa [norm_mul] using aux_3 z c n₀ hcsum, aux_10 z c n₀ hcsum,
-    by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
 
 lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -249,11 +219,19 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   _ = norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by simp [← aux_5 z]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_7 z c n₀
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+        gcongr
+        exacts [aux_6 z, by exact_mod_cast (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+          (Complex.norm_exp (I * (↑π * ((n₀ - 2 : ℤ) * z)))).le)]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_8 z c n₀ hcsum
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+        gcongr
+        exacts [aux_6 z, by simpa [norm_mul] using norm_tsum_le_tsum_norm (aux_3 z c n₀ hcsum)]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+        gcongr
+        exacts [aux_6 z, by simpa [norm_mul] using aux_3 z c n₀ hcsum, aux_10 z c n₀ hcsum,
+          by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
