@@ -51,19 +51,6 @@ variable (r : ℝ)
 public lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), g r t := by
   simp [I₆'_eq, g]
 
-lemma I₆'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ici 1, ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) := by
-  simp [g, neg_mul, norm_I, one_mul, norm_exp]
-
-lemma I₆'_bounding_aux_2' (C₀ : ℝ)
-    (hC₀ : ∀ z : ℍ, 1 / 2 < z.im → ‖φ₀ z‖ ≤ C₀ * rexp (-2 * π * z.im)) (r : ℝ) :
-    ∀ t ∈ Ici (1 : ℝ), ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  intro t ht
-  have ht1 : (1 : ℝ) ≤ t := ht
-  have hpos : 0 < (I * t).im := by simpa using one_pos.trans_le ht1
-  rw [I₆'_bounding_aux_1 r t ht]
-  gcongr
-  simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
-
 noncomputable section Schwartz_Decay
 
 open SchwartzMap
@@ -78,28 +65,31 @@ lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
     ‖coeff t‖ ^ n = (π * t) ^ n := by
   simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht]
 
-lemma g_eq_Φ₆ (r : ℝ) : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r := r))
-    (Ici (1 : ℝ)) := by
-  intro t ht
-  dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
-  rw [z₆'_eq_of_mem ht,
-    show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
-      ring_nf; simp [I_sq]]
-  ac_rfl
-
 private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
+  have hg_eq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r := r)) (Ici (1 : ℝ)) :=
+      fun t ht ↦ by
+    dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
+    rw [z₆'_eq_of_mem ht, show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = -π * r * t by
+      ring_nf; simp [I_sq]]
+    ac_rfl
   simpa [gN, μIciOne] using ContinuousOn.aestronglyMeasurable
     (((by unfold coeff; fun_prop : Continuous coeff).pow n).continuousOn.mul
-      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr
-        (g_eq_Φ₆ (r := r)))) measurableSet_Ici
+      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr hg_eq))
+    measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ici (1 : ℝ),
-      ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) :=
-  let ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
-  ⟨C₀, hC₀_pos, fun r t ht ↦ by simpa using I₆'_bounding_aux_2' (C₀ := C₀) hC₀ r t ht⟩
+      ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
+  refine ⟨C₀, hC₀_pos, fun r t ht ↦ ?_⟩
+  have ht1 : (1 : ℝ) ≤ t := ht
+  have hpos : 0 < (I * t).im := by simpa using one_pos.trans_le ht1
+  rw [show ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) by
+    simp [g, neg_mul, norm_I, one_mul, norm_exp]]
+  gcongr
+  simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
 
 lemma gN_norm (n : ℕ) (r t : ℝ) :
     ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
