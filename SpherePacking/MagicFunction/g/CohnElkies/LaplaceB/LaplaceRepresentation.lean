@@ -327,10 +327,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
       (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
-  simpa [show bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) by
-      simp [bContourWeight, mul_left_comm, mul_comm],
-    show bContourWeight u (-1 : ℂ) = Complex.exp (-(((π * u : ℝ) : ℂ) * I)) by
-      simp [bContourWeight, mul_left_comm, mul_comm],
-    sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
+  have hbcw : ∀ s : ℂ, bContourWeight u s = Complex.exp (((π * u : ℝ) : ℂ) * (s * Complex.I)) := by
+    intro s; simp [bContourWeight, mul_left_comm, mul_comm]
+  simpa [hbcw, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
 
 end MagicFunction.g.CohnElkies.IntegralReps
