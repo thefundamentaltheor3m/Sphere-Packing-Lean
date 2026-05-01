@@ -34,9 +34,8 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ K) :
     DifferentiableAt ℂ
       (fun u : ℂ => ∫ t in (0 : ℝ)..1, base t * Complex.exp (u * k t)) u0 := by
-  have h1 : (1 : ℝ) ∈ Ι (0 : ℝ) 1 := by simp
-  have hCbase : 0 ≤ Cbase := (norm_nonneg (base 1)).trans (hbase_bound 1 h1)
-  have hK : 0 ≤ K := (norm_nonneg (k 1)).trans (hk_bound 1 h1)
+  have hCbase : 0 ≤ Cbase := (norm_nonneg (base 1)).trans (hbase_bound 1 (by simp))
+  have hK : 0 ≤ K := (norm_nonneg (k 1)).trans (hk_bound 1 (by simp))
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * (k t) * Complex.exp (u * k t)
   have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by
@@ -56,36 +55,29 @@ public lemma differentiableAt_intervalIntegral_mul_exp
       hF_meas.self_of_nhds (Cbase * Real.exp (‖u0‖ * K)) <|
       (ae_restrict_iff' measurableSet_uIoc).2 <| .of_forall fun t ht => ?_
     refine norm_mul_le_of_le (hbase_bound t ht) ?_
-    have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K :=
-      (norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)
-    exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
+    exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2
+      ((norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)))
   let E : ℝ := Real.exp ((‖u0‖ + 1) * K)
   let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
-  have bound_int : IntervalIntegrable bound volume (0 : ℝ) 1 := by
-    simp [bound]
   have h_bound :
       ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
         ∀ u ∈ Metric.ball u0 (1 : ℝ), ‖F' u t‖ ≤ bound t := by
     refine Filter.Eventually.of_forall (fun t ht u hu => ?_)
-    have hb : ‖base t‖ ≤ Cbase := hbase_bound t ht
     have hk' : ‖k t‖ ≤ K := hk_bound t ht
     have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
-      have hle : ‖u - u0‖ ≤ (1 : ℝ) :=
-        (by simpa [Metric.mem_ball, dist_eq_norm] using hu : ‖u - u0‖ < 1).le
+      have hle : ‖u - u0‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hu
       have h2 : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
         simpa [sub_eq_add_neg, add_assoc] using norm_add_le u0 (u - u0)
       linarith
-    have hexp_le : ‖Complex.exp (u * k t)‖ ≤ E :=
-      (Complex.norm_exp_le_exp_norm _).trans
-        (Real.exp_le_exp.2 (norm_mul_le_of_le hu' (hk_bound t ht)))
     have hstep1 : ‖F' u t‖ ≤ ‖base t‖ * (‖k t‖ * E) := by
       calc
         ‖F' u t‖ = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
           simp [F', mul_left_comm, mul_comm]
         _ ≤ ‖base t‖ * (‖k t‖ * E) := by
           gcongr
-    have hstep2 : ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (K * E) := by gcongr
-    simpa [bound, E, mul_assoc] using hstep1.trans hstep2
+          exact (Complex.norm_exp_le_exp_norm _).trans
+            (Real.exp_le_exp.2 (norm_mul_le_of_le hu' hk'))
+    simpa [bound, E, mul_assoc] using hstep1.trans (by gcongr; exact hbase_bound t ht)
   have h_diff :
       ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
         ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
@@ -93,13 +85,11 @@ public lemma differentiableAt_intervalIntegral_mul_exp
       simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
         ((Complex.hasDerivAt_exp (u * k t)).comp u
           (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
-  have h :=
-    intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le
-      (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-      (F := F) (F' := F') (x₀ := u0) (s := Metric.ball u0 (1 : ℝ)) (bound := bound)
-      (Metric.ball_mem_nhds u0 (by norm_num)) (hF_meas := hF_meas) (hF_int := hF_int)
-      (hF'_meas := hF'_meas)
-      (h_bound := h_bound) (bound_integrable := bound_int) (h_diff := h_diff)
-  exact h.2.differentiableAt
+  exact (intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le
+    (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    (F := F) (F' := F') (x₀ := u0) (s := Metric.ball u0 (1 : ℝ)) (bound := bound)
+    (Metric.ball_mem_nhds u0 (by norm_num)) (hF_meas := hF_meas) (hF_int := hF_int)
+    (hF'_meas := hF'_meas) (h_bound := h_bound)
+    (bound_integrable := by simp [bound]) (h_diff := h_diff)).2.differentiableAt
 
 end MagicFunction.g.CohnElkies.IntegralReps
