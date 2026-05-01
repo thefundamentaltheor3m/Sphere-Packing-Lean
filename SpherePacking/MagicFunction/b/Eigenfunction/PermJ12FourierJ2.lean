@@ -50,17 +50,18 @@ lemma phase_mul_J₂'_eq_integral_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)
     cexp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
         MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ (2 : ℕ)) =
       ∫ t : ℝ, permJ2Kernel w (x, t) ∂μIoc01 := by
-  let g : ℝ → ℂ := fun t =>
-    ψT' (z₂line t) * cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t))
-  have hJ₂μ : MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ (2 : ℕ)) = ∫ t : ℝ, g t ∂μIoc01 := by
+  rw [show MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ (2 : ℕ)) =
+      ∫ t : ℝ, ψT' (z₂line t) *
+        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t)) ∂μIoc01 from by
     simpa [μIoc01] using (J₂'_eq_Ioc (r := ‖x‖ ^ (2 : ℕ))).trans
       (MeasureTheory.integral_congr_ae <| (ae_restrict_iff' measurableSet_Ioc).2 <|
         .of_forall fun t ht => by
-          simp [g, SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)])
-  rw [hJ₂μ]
-  simpa [g, permJ2Kernel] using
+          simp [SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)])]
+  simpa [permJ2Kernel] using
     (MeasureTheory.integral_const_mul (μ := μIoc01)
-      (r := cexp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I)) (f := g)).symm
+      (r := cexp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I))
+      (f := fun t => ψT' (z₂line t) *
+        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t)))).symm
 
 lemma norm_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     ‖permJ2Kernel w (x, t)‖ = ‖ψT' (z₂line t)‖ * rexp (-(π * ‖x‖ ^ 2)) := by
@@ -75,15 +76,10 @@ lemma norm_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
 lemma integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ2Kernel w (x, t))
       (volume : Measure (EuclideanSpace ℝ (Fin 8))) := by
-  have hz : 0 < (z₂line t).im := by simp [z₂line]
-  have hgauss' :
-      Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦
-          ψT' (z₂line t) * cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₂line t)))
-        (volume : Measure (EuclideanSpace ℝ (Fin 8))) := by
-    simpa [mul_assoc] using
+  simpa [permJ2Kernel, mul_assoc] using Integrable.bdd_mul (c := (1 : ℝ))
+    (hg := by simpa [mul_assoc] using
       (SpherePacking.ForMathlib.integrable_gaussian_cexp_pi_mul_I_mul
-        (z := z₂line t) hz).const_mul (ψT' (z₂line t))
-  simpa [permJ2Kernel, mul_assoc] using Integrable.bdd_mul (hg := hgauss') (c := (1 : ℝ))
+        (z := z₂line t) (by simp [z₂line] : 0 < (z₂line t).im)).const_mul (ψT' (z₂line t)))
     (aestronglyMeasurable_phase (w := w)) (ae_norm_phase_le_one (w := w))
 
 lemma ae_integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) :
@@ -95,10 +91,9 @@ lemma ae_integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) :
 lemma integral_permJ2Kernel_x (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     (∫ x : EuclideanSpace ℝ (Fin 8), permJ2Kernel w (x, t)) =
       Ψ₁_fourier (‖w‖ ^ 2) (z₂line t) := by
-  have hz : 0 < (z₂line t).im := by simp [z₂line]
   simpa [permJ2Kernel, Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm] using
-    (SpherePacking.Contour.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
-      (k := 4) (w := w) (z := z₂line t) hz (c := ψT' (z₂line t)))
+    SpherePacking.Contour.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
+      (k := 4) (w := w) (z := z₂line t) (by simp [z₂line]) (c := ψT' (z₂line t))
 
 lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     Integrable (permJ2Kernel w)
@@ -107,40 +102,35 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     continuous_ψT'_z₂line.comp continuous_snd
   have hzline : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => z₂line p.2 :=
     continuous_z₂line.comp continuous_snd
-  have hcont : Continuous (permJ2Kernel w) := by unfold permJ2Kernel; fun_prop
-  have hmeas := hcont.aestronglyMeasurable
-    (μ := ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01))
   rcases exists_bound_norm_ψT'_z₂' with ⟨Mψ, hMψ'⟩
-  let Cgauss : ℝ := ∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * ‖x‖ ^ 2))
+  set Cgauss : ℝ := ∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * ‖x‖ ^ 2))
   have hCgauss : 0 ≤ Cgauss := MeasureTheory.integral_nonneg fun x => by positivity
   have hbound :
       ∀ᵐ t : ℝ ∂μIoc01,
         (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) ≤ (Mψ : ℝ) * Cgauss := by
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
-    have hz : z₂' t = z₂line t := by
-      simpa [z₂line, add_assoc, add_left_comm, add_comm] using
-        (z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
-    have hInt :
-        (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) =
-          ‖ψT' (z₂line t)‖ * Cgauss := by
+    rw [show (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) =
+        ‖ψT' (z₂line t)‖ * Cgauss from by
       simpa [funext fun x => norm_permJ2Kernel (w := w) (x := x) (t := t), Cgauss, mul_assoc]
         using MeasureTheory.integral_const_mul (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-          (r := ‖ψT' (z₂line t)‖) (f := fun x => rexp (-(π * ‖x‖ ^ 2)))
-    simpa [hInt, mul_assoc] using
-      mul_le_mul_of_nonneg_right (by simpa [hz] using hMψ' t ht : ‖ψT' (z₂line t)‖ ≤ Mψ) hCgauss
-  have hint_norm :
-      Integrable
-        (fun t : ℝ => ∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) μIoc01 := by
-    refine Integrable.mono' (integrable_const ((Mψ : ℝ) * Cgauss))
-      (MeasureTheory.AEStronglyMeasurable.integral_prod_right'
-        (μ := μIoc01) (ν := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-        (f := fun p : ℝ × EuclideanSpace ℝ (Fin 8) => ‖permJ2Kernel w (p.2, p.1)‖) (by fun_prop))
-      (hbound.mono fun t ht => by
-        simpa [Real.norm_eq_abs, abs_of_nonneg
-          (MeasureTheory.integral_nonneg fun x => norm_nonneg _ : (0 : ℝ) ≤ _)] using ht)
+          (r := ‖ψT' (z₂line t)‖) (f := fun x => rexp (-(π * ‖x‖ ^ 2)))]
+    refine mul_le_mul_of_nonneg_right ?_ hCgauss
+    simpa [show z₂' t = z₂line t from by
+      simpa [z₂line, add_assoc, add_left_comm, add_comm] using
+        z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)] using hMψ' t ht
+  have hcont : Continuous (permJ2Kernel w) := by unfold permJ2Kernel; fun_prop
   exact (MeasureTheory.integrable_prod_iff'
-    (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))) (ν := μIoc01) hmeas).2
-      ⟨ae_integrable_permJ2Kernel_slice (w := w), hint_norm⟩
+    (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))) (ν := μIoc01)
+    (hcont.aestronglyMeasurable
+      (μ := ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01)))).2
+    ⟨ae_integrable_permJ2Kernel_slice (w := w),
+      Integrable.mono' (integrable_const ((Mψ : ℝ) * Cgauss))
+        (MeasureTheory.AEStronglyMeasurable.integral_prod_right'
+          (μ := μIoc01) (ν := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
+          (f := fun p : ℝ × EuclideanSpace ℝ (Fin 8) => ‖permJ2Kernel w (p.2, p.1)‖) (by fun_prop))
+        (hbound.mono fun t ht => by
+          simpa [Real.norm_eq_abs, abs_of_nonneg
+            (MeasureTheory.integral_nonneg fun x => norm_nonneg _ : (0 : ℝ) ≤ _)] using ht)⟩
 
 private lemma integral_permJ2Kernel_x_ae (w : EuclideanSpace ℝ (Fin 8)) :
     (fun t : ℝ =>
