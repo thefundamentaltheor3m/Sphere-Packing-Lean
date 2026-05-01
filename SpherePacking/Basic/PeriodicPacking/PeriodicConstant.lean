@@ -10,7 +10,6 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 
 section PeriodicConstantAux
 
-open MeasureTheory Metric EuclideanSpace
 open scoped Pointwise
 
 variable {d : ℕ}
@@ -19,11 +18,6 @@ variable {d : ℕ}
 public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ := by
   simpa [EuclideanSpace.inner_single_left, EuclideanSpace.norm_single] using
     abs_real_inner_le_norm (EuclideanSpace.single i (1 : ℝ)) x
-
-lemma abs_coord_sub_lt_of_mem_ball {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ} (hy : y ∈ ball x r)
-    (i : Fin d) : |y i - x i| < r :=
-  lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i)
-    (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy)
 
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
@@ -38,7 +32,6 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
   refine Set.disjoint_left.1 hAB (hx (a := midpoint ℝ x y) ?_) (hy (a := midpoint ℝ x y) ?_) <;>
     simpa [Metric.mem_ball, dist_comm] using hhalf
 
-open scoped Pointwise in
 /-- The union of all lattice translates of a set `F` of representatives. -/
 @[expose] public noncomputable def periodizedCenters (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
     (F : Set (EuclideanSpace ℝ (Fin d))) : Set (EuclideanSpace ℝ (Fin d)) :=
@@ -149,10 +142,12 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
         mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L :=
-  fun y hy i =>
-    ⟨by linarith [(hx i).1, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).1],
-      by linarith [(hx i).2, (abs_lt.mp (abs_coord_sub_lt_of_mem_ball (d := d) hy i)).2]⟩
+    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
+  have hsub : |y i - x i| < r :=
+    lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i)
+      (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy)
+  exact ⟨by linarith [(hx i).1, (abs_lt.mp hsub).1],
+    by linarith [(hx i).2, (abs_lt.mp hsub).2]⟩
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
@@ -224,7 +219,6 @@ end PeriodicConstant
 section PeriodicConstantApprox
 
 open scoped Pointwise
-open MeasureTheory Metric
 
 namespace PeriodicConstantApprox
 
