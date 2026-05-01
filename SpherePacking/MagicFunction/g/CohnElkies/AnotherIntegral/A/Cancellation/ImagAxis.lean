@@ -12,7 +12,6 @@ public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.Complex.Periodic
 
-
 /-!
 # Helpers on the imaginary axis (AnotherIntegral.A)
 
@@ -27,18 +26,14 @@ imaginary axis, used in the `AnotherIntegral.A` estimates.
 * `exists_E4_sub_one_bound`, `exists_Delta_sub_q_bound`
 -/
 
-
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators Topology MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
 open scoped ArithmeticFunction.sigma
 
-open Real Complex MeasureTheory Filter Function
-open ArithmeticFunction
-
-open MagicFunction.FourierEigenfunctions
-open UpperHalfPlane ModularForm EisensteinSeries
-open SlashInvariantFormClass ModularFormClass
+open Real Complex MeasureTheory Filter Function ArithmeticFunction
+  MagicFunction.FourierEigenfunctions UpperHalfPlane ModularForm EisensteinSeries
+  SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
@@ -114,11 +109,11 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  simpa using (by exact_mod_cast
-    ((by simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
-        Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m) :
-        m * (σ 3 m) ≤ m ^ 5).trans (Nat.pow_le_pow_left hM 5)) :
-      (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
+  have h1 : m * (σ 3 m) ≤ m ^ 5 := by
+    simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
+      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)
+  simpa using (by exact_mod_cast h1.trans (Nat.pow_le_pow_left hM 5) :
+    (m * (σ 3 m) : ℝ) ≤ ((M : ℝ) ^ 5 : ℝ))
 
 lemma qExpansionFormalMultilinearSeries_partialSum_two
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -245,10 +240,9 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       (f := fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n))
       (g := b) (fun n => by positivity) (fun n => ?_) (hsummA.mul_left (512 : ℝ))
     have hpow : ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
-      have hbase : ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ 2 ^ (5 - 1) * ((n : ℝ) ^ 5 + (2 : ℝ) ^ 5) := by
-        simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
-      have : (0 : ℝ) ≤ (n : ℝ) ^ 5 := by positivity
-      grind only
+      have hbase := add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
+      simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
+      nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5]
     nlinarith [hpow, pow_nonneg hq1_nonneg n]
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
   intro t ht0 ht1
