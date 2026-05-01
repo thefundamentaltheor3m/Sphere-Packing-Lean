@@ -95,8 +95,8 @@ private lemma perm_12_contour_mobiusInv_wedgeSet_aux
               scalarOneForm (Ψ₁' r) z) +
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
             scalarOneForm (Ψ₁' r) z) := by
-  have h1 := perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
-  have h2 := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
+  have := perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
+  have := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   grind only
 
 /--
@@ -122,22 +122,13 @@ public lemma perm_J12_contour_mobiusInv_wedgeSet
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
             scalarOneForm (Ψ₁' r) z) := by
   simpa using
-    perm_12_contour_mobiusInv_wedgeSet_aux
-      (Ψ₁_fourier := Ψ₁_fourier)
-      (Ψ₁' := Ψ₁')
-      (s := (-1 : ℂ))
-      (closed_ω_wedgeSet := closed_ω_wedgeSet)
-      (r := r)
+    perm_12_contour_mobiusInv_wedgeSet_aux (s := (-1 : ℂ)) closed_ω_wedgeSet r
       (hseg1 := by
-        simpa [neg_one_mul] using
-          (SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
-            (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := Ψ₁') (-1 : ℂ) ((-1 : ℂ) + Complex.I)
-            (Ψ₁_fourier_eq_neg_deriv_mul := Ψ₁_fourier_eq_neg_deriv_mul) (r := r)))
+        simpa [neg_one_mul] using SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
+          (Ψ₁' := Ψ₁') (-1 : ℂ) ((-1 : ℂ) + Complex.I) Ψ₁_fourier_eq_neg_deriv_mul r)
       (hseg2 := by
-        simpa [neg_one_mul] using
-          (SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
-            (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := Ψ₁') ((-1 : ℂ) + Complex.I) Complex.I
-            (Ψ₁_fourier_eq_neg_deriv_mul := Ψ₁_fourier_eq_neg_deriv_mul) (r := r)))
+        simpa [neg_one_mul] using SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
+          (Ψ₁' := Ψ₁') ((-1 : ℂ) + Complex.I) Complex.I Ψ₁_fourier_eq_neg_deriv_mul r)
 
 /--
 Assembled contour identity for the `perm_I12` argument, specialized to `mobiusInv` and `wedgeSet`.
@@ -158,22 +149,13 @@ public lemma perm_I12_contour_mobiusInv_wedgeSet
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
             scalarOneForm (Ψ₁' r) z := by
   simpa using
-    perm_12_contour_mobiusInv_wedgeSet_aux
-      (Ψ₁_fourier := Ψ₁_fourier)
-      (Ψ₁' := Ψ₁')
-      (s := (1 : ℂ))
-      (closed_ω_wedgeSet := closed_ω_wedgeSet)
-      (r := r)
+    perm_12_contour_mobiusInv_wedgeSet_aux (s := (1 : ℂ)) closed_ω_wedgeSet r
       (hseg1 := by
-        simpa using
-          (SpherePacking.MobiusInv.curveIntegral_segment_pos_inv
-            (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := Ψ₁') (-1 : ℂ) ((-1 : ℂ) + Complex.I)
-            (Ψ₁_fourier_eq_deriv_mul := Ψ₁_fourier_eq_deriv_mul) (r := r)))
+        simpa using SpherePacking.MobiusInv.curveIntegral_segment_pos_inv (Ψ₁' := Ψ₁')
+          (-1 : ℂ) ((-1 : ℂ) + Complex.I) Ψ₁_fourier_eq_deriv_mul r)
       (hseg2 := by
-        simpa using
-          (SpherePacking.MobiusInv.curveIntegral_segment_pos_inv
-            (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := Ψ₁') ((-1 : ℂ) + Complex.I) Complex.I
-            (Ψ₁_fourier_eq_deriv_mul := Ψ₁_fourier_eq_deriv_mul) (r := r)))
+        simpa using SpherePacking.MobiusInv.curveIntegral_segment_pos_inv (Ψ₁' := Ψ₁')
+          ((-1 : ℂ) + Complex.I) Complex.I Ψ₁_fourier_eq_deriv_mul r)
 
 end
 
