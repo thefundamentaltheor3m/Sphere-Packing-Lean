@@ -183,7 +183,6 @@ public theorem decay_J₁' :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
       filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
         simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
-      have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
       have hcoeff : ‖coeff t‖ ^ n ≤ (2 * Real.pi) ^ n :=
         pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
       have hψT : ‖ψT' (z₁' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
@@ -191,24 +190,23 @@ public theorem decay_J₁' :
           (MagicFunction.norm_modular_rewrite_Ioc_exp_bound
             (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψT') (z := z₁')
             (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t) ⟨ht.1, le_of_lt ht.2⟩)
-      have hz1 : z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using (z₁'_eq_of_mem (t := t) htIcc)
-      have hcoeff_re : (coeff t).re = -Real.pi * t := by
-        simp [coeff, Complex.mul_re, show (z₁' t).im = t from by simp [hz1], mul_assoc]
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using
-          (norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t) hcoeff_re)
-      have hExp :
+        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
+          (show (coeff t).re = -Real.pi * t by
+            simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
+              simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
+                simpa [mul_assoc, mul_left_comm, mul_comm] using
+                  z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
+      exact le_mul_of_le_mul_of_nonneg_left
+        (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
+            MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
+              (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψT hcexp :
+          ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
+        (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+          SpherePacking.ForMathlib.exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
           Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
-            Real.exp (-2 * Real.pi * Real.sqrt x) := by
-        simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-          (SpherePacking.ForMathlib.exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1)
-      have hgn :
-          ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)) := by
-        simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-          (MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT') (z := z₁')
-            (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψT hcexp)
-      exact le_mul_of_le_mul_of_nonneg_left hgn hExp (by positivity [hCψ0])
+            Real.exp (-2 * Real.pi * Real.sqrt x))
+        (by positivity [hCψ0])
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
