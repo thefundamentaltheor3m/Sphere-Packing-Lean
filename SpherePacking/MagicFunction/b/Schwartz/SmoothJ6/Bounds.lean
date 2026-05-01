@@ -101,13 +101,10 @@ lemma hasDerivAt_G (n : ℕ) (x : ℝ) (hx : x ∈ s) :
     HasDerivAt (fun y : ℝ => G n y) (G (n + 1) x) x := by
   simpa [G] using (hasDerivAt_F (n := n) (x := x) hx).const_mul (-2 : ℂ)
 
-lemma deriv_G (n : ℕ) (x : ℝ) (hx : x ∈ s) : deriv (G n) x = G (n + 1) x :=
-  (hasDerivAt_G (n := n) (x := x) hx).deriv
-
 lemma iteratedDeriv_G_eq :
     ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s :=
   SpherePacking.ForMathlib.eqOn_iteratedDeriv_eq_of_deriv_eq (hs := isOpen_s) (G := G)
-    (hderiv := fun n x hx => deriv_G (n := n) (x := x) hx)
+    (hderiv := fun n x hx => (hasDerivAt_G (n := n) (x := x) hx).deriv)
 
 private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
     (∫ t in Ici (1 : ℝ),
