@@ -128,15 +128,13 @@ public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
   rcases exists_bound_norm_bAnotherBase_Ioi with ⟨C, hC⟩
   let C0 : ℝ := max C 0
-  have hC0 : 0 ≤ C0 := le_max_right _ _
   have hb : ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
     fun t ht => (hC t ht).trans (le_max_left _ _)
-  have hpu : 0 < π * u := mul_pos Real.pi_pos hu
   have hg :
       Integrable (fun t : ℝ => C0 * Real.exp (-(π * u) * t))
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
     simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-      (exp_neg_integrableOn_Ioi (a := (0 : ℝ)) hpu).const_mul C0
+      (exp_neg_integrableOn_Ioi (a := (0 : ℝ)) (mul_pos Real.pi_pos hu)).const_mul C0
   have hf_meas :
       AEStronglyMeasurable (fun t : ℝ => bAnotherBase t * (Real.exp (-π * u * t) : ℂ))
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
@@ -192,7 +190,6 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
     rw [hset]; exact hf_Ioc.union hf_Ioi
   rcases exists_bound_norm_bAnotherBase_Ioi with ⟨C, hC⟩
   let C0 : ℝ := max C 0
-  have hC0 : 0 ≤ C0 := le_max_right _ _
   have hb : ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
     fun t ht => (hC t ht).trans (le_max_left _ _)
   have hg :
