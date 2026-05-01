@@ -23,8 +23,6 @@ open Real Complex Filter Topology Set
 
 noncomputable section
 
-/-! Helper inequalities for `Θⱼ` and `Hⱼ` norms. -/
-
 private lemma norm_pow4_sub_le (x y : ℂ) :
     ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤ 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by
   have hx : ‖x‖ ≤ ‖x‖ + ‖y‖ := le_add_of_nonneg_right (norm_nonneg _)
@@ -158,8 +156,7 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
       (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hC10
   have hσ_norm : ‖σ‖ = 1 := by rcases hσ with rfl | rfl <;> simp
   have hy : ‖y‖ ≤ 3 := by
-    have := norm_add_le (1 : ℂ) (σ * (2 : ℂ) * q')
-    simp [hσ_norm] at this; linarith
+    have h := norm_add_le (1 : ℂ) (σ * (2 : ℂ) * q'); simp [hσ_norm] at h; linarith
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
@@ -236,12 +233,12 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
   obtain ⟨C3, hC3⟩ := exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one
   obtain ⟨C4, hC4⟩ := exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one
   refine ⟨C3 + C4, fun t ht => ?_⟩
-  set A : ℂ := H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
-  set B : ℂ := H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-    (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
-  linarith [hC3 t ht, hC4 t ht, (show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
-    (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring) ▸ norm_add_le A B]
+  set A : ℂ := H₃.resToImagAxis t - 1 - 8 * (Real.exp (-Real.pi * t) : ℂ) -
+    24 * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
+  set B : ℂ := H₄.resToImagAxis t - 1 + 8 * (Real.exp (-Real.pi * t) : ℂ) -
+    24 * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)
+  linarith [hC3 t ht, hC4 t ht, (show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - 2 -
+    48 * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring) ▸ norm_add_le A B]
 
 /-- Crude inverse-square bound for `H₃(it)` on `t ≥ 1`. -/
 public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
@@ -301,9 +298,9 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     gcongr ?_ * ?_
     exacts [((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le, hsub1 t ht]
   have hinv_le : ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
-    have hxne : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one (hnorm_H3_ge_one t ht))
-    rw [show (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ by
-      field_simp, norm_mul, norm_sub_rev]
+    have : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one (hnorm_H3_ge_one t ht))
+    rw [show (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ by field_simp,
+      norm_mul, norm_sub_rev]
     simpa using mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
   simpa [x, mul_assoc, mul_left_comm, mul_comm] using hinv_le.trans hx2sub
 
