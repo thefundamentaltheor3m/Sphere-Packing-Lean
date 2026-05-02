@@ -45,13 +45,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
       simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
-  rw [MagicFunction.b.RealIntegrals.b',
-    show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            (∫ t in Set.Ioi (0 : ℝ),
-              ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
-        (Complex.I : ℂ) *
-            (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-                  Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
+  rw [MagicFunction.b.RealIntegrals.b', show (-4 * (Complex.I : ℂ)) *
+        (Real.sin (π * u / 2)) ^ (2 : ℕ) * (∫ t in Set.Ioi (0 : ℝ),
+          ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
+      (Complex.I : ℂ) * (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+        Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
       rw [hLap, show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
             Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
             ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
@@ -317,8 +315,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
       (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
-  have hbcw : ∀ s : ℂ, bContourWeight u s = Complex.exp (((π * u : ℝ) : ℂ) * (s * Complex.I)) :=
-    fun s => by simp [bContourWeight, mul_left_comm, mul_comm]
-  simpa [hbcw, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc] using hsum
+  simpa [bContourWeight, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm,
+    mul_comm] using hsum
 
 end MagicFunction.g.CohnElkies.IntegralReps
