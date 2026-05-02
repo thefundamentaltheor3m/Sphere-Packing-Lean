@@ -143,11 +143,10 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
-  have hsub : |y i - x i| < r :=
-    lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i)
-      (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy)
-  exact ⟨by linarith [(hx i).1, (abs_lt.mp hsub).1],
-    by linarith [(hx i).2, (abs_lt.mp hsub).2]⟩
+  have hsub := abs_lt.mp <| lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i :
+    |y i - x i| ≤ ‖y - x‖)
+    (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy : ‖y - x‖ < r)
+  exact ⟨by linarith [(hx i).1, hsub.1], by linarith [(hx i).2, hsub.2]⟩
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
