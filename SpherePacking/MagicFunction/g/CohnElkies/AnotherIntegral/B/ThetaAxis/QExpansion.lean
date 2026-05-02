@@ -193,7 +193,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       nlinarith [ht, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)), mul_le_mul_of_nonneg_right
         (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith)
         (by linarith : (0:ℝ) ≤ t)]
-    rw [hnorm, show r ^ n = Real.exp (n * (-Real.pi)) from by
+    rw [hnorm, show r ^ n = Real.exp (n * (-Real.pi)) by
       simpa [r] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
     exact Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos])
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
@@ -225,9 +225,8 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
       (by nlinarith [sq_nonneg (n : ℝ), ht] :
         ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
       (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq (by
-      rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) from by
-          simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
-      ring_nf)
+      rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) by
+        simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]; ring_nf)
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) =
       (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]
