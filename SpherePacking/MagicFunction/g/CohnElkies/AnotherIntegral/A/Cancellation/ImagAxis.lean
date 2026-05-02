@@ -250,29 +250,26 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   let f : ℕ → ℂ := fun n =>
     ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
-    calc
-      ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
-            ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by simp [f, mul_assoc]
-      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by
-            gcongr
-            · exact_mod_cast norm_mul_sigma_le (n + 2) (n + 2) le_rfl
-            · simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
-                norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
-      _ = q ^ (2 : ℕ) * b n := by simp [b]; ring
+    rw [show ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
+        ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ from by simp [f, mul_assoc],
+      show q ^ (2 : ℕ) * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) from by
+        simp [b]; ring]
+    gcongr
+    · exact_mod_cast norm_mul_sigma_le (n + 2) (n + 2) le_rfl
+    · simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
+        norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
   have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
   let g : ℕ → ℂ := fun n =>
     (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
   have hg_summ : Summable g := by
     refine Summable.of_norm_bounded (hb_summ.mul_left q) fun n => ?_
-    calc
-      ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
-            ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ := by simp [g, mul_assoc]
-      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by
-            gcongr
-            · exact_mod_cast norm_mul_sigma_le (n + 1) (n + 2) (by omega)
-            · simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
-                norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
-      _ = q * b n := by simp [b]; ring
+    rw [show ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
+        ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ from by simp [g, mul_assoc],
+      show q * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) from by simp [b]; ring]
+    gcongr
+    · exact_mod_cast norm_mul_sigma_le (n + 1) (n + 2) (by omega)
+    · simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
+        norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
   have hsplit :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =
         ∑' n : ℕ, f n := by
