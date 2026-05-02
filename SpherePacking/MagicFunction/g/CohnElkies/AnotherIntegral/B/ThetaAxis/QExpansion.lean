@@ -201,11 +201,11 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     rw [hnorm, show r ^ n = Real.exp (n * (-Real.pi)) from by
       simpa [r] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
     exact Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos])
-  have htail : ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
-    tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) hterm
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - r)) * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) =
-      (2 : ℝ) * (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by ring]; gcongr
+      (2 : ℝ) * (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by ring]
+  gcongr
+  exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) hterm
 /-- Tail bound for `2 * ∑' n, a(n+1)` in the Jacobi-theta `q`-expansion. Used for both Θ₃ and Θ₄. -/
 private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (ht : 1 ≤ t) :
     ‖(2 : ℂ) * ∑' n : ℕ, (fun n : ℕ ↦
@@ -226,20 +226,18 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
           simpa using norm_jacobiTheta₂_term (n + 2 : ℤ) (0 : ℂ) τ, hτim,
         show ((n + 2 : ℤ) : ℝ) = (n : ℝ) + 2 from by norm_cast]
       simp; ring_nf
-    have hrhs : Real.exp ((-Real.pi) * ((4 : ℝ) * t + (n : ℝ))) =
-        Real.exp (-(4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi) ^ n) := by
-      rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) from by
-          simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
-      ring_nf
     simpa [hnorm, r, pow_two, mul_assoc] using (Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left
       (by nlinarith [sq_nonneg (n : ℝ), ht] :
         ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
-      (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq hrhs
-  have htail : ‖∑' n : ℕ, a (n + 1)‖ ≤ Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
-    tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(4 : ℝ) * Real.pi * t))) hterm
+      (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq (by
+        rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) from by
+            simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
+        ring_nf)
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) =
-      (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]; gcongr
+      (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]
+  gcongr
+  exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(4 : ℝ) * Real.pi * t))) hterm
 
 /-- Setup for Θ₃/Θ₄ `q`-expansion: q-series identity and shift. -/
 private lemma jacobiTheta_setup {τ : ℂ} (hτ : 0 < τ.im) :
