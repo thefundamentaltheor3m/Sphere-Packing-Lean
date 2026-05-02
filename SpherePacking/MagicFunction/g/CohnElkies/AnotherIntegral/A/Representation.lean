@@ -149,29 +149,15 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi fun t _ ↦ by
           simp [-Complex.ofReal_exp, aLaplaceIntegrand, aAnotherIntegrand, c36, c8640, c18144,
-            sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm, corr]
-          ring]
+            sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm, corr]; ring]
     exact integral_add (by simpa [MeasureTheory.IntegrableOn] using
       aAnotherIntegrand_integrable_of_pos hu0)
       (by simpa [MeasureTheory.IntegrableOn] using hCorrInt)
-  have hCorr_eval : (∫ t in Set.Ioi (0 : ℝ), corr t) =
+  simpa [aAnotherIntegral, hLapInt_decomp, show (∫ t in Set.Ioi (0 : ℝ), corr t) =
       (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-        (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) :=
-    corrIntegral_eval hu0 hu hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt h2ExpInt
-  simpa [aAnotherIntegral, hLapInt_decomp, hCorr_eval, add_assoc, add_left_comm, add_comm]
-    using hLap'
-
-lemma aRadial_eq_another_integral_analytic_continuation {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
-    a' u =
-      (4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-            (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) +
-              ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) := by
-  refine aRadial_eq_another_integral_analytic_continuation_of_gt2 (u := u) (hu := hu) (hu2 := hu2)
-    (fun r hr => ?_)
-  simpa [aAnotherIntegral] using aRadial_eq_another_integral_of_gt2 (u := r) hr
+        (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) from
+    corrIntegral_eval hu0 hu hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt h2ExpInt,
+    add_assoc, add_left_comm, add_comm] using hLap'
 
 /-- Main lemma for blueprint proposition `prop:a-another-integral`. -/
 public theorem aRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
@@ -187,6 +173,8 @@ public theorem aRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u 
                         ((8640 / π : ℝ) : ℂ) * t -
                         ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
                     Real.exp (-π * u * t))) := by
-  simpa [aAnotherIntegrand] using aRadial_eq_another_integral_analytic_continuation (u := u) hu hu2
+  simpa [aAnotherIntegrand] using
+    aRadial_eq_another_integral_analytic_continuation_of_gt2 (u := u) (hu := hu) (hu2 := hu2)
+      fun r hr => by simpa [aAnotherIntegral] using aRadial_eq_another_integral_of_gt2 (u := r) hr
 
 end MagicFunction.g.CohnElkies.IntegralReps
