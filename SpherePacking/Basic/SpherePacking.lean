@@ -63,7 +63,7 @@ public noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpher
     AddAction S.lattice S.centers where
   vadd x y := ⟨↑x + ↑y, S.lattice_action x.prop y.prop⟩
   zero_vadd y := Subtype.ext (zero_add y.val)
-  add_vadd u v p := Subtype.ext (add_assoc ..)
+  add_vadd _ _ _ := Subtype.ext (add_assoc ..)
 
 alias PeriodicSpherePacking.instAddAction := PeriodicSpherePacking.addAction
 
@@ -248,7 +248,7 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
     linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
 /-- An upper bound on the number of points in the sphere packing X with norm less than R. -/
-theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
@@ -272,11 +272,9 @@ theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
   exact ENNReal.div_le_of_le_mul h
 
 public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
-    Finite ↑(S.centers ∩ ball 0 R) := by
-  rcases eq_or_ne d 0 with rfl | hd
-  · exact Finite.Set.subset _ Set.inter_subset_right
-  exact Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
-    (S.inter_ball_encard_le (Nat.pos_of_ne_zero hd) R).trans_lt <| ENNReal.div_lt_top
+    Finite ↑(S.centers ∩ ball 0 R) :=
+  Set.encard_lt_top_iff.mp <| ENat.toENNReal_lt.mp <|
+    (S.inter_ball_encard_le R).trans_lt <| ENNReal.div_lt_top
       ((volume.mono Set.inter_subset_right).trans_lt measure_ball_lt_top).ne
       (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
@@ -289,7 +287,7 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
   exact ENNReal.div_le_div_right ((ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
     (.inl MeasureTheory.measure_ball_lt_top.ne)).1 <| by
-      simpa [sub_add_cancel] using S.inter_ball_encard_le hd (R - S.separation / 2)) _
+      simpa [sub_add_cancel] using S.inter_ball_encard_le (R - S.separation / 2)) _
 
 public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
     S.finiteDensity R
