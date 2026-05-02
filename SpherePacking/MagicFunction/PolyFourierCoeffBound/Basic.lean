@@ -217,8 +217,7 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
         gcongr
-        exacts [aux_6 z, by exact_mod_cast (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (Complex.norm_exp (I * (↑π * ((n₀ - 2 : ℤ) * z)))).le)]
+        exacts [aux_6 z, by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
         gcongr
