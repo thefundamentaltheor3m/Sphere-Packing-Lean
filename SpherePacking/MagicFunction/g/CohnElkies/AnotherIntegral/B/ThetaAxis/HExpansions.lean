@@ -57,9 +57,8 @@ private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ �
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖H₂.resToImagAxis t
-          - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
-          - (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
+      ‖H₂.resToImagAxis t - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+          (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(5 : ℝ) * Real.pi * t) := by
   obtain ⟨M, hM⟩ := exists_bound_norm_Theta2_resToImagAxis_Ici_one
   obtain ⟨Cθ, hCθ⟩ := exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one
@@ -139,8 +138,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
       ‖Θj t - 1 - σ * (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ ≤
         C2 * Real.exp (-(4 : ℝ) * Real.pi * t)) :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖Hj t - (1 : ℂ) - σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
-          - (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
+      ‖Hj t - (1 : ℂ) - σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   refine ⟨(4 * (1 + C1 + 3) ^ 3) * C2 + 48, fun t ht ↦ ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -191,10 +190,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
 /-- `H₃(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
 lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖H₃.resToImagAxis t
-          - (1 : ℂ)
-          - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
-          - (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
+      ‖H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   obtain ⟨C1, hC1⟩ := exists_bound_norm_Theta3_resToImagAxis_sub_one_Ici_one
   obtain ⟨C2, hC2⟩ := exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one
@@ -207,10 +204,8 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
 /-- `H₄(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖H₄.resToImagAxis t
-          - (1 : ℂ)
-          + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
-          - (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
+      ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   obtain ⟨C1, hC1⟩ := exists_bound_norm_Theta4_resToImagAxis_sub_one_Ici_one
   obtain ⟨C2, hC2⟩ := exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one
@@ -223,9 +218,8 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
 /-- `H₃(it) + H₄(it)` cancellation up to the `exp(-2π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖(H₃.resToImagAxis t + H₄.resToImagAxis t)
-          - (2 : ℂ)
-          - (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
+      ‖(H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
+          (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   obtain ⟨C3, hC3⟩ := exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one
   obtain ⟨C4, hC4⟩ := exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one
