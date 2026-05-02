@@ -52,11 +52,9 @@ public lemma exists_phi2'_phi4'_bound_exp :
   obtain ⟨CΔ, AΔ, _, hΔ⟩ := exists_inv_Delta_bound_exp
   refine ⟨max 1 (max (CE4 ^ 2 * CΔ) (CE4 * (CE2 * CE4 + CE6) * CΔ)),
     max AΔ (max AE2 (max AE4 AE6)), by positivity, fun z hzA => ?_⟩
-  have hzE2 : AE2 ≤ z.im := ((le_max_left _ _).trans (le_max_right _ _)).trans hzA
-  have hzE4 : AE4 ≤ z.im :=
-    (((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
-  have hzE6 : AE6 ≤ z.im :=
-    (((le_max_right _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
+  have hzE2 : AE2 ≤ z.im := by simp_all
+  have hzE4 : AE4 ≤ z.im := by simp_all
+  have hzE6 : AE6 ≤ z.im := by simp_all
   have hΔz : ‖(Δ z)⁻¹‖ ≤ CΔ * Real.exp (2 * π * z.im) := hΔ z ((le_max_left _ _).trans hzA)
   have hcore : ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE2 * CE4 + CE6 :=
     (by simpa [norm_mul] using norm_sub_le ((E₂ z) * (E₄ z)) (E₆ z) :
@@ -73,10 +71,8 @@ public lemma exists_phi2'_phi4'_bound_exp :
     ‖φ₄' z‖ = ‖E₄ z‖ ^ 2 * ‖(Δ z)⁻¹‖ := by simp [φ₄', div_eq_mul_inv, pow_two]
     _ ≤ CE4 ^ 2 * (CΔ * Real.exp (2 * π * z.im)) := by gcongr; exact hE4 z hzE4
     _ = _ := by ring
-  exact ⟨hφ2.trans <| mul_le_mul_of_nonneg_right
-      ((le_max_right _ _).trans (le_max_right _ _)) (Real.exp_pos _).le,
-    hφ4.trans <| mul_le_mul_of_nonneg_right
-      ((le_max_left _ _).trans (le_max_right _ _)) (Real.exp_pos _).le⟩
+  exact ⟨hφ2.trans <| mul_le_mul_of_nonneg_right (by simp_all) (Real.exp_pos _).le,
+    hφ4.trans <| mul_le_mul_of_nonneg_right (by simp_all) (Real.exp_pos _).le⟩
 
 /-- Integrability of `Φ₆'` on the imaginary axis tail `t > 1`. -/
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
