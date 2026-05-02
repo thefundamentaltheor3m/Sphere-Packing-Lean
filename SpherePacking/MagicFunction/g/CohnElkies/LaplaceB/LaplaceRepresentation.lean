@@ -202,8 +202,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hJ4_top : J₄' u =
       ∫ (x : ℝ) in (1 : ℝ)..0,
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
-    dsimp [J₄']
-    let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
+    dsimp [J₄']; let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
     rw [show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) *
             cexp (π * (Complex.I : ℂ) * (u : ℂ) * z₄' t)) =
           ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) from
