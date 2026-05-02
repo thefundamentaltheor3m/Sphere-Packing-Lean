@@ -67,15 +67,16 @@ lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
 
 private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
-  have hg_eq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r := r)) (Ici (1 : ℝ)) :=
-      fun t ht ↦ by
-    dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
-    rw [z₆'_eq_of_mem ht, show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = -π * r * t by
-      ring_nf; simp [I_sq]]
-    ac_rfl
   simpa [gN, μIciOne] using ContinuousOn.aestronglyMeasurable
     (((by unfold coeff; fun_prop : Continuous coeff).pow n).continuousOn.mul
-      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr hg_eq))
+      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr
+        (show EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₆ (r := r)) (Ici (1 : ℝ)) from
+          fun t ht ↦ by
+            dsimp [MagicFunction.a.RealIntegrands.Φ₆,
+              MagicFunction.a.ComplexIntegrands.Φ₆', g]
+            rw [z₆'_eq_of_mem ht, show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = -π * r * t by
+              ring_nf; simp [I_sq]]
+            ac_rfl)))
     measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
@@ -111,9 +112,8 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
-      have h2 : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
-        rw [← Real.exp_add]; ring_nf
-      simp only [bound, mul_pow, ← h2]; ring
+      simp only [bound, mul_pow, ← show rexp (-2 * π * t) * rexp (-π * r * t) =
+        rexp (-(π * (r + 2)) * t) from by rw [← Real.exp_add]; ring_nf]; ring
 
 private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
@@ -136,9 +136,8 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
                 (by nlinarith [Real.pi_pos] : (-π : ℝ) ≤ 0)) (by positivity))
           (by positivity) (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
       _ = bound t := by
-        have h2 : rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by
-          rw [← Real.exp_add]; ring_nf
-        simp only [bound, mul_pow, ← h2]; ring
+        simp only [bound, mul_pow, ← show rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) =
+          rexp (-(π * (r₀ + 1)) * t) from by rw [← Real.exp_add]; ring_nf]; ring
   have bound_integrable : Integrable bound μ := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (show Integrable (fun t : ℝ ↦ t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) μ by
@@ -187,9 +186,8 @@ lemma iteratedDeriv_bound (n : ℕ) :
           (n := n) (b := 2 * π) (by positivity)).const_mul (C₀ * (π ^ n))
   let A : ℝ := ∫ t in Ici (1 : ℝ), B t
   have hA_nonneg : 0 ≤ A :=
-    MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ))
-      measurableSet_Ici fun t ht ↦ by
-        have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
+    MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ)) measurableSet_Ici
+      fun t ht ↦ by have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
   simpa [mul_assoc, mul_left_comm, mul_comm]
@@ -212,8 +210,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
                 (by positivity)) (by positivity) (by positivity)
           _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
     _ = 2 * (A * rexp (-π * r)) := by
-      rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))
-        (r := rexp (-π * r)) (f := fun t : ℝ ↦ B t)]
+      rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))]
     _ ≤ (2 * (A + 1)) * rexp (-π * r) := by nlinarith [hA_nonneg, Real.exp_pos (-π * r)]
 
 /--
