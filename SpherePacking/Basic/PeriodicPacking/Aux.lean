@@ -68,12 +68,11 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   refine Set.finite_coe_iff.2 <| finite_of_bounded_iUnion_of_volume_lower_bound
       (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))
-      (hc := by simpa using Metric.measure_ball_pos volume _ (by linarith [S.separation_pos]))
-      (h_measurable := fun _ _ => measurableSet_ball)
-      (h_bounded := isBounded_iUnion_ball_centers_inter S D hD_isBounded)
-      (h_volume := fun _ _ => by simp [Measure.addHaar_ball_center])
-      (h_disjoint := fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
-        simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy)
+      (by simpa using Metric.measure_ball_pos volume _ (by linarith [S.separation_pos]))
+      (fun _ _ => measurableSet_ball) (isBounded_iUnion_ball_centers_inter S D hD_isBounded)
+      (fun _ _ => by simp [Measure.addHaar_ball_center])
+      fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
+        simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy
 
 end aux_lemmas
 
@@ -105,18 +104,17 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     have hv' := (Classical.choose_spec (hD_unique_covers v)).2
     simp only [Subtype.forall] at hv'
     simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
-    refine congrArg (· + _) (Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) ?_))
-    simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
-      (Classical.choose_spec (hD_unique_covers (y + v))).1
+    exact congrArg (· + _) (Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) <| by
+      simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
+        (Classical.choose_spec (hD_unique_covers (y + v))).1))
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.1⟩⟧
   left_inv := Quotient.ind fun _ ↦ Quotient.eq.2 <| by
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
     obtain ⟨g, _, hg'⟩ := hD_unique_covers x
-    trans g.val <;> norm_cast
-    exacts [hg' _ (Classical.choose_spec (hD_unique_covers x)).1,
-      (hg' 0 (by simpa using hx.2)).symm]
+    exact_mod_cast (hg' _ (Classical.choose_spec (hD_unique_covers x)).1).trans
+      (hg' 0 (by simpa using hx.2)).symm
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -288,8 +286,8 @@ private theorem aux' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     exact ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ = ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by
         simp [fract]).le.trans (norm_sub_le _ _)).trans_lt
       (add_lt_add_of_lt_of_le hx (hL _ (fract_mem_fundamentalDomain _ _)))
-  · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]
-    exact fract_mem_fundamentalDomain _ x
+  · simpa [Set.mem_vadd_set_iff_neg_vadd_mem, neg_add_eq_sub] using
+      fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
 
 /-- Theorem 2.3, upper bound. -/
 public theorem PeriodicSpherePacking.aux_le
