@@ -45,19 +45,15 @@ lemma ψI_apply_eq_factor (z : ℍ) :
       (1 / 2 : ℂ) *
         (H₄ z ^ (3 : ℕ) *
           (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ))) / (Δ z) := by
-  have hJ : H₃ z = H₂ z + H₄ z := by
-    simpa using congrArg (fun f : ℍ → ℂ => f z) jacobi_identity.symm
-  have hψI0 :
-      ψI z =
-        (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ (2 : ℕ)) +
-          (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ (2 : ℕ)) := by
-    simpa [Pi.smul_apply, nsmul_eq_mul] using congrArg (fun f : ℍ → ℂ => f z) ψI_eq
-  have hΔ : (Δ z : ℂ) = ((H₂ z) * (H₃ z) * (H₄ z)) ^ 2 / (256 : ℂ) := by
-    simpa [Delta_apply] using Delta_eq_H₂_H₃_H₄ z
   refine eq_div_of_mul_eq (by simpa [Delta_apply] using Δ_ne_zero z) ?_
-  rw [hψI0, hΔ]
+  rw [show ψI z = (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ (2 : ℕ)) +
+        (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ (2 : ℕ)) by
+      simpa [Pi.smul_apply, nsmul_eq_mul] using congrArg (fun f : ℍ → ℂ => f z) ψI_eq,
+    show (Δ z : ℂ) = ((H₂ z) * (H₃ z) * (H₄ z)) ^ 2 / (256 : ℂ) by
+      simpa [Delta_apply] using Delta_eq_H₂_H₃_H₄ z]
   field_simp [H₂_ne_zero z, H₃_ne_zero z, H₄_ne_zero z]
-  simp [hJ]; ring
+  simp [show H₃ z = H₂ z + H₄ z by
+    simpa using congrArg (fun f : ℍ → ℂ => f z) jacobi_identity.symm]; ring
 
 /-- Exponential growth bound for `ψI` on vertical rays in the upper half-plane. -/
 public lemma exists_ψI_bound_exp :
@@ -69,24 +65,19 @@ public lemma exists_ψI_bound_exp :
           (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
-  have hpoly :
-      Tendsto
-        (fun z : ℍ =>
-          (2 : ℂ) * H₄ z ^ (2 : ℕ) + (5 : ℂ) * (H₄ z * H₂ z) + (5 : ℂ) * H₂ z ^ (2 : ℕ))
-        atImInfty (𝓝 (2 : ℂ)) := by
-    simpa [mul_add, add_assoc, add_left_comm, add_comm] using
-      (tendsto_const_nhds.mul (hH4.pow 2)).add
-        ((tendsto_const_nhds.mul (hH4.mul hH2)).add (tendsto_const_nhds.mul (hH2.pow 2)))
   have hnum : Tendsto num atImInfty (𝓝 (1 : ℂ)) := by
-    have hprod : Tendsto
-            (fun z : ℍ =>
-              H₄ z ^ (3 : ℕ) *
-                (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))
-            atImInfty (𝓝 ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) := by
-      simpa [mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm] using
-        (hH4.pow 3).mul hpoly
     simpa [num, show ((1 / 2 : ℂ) * ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) = (1 : ℂ) from by norm_num] using
-      (tendsto_const_nhds (x := (1 / 2 : ℂ)) (f := atImInfty)).mul hprod
+      (tendsto_const_nhds (x := (1 / 2 : ℂ)) (f := atImInfty)).mul (show Tendsto
+            (fun z : ℍ => H₄ z ^ (3 : ℕ) *
+              (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))
+            atImInfty (𝓝 ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) by
+        simpa [mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm]
+          using (hH4.pow 3).mul (show Tendsto
+              (fun z : ℍ => (2 : ℂ) * H₄ z ^ (2 : ℕ) + (5 : ℂ) * (H₄ z * H₂ z) +
+                (5 : ℂ) * H₂ z ^ (2 : ℕ)) atImInfty (𝓝 (2 : ℂ)) by
+            simpa [mul_add, add_assoc, add_left_comm, add_comm] using
+              (tendsto_const_nhds.mul (hH4.pow 2)).add
+                ((tendsto_const_nhds.mul (hH4.mul hH2)).add (tendsto_const_nhds.mul (hH2.pow 2)))))
   have hEvNum : ∀ᶠ z in atImInfty, ‖num z‖ ≤ (2 : ℝ) := by
     filter_upwards [hnum.eventually (Metric.ball_mem_nhds (1 : ℂ) (by norm_num : (0 : ℝ) < 1))]
       with z hz
@@ -114,9 +105,8 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) := by
     simpa [zpow_two, pow_two, ψS_slash_S] using
       ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht
-  rcases
-      MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with
-    ⟨Cψ, hCψ⟩
+  obtain ⟨Cψ, hCψ⟩ :=
+    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   let Cψ0 : ℝ := max Cψ 0
   have hψS_bound (s : ℝ) (hs : 1 ≤ s) :
       ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s) :=
@@ -148,10 +138,9 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have ht1 : t ≤ 1 := ht.2
       have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht1
       have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
-        have hexp_le : Real.exp (-π * (1 / t : ℝ)) ≤ 1 :=
-          Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
-        simpa using (hψS_bound (1 / t : ℝ) ht').trans
-          (mul_le_mul_of_nonneg_left hexp_le (le_max_right _ _))
+        simpa using (hψS_bound (1 / t : ℝ) ht').trans (mul_le_mul_of_nonneg_left
+          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
+            : Real.exp (-π * (1 / t : ℝ)) ≤ 1) (le_max_right _ _))
       have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
         rw [hψI' t ht0, hSlashS t ht0]
         calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
@@ -187,11 +176,12 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
       have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans ht.le)
       have htIm : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
-      let z : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩
       have hψI' : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ CI * Real.exp (2 * π * t) := by
-        simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI z from by simp [ψI', ht0, z],
-          z, UpperHalfPlane.im] using hI z (by
-            simpa [z, UpperHalfPlane.im] using (le_max_left _ _).trans ht.le)
+        simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
+            ψI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ) from by simp [ψI', ht0],
+          UpperHalfPlane.im] using
+          hI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ)
+            (by simpa [UpperHalfPlane.im] using (le_max_left _ _).trans ht.le)
       calc ‖bLaplaceIntegrand u t‖
             = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
               simp [bLaplaceIntegrand]
@@ -208,12 +198,10 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                 show ‖(Real.exp (-(π * (u - 2)) * t) : ℂ)‖ = Real.exp (-(π * (u - 2)) * t) from by
                   simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-(π * (u - 2)) * t)]
     exact MeasureTheory.Integrable.mono (μ := volume.restrict (Set.Ioi A))
-      (by
-        have hExp : IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) := by
+      (by simpa [IntegrableOn] using
+        (show IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) by
           simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
-            (mul_pos Real.pi_pos (sub_pos.2 hu))
-        simpa [IntegrableOn] using
-          (show Integrable _ (volume.restrict (Set.Ioi A)) from hExp).ofReal.const_mul (CI : ℂ))
+            (mul_pos Real.pi_pos (sub_pos.2 hu))).ofReal.const_mul (CI : ℂ))
       hmeas hdom
   rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) from by norm_num]
   exact hint_small.union <| by
