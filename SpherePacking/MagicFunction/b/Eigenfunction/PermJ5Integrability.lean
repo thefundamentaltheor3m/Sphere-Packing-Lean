@@ -88,8 +88,8 @@ lemma aestronglyMeasurable_kernel (w : ℝ⁸) :
 /-- Cancellation identity `s^(-4) * s^4 = 1` (after coercions to `ℂ`). -/
 public lemma zpow_neg_four_mul_pow_four (s : ℝ) (hs : s ≠ 0) :
     ((s ^ (-4 : ℤ) : ℝ) : ℂ) * (s ^ 4 : ℂ) = 1 := by
-  have hsC : (s : ℂ) ≠ 0 := by exact_mod_cast hs
-  simpa [Complex.ofReal_zpow] using (zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ)) hsC)
+  simpa [Complex.ofReal_zpow] using (zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ))
+    (by exact_mod_cast hs))
 
 lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
     ‖kernel w (x, s)‖ =
@@ -106,14 +106,14 @@ lemma integrable_kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
     simpa [mul_assoc] using
       (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s) hs0).const_mul
         (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖)
-  have hphase : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I) := by fun_prop
   have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
-    have hf : Continuous fun x : ℝ⁸ => (x, s) := by fun_prop
-    have hmaps : MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) :=
-      fun _ _ => ⟨Set.mem_univ _, hs⟩
-    simpa [continuousOn_univ, Function.comp] using
-      (continuousOn_J₅_g.comp hf.continuousOn hmaps)
-  exact Integrable.mono' hmajor (hphase.mul hg).aestronglyMeasurable <| .of_forall fun x =>
+    simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
+      (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
+      (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
+        fun _ _ => ⟨Set.mem_univ _, hs⟩)
+  exact Integrable.mono' hmajor
+    ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
+      hg).aestronglyMeasurable <| .of_forall fun x =>
     le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s))
 
 /-- Integrability of `kernel w` for the product measure `volume × μIciOne`. -/
@@ -140,7 +140,6 @@ public lemma integrable_kernel (w : ℝ⁸) :
   refine Integrable.mono' hmajor hmeas' <| (ae_restrict_iff' measurableSet_Ici).2 <|
     .of_forall fun s hs => ?_
   have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-  have hs_ne0 : s ≠ 0 := hs0.ne'
   have hnorm : (fun x : ℝ⁸ ↦ ‖kernel w (x, s)‖) =
       fun x : ℝ⁸ ↦ (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
         rexp (-π * (‖x‖ ^ 2) / s) :=
@@ -154,9 +153,7 @@ public lemma integrable_kernel (w : ℝ⁸) :
       exact (RCLike.norm_ofReal _).trans (abs_of_pos hs_zpow_pos)
     have hscal : (‖(s ^ (-4 : ℤ) : ℂ)‖) * (s ^ 4) = (1 : ℝ) := by
       rw [habs, show (s ^ (-4 : ℤ)) = (s ^ 4)⁻¹ by simpa using (zpow_negSucc s 3)]
-      exact inv_mul_cancel₀ (pow_ne_zero 4 hs_ne0)
-    have hψS' : ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ = ‖ψS.resToImagAxis s‖ :=
-      congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
+      exact inv_mul_cancel₀ (pow_ne_zero 4 hs0.ne')
     refine le_of_eq ?_
     calc
       (∫ x : ℝ⁸, ‖kernel w (x, s)‖)
@@ -166,10 +163,10 @@ public lemma integrable_kernel (w : ℝ⁸) :
       _ = ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ := by
             rw [SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0, mul_assoc, hscal,
               mul_one]
-      _ = ‖ψS.resToImagAxis s‖ := hψS'
-  have hn0 : 0 ≤ ∫ x : ℝ⁸, ‖kernel w (x, s)‖ :=
-    MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)
-  simpa [Real.norm_eq_abs, abs_of_nonneg hn0] using hval.trans (hC s hs)
+      _ = ‖ψS.resToImagAxis s‖ :=
+            congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
+  simpa [Real.norm_eq_abs, abs_of_nonneg (show 0 ≤ ∫ x : ℝ⁸, ‖kernel w (x, s)‖ from
+    MeasureTheory.integral_nonneg fun _ => norm_nonneg _)] using hval.trans (hC s hs)
 
 end Integral_Permutations.PermJ5
 end
