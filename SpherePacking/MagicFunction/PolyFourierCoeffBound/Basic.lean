@@ -64,8 +64,7 @@ include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
     Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) := by
   refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := cexp (-(π : ℂ) / 2))
-    (by simpa [Complex.norm_exp] using
-      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)) (by
+    (by simp [Complex.norm_exp, Real.exp_lt_one_iff]; nlinarith [Real.pi_pos]) (by
     simpa using ((show (fun n : ℕ ↦ c (n + n₀)) =O[atTop]
         (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) by
       simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
