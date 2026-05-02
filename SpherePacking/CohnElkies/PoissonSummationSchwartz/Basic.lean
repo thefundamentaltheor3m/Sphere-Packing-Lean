@@ -138,8 +138,7 @@ public lemma periodized_apply (x : E) :
 
 /-- The quotient map `E = ℝ^d → (ℝ/ℤ)^d`, bundled as a continuous map. -/
 @[expose] public noncomputable def coeFunEC : C(E, UnitAddTorus (Fin d)) :=
-  ⟨PoissonSummation.Standard.coeFunE (d := d),
-    PoissonSummation.Standard.continuous_coeFunE (d := d)⟩
+  ⟨PoissonSummation.Standard.coeFunE (d := d), PoissonSummation.Standard.continuous_coeFunE⟩
 
 /-- `coeFunEC` is a quotient map. -/
 public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) :=
@@ -160,10 +159,8 @@ public lemma periodized_factorsThrough :
 The descended function on the torus `(ℝ/ℤ)^d`, obtained by quotient-lifting the periodization.
 -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
-  Topology.IsQuotientMap.lift
-    (hf := isQuotientMap_coeFunEC (d := d))
-    (g := periodized (d := d) f)
-    (periodized_factorsThrough (d := d) (f := f))
+  Topology.IsQuotientMap.lift (hf := isQuotientMap_coeFunEC (d := d))
+    (g := periodized (d := d) f) (periodized_factorsThrough (d := d) (f := f))
 
 /-- Compatibility of `descended` with `coeFunE`: pulling back gives `periodized`. -/
 public lemma descended_comp (x : E) :
@@ -215,9 +212,8 @@ public lemma iocCube_subset_closedBall :
   refine (by simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using
     Real.sqrt_le_sqrt (show (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) by
       simpa using (Finset.sum_le_sum fun i _ => show ‖x i‖ ^ 2 ≤ (1 : ℝ) by
-        have hxle : ‖x i‖ ≤ (1 : ℝ) := by
-          simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2
-        nlinarith [norm_nonneg (x i)]).trans_eq (by simp)))
+        nlinarith [norm_nonneg (x i), show ‖x i‖ ≤ (1 : ℝ) by
+          simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2]).trans_eq (by simp)))
 
 /-- The fundamental cube `iocCube` has finite Lebesgue measure. -/
 public lemma volume_iocCube_lt_top :
@@ -250,13 +246,11 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
         (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x hx => ?_)
   calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
         f (x + (ℓ : E))‖
-      = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
-          ‖f (x + (ℓ : E))‖ := by simp
-    _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by
-      gcongr
-      simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-        ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-          (PoissonSummation.Standard.coeFunE (d := d) x)
+      ≤ 1 * ‖f (x + (ℓ : E))‖ := by
+        rw [norm_mul]; gcongr
+        simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+          ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
+            (PoissonSummation.Standard.coeFunE (d := d) x)
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
       simpa [translate_apply, ContinuousMap.restrict_apply] using
         ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
