@@ -177,21 +177,16 @@ public theorem decay_J₅' :
         (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := calc
-    iteratedDeriv n J₅' x = iteratedDeriv n ((-2 : ℂ) • (fun y : ℝ => I 0 y)) x := by
-      simp [show J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) from funext fun y => by
-        simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)]
-    _ = (-2 : ℂ) • iteratedDeriv n (fun y : ℝ => I 0 y) x := by simp
-    _ = (-2 : ℂ) * I n x := by
-        simp [SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
-          (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
+  have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
+    rw [show J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) from funext fun y => by
+      simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)]
+    simp [SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
+      (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
       filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
         simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
-      have hcoeff : ‖coeff t‖ ^ n ≤ (2 * Real.pi) ^ n :=
-        pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
       have hψI : ‖ψI' (z₅' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
         simpa [one_div] using
           (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
@@ -207,7 +202,8 @@ public theorem decay_J₅' :
       exact le_mul_of_le_mul_of_nonneg_left
         (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
             MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψI')
-              (z := z₅') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψI hcexp :
+              (z := z₅') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
+              (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n) hψI hcexp :
           ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
         (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
           SpherePacking.ForMathlib.exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
@@ -225,12 +221,12 @@ public theorem decay_J₅' :
     _ ≤ x ^ k * (2 * ‖I n x‖) :=
       mul_le_mul_of_nonneg_left (le_of_eq (by simp [hiterJ])) (pow_nonneg hx k)
     _ ≤ x ^ k * (2 * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
-    _ = (2 * Kn) * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
     _ ≤ (2 * Kn) * B := by
-      simpa using mul_le_mul_of_nonneg_left
+      have h := mul_le_mul_of_nonneg_left
         (by simpa [mul_assoc] using hB x hx :
           x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B)
         (by positivity : (0 : ℝ) ≤ 2 * Kn)
+      nlinarith [h]
 
 end
 
