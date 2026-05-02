@@ -53,18 +53,13 @@ lemma continuousOn_J₅_g :
         exact_mod_cast (lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) hs).ne'
       exact ((continuousAt_zpow₀ (s : ℂ) (-4 : ℤ) (Or.inl hsC)).comp
         Complex.continuous_ofReal.continuousAt).continuousWithinAt
-    have hψ' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ ψS' ((Complex.I : ℂ) * (p.2 : ℂ)))
-        (univ ×ˢ Ici (1 : ℝ)) :=
-      hψ.comp continuousOn_snd fun _ hp => (Set.mem_prod.mp hp).2
-    have hzpow' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) :=
-      hzpow.comp continuousOn_snd fun _ hp => (Set.mem_prod.mp hp).2
-    have hprod3 : ContinuousOn
+    refine (show ContinuousOn
         (fun p : ℝ⁸ × ℝ ↦ (-I : ℂ) * ψS' ((Complex.I : ℂ) * (p.2 : ℂ)) * ((p.2 : ℂ) ^ (-4 : ℤ)) *
-          cexp ((-π : ℂ) * ((‖p.1‖ : ℂ) ^ 2) / (p.2 : ℂ)))
-        (univ ×ˢ Ici (1 : ℝ)) :=
-      ((continuousOn_const.mul hψ').mul hzpow').mul
-        (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))
-    refine hprod3.congr fun p _ => ?_
+          cexp ((-π : ℂ) * ((‖p.1‖ : ℂ) ^ 2) / (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) from
+      ((continuousOn_const.mul (hψ.comp continuousOn_snd
+        fun _ hp => (Set.mem_prod.mp hp).2)).mul (hzpow.comp continuousOn_snd
+        fun _ hp => (Set.mem_prod.mp hp).2)).mul
+        (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))).congr fun p _ => ?_
     simp [J5Change.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
 /-- The `(x,s)`-kernel used in the `J₅`/`J₆` Fourier permutation argument. -/
@@ -100,18 +95,15 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
 lemma integrable_kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
     Integrable (fun x : ℝ⁸ ↦ kernel w (x, s)) (volume : Measure ℝ⁸) := by
   have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-  have hmajor :
-      Integrable (fun x : ℝ⁸ ↦ (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
-        rexp (-π * (‖x‖ ^ 2) / s)) (volume : Measure ℝ⁸) := by
-    simpa [mul_assoc] using
-      (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s) hs0).const_mul
-        (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖)
   have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
     simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
       (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
       (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
         fun _ _ => ⟨Set.mem_univ _, hs⟩)
-  exact Integrable.mono' hmajor
+  exact Integrable.mono' (by
+      simpa [mul_assoc] using
+        (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s) hs0).const_mul
+          (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
     ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
       hg).aestronglyMeasurable <| .of_forall fun x =>
     le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s))
@@ -125,15 +117,14 @@ public lemma integrable_kernel (w : ℝ⁸) :
   refine (MeasureTheory.integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIciOne) hmeas).2
     ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs =>
       integrable_kernel_slice (w := w) (s := s) hs, ?_⟩
-  rcases
-    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with
-    ⟨C, hC⟩
+  obtain ⟨C, hC⟩ :=
+    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   have hmajor : Integrable (fun s : ℝ ↦ C * rexp (-π * s)) μIciOne := by
-    have hIci : IntegrableOn (fun s : ℝ ↦ rexp (-(π : ℝ) * s)) (Ici (1 : ℝ)) volume := by
-      simpa [pow_zero, one_mul] using
-        (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := (π : ℝ))
-          Real.pi_pos)
-    simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using hIci.const_mul C
+    simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
+      ((show IntegrableOn (fun s : ℝ ↦ rexp (-(π : ℝ) * s)) (Ici (1 : ℝ)) volume by
+        simpa [pow_zero, one_mul] using
+          (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := (π : ℝ))
+            Real.pi_pos)).const_mul C)
   have hmeas' : AEStronglyMeasurable (fun s : ℝ ↦ ∫ x : ℝ⁸, ‖kernel w (x, s)‖) μIciOne := by
     simpa using (hmeas.norm.prod_swap.integral_prod_right'
       (μ := μIciOne) (ν := (volume : Measure ℝ⁸)))
