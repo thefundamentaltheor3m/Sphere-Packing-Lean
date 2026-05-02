@@ -127,12 +127,10 @@ public lemma A_E_sq_fourierCoeff_four_ne_zero : A_E_sq_fourierCoeff 4 ≠ 0 := b
 public lemma norm_A_E_sq_fourierCoeff_ofNat_le (j : ℕ) (hj : 4 ≤ j) :
     ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := by
   by_cases hjEven : Even j
-  · calc ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ = ‖A_E_sq_coeff (j / 2 - 2)‖ := by
-          simp [A_E_sq_fourierCoeff, hj, hjEven]
-      _ ≤ (720 : ℝ) ^ 2 * ((j / 2 - 2 + 1 : ℕ) : ℝ) ^ 11 := by
-          simpa using norm_A_E_sq_coeff_le (m := (j / 2 - 2))
-      _ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := by
-          gcongr; exact_mod_cast (by omega : j / 2 - 2 + 1 ≤ j)
+  · refine ((show ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ = ‖A_E_sq_coeff (j / 2 - 2)‖ by
+        simp [A_E_sq_fourierCoeff, hj, hjEven]).trans_le <| by
+      simpa using norm_A_E_sq_coeff_le (m := (j / 2 - 2))).trans ?_
+    gcongr; exact_mod_cast (by omega : j / 2 - 2 + 1 ≤ j)
   · simp [A_E_sq_fourierCoeff, show ¬(4 ≤ j ∧ Even j) from fun h => hjEven h.2,
       show 0 ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 by positivity]
 
