@@ -149,12 +149,12 @@ open Real
     ext v; simp_rw [Submodule.mem_span]
     refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
     · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
-      simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
+      simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
         Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
-    · specialize h (c⁻¹ • p) (by rw [Submodule.coe_pointwise_smul] at *
-                                 simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] using
-                                   Set.smul_set_mono (a := c⁻¹) hp)
-      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul] using
+    · specialize h (c⁻¹ • p) (by
+        rw [Submodule.coe_pointwise_smul] at *
+        simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp)
+      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm] using
         Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
 }
 
@@ -188,10 +188,10 @@ namespace SpherePacking
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  have hball : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
-    simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
-      (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
-  rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm,
+  rw [finiteDensity, scale_balls, show ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R by
+      simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
+        (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm,
+    ← Set.smul_set_inter₀ hc.ne.symm,
     Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
     ENNReal.mul_div_mul_left _ _ (by simp; positivity) ENNReal.ofReal_ne_top, finiteDensity]
 
@@ -279,10 +279,9 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
       (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
 public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
-    S.finiteDensity R
-      ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
-        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    S.finiteDensity R ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
+      * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
@@ -290,10 +289,9 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
       simpa [sub_add_cancel] using S.inter_ball_encard_le (R - S.separation / 2)) _
 
 public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
-    S.finiteDensity R
-      ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
-        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    S.finiteDensity R ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
+      * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.div_le_iff_le_mul
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
