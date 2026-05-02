@@ -223,16 +223,15 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   have hq1_lt_one : q1 < 1 := exp_neg_two_pi_lt_one
   let b : ℕ → ℝ := fun n => ((n + 2 : ℝ) ^ 5) * q1 ^ n
   have hb_summ : Summable b := by
-    have hsummA : Summable (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) := by
-      simpa [show (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) =
-          (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * q1 ^ n) + fun n : ℕ => q1 ^ n by
-        funext n; simp [add_mul]] using
-        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5
-          (by simpa [Real.norm_of_nonneg hq1_nonneg] using hq1_lt_one)).add
-          (summable_geometric_of_lt_one hq1_nonneg hq1_lt_one)
     refine Summable.of_nonneg_of_le
       (f := fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n))
-      (g := b) (fun n => by positivity) (fun n => ?_) (hsummA.mul_left (512 : ℝ))
+      (g := b) (fun n => by positivity) (fun n => ?_) <| Summable.mul_left (512 : ℝ) <| by
+        simpa [show (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) =
+            (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * q1 ^ n) + fun n : ℕ => q1 ^ n by
+          funext n; simp [add_mul]] using
+          (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5
+            (by simpa [Real.norm_of_nonneg hq1_nonneg] using hq1_lt_one)).add
+            (summable_geometric_of_lt_one hq1_nonneg hq1_lt_one)
     have hbase := add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
     simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
     nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5, pow_nonneg hq1_nonneg n]
