@@ -50,8 +50,6 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     s.Finite := by
   classical
   let As : ι → Set (EuclideanSpace ℝ τ) := fun i ↦ if i ∈ s then f i else ∅
-  have As_mble : ∀ i, MeasurableSet (As i) := fun i ↦ by
-    by_cases hi : i ∈ s <;> [simpa [As, hi] using h_measurable i hi; simp [As, hi]]
   have As_disj : Pairwise fun i j ↦ Disjoint (As i) (As j) := fun i j hij ↦ by
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
@@ -59,8 +57,9 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
   obtain ⟨L, hL⟩ := (h_bounded.subset (Set.iUnion_subset fun i x hi ↦ by
     by_cases hs : i ∈ s <;> [exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩;
       simp [As, hs] at hi] : (⋃ i, As i) ⊆ _)).subset_ball 0
-  exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
-    (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset fun i hi ↦ by
+  exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc
+    (fun i ↦ by by_cases hi : i ∈ s <;> [simpa [As, hi] using h_measurable i hi; simp [As, hi]])
+    As_disj (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset fun i hi ↦ by
     simpa [As, hi] using h_volume i hi
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
@@ -93,7 +92,7 @@ public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace 
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)
     (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh)
 
-variable {d : ℕ} (S : PeriodicSpherePacking d)
+variable (S : PeriodicSpherePacking d)
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
