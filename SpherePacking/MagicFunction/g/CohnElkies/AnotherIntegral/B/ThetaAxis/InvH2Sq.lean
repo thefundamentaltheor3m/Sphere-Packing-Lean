@@ -24,13 +24,12 @@ private lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
     (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
     (hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C * (u ^ (2 : ℕ))) :
     ‖w - (1 : ℂ)‖ ≤ (8 + |C|) * u := by
-  have htail' : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ |C| * u :=
-    hw_tail.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
-      (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
-        (abs_nonneg C))
   linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
     simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring] using
-      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ), htail',
+      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ),
+    hw_tail.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
+      (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
+        (abs_nonneg C)),
     show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u by
       simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
 
@@ -198,11 +197,11 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       linear_combination (160 / 256 : ℝ) * CH2 * he15
     have h3 : (e / 256) * ((CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2) ≤
         (CH2 ^ 2) / 256 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-      have he8 : e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
-          Real.exp (-(8 : ℝ) * Real.pi * t) := by
-        simp only [e, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
-      nlinarith [he8, Real.exp_le_exp.mpr (show -(8 : ℝ) * Real.pi * t ≤ -(4 : ℝ) * Real.pi * t by
-        nlinarith [Real.pi_pos, ht]), sq_nonneg CH2]
+      nlinarith [show e * (Real.exp (-(5 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
+          Real.exp (-(8 : ℝ) * Real.pi * t) by
+        simp only [e, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring,
+        Real.exp_le_exp.mpr (show -(8 : ℝ) * Real.pi * t ≤ -(4 : ℝ) * Real.pi * t by
+          nlinarith [Real.pi_pos, ht]), sq_nonneg CH2]
     calc
       ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖
           = ‖A‖ * ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ := by
