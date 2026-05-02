@@ -101,15 +101,14 @@ public theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
 public theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := fun k n ↦ by
   let g3 : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * ((2 * π : ℂ) * I))
-  have hI : RealIntegrals.I₃' = fun x : ℝ ↦ g3 x * RealIntegrals.I₁' x :=
-    I₃'_eq_exp_mul_I₁'.trans <| funext fun _ ↦ by simp [g3, mul_comm, mul_left_comm]
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left (f := g3)
     (g := RealIntegrals.I₁') (k := k) (n := n) (B := fun m ↦ (2 * π) ^ m)
     (ofRealCLM.contDiff.mul contDiff_const).cexp I₁'_smooth' (fun m x => by
       simpa [g3, mul_assoc, mul_left_comm, mul_comm, abs_of_nonneg Real.pi_pos.le] using
         SpherePacking.ForMathlib.norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a := 2 * π) m x)
     (I₁'_decay' (k := k))
-  exact ⟨C, fun x hx => by simpa [hI] using hC x hx⟩
+  exact ⟨C, fun x hx => by
+    simpa [I₃'_eq_exp_mul_I₁', g3, mul_comm, mul_left_comm] using hC x hx⟩
 
 public theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C :=
@@ -120,19 +119,18 @@ public theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   let g5 : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * ((π : ℂ) * I))
   let f5 : ℝ → ℂ := fun x ↦ (-2 : ℂ) * g5 x
   have hg5_smooth : ContDiff ℝ ∞ g5 := (ofRealCLM.contDiff.mul contDiff_const).cexp
-  have hf5_bound : ∀ (m : ℕ) (x : ℝ), ‖iteratedFDeriv ℝ m f5 x‖ ≤ 2 * π ^ m := fun m x => by
-    rw [show iteratedFDeriv ℝ m f5 x = (-2 : ℂ) • iteratedFDeriv ℝ m g5 x by
-      simpa [f5, smul_eq_mul] using iteratedFDeriv_const_smul_apply (𝕜 := ℝ) (i := m)
-        (a := (-2 : ℂ)) (f := g5) (hg5_smooth.contDiffAt.of_le (by exact_mod_cast le_top)),
-      norm_smul, show ‖(-2 : ℂ)‖ = (2 : ℝ) from by simp]
-    exact mul_le_mul_of_nonneg_left
-      (SpherePacking.ForMathlib.norm_iteratedFDeriv_cexp_mul_pi_I_le m x) (by norm_num)
-  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ f5 x * RealIntegrals.I₁' x :=
-    I₅'_eq_mul_exp_mul_I₁'.trans <| funext fun _ ↦ by simp [f5, g5, mul_comm, mul_left_comm]
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left (f := f5)
     (g := RealIntegrals.I₁') (k := k) (n := n) (B := fun m ↦ 2 * π ^ m)
-    (contDiff_const.mul hg5_smooth) I₁'_smooth' hf5_bound (I₁'_decay' (k := k))
-  exact ⟨C, fun x hx => by simpa [hI] using hC x hx⟩
+    (contDiff_const.mul hg5_smooth) I₁'_smooth' (fun m x => by
+      rw [show iteratedFDeriv ℝ m f5 x = (-2 : ℂ) • iteratedFDeriv ℝ m g5 x by
+        simpa [f5, smul_eq_mul] using iteratedFDeriv_const_smul_apply (𝕜 := ℝ) (i := m)
+          (a := (-2 : ℂ)) (f := g5) (hg5_smooth.contDiffAt.of_le (by exact_mod_cast le_top)),
+        norm_smul, show ‖(-2 : ℂ)‖ = (2 : ℝ) from by simp]
+      exact mul_le_mul_of_nonneg_left
+        (SpherePacking.ForMathlib.norm_iteratedFDeriv_cexp_mul_pi_I_le m x) (by norm_num))
+    (I₁'_decay' (k := k))
+  exact ⟨C, fun x hx => by
+    simpa [I₅'_eq_mul_exp_mul_I₁', f5, g5, mul_comm, mul_left_comm] using hC x hx⟩
 
 public theorem I₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₆' x‖ ≤ C :=
