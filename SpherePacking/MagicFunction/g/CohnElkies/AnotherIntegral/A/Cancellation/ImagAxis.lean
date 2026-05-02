@@ -50,10 +50,6 @@ lemma qParam_zI (t : ℝ) (ht : 0 < t) :
   simp [Periodic.qParam, zI, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm,
     show (Complex.I : ℂ) * (Complex.I * (↑t * (↑π * 2))) = -(↑t * (↑π * 2)) by ring_nf; simp]
 
-lemma qParam_zI_norm (t : ℝ) (ht : 0 < t) :
-    ‖Periodic.qParam (1 : ℝ) (zI t ht)‖ = Real.exp (-2 * π * t) := by
-  simpa [zI, mul_comm, div_one] using Periodic.norm_qParam (h := (1 : ℝ)) (z := (zI t ht : ℂ))
-
 /-- The imaginary part of `(Complex.I : ℂ) / t` is `t⁻¹` (as a real number). -/
 public lemma imag_I_div (t : ℝ) : ((Complex.I : ℂ) / (t : ℂ)).im = t⁻¹ := by
   simp [Complex.div_im, Complex.normSq]
@@ -143,7 +139,9 @@ private lemma exists_sub_partialSum_bound
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
-  have hqn : ‖q‖ = Real.exp (-2 * π * t) := by simpa [q, z] using qParam_zI_norm t ht
+  have hqn : ‖q‖ = Real.exp (-2 * π * t) := by
+    simpa [q, z, zI, mul_comm, div_one] using
+      Periodic.norm_qParam (h := (1 : ℝ)) (z := (zI t ht : ℂ))
   simpa [z, q, hqn] using
     (show ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
