@@ -28,8 +28,7 @@ local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
 public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (0 : ℝ)) volume := by
   simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
-    (show Integrable (fun t : ℝ => aLaplaceIntegrand u t) (volume.restrict (Set.Ioi (0 : ℝ))) from
-      by simpa [IntegrableOn] using aLaplaceIntegral_convergent (u := u) hu).neg'
+    (aLaplaceIntegral_convergent (u := u) hu).neg'
 
 /-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
 `F (x + t*I) = (φ₀''(-1/w) * w^2) * exp(π*I*u*(x + t*I))` where `w = s + t*I` with `|s| ≤ 1`,
