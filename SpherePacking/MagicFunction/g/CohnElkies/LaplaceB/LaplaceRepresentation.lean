@@ -127,8 +127,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
     have hzI : 0 < (z + (1 : ℂ)).im := by simpa using hzpos
     rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ by
-          simp [bContourIntegrandT],
-        ψT'_eq_ψI'_add_one z hzpos,
+          simp [bContourIntegrandT], ψT'_eq_ψI'_add_one z hzpos,
         show ψI' (z + (1 : ℂ)) = ψI ⟨z + (1 : ℂ), hzI⟩ by simp [ψI', hzpos],
         show ‖bContourWeight u z‖ = Real.exp (-π * u * z.im) by
           simp [bContourWeight, Complex.norm_exp]]
