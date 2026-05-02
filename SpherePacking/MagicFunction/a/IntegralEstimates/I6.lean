@@ -74,9 +74,9 @@ private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
           fun t ht ↦ by
             dsimp [MagicFunction.a.RealIntegrands.Φ₆,
               MagicFunction.a.ComplexIntegrands.Φ₆', g]
-            rw [z₆'_eq_of_mem ht, show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = -π * r * t by
-              ring_nf; simp [I_sq]]
-            ac_rfl)))
+            rw [z₆'_eq_of_mem ht,
+              show (π : ℂ) * I * (r : ℂ) * (I * (t : ℂ)) = -π * r * t by
+                ring_nf; simp [I_sq]]; ac_rfl)))
     measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
@@ -146,12 +146,11 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
             (b := π * (r₀ + 1)) (mul_pos Real.pi_pos (by linarith))).const_mul ((π ^ (n + 1)) * C₀)
   have h_diff : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ),
       HasDerivAt (fun r : ℝ ↦ gN n r t) (gN (n + 1) r t) r := ae_of_all _ fun t r _ ↦ by
-    let A : ℂ := I * φ₀'' (I * t)
-    simpa [gN, show ∀ y : ℝ, g y t = A * cexp ((y : ℂ) * coeff t) from fun y => by
-      simp [A, g, coeff, mul_assoc, mul_left_comm, mul_comm], pow_succ,
+    simpa [gN, show ∀ y : ℝ, g y t = (I * φ₀'' (I * t)) * cexp ((y : ℂ) * coeff t) from fun y => by
+      simp [g, coeff, mul_assoc, mul_left_comm, mul_comm], pow_succ,
       mul_assoc, mul_left_comm, mul_comm] using
-      SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := A) (c := coeff t)
-        (n := n) (x := r)
+      SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
+        (a := I * φ₀'' (I * t)) (c := coeff t) (n := n) (x := r)
   exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
     (F := fun r t ↦ gN n r t) (x₀ := r₀) (s := Metric.ball r₀ (1 : ℝ))
     (hs := by simpa using Metric.ball_mem_nhds r₀ (by norm_num))
