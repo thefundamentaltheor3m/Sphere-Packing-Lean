@@ -62,24 +62,22 @@ public def DivDiscBound : ℝ :=
 section summable_aux
 
 include hpoly in
-theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  refine (show (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) by
-    simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
-    obtain ⟨C, m, hCa⟩ := hpoly
-    exact ⟨C, (m - n₀).toNat, fun n _ ↦ hCa (n + n₀) (by grind)⟩).trans ?_
-  simp only [isBigO_iff, eventually_atTop]
-  refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
-  simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg, ← mul_pow]
-  refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
-  norm_cast; cases abs_cases (n + n₀ : ℤ) <;> grind
-
-include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
     Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) := by
+  have hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
+    refine (show (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) by
+      simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
+      obtain ⟨C, m, hCa⟩ := hpoly
+      exact ⟨C, (m - n₀).toNat, fun n _ ↦ hCa (n + n₀) (by grind)⟩).trans ?_
+    simp only [isBigO_iff, eventually_atTop]
+    refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
+    simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg, ← mul_pow]
+    refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
+    norm_cast; cases abs_cases (n + n₀ : ℤ) <;> grind
   refine (summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := cexp (-(π : ℂ) / 2))
     (by simpa [Complex.norm_exp] using
       Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0))
-    (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)).congr fun n => ?_
+    (by simpa using hpoly')).congr fun n => ?_
   rw [norm_mul, norm_pow, show ‖cexp (-(π : ℂ) / 2)‖ = rexp (-(π : ℝ) / 2) by
       simp [Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
   congr 2; ring
