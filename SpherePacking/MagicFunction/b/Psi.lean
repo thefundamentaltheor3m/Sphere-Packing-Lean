@@ -63,13 +63,11 @@ lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := fun hz =>
 /-- Slash-action formula for `S` in weight `-2`. -/
 public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, S, denom]; simp [zpow_two, pow_two]
+  simp [SL_slash_apply, S, denom, zpow_two, pow_two]
 
 lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
-  simpa [mul_assoc, zpow_neg, zpow_two, pow_two, UpperHalfPlane.ne_zero z] using
-    congrArg (fun w => w * (z : ℂ) ^ (2 : ℕ)) (show (F ∣[(2 : ℤ)] (S)) (z) =
-      F (S • z) * (z : ℂ) ^ (-2 : ℤ) by simp [SL_slash_apply, S, denom]).symm
+  simp [SL_slash_apply, S, denom, zpow_two, pow_two, UpperHalfPlane.ne_zero z, mul_assoc]
 
 lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
@@ -84,10 +82,8 @@ public lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)
 
 lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
-  simpa [mul_assoc, zpow_neg, zpow_two, pow_two, z_plus_one_nonzero z] using
-    congrArg (fun w => w * (z + 1 : ℂ) ^ (2 : ℕ)) (show (F ∣[(2 : ℤ)] (S * T)) (z) =
-      F ((S * T) • z) * (z + 1 : ℂ) ^ (-2 : ℤ) by
-        simp [SL_slash_apply, ModularGroup.S_mul_T, denom]).symm
+  simp [SL_slash_apply, ModularGroup.S_mul_T, denom, zpow_two, pow_two, z_plus_one_nonzero z,
+    mul_assoc]
 
 end aux
 
@@ -100,19 +96,19 @@ public lemma ψI_eq :
   conv_lhs => rw [sub_eq_add_neg, smul_div_assoc 128 (⇑H₃_MF + ⇑H₄_MF) (⇑H₂_MF ^ 2)]
   simp only [Int.reduceNeg, add_right_inj]
   ext z
-  rw [Pi.neg_apply, slashST']
-  have rewriting (z : ℍ) (F2 F3 F4 : ℍ → ℂ) : (128 • ((F3 + F4) / (F2 ^ 2))) ((S * T) • z) =
-      128 • ((F3 ((S * T) • z) + F4 ((S * T) • z)) / ((F2 ((S * T) • z)) ^ 2)) := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
-      Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
-  rw [rewriting, slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF,
+  have hz1 : (z + 1 : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (z_plus_one_nonzero z)
+  rw [Pi.neg_apply, slashST',
+    show (128 • ((⇑H₃_MF + ⇑H₄_MF) / (⇑H₂_MF ^ 2))) ((S * T) • z) =
+        128 • ((H₃_MF ((S * T) • z) + H₄_MF ((S * T) • z)) / ((H₂_MF ((S * T) • z)) ^ 2)) from by
+      simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
+        Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply],
+    slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF,
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, slash_mul, slash_mul, slash_mul,
     H₂_S_action, H₃_S_action, H₄_S_action,
     SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
     H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
-  have hz1 : (z + 1 : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (z_plus_one_nonzero z)
   rw [← mul_assoc, mul_div_mul_comm, div_self hz1, mul_one]
   nth_rw 2 [mul_comm]
   rw [← mul_assoc, ← pow_two, ← div_div, smul_mul_assoc, div_mul_comm,
