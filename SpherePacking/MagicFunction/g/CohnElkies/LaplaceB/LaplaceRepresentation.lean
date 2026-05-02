@@ -180,9 +180,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
         (by simpa [Set.uIcc_comm] using
           (continuousOn_bContourIntegrandT (u := u)).mono hStrip0) (s := (∅ : Set ℂ)) (by simp)
-        (fun z hz ↦
-          have hzpos : 0 < z.im := lt_trans zero_lt_one (by
-            simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
+        (fun z hz ↦ have hzpos : 0 < z.im := lt_trans zero_lt_one (by
+          simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
           (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
             (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos))
         (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
