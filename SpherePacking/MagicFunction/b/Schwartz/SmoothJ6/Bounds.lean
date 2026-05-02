@@ -128,12 +128,10 @@ private lemma J₆'_eq_G0 (x : ℝ) : RealIntegrals.J₆' x = G 0 x := by
 
 /-- Smoothness of `RealIntegrals.J₆'` on the open half-line `Ioi (-1)`. -/
 public theorem contDiffOn_J₆'_Ioi_neg1 :
-    ContDiffOn ℝ ∞ RealIntegrals.J₆' (Ioi (-1 : ℝ)) := by
-  have hF0 : ContDiffOn ℝ ∞ (F 0) s := by
-    simpa using
+    ContDiffOn ℝ ∞ RealIntegrals.J₆' (Ioi (-1 : ℝ)) :=
+  (by simpa [G] using contDiffOn_const.mul (by simpa using
       (SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt (F := F) (s := s) isOpen_s
-        (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)
-  exact (by simpa [G] using contDiffOn_const.mul hF0 :
+        (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)) :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 
 /-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`.
@@ -151,12 +149,9 @@ public theorem decay_J₆' :
       (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ
   have hbound_int : Integrable bound (μ) := by
-    have hInt :
-        IntegrableOn (fun t : ℝ ↦ t ^ n * Real.exp (-Real.pi * t)) (Ici (1 : ℝ)) volume :=
-      SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
-        Real.pi_pos
     simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
-      hInt.const_mul ((Real.pi ^ n) * Cψ)
+      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
+        Real.pi_pos).const_mul ((Real.pi ^ n) * Cψ)
   let Kn : ℝ := ∫ t, bound t ∂μ
   have hKn_nonneg : 0 ≤ Kn :=
     integral_nonneg_of_ae <|
@@ -170,18 +165,16 @@ public theorem decay_J₆' :
       intro t ht
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
       have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by simp [coeff_norm t ht]
-      have hψ : ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t) := hCψ t ht
-      have hg : ‖g x t‖ ≤ ‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t) :=
-        g_norm_bound (x := x) (t := t)
       have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
         SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
           (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
       calc
         ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
               simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
-        _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by gcongr
+        _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by
+              gcongr; exact g_norm_bound (x := x) (t := t)
         _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
-              gcongr
+              gcongr; exact hCψ t ht
         _ = bound t * Real.exp (-Real.pi * x) := by ring
     have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := calc
       ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
@@ -198,7 +191,7 @@ public theorem decay_J₆' :
         ≤ 2 * (Kn * Real.exp (-Real.pi * x)) := by
           simpa [G, norm_mul, mul_assoc] using
             mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
-      _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
+      _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖
         = x ^ k * ‖G n x‖ := by
@@ -208,10 +201,9 @@ public theorem decay_J₆' :
                 (iteratedDeriv_G_eq (n := n) (m := 0))
                   (lt_of_lt_of_le (by norm_num) hx : x ∈ s)]
     _ ≤ x ^ k * (2 * Kn * Real.exp (-Real.pi * x)) := by gcongr
-    _ = (2 * Kn) * (x ^ k * Real.exp (-Real.pi * x)) := by ring_nf
-    _ ≤ (2 * Kn) * B := by
-      simpa using mul_le_mul_of_nonneg_left (hB x hx) (by positivity : 0 ≤ 2 * Kn)
-    _ = 2 * Kn * B := by ring
+    _ = (2 * Kn) * (x ^ k * Real.exp (-Real.pi * x)) := by ring
+    _ ≤ (2 * Kn) * B :=
+      mul_le_mul_of_nonneg_left (hB x hx) (by positivity)
 
 end
 
