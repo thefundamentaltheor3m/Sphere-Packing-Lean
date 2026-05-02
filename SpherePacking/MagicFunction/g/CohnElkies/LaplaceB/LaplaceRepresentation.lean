@@ -73,10 +73,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
         Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
       fun t ht => by simpa using hS t ht
-    have hInt_finite : IntegrableOn f (Set.Ioc (1 : ℝ) A) :=
-      (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)).integrableOn_compact
-          isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
     have hdom : ∀ t : ℝ, t ∈ Set.Ioi A →
         ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := fun t ht => by
       have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_left 1 Aψ).trans ht.le)
@@ -94,16 +90,18 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         Aψ ≤ UpperHalfPlane.im ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩)
     rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
       (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_left 1 Aψ)).symm]
-    refine hInt_finite.union (by
-      have hg : Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
-          (volume.restrict (Set.Ioi A)) := by
-        simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-          (exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
-            (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cψ
+    refine (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)).integrableOn_compact
+          isCompact_Icc |>.mono_set Set.Ioc_subset_Icc_self).union (by
       simpa [MeasureTheory.IntegrableOn] using
-        hg.mono' (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-          (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
-          measurableSet_Ioi)
+        (show Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
+          (volume.restrict (Set.Ioi A)) by
+          simpa [MeasureTheory.IntegrableOn, mul_assoc] using
+            (exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
+              (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cψ).mono'
+          (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+            (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
+            measurableSet_Ioi)
           (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht))
   have hintT_shift (a : ℂ) (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
       IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ))) (Set.Ioi (1 : ℝ)) := by
@@ -116,18 +114,18 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       bContourWeight_add, mul_comm, mul_left_comm]
   have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
-    have hc : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     intro ε hε
     rcases Filter.eventually_atTop.1
       ((show Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) by
         simpa [mul_assoc] using tendsto_const_nhds.mul
           (Real.tendsto_exp_neg_atTop_nhds_zero.comp
             (by simpa [mul_assoc, mul_comm, mul_left_comm] using
-              tendsto_id.const_mul_atTop hc))).eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
+              tendsto_id.const_mul_atTop (mul_pos Real.pi_pos
+                (sub_pos.2 hu))))).eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
     refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
     have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
       (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
-    have hzI : 0 < (z + (1 : ℂ)).im := by simpa [add_assoc] using hzpos
+    have hzI : 0 < (z + (1 : ℂ)).im := by simpa using hzpos
     rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ by
           simp [bContourIntegrandT],
         ψT'_eq_ψI'_add_one z hzpos,
