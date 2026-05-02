@@ -82,18 +82,14 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
       congrArg (fun w : ℂ => w + (1 : ℂ)) (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
   have hsmul : (S * T) • z = (⟨(Complex.I : ℂ) * (1 / t), by simp [ht0]⟩ : ℍ) := by
     ext1
-    calc (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := coe_ST_smul (z := z)
-      _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [hzplus]
-      _ = (Complex.I : ℂ) * (1 / t) := by
-          field_simp [show (t : ℂ) ≠ 0 by exact_mod_cast ne_of_gt ht0, Complex.I_ne_zero]; simp
-  have hψT' : ψT' (z₁' t) = ψT z := by simp [ψT', hz_im, z]
+    rw [coe_ST_smul (z := z), show ((z : ℂ) + 1) = (Complex.I : ℂ) * (t : ℂ) from hzplus]
+    field_simp [show (t : ℂ) ≠ 0 by exact_mod_cast ne_of_gt ht0, Complex.I_ne_zero]; simp
   have hψS' : ψS ((S * T) • z) = ψS.resToImagAxis (1 / t) := by
     rw [hsmul]; simp [Function.resToImagAxis, ResToImagAxis, ht0]
+  have heq : ψT' (z₁' t) = ψT z := by simp [ψT', hz_im, z]
+  rw [hψS', hzplus] at hψT
   -- Avoid `simp` unfolding the `SL(2,ℤ)` action on `ℍ` to a `GL(2,ℝ)` action.
-  rw [hψT']
-  rw [hψS'] at hψT
-  simpa [hzplus] using hψT
-
+  simpa [heq] using hψT
 
 lemma continuous_coeff : Continuous coeff := by
   simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₁'
@@ -173,13 +169,6 @@ public theorem decay_J₁' :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
       filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
         simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
-      have hcoeff : ‖coeff t‖ ^ n ≤ (2 * Real.pi) ^ n :=
-        pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
-      have hψT : ‖ψT' (z₁' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
-        simpa using
-          (MagicFunction.norm_modular_rewrite_Ioc_exp_bound
-            (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψT') (z := z₁')
-            (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t) ⟨ht.1, le_of_lt ht.2⟩)
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
         simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
           (show (coeff t).re = -Real.pi * t by
@@ -190,7 +179,13 @@ public theorem decay_J₁' :
       exact le_mul_of_le_mul_of_nonneg_left
         (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
             MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
-              (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψT hcexp :
+              (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
+              (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
+              (by simpa using
+                (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
+                  (ψZ := ψT') (z := z₁') (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t)
+                  ⟨ht.1, le_of_lt ht.2⟩))
+              hcexp :
           ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
         (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
           SpherePacking.ForMathlib.exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
