@@ -52,10 +52,10 @@ public lemma J₁'_eq_integral_z₁line (r : ℝ) :
           cexp ((π : ℂ) * I * (r : ℂ) * (z₁line t)) := by
   rw [J₁'_eq_Ioc (r := r)]
   refine MeasureTheory.integral_congr_ae <|
-    (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
-  simpa [z₁line, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
-    congrArg (fun z : ℂ => (Complex.I : ℂ) * ψT' z * cexp ((π : ℂ) * I * (r : ℂ) * z))
-      (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
+    (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => by
+      simpa [z₁line, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
+        congrArg (fun z : ℂ => (Complex.I : ℂ) * ψT' z * cexp ((π : ℂ) * I * (r : ℂ) * z))
+          (z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht))
 
 /-- The `(x,t)`-kernel used in the `J₁` Fourier-transform calculation. -/
 @[expose] public def permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
@@ -75,29 +75,26 @@ public lemma phase_mul_J₁'_eq_integral_permJ1Kernel (w x : EuclideanSpace ℝ 
           (Complex.I : ℂ) * ψT' (z₁line t) *
             cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)) ∂μIoc01 from by
       simpa [μIoc01] using (J₁'_eq_integral_z₁line (r := (‖x‖ ^ (2 : ℕ)))),
-    (MeasureTheory.integral_const_mul
-        (μ := μIoc01)
-        (r := cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I))
-        (f := fun t : ℝ =>
-          (Complex.I : ℂ) * ψT' (z₁line t) *
-            cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)))).symm]
-  refine MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun t => ?_
-  simp [permJ1Kernel, mul_assoc, mul_left_comm, mul_comm]
+    (MeasureTheory.integral_const_mul (μ := μIoc01)
+      (r := cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I))
+      (f := fun t : ℝ => (Complex.I : ℂ) * ψT' (z₁line t) *
+        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)))).symm]
+  exact MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun t => by
+    simp [permJ1Kernel, mul_assoc, mul_left_comm, mul_comm]
 
 lemma norm_permJ1Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     ‖permJ1Kernel w (x, t)‖ = ‖ψT' (z₁line t)‖ * rexp (-(π * t * (‖x‖ ^ 2))) := by
-  have hphase : ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) := by
-    simpa using (Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)))
-  have hgauss :
-      ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖ =
-        rexp (-(π * t * (‖x‖ ^ 2))) := by
-    simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using
-      (norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x))
   rw [show ‖permJ1Kernel w (x, t)‖ =
       ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ *
         (‖ψT' (z₁line t)‖ *
           ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖) from by
-    simp [permJ1Kernel, mul_assoc], hphase, hgauss]
+    simp [permJ1Kernel, mul_assoc],
+    show ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) by
+      simpa using Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)),
+    show ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖ =
+        rexp (-(π * t * (‖x‖ ^ 2))) by
+      simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using
+        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
   simp [mul_assoc]
 
 lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
@@ -141,9 +138,9 @@ lemma integrable_permJ1Kernel_slice (w : EuclideanSpace ℝ (Fin 8))
 public lemma ae_integrable_permJ1Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) :
     (∀ᵐ t : ℝ ∂μIoc01,
       Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ1Kernel w (x, t))
-        (volume : Measure (EuclideanSpace ℝ (Fin 8)))) := by
-  refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
-  simpa using (integrable_permJ1Kernel_slice (w := w) (t := t) ht)
+        (volume : Measure (EuclideanSpace ℝ (Fin 8)))) :=
+  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => by
+    simpa using integrable_permJ1Kernel_slice (w := w) (t := t) ht
 
 /-- Integrability of `t ↦ ∫ ‖permJ1Kernel w (x,t)‖ dx` over `μIoc01`. -/
 public lemma integrable_integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
@@ -155,17 +152,14 @@ public lemma integrable_integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 
       (fun t : ℝ ↦ ∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ1Kernel w (x, t)‖) =ᵐ[μIoc01] g :=
     (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => by
       simpa [g] using (integral_norm_permJ1Kernel (w := w) (t := t) ht)
-  have hψTbound :
-      ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
-        ‖ψT' (z₁line t)‖ ≤ (Cψ : ℝ) * rexp (-Real.pi / t) * t ^ (2 : ℕ) := fun t ht => by
-    simpa [div_eq_mul_inv, one_div, mul_assoc, mul_left_comm, mul_comm] using
-      (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
-        (ψZ := ψT') (z := z₁line) (hCψ := hCψ)
-        (hEq := fun s hs => ψT'_z₁line_eq (t := s) hs) (t := t) ht)
   refine (show Integrable g μIoc01 from ?_).congr hAE.symm
   simpa [g] using
-    (MagicFunction.integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
-      (ψT' := ψT') (k := 2) (Cψ := Cψ) continuousOn_ψT'_z₁line hψTbound)
+    MagicFunction.integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
+      (ψT' := ψT') (k := 2) (Cψ := Cψ) continuousOn_ψT'_z₁line fun t ht => by
+        simpa [div_eq_mul_inv, one_div, mul_assoc, mul_left_comm, mul_comm] using
+          MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
+            (ψZ := ψT') (z := z₁line) (hCψ := hCψ)
+            (hEq := fun s hs => ψT'_z₁line_eq (t := s) hs) (t := t) ht
 
 
 end Integral_Permutations.PermJ12
