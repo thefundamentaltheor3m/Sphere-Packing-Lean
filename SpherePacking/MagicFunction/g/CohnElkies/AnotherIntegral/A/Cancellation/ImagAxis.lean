@@ -60,8 +60,7 @@ public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x :
 /-- Action of the modular matrix `S` on the imaginary-axis point `zI t ht`. -/
 public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
     ModularGroup.S • zI t ht = zI t⁻¹ (inv_pos.2 ht) := by
-  ext1
-  simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
+  ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
     ModularGroup.coe_S_smul (z := zI t ht)
 
 /-- `exp (-2π) < 1`. -/
