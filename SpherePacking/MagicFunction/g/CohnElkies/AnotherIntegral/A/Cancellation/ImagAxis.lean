@@ -268,9 +268,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =
         ∑' n : ℕ, f n := by
     rw [show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) = ∑' n : ℕ, g n from by
-        simpa [g, mul_assoc, mul_left_comm, mul_comm] using
-          tsum_pnat_eq_tsum_succ
-            (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)),
+        simpa [g, mul_assoc, mul_left_comm, mul_comm] using tsum_pnat_eq_tsum_succ
+          (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)),
       show cexp (2 * π * Complex.I * z) = g 0 by simp [g]]
     refine (sub_eq_iff_eq_add).2 ?_
     rw [show (∑' n : ℕ, f n) + g 0 = g 0 + ∑' n : ℕ, g (n + 1) by
