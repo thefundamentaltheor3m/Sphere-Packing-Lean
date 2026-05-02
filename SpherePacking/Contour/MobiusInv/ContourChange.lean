@@ -54,24 +54,21 @@ public lemma curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
     curveIntegral_eq_intervalIntegral_deriv (ω := scalarOneForm (Ψ' r)) γw,
     ← intervalIntegral.integral_neg]
   refine intervalIntegral.integral_congr_ae_restrict (μ := (volume : Measure ℝ)) ?_
-  have hEqAE :
+  simpa [Set.uIoc_of_le zero_le_one] using show
       (fun t : ℝ =>
           scalarOneForm (Ψ r) (AffineMap.lineMap a b t) (b - a)) =ᵐ[
         (volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)] fun t : ℝ =>
-          -(scalarOneForm (Ψ' r) (γw.extend t) (deriv γw.extend t)) := by
-    have htIoo :
-        ∀ᵐ t : ℝ ∂((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)),
-          t ∈ Set.Ioo (0 : ℝ) 1 := by
+          -(scalarOneForm (Ψ' r) (γw.extend t) (deriv γw.extend t)) by
+    filter_upwards [show ∀ᵐ t : ℝ ∂((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)),
+        t ∈ Set.Ioo (0 : ℝ) 1 by
       filter_upwards [ae_restrict_mem measurableSet_Ioc,
         Measure.ae_ne (volume.restrict (Set.Ioc 0 1)) 1] with t ht htne1
-      exact ⟨ht.1, lt_of_le_of_ne ht.2 htne1⟩
-    filter_upwards [htIoo] with t ht
-    have hderiv_w :
-        deriv γw.extend t = deriv (fun s : ℝ => f (AffineMap.lineMap a b s)) t := by
-      simpa using
-        (Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) fun s hs => hExt hs).deriv_eq
-    simp [scalarOneForm_apply, hExt ht, hderiv_w, hΨ r t ht]
-  simpa [Set.uIoc_of_le zero_le_one] using hEqAE
+      exact ⟨ht.1, lt_of_le_of_ne ht.2 htne1⟩] with t ht
+    simp [scalarOneForm_apply, hExt ht,
+      show deriv γw.extend t = deriv (fun s : ℝ => f (AffineMap.lineMap a b s)) t by
+        simpa using
+          (Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) fun s hs => hExt hs).deriv_eq,
+      hΨ r t ht]
 
 end
 
