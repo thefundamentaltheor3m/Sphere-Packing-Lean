@@ -65,17 +65,15 @@ lemma Theta4_eq_jacobiTheta_add_one (τ : ℍ) : Θ₄ τ = jacobiTheta ((τ : �
     simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
       simpa using Int.even_pow' (m := n) (n := 2) two_ne_zero]
   rw [show Θ₄_term n τ = Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ)) *
-        Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) from by
-      simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm],
-    ← Complex.exp_add]
+      Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) from by
+      simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm], ← Complex.exp_add]
   congr 1; ring
 
 /-- Uniform bound for `Θ₂` on `t ≥ 1` along the imaginary axis. -/
 public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖Θ₂.resToImagAxis t‖ ≤ C := by
-  let majorant : ℤ → ℝ :=
-    fun n ↦ Real.exp (-Real.pi / 4) *
-      Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|))
+  let majorant : ℤ → ℝ := fun n ↦ Real.exp (-Real.pi / 4) *
+    Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|))
   have hmajorant : Summable majorant := by
     simpa [majorant, pow_zero, one_mul] using
       (summable_pow_mul_jacobiTheta₂_term_bound (S := (1 / 2 : ℝ)) (T := (1 : ℝ))
@@ -95,9 +93,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
         simp [norm_jacobiTheta₂_term, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
         ring_nf]
       have hbase : t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ)) ≥ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := by
-        have hdiff : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := sub_nonneg.2 <| by
-          exact_mod_cast (by simpa [Int.natCast_natAbs] using Int.natAbs_le_self_sq n :
-            (|n| : ℤ) ≤ n ^ 2)
+        have hdiff : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := sub_nonneg.2 <| mod_cast
+          (by simpa [Int.natCast_natAbs] using Int.natAbs_le_self_sq n : (|n| : ℤ) ≤ n ^ 2)
         nlinarith [(mod_cast neg_abs_le n : (-(|n| : ℝ)) ≤ (n : ℝ)), htpos.le, hdiff, ht]
       simpa [mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg] using
         Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos] :
@@ -151,9 +148,9 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
   set f : ℕ → ℂ := fun n ↦ Θ₂_term (n : ℤ) τ
   have hsumZ : Summable (fun n : ℤ ↦ Θ₂_term n τ) := by
-    simpa [show (fun n : ℤ ↦ Θ₂_term n τ) =
-          fun n : ℤ ↦ Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4) *
-            jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ) from
+    simpa [show (fun n : ℤ ↦ Θ₂_term n τ) = fun n : ℤ ↦
+        Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4) *
+          jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ) from
       funext fun n => by simp [Θ₂_term_as_jacobiTheta₂_term, mul_assoc]] using
       ((summable_jacobiTheta₂_term_iff (z := (τ : ℂ) / 2) (τ := (τ : ℂ))).2
         (by simpa using τ.im_pos)).mul_left (Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4))
@@ -228,9 +225,9 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
       (by nlinarith [sq_nonneg (n : ℝ), ht] :
         ((4 : ℝ) * t + (n : ℝ)) ≤ ((n : ℝ) + 2) ^ 2 * t)
       (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) ≤ 0))).trans_eq (by
-        rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) from by
-            simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
-        ring_nf)
+      rw [show Real.exp (-Real.pi) ^ n = Real.exp ((n : ℝ) * (-Real.pi)) from by
+          simpa [mul_comm] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
+      ring_nf)
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) =
       (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]
@@ -242,10 +239,9 @@ private lemma jacobiTheta_setup {τ : ℂ} (hτ : 0 < τ.im) :
     let a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
     jacobiTheta τ = (1 : ℂ) + (2 : ℂ) * ∑' n : ℕ, a n ∧
     (∑' n : ℕ, a n) - a 0 = ∑' n : ℕ, a (n + 1) :=
-  ⟨by simpa using (jacobiTheta_eq_tsum_nat (τ := τ) hτ),
-    (sub_eq_iff_eq_add).2 (by
-      simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
-        ((hasSum_nat_jacobiTheta (τ := τ) hτ).summable.sum_add_tsum_nat_add 1).symm)⟩
+  ⟨by simpa using (jacobiTheta_eq_tsum_nat (τ := τ) hτ), sub_eq_iff_eq_add.2 <| by
+    simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
+      ((hasSum_nat_jacobiTheta (τ := τ) hτ).summable.sum_add_tsum_nat_add 1).symm⟩
 
 /-- Isolate the `n = ±1` contribution to `Θ₃(it)` for `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one :
@@ -284,8 +280,8 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
       _ = - (Real.exp (-Real.pi * t) : ℂ) := by
           rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) by
             rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
-              (Real.pi : ℂ) * (Complex.I * Complex.I) * (t : ℂ) by ring, Complex.I_mul_I]
-            push_cast; ring, Complex.exp_pi_mul_I]; simp
+              (Real.pi : ℂ) * (Complex.I * Complex.I) * (t : ℂ) by ring,
+              Complex.I_mul_I]; push_cast; ring, Complex.exp_pi_mul_I]; simp
   rw [show Θ₄.resToImagAxis t - (1 : ℂ) + (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) =
       (2 : ℂ) * ∑' n : ℕ, a (n + 1) from by
     rw [show Θ₄.resToImagAxis t = jacobiTheta τ by
