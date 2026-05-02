@@ -275,7 +275,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hITS (z : ℂ) (hz : 0 < z.im) :
       bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
     simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, add_mul,
-      show ψI' z = ψT' z + ψS' z from by
+      show ψI' z = ψT' z + ψS' z by
         simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ ↦ F ⟨z, hz⟩) ψI_eq_add_ψT_ψS]
   have hCenter_split : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
       -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
@@ -311,9 +311,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
     have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
     have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
-    have hCenterVI : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
-        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) = VI :=
-      (setIntegral_Ioi0_eq_add_Ioc_Ioi hintI).symm
+    have hCenterVI := (setIntegral_Ioi0_eq_add_Ioc_Ioi (f := fun t : ℝ =>
+      bContourIntegrandI u (I * (t : ℂ))) hintI).symm
     simp only [smul_eq_mul, neg_mul]; grind only
   simpa [bContourWeight, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm,
     mul_comm] using hsum
