@@ -140,17 +140,15 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
           (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH by simpa using _root_.φ₀_S_transform_mul_sq wH]
     exact (norm_sub_le _ _).trans <| by gcongr; exact norm_sub_le _ _
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-      (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
-        ≤ C₀ * (2 * t) ^ 2 := (norm_mul_le _ _).trans
-          (mul_le_mul ((hC₀ wH (by rw [hw_im]; linarith)).trans
-              (mul_le_of_le_one_right hC₀_pos.le (Real.exp_le_one_iff.2 <| by
-                nlinarith [Real.pi_pos, wH.im_pos])))
-            (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm 2)
-            (norm_nonneg _) hC₀_pos.le)
-      _ = (4 * C₀) * t ^ 2 := by ring
-      _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
-          gcongr; nlinarith [sq_nonneg t, Real.one_le_exp_iff.2 (by positivity : (0:ℝ) ≤ 2*π*t)]
+      (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    have h1 : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤ C₀ * (2 * t) ^ 2 := (norm_mul_le _ _).trans
+      (mul_le_mul ((hC₀ wH (by rw [hw_im]; linarith)).trans
+          (mul_le_of_le_one_right hC₀_pos.le (Real.exp_le_one_iff.2 <| by
+            nlinarith [Real.pi_pos, wH.im_pos])))
+        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm 2)
+        (norm_nonneg _) hC₀_pos.le)
+    nlinarith [h1, sq_nonneg t, Real.one_le_exp_iff.2 (by positivity : (0:ℝ) ≤ 2*π*t),
+      mul_nonneg (by positivity : (0:ℝ) ≤ 4 * C₀) (sq_nonneg t)]
   have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
       (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
     calc ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖
