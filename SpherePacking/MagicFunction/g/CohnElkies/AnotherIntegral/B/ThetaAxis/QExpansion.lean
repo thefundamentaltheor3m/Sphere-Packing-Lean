@@ -168,12 +168,10 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) :=
     hf_eq (-(9 / 4 : ℝ) * Real.pi * t) 1 (by
       simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
-  rw [show Θ₂.resToImagAxis t
-          - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
-          - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
-        = (2 : ℂ) * ∑' n : ℕ, f (n + 2) from by
-    rw [← hf0, ← hf1, ← hshift, show Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n from by
-      rw [show Θ₂.resToImagAxis t = Θ₂ τ from by
+  rw [show Θ₂.resToImagAxis t - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ) -
+        (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) = (2 : ℂ) * ∑' n : ℕ, f (n + 2) by
+    rw [← hf0, ← hf1, ← hshift, show Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n by
+      rw [show Θ₂.resToImagAxis t = Θ₂ τ by
           simp [Function.resToImagAxis, ResToImagAxis, htpos, τ],
         Θ₂, (tsum_nat_add_neg_add_one (f := fun n : ℤ ↦ Θ₂_term n τ) hsumZ).symm,
         ← tsum_mul_left]
