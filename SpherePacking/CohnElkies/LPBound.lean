@@ -102,14 +102,12 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right (n ^ 2)
-  have hA_le : ‖∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ ≤ n := by
-    simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
+  simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
+  gcongr
+  · simpa [Real.norm_eq_abs] using abs_re_le_norm _
+  · simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
         n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
-  gcongr; simpa [Real.norm_eq_abs] using abs_re_le_norm _
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
 theorem calc_steps_part1 (hd : 0 < d) :
@@ -138,8 +136,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
         haveI : Finite ↑(P.centers ∩ D) := finite_centers_inter_of_isBounded P D hD_isBounded hd
         rw [re_tsum Summable.of_finite]
         exact tsum_congr fun x => by
-          rw [re_tsum Summable.of_finite]
-          exact tsum_congr fun y => by
+          rw [re_tsum Summable.of_finite]; exact tsum_congr fun y => by
             simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
               (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
                 (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
@@ -225,8 +222,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
             (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         ↑(P.numReps' hd hD_isBounded) ^ 2 := by
-        simp only [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq
-          (P := P) (D := D) (hd := hd) (hD_isBounded := hD_isBounded)]
+        rw [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq (P := P) (D := D)]
     _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
       SpherePacking.CohnElkies.one_div_mul_mul_eq_mul_mul_div _ _ _
 
