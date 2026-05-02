@@ -36,11 +36,9 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 lemma b_zero_reduction :
     MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) =
       J₁' (0 : ℝ) + J₂' 0 + J₃' 0 + J₄' 0 + J₅' 0 + J₆' 0 := by
-  simpa [MagicFunction.b.RadialFunctions.J₁, MagicFunction.b.RadialFunctions.J₂,
-    MagicFunction.b.RadialFunctions.J₃, MagicFunction.b.RadialFunctions.J₄,
-    MagicFunction.b.RadialFunctions.J₅, MagicFunction.b.RadialFunctions.J₆] using
-    congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
-      MagicFunction.FourierEigenfunctions.b_eq_sum_integrals_RadialFunctions
+  open MagicFunction.b.RadialFunctions in
+  simpa [J₁, J₂, J₃, J₄, J₅, J₆] using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
+    MagicFunction.FourierEigenfunctions.b_eq_sum_integrals_RadialFunctions
 
 lemma J₁'_J₃_eq_neg_J₅'_zero : J₁' (0 : ℝ) + J₃' 0 = -J₅' 0 := by
   have hI (z : ℝ → ℂ) (hz : ∀ t ∈ Icc (0 : ℝ) 1, ψT' (z t) = ψI' (z₅' t)) :
@@ -76,9 +74,9 @@ lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
 
 lemma htendsto_ψS' :
     ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖ψS' z‖ < ε := fun ε hε => by
-  rcases (Filter.eventually_atImInfty).1 (show ∀ᶠ z in UpperHalfPlane.atImInfty, ‖ψS z‖ < ε by
-    simpa [dist_eq_norm] using
-      (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε) with ⟨M, hM⟩
+  obtain ⟨M, hM⟩ := (Filter.eventually_atImInfty).1
+    (show ∀ᶠ z in UpperHalfPlane.atImInfty, ‖ψS z‖ < ε by simpa [dist_eq_norm] using
+      (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
   refine ⟨max M 1, fun z hz => ?_⟩
   have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
   simpa [ψS', hzpos] using hM ⟨z, hzpos⟩ ((le_max_left _ _).trans hz)
@@ -142,9 +140,9 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
             (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
         (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
     have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
-          ψS' ((t : ℂ) + Complex.I) := fun t => by
-      have hz : 0 < (((t : ℂ) + Complex.I).im) := by simp
-      exact sub_eq_of_eq_add' <| by
+          ψS' ((t : ℂ) + Complex.I) := fun t =>
+      sub_eq_of_eq_add' <| by
+        have hz : 0 < (((t : ℂ) + Complex.I).im) := by simp
         simpa [ψI', ψT', ψS', hz] using
           congrArg (fun F : ℍ → ℂ => F ⟨(t : ℂ) + Complex.I, hz⟩) ψI_eq_add_ψT_ψS
     simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
