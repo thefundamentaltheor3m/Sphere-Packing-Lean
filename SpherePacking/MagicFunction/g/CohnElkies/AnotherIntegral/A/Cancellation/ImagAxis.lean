@@ -28,11 +28,11 @@ imaginary axis, used in the `AnotherIntegral.A` estimates.
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
-open scoped BigOperators Topology MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
+open scoped BigOperators MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
 open scoped ArithmeticFunction.sigma
 
-open Real Complex MeasureTheory Filter Function ArithmeticFunction
-  MagicFunction.FourierEigenfunctions UpperHalfPlane ModularForm EisensteinSeries
+open Real Complex Function ArithmeticFunction
+  MagicFunction.FourierEigenfunctions UpperHalfPlane ModularForm
   SlashInvariantFormClass ModularFormClass
 
 noncomputable section
@@ -80,11 +80,10 @@ public lemma norm_φ₀_imag_le :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 1 ≤ t →
       ‖φ₀'' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ C * Real.exp (-2 * π * t) := by
   obtain ⟨C, hCpos, hC⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  refine ⟨C, hCpos, fun t ht => ?_⟩
-  have ht0 : 0 < t := zero_lt_one.trans_le ht
-  simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
-    simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
-    zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])
+  refine ⟨C, hCpos, fun t ht => have ht0 : 0 < t := zero_lt_one.trans_le ht
+    by simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
+        simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
+      zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])⟩
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
@@ -98,16 +97,15 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)]
       simp [abs_of_nonneg hq_nonneg], pow_add]
-  exact mul_le_mul_of_nonneg_left
-    (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
+  exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
 
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have h1 : m * (σ 3 m) ≤ m ^ 5 := by
+  exact_mod_cast (show m * (σ 3 m) ≤ m ^ 5 by
     simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
-      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)
-  exact_mod_cast h1.trans (Nat.pow_le_pow_left hM 5)
+      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)).trans
+    (Nat.pow_le_pow_left hM 5)
 
 lemma qExpansionFormalMultilinearSeries_partialSum_two
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
