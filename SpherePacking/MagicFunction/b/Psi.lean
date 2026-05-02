@@ -160,9 +160,7 @@ public lemma ψS_eq :
 
 /-- Decomposition of `ψI` as the sum `ψT + ψS`. -/
 public lemma ψI_eq_add_ψT_ψS : ψI = ψT + ψS := by
-  ext z
-  simp [ψI_eq, ψT_eq, ψS_eq, sub_eq_add_neg]
-  ring
+  ext z; simp [ψI_eq, ψT_eq, ψS_eq, sub_eq_add_neg]; ring
 
 end eq
 
