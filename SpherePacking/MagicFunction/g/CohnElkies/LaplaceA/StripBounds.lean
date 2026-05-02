@@ -4,7 +4,6 @@ import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.ModularForms.PhiTransformLemmas
 
-
 /-!
 # Strip bounds for the `a'` contour deformation
 
