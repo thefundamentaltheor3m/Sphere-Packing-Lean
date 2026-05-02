@@ -19,7 +19,7 @@ namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
 open scoped BigOperators UpperHalfPlane
 
-open Real Complex Filter Topology Set
+open Real Complex
 
 noncomputable section
 
@@ -70,7 +70,6 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   set b : ℂ := (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
   set x : ℂ := Θ₂.resToImagAxis t
   set y : ℂ := (2 : ℂ) * a + (2 : ℂ) * b
-  have hx : ‖x‖ ≤ M := hM t ht
   have ha_norm : ‖a‖ = Real.exp (-Real.pi * t / 4) := by
     simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
   have hb_norm : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
@@ -80,15 +79,14 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     simp only [norm_mul, Complex.norm_ofNat, ha_norm, hb_norm] at htri
     linarith [Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht] : -Real.pi * t / 4 ≤ 0),
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht] : -(9 / 4 : ℝ) * Real.pi * t ≤ 0)]
-  have hxy : ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by grind only
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (M + 4) ^ 3) * Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) := by
     refine (norm_pow4_sub_le x y).trans <| (?_ : _ ≤
         4 * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) * (M + 4) ^ 3).trans_eq (by ring)
     gcongr (4 * ?_ * ?_) with _ _
-    exacts [hxy.trans (mul_le_mul_of_nonneg_left
-      (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hCθ0),
-      pow_le_pow_left₀ (by positivity) (by linarith) 3]
+    exacts [(show ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) by grind only).trans
+      (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hCθ0),
+      pow_le_pow_left₀ (by positivity) (by linarith [hM t ht]) 3]
   have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
       (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
         (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by
