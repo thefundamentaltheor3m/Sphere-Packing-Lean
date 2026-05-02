@@ -55,9 +55,8 @@ lemma aestronglyMeasurable_phi0''_div_Ioi :
 /-- Integrability of `t^2 * exp(-a * t)` on a ray `Set.Ioi A` (for `0 < a`). -/
 public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) := by
-  have hb : 0 < a / 2 := half_pos ha
-  refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) hb (by fun_prop)
-    (((isLittleO_pow_exp_pos_mul_atTop (k := 2) hb).isBigO.mul
+  refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) (half_pos ha) (by fun_prop)
+    (((isLittleO_pow_exp_pos_mul_atTop (k := 2) (half_pos ha)).isBigO.mul
       (Asymptotics.isBigO_refl _ _)).congr_right fun t => ?_)
   rw [← Real.exp_add]; congr 1; ring
 
@@ -75,7 +74,6 @@ lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
 /-- Convergence of the Laplace integral defining `a'` (integrability on `(0, ∞)` for `u > 2`). -/
 public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  have hu0 : 0 < u := lt_trans (by norm_num) hu
   have hMeasIoi := aestronglyMeasurable_aLaplaceIntegrand_Ioi (u := u)
   have hIoi_split : (Set.Ioi (0 : ℝ)) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) := by
     simp [Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]
@@ -89,13 +87,14 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have ht0 : 0 < t := ht.1
     have ht1 : t ≤ 1 := ht.2
     have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
-    have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ := by
-      have hexp : rexp (-2 * π * t⁻¹) ≤ 1 :=
-        Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 (le_of_lt ht0)])
-      have hdecay' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) := by
+    have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ :=
+      (show ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) by
         simpa [div_eq_mul_inv, Complex.ofReal_inv, C₀] using
-          MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹) (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)
-      exact hdecay'.trans ((mul_le_mul_of_nonneg_left hexp hC₀).trans_eq (by simp))
+          MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹)
+            (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)).trans <|
+        (mul_le_mul_of_nonneg_left
+          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 ht0.le])) hC₀).trans_eq
+          (by simp)
     have ht2_le : ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤ 1 := by
       simpa [Complex.norm_real] using
         pow_le_one₀ (n := 2) (abs_nonneg t) (by simpa [abs_of_pos ht0] using ht1)
@@ -103,8 +102,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
         simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))]
       exact Real.exp_le_one_iff.2 <| by
-        have : 0 ≤ π * u * t := by positivity [Real.pi_pos.le, hu0.le, ht0.le]
-        linarith
+        linarith [mul_nonneg (mul_nonneg Real.pi_pos.le (lt_trans two_pos hu).le) ht0.le]
     calc ‖aLaplaceIntegrand u t‖
           ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
             ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
@@ -137,25 +135,21 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       let Cφ : ℝ := (BA ^ (2 : ℕ) + C2 * (B4 * BA) + C4 * (B4 ^ (2 : ℕ))) * CΔ
       have hMeasA : AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
             (MeasureTheory.volume.restrict (Set.Ioi A)) :=
-        hMeasIoi.mono_measure <| Measure.restrict_mono_set (MeasureTheory.volume : Measure ℝ)
-          fun t ht => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_trans hA1 (le_of_lt ht))
+        hMeasIoi.mono_measure <| Measure.restrict_mono_set _
+          fun _ ht => zero_lt_one.trans_le (hA1.trans ht.le)
       have hdomReal : Integrable (fun t : ℝ => Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)))
             (MeasureTheory.volume.restrict (Set.Ioi A)) :=
-        (by simpa [IntegrableOn] using integrableOn_sq_mul_exp_neg A a ha
-          : Integrable (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t))
-              (MeasureTheory.volume.restrict (Set.Ioi A))).const_mul Cφ
+        (integrableOn_sq_mul_exp_neg A a ha).const_mul Cφ
       have hdom :
           ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
             ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
         refine ae_restrict_of_forall_mem measurableSet_Ioi ?_
         intro t ht
-        have htA : A ≤ t := le_of_lt ht
-        have ht1 : (1 : ℝ) ≤ t := le_trans hA1 htA
-        have ht0 : 0 < t := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht1
-        have hzpos : 0 < (((Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa using ht0
-        let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), hzpos⟩
+        have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le
+        have ht0 : 0 < t := zero_lt_one.trans_le ht1
+        let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
         have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-        have htAim : A ≤ zH.im := hz_im ▸ htA
+        have htAim : A ≤ zH.im := hz_im ▸ ht.le
         have hAle : AΔ ≤ A ∧ A2 ≤ A ∧ A4 ≤ A ∧ A6 ≤ A := by dsimp [A]; simp
         have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hAle.2.2.1.trans htAim)
         have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
@@ -228,12 +222,11 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                     simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]]
                 gcongr
           _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by rw [← hExpRew]; ring
-      simpa [IntegrableOn] using
-        MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
-          hdomReal hMeasA hdom
-    have hIoi1_split : Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A := by
-      simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm
-    rw [hIoi1_split]; exact hmid.union hbig
+      exact MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
+        hdomReal hMeasA hdom
+    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
+      (Set.Ioc_union_Ioi_eq_Ioi hA1).symm]
+    exact hmid.union hbig
   rw [hIoi_split]; exact hsmall.union htail
 
 end
