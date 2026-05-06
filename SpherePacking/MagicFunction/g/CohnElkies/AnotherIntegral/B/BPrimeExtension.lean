@@ -182,40 +182,38 @@ private lemma integral_ψ_exp_differentiable
     hψz_cont (continuous_const.mul hz_cont).continuousOn hψz_bound
     (fun t ht => norm_pi_mul_I_mul_le (z := z t) (N := Cz) (hz_bound t ht))
 
-lemma J₁'C_differentiable : Differentiable ℂ J₁'C := by
-  obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₁'
-  refine (show J₁'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
-      ψT' (z₁' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₁' t) by
-    funext u; simp [J₁'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
-    (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable
-      (Mψ := Mψ) (Cz := 2) (continuousOn_ψT'_comp z₁' continuous_z₁'
-        fun t ht => im_z₁'_pos (mem_Ioc_of_mem_uIoc ht))
+lemma J₁'C_differentiable : Differentiable ℂ J₁'C :=
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₁'
+  (show J₁'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
+      ψT' (z₁' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₁' t) from
+    funext fun u => by simp [J₁'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
+    (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 2)
+      (continuousOn_ψT'_comp z₁' continuous_z₁' fun t ht => im_z₁'_pos (mem_Ioc_of_mem_uIoc ht))
       continuous_z₁' hMψ (fun t _ => norm_z₁'_le_two t))
 
-lemma J₂'C_differentiable : Differentiable ℂ J₂'C := by
-  obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₂'
-  exact integral_ψ_exp_differentiable (Mψ := Mψ) (Cz := 3)
+lemma J₂'C_differentiable : Differentiable ℂ J₂'C :=
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₂'
+  integral_ψ_exp_differentiable (Cz := 3)
     (continuousOn_ψT'_comp z₂' continuous_z₂'
       fun t ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
     continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
 
-lemma J₃'C_differentiable : Differentiable ℂ J₃'C := by
-  obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₃'
-  refine (show J₃'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
-      ψT' (z₃' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₃' t) by
-    funext u; simp [J₃'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
-    (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable
-      (Mψ := Mψ) (Cz := 2) (continuousOn_ψT'_comp z₃' continuous_z₃'
-        fun t ht => im_z₃'_pos (mem_Ioc_of_mem_uIoc ht))
+lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₃'
+  (show J₃'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
+      ψT' (z₃' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₃' t) from
+    funext fun u => by simp [J₃'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
+    (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 2)
+      (continuousOn_ψT'_comp z₃' continuous_z₃' fun t ht => im_z₃'_pos (mem_Ioc_of_mem_uIoc ht))
       continuous_z₃' hMψ (fun t ht => norm_z₃'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
-lemma J₄'C_differentiable : Differentiable ℂ J₄'C := by
-  obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₄'
-  refine (show J₄'C = fun u : ℂ => (-1 : ℂ) * ∫ t in (0 : ℝ)..1,
-      ψT' (z₄' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₄' t) by
-    funext u; simp [J₄'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
-    (differentiable_const (-1 : ℂ)).mul (integral_ψ_exp_differentiable
-      (Mψ := Mψ) (Cz := 3) (continuousOn_ψT'_comp z₄' continuous_z₄'
+lemma J₄'C_differentiable : Differentiable ℂ J₄'C :=
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₄'
+  (show J₄'C = fun u : ℂ => (-1 : ℂ) * ∫ t in (0 : ℝ)..1,
+      ψT' (z₄' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₄' t) from
+    funext fun u => by simp [J₄'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
+    (differentiable_const (-1 : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 3)
+      (continuousOn_ψT'_comp z₄' continuous_z₄'
         fun t ht => im_z₄'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
       continuous_z₄' hMψ (fun t ht => norm_z₄'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
@@ -233,14 +231,14 @@ private lemma continuousOn_ψI'_z₅' :
     simpa [hEq] using b.PsiBounds.continuous_ψI.comp hzH
   simpa using (continuousOn_iff_continuous_restrict).2 (by simpa [Set.restrict] using hcont)
 
-lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
-  obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψI'_z₅'
-  refine (show J₅'C = fun u : ℂ => (-2 * Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
-      ψI' (z₅' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₅' t) by
-    funext u; simp [J₅'C, ← intervalIntegral.integral_const_mul, mul_assoc, mul_left_comm,
-      mul_comm]) ▸
-    (differentiable_const (-2 * Complex.I : ℂ)).mul (integral_ψ_exp_differentiable
-      (Mψ := Mψ) (Cz := 1) continuousOn_ψI'_z₅' continuous_z₅' hMψ
+lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψI'_z₅'
+  (show J₅'C = fun u : ℂ => (-2 * Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
+      ψI' (z₅' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₅' t) from
+    funext fun u => by simp [J₅'C, ← intervalIntegral.integral_const_mul, mul_assoc,
+      mul_left_comm, mul_comm]) ▸
+    (differentiable_const (-2 * Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 1)
+      continuousOn_ψI'_z₅' continuous_z₅' hMψ
       (fun t ht => norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
 set_option maxHeartbeats 1000000 in
