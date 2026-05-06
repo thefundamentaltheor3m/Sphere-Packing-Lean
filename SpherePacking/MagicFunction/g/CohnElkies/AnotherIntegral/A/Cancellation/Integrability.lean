@@ -59,27 +59,23 @@ lemma exists_phi0_cancellation_bound :
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; rw [mul_pow]; simp
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) from modular_S_smul_zI t ht0]
-      simp [zI, div_eq_mul_inv]
+      rw [modular_S_smul_zI t ht0]; simp [zI, div_eq_mul_inv]
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
             ((12 / π : ℝ) : ℂ) * t * φ₂' z +
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * φ₄' z := by
-      have hneg' :
-          (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
-            (t : ℂ) * ((t : ℂ) * φ₀ z) +
-              (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
-                (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-          mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
-          mul_neg, neg_neg] using congrArg (fun w : ℂ => -w) <|
-          show φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
-              φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) +
-                (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
-                (-(36 / (π ^ 2) * φ₄' z)) by
+      have hneg' : (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
+          (t : ℂ) * ((t : ℂ) * φ₀ z) +
+            (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
+              (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
+        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
+          mul_comm, pow_two, neg_add, neg_mul, mul_neg, neg_neg] using congrArg (fun w : ℂ => -w)
+          (show φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
+              φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) + (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
+              (-(36 / (π ^ 2) * φ₄' z)) by
             simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, hzsq]
-              using φ₀_S_transform_mul_sq z
+              using φ₀_S_transform_mul_sq z)
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_left_comm, mul_comm, pow_two] using
         (by simpa [show (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
