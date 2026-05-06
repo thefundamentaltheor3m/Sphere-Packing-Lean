@@ -134,10 +134,8 @@ open Real
   lattice_discrete := by
     have hd := S.lattice_discrete
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at hd ⊢
-    obtain ⟨ε, hε, hε'⟩ := hd
-    refine ⟨c * ε, mul_pos hc hε, ?_⟩
-    simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
-    rintro x ⟨x, hx, rfl⟩ hx'
+    obtain ⟨ε, hε, hε'⟩ := hd; refine ⟨c * ε, mul_pos hc hε, ?_⟩
+    simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢; rintro x ⟨x, hx, rfl⟩ hx'
     simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero,
       AddSubgroupClass.coe_norm, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le,
       mul_lt_mul_iff_right₀ hc] at hx' ⊢
