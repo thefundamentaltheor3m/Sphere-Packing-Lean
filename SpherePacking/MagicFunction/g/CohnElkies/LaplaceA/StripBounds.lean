@@ -7,17 +7,8 @@ import SpherePacking.ModularForms.PhiTransformLemmas
 /-!
 # Strip bounds for the `a'` contour deformation
 
-This file proves the strip estimates needed to deform the contour integrals defining the
-"vertical-segment" pieces of `a'` to the imaginary axis.
-
-Only decay along the top edge of the rectangle as `m → ∞` is required, so we avoid global uniform
-hypotheses in `re z`.
-
-## Main statements
-* `MagicFunction.g.CohnElkies.IntegralReps.exists_phi2'_phi4'_bound_exp`
-* `MagicFunction.g.CohnElkies.IntegralReps.integrableOn_Φ₂'_imag_axis`
-* `MagicFunction.g.CohnElkies.IntegralReps.integrableOn_Φ₄'_imag_axis`
-* `MagicFunction.g.CohnElkies.IntegralReps.I₁'_add_I₃'_add_I₅'_eq_imag_axis`
+Strip estimates to deform the vertical-segment integrals of `a'` to the imaginary axis. Only
+decay along the top edge as `m → ∞` is needed, so no global uniform `re z` hypotheses.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps

@@ -4,15 +4,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAx
 /-!
 # Expansions for `H₂`, `H₃`, and `H₄` on the imaginary axis
 
-This file proves `q`-expansion style bounds for the modular functions `H₂`, `H₃`, and `H₄` on the
-positive imaginary axis. These estimates are used to control `ψI' (it)` in the cancellation
-argument for `AnotherIntegral.B`.
-
-## Main statements
-* `exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one`
-* `exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one`
-* `exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one`
-* `exists_bound_norm_inv_H3_sq_sub_one_Ici_one`
+`q`-expansion style bounds used to control `ψI' (it)` in `AnotherIntegral.B`.
 -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
@@ -168,17 +160,17 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
         48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
     have hq3' : ‖q' ^ (3 : ℕ)‖ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
       rw [show (q' ^ (3 : ℕ) : ℂ) = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by
-        simpa [q'] using ofReal_exp_neg_pi_pow_eq t 3]
-      simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
+        simpa [q'] using ofReal_exp_neg_pi_pow_eq t 3,
+        Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
     have htri := norm_add_le ((32 : ℂ) * σ ^ 3 * (q' ^ (3 : ℕ))) ((16 : ℂ) * (q' ^ (4 : ℕ)))
     simp only [norm_mul, Complex.norm_ofNat,
       show ‖σ ^ 3‖ = 1 by rw [norm_pow, hσ_norm]; ring, mul_one] at htri
     rw [show y ^ (4 : ℕ) - (1 : ℂ) - σ * (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ)) =
       (32 : ℂ) * σ ^ 3 * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ)) by
       rcases hσ with rfl | rfl <;> simp [y] <;> ring]
-    have hq43 : ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ := by
-      simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q' ^ (3 : ℕ)))
-    nlinarith [htri, hq43, hq3', norm_nonneg (q' ^ (3 : ℕ))]
+    nlinarith [htri, show ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ from by
+      simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q' ^ (3 : ℕ))),
+      hq3', norm_nonneg (q' ^ (3 : ℕ))]
   rw [hHj t ht0,
     show (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
       (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) from (ofReal_exp_neg_pi_pow_eq t 2).symm]
