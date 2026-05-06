@@ -85,8 +85,7 @@ variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.cente
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
-omit [Nonempty ↑P.centers] in
-include hD_isBounded in
+omit [Nonempty ↑P.centers] in include hD_isBounded in
 /-- Summability of `∑ m, (𝓕 f m).re * ‖∑ x, exp (2 π I ⟪x, m⟫)‖²` over the dual lattice. -/
 private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
@@ -182,8 +181,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
         congr 1; push_cast; congr! 3 with m
         rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
 
-include d f hCohnElkies₂ in
-omit [Nonempty ↑P.centers] in
+include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
 theorem calc_steps_part2 (hd : 0 < d) :
     (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,

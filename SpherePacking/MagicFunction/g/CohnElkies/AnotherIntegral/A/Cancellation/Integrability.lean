@@ -106,8 +106,8 @@ lemma exists_phi0_cancellation_bound :
           (by fun_prop)).add (by fun_prop)).sub (by fun_prop)).norm)
     exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
-  refine ⟨C, ?_⟩; intro t ht1
-  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
+  refine ⟨C, fun t ht1 => ?_⟩
+  have ht0 : 0 < t := zero_lt_one.trans_le ht1
   by_cases htA : A ≤ t
   · let z : ℍ := zI t ht0
     have hφ₀z : ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * t) := by

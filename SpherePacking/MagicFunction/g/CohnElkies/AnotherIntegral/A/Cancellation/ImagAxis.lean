@@ -158,10 +158,8 @@ public lemma exists_E4_sub_one_bound :
       simpa [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum, E4_q_exp_zero]
         using hC t ht0 ht1⟩
 
-/--
-Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, where
-`q = exp (-2π t)`, valid for all `t ≥ 1`.
--/
+/-- Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, where
+`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
 public lemma exists_E4_sub_one_sub_240q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖E₄ (zI t ht) - ((1 : ℂ) + (240 : ℂ) * (Real.exp (-2 * π * t) : ℂ))‖ ≤
@@ -178,10 +176,8 @@ private lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
         zero_lt_one hΓ1).symm.trans
         (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1)]
 
-/--
-Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`, valid for all
-`t ≥ 1`.
--/
+/-- Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`, valid for all
+`t ≥ 1`. -/
 public lemma exists_Delta_sub_q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) - (Real.exp (-2 * π * t) : ℂ)‖ ≤
@@ -191,10 +187,8 @@ public lemma exists_Delta_sub_q_bound :
     simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := Delta), Delta_q_exp_zero,
       Delta_q_one_term, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
-/--
-Third-order remainder bound for `Δ (it)` after subtracting `q - 24 q^2`, where `q = exp (-2π t)`,
-valid for all `t ≥ 1`.
--/
+/-- Third-order remainder bound for `Δ (it)` after subtracting `q - 24 q^2`, where
+`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
 public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) -
@@ -208,10 +202,8 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
 
 /-! ### Bounding `E₂E₄ - E₆` on the imaginary axis. -/
 
-/--
-Second-order remainder bound for `E₂(it)E₄(it) - E₆(it)` after subtracting `720 q`, where
-`q = exp (-2π t)`, valid for all `t ≥ 1`.
--/
+/-- Second-order remainder bound for `E₂(it)E₄(it) - E₆(it)` after subtracting `720 q`, where
+`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
 public lemma exists_E2E4_sub_E6_sub_720q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖(E₂ (zI t ht)) * (E₄ (zI t ht)) - (E₆ (zI t ht)) -
@@ -255,8 +247,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
   let g : ℕ → ℂ := fun n =>
     (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
-  have hg_summ : Summable g := by
-    refine Summable.of_norm_bounded (hb_summ.mul_left q) fun n => ?_
+  have hg_summ : Summable g := .of_norm_bounded (hb_summ.mul_left q) fun n => by
     rw [show ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
         ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ from by simp [g, mul_assoc],
       show q * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) from by simp [b]; ring]
@@ -270,11 +261,10 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     rw [show (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) = ∑' n : ℕ, g n from by
         simpa [g, mul_assoc, mul_left_comm, mul_comm] using tsum_pnat_eq_tsum_succ
           (f := fun n : ℕ => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)),
-      show cexp (2 * π * Complex.I * z) = g 0 by simp [g]]
-    refine (sub_eq_iff_eq_add).2 ?_
-    rw [show (∑' n : ℕ, f n) + g 0 = g 0 + ∑' n : ℕ, g (n + 1) by
-      grind only [tsum_eq_tsum_of_ne_zero_bij]]
-    simpa [Finset.range_one] using (hg_summ.sum_add_tsum_nat_add 1).symm
+      show cexp (2 * π * Complex.I * z) = g 0 by simp [g],
+      show (∑' n : ℕ, g n) = g 0 + ∑' n : ℕ, g (n + 1) by
+        simpa [Finset.range_one] using (hg_summ.sum_add_tsum_nat_add 1).symm]
+    grind only [tsum_eq_tsum_of_ne_zero_bij]
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
     .of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
   have hmain : ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
@@ -287,11 +277,11 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       norm_mul, show ‖(720 : ℂ)‖ = 720 by simp, mul_assoc]
     gcongr; exact (norm_tsum_le_tsum_norm hnorm_summ).trans <|
       (hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left _)).trans_eq tsum_mul_left
-  simpa [z, q] using (show ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
-        ((720 : ℝ) * (∑' n : ℕ, b n)) * (Real.exp (-2 * π * t)) ^ (2 : ℕ) by
-      simpa [q, mul_assoc, mul_left_comm, mul_comm] using hmain).trans
-    (mul_le_mul_of_nonneg_right (by linarith : (720 : ℝ) * (∑' n : ℕ, b n) ≤
-      1 + (720 : ℝ) * (∑' n : ℕ, b n)) (pow_nonneg hq_nonneg _))
+  refine (show _ ≤ ((720 : ℝ) * (∑' n : ℕ, b n)) * q ^ (2 : ℕ) by
+      simpa [q, mul_assoc, mul_left_comm, mul_comm] using hmain).trans ?_
+  simpa [z, q] using mul_le_mul_of_nonneg_right
+    (by linarith : (720 : ℝ) * (∑' n : ℕ, b n) ≤ 1 + (720 : ℝ) * (∑' n : ℕ, b n))
+    (pow_nonneg hq_nonneg _)
 
 end
 
