@@ -142,8 +142,7 @@ open Real
     exact .inr (by simpa using hε' x hx hx')
   lattice_isZLattice := by
     use ?_; rw [← S.lattice_isZLattice.span_top]
-    ext v; simp_rw [Submodule.mem_span]
-    refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
+    ext v; simp_rw [Submodule.mem_span]; refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
     · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
       simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
         Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
