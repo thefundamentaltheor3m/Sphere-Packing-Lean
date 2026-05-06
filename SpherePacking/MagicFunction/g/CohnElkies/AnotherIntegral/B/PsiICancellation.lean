@@ -41,6 +41,16 @@ private lemma norm_le_err_plus_main {A err main : ℂ} (hdec : A = err + main)
   hdec ▸ (norm_add_le _ _).trans (by
     nlinarith [mul_le_mul_of_nonneg_left (exp_neg_scaled_pi_le k hk ht) hCerr, herr, hmain])
 
+/-- Bound `‖A·exp(-π t) + B·exp(-k π t)‖ ≤ M·exp(-π t)` when `‖A‖+‖B‖ ≤ M, k ≥ 1, t ≥ 0`. -/
+private lemma norm_two_exp_le_const {A B : ℂ} {k M : ℝ} (hk : 1 ≤ k) {t : ℝ} (ht : 0 ≤ t)
+    (hAB : ‖A‖ + ‖B‖ ≤ M) :
+    ‖A * (Real.exp (-Real.pi * t) : ℂ) + B * (Real.exp (-k * Real.pi * t) : ℂ)‖ ≤
+      M * Real.exp (-Real.pi * t) := by
+  refine (norm_add_le _ _).trans ?_
+  simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
+  nlinarith [mul_le_mul_of_nonneg_left (exp_neg_scaled_pi_le k hk ht) (norm_nonneg B), hAB,
+    Real.exp_pos (-Real.pi * t), norm_nonneg A]
+
 /-- Evaluate `ψI'` on the positive imaginary axis as a restriction of `ψI`. -/
 public lemma psiI'_mul_I_eq_resToImagAxis (t : ℝ) (ht : 0 < t) :
     ψI' (Complex.I * (t : ℂ)) = ψI.resToImagAxis t := by
@@ -117,31 +127,17 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       abs_of_nonneg (by positivity : 0 ≤ (1 / 32 : ℝ))] using
         norm_sub_le ((e / 256 : ℝ) : ℂ) ((1 / 32 : ℝ) : ℂ)
   have hH2_bd : ‖H₂.resToImagAxis t‖ ≤ (CH2 + 80) * Real.exp (-Real.pi * t) :=
-    norm_le_err_plus_main (by ring) hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' (hH2 t ht) <| calc
-      ‖(16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
-          (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
-      _ ≤ ‖(16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ +
-            ‖(64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ := norm_add_le _ _
-      _ = (16 : ℝ) * Real.exp (-Real.pi * t) +
-            (64 : ℝ) * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-          simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-      _ ≤ (80 : ℝ) * Real.exp (-Real.pi * t) := by
-          linarith [mul_le_mul_of_nonneg_left hle3 (by norm_num : (0:ℝ) ≤ 64)]
+    norm_le_err_plus_main (by ring) hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' (hH2 t ht) <|
+      norm_two_exp_le_const (A := (16 : ℂ)) (B := (64 : ℂ)) (k := 3) (by norm_num) ht0'
+        (by norm_num)
   have hH4_bd : ‖H₄.resToImagAxis t - 1‖ ≤ (CH4 + 32) * Real.exp (-Real.pi * t) := by
     have herr : ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
           (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
             ≤ CH4 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hH4 t ht
-    refine norm_le_err_plus_main (by ring) hCH4 (by norm_num : (1 : ℝ) ≤ 3) ht0' herr <| calc
-      ‖-(8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
-      _ ≤ ‖-(8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ +
-            ‖(24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ := norm_add_le _ _
-      _ = (8 : ℝ) * Real.exp (-Real.pi * t) +
-            (24 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-          simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-      _ ≤ (32 : ℝ) * Real.exp (-Real.pi * t) := by
-          linarith [mul_le_mul_of_nonneg_left hle2 (by norm_num : (0:ℝ) ≤ 24)]
+    refine norm_le_err_plus_main (by ring) hCH4 (by norm_num : (1 : ℝ) ≤ 3) ht0' herr <|
+      norm_two_exp_le_const (A := -(8 : ℂ)) (B := (24 : ℂ)) (k := 2) (by norm_num) ht0'
+        (by norm_num)
   have hz1 : ‖z - 1‖ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by
     calc ‖z - 1‖ = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by dsimp [z]; ring_nf
       _ ≤ ‖H₄.resToImagAxis t - 1‖ + ‖H₂.resToImagAxis t‖ := norm_sub_le _ _

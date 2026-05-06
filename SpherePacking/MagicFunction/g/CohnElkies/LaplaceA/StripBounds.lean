@@ -88,11 +88,11 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
           {z : ℂ | 0 < z.im})).aestronglyMeasurable measurableSet_Ioi) ?_
   refine (ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => ?_
   let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa using lt_trans zero_lt_one ht⟩
-  have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
   refine (show ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
       (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
     rw [show Φ₆' u ((t : ℂ) * Complex.I) = φ₀'' ((t : ℂ) * Complex.I) *
         cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) by simp [Φ₆']]
+    have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
     refine norm_mul_le_of_le (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) by
       simpa [φ₀''_coe_upperHalfPlane, hz_im] using
         hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)) ?_
@@ -150,22 +150,17 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     nlinarith [h1, sq_nonneg t, Real.one_le_exp_iff.2 (by positivity : (0:ℝ) ≤ 2*π*t),
       mul_nonneg (by positivity : (0:ℝ) ≤ 4 * C₀) (sq_nonneg t)]
   have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
-      (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    calc ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖
-        ≤ (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := norm_mul₃_le
-      _ ≤ (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) :=
-          mul_le_mul (mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _))
-            hφ2 (norm_nonneg _) (by positivity)
-      _ = (2 * c12π * Cφ) * (t * Real.exp (2 * π * t)) := by ring
-      _ ≤ (2 * c12π * Cφ) * (t ^ 2 * Real.exp (2 * π * t)) := by gcongr; nlinarith
+      (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    refine norm_mul₃_le.trans <| (mul_le_mul (mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _))
+      hφ2 (norm_nonneg _) (by positivity)).trans ?_
+    rw [show (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) =
+      (2 * c12π * Cφ) * (t * Real.exp (2 * π * t)) by ring]
+    gcongr; nlinarith
   have hC : ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
-      c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    calc ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖
-        ≤ c36π2 * ‖φ₄' wH‖ := norm_mul_le _ _
-      _ ≤ c36π2 * (Cφ * Real.exp (2 * π * t)) :=
-          mul_le_mul_of_nonneg_left hφ4 (norm_nonneg _)
-      _ = c36π2 * Cφ * (1 * Real.exp (2 * π * t)) := by ring
-      _ ≤ c36π2 * Cφ * (t ^ 2 * Real.exp (2 * π * t)) := by gcongr; exact one_le_pow₀ ht1
+      c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    refine ((norm_mul_le _ _).trans <| mul_le_mul_of_nonneg_left hφ4 (norm_nonneg _)).trans ?_
+    rw [show c36π2 * (Cφ * Real.exp (2 * π * t)) = c36π2 * Cφ * (1 * Real.exp (2 * π * t)) by ring]
+    gcongr; exact one_le_pow₀ ht1
   linarith [htri, hA, hB, hC]
 
 /-- Pointwise bound for `‖Φ₂' u (tI)‖` on the tail `t ≥ 1`. -/

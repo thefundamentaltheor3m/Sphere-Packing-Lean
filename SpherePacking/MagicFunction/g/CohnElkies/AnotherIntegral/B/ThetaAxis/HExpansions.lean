@@ -51,8 +51,8 @@ private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
     (h : ‖a‖ ≤ C * Real.exp r) : 0 ≤ C :=
   nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
 
-private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C := by
-  linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by simpa [sub_add_cancel] using norm_add_le (x - 1) (1 : ℂ)]
+private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C :=
+  by linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by simpa [sub_add_cancel] using norm_add_le (x - 1) (1 : ℂ)]
 
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
@@ -148,8 +148,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
   set y : ℂ := (1 : ℂ) + σ * (2 : ℂ) * q'
   have hq : ‖q'‖ ≤ 1 := by simpa [q'] using norm_exp_neg_pi_mul_le_one t ht0
   have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <| (hC1 t ht).trans <| by
-    simpa [mul_one] using mul_le_mul_of_nonneg_left
-      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hC10
+    simpa using mul_le_of_le_one_right hC10 (Real.exp_le_one_iff.2 (by
+      nlinarith [Real.pi_pos, ht0.le]))
   have hσ_norm : ‖σ‖ = 1 := by rcases hσ with rfl | rfl <;> simp
   have hy : ‖y‖ ≤ 3 := by
     have h := norm_add_le (1 : ℂ) (σ * (2 : ℂ) * q'); simp [hσ_norm] at h; linarith
