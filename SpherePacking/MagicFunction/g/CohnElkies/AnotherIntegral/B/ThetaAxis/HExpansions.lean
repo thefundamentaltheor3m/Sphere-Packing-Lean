@@ -131,8 +131,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
 /-- Generic `H_j(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`, parametrized by sign.
 The sign `σ = +1` gives the H₃ case (`y = 1 + 2q`), `σ = -1` gives H₄ (`y = 1 - 2q`). -/
 private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ : σ = 1 ∨ σ = -1)
-    (hHj : ∀ t : ℝ, 0 < t → Hj t = (Θj t) ^ (4 : ℕ))
-    {C1 C2 : ℝ} (hC10 : 0 ≤ C1) (hC20 : 0 ≤ C2)
+    (hHj : ∀ t : ℝ, 0 < t → Hj t = (Θj t) ^ (4 : ℕ)) {C1 C2 : ℝ}
     (hC1 : ∀ t : ℝ, 1 ≤ t → ‖Θj t - 1‖ ≤ C1 * Real.exp (-Real.pi * t))
     (hC2 : ∀ t : ℝ, 1 ≤ t →
       ‖Θj t - 1 - σ * (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ ≤
@@ -141,6 +140,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
       ‖Hj t - (1 : ℂ) - σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
           (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
+  have hC10 : 0 ≤ C1 := nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)
+  have hC20 : 0 ≤ C2 := nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)
   refine ⟨(4 * (1 + C1 + 3) ^ 3) * C2 + 48, fun t ht ↦ ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set q' : ℂ := (Real.exp (-Real.pi * t) : ℂ)
@@ -196,8 +197,7 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
   obtain ⟨C1, hC1⟩ := exists_bound_norm_Theta3_resToImagAxis_sub_one_Ici_one
   obtain ⟨C2, hC2⟩ := exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one
   exact (exists_bound_H3_or_H4_aux (Hj := H₃.resToImagAxis) (Θj := Θ₃.resToImagAxis) (σ := 1)
-    (.inl rfl) (fun t ht0 => by simp [H₃, Function.resToImagAxis, ResToImagAxis, ht0])
-    (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)) hC1
+    (.inl rfl) (fun t ht0 => by simp [H₃, Function.resToImagAxis, ResToImagAxis, ht0]) hC1
     fun t ht => by simpa [sub_eq_add_neg, mul_assoc] using hC2 t ht).imp fun _ hC t ht => by
     simpa [one_mul] using hC t ht
 
@@ -210,8 +210,7 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
   obtain ⟨C1, hC1⟩ := exists_bound_norm_Theta4_resToImagAxis_sub_one_Ici_one
   obtain ⟨C2, hC2⟩ := exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one
   exact (exists_bound_H3_or_H4_aux (Hj := H₄.resToImagAxis) (Θj := Θ₄.resToImagAxis) (σ := -1)
-    (.inr rfl) (fun t ht0 => by simp [H₄, Function.resToImagAxis, ResToImagAxis, ht0])
-    (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)) hC1
+    (.inr rfl) (fun t ht0 => by simp [H₄, Function.resToImagAxis, ResToImagAxis, ht0]) hC1
     fun t ht => by simpa [sub_eq_add_neg, mul_assoc, add_left_comm, add_comm] using hC2 t ht).imp
     fun _ hC t ht => by simpa [neg_mul, sub_eq_add_neg] using hC t ht
 
