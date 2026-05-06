@@ -478,22 +478,17 @@ private lemma intervalIntegrable_comp_zI {g : ℂ → ℂ} (hg : ContinuousOn g 
   simpa using (hg.comp (continuous_ofReal.add continuous_const).continuousOn
     fun x _ => by simp).intervalIntegrable
 
-private lemma intervalIntegrable_F_zI :
-    IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
-  simpa [zI] using intervalIntegrable_F_comp (fun x : ℝ => zI x)
-    (continuous_ofReal.add continuous_const).continuousOn fun x => by simp [zI]
-
-private lemma intervalIntegrable_F_zI_sub_one :
-    IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 := by
-  simpa [zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
-    intervalIntegrable_F_comp (fun x : ℝ => zI x - 1)
-      ((continuous_ofReal.add continuous_const).sub continuous_const).continuousOn
-      fun x => by simp [zI]
-
 private lemma hI246_eq :
     I₂' (0 : ℝ) + I₄' 0 + I₆' 0 = -8640 * Complex.I / π := by
-  have hI24 := I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2
-    intervalIntegrable_F_zI intervalIntegrable_F_zI_sub_one
+  have hzI : IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
+    simpa [zI] using intervalIntegrable_F_comp (fun x : ℝ => zI x)
+      (continuous_ofReal.add continuous_const).continuousOn fun x => by simp [zI]
+  have hzIs : IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 := by
+    simpa [zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
+      intervalIntegrable_F_comp (fun x : ℝ => zI x - 1)
+        ((continuous_ofReal.add continuous_const).sub continuous_const).continuousOn
+        fun x => by simp [zI]
+  have hI24 := I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 hzI hzIs
   have hIntf0 : IntervalIntegrable (fun x : ℝ => f0 (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
     simpa [f0] using intervalIntegrable_comp_zI f0_continuousOn
   have hIntphi2 : IntervalIntegrable (fun x : ℝ => φ₂'' (zI x)) MeasureTheory.volume (0 : ℝ) 1 :=
