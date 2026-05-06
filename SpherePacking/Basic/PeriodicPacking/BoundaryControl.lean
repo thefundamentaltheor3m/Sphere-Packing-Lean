@@ -290,11 +290,6 @@ open scoped ENNReal BigOperators
 
 variable {d : ℕ}
 
-lemma div_mul_div_cancel_right {a b c : ℝ≥0∞} (hb0 : b ≠ 0) (hb : b ≠ ∞) :
-    ((a * b) / c) / b = a / c := by
-  simp only [div_eq_mul_inv, show a * b * c⁻¹ * b⁻¹ = a * c⁻¹ * (b * b⁻¹) by ring,
-    ENNReal.mul_inv_cancel hb0 hb, mul_one]
-
 theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < d)
     (S : SpherePacking d) (hSsep : S.separation = 1) {b : ℝ≥0∞} (hb : b < S.density) :
     ∃ P : PeriodicSpherePacking d, P.separation = 1 ∧ b < P.density := by
@@ -396,7 +391,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     have := mul_le_mul_left (show ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) / V ≤
         (sg.card : ℝ≥0∞) / volCube by
       have h := ENNReal.div_le_div_right (ENNReal.div_le_of_le_mul hs_mul) volCube
-      rwa [div_mul_div_cancel_right hvolCube_ne0 hvolCube_ne_top] at h) volBall
+      rwa [show ∀ a c : ℝ≥0∞, ((a * volCube) / c) / volCube = a / c from fun a c => by
+        simp only [div_eq_mul_inv,
+          show a * volCube * c⁻¹ * volCube⁻¹ = a * c⁻¹ * (volCube * volCube⁻¹) by ring,
+          ENNReal.mul_inv_cancel hvolCube_ne0 hvolCube_ne_top, mul_one]] at h) volBall
     simp only [div_eq_mul_inv] at this ⊢; convert this using 1 <;> ring
   let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ coordCubeInner d L r
   letI : DecidablePred (fun x : EuclideanSpace ℝ (Fin d) => x ∈ innerSet) := Classical.decPred _
