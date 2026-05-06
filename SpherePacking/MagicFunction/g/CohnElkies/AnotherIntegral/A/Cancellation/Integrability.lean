@@ -110,9 +110,8 @@ lemma exists_phi0_cancellation_bound :
       (show ContinuousOn g (Set.Icc (1 : ℝ) A) by
         simpa [g] using (((((by fun_prop :
           ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
-          (continuousOn_phi0''_Idiv fun t ht =>
-            lt_of_lt_of_le (by norm_num) ht.1)).sub (by fun_prop)).add (by fun_prop)).sub
-          (by fun_prop)).norm)
+          (continuousOn_phi0''_Idiv fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).sub
+          (by fun_prop)).add (by fun_prop)).sub (by fun_prop)).norm)
     exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, ?_⟩
