@@ -169,40 +169,20 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
 
 end BoundaryControl
 
-end PeriodicConstantApprox
-
-namespace SpherePacking
-
 open Filter
-
-variable {d : ℕ}
-
-lemma frequently_lt_finiteDensity_of_lt_density (S : SpherePacking d) {b : ℝ≥0∞}
-    (hb : b < S.density) : ∃ᶠ R in (atTop : Filter ℝ), b < S.finiteDensity R :=
-  frequently_lt_of_lt_limsup (h := by simpa [SpherePacking.density] using hb)
-
-end SpherePacking
-
-namespace PeriodicConstantApprox
-
-open Filter
-
-variable {d : ℕ}
-
-lemma coordCubeInner_one_subset_shell (L : ℝ) :
-    coordCubeInner d L 1 ⊆
-      (constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 := fun x hx =>
-  Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => by
-    simp only [coordCubeInner, Set.mem_setOf_eq, constVec, vadd_eq_add, one_div,
-      WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
-    exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
 lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
       (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
+  have hsub : coordCubeInner d L 1 ⊆
+      (constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 := fun x hx =>
+    Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => by
+      simp only [coordCubeInner, Set.mem_setOf_eq, constVec, vadd_eq_add, one_div,
+        WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
+      exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
   simpa [measure_vadd, constVec, PeriodicConstant.volume_coordCubeInner] using
-    measure_diff (μ := volume) (coordCubeInner_one_subset_shell L)
+    measure_diff (μ := volume) hsub
       (show MeasurableSet (coordCubeInner d L 1) by
         simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
           (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
@@ -272,18 +252,6 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
 
 end PeriodizeCubeDensity
 
-lemma tendsto_cubeShell_ratio_zero :
-    Tendsto (fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)) atTop (𝓝 (0 : ℝ)) := by
-  have h1 : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
-    simpa using ((tendsto_const_nhds (x := (1 : ℝ))).add tendsto_inv_atTop_zero).pow d
-  have h2 : Tendsto (fun L : ℝ => (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
-    simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub
-      ((tendsto_const_nhds (x := (2 : ℝ))).mul tendsto_inv_atTop_zero)).pow d
-  refine (by simpa using h1.sub h2 :
-    Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (0 : ℝ))).congr' ?_
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with L _
-  rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
-
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     Tendsto
         (fun L : ℝ =>
@@ -292,10 +260,19 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
             volume (coordCube d L))
         atTop (𝓝 (0 : ℝ≥0∞)) := by
   let f : ℝ → ℝ := fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
+  have hf : Tendsto f atTop (𝓝 (0 : ℝ)) := by
+    have h1 : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
+      simpa using ((tendsto_const_nhds (x := (1 : ℝ))).add tendsto_inv_atTop_zero).pow d
+    have h2 : Tendsto (fun L : ℝ => (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
+      simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub
+        ((tendsto_const_nhds (x := (2 : ℝ))).mul tendsto_inv_atTop_zero)).pow d
+    refine (by simpa using h1.sub h2 :
+      Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (0 : ℝ))).congr' ?_
+    filter_upwards [eventually_gt_atTop (0 : ℝ)] with L _
+    change (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d = ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
+    rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
   refine (show Tendsto (fun L : ℝ => ENNReal.ofReal (f L)) atTop (𝓝 (0 : ℝ≥0∞)) by
-    simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp
-      (by simpa [f] using tendsto_cubeShell_ratio_zero :
-        Tendsto f atTop (𝓝 (0 : ℝ)))).congr' ?_
+    simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
   filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
   have hL2' : 0 ≤ L - 2 := by linarith
   rw [volume_cubeShell_eq_pow L, show volume (coordCube d L) = (ENNReal.ofReal L) ^ d by
@@ -341,7 +318,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) /
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
   obtain ⟨R, hcR, hRpos, hRratio⟩ :=
-      ((frequently_lt_finiteDensity_of_lt_density S hcS).and_eventually
+      ((frequently_lt_of_lt_limsup (h := by simpa [SpherePacking.density] using hcS) :
+        ∃ᶠ R in (atTop : Filter ℝ), c < S.finiteDensity R).and_eventually
       ((eventually_gt_atTop (0 : ℝ)).and
         ((show Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) by
           simpa [mul_one] using ENNReal.Tendsto.const_mul (a := c)
