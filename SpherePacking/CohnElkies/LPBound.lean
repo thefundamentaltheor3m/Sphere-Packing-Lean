@@ -102,8 +102,7 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right (n ^ 2)
-  simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
-  gcongr
+  simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]; gcongr
   · simpa [Real.norm_eq_abs] using abs_re_le_norm _
   · simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
         n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
