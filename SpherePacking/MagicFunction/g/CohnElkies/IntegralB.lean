@@ -42,20 +42,16 @@ noncomputable local instance : FourierTransform (𝓢(ℝ⁸, ℂ)) (𝓢(ℝ⁸
 
 namespace IntegralB
 
-lemma B_as_complex {t : ℝ} (ht : 0 < t) :
-    (B t : ℂ) =
-      (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
-  apply Complex.ext <;> simp [B, φ₀''_imag_axis_div_im (t := t) ht, ψI'_imag_axis_im (t := t) ht]
-
 lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
     (B t : ℂ) * Real.exp (-π * u * t) =
       -(aAnotherIntegrand u t) +
         ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t +
           ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
-  simp [IntegralB.B_as_complex (t := t) ht, aAnotherIntegrand, bAnotherIntegrand,
-    mul_assoc, mul_left_comm, mul_comm]; ring_nf
+  have hB : (B t : ℂ) = (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
+      ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
+    apply Complex.ext <;> simp [B, φ₀''_imag_axis_div_im (t := t) ht, ψI'_imag_axis_im (t := t) ht]
+  simp [hB, aAnotherIntegrand, bAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm]; ring_nf
 
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => bAnotherIntegrand u t)
