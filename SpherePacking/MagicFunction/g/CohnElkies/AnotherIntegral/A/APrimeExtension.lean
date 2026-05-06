@@ -209,27 +209,21 @@ private lemma base₁_integral_differentiableAt {k : ℝ → ℂ} (u0 : ℂ) (K 
   differentiableAt_intervalIntegral_mul_exp u0 Cbase K
     base₁_continuousOn hk hbase_bound hk_bound
 
-lemma I₁'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₁'C u0 := by
+lemma I₁'C_differentiableOn : DifferentiableOn ℂ I₁'C rightHalfPlane := fun u _ => by
+  refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₁'C_eq] using
-    base₁_integral_differentiableAt u0 (2 * Real.pi) (by unfold k₁; fun_prop) k₁_bound
+    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₁; fun_prop) k₁_bound
 
-lemma I₃'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₃'C u0 := by
+lemma I₃'C_differentiableOn : DifferentiableOn ℂ I₃'C rightHalfPlane := fun u _ => by
+  refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₃'C_eq] using
-    base₁_integral_differentiableAt u0 (2 * Real.pi) (by unfold k₃; fun_prop) k₃_bound
+    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₃; fun_prop) k₃_bound
 
-lemma I₅'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₅'C u0 := by
+lemma I₅'C_differentiableOn : DifferentiableOn ℂ I₅'C rightHalfPlane := fun u _ => by
+  refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext fun u => by simpa [mul_assoc] using I₅'C_eq u, mul_assoc] using
-    (base₁_integral_differentiableAt u0 Real.pi (by unfold k₅; fun_prop) k₅_bound).const_mul
+    (base₁_integral_differentiableAt u Real.pi (by unfold k₅; fun_prop) k₅_bound).const_mul
       (-2 : ℂ)
-
-lemma I₁'C_differentiableOn : DifferentiableOn ℂ I₁'C rightHalfPlane :=
-  fun u _ => (I₁'C_differentiableAt u).differentiableWithinAt
-
-lemma I₃'C_differentiableOn : DifferentiableOn ℂ I₃'C rightHalfPlane :=
-  fun u _ => (I₃'C_differentiableAt u).differentiableWithinAt
-
-lemma I₅'C_differentiableOn : DifferentiableOn ℂ I₅'C rightHalfPlane :=
-  fun u _ => (I₅'C_differentiableAt u).differentiableWithinAt
 
 def arg₂ (t : ℝ) : ℂ := (-1 : ℂ) / ((t : ℂ) + (Complex.I : ℂ))
 def base₂ (t : ℝ) : ℂ := φ₀'' (arg₂ t) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))
@@ -328,9 +322,10 @@ private lemma base_pow_diffAt_of
             (pow_two_bound_of_norm_sub (d := d) hd_norm t ht) (norm_nonneg _) (by positivity)
         _ = 4 * Cφ := by ring) hk_bound
 
-lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
+lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane := fun u _ => by
+  refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₂'C_eq] using
-    base_pow_diffAt_of arg₂ (fun t => (t : ℂ) + (Complex.I : ℂ)) u0
+    base_pow_diffAt_of arg₂ (fun t => (t : ℂ) + (Complex.I : ℂ)) u
       (fun t => by simp [base₂])
       (by unfold base₂ arg₂; exact phi_div_pow_continuousOn (by fun_prop) (fun _ => by simp))
       (fun t => by simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ)))
@@ -338,9 +333,10 @@ lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
         simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
       (by unfold k₂; fun_prop) k₂_bound
 
-lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
+lemma I₄'C_differentiableOn : DifferentiableOn ℂ I₄'C rightHalfPlane := fun u _ => by
+  refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₄'C_eq] using
-    base_pow_diffAt_of arg₄ (fun t => -(t : ℂ) + (Complex.I : ℂ)) u0
+    base_pow_diffAt_of arg₄ (fun t => -(t : ℂ) + (Complex.I : ℂ)) u
       (fun t => by simp [base₄])
       ((show (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t:ℂ) + (Complex.I:ℂ)) ^ (2:ℕ))) = base₄
         from funext fun _ => by simp [base₄, arg₄]) ▸
@@ -350,12 +346,6 @@ lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
       (fun t htIoo => by
         simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
       (by unfold k₄; fun_prop) k₄_bound
-
-lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane :=
-  fun u _ => (I₂'C_differentiableAt u).differentiableWithinAt
-
-lemma I₄'C_differentiableOn : DifferentiableOn ℂ I₄'C rightHalfPlane :=
-  fun u _ => (I₄'C_differentiableAt u).differentiableWithinAt
 
 def base₆ (t : ℝ) : ℂ := (Complex.I : ℂ) * φ₀'' ((t : ℂ) * (Complex.I : ℂ))
 
