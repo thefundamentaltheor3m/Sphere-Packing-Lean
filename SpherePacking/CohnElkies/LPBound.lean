@@ -121,9 +121,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
         letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
         classical
-        rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
-          (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd]
-        simp_rw [tsum_fintype]
+        simp_rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
+          (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd, tsum_fintype]
         exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
           CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
           (by simp [PeriodicSpherePacking.numReps'])

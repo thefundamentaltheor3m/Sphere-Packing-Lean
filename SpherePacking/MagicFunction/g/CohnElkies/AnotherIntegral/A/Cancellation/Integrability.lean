@@ -141,10 +141,9 @@ lemma exists_phi0_cancellation_bound :
             simp [mul_assoc, Complex.norm_real, Real.norm_eq_abs,
               abs_of_nonneg ht0.le, abs_of_pos Real.pi_pos]
         _ ≤ (12 / π) * t * (C₂ * Real.exp (-2 * π * t)) := by gcongr
-        _ ≤ (12 / π) * (t ^ (2 : ℕ)) * (C₂ * Real.exp (-2 * π * t)) := by
-            simpa [mul_assoc] using mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right hle_t (mul_nonneg hC₂pos.le hexp0)) (by positivity)
-        _ = ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
+        _ ≤ ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+            nlinarith [mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hle_t
+              (mul_nonneg hC₂pos.le hexp0)) (show (0 : ℝ) ≤ 12 / π by positivity)]
     have hnorm3 :
         ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖ ≤
@@ -154,10 +153,9 @@ lemma exists_phi0_cancellation_bound :
           = (36 / (π ^ (2 : ℕ))) * ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ := by
             simp [Complex.norm_real, Real.norm_eq_abs]
         _ ≤ (36 / (π ^ (2 : ℕ))) * (C₄ * Real.exp (-2 * π * t)) := by gcongr
-        _ ≤ (36 / (π ^ (2 : ℕ))) * (t ^ (2 : ℕ)) * (C₄ * Real.exp (-2 * π * t)) := by
-            simpa [one_mul, mul_assoc] using mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right ht2 (mul_nonneg hC₄pos.le hexp0)) (by positivity)
-        _ = ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
+        _ ≤ ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+            nlinarith [mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right ht2
+              (mul_nonneg hC₄pos.le hexp0)) (show (0 : ℝ) ≤ 36 / (π ^ (2 : ℕ)) by positivity)]
     have htri : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
