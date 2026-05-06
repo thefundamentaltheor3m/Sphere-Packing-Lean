@@ -143,14 +143,6 @@ lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     φ₀''_sub_one (z := z) hz, φ₂''_sub_one (z := z) hz, φ₄''_sub_one (z := z) hz, pow_two]
   ring_nf
 
-lemma I₂'_zero_add_I₄'_zero :
-    IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 →
-    IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 →
-    I₂' (0 : ℝ) + I₄' 0 =
-      ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume := fun hF hG => by
-  simpa [I₂'_zero, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-    (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hF hG).symm
-
 lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
     IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 →
     IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 →
@@ -158,7 +150,10 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
       ∫ x in (0 : ℝ)..1,
         (φ₀'' (zI x) * ((2 : ℂ) * (zI x) - 1) - (12 * Complex.I) / π * φ₂'' (zI x))
           ∂MeasureTheory.volume := fun hF hG => by
-  rw [I₂'_zero_add_I₄'_zero hF hG]
+  rw [show I₂' (0 : ℝ) + I₄' 0 =
+      ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume from by
+    simpa [I₂'_zero, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hF hG).symm]
   exact intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun x _ => by
     simpa [zI] using F_sub_one (z := zI x) (by simp [zI])
 
@@ -169,15 +164,6 @@ lemma f0_differentiableOn : DifferentiableOn ℂ f0 {z : ℂ | 0 < z.im} := by
     (by fun_prop : Differentiable ℂ fun z : ℂ => (2:ℂ) * z - 1).differentiableOn
 lemma f0_continuousOn : ContinuousOn f0 {z : ℂ | 0 < z.im} := f0_differentiableOn.continuousOn
 
-private lemma norm_two_z_sub_one_le_two_im_add_one {z : ℂ}
-    (hz0 : 0 ≤ z.re) (hz1 : z.re ≤ 1) (hzIm : 0 ≤ z.im) :
-    ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
-  refine (Complex.norm_le_abs_re_add_abs_im _).trans ?_
-  rw [show ((2:ℂ) * z - 1).re = 2 * z.re - 1 by simp, show ((2:ℂ) * z - 1).im = 2 * z.im by simp,
-    abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * z.im)]
-  have : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
-  linarith
-
 lemma f0_norm_bound_on_strip :
     ∃ C₀ > 0, ∀ {z : ℂ}, 1 ≤ z.im → 0 ≤ z.re → z.re ≤ 1 →
       ‖f0 z‖ ≤ C₀ * (2 * z.im + 1) * Real.exp (-2 * π * z.im) := by
@@ -187,10 +173,16 @@ lemma f0_norm_bound_on_strip :
   have hφ : ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := by
     simpa [UpperHalfPlane.im, φ₀''_def (z := z) hzIm_pos] using hC₀ ⟨z, hzIm_pos⟩
       (by simpa [UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) hzIm)
+  have hnorm : ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
+    refine (Complex.norm_le_abs_re_add_abs_im _).trans ?_
+    rw [show ((2:ℂ) * z - 1).re = 2 * z.re - 1 by simp,
+      show ((2:ℂ) * z - 1).im = 2 * z.im by simp,
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * z.im)]
+    have : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
+    linarith
   calc ‖f0 z‖
       = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0]
-    _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by
-        gcongr; exact norm_two_z_sub_one_le_two_im_add_one hzRe0 hzRe1 hzIm_pos.le
+    _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by gcongr
     _ = C₀ * (2 * z.im + 1) * Real.exp (-2 * π * z.im) := by ring_nf
 
 private lemma vadd_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z + 1).im) :
@@ -227,44 +219,23 @@ lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     (Hc := by simpa using f0_continuousOn.mono (strip_uIcc_subset hm))
     (Hd := by simpa [hm] using f0_differentiableOn.mono strip_Ioo_subset)
 
-private lemma norm_phi0_imag_le {C₀ : ℝ}
-    (hC₀ : ∀ z : ℍ, (1/2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    {t : ℝ} (ht : t ∈ Set.Ioi (1 : ℝ)) :
-    ‖φ₀'' ((t : ℂ) * Complex.I)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
-  let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) ht.le⟩
-  simpa [zH, UpperHalfPlane.im] using (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) by
-    simpa [φ₀''_coe_upperHalfPlane] using hC₀ zH
-      (by simpa [zH, UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) ht.le))
-
-private lemma integrable_const_mul_exp_on_Ioi (C₀ : ℝ) :
-    MeasureTheory.Integrable (fun t : ℝ => C₀ * Real.exp (-2 * π * t))
-      (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
-  have : MeasureTheory.IntegrableOn (fun t : ℝ => Real.exp (-2 * π * t)) (Set.Ioi (1 : ℝ))
-      MeasureTheory.volume := by
-    simpa [mul_assoc] using
-      exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity)
-  simpa [MeasureTheory.IntegrableOn] using this.integrable.const_mul C₀
-
-private lemma aestronglyMeasurable_phi0_imag :
-    MeasureTheory.AEStronglyMeasurable (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I))
-      (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) :=
-  ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
-    (continuous_ofReal.mul continuous_const).continuousOn fun t ht => by
-      simpa [mul_assoc] using
-        (lt_of_lt_of_le (by norm_num) ht.le : (0:ℝ) < t)).aestronglyMeasurable measurableSet_Ioi
-
 lemma integrableOn_phi0_imag :
     MeasureTheory.IntegrableOn (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
       MeasureTheory.volume := by
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨C₀, _, hC₀⟩
-  exact MeasureTheory.Integrable.mono' (integrable_const_mul_exp_on_Ioi C₀)
-    aestronglyMeasurable_phi0_imag (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi
-      fun t ht => by simpa using norm_phi0_imag_le hC₀ ht)
-
-lemma integrableOn_two_mul_phi0_imag :
-    MeasureTheory.IntegrableOn (fun t : ℝ => (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I))
-      (Set.Ioi (1 : ℝ)) MeasureTheory.volume := by
-  simpa [MeasureTheory.IntegrableOn] using integrableOn_phi0_imag.const_mul (2 : ℂ)
+  refine MeasureTheory.Integrable.mono' (g := fun t : ℝ => C₀ * Real.exp (-2 * π * t))
+    (by simpa [MeasureTheory.IntegrableOn, mul_assoc] using
+      (exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi))
+        (by positivity)).integrable.const_mul C₀)
+    (((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
+      (continuous_ofReal.mul continuous_const).continuousOn fun t ht => by
+        simpa [mul_assoc] using
+          (lt_of_lt_of_le (by norm_num) ht.le : (0:ℝ) < t)).aestronglyMeasurable measurableSet_Ioi)
+    (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_)
+  let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) ht.le⟩
+  simpa [zH, UpperHalfPlane.im] using (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) by
+    simpa [φ₀''_coe_upperHalfPlane] using hC₀ zH
+      (by simpa [zH, UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) ht.le))
 
 private lemma norm_integral_f0_strip_le {C₀ : ℝ}
     (hC₀ : ∀ {z : ℂ}, 1 ≤ z.im → 0 ≤ z.re → z.re ≤ 1 →
@@ -289,8 +260,7 @@ private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
   have hmain : Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m))
       atTop (𝓝 (0 : ℝ)) := by
     have := (hmul.const_mul 2).add hexp
-    simp only [mul_zero, add_zero] at this
-    exact this.congr' (Eventually.of_forall fun m => by ring_nf)
+    simpa using this.congr' (Eventually.of_forall fun m => by ring_nf)
   simpa [mul_assoc] using hmain.const_mul C₀
 
 lemma tendsto_top_f0 :
@@ -341,7 +311,8 @@ lemma integral_f0_height_one_eq_neg_I6 :
   set bottom : ℂ := ∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)
   have hVert := MeasureTheory.intervalIntegral_tendsto_integral_Ioi (μ := MeasureTheory.volume)
     (f := fun y : ℝ => (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) (a := (1 : ℝ))
-    (hfi := integrableOn_two_mul_phi0_imag) (hb := tendsto_id)
+    (hfi := by simpa [MeasureTheory.IntegrableOn] using
+      integrableOn_phi0_imag.const_mul (2 : ℂ)) (hb := tendsto_id)
   have hA0 : bottom + Complex.I • J = 0 := tendsto_nhds_unique
     ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
       filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
@@ -386,12 +357,6 @@ lemma summable_coeff_A_over_q :
   SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
     fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
 
-private lemma cexp_pnat_succ_factor (z : ℂ) (n : ℕ) :
-    cexp (2 * π * Complex.I * z * ((n + 1 : ℕ) : ℂ)) =
-      cexp (2 * π * Complex.I * z) * cexp (2 * π * Complex.I * z * (n : ℂ)) := by
-  rw [show ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring,
-    mul_add, mul_one, Complex.exp_add]; ring
-
 private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
     (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
     (∑' (n : ℕ+),
@@ -407,7 +372,12 @@ private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
     simpa using tsum_pnat_eq_tsum_succ (f := fun n : ℕ =>
       ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
         cexp (2 * π * Complex.I * (z : ℂ)))]
-  exact tsum_congr fun n => by rw [cexp_pnat_succ_factor, hrel]; field_simp
+  refine tsum_congr fun n => ?_
+  rw [show cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) =
+      cexp (2 * π * Complex.I * (z : ℂ)) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) from by
+    rw [show ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring,
+      mul_add, mul_one, Complex.exp_add]; ring, hrel]
+  field_simp
 
 private lemma A_div_q_eq_nat_tsum (z : ℍ)
     (a : ℕ → ℂ) (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
