@@ -28,28 +28,28 @@ private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
   ((by simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn :
     ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im})).comp
     (continuous_const.continuousOn.div continuous_ofReal.continuousOn
-      fun t ht => by exact_mod_cast (hs t ht).ne')
+      fun t ht => mod_cast (hs t ht).ne')
     fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+
+/-- Internal abbreviation for the cancellation integrand on the imaginary axis. -/
+private def cancelExpr (t : ℝ) : ℂ :=
+  ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+    ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+    ((8640 / π : ℝ) : ℂ) * t -
+    ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
 
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-        ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-          C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+        ‖cancelExpr t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
   rcases norm_φ₀_imag_le with ⟨C₀, hC₀pos, hφ₀⟩
   rcases exists_phi2'_sub_720_bound_ge with ⟨C₂, A₂, hC₂pos, hA₂, hφ₂⟩
   rcases exists_phi4'_sub_exp_sub_504_bound_ge with ⟨C₄, A₄, hC₄pos, hA₄, hφ₄⟩
   let A : ℝ := max A₂ A₄
   have hrewrite :
       ∀ {t : ℝ} (ht0 : 0 < t),
-        (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) =
+        cancelExpr t =
           (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (zI t ht0) -
               ((12 / π : ℝ) : ℂ) * t * (φ₂' (zI t ht0) - (720 : ℂ)) +
               ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
@@ -59,8 +59,8 @@ lemma exists_phi0_cancellation_bound :
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; rw [mul_pow]; simp
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
-        simpa [z] using modular_S_smul_zI t ht0]; simp [zI, div_eq_mul_inv]
+      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) from modular_S_smul_zI t ht0]
+      simp [zI, div_eq_mul_inv]
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
@@ -93,22 +93,14 @@ lemma exists_phi0_cancellation_bound :
             (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
       simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) by
         simpa using congrArg φ₀'' hcoe.symm] using hST'
-    push_cast; linear_combination hSTpow
+    unfold cancelExpr; push_cast; linear_combination hSTpow
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
-  obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A →
-      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤ M := by
-    let g : ℝ → ℝ := fun t =>
-      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
+  obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A → ‖cancelExpr t‖ ≤ M := by
+    let g : ℝ → ℝ := fun t => ‖cancelExpr t‖
     obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn (s := Set.Icc (1 : ℝ) A)
       ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩
       (show ContinuousOn g (Set.Icc (1 : ℝ) A) by
-        simpa [g] using (((((by fun_prop :
+        simpa [g, cancelExpr] using (((((by fun_prop :
           ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
           (continuousOn_phi0''_Idiv fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).sub
           (by fun_prop)).add (by fun_prop)).sub (by fun_prop)).norm)
@@ -155,19 +147,12 @@ lemma exists_phi0_cancellation_bound :
         _ ≤ ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
             nlinarith [mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right ht2
               (mul_nonneg hC₄pos.le hexp0)) (show (0 : ℝ) ≤ 36 / (π ^ (2 : ℕ)) by positivity)]
-    have htri : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-        Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+    have htri : ‖cancelExpr t‖ ≤ Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       set x : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z
       set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
       set z' : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
         (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
-      rw [show (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' by simpa [x, y, z'] using hrewrite ht0]
+      rw [show cancelExpr t = x - y + z' by simpa [x, y, z'] using hrewrite ht0]
       refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])).trans
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
@@ -215,13 +200,11 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         (by simpa using mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
           (by nlinarith [Real.pi_pos, (z.2).le])) hCφ₀_pos.le)
   have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht.1.le, ht.2]
-  have hbr : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-          ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
+  have hbr : ‖cancelExpr t‖ ≤
       (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
         ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
         ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
+    unfold cancelExpr
     set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
     set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
     set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
@@ -240,12 +223,8 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
     linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
       (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
-  have hmul : ‖aAnotherIntegrand u t‖ ≤
-      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-            ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
-    simpa [aAnotherIntegrand, norm_mul, mul_assoc] using mul_le_mul_of_nonneg_left
+  have hmul : ‖aAnotherIntegrand u t‖ ≤ ‖cancelExpr t‖ := by
+    simpa [cancelExpr, aAnotherIntegrand, norm_mul, mul_assoc] using mul_le_mul_of_nonneg_left
       (by rw [norm_ofReal_exp]; exact Real.exp_le_one_iff.2 (by
         nlinarith [mul_nonneg (mul_nonneg Real.pi_pos.le hu.le) ht.1.le]) :
         ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1) (norm_nonneg _)
@@ -259,8 +238,8 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     rw [show C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) =
       (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) by
         rw [mul_assoc (C * _), ← Real.exp_add]; ring_nf]
-    simpa [-Complex.ofReal_exp, aAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm] using
-      mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
+    simpa [-Complex.ofReal_exp, cancelExpr, aAnotherIntegrand, mul_assoc, mul_left_comm,
+        mul_comm] using mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
