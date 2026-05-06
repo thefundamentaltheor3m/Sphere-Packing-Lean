@@ -112,13 +112,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       bContourWeight_add, mul_comm, mul_left_comm]
   have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     intro ε hε
-    rcases Filter.eventually_atTop.1
-      ((show Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) by
-        simpa [mul_assoc] using tendsto_const_nhds.mul
-          (Real.tendsto_exp_neg_atTop_nhds_zero.comp
-            (by simpa [mul_assoc, mul_comm, mul_left_comm] using
-              tendsto_id.const_mul_atTop (mul_pos Real.pi_pos
-                (sub_pos.2 hu))))).eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
+    have htend : Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
+      simpa [mul_assoc] using tendsto_const_nhds.mul
+        (Real.tendsto_exp_neg_atTop_nhds_zero.comp
+          (by simpa [mul_assoc, mul_comm, mul_left_comm] using
+            tendsto_id.const_mul_atTop (mul_pos Real.pi_pos (sub_pos.2 hu))))
+    rcases Filter.eventually_atTop.1 (htend.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
     refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
     have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
       (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
