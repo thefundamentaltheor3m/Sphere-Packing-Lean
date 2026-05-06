@@ -279,29 +279,6 @@ lemma k₄_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₄ t‖ ≤ (3 * Real.pi) := f
     show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
     k_bound_three_pi (s₁ := 1) (s₂ := -1) (by norm_num) (by norm_num) t ht
 
-/-- Shared `‖d t ^ 2‖ ≤ 4` bound where `‖d t‖ ≤ ‖t‖ + 1`. -/
-private lemma pow_two_bound_of_norm_sub {d : ℝ → ℂ}
-    (hd : ∀ t : ℝ, ‖d t‖ ≤ ‖(t : ℂ)‖ + 1) :
-    ∀ t ∈ Ι (0 : ℝ) 1, ‖(d t) ^ (2 : ℕ)‖ ≤ 4 := fun t ht => by
-  have hnorm : ‖d t‖ ≤ 2 := (hd t).trans (by linarith [norm_of_mem_uIoc_le_one ht])
-  calc ‖(d t) ^ (2 : ℕ)‖
-      = ‖d t‖ ^ (2 : ℕ) := by simp
-    _ ≤ (2 : ℝ) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
-    _ = 4 := by norm_num
-
-/-- Shared argument to bound `base` for pieces 2 and 4 on `Ι 0 1`.
-Requires `im_lower t` witnessing `1/2 < (arg t).im` for `t ∈ Ioo 0 1`. -/
-private lemma phi_on_arg_bounded
-    (arg : ℝ → ℂ) (C₀ : ℝ) (hC₀_nonneg : 0 ≤ C₀)
-    (hC₀ : ∀ z : ℍ, 1 / 2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (him : ∀ t ∈ Set.Ioo (0 : ℝ) 1, (1 / 2 : ℝ) < (arg t).im) :
-    ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg t)‖ ≤ max C₀ ‖φ₀'' (arg 1)‖ := fun t ht => by
-  by_cases ht1 : t = 1
-  · exact ht1 ▸ le_max_right _ _
-  · have hh := him t ⟨by simpa using ht.1, lt_of_le_of_ne (by simpa using ht.2) ht1⟩
-    exact (norm_φ₀''_le_of_half_lt hC₀_nonneg hC₀ (one_half_pos.trans hh) hh).trans
-      (le_max_left _ _)
-
 /-- Shared differentiability wrapper for I₂/I₄. -/
 private lemma base_pow_diffAt_of
     {base k : ℝ → ℂ} (arg d : ℝ → ℂ) (u0 : ℂ)
@@ -315,12 +292,22 @@ private lemma base_pow_diffAt_of
       ∫ t in (0 : ℝ)..1, base t * Complex.exp (u * k t)) u0 := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   set Cφ : ℝ := max C₀ ‖φ₀'' (arg 1)‖
-  exact differentiableAt_intervalIntegral_mul_exp u0 (4 * Cφ) (3 * Real.pi)
-    hbase_cont hk_cont (fun t ht => (hbase_eq t).le.trans <| by
-      calc ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖
-          ≤ Cφ * 4 := mul_le_mul (phi_on_arg_bounded arg C₀ hC₀_pos.le hC₀ him t ht)
-            (pow_two_bound_of_norm_sub (d := d) hd_norm t ht) (norm_nonneg _) (by positivity)
-        _ = 4 * Cφ := by ring) hk_bound
+  refine differentiableAt_intervalIntegral_mul_exp u0 (4 * Cφ) (3 * Real.pi)
+    hbase_cont hk_cont (fun t ht => (hbase_eq t).le.trans ?_) hk_bound
+  have hphi : ‖φ₀'' (arg t)‖ ≤ Cφ := by
+    by_cases ht1 : t = 1
+    · exact ht1 ▸ le_max_right _ _
+    · have hh := him t ⟨by simpa using ht.1, lt_of_le_of_ne (by simpa using ht.2) ht1⟩
+      exact (norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ (one_half_pos.trans hh) hh).trans
+        (le_max_left _ _)
+  have hpow : ‖(d t) ^ (2 : ℕ)‖ ≤ 4 := by
+    have hnorm : ‖d t‖ ≤ 2 := (hd_norm t).trans (by linarith [norm_of_mem_uIoc_le_one ht])
+    calc ‖(d t) ^ (2 : ℕ)‖ = ‖d t‖ ^ (2 : ℕ) := by simp
+      _ ≤ (2 : ℝ) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+      _ = 4 := by norm_num
+  calc ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖
+      ≤ Cφ * 4 := mul_le_mul hphi hpow (norm_nonneg _) (by positivity)
+    _ = 4 * Cφ := by ring
 
 lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
