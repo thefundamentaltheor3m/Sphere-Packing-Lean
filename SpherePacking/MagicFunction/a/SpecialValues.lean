@@ -421,26 +421,6 @@ lemma tendsto_phi2'_atImInfty :
   simpa [φ₂', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, one_mul] using
     SpherePacking.ModularForms.tendsto_E₄_atImInfty.mul tendsto_A_over_Delta
 
-private lemma norm_phi2_strip_bound_le {ε : ℝ} {A m : ℝ}
-    (hA : ∀ z : ℍ, A ≤ z.im → ‖φ₂' z - (720 : ℂ)‖ < ε / 2) (hmA : A ≤ m) (hm0 : 0 < m) :
-    ∀ x ∈ Ι (0 : ℝ) 1, ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := fun x _ => by
-  let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
-  simpa [zH, mul_assoc, show φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH from by
-    simpa [zH] using (φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0))]
-    using le_of_lt (hA zH (by simpa [zH, UpperHalfPlane.im, Complex.add_im] using hmA))
-
-private lemma intervalIntegrable_phi2_strip {m : ℝ} (hm : 0 < m) :
-    IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I)) MeasureTheory.volume 0 1 := by
-  simpa using (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.comp
-    (continuous_ofReal.add continuous_const).continuousOn
-    (fun x _ => by simpa [Complex.add_im] using hm)).intervalIntegrable
-
-private lemma integral_phi2_sub_720 {m : ℝ} (hm : 0 < m) :
-    (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
-      ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by
-  simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
-    (intervalIntegrable_phi2_strip hm) (intervalIntegrable_const (c := (720 : ℂ)))).symm
-
 lemma tendsto_top_phi2 :
     Tendsto (fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) atTop (𝓝 (720 : ℂ)) := by
   refine Metric.tendsto_atTop.2 fun ε hε => ?_
@@ -448,11 +428,27 @@ lemma tendsto_top_phi2 :
     (tendsto_phi2'_atImInfty (Metric.ball_mem_nhds (720 : ℂ) (half_pos hε))) with ⟨A, hA⟩
   refine ⟨max A 1, fun m hm => ?_⟩
   have hm0 : 0 < m := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans hm)
+  have hII : IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I))
+      MeasureTheory.volume 0 1 := by
+    simpa using (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.comp
+      (continuous_ofReal.add continuous_const).continuousOn
+      (fun x _ => by simpa [Complex.add_im] using hm0)).intervalIntegrable
+  have hsub : (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
+      ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by
+    simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hII
+      (intervalIntegrable_const (c := (720 : ℂ)))).symm
+  have hbound : ∀ x ∈ Ι (0 : ℝ) 1,
+      ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := fun x _ => by
+    let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
+    simpa [zH, mul_assoc, show φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH from by
+      simpa [zH] using (φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0))]
+      using le_of_lt (hA zH (by simpa [zH, UpperHalfPlane.im, Complex.add_im] using
+        ((le_max_left _ _).trans hm)))
   simpa [Metric.ball, dist_eq_norm] using lt_of_le_of_lt
     (show ‖(∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ)‖ ≤ ε / 2 by
-      simpa [integral_phi2_sub_720 hm0] using
-        intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
-          (norm_phi2_strip_bound_le hA ((le_max_left _ _).trans hm) hm0)) (half_lt_self hε)
+      simpa [hsub] using
+        intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ)) hbound)
+    (half_lt_self hε)
 
 lemma integral_phi2_height_one :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) := by
