@@ -60,9 +60,8 @@ private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
 
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) :=
-  ((((aAnotherIntegrand_integrable_of_pos hu).neg.add
-    ((integrable_bAnother hu).const_mul _)).add
-      ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul _)).sub
+  ((((aAnotherIntegrand_integrable_of_pos hu).neg.add ((integrable_bAnother hu).const_mul _)).add
+    ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul _)).sub
     ((integrableOn_exp_neg_pi_mul_Ioi_complex hu).const_mul _)).congr <|
   MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
