@@ -13,7 +13,6 @@ import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import Mathlib.Analysis.SpecificLimits.Basic
 
-
 /-!
 # Integral representation for `𝓕 g`
 
