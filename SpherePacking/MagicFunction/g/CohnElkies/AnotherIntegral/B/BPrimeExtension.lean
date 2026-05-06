@@ -135,14 +135,11 @@ lemma exists_bound_norm_ψT'_z₂' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z
 lemma exists_bound_norm_ψT'_z₄' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₄' t)‖ ≤ M := by
   simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₄' continuous_z₄' im_z₄'_pos_all
 
-private lemma norm_add_I_mul_le_two (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (ha : ‖a‖ = 1) :
-    ‖a + (Complex.I : ℂ) * (t : ℂ)‖ ≤ 2 := by
-  have h := norm_add_le a ((Complex.I : ℂ) * (t : ℂ))
-  simp [ha, Complex.norm_real, abs_of_nonneg ht.1] at h; linarith [ht.2]
-
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
-  simpa [hz] using norm_add_I_mul_le_two (1 : ℂ) t ht (by simp)
+  rw [hz]
+  have h := norm_add_le (1 : ℂ) ((Complex.I : ℂ) * (t : ℂ))
+  simp [Complex.norm_real, abs_of_nonneg ht.1] at h; linarith [ht.2]
 
 private lemma norm_add_I_le_three (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
     (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 := by
