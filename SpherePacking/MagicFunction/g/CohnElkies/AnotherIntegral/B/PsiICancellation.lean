@@ -56,14 +56,6 @@ public lemma psiI'_mul_I_eq_resToImagAxis (t : ℝ) (ht : 0 < t) :
     ψI' (Complex.I * (t : ℂ)) = ψI.resToImagAxis t := by
   simp [ψI', Function.resToImagAxis, ResToImagAxis, ht]
 
-lemma psiI_resToImagAxis_eq (t : ℝ) (ht : 0 < t) :
-    ψI.resToImagAxis t =
-      (128 : ℂ) *
-          (((H₃.resToImagAxis t + H₄.resToImagAxis t) / (H₂.resToImagAxis t) ^ (2 : ℕ)) +
-            ((H₄.resToImagAxis t - H₂.resToImagAxis t) / (H₃.resToImagAxis t) ^ (2 : ℕ))) := by
-  simpa [Function.resToImagAxis, ResToImagAxis, ht, nsmul_eq_mul, div_eq_mul_inv, mul_add, add_mul]
-    using congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht⟩) ψI_eq
-
 /--
 Cancellation estimate for `ψI'(it)` on `t ≥ 1`.
 
@@ -208,7 +200,11 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
           ((128 : ℂ) * (z * w) - (128 : ℂ))‖ := by
         rw [show ((Real.exp (2 * π * t) : ℝ) : ℂ) = (e : ℂ) from rfl,
           psiI'_mul_I_eq_resToImagAxis t ht0, show ψI.resToImagAxis t =
-            (128 : ℂ) * (x * y + z * w) from psiI_resToImagAxis_eq t ht0, ← hdecomp]; congr 1; ring
+            (128 : ℂ) * (x * y + z * w) by
+          simpa [Function.resToImagAxis, ResToImagAxis, ht0, nsmul_eq_mul, div_eq_mul_inv,
+            mul_add, add_mul, x, y, z, w] using
+              congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht0⟩) ψI_eq,
+          ← hdecomp]; congr 1; ring
     _ ≤ _ + _ := norm_add_le _ _
     _ ≤ ((128 : ℝ) * (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
           ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) := by
