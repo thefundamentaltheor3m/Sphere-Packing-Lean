@@ -314,11 +314,9 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
       calc ‖F' u t‖
           = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by simp [F', mul_assoc]
         _ ≤ Mψ * ((Real.pi * t) * Real.exp (-b * t)) := by
-            have h1 : ‖k t‖ * ‖Complex.exp (u * k t)‖ ≤ (Real.pi * t) * Real.exp (-b * t) :=
-              mul_le_mul (le_of_eq hk_norm) hexp_le (norm_nonneg _)
-                (mul_nonneg Real.pi_pos.le ht0)
             simpa [mul_assoc, mul_left_comm, mul_comm] using
-              (mul_le_mul_of_nonneg_left h1 (norm_nonneg (base t))).trans
+              (mul_le_mul_of_nonneg_left (mul_le_mul (le_of_eq hk_norm) hexp_le (norm_nonneg _)
+                (mul_nonneg Real.pi_pos.le ht0)) (norm_nonneg (base t))).trans
                 (mul_le_mul_of_nonneg_right (hbase_bound t ht) (by positivity))
         _ = bound t := by simp [bound, mul_assoc, mul_left_comm, mul_comm]
   have h_diff : ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε,
