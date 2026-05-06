@@ -14,7 +14,6 @@ public import Mathlib.Topology.EMetricSpace.Paracompact
 
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
-
 /-!
 # Density of Sphere Packings
 
