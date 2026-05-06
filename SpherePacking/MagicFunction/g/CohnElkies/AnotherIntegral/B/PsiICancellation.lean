@@ -113,14 +113,11 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
     exp_neg_scaled_pi_le 5 (by norm_num) ht0'
   have hu_le : u ≤ Real.exp (-Real.pi * t) := hle2
   have heu : (e : ℂ) * (u : ℂ) = 1 := by exact_mod_cast (by simp [e, u, ← Real.exp_add] : e * u = 1)
-  have hxy0_main :
-      (128 : ℂ) * (x0 * y0) = (e : ℂ) + (16 : ℂ) - (192 : ℂ) * (u : ℂ) := by
-    simp [x0, y0]; linear_combination 24 * heu
   have hx0_bound : ‖x0‖ ≤ 50 := by
     have hu : 0 ≤ u := (Real.exp_pos _).le
-    have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'])
     linarith [show ‖x0‖ ≤ 2 + 48 * u from by
-      simpa [x0, abs_of_nonneg hu] using norm_add_le (2 : ℂ) ((48 : ℂ) * (u : ℂ))]
+      simpa [x0, abs_of_nonneg hu] using norm_add_le (2 : ℂ) ((48 : ℂ) * (u : ℂ)),
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0'] : -(2 : ℝ) * Real.pi * t ≤ 0)]
   have hy0_bound : ‖y0‖ ≤ (e / 256) + (1 / 32) := by
     have he : 0 ≤ e := (Real.exp_pos _).le
     simpa [y0, RCLike.norm_ofReal, Real.norm_eq_abs, abs_of_nonneg he,
@@ -183,7 +180,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
         mul_le_mul_of_nonneg_left hu_le (by norm_num : (0:ℝ) ≤ 192)
     rw [show (128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ) =
         (128 : ℂ) * ((x - x0) * y0 + x0 * (y - y0) + (x - x0) * (y - y0)) -
-          (192 : ℂ) * (u : ℂ) from by grind only]
+          (192 : ℂ) * (u : ℂ) from by simp [x0, y0]; linear_combination 24 * heu]
     set Kxy : ℝ := (Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2) with hKxy
     have hS : ‖(x - x0) * y0 + x0 * (y - y0) + (x - x0) * (y - y0)‖ ≤
         Kxy * Real.exp (-Real.pi * t) := by
