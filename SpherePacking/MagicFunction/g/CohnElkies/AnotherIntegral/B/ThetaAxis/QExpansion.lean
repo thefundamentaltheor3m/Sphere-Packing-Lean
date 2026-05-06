@@ -271,14 +271,13 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
   set a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
   obtain ⟨hjac, hshift⟩ := jacobiTheta_setup (τ := τ) (by simpa [τ] using htpos)
   have ha0 : a 0 = - (Real.exp (-Real.pi * t) : ℂ) := by
-    calc a 0 = Complex.exp (Real.pi * Complex.I * ((Complex.I : ℂ) * t)) *
-            Complex.exp (Real.pi * Complex.I) := by
-          rw [← Complex.exp_add]; simp [a, pow_two, τ, mul_assoc, mul_left_comm, mul_comm]; ring_nf
-      _ = - (Real.exp (-Real.pi * t) : ℂ) := by
-          rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) by
-            rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
-              (Real.pi : ℂ) * (Complex.I * Complex.I) * (t : ℂ) by ring,
-              Complex.I_mul_I]; push_cast; ring, Complex.exp_pi_mul_I]; simp
+    have h1 : a 0 = Complex.exp (Real.pi * Complex.I * ((Complex.I : ℂ) * t)) *
+        Complex.exp (Real.pi * Complex.I) := by
+      rw [← Complex.exp_add]; simp [a, pow_two, τ, mul_assoc, mul_left_comm, mul_comm]; ring_nf
+    rw [h1, show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) by
+      rw [show (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) =
+        (Real.pi : ℂ) * (Complex.I * Complex.I) * (t : ℂ) by ring, Complex.I_mul_I]
+      push_cast; ring, Complex.exp_pi_mul_I]; simp
   rw [show Θ₄.resToImagAxis t - (1 : ℂ) + (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) =
       (2 : ℂ) * ∑' n : ℕ, a (n + 1) from by
     rw [show Θ₄.resToImagAxis t = jacobiTheta τ by
