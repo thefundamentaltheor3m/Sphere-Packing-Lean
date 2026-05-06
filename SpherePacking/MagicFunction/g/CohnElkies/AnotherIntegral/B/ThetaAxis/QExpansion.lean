@@ -227,8 +227,7 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
   rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) from by simp,
     show (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) =
       (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]
-  gcongr
-  exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(4 : ℝ) * Real.pi * t))) hterm
+  gcongr; exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(4 : ℝ) * Real.pi * t))) hterm
 
 /-- Setup for Θ₃/Θ₄ `q`-expansion: q-series identity and shift. -/
 private lemma jacobiTheta_setup {τ : ℂ} (hτ : 0 < τ.im) :
