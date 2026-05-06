@@ -119,17 +119,15 @@ lemma exists_bound_norm_ψI'_z₅' :
     (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ))
     ((norm_nonneg (ψS.resToImagAxis 1)).trans (hM 1 (by norm_num)))
 
-lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
-  obtain ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
-  exact ⟨M, fun t ht => by
+lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M :=
+  exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
     simpa [MagicFunction.b.PsiParamRelations.ψT'_z₁'_eq_ψI'_z₅' (t := t)
-      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht⟩
+      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
 
-lemma exists_bound_norm_ψT'_z₃' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M := by
-  obtain ⟨M, hM⟩ := exists_bound_norm_ψI'_z₅'
-  exact ⟨M, fun t ht => by
+lemma exists_bound_norm_ψT'_z₃' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M :=
+  exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
     simpa [MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t)
-      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht⟩
+      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
 
 lemma exists_bound_norm_ψT'_z₂' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
   simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₂' continuous_z₂' im_z₂'_pos_all
@@ -284,10 +282,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
       simp [Complex.norm_exp, mul_re, show (k t).re = -Real.pi * t by simp [k],
         show (k t).im = 0 by simp [k], b, mul_left_comm, mul_comm]
-    calc ‖F u0 t‖ = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ := by simp [F]
-      _ ≤ Mψ * Real.exp (-b * t) := by
-          simpa [hexp] using
-            mul_le_mul_of_nonneg_right (hbase_bound t ht) (norm_nonneg (Complex.exp (u0 * k t)))
+    rw [show ‖F u0 t‖ = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ by simp [F], hexp]
+    exact mul_le_mul_of_nonneg_right (hbase_bound t ht) (Real.exp_pos _).le
   let ε : ℝ := u0.re / 2
   have ε_pos : 0 < ε := div_pos hu0re (by norm_num)
   let b : ℝ := Real.pi * ε
