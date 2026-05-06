@@ -63,9 +63,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
       (bLaplaceIntegral_convergent (u := u) hu).neg
     simpa [bContourIntegrandI_mul_I_eq_bLaplaceIntegrand] using hneg
+  rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
   have hintT_center : IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
       (Set.Ioi (1 : ℝ)) := by
-    rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
     let A : ℝ := max 1 Aψ
     let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
     have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
@@ -111,7 +111,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
   have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
-    rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
     intro ε hε
     rcases Filter.eventually_atTop.1
       ((show Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) by
