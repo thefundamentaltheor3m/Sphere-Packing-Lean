@@ -247,9 +247,8 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
       hD_unique_covers] at hCalc
     have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := ENNReal.coe_ne_zero.mpr <| by
-      rw [ne_eq, Real.toNNReal_eq_zero, not_le]
-      exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f <|
-        Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
+      rw [ne_eq, Real.toNNReal_eq_zero, not_le]; exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq =>
+        h𝓕f <| Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
     haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
       nonempty_quotient_iff _ |>.2 ‹_›
     rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
