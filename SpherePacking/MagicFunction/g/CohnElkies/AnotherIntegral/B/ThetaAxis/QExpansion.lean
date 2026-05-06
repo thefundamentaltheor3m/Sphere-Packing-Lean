@@ -155,10 +155,9 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       ((summable_jacobiTheta₂_term_iff (z := (τ : ℂ) / 2) (τ := (τ : ℂ))).2
         (by simpa using τ.im_pos)).mul_left (Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4))
   have hf : Summable f := hsumZ.comp_injective Nat.cast_injective
-  have hshift : (∑' n : ℕ, f n) - (f 0 + f 1) = ∑' n : ℕ, f (n + 2) :=
-    (sub_eq_iff_eq_add).2 <| by
-      simpa [Finset.range_add_one, add_comm, add_left_comm, add_assoc] using
-        (Summable.sum_add_tsum_nat_add (k := 2) hf).symm
+  have hshift : (∑' n : ℕ, f n) - (f 0 + f 1) = ∑' n : ℕ, f (n + 2) := sub_eq_iff_eq_add.2 <| by
+    simpa [Finset.range_add_one, add_comm, add_left_comm, add_assoc] using
+      (Summable.sum_add_tsum_nat_add (k := 2) hf).symm
   have hf_eq (c : ℝ) (n : ℕ) (h : Real.pi * Complex.I * (((n : ℂ) + 1 / 2) ^ 2 * (τ : ℂ)) =
       ((c : ℝ) : ℂ)) : f n = (Real.exp c : ℂ) := by
     unfold f Θ₂_term; rw [Complex.ofReal_exp c]
