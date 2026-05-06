@@ -259,9 +259,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     fun u => ContinuousOn.cexp (continuousOn_const.mul hk_cont)
   have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ := .of_forall fun u => by
     simpa [μ] using ((hcont_base.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
-  have hF'_meas : AEStronglyMeasurable (F' u0) μ := by
-    simpa [F', μ, mul_assoc] using ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable
-      (μ := volume) measurableSet_Ici
+  have hF'_meas : AEStronglyMeasurable (F' u0) μ := by simpa [F', μ, mul_assoc] using
+    ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable (μ := volume) measurableSet_Ici
   obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
   have hbase_bound : ∀ t : ℝ, 1 ≤ t → ‖base t‖ ≤ Mψ := fun t ht => by
     simpa [base, norm_mul] using mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ))
