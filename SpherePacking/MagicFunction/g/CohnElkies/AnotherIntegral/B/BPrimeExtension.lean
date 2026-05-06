@@ -331,19 +331,17 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     funext u
     simp only [J₆'C, μ]
     have hμ : (∫ t, F u t ∂μIciOne) = ∫ t in Set.Ici (1 : ℝ), F u t := by simp [μIciOne]
-    have hInt : (∫ t in Set.Ici (1 : ℝ), F u t) = ∫ t in Set.Ici (1 : ℝ),
-        (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t)) := by
-      refine MeasureTheory.integral_congr_ae <|
-        (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
-      have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
-      have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
-        simpa [hz] using hψS'_eq t ht
-      have hIexp : Complex.I * (Complex.I * (↑t * ↑π)) = -(↑t * ↑π) := by
-        rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
-      have hIexp' : u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
-            -(u * ((t : ℂ) * (π : ℂ))) := by simp [hIexp]
-      simp [F, base, k, hz, hψ', hIexp', mul_left_comm, mul_comm]
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (hμ.trans hInt)
+    rw [hμ]
+    refine congrArg ((-2 : ℂ) * ·) (MeasureTheory.integral_congr_ae <|
+      (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
+    have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
+    have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
+      simpa [hz] using hψS'_eq t ht
+    have hIexp : Complex.I * (Complex.I * (↑t * ↑π)) = -(↑t * ↑π) := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
+    have hIexp' : u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
+          -(u * ((t : ℂ) * (π : ℂ))) := by simp [hIexp]
+    simp [F, base, k, hz, hψ', hIexp', mul_left_comm, mul_comm]
   exact (hEq ▸ (h.2.differentiableAt.const_mul (-2 : ℂ)) : DifferentiableAt ℂ J₆'C u0)
     |>.differentiableWithinAt
 
