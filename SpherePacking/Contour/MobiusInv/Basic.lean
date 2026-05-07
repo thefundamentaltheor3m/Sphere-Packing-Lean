@@ -19,11 +19,6 @@ noncomputable section
 /-- The Mobius inversion map `z ↦ -z⁻¹`. -/
 @[expose] public def mobiusInv (z : ℂ) : ℂ := -z⁻¹
 
-/-- If `z` is in the upper half-plane, then so is `mobiusInv z`. -/
-public lemma mobiusInv_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (mobiusInv z).im := by
-  simpa [mobiusInv, Complex.inv_im, div_eq_mul_inv] using
-    div_pos hz (Complex.normSq_pos.2 fun hz0 => hz.ne' (by simp [hz0]))
-
 /-- Complex derivative of `mobiusInv`. -/
 public lemma deriv_mobiusInv (z : ℂ) : deriv mobiusInv z = (1 : ℂ) / z ^ (2 : ℕ) := by
   simp [show mobiusInv = (fun z : ℂ => -z⁻¹) from rfl, deriv_inv, div_eq_mul_inv]

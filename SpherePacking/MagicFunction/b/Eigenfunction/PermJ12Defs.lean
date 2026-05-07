@@ -37,7 +37,9 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
     (eq_div_iff (pow_ne_zero 2 hz0)).2 <| by
       simpa using (modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH)).symm.trans
         (congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψT_slash_S)
-  have hz' : 0 < (mobiusInv z).im := mobiusInv_im_pos z hz
+  have hz' : 0 < (mobiusInv z).im := by
+    simpa [mobiusInv, Complex.inv_im, div_eq_mul_inv] using
+      div_pos hz (Complex.normSq_pos.2 fun hz0 => hz.ne' (by simp [hz0]))
   calc
     ψT' (mobiusInv z) = ψT ⟨mobiusInv z, hz'⟩ := by simp [ψT', hz']
     _ = ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) := by
