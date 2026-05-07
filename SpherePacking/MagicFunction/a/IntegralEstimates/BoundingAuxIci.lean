@@ -6,16 +6,7 @@ public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
-/-!
-# Integrability on `Ici 1`
-
-This file provides a single integrability lemma for the model bound integrand
-`s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)` on `Ici 1`, used in the
-`IntegralEstimates` development.
-
-## Main statement
-* `bound_integrableOn_Ici`
--/
+/-! # Integrability on `Ici 1` for `s ↦ C₀ * rexp (-2πs) * rexp (-πr/s)`. -/
 
 open Real Set MeasureTheory
 
