@@ -15,15 +15,8 @@ public import Mathlib.Analysis.Complex.Periodic
 /-!
 # Helpers on the imaginary axis (AnotherIntegral.A)
 
-This file provides helper definitions and bounds for evaluating modular objects on the positive
-imaginary axis, used in the `AnotherIntegral.A` estimates.
-
-## Main definitions
-* `zI`
-
-## Main statements
-* `norm_φ₀_imag_le`
-* `exists_E4_sub_one_bound`, `exists_Delta_sub_q_bound`
+Helper definitions (`zI`) and bounds (`norm_φ₀_imag_le`, `exists_E4_sub_one_bound`,
+`exists_Delta_sub_q_bound`, …) for evaluating modular objects on the positive imaginary axis.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -37,11 +30,10 @@ open Real Complex Function ArithmeticFunction
 
 noncomputable section
 
-/-- The point `it` in the upper half-plane, as an element of `ℍ`. -/
+/-- The point `it` in the upper half-plane. -/
 @[expose] public def zI (t : ℝ) (ht : 0 < t) : ℍ :=
   ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht⟩
 
-/-- Imaginary part of `zI t ht` is `t`. -/
 public lemma zI_im (t : ℝ) (ht : 0 < t) : (zI t ht).im = t := by
   simp [zI, UpperHalfPlane.im]
 
@@ -50,29 +42,23 @@ lemma qParam_zI (t : ℝ) (ht : 0 < t) :
   simp [Periodic.qParam, zI, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm,
     show (Complex.I : ℂ) * (Complex.I * (↑t * (↑π * 2))) = -(↑t * (↑π * 2)) by ring_nf; simp]
 
-/-- The imaginary part of `(Complex.I : ℂ) / t` is `t⁻¹` (as a real number). -/
 public lemma imag_I_div (t : ℝ) : ((Complex.I : ℂ) / (t : ℂ)).im = t⁻¹ := by
   simp [Complex.div_im, Complex.normSq]
 
-/-- Norm of a real exponential viewed in `ℂ`. -/
 public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x := by simp
 
-/-- Action of the modular matrix `S` on the imaginary-axis point `zI t ht`. -/
+/-- Action of the modular matrix `S` on `zI t ht`. -/
 public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
     ModularGroup.S • zI t ht = zI t⁻¹ (inv_pos.2 ht) := by
   ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
     ModularGroup.coe_S_smul (z := zI t ht)
 
-/-- `exp (-2π) < 1`. -/
 public lemma exp_neg_two_pi_lt_one : Real.exp (-2 * π) < 1 :=
   Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos])
 
-/-- Monotonicity estimate `exp (-2π t) ≤ exp (-2π)` for `1 ≤ t`. -/
 public lemma q_le_q1 {t : ℝ} (ht : 1 ≤ t) :
     Real.exp (-2 * π * t) ≤ Real.exp (-2 * π) :=
   Real.exp_le_exp.2 (by nlinarith [Real.pi_pos])
-
-/-! ## Bounds for `φ₀` on the imaginary axis -/
 
 /-- Exponential decay bound for `φ₀'' (it)` on `t ≥ 1`. -/
 public lemma norm_φ₀_imag_le :
@@ -86,7 +72,6 @@ public lemma norm_φ₀_imag_le :
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
-/-- Helper: bound `‖cexp(2π i m z)‖` by `q^j * q1^k` whenever `m = j + k`. -/
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
     ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
@@ -98,7 +83,6 @@ private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q
       simp [abs_of_nonneg hq_nonneg], pow_add]
   exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
 
-/-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
   exact_mod_cast (show m * (σ 3 m) ≤ m ^ 5 by
@@ -113,8 +97,6 @@ lemma qExpansionFormalMultilinearSeries_partialSum_two
       (qExpansion (1 : ℝ) f).coeff 0 + (qExpansion (1 : ℝ) f).coeff 1 * q := by
   simp [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
     Finset.sum_range_succ, mul_comm]
-
-/-! Uniform `q`-expansion bounds on the imaginary axis (for `t ≥ 1`). -/
 
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
@@ -199,8 +181,6 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
     simpa [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum,
       Finset.sum_range_succ, mul_comm, Delta_q_exp_zero,
       Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
-
-/-! ### Bounding `E₂E₄ - E₆` on the imaginary axis. -/
 
 /-- Second-order remainder bound for `E₂(it)E₄(it) - E₆(it)` after subtracting `720 q`, where
 `q = exp (-2π t)`, valid for all `t ≥ 1`. -/
