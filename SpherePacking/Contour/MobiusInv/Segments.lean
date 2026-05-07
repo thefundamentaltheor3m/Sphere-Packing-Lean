@@ -11,11 +11,8 @@ import SpherePacking.Contour.Segments
 /-!
 # Mobius inversion on segments
 
-This file proves continuity of `SpherePacking.mobiusInv` along the two line segments
-`-1 → -1 + I` and `-1 + I → I`.
-
-These lemmas are used to form `Path.map'` images under `mobiusInv` in the permutation/contour-change
-arguments.
+Continuity of `SpherePacking.mobiusInv` along the segments `-1 → -1 + I` and `-1 + I → I`,
+plus the bundled mapped paths used in permutation/contour-change arguments.
 -/
 
 namespace SpherePacking
@@ -32,33 +29,25 @@ private lemma continuousOn_mobiusInv_segment_of_ne_zero (a b : ℂ)
 
 /-- `mobiusInv` is continuous on the segment `-1 → -1 + I`. -/
 public lemma continuousOn_mobiusInv_segment_z₁ :
-    ContinuousOn mobiusInv
-      (Set.range (Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I))) := by
+    ContinuousOn mobiusInv (Set.range (Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I))) := by
   simpa using continuousOn_mobiusInv_segment_of_ne_zero (-1) (-1 + I) segment_z₁_ne_zero
 
 /-- `mobiusInv` is continuous on the segment `-1 + I → I`. -/
 public lemma continuousOn_mobiusInv_segment_z₂ :
-    ContinuousOn mobiusInv
-      (Set.range (Path.segment ((-1 : ℂ) + Complex.I) Complex.I)) := by
+    ContinuousOn mobiusInv (Set.range (Path.segment ((-1 : ℂ) + Complex.I) Complex.I)) := by
   simpa using continuousOn_mobiusInv_segment_of_ne_zero (-1 + I) I segment_z₂_ne_zero
-
-/-! ### Canonical mapped paths -/
 
 /-- The segment `-1 → -1 + I` mapped by `mobiusInv`, bundled as a path. -/
 public abbrev mobiusInv_segment_z₁ :
     Path (mobiusInv (-1 : ℂ)) (mobiusInv ((-1 : ℂ) + Complex.I)) :=
   (Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I)).map'
-    (f := mobiusInv)
-    (by
-      simpa using continuousOn_mobiusInv_segment_z₁)
+    (f := mobiusInv) (by simpa using continuousOn_mobiusInv_segment_z₁)
 
 /-- The segment `-1 + I → I` mapped by `mobiusInv`, bundled as a path. -/
 public abbrev mobiusInv_segment_z₂ :
     Path (mobiusInv ((-1 : ℂ) + Complex.I)) (mobiusInv Complex.I) :=
   (Path.segment ((-1 : ℂ) + Complex.I) Complex.I).map'
-    (f := mobiusInv)
-    (by
-      simpa using continuousOn_mobiusInv_segment_z₂)
+    (f := mobiusInv) (by simpa using continuousOn_mobiusInv_segment_z₂)
 
 end
 
