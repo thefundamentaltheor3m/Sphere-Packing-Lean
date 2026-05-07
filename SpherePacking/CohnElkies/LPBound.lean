@@ -25,9 +25,7 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 /-!
 # Cohn-Elkies linear programming bound
 
-Cohn-Elkies upper bound on `SpherePackingConstant d`: a Schwartz `f ≠ 0` with `(f x).re ≤ 0` on
-`‖x‖ ≥ 1` and `(𝓕 f x).re ≥ 0` yields a bound via `(f 0).re`, `(𝓕 f 0).re`, and the unit ball
-volume. Exports `LinearProgrammingBound'` (single packing) and `LinearProgrammingBound`.
+Cohn-Elkies upper bound on `SpherePackingConstant d` via `LinearProgrammingBound`.
 -/
 
 open scoped FourierTransform ENNReal SchwartzMap BigOperators
@@ -52,7 +50,7 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul,
     ← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
-  exact integral_nonneg fun v => by simpa using hCohnElkies₂ v
+  exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
@@ -77,24 +75,22 @@ variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
 omit [Nonempty ↑P.centers] in include hD_isBounded in
-/-- Summability of `∑ m, (𝓕 f m).re * ‖∑ x, exp (2 π I ⟪x, m⟫)‖²` over the dual lattice. -/
 private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
   letI : Fintype (↑(P.centers ∩ D)) :=
     @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded P D hD_isBounded hd
-  let n : ℝ := (Fintype.card (↑(P.centers ∩ D)) : ℝ)
-  refine Summable.of_norm_bounded (g := fun m =>
-    ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2)) ?_ fun m => ?_
+  refine Summable.of_norm_bounded (g := fun m => ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ *
+    ((Fintype.card (↑(P.centers ∩ D)) : ℝ) ^ 2)) ?_ fun m => ?_
   · simpa [SchwartzMap.fourier_coe] using
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
-        (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right (n ^ 2)
+        (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right _
   simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]; gcongr
   · simpa [Real.norm_eq_abs] using abs_re_le_norm _
-  · simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm,
-        n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
+  · simpa [tsum_fintype, Complex.norm_exp, mul_re, mul_im, mul_assoc, mul_left_comm, mul_comm]
+      using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
@@ -215,8 +211,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
-/-- Linear programming bound for a single periodic packing of separation `1`; the key estimate
-used to bound `SpherePackingConstant d` after reducing to periodic packings. -/
+/-- Linear programming bound for a single periodic packing of separation `1`. -/
 public theorem LinearProgrammingBound' (hd : 0 < d) :
     P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
@@ -239,23 +234,23 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f <|
         Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
     haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
-      nonempty_quotient_iff _ |>.2 ‹_›
+      (nonempty_quotient_iff _).2 ‹_›
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
       ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero measure_ball_lt_top.ne,
       ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
       div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
       ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
-      ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right (by
-        simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
-        ENat.toENNReal (P.numReps : ENat) ≠ 0)
+      ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right
+        (by simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
+          ENat.toENNReal (P.numReps : ENat) ≠ 0)
         (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
       ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc,
-      show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal from by
+      show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal by
         simp [Real.toNNReal_mul (Nat.cast_nonneg _)],
       show (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
           ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) =
-          ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal from by
+          ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal by
         simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
           Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
             (inv_nonneg.mpr hcov_pos.le))]
@@ -285,7 +280,7 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
     (PeriodicSpherePacking.basis_index_equiv P)
   exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-    (ZSpan.fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-    (PeriodicSpherePacking.fundamental_domain_unique_covers (S := P) b) hd
+    (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
+      (S := P) b) hd
 
 end Main_Theorem
