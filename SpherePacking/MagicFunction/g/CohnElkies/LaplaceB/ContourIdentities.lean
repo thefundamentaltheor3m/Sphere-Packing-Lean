@@ -1,23 +1,11 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.Basic
 
-
 /-!
 # Contour integrands for `b'`
 
-This file packages the exponential weight `exp(π i u z)` together with the functions `ψI'`,
-`ψT'`, and `ψS'` into contour integrands used in the rectangle deformation argument for the
-Laplace representation of `b'`.
-
-## Main definitions
-* `MagicFunction.g.CohnElkies.IntegralReps.bContourWeight`
-* `MagicFunction.g.CohnElkies.IntegralReps.bContourIntegrandI`
-* `MagicFunction.g.CohnElkies.IntegralReps.bContourIntegrandT`
-* `MagicFunction.g.CohnElkies.IntegralReps.bContourIntegrandS`
-
-## Main statements
-* `MagicFunction.g.CohnElkies.IntegralReps.bContourIntegrandI_mul_I_eq_bLaplaceIntegrand`
-* `MagicFunction.g.CohnElkies.IntegralReps.differentiableOn_bContourIntegrandT`
+Exponential weight `exp(π i u z)` and contour integrands `bContourIntegrandI/T/S` for the
+rectangle deformation argument used in the Laplace representation of `b'`.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -102,15 +90,9 @@ public lemma ψT'_I_mul (t : ℝ) (ht : 0 < t) :
 
 private lemma differentiableOn_ψT_ofComplex :
     DifferentiableOn ℂ (fun z : ℂ => ψT (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
-  have hH2 :
-      DifferentiableOn ℂ (fun z : ℂ => H₂ (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
-  have hH3 :
-      DifferentiableOn ℂ (fun z : ℂ => H₃ (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
-  have hH4 :
-      DifferentiableOn ℂ (fun z : ℂ => H₄ (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} :=
-    (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
+  have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
+  have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
+  have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
   have hleft := (hH3.add hH4).div (hH2.pow 2) fun _ _ => pow_ne_zero 2 (H₂_ne_zero _)
   have hright := (hH2.add hH3).div (hH4.pow 2) fun _ _ => pow_ne_zero 2 (H₄_ne_zero _)
   refine (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ)).congr fun z _ => ?_
@@ -128,8 +110,8 @@ public lemma differentiableOn_bContourIntegrandT (u : ℝ) :
 
 /-- Continuity of `bContourIntegrandT` on the open upper half-plane. -/
 public lemma continuousOn_bContourIntegrandT (u : ℝ) :
-    ContinuousOn (bContourIntegrandT u) {z : ℂ | 0 < z.im} := by
-  simpa using (differentiableOn_bContourIntegrandT (u := u)).continuousOn
+    ContinuousOn (bContourIntegrandT u) {z : ℂ | 0 < z.im} :=
+  (differentiableOn_bContourIntegrandT (u := u)).continuousOn
 
 end
 
