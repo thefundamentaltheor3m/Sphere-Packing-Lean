@@ -14,10 +14,8 @@ import SpherePacking.ForMathlib.IteratedDeriv
 /-!
 # Differentiation under the integral sign on `(0, 1)`
 
-This file provides lemmas for differentiating functions of the form
-`x ↦ ∫ t in Ioo (0 : ℝ) 1, hf t * exp (x * coeff t)`.
-
-It is dimension-agnostic and is used by the dimension-specific developments.
+Lemmas for differentiating `x ↦ ∫ t in Ioo (0 : ℝ) 1, hf t * exp (x * coeff t)`,
+dimension-agnostic and used by the dimension-specific developments.
 -/
 
 namespace SpherePacking.Integration.DifferentiationUnderIntegral
@@ -39,8 +37,7 @@ variable {coeff hf : ℝ → ℂ}
 private lemma aestronglyMeasurable_gN_Ioo
     (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
     (continuous_coeff : Continuous coeff) (n : ℕ) (x : ℝ) :
-    AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x)
-      μIoo01 := by
+    AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x) μIoo01 := by
   have hcont : ContinuousOn (gN (coeff := coeff) (hf := hf) n x) (Ioo (0 : ℝ) 1) := by
     simpa [gN, g] using (continuous_coeff.pow n).continuousOn.mul
       (continuousOn_hf.mul (Continuous.continuousOn ((continuous_const.mul continuous_coeff).cexp)))
@@ -69,11 +66,8 @@ public lemma hasDerivAt_integral_gN_Ioo
     (exists_bound_norm_hf : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M)
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
     (n : ℕ) (x₀ : ℝ) :
-    HasDerivAt
-        (fun x : ℝ =>
-          ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01)
-        (∫ t, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t ∂μIoo01)
-        x₀ := by
+    HasDerivAt (fun x : ℝ => ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01)
+        (∫ t, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t ∂μIoo01) x₀ := by
   have hμmem : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := by
     simpa [μIoo01] using
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
@@ -87,8 +81,7 @@ public lemma hasDerivAt_integral_gN_Ioo
     (bound := fun _ : ℝ ↦
       (2 * Real.pi) ^ (n + 1) * (Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi))))
     (x₀ := x₀) (Metric.ball_mem_nhds x₀ (by norm_num))
-    (Filter.Eventually.of_forall (fun x => aestronglyMeasurable_gN_Ioo
-      continuousOn_hf continuous_coeff n x))
+    (.of_forall (fun x => aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x))
     (Integrable.of_bound (aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x₀) _
       (hμmem.mono fun t ht =>
         norm_gN_le_const coeff_norm_le (Metric.mem_ball_self (by norm_num)) (hMh t ht) n))
@@ -116,8 +109,7 @@ public theorem contDiff_integral_g_Ioo
       hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
         exists_bound_norm_hf coeff_norm_le n x
 
-/-- Differentiate under the integral sign for the interval integral `∫ t in (0)..1, gN n x t`,
-assuming `hf` and `coeff` are continuous. -/
+/-- Differentiate under the integral sign for `∫ t in (0)..1, gN n x t`, assuming continuity. -/
 public lemma hasDerivAt_integral_gN_of_continuous
     (continuous_hf : Continuous hf)
     (continuous_coeff : Continuous coeff)
@@ -143,7 +135,7 @@ public lemma hasDerivAt_integral_gN_of_continuous
         (bound := fun _ : ℝ ↦
           (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))
         (Metric.ball_mem_nhds x₀ (by norm_num))
-        (Filter.Eventually.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
+        (.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
         ((continuous_gN n x₀).integrableOn_uIoc (μ := (volume : Measure ℝ)) (a := 0) (b := 1))
         (continuous_gN (n + 1) x₀).aestronglyMeasurable
         (by filter_upwards [hμmem] with t ht x hx
