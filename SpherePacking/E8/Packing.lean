@@ -82,8 +82,6 @@ lemma coe_E8_ℤBasis_apply (i : Fin 8) :
     E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
   rw [E8_ℤBasis, Basis.coe_mk]
 
-section Packing
-
 open scoped Real
 
 /-- The periodic sphere packing in `ℝ^8` coming from the `E8` lattice. -/
@@ -109,24 +107,10 @@ lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ �
 lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
   simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using E8Basis_apply_norm
 
-section Determinant
-
-private abbrev Matrix.myDet {n : Type*} [DecidableEq n] [Fintype n] {R : Type*} [CommRing R]
-    (M : Matrix n n R) : R := M.det
-
-lemma E8Matrix_myDet_eq_one (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).myDet = 1 :=
-  E8Matrix_unimodular R
-
-open MeasureTheory ZSpan
-
-lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (b : Basis ι ℝ (ι → ℝ)) :
-    volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| := volume_fundamentalDomain b
-
+open MeasureTheory ZSpan in
 public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
-  simp [ZSpan.volume_fundamentalDomain' (b := E8Basis ℝ), of_basis_eq_matrix, E8Matrix_myDet_eq_one]
-
-end Determinant
+  simp [volume_fundamentalDomain (b := E8Basis ℝ), of_basis_eq_matrix,
+    E8Matrix_unimodular (R := ℝ)]
 
 open MeasureTheory ZSpan in
 lemma same_domain :
@@ -162,5 +146,3 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
     trans ∑ i, ‖E8_ℤBasis i‖
     · rw [← fract_eq_self.mpr hx]; convert norm_fract_le (K := ℝ) _ _; simp; rfl
     · exact (Finset.sum_le_sum (fun i _ ↦ E8_ℤBasis_apply_norm i)).trans (by norm_num)
-
-end Packing
