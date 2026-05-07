@@ -22,16 +22,7 @@ import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 import SpherePacking.MagicFunction.b.Schwartz.BoundsAux
 
 
-/-!
-# Smoothness and decay for `J₁'`
-
-This file proves `ContDiff` and Schwartz-type decay bounds for the primed radial integral `J₁'`
-by differentiating under the integral sign on `Ioo (0,1)` and using a modular rewrite to control
-`ψT' (z₁' t)` near `t = 0`.
-
-## Main statements
-* `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`
--/
+/-! # Smoothness and decay for `J₁'`. Main: `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`. -/
 
 namespace MagicFunction.b.Schwartz.J1Smooth
 
@@ -80,7 +71,6 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     rw [hsmul]; simp [Function.resToImagAxis, ResToImagAxis, ht0]
   have heq : ψT' (z₁' t) = ψT z := by simp [ψT', hz_im, z]
   rw [hψS', hzplus] at hψT
-  -- Avoid `simp` unfolding the `SL(2,ℤ)` action on `ℍ` to a `GL(2,ℝ)` action.
   simpa [heq] using hψT
 
 lemma continuous_coeff : Continuous coeff := by
@@ -95,11 +85,10 @@ lemma continuousOn_hf :
           (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS)
           ψT'_z₁'_eq)
 
-lemma exists_bound_norm_hf :
-    ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
-  obtain ⟨Mψ, hMψ⟩ := MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+lemma exists_bound_norm_hf : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M :=
+  let ⟨Mψ, hMψ⟩ := MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
     exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq
-  exact ⟨Mψ, fun t ht => by simpa [hf] using hMψ t ht⟩
+  ⟨Mψ, fun t ht => by simpa [hf] using hMψ t ht⟩
 
 def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
 
@@ -119,15 +108,13 @@ private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
 
 lemma iteratedDeriv_J₁'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n J₁' = fun x : ℝ ↦ I n x := by
-  simpa [I_zero_eq_J₁'] using
-    (SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
-      (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)
+  simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+    (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
-  simpa [I_zero_eq_J₁'] using
-    (SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I)
-      (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
+  simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I)
+    (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x))
 
 /-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
