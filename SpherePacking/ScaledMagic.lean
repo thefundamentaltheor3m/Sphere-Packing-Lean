@@ -2,33 +2,19 @@ module
 public import SpherePacking.MagicFunction.g.Basic
 import SpherePacking.ForMathlib.FourierLinearEquiv
 
-
 /-!
 # The scaled magic function
 
-This file defines the scaled Schwartz function `scaledMagic`, obtained from Viazovska's magic
-function `g` by precomposing with scaling by `Real.sqrt 2`, and computes its value and Fourier
-value at `0`.
-
-## Main definitions
-* `SpherePacking.scaledMagic`
-
-## Main statements
-* `SpherePacking.scaledMagic_zero`
-* `SpherePacking.fourier_scaledMagic_zero`
-* `SpherePacking.scaledMagic_ratio`
+Defines `scaledMagic`, obtained from Viazovska's magic function `g` by precomposing with scaling
+by `Real.sqrt 2`, and computes its value and Fourier value at `0`.
 -/
 
 namespace SpherePacking
 
 open scoped FourierTransform
-
-local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-section FourierScalingAtZero
-
 open SchwartzMap SpherePacking.ForMathlib.Fourier
 
+local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 local notation "FT" => FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ)
 
 /-- Non-vanishing of `Real.sqrt 2`. -/
@@ -37,9 +23,9 @@ public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
 
 /-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
 @[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
-  let c : ℝ := Real.sqrt 2
-  let A : ℝ⁸ ≃ₗ[ℝ] ℝ⁸ := LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) c sqrt2_ne_zero
-  SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A.toContinuousLinearEquiv g
+  SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
+    (LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv
+    g
 
 /-- The value of `scaledMagic` at `0` is `1`. -/
 public theorem scaledMagic_zero : scaledMagic 0 = 1 := by
@@ -76,7 +62,5 @@ public theorem fourier_scaledMagic_zero_fun : 𝓕 (⇑scaledMagic) 0 = (1 / 16 
 public theorem scaledMagic_ratio :
     (scaledMagic 0).re / (𝓕 (⇑scaledMagic) 0).re = (16 : ℝ) := by
   simp [scaledMagic_zero, fourier_scaledMagic_zero_fun]
-
-end FourierScalingAtZero
 
 end SpherePacking
