@@ -13,12 +13,7 @@ import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.SpecialValues
 import SpherePacking.Tactic.NormNumI
 
-
-/-!
-# Viazovska's Magic Function (`g`)
-
-Defines Viazovska's magic function `g` and its normalization at `0`.
--/
+/-! # Viazovska's Magic Function `g` and its normalization at `0`. -/
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
@@ -37,7 +32,6 @@ public theorem g_zero : g 0 = 1 := by
 
 /-- Normalization of the Fourier transform of `g` at the origin. -/
 public theorem fourier_g_zero : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g 0 = 1 := by
-  -- Use linearity + eigenfunction identities, then evaluate at `0`.
   simp only [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
     sub_apply, smul_apply, smul_eq_mul]
   simp [a_zero, b_zero, sub_eq_add_neg, div_eq_mul_inv]
