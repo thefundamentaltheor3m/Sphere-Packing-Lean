@@ -32,6 +32,9 @@ lemma continuousOn_psiI'_mul_I :
 @[expose] public def bAnotherBase (t : ℝ) : ℂ :=
   ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ)
 
+@[simp] public lemma bAnotherBase_eq (t : ℝ) :
+    bAnotherBase t = ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
+
 public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) :=
   (continuousOn_psiI'_mul_I.sub continuousOn_const).sub (by fun_prop)
 
