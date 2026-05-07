@@ -81,9 +81,9 @@ public theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpher
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
     ∀ x : S.centers, ∃! g : S.lattice,
-      (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := fun x => by
-  rcases hD_unique_covers (x : EuclideanSpace ℝ (Fin d)) with ⟨g, hg, hguniq⟩
-  exact ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
+      (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := fun x =>
+  let ⟨g, hg, hguniq⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
+  ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
 
 end Disjoint_Covering_of_Centers
 
@@ -99,11 +99,11 @@ theorem PeriodicSpherePacking.exists_bound_on_fundamental_domain :
 
 /-- Every point has a unique translate in the fundamental domain associated to a lattice basis. -/
 public theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
-    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := fun x => by
+    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := fun x =>
   have hspan : S.lattice = span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) :=
     (Basis.ofZLatticeBasis_span ℝ S.lattice b).symm
-  rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with ⟨g, hg, hguniq⟩
-  exact ⟨⟨(g : EuclideanSpace ℝ (Fin d)), by simp [hspan]⟩, hg, fun y hy => Subtype.ext <|
+  let ⟨g, hg, hguniq⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+  ⟨⟨(g : EuclideanSpace ℝ (Fin d)), by simp [hspan]⟩, hg, fun y hy => Subtype.ext <|
     congrArg (fun z : span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) => (z : EuclideanSpace ℝ (Fin d)))
       (hguniq ⟨(y : EuclideanSpace ℝ (Fin d)), by simpa [hspan] using y.property⟩ hy)⟩
 
@@ -133,8 +133,7 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
   let b : Basis (Fin d) ℤ ↥S.lattice := S.defaultBasis
   obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
   rw [Real.toNNReal_of_nonneg (ZLattice.covolume_pos S.lattice volume).le,
-    S.density_eq b hL hd]
-  simp only [ENat.toENNReal_coe]
+    S.density_eq b hL hd, ENat.toENNReal_coe]
   refine congrArg _ ((ENNReal.toReal_eq_toReal_iff' (IsBounded.measure_lt_top
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))).ne
     ENNReal.coe_ne_top).mp ?_)
