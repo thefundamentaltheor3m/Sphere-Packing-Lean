@@ -55,14 +55,12 @@ lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
     norm_mul_pi_I_le_two_pi (z := z₅' t) (hz := (norm_z₅'_le_one t).trans (by norm_num))
 
 lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ioo (0 : ℝ) 1) := by
-  refine (continuousOn_iff_continuous_restrict).2 ?_
+  refine continuousOn_iff_continuous_restrict.2 ?_
   have him : ∀ t : Ioo (0 : ℝ) 1, 0 < (z₅' (t : ℝ)).im := fun t =>
-    im_z₅'_pos (t := (t : ℝ)) ⟨t.2.1, le_of_lt t.2.2⟩
-  simpa [Set.restrict] using
-    (continuous_comp_upperHalfPlane_mk
-      (ψT := ψI) (ψT' := ψI') (MagicFunction.b.PsiBounds.continuous_ψI)
-      (z := fun t : Ioo (0 : ℝ) 1 => z₅' (t : ℝ))
-      (continuous_z₅'.comp continuous_subtype_val) him (fun t => by simp [ψI', him t]))
+    im_z₅'_pos (t := (t : ℝ)) ⟨t.2.1, t.2.2.le⟩
+  simpa [Set.restrict] using continuous_comp_upperHalfPlane_mk (ψT := ψI) (ψT' := ψI')
+    MagicFunction.b.PsiBounds.continuous_ψI (z := fun t : Ioo (0 : ℝ) 1 => z₅' (t : ℝ))
+    (continuous_z₅'.comp continuous_subtype_val) him (fun t => by simp [ψI', him t])
 
 lemma continuous_coeff : Continuous coeff := by
   simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₅'
