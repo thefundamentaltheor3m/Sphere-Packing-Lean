@@ -90,9 +90,9 @@ theorem PeriodicSpherePacking.aux2_le
 variable (b : Basis ι ℤ S.lattice)
 
 private lemma fundamentalDomain_unique_covers (x : EuclideanSpace ℝ (Fin d)) :
-    ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
-  obtain ⟨⟨v, hv⟩, hvD, hvuniq⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  exact ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, fun ⟨y, hy⟩ hyD => Subtype.ext <| by
+    ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) :=
+  let ⟨⟨v, hv⟩, hvD, hvuniq⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+  ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, fun ⟨y, hy⟩ hyD => Subtype.ext <| by
     simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)⟩
 
 /-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice. -/
@@ -245,10 +245,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
 
 /-- Shifting the argument by a constant does not change convergence to `atTop`. -/
 public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
-    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
+    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α :=
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
     simpa using Filter.map_add_atTop_eq (α := ℝ) (k := C)
-  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
+  ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
     fun hf => by simpa [hmap] using tendsto_map'_iff.mpr hf⟩
 
 /-- Same as `volume_ball_ratio_tendsto_nhds_one'`, without sign assumptions on `C, C'`. -/
