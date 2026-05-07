@@ -42,14 +42,13 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
       (36 / (π ^ (2 : ℕ)) : ℝ) * Real.exp (2 * π * t) +
       (8640 / π : ℝ) * t - (18144 / (π ^ (2 : ℕ)) : ℝ)
     have hcongr : Iterm =
-        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
-      refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-        measurableSet_Ioi ?_
-      intro t (ht : 0 < t)
-      have hφ : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) =
-            ((φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re : ℂ) := by
-        apply Complex.ext <;> simp [φ₀''_imag_axis_div_im t ht]
-      simp only []; rw [hφ]; push_cast [innerR]; ring
+        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) :=
+      MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+        measurableSet_Ioi fun t (ht : 0 < t) => by
+          rw [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) =
+            ((φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re : ℂ) from by
+              apply Complex.ext <;> simp [φ₀''_imag_axis_div_im t ht]]
+          push_cast [innerR]; ring
     simpa [hcongr] using
       setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
   have hEim : E.im = 0 := by
@@ -74,14 +73,13 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
     let innerR : ℝ → ℝ := fun t =>
       (ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) - Real.exp (2 * π * t)
     have hcongr : Iterm =
-        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
-      refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-        measurableSet_Ioi ?_
-      intro t (ht : 0 < t)
-      have hψ : ψI' ((Complex.I : ℂ) * (t : ℂ)) =
-            ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) := by
-        apply Complex.ext <;> simp [ψI'_imag_axis_im t ht]
-      simp only []; rw [hψ]; push_cast [innerR]; ring
+        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) :=
+      MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+        measurableSet_Ioi fun t (ht : 0 < t) => by
+          rw [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
+            ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) from by
+              apply Complex.ext <;> simp [ψI'_imag_axis_im t ht]]
+          push_cast [innerR]; ring
     simpa [hcongr] using setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, Complex.div_im, Complex.mul_im]
@@ -98,13 +96,12 @@ private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuou
     (h : ∀ {u : ℝ}, 0 < u → u ≠ 2 → (f u).re = 0) {u : ℝ} (hu : 0 < u) : (f u).re = 0 := by
   by_cases hu2 : u = 2
   · subst hu2
-    refine (IsClosed.closure_subset_iff
+    exact (IsClosed.closure_subset_iff
         (isClosed_eq (Complex.continuous_re.comp hcont) continuous_const)).2
       (fun r (hr : r ∈ Set.Ioi (0 : ℝ) \ ({2} : Set ℝ)) =>
         h hr.1 fun h' => hr.2 (by simp [h']))
-      (Metric.mem_closure_iff.2 fun ε hε => ⟨2 + ε / 2,
-        ⟨show (0 : ℝ) < 2 + ε / 2 by positivity, fun h =>
-          by linarith [show (2 + ε / 2 : ℝ) = 2 by simpa using h]⟩, by
+      (Metric.mem_closure_iff.2 fun ε hε => ⟨2 + ε / 2, ⟨show (0 : ℝ) < 2 + ε / 2 by positivity,
+        fun h => by linarith [show (2 + ε / 2 : ℝ) = 2 by simpa using h]⟩, by
         rw [Real.dist_eq, show (2 : ℝ) - (2 + ε / 2) = -(ε/2) by ring, abs_neg,
           abs_of_pos (by linarith : (0:ℝ) < ε / 2)]; linarith⟩)
   · exact h hu hu2
