@@ -99,18 +99,10 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
     integrableOn_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex hu
   have hCorrInt : IntegrableOn corr (Set.Ioi (0 : ℝ)) := by
-    have h36 : IntegrableOn
-        (fun t : ℝ => (c36 * Real.exp (2 * π * t)) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using h2ExpInt.const_mul c36
-    have h8640 : IntegrableOn (fun t : ℝ => (c8640 * t) * Real.exp (-π * u * t))
-        (Set.Ioi (0 : ℝ)) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hTExpInt.const_mul c8640
-    have h18144 : IntegrableOn (fun t : ℝ => c18144 * Real.exp (-π * u * t))
-        (Set.Ioi (0 : ℝ)) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hExpInt.const_mul c18144
-    refine ((h36.sub h8640).add h18144).congr <|
-      MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t _ ↦ ?_
-    dsimp [corr]; ring_nf
+    refine ((((h2ExpInt.const_mul c36).sub (hTExpInt.const_mul c8640)).add
+      (hExpInt.const_mul c18144)).congr <|
+        MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t _ ↦ ?_)
+    dsimp [corr]; ring
   have hLapInt_decomp : (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) =
       (∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) + (∫ t in Set.Ioi (0 : ℝ), corr t) := by
     rw [show (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) =
