@@ -1,6 +1,7 @@
 module
 public import Mathlib.Init
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
+import SpherePacking.ForMathlib.IntegrablePowMulExp
 
 /-! Integrability of the `AnotherIntegral.A` integrand on `(0, ∞)` for `0 < u`. -/
 
@@ -219,19 +220,8 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
-    set b : ℝ := (2 * π + π * u) / 2
-    have hb : 0 < b := by positivity
-    have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
-        fun _t : ℝ => (1 : ℝ) :=
-      ((((isLittleO_pow_exp_pos_mul_atTop 2 hb).const_mul_left C).mul_isBigO
-        (Asymptotics.isBigO_refl _ _)).congr_right
-        (fun t => by rw [← Real.exp_add]; simp)).isBigO
-    exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
-        (b := (1 : ℝ))).2 <| integrable_of_isBigO_exp_neg (a := 1) (b := b) hb
-        (by fun_prop)
-        (((hfacBig.mul (Asymptotics.isBigO_refl
-          (fun t : ℝ => Real.exp (-b * t)) atTop)).congr_left fun t => by
-          rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf).congr_right fun _ => by ring)
+    simpa [mul_assoc] using (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici
+      (n := 2) (b := 2 * π + π * u) (by positivity)).const_mul C
   exact MeasureTheory.Integrable.mono' hdom.integrable
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi
       (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici)
