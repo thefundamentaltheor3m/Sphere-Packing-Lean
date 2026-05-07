@@ -45,16 +45,13 @@ end StandardLattice.standardLattice
 
 namespace PoissonSummation
 
-/-! ### The standard lattice `ℤ^d` -/
-
 namespace Standard
 
 /-- Embed an integer vector `k : ℤ^d` into `E = ℝ^d`. -/
 @[expose] public noncomputable def intVec (k : Fin d → ℤ) : E :=
   WithLp.toLp (2 : ENNReal) (fun i : Fin d => (k i : ℝ))
 
-@[simp]
-public lemma intVec_apply (k : Fin d → ℤ) (i : Fin d) :
+@[simp] public lemma intVec_apply (k : Fin d → ℤ) (i : Fin d) :
     intVec (d := d) k i = (k i : ℝ) := by simp [intVec]
 
 public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
@@ -126,8 +123,7 @@ public lemma dualSubmodule_standardLattice_eq :
 @[expose] public def coeFunE : E → UnitAddTorus (Fin d) :=
   fun x => UnitAddTorus.coeFun d ((WithLp.ofLp : E → (Fin d → ℝ)) x)
 
-@[continuity]
-public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) := by
+@[continuity] public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) := by
   simpa [coeFunE] using (UnitAddTorus.continuous_coeFun (n := d)).comp
     (PiLp.continuous_ofLp (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ))
 
@@ -136,8 +132,7 @@ public theorem isOpenQuotientMap_coeFunE : IsOpenQuotientMap (coeFunE (d := d)) 
     IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
       (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ)).isOpenQuotientMap
 
-@[simp]
-public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
+@[simp] public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
     coeFunE (d := d) (x + intVec (d := d) n) = coeFunE (d := d) x := by
   ext i; simp [coeFunE, UnitAddTorus.coeFun]
 
