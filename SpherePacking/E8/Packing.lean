@@ -9,11 +9,10 @@ public import SpherePacking.E8.Basic
 /-!
 # The E8 packing
 
-This file defines the periodic packing coming from the `E8` lattice, and computes its density.
+Defines the periodic packing from the `E8` lattice, and computes its density `π^4 / 384`.
 
 ## Main definitions
-* `E8Lattice`
-* `E8Packing`
+* `E8Lattice`, `E8Packing`
 
 ## Main statements
 * `E8Packing_density`
@@ -21,11 +20,9 @@ This file defines the periodic packing coming from the `E8` lattice, and compute
 
 variable {R : Type*}
 
-open Module
-open InnerProductSpace RCLike
+open Module InnerProductSpace RCLike
 
-public lemma E8_norm_eq_sqrt_even
-    (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
+public lemma E8_norm_eq_sqrt_even (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
   rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
   exact E8_integral_self _ hv
@@ -55,10 +52,9 @@ public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   exact (E8_norm_lower_bound v hv).resolve_right (not_le_of_gt (lt_trans
     (by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx') Real.one_lt_sqrt_two))
 
-lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
-  refine (eq_top_iff).2 ?_
-  simpa [span_E8Matrix_eq_top ℝ] using
-    (Submodule.span_mono (R := ℝ) (range_E8Matrix_row_subset ℝ))
+lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ :=
+  eq_top_iff.2 (by simpa [span_E8Matrix_eq_top ℝ] using
+    Submodule.span_mono (R := ℝ) (range_E8Matrix_row_subset ℝ))
 
 lemma span_E8_eq_top' :
     Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
@@ -80,7 +76,7 @@ lemma span_E8Matrix_eq_E8Lattice :
 
 /-- `E8Lattice` spans the ambient space over `ℝ`. -/
 public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
-  span_top := by rw [span_E8_eq_top']
+  span_top := span_E8_eq_top'
 
 noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   refine Basis.mk
@@ -122,7 +118,7 @@ lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ �
   norm_num [show (√2 : ℝ) ≤ 2 by rw [Real.sqrt_le_iff]; norm_num]
 
 lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
-  simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using fun i => E8Basis_apply_norm i
+  simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using E8Basis_apply_norm
 
 section Determinant
 
@@ -176,9 +172,7 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
     · positivity
   · intro x hx
     trans ∑ i, ‖E8_ℤBasis i‖
-    · rw [← fract_eq_self.mpr hx]
-      convert norm_fract_le (K := ℝ) _ _
-      simp; rfl
+    · rw [← fract_eq_self.mpr hx]; convert norm_fract_le (K := ℝ) _ _; simp; rfl
     · exact (Finset.sum_le_sum (fun i _ ↦ E8_ℤBasis_apply_norm i)).trans (by norm_num)
 
 end Packing
