@@ -81,12 +81,9 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, Complex.div_im, Complex.mul_im]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
-      (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow],
-    show (-4 * (Complex.I : ℂ)) * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E =
-      -4 * I * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E) from by ring, Complex.mul_re,
-    show ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 from by
-      rw [Complex.mul_im, hEim, Complex.ofReal_im]; simp]
-  simp
+      (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
+  have : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 := Complex.ofReal_im _
+  simp_all
 
 /-- Extend `re = 0` from `(0,∞) \ {2}` to all of `(0,∞)` using continuity. -/
 private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuous f)
