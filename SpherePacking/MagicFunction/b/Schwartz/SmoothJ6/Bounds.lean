@@ -85,8 +85,7 @@ private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
     (∫ t in Ici (1 : ℝ),
           (Complex.I : ℂ) * ψS' (z₆' t) * cexp (π * (Complex.I : ℂ) * x * (z₆' t))) =
       ∫ t in Ici (1 : ℝ), g x t := by
-  refine integral_congr_ae <|
-    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
+  refine integral_congr_ae <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hz : z₆' t = (Complex.I : ℂ) * t := z₆'_eq_of_mem ht
   dsimp
@@ -120,14 +119,14 @@ public theorem decay_J₆' :
     (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
     (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ
-  have hbound_int : Integrable bound (μ) := by
+  have hbound_int : Integrable bound μ := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
       (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
         Real.pi_pos).const_mul ((Real.pi ^ n) * Cψ)
   let Kn : ℝ := ∫ t, bound t ∂μ
   have hKn_nonneg : 0 ≤ Kn := integral_nonneg_of_ae <|
-    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht =>
-      by have : 0 ≤ t := zero_le_one.trans ht; positivity
+    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht => by
+      have : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
     have hbound_ae :
@@ -135,8 +134,6 @@ public theorem decay_J₆' :
       refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
       intro t ht
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-      have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by
-        simp [coeff, SmoothIntegralIciOne.coeff_norm (t := t) ht]
       have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
         SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
           (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
@@ -144,9 +141,10 @@ public theorem decay_J₆' :
         ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
               simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
         _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by
-              gcongr
-              simpa [g] using SmoothIntegralIciOne.g_norm_bound
-                (hf := ψS.resToImagAxis) (x := x) (t := t)
+              gcongr ?_ * ?_
+              · simp [coeff, SmoothIntegralIciOne.coeff_norm (t := t) ht]
+              · simpa [g] using SmoothIntegralIciOne.g_norm_bound
+                  (hf := ψS.resToImagAxis) (x := x) (t := t)
         _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
               gcongr; exact hCψ t ht
         _ = bound t * Real.exp (-Real.pi * x) := by ring
@@ -158,9 +156,8 @@ public theorem decay_J₆' :
             integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
               (by simpa [mul_assoc, mul_left_comm, mul_comm] using
                 hbound_int.mul_const (Real.exp (-Real.pi * x))) hbound_ae
-      _ = Kn * Real.exp (-Real.pi * x) := by
-            simpa [Kn] using
-              (integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound))
+      _ = Kn * Real.exp (-Real.pi * x) := by simpa [Kn] using
+            (integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound))
     calc ‖G n x‖
         ≤ 2 * (Kn * Real.exp (-Real.pi * x)) := by
           simpa [G, norm_mul, mul_assoc] using
