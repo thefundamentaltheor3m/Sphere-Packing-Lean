@@ -27,35 +27,22 @@ noncomputable section
 open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
 
-section Integral_Permutations
-
-local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-section PermI12Fourier
-
-open MeasureTheory Set Complex Real
-open SpherePacking.Integration
-open SpherePacking.Contour
+open MeasureTheory Set Complex Real SpherePacking.Integration SpherePacking.Contour
 open scoped Interval
 
 /-- The kernel used to rewrite `𝓕 I₁` as an integral over `x` and the segment parameter `t`. -/
 @[expose] public def permI1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     (EuclideanSpace ℝ (Fin 8)) × ℝ → ℂ := fun p =>
-  let x : EuclideanSpace ℝ (Fin 8) := p.1
-  let t : ℝ := p.2
-  cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-    ((I : ℂ) * MagicFunction.a.ComplexIntegrands.Φ₁' (‖x‖ ^ 2) (z₁line t))
+  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) *
+    ((I : ℂ) * MagicFunction.a.ComplexIntegrands.Φ₁' (‖p.1‖ ^ 2) (z₁line p.2))
 
 /-- The kernel used to rewrite `𝓕 I₂` as an integral over `x` and the segment parameter `t`. -/
 @[expose] public def permI2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     (EuclideanSpace ℝ (Fin 8)) × ℝ → ℂ := fun p =>
-  let x : EuclideanSpace ℝ (Fin 8) := p.1
-  let t : ℝ := p.2
-  cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-    MagicFunction.a.ComplexIntegrands.Φ₁' (‖x‖ ^ 2) (z₂line t)
+  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) *
+    MagicFunction.a.ComplexIntegrands.Φ₁' (‖p.1‖ ^ 2) (z₂line p.2)
 
-/-- Helper: if `z : ℝ → ℂ` is continuous and `(z t + 1).im > 0`, then `φ₀'' ∘ (-1 / (z · + 1))` is
-continuous at `t`. -/
+/-- Helper: continuity of `φ₀'' ∘ (-1 / (z · + 1))` at `t` given `(z t + 1).im > 0`. -/
 private lemma continuousAt_φ₀''_inv_add_one {z : ℝ → ℂ} (hz : Continuous z) {t : ℝ}
     (hpos : 0 < (z t + 1).im) :
     ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) t := by
@@ -65,12 +52,10 @@ private lemma continuousAt_φ₀''_inv_add_one {z : ℝ → ℂ} (hz : Continuou
   have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z t + 1)) :=
     (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hmem)).continuousAt
-  have hmap : ContinuousAt (fun s : ℝ => (-1 : ℂ) / (z s + 1)) t :=
-    continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden)
-  exact ContinuousAt.comp (f := fun s : ℝ => (-1 : ℂ) / (z s + 1)) hφ hmap
+  exact ContinuousAt.comp (f := fun s : ℝ => (-1 : ℂ) / (z s + 1)) hφ
+    (continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden))
 
-/-- Helper: given continuity data for a line `z`, `(x, t) ↦ Φ₁'(‖x‖², z t)` is continuous at any
-product point whose second coordinate has `(z t + 1).im > 0`. -/
+/-- Continuity of `(x, t) ↦ Φ₁'(‖x‖², z t)` at points where `(z p.2 + 1).im > 0`. -/
 private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
     {p : (EuclideanSpace ℝ (Fin 8)) × ℝ} (hpos : 0 < (z p.2 + 1).im) :
     ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
@@ -90,13 +75,11 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
   dsimp [MagicFunction.a.ComplexIntegrands.Φ₁']
   exact (hφterm.mul hpow).mul hexp
 
-/-- Helper: extract measurability of the restricted product measure from continuity on
-`univ ×ˢ Ioc 0 1`. -/
+/-- Measurability for the restricted product measure via continuity on `univ ×ˢ Ioc 0 1`. -/
 private lemma aestronglyMeasurable_of_continuousOn_univ_prod_Ioc01
     {f : (EuclideanSpace ℝ (Fin 8)) × ℝ → ℂ}
     (hcont : ContinuousOn f (univ ×ˢ Ioc (0 : ℝ) 1)) :
-    AEStronglyMeasurable f
-      ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01) := by
+    AEStronglyMeasurable f ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01) := by
   have hμ : ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01) =
       (((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod (volume : Measure ℝ)).restrict
         (univ ×ˢ Ioc (0 : ℝ) 1)) := by
@@ -123,6 +106,5 @@ public lemma permI2Kernel_measurable (w : EuclideanSpace ℝ (Fin 8)) :
       cexp (↑(-2 * (π * ⟪q.1, w⟫)) * I)) p := by fun_prop
   exact (hphase.mul (continuousAt_Φ₁'_comp continuous_z₂line (by simp))).continuousWithinAt
 
-end Integral_Permutations.PermI12Fourier
 end
 end MagicFunction.a.Fourier
