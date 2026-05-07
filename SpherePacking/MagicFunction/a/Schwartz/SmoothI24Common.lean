@@ -11,18 +11,10 @@ import SpherePacking.Integration.UpperHalfPlaneComp
 /-!
 # Smooth `I₂'`/`I₄'` common skeleton
 
-Shared infrastructure for proving `ContDiff ℝ ⊤ I₂'` and `ContDiff ℝ ⊤ I₄'`.
-
-Both `I₂'` and `I₄'` have integrands of the form
-`t ↦ prefactor * φ₀''(arg t) * (z t + shift)^2 * cexp (x * coeff t)`
-where `coeff t = (π*I) * z t`, `arg t = -1 / (z t + shift)`, and
-`shift, prefactor ∈ {1, -1}` are small constants. The only genuine
-differences between the `I₂'` and `I₄'` files are the parametrization
-`z` (`z₂'` vs `z₄'`) and these constants.
-
-This module extracts the common lemmas parameterized by
-`(z, shift, prefactor)` together with the geometric facts that pin down
-`arg`'s imaginary part.
+Shared infrastructure parameterized by `(z, shift, prefactor)` for proving `ContDiff ℝ ⊤ I₂'`
+and `ContDiff ℝ ⊤ I₄'`. Both have integrands of the form
+`prefactor * φ₀''(arg t) * (z t + shift)^2 * cexp (x * coeff t)` with
+`coeff t = (π*I) * z t`, `arg t = -1 / (z t + shift)`, `shift, prefactor ∈ {1, -1}`.
 -/
 
 namespace MagicFunction.a.Schwartz.SmoothI24Common
@@ -54,13 +46,6 @@ public lemma coeff_norm_le {z : ℝ → ℂ} (hnorm : ∀ t : ℝ, ‖z t‖ ≤
 public lemma continuous_coeff {z : ℝ → ℂ} (hz : Continuous z) : Continuous (coeff z) := by
   simpa [coeff, mul_assoc] using continuous_const.mul hz
 
-/-- If the Mobius image has positive imaginary part on `Ioo 0 1`, it lies in the
-upper half-plane set. -/
-public lemma arg_mem_upperHalfPlaneSet {z : ℝ → ℂ} {shift : ℂ}
-    (harg_im_pos : ∀ t, t ∈ Ioo (0 : ℝ) 1 → 0 < (arg z shift t).im)
-    (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    arg z shift t ∈ UpperHalfPlane.upperHalfPlaneSet := harg_im_pos t ht
-
 /-- Continuity of `hf` on `Ioo 0 1` given the continuity of `z`, non-vanishing of
 `z + shift`, and the geometric fact that `arg` lands in the upper half-plane. -/
 public lemma continuousOn_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
@@ -70,10 +55,9 @@ public lemma continuousOn_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
     ContinuousOn (hf z shift prefactor) (Ioo (0 : ℝ) 1) := by
   have harg : ContinuousOn (arg z shift) (Ioo (0 : ℝ) 1) :=
     continuousOn_const.div (hz.continuousOn.add continuousOn_const) hden
-  have hφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg z shift t)) (Ioo (0 : ℝ) 1) :=
-    φ₀''_holo.continuousOn.comp harg harg_im_pos
-  simpa [hf, mul_assoc] using
-    continuousOn_const.mul (hφcomp.mul ((hz.add continuous_const).pow 2).continuousOn)
+  simpa [hf, mul_assoc] using continuousOn_const.mul
+    ((φ₀''_holo.continuousOn.comp harg harg_im_pos).mul
+      ((hz.add continuous_const).pow 2).continuousOn)
 
 /-- Uniform bound on `hf` over `Ioo 0 1` given `‖z t‖ ≤ 2` and `Im(arg t) > 1/2`. -/
 public lemma exists_bound_norm_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
