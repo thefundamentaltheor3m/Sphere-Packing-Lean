@@ -10,7 +10,6 @@ public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Contour.PermJ5Kernel
 
-
 /-! # Perm J5 Integrability: integrability and measurability for the `PermJ5` kernel. -/
 
 namespace MagicFunction.b.Fourier
@@ -56,12 +55,12 @@ lemma aestronglyMeasurable_kernel (w : ℝ⁸) :
   have hphase : Continuous fun p : ℝ⁸ × ℝ => cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) := by fun_prop
   have hker : ContinuousOn (kernel w) (univ ×ˢ Ici (1 : ℝ)) :=
     (hphase.continuousOn.mul continuousOn_J₅_g).congr fun p _ => by simp [kernel]
-  have hμ : ((volume : Measure ℝ⁸).prod μIciOne) =
-      (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by
-    simpa [μIciOne, Measure.restrict_univ] using
-      Measure.prod_restrict (μ := (volume : Measure ℝ⁸)) (ν := (volume : Measure ℝ))
-        (s := (univ : Set ℝ⁸)) (t := Ici (1 : ℝ))
-  simpa [hμ] using hker.aestronglyMeasurable (MeasurableSet.univ.prod measurableSet_Ici)
+  simpa [show ((volume : Measure ℝ⁸).prod μIciOne) =
+      (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) by
+        simpa [μIciOne, Measure.restrict_univ] using
+          Measure.prod_restrict (μ := (volume : Measure ℝ⁸)) (ν := (volume : Measure ℝ))
+            (s := (univ : Set ℝ⁸)) (t := Ici (1 : ℝ))] using
+    hker.aestronglyMeasurable (MeasurableSet.univ.prod measurableSet_Ici)
 
 /-- Cancellation identity `s^(-4) * s^4 = 1` (after coercions to `ℂ`). -/
 public lemma zpow_neg_four_mul_pow_four (s : ℝ) (hs : s ≠ 0) :
