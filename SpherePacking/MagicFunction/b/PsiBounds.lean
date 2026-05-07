@@ -36,8 +36,7 @@ public lemma ψS_apply_eq_factor (z : ℍ) :
   rw [show ψS z = 128 * (((H₄ z - H₂ z) / (H₃ z) ^ 2) - ((H₂ z + H₃ z) / (H₄ z) ^ 2)) by
     simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_eq']
   field_simp [H₃_ne_zero z, H₄_ne_zero z]
-  simp [hJ]
-  ring_nf
+  simp [hJ]; ring_nf
 
 end
 
@@ -45,31 +44,30 @@ end
 
 /-- Continuity of the modular function `ψS`. -/
 public lemma continuous_ψS : Continuous ψS := by
-  have hH2 : Continuous H₂ := mdifferentiable_H₂.continuous
-  have hH3 : Continuous H₃ := mdifferentiable_H₃.continuous
-  have hH4 : Continuous H₄ := mdifferentiable_H₄.continuous
+  have hH2 := mdifferentiable_H₂.continuous
+  have hH3 := mdifferentiable_H₃.continuous
+  have hH4 := mdifferentiable_H₄.continuous
   simpa [ψS_eq', mul_assoc] using continuous_const.mul
     (((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))).sub
       ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z))))
 
 /-- Continuity of the modular function `ψT`. -/
 public lemma continuous_ψT : Continuous ψT := by
-  have hH2 : Continuous H₂ := mdifferentiable_H₂.continuous
-  have hH3 : Continuous H₃ := mdifferentiable_H₃.continuous
-  have hH4 : Continuous H₄ := mdifferentiable_H₄.continuous
+  have hH2 := mdifferentiable_H₂.continuous
+  have hH3 := mdifferentiable_H₃.continuous
+  have hH4 := mdifferentiable_H₄.continuous
   simpa [ψT_eq, mul_assoc] using continuous_const.mul
     (((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z))).add
       ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z))))
 
 /-- Continuity of the modular function `ψI`. -/
 public lemma continuous_ψI : Continuous ψI := by
-  have hH2 : Continuous H₂ := mdifferentiable_H₂.continuous
-  have hH3 : Continuous H₃ := mdifferentiable_H₃.continuous
-  have hH4 : Continuous H₄ := mdifferentiable_H₄.continuous
+  have hH2 := mdifferentiable_H₂.continuous
+  have hH3 := mdifferentiable_H₃.continuous
+  have hH4 := mdifferentiable_H₄.continuous
   rw [show ψI = fun z : ℍ =>
         (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ 2) +
-          (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ 2) by
-    funext z
+          (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ 2) from funext fun z => by
     simpa [nsmul_eq_mul, mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
       mul_comm] using congrArg (fun f : ℍ → ℂ => f z) ψI_eq]
   simpa [mul_assoc] using (continuous_const.mul
@@ -79,46 +77,34 @@ public lemma continuous_ψI : Continuous ψI := by
 
 /-- `ψS` tends to `0` at `Im z → ∞`. -/
 public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) := by
-  have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
-  have hH3 : Tendsto H₃ atImInfty (𝓝 (1 : ℂ)) := H₃_tendsto_atImInfty
-  have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
+  have hH2 := H₂_tendsto_atImInfty
+  have hH3 := H₃_tendsto_atImInfty
+  have hH4 := H₄_tendsto_atImInfty
   have hpoly :
-      Tendsto
-        (fun z : ℍ => 2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)
+      Tendsto (fun z : ℍ => 2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)
         atImInfty (𝓝 (5 : ℂ)) := by
     have h1 : Tendsto (fun z : ℍ => 2 * (H₂ z) ^ 2) atImInfty (𝓝 (0 : ℂ)) := by
-      simpa using (tendsto_const_nhds.mul (hH2.pow 2))
+      simpa using tendsto_const_nhds.mul (hH2.pow 2)
     have h2 : Tendsto (fun z : ℍ => 5 * (H₂ z) * (H₄ z)) atImInfty (𝓝 (0 : ℂ)) := by
-      simpa [mul_assoc] using (tendsto_const_nhds.mul (hH2.mul hH4))
+      simpa [mul_assoc] using tendsto_const_nhds.mul (hH2.mul hH4)
     have h3 : Tendsto (fun z : ℍ => 5 * (H₄ z) ^ 2) atImInfty (𝓝 (5 : ℂ)) := by
-      simpa using (tendsto_const_nhds.mul (hH4.pow 2))
+      simpa using tendsto_const_nhds.mul (hH4.pow 2)
     simpa [add_assoc] using (h1.add h2).add h3
-  have hnum :
-      Tendsto
-        (fun z : ℍ =>
-          -((128 : ℂ) *
-            (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2))))
-        atImInfty (𝓝 (0 : ℂ)) := by
-    simpa [mul_assoc] using (tendsto_const_nhds.mul (hH2.mul hpoly)).neg
-  have hden :
-      Tendsto (fun z : ℍ => (H₃ z) ^ 2 * (H₄ z) ^ 2) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa using (hH3.pow 2).mul (hH4.pow 2)
   rw [show ψS = fun z : ℍ =>
         -((128 : ℂ) *
             (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2))) /
           ((H₃ z) ^ 2 * (H₄ z) ^ 2) from funext fun z => by simp [ψS_apply_eq_factor]]
-  simpa [Pi.div_apply] using hnum.div hden (by norm_num : (1 : ℂ) ≠ 0)
-
-lemma tendsto_ψS_resToImagAxis_atTop :
-    Tendsto (fun t : ℝ => ψS.resToImagAxis t) atTop (𝓝 (0 : ℂ)) := by
-  simpa using
-    Function.tendsto_resToImagAxis_atImInfty (F := ψS) (l := (0 : ℂ)) tendsto_ψS_atImInfty
+  simpa [Pi.div_apply] using ((tendsto_const_nhds.mul (hH2.mul hpoly)).neg.div
+    (by simpa using (hH3.pow 2).mul (hH4.pow 2)) (by norm_num : (1 : ℂ) ≠ 0))
 
 /-- Uniform bound for `‖ψS.resToImagAxis t‖` on `Ici (1 : ℝ)`. -/
 public lemma exists_bound_norm_ψS_resToImagAxis_Ici_one :
     ∃ M, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ M := by
+  have htop : Tendsto (fun t : ℝ => ψS.resToImagAxis t) atTop (𝓝 (0 : ℂ)) := by
+    simpa using Function.tendsto_resToImagAxis_atImInfty (F := ψS) (l := (0 : ℂ))
+      tendsto_ψS_atImInfty
   rcases eventually_atTop.1 <|
-    ((tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_resToImagAxis_atTop).eventually
+    ((tendsto_zero_iff_norm_tendsto_zero).1 htop).eventually
       (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num)) with ⟨A, hA⟩
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc (a := 1) (b := max A 1)
     (hab := le_max_right _ _)
