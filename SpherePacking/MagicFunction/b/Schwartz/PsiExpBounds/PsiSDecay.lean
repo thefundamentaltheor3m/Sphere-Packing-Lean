@@ -17,14 +17,12 @@ namespace MagicFunction.b.PsiBounds.PsiExpBounds
 noncomputable section
 
 open scoped Topology UpperHalfPlane
-
-open Complex Real Filter Topology UpperHalfPlane Set
-open HurwitzKernelBounds
+open Complex Real Filter Topology UpperHalfPlane Set HurwitzKernelBounds
 
 /-- Exponential decay bound for `ψS.resToImagAxis` on `Ici (1 : ℝ)`. -/
 public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ C * rexp (-π * t) := by
-  rcases exists_bound_norm_H₂_resToImagAxis_exp_Ici_one with ⟨CH2, hH2⟩
+  obtain ⟨CH2, hH2⟩ := exists_bound_norm_H₂_resToImagAxis_exp_Ici_one
   let CH2' : ℝ := max CH2 0
   have hCH2' : 0 ≤ CH2' := le_max_right _ _
   have hH2' : ∀ t : ℝ, 1 ≤ t → ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := fun t ht =>
@@ -36,8 +34,8 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     (tendsto_sub_nhds_zero_iff.mpr (by simpa using
         (Function.tendsto_resToImagAxis_atImInfty (F := H) (l := (1 : ℂ)) hH))).norm.eventually
       (Iic_mem_nhds (by norm_num))
-  rcases (eventually_atTop.1 ((hEv H₃ H₃_tendsto_atImInfty).and
-    (hEv H₄ H₄_tendsto_atImInfty))) with ⟨T0, hT0⟩
+  obtain ⟨T0, hT0⟩ :=
+    eventually_atTop.1 ((hEv H₃ H₃_tendsto_atImInfty).and (hEv H₄ H₄_tendsto_atImInfty))
   let T : ℝ := max T0 1
   have hT1 : 1 ≤ T := le_max_right _ _
   have hH_ne (H : ℍ → ℂ) (hne : ∀ z : ℍ, H z ≠ 0) :
@@ -58,15 +56,17 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     hcont_norm_resToImagAxis H₃ mdifferentiable_H₃.continuous
   have hcontH4 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₄ t‖) (Icc 1 T) :=
     hcont_norm_resToImagAxis H₄ mdifferentiable_H₄.continuous
-  rcases SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc (g := fun t ↦ ‖H₃.resToImagAxis t‖)
-      (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH3)
-      (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₃ H₃_ne_zero t ht.1)) with ⟨m3, hm3, hm3le⟩
-  rcases SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc (g := fun t ↦ ‖H₄.resToImagAxis t‖)
-      (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
-      (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₄ H₄_ne_zero t ht.1)) with ⟨m4, hm4, hm4le⟩
-  rcases SpherePacking.ForMathlib.exists_upper_bound_on_Icc (g := fun t : ℝ => ‖H₄.resToImagAxis t‖)
-      (hab := hT1) (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
-      with ⟨M4Icc, hM4Icc⟩
+  obtain ⟨m3, hm3, hm3le⟩ := SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc
+    (g := fun t ↦ ‖H₃.resToImagAxis t‖)
+    (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH3)
+    (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₃ H₃_ne_zero t ht.1))
+  obtain ⟨m4, hm4, hm4le⟩ := SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc
+    (g := fun t ↦ ‖H₄.resToImagAxis t‖)
+    (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
+    (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₄ H₄_ne_zero t ht.1))
+  obtain ⟨M4Icc, hM4Icc⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc
+    (g := fun t : ℝ => ‖H₄.resToImagAxis t‖) (hab := hT1)
+    (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
   let M4 : ℝ := max M4Icc 2
   have half_le_norm {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) : (1 / 2 : ℝ) ≤ ‖x‖ := by
     have := (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' (1 : ℂ) x)
@@ -74,13 +74,13 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hH3_lower : ∀ t : ℝ, 1 ≤ t → min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm3le t ⟨ht, htT⟩)
-    · exact inf_le_of_right_le (half_le_norm (hT0 t (le_trans (le_max_left _ _)
-        (le_of_not_ge htT))).1)
+    · exact inf_le_of_right_le
+        (half_le_norm (hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).1)
   have hH4_lower : ∀ t : ℝ, 1 ≤ t → min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm4le t ⟨ht, htT⟩)
-    · exact inf_le_of_right_le (half_le_norm (hT0 t (le_trans (le_max_left _ _)
-        (le_of_not_ge htT))).2)
+    · exact inf_le_of_right_le
+        (half_le_norm (hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).2)
   have hH4_upper : ∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4 := fun t ht ↦ by
     by_cases htT : t ≤ T
     · exact (hM4Icc t ⟨ht, htT⟩).trans (le_max_left _ _)
@@ -88,8 +88,8 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
         simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc, norm_one] using
           norm_add_le (H₄.resToImagAxis t - (1 : ℂ)) (1 : ℂ)
       have h32 : ‖H₄.resToImagAxis t‖ ≤ (3 / 2 : ℝ) := by
-        linarith [(hT0 t (le_trans (le_max_left _ _) (le_of_not_ge htT))).2]
-      exact h32.trans ((show (3 / 2 : ℝ) ≤ 2 by norm_num).trans (le_max_right _ _))
+        linarith [(hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).2]
+      exact h32.trans ((by norm_num : (3 / 2 : ℝ) ≤ 2).trans (le_max_right _ _))
   -- Bound the polynomial factor in `ψS_apply_eq_factor`.
   let P : ℝ := 2 * (CH2' ^ 2) + 5 * CH2' * M4 + 5 * (M4 ^ 2)
   let c3 : ℝ := min m3 (1 / 2 : ℝ)
@@ -110,16 +110,13 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           + (5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ P := by
     have h1 : ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2‖ ≤ 2 * (CH2' ^ 2) := by
       simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
-        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH2le 2)
-        (norm_nonneg (2 : ℂ))
+        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH2le 2) (norm_nonneg (2 : ℂ))
     have h2 : ‖(5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)‖ ≤ 5 * CH2' * M4 := by
-      simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using
-        mul_le_mul_of_nonneg_left (by gcongr : ‖H₂.resToImagAxis t‖ * ‖H₄.resToImagAxis t‖ ≤
-          CH2' * M4) (norm_nonneg (5 : ℂ))
+      simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
+        (by gcongr : ‖H₂.resToImagAxis t‖ * ‖H₄.resToImagAxis t‖ ≤ CH2' * M4) (norm_nonneg (5 : ℂ))
     have h3 : ‖(5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ 5 * (M4 ^ 2) := by
       simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
-        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2)
-        (norm_nonneg (5 : ℂ))
+        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2) (norm_nonneg (5 : ℂ))
     exact norm_add_le_of_le ((norm_add_le _ _).trans (by linarith [h1, h2])) h3
   -- Now bound `ψS.resToImagAxis t` using `ψS_apply_eq_factor`.
   let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
@@ -156,7 +153,6 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hpoly' :
       ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P := by
     simpa [hHz2, hHz4, Function.resToImagAxis] using hpoly
-  -- put everything together
   calc
     ‖ψS.resToImagAxis t‖ =
         ‖(-128 : ℂ) *
@@ -181,21 +177,18 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
                 (norm_nonneg _)) (norm_nonneg _)
           simp [p, denInv, mul_assoc]
     _ ≤ (128 : ℝ) * (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have hP0 : (0 : ℝ) ≤ P := le_trans (norm_nonneg _) hpoly'
-          have h1 :
-              ‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤
-                ‖H₂ z‖ * P := mul_le_mul_of_nonneg_left hpoly' (norm_nonneg _)
+          have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
+          have h1 : ‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤
+              ‖H₂ z‖ * P := mul_le_mul_of_nonneg_left hpoly' (norm_nonneg _)
           have h2 :
               (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
-                  ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤
-                (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
+                ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
             mul_le_mul h1 hinv (norm_nonneg _) (mul_nonneg (norm_nonneg _) hP0)
           grind only
     _ ≤ (128 : ℝ) * ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have hP0 : (0 : ℝ) ≤ P := le_trans (norm_nonneg _) hpoly'
-          have h2 :
-              (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ ≤
-                ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
+          have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
+          have h2 : (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ ≤
+              ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
             mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hH2z hP0) (by positivity)
           simpa [mul_assoc] using mul_le_mul_of_nonneg_left h2 (by positivity : (0:ℝ) ≤ 128)
     _ = ((128 : ℝ) * P * (c3 ^ 2 * c4 ^ 2)⁻¹ * CH2') * rexp (-π * t) := by ring
