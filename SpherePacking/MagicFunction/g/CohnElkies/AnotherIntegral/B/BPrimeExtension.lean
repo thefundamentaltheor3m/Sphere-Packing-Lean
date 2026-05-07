@@ -22,17 +22,9 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 /-!
 # Complex analytic extension of `b'` (`bPrimeC`)
 
-For the identity-theorem argument in `AnotherIntegral.B`, we need a function `ℂ → ℂ` that is
-analytic on the right half-plane and whose restriction to real `u > 0` agrees with `b' u`.
-This file defines complexified integrals `J₁'C`, ..., `J₆'C` and their sum `bPrimeC`, then proves
-the real restriction lemma `bPrimeC_ofReal` and analyticity `bPrimeC_analyticOnNhd`.
-
-## Main definition
-* `bPrimeC`
-
-## Main statements
-* `bPrimeC_ofReal`
-* `bPrimeC_analyticOnNhd`
+Defines `bPrimeC` as the sum of complexified integrals `J₁'C`, ..., `J₆'C`, proves it agrees
+with `b'` on the positive real axis (`bPrimeC_ofReal`) and is analytic on the right half-plane
+(`bPrimeC_analyticOnNhd`).
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -45,31 +37,31 @@ open MagicFunction.b.RealIntegrals MagicFunction.Parametrisations
 
 noncomputable section
 
-/-- Complexified `J₁'`. -/
+/-- Complexification of `J₁'`. -/
 def J₁'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψT' (z₁' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₁' t))
 
-/-- Complexified `J₂'`. -/
+/-- Complexification of `J₂'`. -/
 def J₂'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   ψT' (z₂' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₂' t))
 
-/-- Complexified `J₃'`. -/
+/-- Complexification of `J₃'`. -/
 def J₃'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψT' (z₃' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₃' t))
 
-/-- Complexified `J₄'`. -/
+/-- Complexification of `J₄'`. -/
 def J₄'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (-1 : ℂ) * ψT' (z₄' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₄' t))
 
-/-- Complexified `J₅'`. -/
+/-- Complexification of `J₅'`. -/
 def J₅'C (u : ℂ) : ℂ := -2 * ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψI' (z₅' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₅' t))
 
-/-- Complexified `J₆'`. -/
+/-- Complexification of `J₆'`. -/
 def J₆'C (u : ℂ) : ℂ := -2 * ∫ t in Set.Ici (1 : ℝ),
   (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t))
 
-/-- Analytic extension of `b'` to complex parameters, defined as the sum of `J₁'C`, ..., `J₆'C`. -/
+/-- Analytic extension of `b'` defined as the sum `J₁'C + … + J₆'C`. -/
 public def bPrimeC (u : ℂ) : ℂ :=
   J₁'C u + J₂'C u + J₃'C u + J₄'C u + J₅'C u + J₆'C u
 
@@ -137,30 +129,27 @@ lemma exists_bound_norm_ψT'_z₄' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z
 
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
-  rw [hz]
   have h := norm_add_le (1 : ℂ) ((Complex.I : ℂ) * (t : ℂ))
-  simp [Complex.norm_real, abs_of_nonneg ht.1] at h; linarith [ht.2]
+  rw [hz]; simp [Complex.norm_real, abs_of_nonneg ht.1] at h; linarith [ht.2]
 
-private lemma norm_add_I_le_three (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+private lemma norm_add_I_le_three (a : ℂ) {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1)
     (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 := by
   have h := norm_add_le a (Complex.I : ℂ); simp at h; linarith [ht.2]
 
 lemma norm_z₂'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₂' t‖ ≤ 3 :=
   (show z₂' t = ((-1 : ℂ) + (t : ℂ)) + (Complex.I : ℂ) by
-    simp [z₂'_eq_of_mem (t := t) ht, add_comm]) ▸ norm_add_I_le_three _ t ht
+    simp [z₂'_eq_of_mem (t := t) ht, add_comm]) ▸ norm_add_I_le_three _ ht
     (by simpa [Complex.norm_real, abs_of_nonneg ht.1] using norm_add_le (-1 : ℂ) (t : ℂ))
 
 lemma norm_z₄'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₄' t‖ ≤ 3 :=
   (show z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) by
-    simp [z₄'_eq_of_mem (t := t) ht, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ t ht
+    simp [z₄'_eq_of_mem (t := t) ht, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ ht
     ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg ht.1]))
 
 lemma norm_z₅'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₅' t‖ ≤ 1 := by
   simpa [z₅'_eq_of_mem (t := t) ht, Complex.norm_real, abs_of_nonneg ht.1] using ht.2
 
-/-- Shared differentiability wrapper for `J₁'C`–`J₅'C`:
-`u ↦ ∫ t in (0:ℝ)..1, ψ (z t) * exp (π*I*u*z t)` is differentiable, given continuity of the
-composed map, continuity of `z`, and `‖ψ (z t)‖ ≤ Mψ`, `‖z t‖ ≤ Cz` on `Ι 0 1`. -/
+/-- Shared differentiability wrapper for `J₁'C`–`J₅'C`. -/
 private lemma integral_ψ_exp_differentiable
     {ψ : ℂ → ℂ} {z : ℝ → ℂ} {Mψ Cz : ℝ}
     (hψz_cont : ContinuousOn (fun t : ℝ => ψ (z t)) (Ι (0 : ℝ) 1))
@@ -192,7 +181,7 @@ lemma J₂'C_differentiable : Differentiable ℂ J₂'C :=
   let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₂'
   integral_ψ_exp_differentiable (Cz := 3)
     (continuousOn_ψT'_comp z₂' continuous_z₂'
-      fun t ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
+      fun _ ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
     continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
 
 lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
@@ -214,7 +203,6 @@ lemma J₄'C_differentiable : Differentiable ℂ J₄'C :=
         fun t ht => im_z₄'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
       continuous_z₄' hMψ (fun t ht => norm_z₄'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
-/-- Continuity of `t ↦ ψI' (z₅' t)` on `Ι 0 1`, using `ψI' = ψI` on the upper half-plane. -/
 private lemma continuousOn_ψI'_z₅' :
     ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ι (0 : ℝ) 1) := by
   have hcont : Continuous fun t : Ioc (0 : ℝ) 1 => ψI' (z₅' (t : ℝ)) := by
@@ -333,10 +321,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
     have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
       simpa [hz] using hψS'_eq t ht
-    have hIexp : Complex.I * (Complex.I * (↑t * ↑π)) = -(↑t * ↑π) := by
-      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     have hIexp' : u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
-          -(u * ((t : ℂ) * (π : ℂ))) := by simp [hIexp]
+          -(u * ((t : ℂ) * (π : ℂ))) := by ring_nf; simp [Complex.I_sq]
     simp [F, base, k, hz, hψ', hIexp', mul_left_comm, mul_comm]
   exact (hEq ▸ (h.2.differentiableAt.const_mul (-2 : ℂ)) : DifferentiableAt ℂ J₆'C u0)
     |>.differentiableWithinAt
