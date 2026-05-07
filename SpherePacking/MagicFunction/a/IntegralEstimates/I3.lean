@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -15,15 +13,8 @@ import SpherePacking.Integration.InvChangeOfVariables
 /-!
 # Bounds for `I₃'`
 
-This file rewrites the auxiliary integral `I₃'` as an integral over `Ici 1` and proves the
+Rewrites the auxiliary integral `I₃'` as an integral over `Ici 1` and proves the
 exponential bound used in Proposition 7.8 of the blueprint.
-
-## Main definitions
-* `g`
-
-## Main statements
-* `inv_integrand_eq_integrand`
-* `I₃'_bounding`
 -/
 
 namespace MagicFunction.a.IntegralEstimates.I₃
@@ -39,10 +30,7 @@ variable (r : ℝ)
 
 /-- The integrand on `Ici 1` obtained from `I₃'` after an inversion change of variables. -/
 @[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦ -I
-  * φ₀'' (I * s)
-  * (s ^ (-4 : ℤ))
-  * cexp (π * I * r)
-  * cexp (-π * r / s)
+  * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (π * I * r) * cexp (-π * r / s)
 
 /-- Algebraic identity relating the `I₃'` integrand under the inversion `t ↦ 1 / t`. -/
 public lemma inv_integrand_eq_integrand {t : ℝ} (ht₀ : 0 < t) (r : ℝ) (phase : ℂ) :
@@ -50,9 +38,8 @@ public lemma inv_integrand_eq_integrand {t : ℝ} (ht₀ : 0 < t) (r : ℝ) (pha
       |(-1 / t ^ 2)| •
         ((-I : ℂ) * φ₀'' (I * (1 / t)) * (1 / t) ^ (-4 : ℤ) * phase * cexp (-π * r / (1 / t))) := by
   simp only [Int.reduceNeg, zpow_neg, real_smul]
-  have h₃ : -1 / (I * t) = I / t := by rw [div_mul_eq_div_div_swap, div_I]; ring
-  have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by simp [neg_div]
-  rw [h₁, h₃]
+  rw [show |-1 / t ^ 2| = 1 / t ^ 2 by simp [neg_div],
+    show -1 / (I * t) = I / t by rw [div_mul_eq_div_div_swap, div_I]; ring]
   simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
     one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
   rw [eq_div_iff (pow_ne_zero 2 (mod_cast ht₀.ne')), neg_mul, neg_inj]
@@ -62,11 +49,9 @@ public lemma inv_integrand_eq_integrand {t : ℝ} (ht₀ : 0 < t) (r : ℝ) (pha
 public lemma I₃'_bounding_aux_1 (r : ℝ) :
     ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
   intro s hs
-  simp only [
-    g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv, norm_zpow,
-    norm_real, norm_eq_abs, norm_exp, neg_re, mul_re, ofReal_re, I_re, mul_zero, ofReal_im, I_im,
-    mul_one, zero_mul, mul_im, add_zero, Real.exp_zero, div_ofReal_re, sub_zero
-  ]
+  simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
+    norm_zpow, norm_real, norm_eq_abs, norm_exp, neg_re, mul_re, ofReal_re, I_re, mul_zero,
+    ofReal_im, I_im, mul_one, zero_mul, mul_im, add_zero, Real.exp_zero, div_ofReal_re, sub_zero]
   conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
   gcongr
   have hs1 : (1 : ℝ) ≤ s := hs
