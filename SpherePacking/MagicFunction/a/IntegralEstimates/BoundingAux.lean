@@ -45,27 +45,8 @@ public lemma iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
         simpa [mul_assoc, mul_left_comm, mul_comm] using norm_pow_mul_mul_le (n := n)
           (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (by positivity) (hcoeff t ht) (hC₀ r t ht)
 
-/-- Integrability of `(coeff t) ^ n * g r t` from uniform bounds, with `μ` finite and a.e. on
+/-- Integrability of `(coeff t) ^ n * g r t` from uniform bounds, on `volume.restrict
 `Ioo (0, 1)`. -/
-public lemma integrable_pow_mul_of_ae_mem_Ioo01 {μ : Measure ℝ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
-    {n : ℕ} {r : ℝ}
-    (hμ_ne : μ univ ≠ ⊤)
-    (hmeas : AEStronglyMeasurable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ)
-    (hmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1)
-    (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
-    (hg : ∃ C₀ > 0, ∀ r : ℝ, ∀ t : ℝ, t ∈ Ioo (0 : ℝ) 1 →
-      ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
-    Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := hg
-  have hbd : ∀ᵐ t ∂μ,
-      ‖(coeff t) ^ n * g r t‖ ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2) * rexp (-π * r) := by
-    filter_upwards [hmem] with t ht
-    simpa [mul_assoc, mul_left_comm, mul_comm] using norm_pow_mul_mul_le
-      (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n) (by positivity) (hcoeff t ht) (hC₀ r t ht)
-  simpa [IntegrableOn] using
-    Measure.integrableOn_of_bounded (s := Set.univ) hμ_ne hmeas (by simpa using hbd)
-
-/-- Specialization of `integrable_pow_mul_of_ae_mem_Ioo01` to `volume.restrict (Ioo (0, 1))`. -/
 public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
     {n : ℕ} {r : ℝ}
     (hmeas : AEStronglyMeasurable (fun t : ℝ ↦ (coeff t) ^ n * g r t)
@@ -74,9 +55,15 @@ public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {
     (hg : ∃ C₀ > 0, ∀ r : ℝ, ∀ t : ℝ, t ∈ Ioo (0 : ℝ) 1 →
       ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
     Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t)
-      ((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)) :=
-  integrable_pow_mul_of_ae_mem_Ioo01 (measure_ne_top _ univ) hmeas
-    (ae_restrict_mem measurableSet_Ioo) hcoeff hg
+      ((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)) := by
+  obtain ⟨C₀, _, hC₀⟩ := hg
+  have hbd : ∀ᵐ t ∂((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)),
+      ‖(coeff t) ^ n * g r t‖ ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2) * rexp (-π * r) := by
+    filter_upwards [ae_restrict_mem measurableSet_Ioo] with t ht
+    simpa [mul_assoc, mul_left_comm, mul_comm] using norm_pow_mul_mul_le
+      (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n) (by positivity) (hcoeff t ht) (hC₀ r t ht)
+  simpa [IntegrableOn] using
+    Measure.integrableOn_of_bounded (s := Set.univ) (measure_ne_top _ _) hmeas (by simpa using hbd)
 
 /-- For `r` in a unit ball around `r₀`, `rexp (-π * r) ≤ rexp π * rexp (-π * r₀)`. -/
 public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ : ℝ}
