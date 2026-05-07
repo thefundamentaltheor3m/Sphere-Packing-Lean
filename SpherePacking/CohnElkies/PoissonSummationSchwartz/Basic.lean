@@ -2,13 +2,10 @@ module
 public import SpherePacking.CohnElkies.PoissonSummationLattices.PoissonSummation
 public import Mathlib.Topology.MetricSpace.Bounded
 
-/-!
-Basic definitions and lemmas for Poisson summation of Schwartz functions on `ℝ^d` over full-rank
-`ℤ`-lattices.
--/
+/-! Poisson summation of Schwartz functions on `ℝ^d` over full-rank `ℤ`-lattices. -/
 
 open scoped BigOperators FourierTransform
-open MeasureTheory
+open MeasureTheory UnitAddTorus
 
 namespace SchwartzMap.PoissonSummation.Standard
 
@@ -16,8 +13,6 @@ variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
 local notation "Λ" => SchwartzMap.standardLattice d
-
-open UnitAddTorus
 
 /-- Equivalence between integer vectors `Fin d → ℤ` and the standard lattice `Λ = ℤ^d ⊆ ℝ^d`. -/
 @[expose] public noncomputable def equivIntVec : (Fin d → ℤ) ≃ Λ :=
@@ -75,15 +70,12 @@ public lemma finite_norm_le_lattice (r : ℝ) :
     (by simpa [Submodule.coe_toAddSubgroup] using hfinE)).subset fun ℓ hℓ => by
       simpa [e, Metric.mem_closedBall, dist_eq_norm] using hℓ
 
-/--
-Schwartz decay implies that the sup norms of translates, restricted to a compact set, are summable
-over the standard lattice.
--/
+/-- Schwartz decay: sup norms of translates restricted to a compact `K` are summable. -/
 public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : Λ => ‖(translate (d := d) f ℓ).restrict K‖) := by
   let k : ℕ := Module.finrank ℤ Λ + 1
   obtain ⟨C, hCpos, hC⟩ := f.decay k 0
-  have hC' : ∀ x : E, ‖x‖ ^ k * ‖f x‖ ≤ C := by simpa [norm_iteratedFDeriv_zero] using hC
+  simp_rw [norm_iteratedFDeriv_zero] at hC
   obtain ⟨r, hrK⟩ := K.isCompact.isBounded.subset_closedBall (0 : E)
   let r0 : ℝ := max r 0
   have hrK0 : (K : Set E) ⊆ Metric.closedBall (0 : E) r0 :=
@@ -111,7 +103,7 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
           (pow_le_pow_left₀ (by positivity) hnorm_ge k)
     calc ‖(translate (d := d) f ℓ) (⟨x, hxK⟩ : K)‖
         = ‖f (x + (ℓ : E))‖ := by simp [translate]
-      _ ≤ C / (‖(x + (ℓ : E))‖ ^ k) := (le_div_iff₀' hpow_pos).2 (hC' (x + (ℓ : E)))
+      _ ≤ C / (‖(x + (ℓ : E))‖ ^ k) := (le_div_iff₀' hpow_pos).2 (hC (x + (ℓ : E)))
       _ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
         simpa [div_eq_mul_inv, mul_assoc] using mul_le_mul_of_nonneg_left hinv hCpos.le
   refine Summable.of_norm_bounded_eventually
@@ -155,9 +147,7 @@ public lemma periodized_factorsThrough :
       ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩
 
-/--
-The descended function on the torus `(ℝ/ℤ)^d`, obtained by quotient-lifting the periodization.
--/
+/-- Descend the periodization to the torus `(ℝ/ℤ)^d` via the quotient. -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
   Topology.IsQuotientMap.lift (hf := isQuotientMap_coeFunEC (d := d))
     (g := periodized (d := d) f) (periodized_factorsThrough (d := d) (f := f))
@@ -221,12 +211,7 @@ public lemma volume_iocCube_lt_top :
   simpa using ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
     (iocCube_subset_closedBall (d := d))).measure_lt_top
 
-/--
-Integrability of `mFourier (-n) * translate` on the fundamental cube `iocCube`.
-
-This is one of the analytic inputs needed to compute Fourier coefficients of the descended
-periodization.
--/
+/-- Integrability of `mFourier (-n) * translate` on the fundamental cube `iocCube`. -/
 public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (ℓ : Λ) :
     IntegrableOn
         (fun x : E =>
