@@ -97,12 +97,12 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
   have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
     intro t ht0
-    have hIm : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
     have hψIcomp :
         ContinuousAt
           (fun s : ℝ => ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) t :=
       ContinuousAt.comp MagicFunction.b.PsiBounds.continuous_ψI.continuousAt
-        (ContinuousAt.comp (UpperHalfPlane.contMDiffAt_ofComplex (n := ⊤) hIm).continuousAt
+        (ContinuousAt.comp (UpperHalfPlane.contMDiffAt_ofComplex (n := ⊤) (by simpa using ht0 :
+          0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im)).continuousAt
           (by fun_prop : ContinuousAt (fun s : ℝ => (Complex.I : ℂ) * (s : ℂ)) t))
     refine ((show ContinuousAt
         (fun s : ℝ => (ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) *
@@ -118,8 +118,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       ((hcontIoi.mono fun t ht => ht.1).aestronglyMeasurable measurableSet_Ioc) Cψ0 <| by
       refine ae_restrict_of_forall_mem measurableSet_Ioc fun t ht => ?_
       have ht0 : 0 < t := ht.1
-      have ht1 : t ≤ 1 := ht.2
-      have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht1
+      have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht.2
       have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
         simpa using (hψS_bound (1 / t : ℝ) ht').trans (mul_le_mul_of_nonneg_left
           (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
@@ -128,7 +127,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         rw [hψI' t ht0, hSlashS t ht0]
         calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
               = (t ^ (2 : ℕ)) * ‖ψS.resToImagAxis (1 / t)‖ := by simp
-          _ ≤ 1 * Cψ0 := mul_le_mul (by simpa using pow_le_one₀ (n := 2) ht0.le ht1) hψS'
+          _ ≤ 1 * Cψ0 := mul_le_mul (by simpa using pow_le_one₀ (n := 2) ht0.le ht.2) hψS'
             (norm_nonneg _) zero_le_one
           _ = Cψ0 := one_mul _
       calc ‖bLaplaceIntegrand u t‖
@@ -157,12 +156,6 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
       have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans ht.le)
       have htIm : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
-      have hψI' : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ CI * Real.exp (2 * π * t) := by
-        simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
-            ψI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ) from by simp [ψI', ht0],
-          UpperHalfPlane.im] using
-          hI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ)
-            (by simpa [UpperHalfPlane.im] using (le_max_left _ _).trans ht.le)
       calc ‖bLaplaceIntegrand u t‖
             = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
               simp [bLaplaceIntegrand]
@@ -170,7 +163,13 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
               rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
                 simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)]
         _ ≤ (CI * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
-              mul_le_mul_of_nonneg_right hψI' (Real.exp_pos _).le
+              mul_le_mul_of_nonneg_right (by
+                simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
+                    ψI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ) from by simp [ψI', ht0],
+                  UpperHalfPlane.im] using
+                  hI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ)
+                    (by simpa [UpperHalfPlane.im] using (le_max_left _ _).trans ht.le))
+                (Real.exp_pos _).le
         _ = CI * Real.exp (-(π * (u - 2)) * t) := by
               simpa [mul_assoc] using congrArg (fun x : ℝ => CI * x)
                 (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t)
