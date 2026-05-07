@@ -148,15 +148,12 @@ section Empty_Centers
 /-- If a periodic packing has no centers, then its density is zero. -/
 public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePacking d)
     (hd : 0 < d) [instEmpty : IsEmpty S.centers] : S.density = 0 := by
-  rw [S.density_eq' hd]
   let b := S.defaultBasis
   let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
-  rw [← S.card_centers_inter_isFundamentalDomain D
+  haveI : IsEmpty (↥(S.centers ∩ D)) := ⟨fun x => instEmpty.false ⟨x.1, x.2.1⟩⟩
+  rw [S.density_eq' hd, ← S.card_centers_inter_isFundamentalDomain D
     (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))
     (S.fundamental_domain_unique_covers b) hd]
-  simp only [Set.toFinset_card, ENat.toENNReal_coe, ENNReal.div_eq_zero_iff, mul_eq_zero,
-    Nat.cast_eq_zero, ENNReal.coe_ne_top, or_false]
-  haveI : IsEmpty (↥(S.centers ∩ D)) := ⟨fun x => instEmpty.false ⟨x.1, x.2.1⟩⟩
-  exact .inl (by simp)
+  simp
 
 end Empty_Centers
