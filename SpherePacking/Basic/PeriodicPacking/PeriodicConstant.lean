@@ -5,12 +5,8 @@ public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 # Periodizing a sphere packing
 -/
 
-open scoped ENNReal
+open scoped ENNReal Pointwise
 open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
-
-section PeriodicConstantAux
-
-open scoped Pointwise
 
 variable {d : ℕ}
 
@@ -19,10 +15,7 @@ public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x
   simpa [EuclideanSpace.inner_single_left, EuclideanSpace.norm_single] using
     abs_real_inner_le_norm (EuclideanSpace.single i (1 : ℝ)) x
 
-/--
-If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
-`2 * r ≤ dist x y`.
--/
+/-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
 public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
     {A B : Set (EuclideanSpace ℝ (Fin d))}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) :
@@ -98,14 +91,6 @@ along a lattice `Λ`.
           (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
   · exact fun _ _ ↦ periodizedCenters_lattice_action
 
-end PeriodicConstantAux
-
-section PeriodicConstantCube
-
-open scoped Pointwise
-
-variable {d : ℕ}
-
 /-- The coordinate cube `[0,L)^d` as a set in `EuclideanSpace`. -/
 @[expose] public def coordCube (d : ℕ) (L : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
   {x | ∀ i : Fin d, x i ∈ Set.Ico (0 : ℝ) L}
@@ -159,13 +144,7 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
   obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
   simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
 
-end PeriodicConstantCube
-
-open scoped Pointwise
-
 namespace PeriodicConstant
-
-variable {d : ℕ}
 
 private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet s) :
     volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s := by
@@ -215,13 +194,7 @@ public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
 
 end PeriodicConstant
 
-section PeriodicConstantApprox
-
-open scoped Pointwise
-
 namespace PeriodicConstantApprox
-
-variable {d : ℕ}
 
 public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
     (v : cubeLattice d L hL) :
@@ -251,12 +224,8 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
   refine (Set.Finite.preimage_embedding (f := ⟨fun g : cubeLattice d L hL =>
     (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩) (by
-      simpa [cubeLattice] using
-        ZSpan.setFinite_inter (b := cubeBasis d L hL)
-          (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset
-    fun g hg => ?_
+      simpa [cubeLattice] using ZSpan.setFinite_inter (b := cubeBasis d L hL)
+        (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset fun g hg => ?_
   exact ⟨hg, g.property⟩
-
-end PeriodicConstantApprox
 
 end PeriodicConstantApprox
