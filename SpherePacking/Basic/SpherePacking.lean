@@ -101,9 +101,8 @@ open Real
     obtain ⟨y', hy', rfl⟩ := Set.mem_smul_set.mp hy
     change c * S.separation ≤ ‖c • x' - c • y'‖
     rw [← smul_sub, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le]
-    exact (mul_le_mul_iff_right₀ hc).mpr <| S.centers_dist
-      (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩) fun heq ↦ hxy <| by
-        simp [Subtype.ext_iff] at heq; simp [heq]
+    exact (mul_le_mul_iff_right₀ hc).mpr <| S.centers_dist (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩)
+      fun heq ↦ hxy <| by simp [Subtype.ext_iff] at heq; simp [heq]
 
 /-- Scale a periodic packing by a positive factor `c`, scaling both centers and the lattice. -/
 @[expose] public noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ}
