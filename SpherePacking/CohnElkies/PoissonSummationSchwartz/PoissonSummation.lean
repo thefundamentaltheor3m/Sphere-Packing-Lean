@@ -117,19 +117,16 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
         = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
             simp only [UnitAddTorus.mFourierCoeff, smul_eq_mul]
             haveI : Fact (0 < (1 : ℝ)) := ⟨one_pos⟩
-            have hμ_circle :
-                (@volume UnitAddCircle instMeasureSpaceUnitAddCircle) =
-                  (@volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ))) := by
-              change (AddCircle.haarAddCircle (T := (1 : ℝ)) : Measure UnitAddCircle) =
-                (@volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ)))
-              simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle]
             simp [show (@volume (UnitAddTorus (Fin d))
                   (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
                     (fun _ => instMeasureSpaceUnitAddCircle))) =
                 (@volume (UnitAddTorus (Fin d))
                   (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
                     (fun _ => AddCircle.measureSpace (1 : ℝ)))) from
-              congrArg Measure.pi (funext fun _ => hμ_circle)]
+              congrArg Measure.pi (funext fun _ => by
+                change (AddCircle.haarAddCircle (T := (1 : ℝ)) : Measure UnitAddCircle) =
+                  (@volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ)))
+                simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle])]
     _ = ∫ x in iocCube (d := d),
           UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) •
             descended (d := d) f (coeFunE (d := d) x)
