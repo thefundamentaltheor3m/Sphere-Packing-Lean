@@ -53,12 +53,6 @@ public lemma bContourIntegrandI_mul_I_eq_bLaplaceIntegrand (u t : ℝ) :
     bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) = -bLaplaceIntegrand u t := by
   simp [bLaplaceIntegrand, bContourIntegrandI_mul_I]
 
-/-- Imaginary-axis specialization of `bContourIntegrandT`. -/
-public lemma bContourIntegrandT_mul_I (u t : ℝ) :
-    bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)) =
-      ψT' ((Complex.I : ℂ) * (t : ℂ)) * (Real.exp (-π * u * t) : ℂ) := by
-  simp [bContourIntegrandT, bContourWeight_mul_I, mul_assoc]
-
 /-- Translate `ψT'` into `ψI'` by adding `1` in the upper half-plane. -/
 public lemma ψT'_eq_ψI'_add_one (z : ℂ) (hz : 0 < z.im) :
     ψT' z = ψI' (z + (1 : ℂ)) := by

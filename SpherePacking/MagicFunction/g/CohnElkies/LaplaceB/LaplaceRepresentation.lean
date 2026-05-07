@@ -71,8 +71,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_left 1 Aψ).trans ht.le)
       have hzI : 0 < ((I * (t : ℂ) + (1 : ℂ)).im) := by simpa [add_assoc, mul_assoc] using ht0
       rw [show ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) by
-            simp [f, bContourIntegrandT_mul_I, -Complex.ofReal_exp, Complex.norm_real,
-              abs_of_nonneg (Real.exp_pos _).le],
+            simp [f, bContourIntegrandT, bContourWeight_mul_I, mul_assoc,
+              -Complex.ofReal_exp, Complex.norm_real, abs_of_nonneg (Real.exp_pos _).le],
         ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc,
         show ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ by
           rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]]
