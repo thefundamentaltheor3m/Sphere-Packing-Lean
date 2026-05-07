@@ -7,12 +7,8 @@ import SpherePacking.ForMathlib.ExpBounds
 /-!
 # Smoothness and decay for integrals on `(0, 1)`
 
-This file is a small wrapper around:
-- `SpherePacking.Integration.DifferentiationUnderIntegral` (differentiate under the integral sign),
-- `SpherePacking.ForMathlib.IteratedDeriv` (package smoothness from a `HasDerivAt` recurrence).
-
-It also provides a standard one-sided decay argument for integrals whose exponential factor has a
-uniform norm formula such as `‖cexp ((x : ℂ) * coeff t)‖ = exp (-π * x)`.
+Wrapper around `DifferentiationUnderIntegral` and `IteratedDeriv` for integrals whose
+exponential factor satisfies `‖cexp ((x : ℂ) * coeff t)‖ = exp (-π * x)`.
 -/
 
 namespace SpherePacking.Integration.SmoothIntegralCommon
@@ -73,7 +69,6 @@ private theorem decay_integral
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
   have hMh0 : 0 ≤ Mh := (norm_nonneg (hf 1)).trans (hMh 1 (by simp))
   refine ⟨(2 * Real.pi) ^ n * Mh * B, fun x hx => ?_⟩
-  have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
   have hrepr := congrArg (fun f : ℝ → ℂ => f x)
     (iteratedDeriv_eq_I (coeff := coeff) (hf := hf)
       continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n))
@@ -94,13 +89,13 @@ private theorem decay_integral
           simpa [mul_assoc, norm_cexp] using
             mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t)))
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖
-        = x ^ k * ‖I (coeff := coeff) (hf := hf) n x‖ := by
-          simp [hxabs, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hrepr]
+      = x ^ k * ‖I (coeff := coeff) (hf := hf) n x‖ := by
+        simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hrepr]
     _ ≤ x ^ k * ((2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x)) := by gcongr
     _ = (2 * Real.pi) ^ n * Mh * (x ^ k * Real.exp (-Real.pi * x)) := by ring
     _ ≤ (2 * Real.pi) ^ n * Mh * B :=
-          mul_le_mul_of_nonneg_left (hB x hx)
-            (mul_nonneg (pow_nonneg (by positivity) n) hMh0)
+        mul_le_mul_of_nonneg_left (hB x hx)
+          (mul_nonneg (pow_nonneg (by positivity) n) hMh0)
 
 /-- Specialize `decay_integral` when `Re (coeff t) = -π` for all `t`. -/
 public theorem decay_integral_of_coeff_re
