@@ -13,6 +13,8 @@ public import SpherePacking.ModularForms.Eisenstein
 
 Wrap `E₄.holo'` / `E₆.holo'` / `Δ.holo'` as `MDifferentiable` lemmas so that `fun_prop` can
 close goals of the form `MDiff (fun z => E₄ z * …)` automatically.
+
+To be upstreamed in mathlib PR [#33808](https://github.com/leanprover-community/mathlib4/pull/33808).
 -/
 
 @[expose] public section
@@ -23,19 +25,6 @@ theorem E₄_MDifferentiable : MDiff E₄.toFun := E₄.holo'
 
 theorem E₆_MDifferentiable : MDiff E₆.toFun := E₆.holo'
 
-/-
-Register `MDifferentiable` as a `fun_prop` so that we can use it in `fun_prop`-based proofs.
-To be upstreamed in mathlib PR [#33808](https://github.com/leanprover-community/mathlib4/pull/33808)
--/
-attribute [fun_prop] MDifferentiable
-
-attribute [fun_prop]
-  MDifferentiable.add
-  MDifferentiable.sub
-  MDifferentiable.neg
-  MDifferentiable.mul
-  MDifferentiable.pow
-  MDifferentiable.const_smul
-  mdifferentiable_const
-  E₄_MDifferentiable
-  E₆_MDifferentiable
+attribute [fun_prop] MDifferentiable MDifferentiable.add MDifferentiable.sub MDifferentiable.neg
+  MDifferentiable.mul MDifferentiable.pow MDifferentiable.const_smul mdifferentiable_const
+  E₄_MDifferentiable E₆_MDifferentiable
