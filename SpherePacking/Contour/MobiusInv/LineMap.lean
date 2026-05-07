@@ -7,13 +7,7 @@ import Mathlib.Tactic.FunProp
 
 public import SpherePacking.Contour.MobiusInv.Basic
 
-/-!
-# Smoothness of Mobius homotopies
-
-A smoothness lemma for the affine homotopy map used in Poincare-lemma arguments. We linearly
-interpolate between `mobiusInv (lineMap p0 p1 t)` and `lineMap q0 q1 t`, assuming the inner segment
-avoids `0`.
--/
+/-! # Smoothness of Mobius homotopies (affine homotopy map for Poincare-lemma arguments). -/
 
 namespace SpherePacking
 
