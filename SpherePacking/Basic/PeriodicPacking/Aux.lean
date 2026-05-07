@@ -15,8 +15,6 @@ public import SpherePacking.ForMathlib.ZLattice
 
 /-!
 # Periodic packings: auxiliary finiteness and disjointness lemmas (blueprint Theorem 2.2)
-
-Finiteness of `S.centers ∩ D` for bounded `D`, and disjointness of distinct lattice translates.
 -/
 
 open scoped ENNReal
@@ -48,7 +46,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     As_disj (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset fun i hi ↦ by
     simpa [As, hi] using h_volume i hi
 
-/-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
+/-- A periodic packing has only finitely many centers in a bounded set. -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
     Finite ↑(S.centers ∩ D) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
@@ -74,8 +72,7 @@ open scoped Pointwise
 
 variable {d : ℕ}
 
-/-- If a set `D` meets each orbit of the lattice action in exactly one point, then distinct
-lattice translates of `D` are disjoint. -/
+/-- If `D` meets each lattice orbit at exactly one point, distinct translates of `D` are disjoint. -/
 public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D)
     {g h : Λ} (hgh : g ≠ h) : Disjoint (g +ᵥ D) (h +ᵥ D) :=

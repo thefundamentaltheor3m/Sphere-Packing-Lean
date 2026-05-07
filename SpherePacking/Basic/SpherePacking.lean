@@ -14,10 +14,7 @@ public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 /-!
-# Density of Sphere Packings
-
-A *sphere packing* in `ℝ^d` is a set of centers `X` with pairwise distance `≥ r`, equivalently
-disjoint balls of radius `r/2`. We define density and basic notions for periodic packings.
+# Density of Sphere Packings: definitions and basic notions for periodic packings.
 -/
 
 open MeasureTheory Metric Filter Module
@@ -45,7 +42,6 @@ variable {d : ℕ}
 attribute [instance] PeriodicSpherePacking.lattice_discrete
   PeriodicSpherePacking.lattice_isZLattice
 
-/-- Unpack `SpherePacking.centers_dist` as a statement about points of `S.centers`. -/
 public theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace ℝ (Fin d))
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) : S.separation ≤ dist x y :=
   S.centers_dist (i := ⟨x, hx⟩) (j := ⟨y, hy⟩) (Subtype.coe_ne_coe.mp hxy)
@@ -64,18 +60,17 @@ public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d
     {x : S.lattice} {y : S.centers} :
     x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ := rfl
 
-/-- The union of the balls of radius `S.separation / 2` around the centers of a packing. -/
+/-- Balls of radius `S.separation / 2` around the centers of a packing. -/
 @[expose, reducible] public def SpherePacking.balls (S : SpherePacking d) :
     Set (EuclideanSpace ℝ (Fin d)) :=
   ⋃ x : S.centers, ball (x : EuclideanSpace ℝ (Fin d)) (S.separation / 2)
 
-/-- The density inside radius `R`: the volume of the packing balls inside `ball 0 R`, normalized by
-`volume (ball 0 R)`. -/
+/-- Volume of packing balls inside `ball 0 R`, normalized by `volume (ball 0 R)`. -/
 @[expose] public noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) :
     ℝ≥0∞ :=
   volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
 
-/-- The (upper) density of a packing, defined as `limsup` of `finiteDensity` as `R → ∞`. -/
+/-- The (upper) density: `limsup` of `finiteDensity` as `R → ∞`. -/
 @[expose] public noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
 
@@ -155,15 +150,14 @@ end Scaling
 noncomputable section Density
 namespace SpherePacking
 
-/-- The supremum of the density of all periodic packings in dimension `d`. -/
+/-- Supremum of density over all periodic packings in dimension `d`. -/
 @[expose] public def _root_.PeriodicSpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : PeriodicSpherePacking d, S.density
 
-/-- The supremum of the density of all packings in dimension `d`. -/
+/-- Supremum of density over all packings in dimension `d`. -/
 @[expose] public def _root_.SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : SpherePacking d, S.density
 
-/-- Finite density of a scaled packing. -/
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
@@ -179,7 +173,6 @@ public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc 
     (S.scale hc).finiteDensity R = S.finiteDensity (R / c) := by
   simpa [mul_div_assoc', hc.ne.symm] using S.scale_finiteDensity hc (R := R / c)
 
-/-- Density of a scaled packing. -/
 public lemma scale_density {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   simpa [density, Function.comp, map_div_atTop_eq c hc] using
@@ -228,7 +221,6 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
   measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball <| by
     linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
-/-- An upper bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
@@ -241,7 +233,6 @@ theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
     (.inl MeasureTheory.measure_ball_lt_top.ne)] at h
 
-/-- A lower bound on the number of points in the sphere packing X with norm less than R. -/
 theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
       volume (S.balls ∩ ball 0 (R - S.separation / 2))
