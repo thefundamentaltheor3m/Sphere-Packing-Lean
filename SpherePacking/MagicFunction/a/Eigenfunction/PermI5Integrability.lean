@@ -30,7 +30,7 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 /-- Cancellation lemma for the normalization factor `s ^ (-4)` appearing in `permI5Kernel`. -/
 public lemma zpow_neg_four_mul_pow_four (s : ℝ) (hs : s ≠ 0) :
     ((s : ℂ) ^ (-4 : ℤ)) * (s ^ 4 : ℂ) = 1 := by
-  simpa using zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ)) (by exact_mod_cast hs)
+  simpa using zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ)) (mod_cast hs)
 
 private lemma norm_permI5Kernel_le (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) (x : ℝ⁸) :
     ‖permI5Kernel w (x, s)‖ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s) := by
@@ -93,8 +93,8 @@ lemma integrable_integral_norm_permI5Kernel (w : ℝ⁸) :
         (fun s : ℝ ↦
           (MagicFunction.a.Schwartz.I1Decay.Cφ : ℝ) * s ^ 4 * rexp (-2 * π * s))
         μIciOne := by
-    have harg : ∀ s : ℝ, (-(2 * π) * s) = (-2 * π * s) := fun s => by ring
-    simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm, harg] using
+    simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm,
+        show ∀ s : ℝ, (-(2 * π) * s) = (-2 * π * s) from fun s => by ring] using
       ((SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 4) (b := (2 * π))
         (by positivity) :
         IntegrableOn (fun s : ℝ ↦ s ^ 4 * rexp (-(2 * π) * s)) (Set.Ici (1 : ℝ)) volume)).const_mul
@@ -106,16 +106,10 @@ lemma integrable_integral_norm_permI5Kernel (w : ℝ⁸) :
       ).norm.prod_swap.integral_prod_right'
         (μ := μIciOne) (ν := (volume : Measure ℝ⁸)))
   refine hmajor.mono' hmeas <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
-  have hn0 : 0 ≤ ∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖ :=
-    MeasureTheory.integral_nonneg fun _ => norm_nonneg _
-  have hchain :
-      ∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖ ≤
-        (MagicFunction.a.Schwartz.I1Decay.Cφ : ℝ) * rexp (-2 * π * s) * s ^ 4 :=
-    (integral_norm_permI5Kernel_bound w s hs).trans <|
-      mul_le_mul_of_nonneg_right (MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := s) hs)
-        (pow_nonneg (le_trans (by norm_num) hs) 4)
-  rw [Real.norm_of_nonneg hn0]
-  linarith
+  rw [Real.norm_of_nonneg (MeasureTheory.integral_nonneg fun _ => norm_nonneg _)]
+  linarith [(integral_norm_permI5Kernel_bound w s hs).trans <|
+    mul_le_mul_of_nonneg_right (MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := s) hs)
+      (pow_nonneg (le_trans (by norm_num) hs) 4)]
 
 /-- Integrability of `permI5Kernel` on the product measure `volume × μIciOne`. -/
 public lemma integrable_perm_I₅_kernel (w : ℝ⁸) :
@@ -123,8 +117,7 @@ public lemma integrable_perm_I₅_kernel (w : ℝ⁸) :
   haveI : MeasureTheory.SFinite μIciOne := by dsimp [μIciOne]; infer_instance
   exact (MeasureTheory.integrable_prod_iff' (ν := μIciOne)
     (by simpa [μIciOne] using aestronglyMeasurable_perm_I₅_kernel (w := w))).2
-    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs =>
-        integrable_permI5Kernel_slice w s hs,
+    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall (integrable_permI5Kernel_slice w),
       integrable_integral_norm_permI5Kernel w⟩
 
 /-- The phase-shifted Gaussian integral used in the computation of `𝓕 I₅`. -/
