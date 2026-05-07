@@ -7,12 +7,8 @@ module
 public import SpherePacking.Basic.PeriodicPacking.Aux
 public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 
-/-!
-# Basic properties of the E₈ lattice
-
-E₈ as a submodule of `Fin 8 → R` (parity conditions) and as the ℤ-span of `E8Matrix`; the two are
-equivalent, plus integrality of squared norms.
--/
+/-! # Basic properties of the E₈ lattice: as parity submodule of `Fin 8 → R` and as the ℤ-span of
+`E8Matrix`, plus integrality of squared norms. -/
 
 variable {R : Type*}
 
