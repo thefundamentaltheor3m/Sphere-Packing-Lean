@@ -17,22 +17,7 @@ public import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 
-/-!
-# Bounds for `I₄'`
-
-This file proves the analytic estimates needed for the auxiliary integral `I₄'`: a representation
-as an integral over `Ioo (0, 1)`, uniform exponential bounds, and Schwartz decay for iterated
-derivatives in the parameter `r`.
-
-## Main definitions
-* `g`
-* `coeff`, `gN`
-
-## Main statements
-* `I₄'_eq_integral_g_Ioo`
-* `g_norm_bound_uniform`
-* `decay'`
--/
+/-! # Bounds for `I₄'`: integral representation, uniform bounds, and Schwartz decay. -/
 
 namespace MagicFunction.a.IntegralEstimates.I₄
 
@@ -61,8 +46,6 @@ end Setup
 
 section Bounding
 
-section Bounding_Integrand
-
 lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
     ‖φ₀'' (-1 / (-t + I))‖ * 2 * rexp (-π * r) := by
   intro t ht
@@ -85,28 +68,18 @@ public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 /
     simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)]
     using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
-end Bounding_Integrand
-
-section Bounding_Integral
-
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) :=
   I24Common.g_norm_bound_uniform_of I₄'_bounding_aux_1 im_parametrisation_lower
 
-end Bounding.Bounding_Integral
+end Bounding
 
 noncomputable section Schwartz_Decay
 
 open SchwartzMap
 
-section Higher_iteratedFDerivs
-
-open scoped Topology
-
-/-- The coefficient appearing in the exponent when rewriting `g r t` as
-`A t * cexp ((r : ℂ) * coeff t)`. Specialization of `I24Common.coeff` to
-`shift = fun t => (1 : ℂ) - (t : ℂ)`. -/
+/-- Specialization of `I24Common.coeff` to `shift = fun t => (1 : ℂ) - (t : ℂ)`. -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (1 : ℂ) - (t : ℂ))
 
 /-- Continuity of `coeff`. -/
@@ -158,13 +131,12 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
     (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n
 
-/-- Schwartz-style decay estimate for `I₄'`: all iterated derivatives decay faster than any power.
-The prime indicates this is about the auxiliary integral `I₄'`. -/
+/-- Schwartz-style decay estimate for the auxiliary integral `I₄'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.decay_of_iteratedDeriv_eq_integral_pow_mul
     g_norm_bound_uniform coeff_norm_le
     (fun n => by simpa [gN] using iteratedDeriv_I₄'_eq_integral_gN (n := n))
 
-end Schwartz_Decay.Higher_iteratedFDerivs
+end Schwartz_Decay
 end MagicFunction.a.IntegralEstimates.I₄
