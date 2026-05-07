@@ -36,9 +36,6 @@ def μ : Measure ℝ := SpherePacking.Integration.μIciOne
 /-- The coefficient capturing the `r`-dependence of the exponential factor. -/
 def coeff (t : ℝ) : ℂ := (-Real.pi * t : ℂ)
 
-lemma norm_coeff_of_nonneg {t : ℝ} (ht : 0 ≤ t) : ‖coeff t‖ = π * t := by
-  simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht]
-
 def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
 lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) (μ) := by
@@ -67,7 +64,7 @@ lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ)
   calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN, norm_pow]
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by
           gcongr ?_ * ?_
-          · simp [norm_coeff_of_nonneg ht0]
+          · simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht0]
           · exact hC₀ r t ht
     _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by
           rw [show rexp (-(π * (r + 2)) * t) = rexp (-2 * π * t) * rexp (-π * r * t) by
