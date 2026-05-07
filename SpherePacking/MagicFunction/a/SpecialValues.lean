@@ -75,10 +75,6 @@ def zI (x : ℝ) : ℂ := (x : ℂ) + Complex.I
 
 def F (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ (2 : ℕ)
 
-lemma I₂'_zero :
-    I₂' (0 : ℝ) = ∫ x in (0 : ℝ)..1, F (zI x) := by
-  simp [F, zI, MagicFunction.a.RadialFunctions.I₂'_eq]
-
 private lemma integral_neg_x_add_I_eq_integral_F_zI_sub_one :
     (∫ x in (0 : ℝ)..1,
         φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
@@ -140,9 +136,11 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
       ∫ x in (0 : ℝ)..1,
         (φ₀'' (zI x) * ((2 : ℂ) * (zI x) - 1) - (12 * Complex.I) / π * φ₂'' (zI x))
           ∂MeasureTheory.volume := fun hF hG => by
+  have hI2 : I₂' (0 : ℝ) = ∫ x in (0 : ℝ)..1, F (zI x) := by
+    simp [F, zI, MagicFunction.a.RadialFunctions.I₂'_eq]
   rw [show I₂' (0 : ℝ) + I₄' 0 =
       ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume from by
-    simpa [I₂'_zero, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+    simpa [hI2, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hF hG).symm]
   exact intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun x _ => by
     simpa [zI] using F_sub_one (z := zI x) (by simp [zI])
