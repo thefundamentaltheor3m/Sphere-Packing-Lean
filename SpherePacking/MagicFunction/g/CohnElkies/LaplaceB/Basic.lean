@@ -82,13 +82,6 @@ public lemma exists_ψI_bound_exp :
 public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
   have hu0 : 0 ≤ u := by linarith
-  have hψI' (t : ℝ) (ht : 0 < t) :
-      ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t := by
-    simp [ψI', Function.resToImagAxis, ResToImagAxis, ht]
-  have hSlashS (t : ℝ) (ht : 0 < t) :
-      ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) := by
-    simpa [zpow_two, pow_two, ψS_slash_S] using
-      ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht
   obtain ⟨Cψ, hCψ⟩ :=
     MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   let Cψ0 : ℝ := max Cψ 0
@@ -124,7 +117,11 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
             : Real.exp (-π * (1 / t : ℝ)) ≤ 1) (le_max_right _ _))
       have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
-        rw [hψI' t ht0, hSlashS t ht0]
+        rw [show ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t by
+            simp [ψI', Function.resToImagAxis, ResToImagAxis, ht0],
+          show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
+            simpa [zpow_two, pow_two, ψS_slash_S] using
+              ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0]
         calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
               = (t ^ (2 : ℕ)) * ‖ψS.resToImagAxis (1 / t)‖ := by simp
           _ ≤ 1 * Cψ0 := mul_le_mul (by simpa using pow_le_one₀ (n := 2) ht0.le ht.2) hψS'
