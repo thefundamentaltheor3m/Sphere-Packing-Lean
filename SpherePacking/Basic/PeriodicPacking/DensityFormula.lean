@@ -8,17 +8,10 @@ public import SpherePacking.Basic.PeriodicPacking.Theorem22
 For a periodic sphere packing `S` with lattice `S.lattice`, the density can be computed from a
 fundamental domain `D`: it is the number of centers in `D` times the volume of a ball of radius
 `S.separation / 2`, divided by `volume D`.
-
-This file proves the limit statement for `S.finiteDensity` and packages it as
-`PeriodicSpherePacking.density_eq`, together with a few auxiliary consequences used later in the
-linear programming bound.
 -/
 
-open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
-open Filter
-open scoped Pointwise
-open scoped Topology
+open scoped ENNReal Pointwise Topology
+open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module Filter
 
 variable {d : ℕ}
 
@@ -54,11 +47,7 @@ public theorem PeriodicSpherePacking.density_eq
 
 end DensityEqFdDensity
 
-section ConstantEqNormalizedConstant
-
-/--
-Normalize `PeriodicSpherePackingConstant d` to a supremum over packings with `separation = 1`.
--/
+/-- Normalize `PeriodicSpherePackingConstant d` as a sup over packings with `separation = 1`. -/
 public theorem periodic_constant_eq_periodic_constant_normalized :
     PeriodicSpherePackingConstant d = ⨆ (S : PeriodicSpherePacking d) (_ : S.separation = 1),
     S.density := by
@@ -69,14 +58,8 @@ public theorem periodic_constant_eq_periodic_constant_normalized :
   exact le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
     ⟨S.scale (inv_pos.mpr S.separation_pos), inv_mul_cancel₀ S.separation_pos.ne.symm⟩
 
-end ConstantEqNormalizedConstant
-
-section Disjoint_Covering_of_Centers
-
-/--
-If `D` meets each lattice orbit in exactly one point, then the same is true for each center of a
-periodic packing.
--/
+/-- If `D` meets each lattice orbit in exactly one point, then the same is true for each center of
+a periodic packing. -/
 public theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d)
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
@@ -84,8 +67,6 @@ public theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpher
       (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := fun x =>
   let ⟨g, hg, hguniq⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
   ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
-
-end Disjoint_Covering_of_Centers
 
 section Fundamental_Domains_in_terms_of_Basis
 
@@ -108,12 +89,6 @@ public theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
       (hguniq ⟨(y : EuclideanSpace ℝ (Fin d)), by simpa [hspan] using y.property⟩ hy)⟩
 
 end Fundamental_Domains_in_terms_of_Basis
-
-section Periodic_Density_Formula
-
-/-!
-## Convenience definitions
--/
 
 /-- An index equivalence for the default basis of the lattice of a periodic packing. -/
 @[expose] public noncomputable def PeriodicSpherePacking.basis_index_equiv
@@ -141,10 +116,6 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
   exact (ZLattice.covolume_eq_measure_fundamentalDomain S.lattice volume
     (ZLattice.isAddFundamentalDomain b volume)).symm
 
-end Periodic_Density_Formula
-
-section Empty_Centers
-
 /-- If a periodic packing has no centers, then its density is zero. -/
 public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePacking d)
     (hd : 0 < d) [instEmpty : IsEmpty S.centers] : S.density = 0 := by
@@ -155,5 +126,3 @@ public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpher
     (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))
     (S.fundamental_domain_unique_covers b) hd]
   simp
-
-end Empty_Centers
