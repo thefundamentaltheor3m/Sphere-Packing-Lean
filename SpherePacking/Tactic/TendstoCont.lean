@@ -14,32 +14,20 @@ public import Mathlib.Tactic.Ring
 /-!
 # `tendsto_cont` tactic
 
-A tactic for proving goals of the form
-  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)`
-where atomic limits `Tendsto fᵢ l (nhds aᵢ)` are known from context
-and the expression is continuous in the atoms (proved via `fun_prop`).
+Proves `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)` from atomic
+`Tendsto fᵢ l (nhds aᵢ)` hypotheses, by abstracting the body and discharging
+continuity via `fun_prop`. Handles any expression `fun_prop` can prove
+continuous (polynomials, trig, exp, compositions, ...).
 
-This handles any expression where `fun_prop` can prove continuity of the
-abstracted body — including polynomials, trigonometric functions,
-exponentials, and other compositions.
-
-## Strategy
-
-1. Parse the goal to extract the body, filter, and target limit.
-2. Scan context for `Tendsto` hypotheses matching the goal filter.
-3. Identify which atoms appear in the goal body.
-4. Bundle atoms into a right-associated product via `prodMk_nhds`.
-5. Abstract the body: replace `fᵢ(z)` with projections from the product.
-6. Prove continuity of the abstracted function via `fun_prop`.
-7. Combine via `tendsto_continuousAt_comp` and close the goal.
+Strategy: parse goal → collect atoms → bundle via `prodMk_nhds` → abstract
+body to a function of the product → `fun_prop` for continuity → compose.
 -/
 
 @[expose] public section
 
 open Lean Meta Elab Tactic
 
-/-- Compose a continuous function with a convergent one. Stated with an
-    explicit lambda (no `Function.comp`) so the kernel sees the right type. -/
+/-- Compose a continuous function with a convergent one (explicit lambda for kernel typing). -/
 theorem tendsto_continuousAt_comp
     {α β γ : Type*} [TopologicalSpace β] [TopologicalSpace γ]
     {l : Filter α} {f : α → β} {h : β → γ} {b : β}
@@ -56,8 +44,6 @@ meta structure Atom where
   hyp : Expr
   codTy : Expr
   deriving Inhabited
-
-/-! ### Goal and hypothesis parsing -/
 
 /-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
 private meta def matchTendsto? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
@@ -85,16 +71,12 @@ private meta def matchTendstoNhds? (e : Expr) : MetaM (Option (Expr × Expr × E
   let some a ← matchNhds? tgt | return none
   return some (codTy, f, l, a)
 
-/-! ### Atom discovery -/
-
-/-- Check if `e` equals `cand.fn bvar` for some candidate atom,
-    using `isDefEq` to handle coercions and implicit arguments. -/
+/-- Check if `e` equals `cand.fn bvar` for some candidate (`isDefEq` handles coercions). -/
 private meta def matchAtom? (e : Expr) (bvar : FVarId)
     (candidates : Array Atom) : MetaM (Option Atom) := do
   unless e.containsFVar bvar do return none
   for cand in candidates do
-    if ← withNewMCtxDepth (isDefEq e (mkApp cand.fn (.fvar bvar))) then
-      return some cand
+    if ← withNewMCtxDepth (isDefEq e (mkApp cand.fn (.fvar bvar))) then return some cand
   return none
 
 /-- Children for left-to-right DFS. -/
@@ -151,8 +133,6 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
             `{cand.limit}` for the same function"
   return (candidates, atoms)
 
-/-! ### Product type / limit / proof builders -/
-
 /-- Fold atoms right-associatively using `combine` on the given per-atom field. -/
 private meta def foldRightAssoc (atoms : Array Atom) (field : Atom → Expr)
     (combine : Expr → Expr → MetaM Expr) : MetaM Expr := do
@@ -184,8 +164,6 @@ private meta def buildProjection (p : Expr) (n i : Nat) :
   if i < n - 1 then e ← mkAppM ``Prod.fst #[e]
   return e
 
-/-! ### Body abstraction -/
-
 /-- Replace `fᵢ(bvar)` with `projᵢ(p)` in the body. -/
 private meta partial def abstractBody (body : Expr) (bvar : FVarId)
     (pVar : Expr) (atoms : Array Atom) : MetaM Expr := do
@@ -202,11 +180,8 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
   | .proj s i e => return .proj s i (← go e)
   | _ => return body
 
-/-! ### Limit reconciliation -/
-
 /-- Close a goal using a proof whose limit may differ from the stated one
-    (e.g. `1 + 2` vs `3`, or `b + a` vs `a + b`).
-    Uses `convert using 1` then `congr 1; norm_num <;> ring`. -/
+    (e.g. `1 + 2` vs `3`); `convert using 1` then `congr 1; norm_num <;> ring`. -/
 private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit := do
   let keyName := `_tendsto_cont_key
   let goal1 ← goal.define keyName (← inferType proof) proof
@@ -223,8 +198,6 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit :
     catch e =>
       throwError m!"tendsto_cont: failed to close subgoal after convert:\n\
         {← g.getType}\n{← e.toMessageData.format}"
-
-/-! ### Main tactic -/
 
 /-- Build the continuity-based proof for a non-constant body with atoms. -/
 private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
