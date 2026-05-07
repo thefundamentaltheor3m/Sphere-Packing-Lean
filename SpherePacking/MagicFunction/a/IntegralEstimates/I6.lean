@@ -44,8 +44,7 @@ open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegra
 variable (r : ℝ)
 
 /-- The integrand on `Ici 1` whose set integral is `I₆'`. -/
-@[expose] public noncomputable def g : ℝ → ℝ → ℂ :=
-  fun r t ↦ I * φ₀'' (I * t) * cexp (-π * r * t)
+@[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ I * φ₀'' (I * t) * cexp (-π * r * t)
 
 /-- Rewrite `I₆' r` as a set integral of `g r` over `Ici 1` (up to the factor `2`). -/
 public lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), g r t := by
@@ -61,8 +60,7 @@ def coeff (t : ℝ) : ℂ := (-π * t : ℂ)
 
 def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
-lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
-    ‖coeff t‖ ^ n = (π * t) ^ n := by
+lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) : ‖coeff t‖ ^ n = (π * t) ^ n := by
   simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht]
 
 private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
@@ -90,10 +88,9 @@ public lemma g_norm_bound_uniform :
   rw [show ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) by
     simp [g, neg_mul, norm_I, one_mul, norm_exp]]
   gcongr
-  simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
+  simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith)
 
-lemma gN_norm (n : ℕ) (r t : ℝ) :
-    ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
+lemma gN_norm (n : ℕ) (r t : ℝ) : ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
 
 private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
@@ -167,10 +164,8 @@ lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
     intro r hr
     calc
       iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by simp [iteratedDeriv_succ]
-      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r := by
-        simpa using (show (iteratedDeriv n I₆') =ᶠ[𝓝 r]
-            (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) from by
-          filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx).deriv_eq
+      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
+        (Filter.EventuallyEq.deriv_eq (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx))
       _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
         simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
 
@@ -208,20 +203,15 @@ lemma iteratedDeriv_bound (n : ℕ) :
                 nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
                 (by positivity)) (by positivity) (by positivity)
           _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
-    _ = 2 * (A * rexp (-π * r)) := by
-      rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))]
+    _ = 2 * (A * rexp (-π * r)) :=
+      by rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))]
     _ ≤ (2 * (A + 1)) * rexp (-π * r) := by nlinarith [hA_nonneg, Real.exp_pos (-π * r)]
 
-/--
-Schwartz-style decay estimate for `I₆'`: all iterated derivatives decay faster than any power.
-
-The prime in the name indicates that this result is about the auxiliary integral `I₆'`.
--/
+/-- Schwartz-style decay estimate for `I₆'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₆' x‖ ≤ C := fun k n ↦ by
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := iteratedDeriv_bound (n := n)
   simpa using MagicFunction.a.IntegralEstimates.decay_of_bounding_uniform_norm_iteratedDeriv
-    (I := I₆') (n := n) ⟨C₁, hC₁_pos, hC₁⟩ k
+    (I := I₆') (n := n) (iteratedDeriv_bound (n := n)) k
 
 end Schwartz_Decay
 
