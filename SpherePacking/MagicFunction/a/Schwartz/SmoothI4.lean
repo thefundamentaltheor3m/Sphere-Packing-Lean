@@ -9,11 +9,10 @@ import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 /-!
 # Smoothness of `RealIntegrals.I₄'`
 
-This file proves `ContDiff ℝ (⊤ : ℕ∞) RealIntegrals.I₄'` by differentiating under the integral
-sign over `Ioo (0, 1)`. The heavy lifting is delegated to
-`MagicFunction.a.Schwartz.SmoothI24Common` which handles the common pattern shared with
-`SmoothI2`; this file only provides the `I₄'`-specific parametrization (`z = z₄'`, `shift = -1`,
-`prefactor = -1`) and the geometric facts about its Mobius image.
+Proves `ContDiff ℝ (⊤ : ℕ∞) RealIntegrals.I₄'` by differentiating under the integral sign over
+`Ioo (0, 1)`. Heavy lifting is delegated to `MagicFunction.a.Schwartz.SmoothI24Common`; this file
+only provides the `I₄'`-specific parametrization (`z = z₄'`, `shift = -1`, `prefactor = -1`)
+and the geometric facts about its Mobius image.
 
 ## Main statement
 * `I₄'_contDiff`
@@ -37,8 +36,7 @@ private lemma I₄'_eq_integral_g_Ioo (x : ℝ) :
       DifferentiationUnderIntegral.g (coeff := coeff z₄')
         (hf := hf z₄' (-1 : ℂ) (-1 : ℂ)) x t := by
   simp [RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def,
-    DifferentiationUnderIntegral.g, Φ₄', Φ₃', coeff, hf, SmoothI24Common.arg,
-    sub_eq_add_neg,
+    DifferentiationUnderIntegral.g, Φ₄', Φ₃', coeff, hf, SmoothI24Common.arg, sub_eq_add_neg,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
     mul_assoc, mul_left_comm, mul_comm]
 
@@ -50,16 +48,14 @@ private lemma arg_z₄'_eq_neg_one_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 
 private lemma arg_z₄'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (arg z₄' (-1 : ℂ) t).im = 1 / (t ^ 2 + 1) := by
-  simpa [arg_z₄'_eq_neg_one_div (t := t) ht] using
-    im_neg_one_div_neg_ofReal_add_I (t := t)
+  simpa [arg_z₄'_eq_neg_one_div (t := t) ht] using im_neg_one_div_neg_ofReal_add_I (t := t)
 
 private lemma arg_z₄'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     0 < (arg z₄' (-1 : ℂ) t).im := by rw [arg_z₄'_im_eq t ht]; positivity
 
 private lemma arg_z₄'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < (arg z₄' (-1 : ℂ) t).im := by
-  simpa [arg_z₄'_im_eq (t := t) ht] using
-    one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
+  simpa [arg_z₄'_im_eq (t := t) ht] using one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
 private lemma den_z₄'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     z₄' t + (-1 : ℂ) ≠ 0 := fun h0 => by
