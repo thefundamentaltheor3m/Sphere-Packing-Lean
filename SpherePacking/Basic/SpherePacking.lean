@@ -110,16 +110,14 @@ open Real
   centers := c • S.centers
   separation := c * S.separation
   separation_pos := mul_pos hc S.separation_pos
-  centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ _ ↦ by
+  centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ hxy ↦ by
     change c * S.separation ≤ ‖x - y‖
     obtain ⟨x', ⟨hx', rfl⟩⟩ := Set.mem_smul_set.mp hx
     obtain ⟨y', ⟨hy', rfl⟩⟩ := Set.mem_smul_set.mp hy
     rw [← smul_sub, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le]
-    rw [ne_eq, Subtype.mk.injEq] at *
-    have : x' ≠ y' := by rintro rfl; tauto
-    have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
-    have := S.centers_dist this
-    exact (mul_le_mul_iff_right₀ hc).mpr this
+    refine (mul_le_mul_iff_right₀ hc).mpr
+      (S.centers_dist (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩) ?_)
+    intro heq; exact hxy (by simp [Subtype.ext_iff] at heq; simp [heq])
 
 /-- Scale a periodic packing by a positive factor `c`, scaling both centers and the lattice. -/
 @[expose] public noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ}
@@ -143,14 +141,14 @@ open Real
   lattice_isZLattice := by
     use ?_; rw [← S.lattice_isZLattice.span_top]
     ext v; simp_rw [Submodule.mem_span]; refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
-    · specialize h (c • p) (by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp)
-      simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c h)
-    · specialize h (c⁻¹ • p) (by
-        rw [Submodule.coe_pointwise_smul] at *
-        simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp)
-      simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ h)
+    · simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
+        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c
+          (h _ <| by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp))
+    · simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm] using
+        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹
+          (h _ <| by
+            rw [Submodule.coe_pointwise_smul] at *
+            simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp))
 }
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -199,7 +197,7 @@ public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc 
 public lemma scale_density {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   simpa [density, Function.comp, map_div_atTop_eq c hc] using
-    (limsup_congr (.of_forall fun R => S.scale_finiteDensity' hc R)).trans
+    (limsup_congr (.of_forall (S.scale_finiteDensity' hc))).trans
       (Filter.limsup_comp (u := S.finiteDensity) (v := (· / c)) (f := atTop))
 
 public theorem constant_eq_constant_normalized {d : ℕ} :
@@ -230,15 +228,15 @@ lemma biUnion_balls_inter_subset_biUnion_inter_balls
   obtain ⟨⟨y, hy₁, hy₂⟩, hx⟩ := hx
   refine ⟨y, ⟨hy₁, ?_⟩, hy₂⟩
   rw [← sub_add_cancel R r]
-  exact (norm_le_norm_add_norm_sub x y).trans_lt <|
-    add_lt_add hx (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
+  exact (norm_le_norm_add_norm_sub x y).trans_lt
+    (add_lt_add hx (by simpa [dist_eq_norm, norm_sub_rev] using hy₂))
 
 theorem SpherePacking.volume_iUnion_balls_eq_tsum
     (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
     volume (⋃ x : ↑(S.centers ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
       = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') :=
-  have : Countable ↑(S.centers ∩ ball 0 R) :=
-    Set.Countable.mono Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
+  have _ : Countable ↑(S.centers ∩ ball 0 R) := Set.Countable.mono
+    Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
   measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball <| by
     linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
