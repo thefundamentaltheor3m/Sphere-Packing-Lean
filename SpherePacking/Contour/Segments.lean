@@ -48,15 +48,12 @@ public lemma z₁line_im_pos_Ioc {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : 0 < (z
 public lemma lineMap_z₁line (t : ℝ) :
     AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₁line, add_comm, mul_comm]
-
 public lemma lineMap_z₂line (t : ℝ) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₂line, add_left_comm, add_comm]
-
 public lemma lineMap_z₃line (t : ℝ) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₃line, add_comm, mul_comm]
-
 public lemma lineMap_z₄line (t : ℝ) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₄line, sub_eq_add_neg, add_left_comm,
@@ -69,7 +66,6 @@ public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := 
 
 public lemma z₁'_eq_z₁line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₁' t = z₁line t := by
   simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using z₁'_eq_of_mem (t := t) ht
-
 public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t = z₂line t := by
   simpa [z₂line, add_assoc] using z₂'_eq_of_mem (t := t) ht
 
@@ -78,16 +74,13 @@ public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t 
 public lemma lineMap_z₁_eq_z₁' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁' t :=
   (lineMap_z₁line t).trans (z₁'_eq_z₁line t ht).symm
-
 public lemma lineMap_z₂_eq_z₂' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂' t :=
   (lineMap_z₂line t).trans (z₂'_eq_z₂line t ht).symm
-
 public lemma lineMap_z₃_eq_z₃' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃' t := by
   simpa [z₃line, lineMap_z₃line (t := t), mul_assoc, mul_left_comm, mul_comm]
     using (z₃'_eq_of_mem (t := t) ht).symm
-
 public lemma lineMap_z₄_eq_z₄' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄' t := by
   simpa [z₄line, lineMap_z₄line (t := t), sub_eq_add_neg, add_assoc]
