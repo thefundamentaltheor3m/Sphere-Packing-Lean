@@ -2,21 +2,17 @@
 Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
 -/
 module
 
 public import Mathlib.Analysis.SpecificLimits.Normed
-public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.SpecialFunctions.Exp
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-public import Mathlib.Topology.Algebra.InfiniteSum.Real
-
 
 /-!
 # Specific limits
 
-Auxiliary limit results not available in Mathlib (e.g. `summable_real_norm_mul_geometric_of_norm_lt_one`).
+Auxiliary limit results not in Mathlib (e.g. `summable_real_norm_mul_geometric_of_norm_lt_one`).
 -/
 
 open Filter
@@ -40,8 +36,5 @@ public theorem summable_pow_shift_mul_exp (k s : ℕ) :
           simpa [mul_assoc] using
             Real.summable_pow_mul_exp_neg_nat_mul k (r := 2 * Real.pi) (by positivity))
   refine (hs.mul_left (Real.exp (2 * Real.pi * (s : ℝ)))).congr fun n => ?_
-  rw [show Real.exp (2 * Real.pi * (s : ℝ)) *
-      ((n + s : ℝ) ^ k * Real.exp (-2 * Real.pi * (n + s : ℝ))) =
-    ((n + s : ℝ) ^ k) * (Real.exp (2 * Real.pi * (s : ℝ)) *
-      Real.exp (-2 * Real.pi * (n + s : ℝ))) by ring, ← Real.exp_add]
-  congr 2; ring
+  rw [show (-2 * Real.pi * (n : ℝ)) = 2 * Real.pi * (s : ℝ) + -2 * Real.pi * (n + s : ℝ) by ring,
+    Real.exp_add]; ring
