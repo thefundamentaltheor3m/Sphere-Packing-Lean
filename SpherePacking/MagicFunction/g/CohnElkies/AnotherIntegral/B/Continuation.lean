@@ -49,7 +49,9 @@ lemma bAnotherRHS_analyticOnNhd :
   unfold bAnotherRHS
   exact analyticOnNhd_sinSq_prefactor_mul (sign := (-4 * (Complex.I : ℂ))) <| by
     simpa [add_assoc] using
-      (hterm1.add hterm2).add (bAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1)
+      (hterm1.add hterm2).add ((show AnalyticOnNhd ℂ bAnotherIntegralC rightHalfPlane by
+        convert analyticOnNhd_integral_base_exp (base := bAnotherBase) continuousOn_bAnotherBase
+          (fun u hu ↦ bAnotherBase_integrable_exp (u := u) hu) using 1).mono fun u hu => hu.1)
 
 lemma bAnotherRHS_ofReal (u : ℝ) :
     bAnotherRHS (u : ℂ) =

@@ -40,12 +40,6 @@ public lemma bAnotherIntegralC_ofReal (u : ℝ) :
   MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
     (fun t _ ↦ bAnotherIntegrandC_ofReal u t)
 
-/-- `bAnotherIntegralC` is analytic on the right half-plane. -/
-public lemma bAnotherIntegralC_analyticOnNhd :
-    AnalyticOnNhd ℂ bAnotherIntegralC rightHalfPlane := by
-  convert analyticOnNhd_integral_base_exp (base := bAnotherBase) continuousOn_bAnotherBase
-    (fun u hu ↦ bAnotherBase_integrable_exp (u := u) hu) using 1
-
 end
 
 end MagicFunction.g.CohnElkies.IntegralReps
