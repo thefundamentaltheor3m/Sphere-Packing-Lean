@@ -195,15 +195,14 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     have hbase := add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
     simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
     nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5, pow_nonneg hq1_nonneg n]
-  refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
-  intro t ht0 ht1
+  refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, fun t ht0 ht1 => ?_⟩
   let z : ℍ := zI t ht0
   let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le : q ≤ q1 := q_le_q1 (t := t) ht1
   have hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ) := by simpa [q, z] using qParam_zI t ht0
-  let f : ℕ → ℂ :=
-    fun n => ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
+  let f : ℕ → ℂ := fun n =>
+    ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
     rw [show ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
         ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ from by simp [f, mul_assoc],
