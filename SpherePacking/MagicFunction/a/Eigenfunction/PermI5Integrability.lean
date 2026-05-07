@@ -51,12 +51,6 @@ private lemma norm_permI5Kernel_le (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) (x : �
     by simp [permI5Kernel, permI5Phase, norm_exp]).le.trans <| hnormg.le.trans <|
     MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := ‖x‖ ^ 2) s hs
 
-private lemma integrable_majorant (s : ℝ) (hs0 : 0 < s) :
-    Integrable (fun x : ℝ⁸ ↦ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s))
-      (volume : Measure ℝ⁸) := by
-  simpa [mul_assoc] using
-    (integrable_gaussian_rexp (s := s) hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖
-
 lemma integrable_permI5Kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
     Integrable (fun x : ℝ⁸ ↦ permI5Kernel w (x, s)) (volume : Measure ℝ⁸) := by
   have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
@@ -66,7 +60,9 @@ lemma integrable_permI5Kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
       (continuous_id.prodMk continuous_const).continuousOn
       (fun _ _ => ⟨Set.mem_univ _, hs⟩ :
         MapsTo (fun x : ℝ⁸ => (x, s)) (univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)))
-  exact (integrable_majorant s hs0).mono'
+  exact (by simpa [mul_assoc] using
+      (integrable_gaussian_rexp (s := s) hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖ :
+      Integrable (fun x : ℝ⁸ ↦ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s)) volume).mono'
     (by simpa [permI5Kernel] using hphase.mul hg : Continuous _).aestronglyMeasurable
     (.of_forall (norm_permI5Kernel_le w s hs))
 
@@ -76,7 +72,9 @@ lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
   calc (∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖)
       ≤ ∫ x : ℝ⁸, ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s) :=
         MeasureTheory.integral_mono_of_nonneg (μ := (volume : Measure ℝ⁸))
-          (.of_forall fun _ => norm_nonneg _) (integrable_majorant s hs0)
+          (.of_forall fun _ => norm_nonneg _)
+          (by simpa [mul_assoc] using
+            (integrable_gaussian_rexp (s := s) hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖)
           (.of_forall (norm_permI5Kernel_le w s hs))
     _ = ‖φ₀'' (I * (s : ℂ))‖ * s ^ 4 := by
       rw [integral_const_mul, SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0]
