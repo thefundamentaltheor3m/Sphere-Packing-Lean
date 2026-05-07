@@ -69,8 +69,6 @@ lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
 public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
   have hMeasIoi := aestronglyMeasurable_aLaplaceIntegrand_Ioi (u := u)
-  have hIoi_split : (Set.Ioi (0 : ℝ)) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) := by
-    simp [Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]
   have hsmall : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
     let C₀ : ℝ := MagicFunction.a.Schwartz.I1Decay.Cφ
     refine MeasureTheory.IntegrableOn.of_bound (by simp : (MeasureTheory.volume : Measure ℝ)
@@ -218,10 +216,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by rw [← hExpRew]; ring
       exact MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
         hdomReal hMeasA hdom
-    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
-      (Set.Ioc_union_Ioi_eq_Ioi hA1).symm]
-    exact hmid.union hbig
-  rw [hIoi_split]; exact hsmall.union htail
+    rw [← Set.Ioc_union_Ioi_eq_Ioi hA1]; exact hmid.union hbig
+  rw [← Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]; exact hsmall.union htail
 
 end
 
