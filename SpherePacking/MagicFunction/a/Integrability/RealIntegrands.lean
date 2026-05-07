@@ -10,40 +10,32 @@ import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 /-! # Smoothness
 
-In this file, we prove that the integrands of all of the REAL integrals making up a are smooth. That
-is, we translate the complex holomorphicity results into smoothness results by showing first that
-the parametrisations are smooth and then composing them with the holomorphicity proofs to conclude
-that the composition of the complex integrands with the parametrisations are smooth real functions.
+We prove smoothness of the integrands of all of the REAL integrals making up `a`, by translating
+complex holomorphicity results via smoothness of the parametrisations.
 -/
 
 open Real ContDiff Filter Set Complex
-
-section Parametrisations
 
 namespace MagicFunction.Parametrisations
 
 /-- Smoothness of the parametrisation `z₂'` on `Icc (0, 1)`. -/
 public theorem z₂'_contDiffOn : ContDiffOn ℝ ∞ z₂' (Icc (0 : ℝ) 1) :=
   ((contDiffOn_const.add ofRealCLM.contDiff.contDiffOn).add contDiffOn_const).congr
-    fun y hy => by simpa [add_assoc] using z₂'_eq_of_mem (t := y) hy
+    fun y hy ↦ by simpa [add_assoc] using z₂'_eq_of_mem (t := y) hy
 
 /-- Smoothness of the parametrisation `z₄'` on `Icc (0, 1)`. -/
 public theorem z₄'_contDiffOn : ContDiffOn ℝ ∞ z₄' (Icc (0 : ℝ) 1) :=
   ((contDiffOn_const.sub ofRealCLM.contDiff.contDiffOn).add contDiffOn_const).congr
-    fun y hy => by simpa [sub_eq_add_neg, add_assoc] using z₄'_eq_of_mem (t := y) hy
+    fun y hy ↦ by simpa [sub_eq_add_neg, add_assoc] using z₄'_eq_of_mem (t := y) hy
 
 /-- Smoothness of the parametrisation `z₆'` on `Ici 1`. -/
 public theorem z₆'_contDiffOn : ContDiffOn ℝ ∞ z₆' (Ici (1 : ℝ)) :=
   (contDiffOn_const.mul ofRealCLM.contDiff.contDiffOn).congr
-    fun y hy => by simpa using z₆'_eq_of_mem (t := y) hy
+    fun y hy ↦ by simpa using z₆'_eq_of_mem (t := y) hy
 
 end MagicFunction.Parametrisations
 
-end Parametrisations
-section Integrands
-
-open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
-  MagicFunction.Parametrisations
+open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands MagicFunction.Parametrisations
 
 variable {r : ℝ}
 
@@ -64,5 +56,3 @@ public theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) :
     ((Φ₆'_contDiffOn (r := r)).comp z₆'_contDiffOn z₆'_mapsto)
 
 end MagicFunction.a.RealIntegrands
-
-end Integrands
