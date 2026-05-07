@@ -6,7 +6,6 @@ import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegra
 import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.SpecialValues
 
-
 /-! # Viazovska's eigenfunctions `a` and `b` are purely imaginary-valued. -/
 
 namespace MagicFunction.g.CohnElkies
@@ -34,22 +33,16 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
                 ((8640 / π : ℝ) : ℂ) * t -
                 ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
             Real.exp (-π * u * t))
-  set E : ℂ :=
-      (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-        (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-        (18144 : ℂ) / (π ^ (3 : ℕ) * u) +
-          Iterm
-  have hEq' : a' u =
-      (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
+  set E : ℂ := (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+    (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) + Iterm
+  have hEq' : a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
     simpa [E, Iterm, IntegralReps.aAnotherIntegrand, mul_assoc] using hEq
   have hIterm : Iterm.im = 0 := by
-    let innerR : ℝ → ℝ := fun t =>
-      (t ^ (2 : ℕ)) * (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re -
-        (36 / (π ^ (2 : ℕ)) : ℝ) * Real.exp (2 * π * t) +
-        (8640 / π : ℝ) * t -
-        (18144 / (π ^ (2 : ℕ)) : ℝ)
-    have hcongr :
-        Iterm = ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
+    let innerR : ℝ → ℝ := fun t => (t ^ (2 : ℕ)) * (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re -
+      (36 / (π ^ (2 : ℕ)) : ℝ) * Real.exp (2 * π * t) +
+      (8640 / π : ℝ) * t - (18144 / (π ^ (2 : ℕ)) : ℝ)
+    have hcongr : Iterm =
+        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
       refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi ?_
       intro t (ht : 0 < t)
@@ -75,16 +68,14 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
       ∫ t in Set.Ioi (0 : ℝ),
         (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - Real.exp (2 * π * t)) *
           Real.exp (-π * u * t)
-  set E : ℂ :=
-      (144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + Iterm
-  have hEq' : b' u =
-      (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
+  set E : ℂ := (144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + Iterm
+  have hEq' : b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
     simpa [E, Iterm, IntegralReps.bAnotherIntegrand, mul_assoc] using hEq
   have hIterm : Iterm.im = 0 := by
     let innerR : ℝ → ℝ := fun t =>
       (ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) - Real.exp (2 * π * t)
-    have hcongr :
-        Iterm = ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
+    have hcongr : Iterm =
+        ∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
       refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi ?_
       intro t (ht : 0 < t)
@@ -92,8 +83,7 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
             ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) := by
         apply Complex.ext <;> simp [ψI'_imag_axis_im t ht]
       simp only []; rw [hψ]; push_cast [innerR]; ring
-    simpa [hcongr] using
-      setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
+    simpa [hcongr] using setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, Complex.div_im, Complex.mul_im]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
@@ -109,11 +99,10 @@ private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuou
     (h : ∀ {u : ℝ}, 0 < u → u ≠ 2 → (f u).re = 0) {u : ℝ} (hu : 0 < u) : (f u).re = 0 := by
   by_cases hu2 : u = 2
   · subst hu2
-    have hclosed : IsClosed {r : ℝ | (f r).re = 0} :=
-      isClosed_eq (Complex.continuous_re.comp hcont) continuous_const
     have hsubset : Set.Ioi (0 : ℝ) \ ({2} : Set ℝ) ⊆ {r : ℝ | (f r).re = 0} := fun r hr =>
       h hr.1 fun h' => hr.2 (by simp [h'])
-    refine (IsClosed.closure_subset_iff hclosed).2 hsubset ?_
+    refine (IsClosed.closure_subset_iff
+      (isClosed_eq (Complex.continuous_re.comp hcont) continuous_const)).2 hsubset ?_
     rw [Metric.mem_closure_iff]
     intro ε hε
     refine ⟨2 + ε / 2, ⟨show (0 : ℝ) < 2 + ε / 2 by positivity, fun h => by
@@ -132,21 +121,19 @@ lemma b'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (b' u).re = 0 :=
 end PureImaginary
 
 /-- The eigenfunction `a` is purely imaginary-valued (its real part vanishes). -/
-public theorem a_pureImag : ∀ x : ℝ⁸, (a x).re = 0 := by
-  intro x
+public theorem a_pureImag : ∀ x : ℝ⁸, (a x).re = 0 := fun x => by
   by_cases hx : x = 0
   · subst hx; simp [MagicFunction.a.SpecialValues.a_zero]
-  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by simpa using pow_pos (norm_pos_iff.2 hx) 2
-    simpa [MagicFunction.FourierEigenfunctions.a, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using PureImaginary.a'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu
+  · simpa [MagicFunction.FourierEigenfunctions.a, schwartzMap_multidimensional_of_schwartzMap_real,
+      SchwartzMap.compCLM_apply] using PureImaginary.a'_re_eq_zero_of_pos (u := ‖x‖ ^ 2)
+        (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
 
 /-- The eigenfunction `b` is purely imaginary-valued (its real part vanishes). -/
-public theorem b_pureImag : ∀ x : ℝ⁸, (b x).re = 0 := by
-  intro x
+public theorem b_pureImag : ∀ x : ℝ⁸, (b x).re = 0 := fun x => by
   by_cases hx : x = 0
   · subst hx; simp [MagicFunction.b.SpecialValues.b_zero]
-  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by simpa using pow_pos (norm_pos_iff.2 hx) 2
-    simpa [MagicFunction.FourierEigenfunctions.b, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using PureImaginary.b'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu
+  · simpa [MagicFunction.FourierEigenfunctions.b, schwartzMap_multidimensional_of_schwartzMap_real,
+      SchwartzMap.compCLM_apply] using PureImaginary.b'_re_eq_zero_of_pos (u := ‖x‖ ^ 2)
+        (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
 
 end MagicFunction.g.CohnElkies
