@@ -6,8 +6,6 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-public import Mathlib.Topology.Algebra.Algebra
-public import Mathlib.Order.Interval.Set.UnorderedInterval
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 /-! # `Tendsto` for the `Ψ₁'` integrand near `z = 1` (dimension-agnostic). -/
@@ -40,9 +38,9 @@ private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r :
 
 private lemma exists_expNorm_le_add_one (r : ℝ) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
-  have hcont : ContinuousAt (expNorm r) (1 : ℂ) := by
-    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm
-  rcases (Metric.continuousAt_iff.1 hcont) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
+  rcases (Metric.continuousAt_iff.1 (by
+    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
+    ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
   exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
     (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
 
@@ -52,8 +50,8 @@ private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
   rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
     (((tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_atImInfty).eventually
       (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
-  exact ⟨max A0 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _),
-    fun τ hτ => (hA0 τ (le_trans (le_max_left _ _) hτ)).le⟩
+  exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
+    fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
 
 private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ)) (habs_re : |z.re - 1| ≤ z.im) :
@@ -87,15 +85,15 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
   · subst hz1; simpa [h.Ψ₁'_eq, h.ψT'_one] using hε
   have hz_im_pos : 0 < z.im := by
     simpa [UpperHalfPlane.upperHalfPlaneSet] using
-      (h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1)
+      h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
   let zH : UpperHalfPlane := ⟨z, hz_im_pos⟩
   have hexpZ : expNorm r z ≤ M := hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _))
   have hdist_min := lt_of_lt_of_le hdistz (min_le_right _ _)
   have hdist_lt := lt_of_lt_of_le hdist_min (min_le_left _ _)
   have hdist_lt_one : dist z (1 : ℂ) < 1 := lt_of_lt_of_le hdist_lt (min_le_left _ _)
   have hdist_pow : (dist z (1 : ℂ)) ^ k < ε / M :=
-    (by simpa [pow_one] using pow_le_pow_of_le_one dist_nonneg hdist_lt_one.le h.hk
-      : (dist z (1 : ℂ)) ^ k ≤ dist z (1 : ℂ)).trans_lt
+    ((by simpa [pow_one] using pow_le_pow_of_le_one dist_nonneg hdist_lt_one.le h.hk
+      : (dist z (1 : ℂ)) ^ k ≤ dist z (1 : ℂ))).trans_lt
         (lt_of_lt_of_le hdist_lt (min_le_right _ _))
   have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) := lt_of_lt_of_le hdist_min (min_le_right _ _)
   have hA_le_im : A ≤ (gAct zH).im := by
