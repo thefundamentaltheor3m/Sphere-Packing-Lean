@@ -9,9 +9,8 @@ import SpherePacking.MagicFunction.g.CohnElkies.IneqB
 /-!
 # Cohn-Elkies sign conditions for `g`
 
-This file proves the sign conditions for `g` and its Fourier transform needed for the
-Cohn-Elkies LP bound in dimension 8. These correspond to the conditions (g1) and (g2) in the
-blueprint theorem `thm:g1`.
+Sign conditions for `g` and `𝓕 g` needed for the Cohn-Elkies LP bound in dimension 8,
+corresponding to (g1) and (g2) in `thm:g1`.
 
 ## Main statements
 * `MagicFunction.g.CohnElkies.g_nonpos_of_norm_sq_ge_two`
@@ -33,12 +32,10 @@ private lemma integral_Ioi_ofReal_mul_exp (u : ℝ) (f : ℝ → ℝ) :
       (f := fun t : ℝ => f t * Real.exp (-π * u * t)))
 
 lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 := by
-  set IA : ℝ := ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t)
-  have hEqReal : gRadial u =
-      (((π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA : ℝ) : ℂ) := by
-    rw [gRadial_eq_integral_A (u := u) hu, integral_Ioi_ofReal_mul_exp u A]
-    push_cast; ring
-  have hIntegral : IA ≤ 0 :=
+  have hEqReal : gRadial u = (((π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+      ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
+    rw [gRadial_eq_integral_A (u := u) hu, integral_Ioi_ofReal_mul_exp u A]; push_cast; ring
+  have hIntegral : (∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t)) ≤ 0 :=
     MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
       measurableSet_Ioi fun t ht =>
         mul_nonpos_of_nonpos_of_nonneg (A_neg (t := t) ht).le (Real.exp_pos _).le
@@ -49,7 +46,7 @@ lemma gRadial_re_nonpos_of_two_le {u : ℝ} (hu : 2 ≤ u) : (gRadial u).re ≤ 
   have hclosed : IsClosed {u : ℝ | (gRadial u).re ≤ 0} :=
     isClosed_Iic.preimage (Complex.continuous_re.comp (SchwartzMap.continuous gRadial))
   have hmem : u ∈ closure (Set.Ioi (2 : ℝ)) := by simpa [closure_Ioi] using hu
-  exact hclosed.closure_subset_iff.2 (fun u hu' => gRadial_re_nonpos_of_two_lt hu') hmem
+  exact hclosed.closure_subset_iff.2 (fun _ hu' => gRadial_re_nonpos_of_two_lt hu') hmem
 
 /-- If `‖x‖ ^ 2 ≥ 2`, then the real part of `g x` is nonpositive. -/
 public theorem g_nonpos_of_norm_sq_ge_two (x : ℝ⁸) (hx : 2 ≤ ‖x‖ ^ 2) : (g x).re ≤ 0 := by
