@@ -28,8 +28,7 @@ noncomputable section
 
 namespace MagicFunction.a.Schwartz.I6Deriv
 
-open MagicFunction.a.RealIntegrals
-open MagicFunction.a.IntegralEstimates.I₆
+open MagicFunction.a.RealIntegrals MagicFunction.a.IntegralEstimates.I₆
 
 /-- The measure on `Ici 1` used for the `I₆'` integral representation. -/
 def μ : Measure ℝ := SpherePacking.Integration.μIciOne
@@ -55,9 +54,9 @@ lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) (μ) := 
 
 lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ) := by
   obtain ⟨C₀, _, hC₀⟩ := g_norm_bound_uniform
-  let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
-  have hbound_int : Integrable bound (μ) := by
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
+  have hbound_int :
+      Integrable (fun t : ℝ ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀) (μ) := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
       (show Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) (μ) by
         simpa [IntegrableOn, μ, SpherePacking.Integration.μIciOne] using
           SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
@@ -69,8 +68,7 @@ lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ)
     ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN, norm_pow]
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by
           have : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by simp [norm_coeff_of_nonneg ht0]
-          gcongr
-          exact hC₀ r t ht
+          gcongr; exact hC₀ r t ht
     _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by
           rw [show rexp (-(π * (r + 2)) * t) = rexp (-2 * π * t) * rexp (-π * r * t) from by
             rw [← Real.exp_add]; ring_nf]; ring
@@ -79,9 +77,7 @@ end MagicFunction.a.Schwartz.I6Deriv
 
 namespace MagicFunction.a.Schwartz.I6Smooth
 
-open MagicFunction.a.RealIntegrals
-open MagicFunction.a.Schwartz.I6Deriv
-open RadialSchwartz
+open MagicFunction.a.RealIntegrals MagicFunction.a.Schwartz.I6Deriv RadialSchwartz
 
 /-- The open set on which the integral defining `I₆'` is smoothly differentiable. -/
 def s : Set ℝ := Ioi (-2 : ℝ)
@@ -90,25 +86,22 @@ def s : Set ℝ := Ioi (-2 : ℝ)
 private abbrev hφ : ℝ → ℂ := fun t : ℝ ↦ φ₀'' (I * t)
 
 private lemma gN_eq_sharedGN (n : ℕ) (r t : ℝ) :
-    gN n r t =
-      SpherePacking.Integration.SmoothIntegralIciOne.gN (hf := hφ) n r t := by
+    gN n r t = SpherePacking.Integration.SmoothIntegralIciOne.gN (hf := hφ) n r t := by
   simp [gN, coeff, SpherePacking.Integration.SmoothIntegralIciOne.gN,
     SpherePacking.Integration.SmoothIntegralIciOne.g,
     SpherePacking.Integration.SmoothIntegralIciOne.coeff,
     MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, mul_left_comm, mul_comm]
 
-/-- Differentiate under the integral sign for `∫ t ∈ Ici 1, gN n r t` on `r₀ > -2`, by
-delegating to the shared dominated-differentiation lemma in `SmoothIntegralIciOne`. -/
+/-- Differentiate under the integral for `∫ t ∈ Ici 1, gN n r t`, via `SmoothIntegralIciOne`. -/
 lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
       (∫ t in Ici (1 : ℝ), gN (n + 1) r₀ t) r₀ := by
   obtain ⟨C₀, _, hC₀⟩ := MagicFunction.a.IntegralEstimates.I₆.g_norm_bound_uniform
-  have hbound_hf :
-      ∃ C, ∀ t : ℝ, 1 ≤ t → ‖hφ t‖ ≤ C * Real.exp (-(Real.pi * (2 : ℝ)) * t) := by
-    refine ⟨C₀, fun t ht ↦ ?_⟩
-    simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, mul_comm,
-      show rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) from by
-        rw [← Real.exp_add]; ring_nf] using hC₀ 0 t (by simpa using ht)
+  have hbound_hf : ∃ C, ∀ t : ℝ, 1 ≤ t → ‖hφ t‖ ≤ C * Real.exp (-(Real.pi * (2 : ℝ)) * t) :=
+    ⟨C₀, fun t ht ↦ by
+      simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, mul_comm,
+        show rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) from by
+          rw [← Real.exp_add]; ring_nf] using hC₀ 0 t (by simpa using ht)⟩
   convert SpherePacking.Integration.SmoothIntegralIciOne.hasDerivAt_integral_gN
     (hf := hφ) (shift := (2 : ℝ))
     (exists_bound_norm_hf := hbound_hf)
@@ -117,14 +110,12 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
     (n := n) (x := r₀) hr₀
     (hF_int :=
       (integrable_congr (.of_forall (gN_eq_sharedGN n r₀))).mp (gN_integrable n r₀ hr₀)) using 1
-  · funext r
-    exact integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
+  · exact funext fun r => integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
       .of_forall fun t _ ↦ gN_eq_sharedGN n r t)
   · exact integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
       .of_forall fun t _ ↦ gN_eq_sharedGN (n + 1) r₀ t)
 
-/-- The family of integrals `F n r = ∫ t in Ici 1, gN n r t`, whose smooth differentiability
-in `r` captures the smoothness of `I₆'`. -/
+/-- The family `F n r = ∫ t in Ici 1, gN n r t`, capturing smoothness of `I₆'`. -/
 def F (n : ℕ) (r : ℝ) : ℂ := ∫ t in Ici (1 : ℝ), gN n r t
 
 theorem I₆'_contDiffOn_Ioi_neg2 : ContDiffOn ℝ ∞ MagicFunction.a.RealIntegrals.I₆' s := by
