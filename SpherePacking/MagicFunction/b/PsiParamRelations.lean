@@ -7,8 +7,8 @@ import SpherePacking.ModularForms.SlashActionAuxil
 /-!
 # Relations between `ψT'` and `ψI'` along parametrisations
 
-This file records modular-translation identities relating `ψT'` and `ψI'` along the
-parametrisations `z₁'`, `z₃'`, and `z₅'`.
+Modular-translation identities relating `ψT'` and `ψI'` along the parametrisations
+`z₁'`, `z₃'`, and `z₅'`.
 
 ## Main statements
 * `ψT'_z₁'_eq_ψI'_z₅'`
@@ -18,22 +18,16 @@ parametrisations `z₁'`, `z₃'`, and `z₅'`.
 namespace MagicFunction.b.PsiParamRelations
 
 open scoped UpperHalfPlane
-
-open Complex Real Set UpperHalfPlane
-
-open MagicFunction.Parametrisations
+open Complex Real Set UpperHalfPlane MagicFunction.Parametrisations
 
 private lemma ψT'_eq_ψI'_of_ψT_eq_ψI {z w : ℂ} (hz : 0 < z.im) (hw : 0 < w.im)
-    (h : ψT ⟨z, hz⟩ = ψI ⟨w, hw⟩) :
-    ψT' z = ψI' w := by
+    (h : ψT ⟨z, hz⟩ = ψI ⟨w, hw⟩) : ψT' z = ψI' w := by
   simpa [ψT', ψI', hz, hw] using h
 
-private lemma ψT_eq_ψI_vadd_one (z : ℍ) :
-    ψT z = ψI ((1 : ℝ) +ᵥ z) := by
+private lemma ψT_eq_ψI_vadd_one (z : ℍ) : ψT z = ψI ((1 : ℝ) +ᵥ z) := by
   simp [ψT, modular_slash_T_apply]
 
-private lemma ψT_vadd_one_eq_ψI (z : ℍ) :
-    ψT ((1 : ℝ) +ᵥ z) = ψI z := by
+private lemma ψT_vadd_one_eq_ψI (z : ℍ) : ψT ((1 : ℝ) +ᵥ z) = ψI z := by
   simpa [modular_slash_T_apply] using congrFun ψT_slash_T z
 
 private lemma vadd_one_z₁'_eq_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
