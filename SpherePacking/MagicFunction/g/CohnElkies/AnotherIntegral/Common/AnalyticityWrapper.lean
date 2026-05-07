@@ -24,10 +24,9 @@ private lemma t_mul_exp_le {c t : ℝ} (hc : 0 < c) :
 
 private lemma norm_exp_le_of_re_ge {z : ℂ} {t c : ℝ} (ht0 : 0 ≤ t) (hcz : c ≤ z.re) :
     ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * c * t) := by
-  have hre : (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t := by
-    simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-  simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr <| by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
+  simpa [Complex.norm_exp, show (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t by
+    simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]] using
+    Real.exp_le_exp.mpr <| by simpa [mul_assoc, mul_left_comm, mul_comm] using
       mul_le_mul_of_nonpos_left hcz (by nlinarith [Real.pi_pos, ht0] : (-π * t : ℝ) ≤ 0)
 
 /-- Analyticity of `u ↦ ∫ t ∈ (0, ∞), base(t) * Complex.exp(-π u t)` on the right half-plane. -/
