@@ -50,14 +50,6 @@ lemma a_zero_reduction :
   simpa using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
     FourierEigenfunctions.a_eq_sum_integrals_RadialFunctions
 
-lemma I₁'_zero_add_I₃'_zero_add_I₅'_zero :
-    (I₁' (0 : ℝ) + I₃' 0 + I₅' 0 : ℂ) = 0 := by
-  simp [I₁'_eq, I₃'_eq, I₅'_eq]; ring
-
-lemma a_zero_reduction_I₂₄₆ :
-    FourierEigenfunctions.a (0 : ℝ⁸) = I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
-  linear_combination a_zero_reduction + I₁'_zero_add_I₃'_zero_add_I₅'_zero
-
 /-- A second-order finite difference identity for `φ₀` obtained from its modular transformation
 under `S`, together with periodicity. -/
 public theorem φ₀_finite_difference (z : ℍ) :
@@ -124,23 +116,21 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
 private lemma vadd_neg_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z - 1).im) :
     ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [sub_eq_add_neg, add_comm]
 
-private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
-  rw [φ₀''_def (z := z - 1) (by simpa using hz), φ₀''_def (z := z) hz,
-    ← vadd_neg_one_eq z hz (by simpa using hz), φ₀_periodic_neg_one]
-
-private lemma φ₂''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z - 1) = φ₂'' z := by
-  rw [φ₂''_def (z := z - 1) (by simpa using hz), φ₂''_def (z := z) hz,
-    ← vadd_neg_one_eq z hz (by simpa using hz), φ₂'_periodic_neg_one]
-
-private lemma φ₄''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₄'' (z - 1) = φ₄'' z := by
-  rw [φ₄''_def (z := z - 1) (by simpa using hz), φ₄''_def (z := z) hz,
-    ← vadd_neg_one_eq z hz (by simpa using hz), φ₄'_periodic_neg_one]
-
 lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
       φ₀'' z * ((2 : ℂ) * z - 1) - (12 * Complex.I) / π * φ₂'' z := by
-  simp [F_eq_phi0_phi2_phi4 (z := z) hz, F_eq_phi0_phi2_phi4 (z := z - 1) (by simpa using hz),
-    φ₀''_sub_one (z := z) hz, φ₂''_sub_one (z := z) hz, φ₄''_sub_one (z := z) hz, pow_two]
+  have hzm : 0 < (z - 1).im := by simpa using hz
+  have hφ₀ : φ₀'' (z - 1) = φ₀'' z := by
+    rw [φ₀''_def (z := z - 1) hzm, φ₀''_def (z := z) hz,
+      ← vadd_neg_one_eq z hz hzm, φ₀_periodic_neg_one]
+  have hφ₂ : φ₂'' (z - 1) = φ₂'' z := by
+    rw [φ₂''_def (z := z - 1) hzm, φ₂''_def (z := z) hz,
+      ← vadd_neg_one_eq z hz hzm, φ₂'_periodic_neg_one]
+  have hφ₄ : φ₄'' (z - 1) = φ₄'' z := by
+    rw [φ₄''_def (z := z - 1) hzm, φ₄''_def (z := z) hz,
+      ← vadd_neg_one_eq z hz hzm, φ₄'_periodic_neg_one]
+  simp [F_eq_phi0_phi2_phi4 (z := z) hz, F_eq_phi0_phi2_phi4 (z := z - 1) hzm,
+    hφ₀, hφ₂, hφ₄, pow_two]
   ring_nf
 
 lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
@@ -319,10 +309,6 @@ lemma integral_f0_height_one_eq_neg_I6 :
     tendsto_top_f0
   rw [I6_zero_eq_I_smul_integral]; linear_combination hA0
 
-lemma φ₂''_add_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z + 1) = φ₂'' z := by
-  rw [φ₂''_def (z := z + 1) (by simpa using hz), φ₂''_def (z := z) hz,
-    ← vadd_one_eq z hz (by simpa using hz), φ₂'_periodic]
-
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
         (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) +
@@ -345,10 +331,14 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
   have hVert : ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((1 : ℝ) + y * Complex.I) =
       ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I) :=
     intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
-      simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using
-        φ₂''_add_one (z := (y : ℂ) * Complex.I) (by
-          simpa [mul_assoc] using
-            lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ((Set.uIcc_of_le hm ▸ hy).1))
+      have hyim : (0 : ℝ) < ((y : ℂ) * Complex.I).im := by
+        simpa [mul_assoc] using
+          lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ((Set.uIcc_of_le hm ▸ hy).1)
+      have hadd : φ₂'' ((y : ℂ) * Complex.I + 1) = φ₂'' ((y : ℂ) * Complex.I) := by
+        rw [φ₂''_def (z := (y : ℂ) * Complex.I + 1) (by simpa using hyim),
+          φ₂''_def (z := (y : ℂ) * Complex.I) hyim,
+          ← vadd_one_eq ((y : ℂ) * Complex.I) hyim (by simpa using hyim), φ₂'_periodic]
+      simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using hadd
   have hrect := rect_phi2 m hm; grind only
 
 lemma summable_coeff_A_over_q :
@@ -510,7 +500,9 @@ end StripContour
 /-- The special value at the origin: `a 0 = -8640 * I / π`. -/
 public theorem a_zero :
     FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := by
-  rw [a_zero_reduction_I₂₄₆, hI246_eq]
+  have h135 : (I₁' (0 : ℝ) + I₃' 0 + I₅' 0 : ℂ) = 0 := by
+    simp [I₁'_eq, I₃'_eq, I₅'_eq]; ring
+  linear_combination a_zero_reduction + h135 + hI246_eq
 
 end Zero
 
