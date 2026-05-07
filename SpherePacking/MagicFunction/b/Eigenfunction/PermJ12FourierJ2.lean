@@ -8,37 +8,16 @@ import SpherePacking.Contour.GaussianIntegral
 import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 
 
-/-!
-# Perm J12 Fourier J2
-
-##### Fourier transform of `J₂`
-
--/
+/-! # Perm J12 Fourier J2: Fourier transform of `J₂`. -/
 
 namespace MagicFunction.b.Fourier
 
 noncomputable section
 
-open scoped FourierTransform RealInnerProductSpace Topology
-
+open scoped FourierTransform RealInnerProductSpace Topology Real Interval
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
-
-section Integral_Permutations
-
-open scoped Real
-
-open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
-open SpherePacking.ForMathlib
-open SpherePacking.Contour
-open SpherePacking.Integration
-
-
-section PermJ12
-
-open MeasureTheory Set Complex Real
-open Filter
-open scoped Interval
-
+open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral Filter
+open SpherePacking.ForMathlib SpherePacking.Contour SpherePacking.Integration
 
 def permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) : EuclideanSpace ℝ (Fin 8) × ℝ → ℂ :=
   fun p =>
@@ -82,12 +61,6 @@ lemma integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
         (z := z₂line t) (by simp [z₂line] : 0 < (z₂line t).im)).const_mul (ψT' (z₂line t)))
     (aestronglyMeasurable_phase (w := w)) (ae_norm_phase_le_one (w := w))
 
-lemma ae_integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) :
-    ∀ᵐ t : ℝ ∂μIoc01,
-      Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ2Kernel w (x, t))
-        (volume : Measure (EuclideanSpace ℝ (Fin 8))) :=
-  .of_forall fun t => integrable_permJ2Kernel_slice (w := w) (t := t)
-
 lemma integral_permJ2Kernel_x (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     (∫ x : EuclideanSpace ℝ (Fin 8), permJ2Kernel w (x, t)) =
       Ψ₁_fourier (‖w‖ ^ 2) (z₂line t) := by
@@ -123,7 +96,7 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))) (ν := μIoc01)
     (hcont.aestronglyMeasurable
       (μ := ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μIoc01)))).2
-    ⟨ae_integrable_permJ2Kernel_slice (w := w),
+    ⟨.of_forall fun t => integrable_permJ2Kernel_slice (w := w) (t := t),
       Integrable.mono' (integrable_const ((Mψ : ℝ) * Cgauss))
         (MeasureTheory.AEStronglyMeasurable.integral_prod_right'
           (μ := μIoc01) (ν := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
@@ -131,12 +104,6 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
         (hbound.mono fun t ht => by
           simpa [Real.norm_eq_abs, abs_of_nonneg
             (MeasureTheory.integral_nonneg fun x => norm_nonneg _ : (0 : ℝ) ≤ _)] using ht)⟩
-
-private lemma integral_permJ2Kernel_x_ae (w : EuclideanSpace ℝ (Fin 8)) :
-    (fun t : ℝ =>
-        (∫ x : EuclideanSpace ℝ (Fin 8), permJ2Kernel w (x, t) ∂(volume : Measure _))) =ᵐ[μIoc01]
-      fun t : ℝ => Ψ₁_fourier (‖w‖ ^ 2) (z₂line t) :=
-  .of_forall fun t => integral_permJ2Kernel_x (w := w) (t := t)
 
 /-- Fourier transform of `J₂` as a curve integral of `Ψ₁_fourier` along the segment
 `Path.segment (-1 + I) I`. -/
@@ -147,20 +114,16 @@ public lemma fourier_J₂_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
   simpa using
     SpherePacking.Contour.fourier_J_eq_curveIntegral_of
       (a := (-1 : ℂ) + I) (b := I)
-      (fun x => by
-        simpa using (J₂_apply (x := x)))
+      (fun x => by simpa using J₂_apply (x := x))
       (fun w x => by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x))
       integrable_permJ2Kernel
-      integral_permJ2Kernel_x_ae
-      (fun w' => by
-        simpa using
-          (integral_muIoc01_z₂line (F := Ψ₁_fourier (‖w'‖ ^ 2))))
+      (fun w' => .of_forall fun t => integral_permJ2Kernel_x (w := w') (t := t))
+      (fun w' => by simpa using integral_muIoc01_z₂line (F := Ψ₁_fourier (‖w'‖ ^ 2)))
       w
 
 
-end Integral_Permutations.PermJ12
 end
 
 end MagicFunction.b.Fourier
