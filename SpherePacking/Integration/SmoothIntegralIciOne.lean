@@ -24,7 +24,6 @@ noncomputable section
 
 open scoped Topology
 open Complex Real Set MeasureTheory Filter
-
 open SpherePacking.Integration (μIciOne)
 
 /-- The coefficient function used in the exponential weight. -/
@@ -43,7 +42,7 @@ public lemma coeff_norm (t : ℝ) (ht : t ∈ Set.Ici (1 : ℝ)) : ‖coeff t‖
   simp [coeff, Complex.norm_real, abs_of_nonneg Real.pi_pos.le,
     abs_of_nonneg (zero_le_one.trans (by simpa [Set.mem_Ici] using ht))]
 
-/-- A crude bound on the integrand `g` in terms of `‖hf t‖` and `exp (-π * x * t)`. -/
+/-- Crude bound on `g` in terms of `‖hf t‖` and `exp (-π * x * t)`. -/
 public lemma g_norm_bound (hf : ℝ → ℂ) (x t : ℝ) :
     ‖g (hf := hf) x t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * x * t) := by
   simp [g, coeff, Complex.norm_exp, mul_left_comm, mul_comm]
@@ -89,12 +88,11 @@ public lemma hasDerivAt_integral_gN
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
       grind only [= abs.eq_1, = max_def]
     have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-      have hexp : Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t) =
-          Real.exp (-(Real.pi * (y + shift)) * t) := by rw [← Real.exp_add]; ring_nf
       calc ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := g_norm_bound _ _ _
         _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by
               gcongr; exact hC t ht
-        _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by rw [mul_assoc, hexp]
+        _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by
+              rw [mul_assoc, ← Real.exp_add]; ring_nf
     calc ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
             simp [gN, norm_pow]
       _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * ε) * t)) := by
