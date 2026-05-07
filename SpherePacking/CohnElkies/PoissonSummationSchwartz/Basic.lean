@@ -24,20 +24,17 @@ local notation "Λ" => SchwartzMap.standardLattice d
       let ⟨n, hn⟩ := exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E)) ℓ.property
       ⟨n, Subtype.ext hn.symm⟩⟩
 
-/-- Coercion lemma for `equivIntVec`. -/
 @[simp] public lemma coe_equivIntVec (n : Fin d → ℤ) :
     ((equivIntVec (d := d) n : Λ) : E) = intVec (d := d) n := rfl
 
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
-/-- Measurability of the additive action of the standard lattice on `E = ℝ^d`. -/
 public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
   measurable_const_vadd c := by
     simpa [Submodule.vadd_def, vadd_eq_add] using (continuous_const.add continuous_id).measurable
   measurable_vadd_const x := by simpa [Submodule.vadd_def, vadd_eq_add] using
     (continuous_subtype_val.add continuous_const).measurable
 
-/-- Invariance of Lebesgue measure under translations by standard lattice vectors. -/
 public instance instVAddInvariantMeasure_standardLattice :
     MeasureTheory.VAddInvariantMeasure Λ E (volume : Measure E) where
   measure_preimage_vadd c s hs := by
@@ -47,7 +44,6 @@ public instance instVAddInvariantMeasure_standardLattice :
 @[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) :=
   (⟨f, f.continuous⟩ : C(E, ℂ)).comp (ContinuousMap.addRight (ℓ : E))
 
-/-- Pointwise formula for `translate`. -/
 @[simp] public lemma translate_apply (ℓ : Λ) (x : E) :
     translate (d := d) f ℓ x = f (x + (ℓ : E)) := rfl
 
@@ -109,7 +105,6 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
 @[expose] public noncomputable def periodized : C(E, ℂ) :=
   ∑' ℓ : Λ, translate (d := d) f ℓ
 
-/-- Pointwise formula for `periodized`. -/
 public lemma periodized_apply (x : E) :
     periodized (d := d) f x = ∑' ℓ : Λ, f (x + (ℓ : E)) := by
   simpa [periodized, translate_apply] using
@@ -125,7 +120,6 @@ public lemma periodized_apply (x : E) :
 @[expose] public noncomputable def coeFunEC : C(E, UnitAddTorus (Fin d)) :=
   ⟨coeFunE (d := d), continuous_coeFunE⟩
 
-/-- `coeFunEC` is a quotient map. -/
 public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) :=
   (isOpenQuotientMap_coeFunE (d := d)).isQuotientMap
 
@@ -150,7 +144,6 @@ public lemma descended_comp (x : E) :
   congrArg (fun g : C(E, ℂ) => g x)
     (by simp [descended] : (descended (d := d) f).comp (coeFunEC (d := d)) = periodized (d := d) f)
 
-/-- Evaluate `mFourier (-n)` after composing with `coeFunE`, in terms of an inner product. -/
 public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) =
       (𝐞 (-(inner ℝ x (intVec (d := d) n))) : ℂ) := by
@@ -159,29 +152,25 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     Finset.sum_neg_distrib, mul_assoc, mul_comm]
 
 @[simp] lemma intVec_neg (n : Fin d → ℤ) :
-    intVec (d := d) (-n) = -intVec (d := d) n := by
-  ext i; simp [intVec_apply]
+    intVec (d := d) (-n) = -intVec (d := d) n := by ext i; simp [intVec_apply]
 
 lemma mFourier_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (coeFunE (d := d) x) =
       (𝐞 (inner ℝ x (intVec (d := d) n)) : ℂ) := by
   simpa [inner_neg_right] using mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
 
-/-- The same character evaluation as `mFourier_apply_coeFunE`, written with `Complex.exp`. -/
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (coeFunE (d := d) x) =
       Complex.exp (2 * Real.pi * Complex.I * ⟪x, intVec (d := d) n⟫_[ℝ]) := by
   simpa [Real.fourierChar_apply, mul_assoc, mul_comm,
     RCLike.inner_eq_wInner_one x (intVec n)] using mFourier_apply_coeFunE (d := d) (n := n) (x := x)
 
-/-- `mFourier (-n) ∘ coeFunE` is invariant under adding an element of the standard lattice. -/
 public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ) (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE (d := d) (x + (ℓ : E))) =
       UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) :=
   let ⟨m, hm⟩ := exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E)) ℓ.property
   by simp [hm]
 
-/-- The fundamental cube `iocCube` is contained in the closed ball of radius `sqrt d`. -/
 public lemma iocCube_subset_closedBall :
     iocCube (d := d) ⊆ Metric.closedBall (0 : E) (Real.sqrt d) := fun x hx => by
   simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using
@@ -190,12 +179,10 @@ public lemma iocCube_subset_closedBall :
         nlinarith [norm_nonneg (x i), show ‖x i‖ ≤ (1 : ℝ) by
           simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2]).trans_eq (by simp))
 
-/-- The fundamental cube `iocCube` has finite Lebesgue measure. -/
 public lemma volume_iocCube_lt_top : (volume : Measure E) (iocCube (d := d)) < ⊤ :=
   ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
     (iocCube_subset_closedBall (d := d))).measure_lt_top
 
-/-- Integrability of `mFourier (-n) * translate` on the fundamental cube `iocCube`. -/
 public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (ℓ : Λ) :
     IntegrableOn
         (fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f (x + (ℓ : E)))
