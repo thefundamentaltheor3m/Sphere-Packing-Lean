@@ -96,14 +96,12 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
       ⟨c * j, by simp [hc, hj, hj', mul_left_comm]⟩
 
 lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R} :
-    v ∈ E8 R ↔
-      ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
-        ∧ ∑ i, v i ≡ 0 [PMOD 2] := Iff.rfl
+    v ∈ E8 R ↔ ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
+      ∧ ∑ i, v i ≡ 0 [PMOD 2] := Iff.rfl
 
 lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R} :
-    v ∈ E8 R ↔
-      ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, n + 2⁻¹ = v i))
-        ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
+    v ∈ E8 R ↔ ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, n + 2⁻¹ = v i))
+      ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
   rw [mem_E8]
   suffices ∀ i, (∃ n : ℤ, Odd n ∧ n = 2 • v i) ↔ (∃ n : ℤ, n + 2⁻¹ = v i) by simp_rw [this]
   exact fun i => ⟨fun ⟨_, ⟨k, rfl⟩, hn'⟩ => ⟨k, by
