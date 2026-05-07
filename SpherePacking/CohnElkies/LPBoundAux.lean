@@ -4,28 +4,21 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 public import Mathlib.Order.Filter.Cofinite
 
-
 /-!
 # Auxiliary summability for the LP bound
 
-The Cohn-Elkies linear programming bound involves lattice sums of Schwartz functions.
-This file isolates a basic input: if `f` is Schwartz and `a + Λ` is a translate of a discrete
-`ℤ`-lattice, then the family of norms `‖f (a + ℓ)‖` is summable over `ℓ : Λ`.
-
-This summability is used later to justify rearranging and commuting `tsum` expressions.
+If `f` is Schwartz and `a + Λ` is a translate of a discrete `ℤ`-lattice, then the family of norms
+`‖f (a + ℓ)‖` is summable over `ℓ : Λ`. Used to justify rearranging `tsum` expressions in the
+Cohn-Elkies linear programming bound.
 -/
 
-open scoped SchwartzMap
-open scoped FourierTransform
-
+open scoped SchwartzMap FourierTransform
 open BigOperators
 
 namespace SpherePacking.CohnElkies
 variable {d : ℕ}
 
 namespace LPBoundAux
-
-section ZLatticeSummability
 
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 
@@ -50,14 +43,11 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
         AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup)
     have hFiniteBad :
         ({ℓ : Λ | ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ≤ (1 : ℝ)} : Set Λ).Finite := by
-      have hFiniteBall :
-          ((Metric.closedBall b (1 : ℝ)) ∩ (Λ : Set (EuclideanSpace ℝ (Fin d)))).Finite :=
-        Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
-          Metric.isBounded_closedBall hClosed
       have hpre :
           ((fun ℓ : Λ => (ℓ : EuclideanSpace ℝ (Fin d))) ⁻¹'
               (Metric.closedBall b (1 : ℝ) ∩ (Λ : Set (EuclideanSpace ℝ (Fin d))))).Finite := by
-        simpa using hFiniteBall.preimage_embedding
+        simpa using (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
+          Metric.isBounded_closedBall hClosed).preimage_embedding
           (f := (⟨Subtype.val, Subtype.coe_injective⟩ : Λ ↪ EuclideanSpace ℝ (Fin d)))
       simpa [Set.preimage, Metric.mem_closedBall, dist_eq_norm, and_true] using hpre
     refine hFiniteBad.subset ?_
@@ -72,19 +62,15 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
       have hnorm : ‖a + (ℓ : EuclideanSpace ℝ (Fin d))‖ = ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ := by
         simp [b, sub_eq_add_neg, add_comm]
       simpa [hnorm] using hC' (a + (ℓ : EuclideanSpace ℝ (Fin d)))
-    have hle :
-        ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤
-          C / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k :=
-      (le_div_iff₀' hpos).2 hdec
     have hmono :
         C / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k ≤
           (C + 1) / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k := by
-      have hnonneg : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹ := by positivity
       simpa [div_eq_mul_inv, mul_assoc] using
-        mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1) hnonneg
-    have hgood : ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤
-        (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k := by
-      simpa [div_eq_mul_inv, inv_pow] using hle.trans (by simpa using hmono)
-    exact hfail (by simpa using hgood)
+        mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1)
+          (by positivity : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹)
+    refine hfail (by simpa [div_eq_mul_inv, inv_pow] using
+      ((le_div_iff₀' hpos).2 hdec).trans (by simpa using hmono))
 
-end SpherePacking.CohnElkies.LPBoundAux.ZLatticeSummability
+end LPBoundAux
+
+end SpherePacking.CohnElkies
