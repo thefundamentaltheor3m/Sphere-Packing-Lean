@@ -48,8 +48,8 @@ theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion, fourierInv_eq]
-  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul,
-    ← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
+  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re,
+    ← integral_re hIntegrable]
   exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
@@ -63,8 +63,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
     simpa [fourierInv_eq, show f 0 = 0 from by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion))
-  ext x
-  simpa [show (𝓕 f x).re = 0 from by simpa using congrFun hfun x] using (hRealFourier x).symm
+  ext x; simpa [show (𝓕 f x).re = 0 from by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 end Nonnegativity
 
@@ -277,10 +276,9 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   refine iSup_le fun P => iSup_le fun hP => ?_
   rcases isEmpty_or_nonempty ↑P.centers with _ | _
   · simp [P.density_of_centers_empty hd]
-  let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
-    (PeriodicSpherePacking.basis_index_equiv P)
   exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
-      (S := P) b) hd
+      (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
+        (PeriodicSpherePacking.basis_index_equiv P))) hd
 
 end Main_Theorem
