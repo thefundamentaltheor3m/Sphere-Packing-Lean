@@ -15,27 +15,24 @@ public import Mathlib.Analysis.Complex.Periodic
 /-!
 # Helpers on the imaginary axis (AnotherIntegral.A)
 
-Helper definitions (`zI`) and bounds (`norm_φ₀_imag_le`, `exists_E4_sub_one_bound`,
-`exists_Delta_sub_q_bound`, …) for evaluating modular objects on the positive imaginary axis.
+Definitions (`zI`) and bounds (`norm_φ₀_imag_le`, `exists_E4_sub_one_bound`, …) for evaluating
+modular objects on the positive imaginary axis.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
-open scoped ArithmeticFunction.sigma
+  ArithmeticFunction.sigma
 
-open Real Complex Function ArithmeticFunction
-  MagicFunction.FourierEigenfunctions UpperHalfPlane ModularForm
-  SlashInvariantFormClass ModularFormClass
+open Real Complex Function ArithmeticFunction MagicFunction.FourierEigenfunctions
+  UpperHalfPlane ModularForm SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
 /-- The point `it` in the upper half-plane. -/
-@[expose] public def zI (t : ℝ) (ht : 0 < t) : ℍ :=
-  ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht⟩
+@[expose] public def zI (t : ℝ) (ht : 0 < t) : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht⟩
 
-public lemma zI_im (t : ℝ) (ht : 0 < t) : (zI t ht).im = t := by
-  simp [zI, UpperHalfPlane.im]
+public lemma zI_im (t : ℝ) (ht : 0 < t) : (zI t ht).im = t := by simp [zI, UpperHalfPlane.im]
 
 lemma qParam_zI (t : ℝ) (ht : 0 < t) :
     Periodic.qParam (1 : ℝ) (zI t ht) = (Real.exp (-2 * π * t) : ℂ) := by
@@ -56,21 +53,18 @@ public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
 public lemma exp_neg_two_pi_lt_one : Real.exp (-2 * π) < 1 :=
   Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos])
 
-public lemma q_le_q1 {t : ℝ} (ht : 1 ≤ t) :
-    Real.exp (-2 * π * t) ≤ Real.exp (-2 * π) :=
+public lemma q_le_q1 {t : ℝ} (ht : 1 ≤ t) : Real.exp (-2 * π * t) ≤ Real.exp (-2 * π) :=
   Real.exp_le_exp.2 (by nlinarith [Real.pi_pos])
 
 /-- Exponential decay bound for `φ₀'' (it)` on `t ≥ 1`. -/
 public lemma norm_φ₀_imag_le :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 1 ≤ t →
-      ‖φ₀'' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ C * Real.exp (-2 * π * t) := by
-  obtain ⟨C, hCpos, hC⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  refine ⟨C, hCpos, fun t ht => have ht0 : 0 < t := zero_lt_one.trans_le ht
-    by simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
-        simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
-      zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])⟩
-
-/-! ## `q`-expansion remainder bounds on the imaginary axis. -/
+      ‖φ₀'' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ C * Real.exp (-2 * π * t) :=
+  MagicFunction.PolyFourierCoeffBound.norm_φ₀_le.imp fun _ ⟨hCpos, hC⟩ =>
+    ⟨hCpos, fun t ht => have ht0 := zero_lt_one.trans_le ht
+      by simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
+          simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
+        zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])⟩
 
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
@@ -111,9 +105,8 @@ private lemma exists_sub_partialSum_bound
             (Periodic.qParam (1 : ℝ) (zI t ht))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ n := by
   obtain ⟨a, ha, C, hCpos, hbound⟩ := (ModularFormClass.hasFPowerSeries_cuspFunction
-    (f := f) (h := (1 : ℝ)) zero_lt_one hΓ).uniform_geometric_approx' (r' := r0)
-    (by simpa using (ENNReal.coe_lt_one_iff.2
-      (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos))))
+    (f := f) (h := (1 : ℝ)) zero_lt_one hΓ).uniform_geometric_approx' (r' := r0) (by
+      simpa using ENNReal.coe_lt_one_iff.2 (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)))
   refine ⟨C * (a / (r0 : ℝ)) ^ n,
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
@@ -140,8 +133,7 @@ public lemma exists_E4_sub_one_bound :
       simpa [qExpansionFormalMultilinearSeries, FormalMultilinearSeries.partialSum, E4_q_exp_zero]
         using hC t ht0 ht1⟩
 
-/-- Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, where
-`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
+/-- Second-order remainder bound for `E₄ (it) - (1 + 240 q)` with `q = exp (-2π t)`, `t ≥ 1`. -/
 public lemma exists_E4_sub_one_sub_240q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖E₄ (zI t ht) - ((1 : ℂ) + (240 : ℂ) * (Real.exp (-2 * π * t) : ℂ))‖ ≤
@@ -158,8 +150,7 @@ private lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
         zero_lt_one hΓ1).symm.trans
         (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1)]
 
-/-- Second-order remainder bound for `Δ (it)` after subtracting `q = exp (-2π t)`, valid for all
-`t ≥ 1`. -/
+/-- Second-order remainder bound for `Δ (it) - q` with `q = exp (-2π t)`, `t ≥ 1`. -/
 public lemma exists_Delta_sub_q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) - (Real.exp (-2 * π * t) : ℂ)‖ ≤
@@ -169,8 +160,7 @@ public lemma exists_Delta_sub_q_bound :
     simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := Delta), Delta_q_exp_zero,
       Delta_q_one_term, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
-/-- Third-order remainder bound for `Δ (it)` after subtracting `q - 24 q^2`, where
-`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
+/-- Third-order remainder bound for `Δ (it) - (q - 24 q²)` with `q = exp (-2π t)`, `t ≥ 1`. -/
 public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) -
@@ -182,8 +172,7 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
       Finset.sum_range_succ, mul_comm, Delta_q_exp_zero,
       Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
-/-- Second-order remainder bound for `E₂(it)E₄(it) - E₆(it)` after subtracting `720 q`, where
-`q = exp (-2π t)`, valid for all `t ≥ 1`. -/
+/-- Second-order remainder bound for `E₂E₄ - E₆ - 720 q` with `q = exp (-2π t)`, `t ≥ 1`. -/
 public lemma exists_E2E4_sub_E6_sub_720q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖(E₂ (zI t ht)) * (E₄ (zI t ht)) - (E₆ (zI t ht)) -
@@ -213,8 +202,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le : q ≤ q1 := q_le_q1 (t := t) ht1
   have hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ) := by simpa [q, z] using qParam_zI t ht0
-  let f : ℕ → ℂ := fun n =>
-    ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
+  let f : ℕ → ℂ :=
+    fun n => ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
     rw [show ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
         ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ from by simp [f, mul_assoc],
@@ -225,8 +214,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     · simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
         norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
   have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
-  let g : ℕ → ℂ := fun n =>
-    (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
+  let g : ℕ → ℂ := fun n => (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
   have hg_summ : Summable g := .of_norm_bounded (hb_summ.mul_left q) fun n => by
     rw [show ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
         ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ from by simp [g, mul_assoc],
