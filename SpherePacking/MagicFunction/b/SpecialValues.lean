@@ -14,15 +14,7 @@ import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import Mathlib.Analysis.Complex.Periodic
 import Mathlib.MeasureTheory.Integral.ExpDecay
 
-/-!
-# Special values for `b`
-
-This file proves special values for Viazovska's magic function `b`, notably the evaluation
-`b 0 = 0`.
-
-## Main statement
-* `MagicFunction.b.SpecialValues.b_zero`
--/
+/-! Special values for Viazovska's magic function `b`, notably `b 0 = 0`. -/
 
 namespace MagicFunction.b.SpecialValuesProof
 
@@ -59,7 +51,6 @@ private lemma continuous_addIφ :
 
 lemma continuous_ψI'_add_I : Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I) := by
   simpa [ψI'] using MagicFunction.b.PsiBounds.continuous_ψI.comp continuous_addIφ
-
 lemma continuous_ψT'_add_I : Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I) := by
   simpa [ψT'] using MagicFunction.b.PsiBounds.continuous_ψT.comp continuous_addIφ
 
@@ -70,12 +61,10 @@ lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ext1; simp [z₂'_eq_of_mem (t := t) ht, add_left_comm, add_comm]] using
     (show ψT ⟨z₂' t, hz2⟩ = ψI ((1 : ℝ) +ᵥ ⟨z₂' t, hz2⟩) by simp [ψT, modular_slash_T_apply])
 
-/-! Contour identity for `b_zero`: `J₂'(0)+J₄'(0)+J₆'(0)=0` via rectangular deformation. -/
-
 lemma htendsto_ψS' :
     ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖ψS' z‖ < ε := fun ε hε => by
-  obtain ⟨M, hM⟩ := (Filter.eventually_atImInfty).1
-    (show ∀ᶠ z in UpperHalfPlane.atImInfty, ‖ψS z‖ < ε by simpa [dist_eq_norm] using
+  obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
+    ‖ψS z‖ < ε by simpa [dist_eq_norm] using
       (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
   refine ⟨max M 1, fun z hz => ?_⟩
   have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
@@ -155,16 +144,10 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
     have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
     have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-    refine (show DifferentiableOn ℂ (fun z : ℂ => (128 : ℂ) *
-            (((H₄ (UpperHalfPlane.ofComplex z) - H₂ (UpperHalfPlane.ofComplex z)) /
-                  (H₃ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ)) -
-              ((H₂ (UpperHalfPlane.ofComplex z) + H₃ (UpperHalfPlane.ofComplex z)) /
-                  (H₄ (UpperHalfPlane.ofComplex z)) ^ (2 : ℕ))))
-          {z : ℂ | 0 < z.im} by
-      simpa [mul_assoc] using (DifferentiableOn.const_mul
+    refine (DifferentiableOn.const_mul
         (((hH4.sub hH2).div (hH3.pow 2) (fun _ _ => pow_ne_zero 2 (H₃_ne_zero _))).sub
           ((hH2.add hH3).div (hH4.pow 2) (fun _ _ => pow_ne_zero 2 (H₄_ne_zero _))))
-        (128 : ℂ))).congr fun z _ => ?_
+        (128 : ℂ)).congr fun z _ => ?_
     simpa [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
       show (H₄_MF : ℍ → ℂ) = H₄ from rfl] using
       congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψS_eq'
