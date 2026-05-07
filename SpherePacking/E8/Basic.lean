@@ -13,8 +13,8 @@ public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 /-!
 # Basic properties of the E₈ lattice
 
-We define the E₈ lattice as a submodule of `Fin 8 → R` (parity conditions) and as the ℤ-span of an
-explicit basis matrix (`E8Matrix`), prove the two are equivalent, and derive integrality facts.
+E₈ as a submodule of `Fin 8 → R` (parity conditions) and as the ℤ-span of `E8Matrix`; the two are
+equivalent, plus integrality of squared norms.
 -/
 
 variable {R : Type*}
@@ -80,10 +80,10 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
         ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
     refine hb.symm.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha', ha⟩ := ha i
     · obtain ⟨b', hb', hb⟩ := hb i
-      refine ⟨(a' + b') / 2, ?_⟩
-      rw [Int.cast_div ((even_iff_two_dvd ..).1 (ha'.add_odd hb')) (by simpa using NeZero.ne 2),
-        Int.cast_add, add_div (K := R), ha, hb, Int.cast_ofNat,
-        mul_div_cancel_left₀ _ (NeZero.ne 2), mul_div_cancel_left₀ _ (NeZero.ne _)]
+      exact ⟨(a' + b') / 2, by
+        rw [Int.cast_div ((even_iff_two_dvd ..).1 (ha'.add_odd hb')) (by simpa using NeZero.ne 2),
+          Int.cast_add, add_div (K := R), ha, hb, Int.cast_ofNat,
+          mul_div_cancel_left₀ _ (NeZero.ne 2), mul_div_cancel_left₀ _ (NeZero.ne _)]⟩
     exact let ⟨b', hb⟩ := hb i
       ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
   zero_mem' := ⟨.inl fun _ => ⟨0, by simp⟩, by simp⟩
@@ -92,7 +92,7 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
       Pi.intCast_apply, and_imp]
     refine fun c a ha has => ⟨?_, by simpa [zsmul_eq_mul, Finset.mul_sum] using has.zsmul' (n := c)⟩
     rcases ha with ha | ha
-    · exact .inl fun i ↦ let ⟨a, ha⟩ := ha i; by simp only [← ha, ← Int.cast_mul]; exact ⟨_, rfl⟩
+    · exact .inl fun i ↦ let ⟨a, ha⟩ := ha i; ⟨c * a, by simp [← ha, Int.cast_mul]⟩
     rcases c.even_or_odd with ⟨c, rfl⟩ | hc
     · exact .inl fun i ↦ let ⟨j, hj, hj'⟩ := ha i
         ⟨c * j, by rw [Int.cast_mul, hj', Int.cast_add]; ring⟩
@@ -113,7 +113,7 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)] {v : Fin 8 → R
   exact fun i => ⟨fun ⟨_, ⟨k, rfl⟩, hn'⟩ => ⟨k, by
     simp only [Int.cast_add, Int.cast_mul, Int.cast_ofNat, Int.cast_one, nsmul_eq_mul,
       Nat.cast_ofNat] at hn'
-    linear_combination 2⁻¹ * hn' - (k - v i) * (inv_mul_cancel₀ (NeZero.ne (2 : R)))⟩,
+    linear_combination 2⁻¹ * hn' - (k - v i) * inv_mul_cancel₀ (NeZero.ne (2 : R))⟩,
     fun ⟨k, hk⟩ => ⟨2 * k + 1, by simp, by rw [← hk]; simp [NeZero.ne]⟩⟩
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
@@ -140,8 +140,6 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
     nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
   exact ⟨by simp, by simpa using (AddCommGroup.add_nsmul_modEq _).symm.trans hx'⟩
-
-section E8_basis
 
 /-- A concrete matrix whose rows form a basis for the `E8` lattice. -/
 @[expose] public def E8Matrix (R : Type*) [Field R] : Matrix (Fin 8) (Fin 8) R :=
@@ -216,15 +214,6 @@ lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
       rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse],
     ← Matrix.map_mul, show E8Inverse ℚ * E8Matrix ℚ = 1 by decide +kernel]; simp
 
-lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
-    (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
-    (hw : ∑ i, w i = 0) :
-    ∃ c : ℤ, c = ∑ i, v i * w i := by
-  obtain ⟨hv' | hv', _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
-  exacts [⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩,
-    ⟨∑ i, v' i * w i, by simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
-      Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
-
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
     ∃ c : Fin 8 → ℤ, LinearMap.intCast R c = Matrix.vecMul v (E8Inverse R) := by
@@ -232,7 +221,12 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
   have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8)
       (hk : c' k = ∑ i, v i * w i := by
         simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) : ∃ n : ℤ, (n : R) = c' k :=
-    (exists_cast_eq_vecMul_E8Inverse_aux (R := R) v w hv hw).imp fun _ hn => hn.trans hk.symm
+    have : ∃ c : ℤ, (c : R) = ∑ i, v i * w i := by
+      obtain ⟨hv' | hv', _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
+      exacts [⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩,
+        ⟨∑ i, v' i * w i, by simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
+          Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
+    this.imp fun _ hn => hn.trans hk.symm
   obtain ⟨c0, hc0⟩ : ∃ n : ℤ, (n : R) = c' 0 := by
     have h0' : c' 0 = (∑ i, v i) * 2⁻¹ - 4 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]; ring
@@ -290,9 +284,6 @@ public theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 �
   simp_rw [sum_dotProduct, dotProduct_sum, dotProduct_smul, smul_dotProduct, dotProduct_eq_inn,
     zsmul_eq_mul]
   norm_cast
-  simp only [exists_eq_right, E8.inn, Int.reduceNeg, Matrix.of_apply, Matrix.cons_val',
-    Matrix.cons_val_fin_one, Fin.sum_univ_eight, Fin.isValue, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val, mul_neg, mul_zero, add_zero, mul_one, zero_add]
+  simp only [exists_eq_right, E8.inn, Fin.sum_univ_eight, Matrix.of_apply, Matrix.cons_val, mul_neg,
+    mul_zero, add_zero, mul_one, zero_add]
   ring_nf; simp [show Even (4 : ℤ) from ⟨2, rfl⟩, parity_simps]
-
-end E8_basis
