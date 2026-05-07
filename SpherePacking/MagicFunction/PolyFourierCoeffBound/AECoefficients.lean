@@ -7,7 +7,6 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound.Basic
 
-
 /-!
 # Fourier coefficients of `(A_E)^2`
 
@@ -34,7 +33,6 @@ open scoped UpperHalfPlane ArithmeticFunction.sigma BigOperators
 open Filter Complex Real Asymptotics ArithmeticFunction
 
 section Corollaries
-
 
 public def A_E_sq_coeff (m : ℕ) : ℂ :=
   ∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2
@@ -107,17 +105,10 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
         ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2)]
   exact tsum_congr hanti
 
-/-!
-### Converting to `fouterm` coefficients
-
-`DivDiscBoundOfPolyFourierCoeff` expects a `π i`-Fourier series with coefficients indexed by `ℤ`.
-The expansion `A_E_sq_eq_tsum` is a `2π i`-series indexed by `ℕ`. We convert by forcing odd
-indices to vanish and matching even indices.
--/
+/-! ### Converting to `fouterm` coefficients -/
 
 public noncomputable def A_E_sq_fourierCoeff : ℤ → ℂ
-  | (Int.ofNat j) =>
-      if 4 ≤ j ∧ Even j then A_E_sq_coeff (j / 2 - 2) else 0
+  | (Int.ofNat j) => if 4 ≤ j ∧ Even j then A_E_sq_coeff (j / 2 - 2) else 0
   | (Int.negSucc _) => 0
 
 public lemma A_E_sq_fourierCoeff_four_ne_zero : A_E_sq_fourierCoeff 4 ≠ 0 := by
@@ -168,8 +159,7 @@ public lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
     _ = ((720 : ℝ) ^ 2) * g (n + 4) := by simp [g, mul_assoc, mul_left_comm, mul_comm]
 
 public lemma A_E_sq_series_summable (x : ℍ) :
-    Summable (fun m : ℕ =>
-      A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))) := by
+    Summable (fun m : ℕ => A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))) := by
   set r : ℝ := Real.exp (-2 * Real.pi * x.im)
   refine Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
     ((show Summable (fun m : ℕ => ((m + 1 : ℕ) : ℝ) ^ 11 * r ^ (m + 2)) by
@@ -192,8 +182,7 @@ public lemma A_E_sq_series_summable (x : ℍ) :
 public lemma A_E_sq_fourierCoeff_hf (x : ℍ) :
     (A_E x) ^ 2 = ∑' (n : ℕ), fouterm A_E_sq_fourierCoeff x (n + 4) := by
   let f : ℕ → ℂ := fun n => fouterm A_E_sq_fourierCoeff x (n + 4)
-  let g : ℕ → ℂ := fun m =>
-    A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))
+  let g : ℕ → ℂ := fun m => A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (x : ℂ))
   have hodd_term (m : ℕ) : f (2 * m + 1) = 0 := by
     simp only [f, fouterm, show ((2 * m + 1 : ℕ) : ℤ) + (4 : ℤ) = (Int.ofNat (2 * m + 5)) by
       simpa [show (2 * m + 1) + 4 = 2 * m + 5 by omega] using Int.ofNat_add_ofNat (2 * m + 1) 4,
