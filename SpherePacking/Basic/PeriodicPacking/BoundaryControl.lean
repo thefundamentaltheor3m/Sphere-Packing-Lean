@@ -3,10 +3,7 @@ public import SpherePacking.Basic.PeriodicPacking.PeriodicConstant
 import Mathlib.Combinatorics.Pigeonhole
 
 /-!
-# Periodic packings: boundary control
-
-Boundary control argument for approximating arbitrary sphere packings by periodic ones via
-coordinate cubes and pigeonhole. Main result: `periodic_constant_eq_constant`.
+# Periodic packings: boundary control. Main result: `periodic_constant_eq_constant`.
 -/
 
 open scoped ENNReal Pointwise Topology BigOperators
@@ -20,7 +17,6 @@ section CoordCubeCover
 
 variable (L : ℝ) (hL : 0 < L)
 
-/-- The unique lattice translate sending `x` into the coordinate cube `coordCube L`. -/
 noncomputable def coordCubeCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice d L hL :=
   Classical.choose (PeriodicConstant.coordCube_unique_covers L hL x)
 
@@ -88,8 +84,6 @@ section BoundaryControl
 def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun _ : Fin d => c)
 
-/-- If `x` lies in the width-`1/2` boundary strip of `coordCube L`, then the `1/2`-ball around `x`
-lies in a fixed set of finite volume independent of the translate. -/
 lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
     ((coordCube d L \ coordCubeInner d L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
@@ -190,8 +184,6 @@ end CubeLatticeCovolume
 
 section PeriodizeCubeDensity
 
-variable {d : ℕ}
-
 lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.separation = 1)
     {L : ℝ} (hL : 0 < L) {g : cubeLattice d L hL}
     (F : Finset (EuclideanSpace ℝ (Fin d)))
@@ -261,8 +253,6 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
 end PeriodicConstantApprox
 
 namespace SpherePacking
-
-variable {d : ℕ}
 
 theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < d)
     (S : SpherePacking d) (hSsep : S.separation = 1) {b : ℝ≥0∞} (hb : b < S.density) :
@@ -391,7 +381,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   refine ⟨P, hPsep, (lt_tsub_iff_right.mpr hsg_density).trans_le (tsub_le_iff_right.2 ?_)⟩
   have hsplit : (sg.card : ℝ≥0∞) * volBall =
       (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
-    simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by exact_mod_cast
+    rw [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by exact_mod_cast
       (Finset.card_filter_add_card_filter_not (s := sg) (p := fun x => x ∈ innerSet)).symm, add_mul]
   simpa [hPdens', div_eq_mul_inv, mul_add, add_mul, mul_assoc,
     show cubeShellErr L = shellVol / volCube by simp [cubeShellErr, shellVol, volCube],
