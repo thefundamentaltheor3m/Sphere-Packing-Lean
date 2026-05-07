@@ -11,13 +11,11 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 section theorem_2_2
 
 open scoped Pointwise
-variable {d : ℕ} (S : PeriodicSpherePacking d)
-  {ι : Type*} [Finite ι]
+variable {d : ℕ} (S : PeriodicSpherePacking d) {ι : Type*} [Finite ι]
   (D : Set (EuclideanSpace ℝ (Fin d))) {L : ℝ} (R : ℝ)
 
-theorem hD_isAddFundamentalDomain
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
-    IsAddFundamentalDomain S.lattice D :=
+theorem hD_isAddFundamentalDomain (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
+    (hD_measurable : MeasurableSet D) : IsAddFundamentalDomain S.lattice D :=
   .mk' (μ := volume) hD_measurable.nullMeasurableSet hD_unique_covers
 
 private theorem ball_subset_iUnion_lattice_inter_ball_vadd
@@ -113,8 +111,7 @@ public theorem PeriodicSpherePacking.aux2_le'
 
 section finiteDensity_limit
 
-variable
-  {d : ℕ} {S : PeriodicSpherePacking d}
+variable {d : ℕ} {S : PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
 /-- Upper bound for `S.finiteDensity R` in terms of a fundamental domain. -/
