@@ -164,9 +164,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
     nlinarith [htri, show ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ from by
       simpa [pow_succ, norm_mul] using mul_le_mul_of_nonneg_left hq (norm_nonneg (q' ^ (3 : ℕ))),
       hq3', norm_nonneg (q' ^ (3 : ℕ))]
-  rw [hHj t ht0,
-    show (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
-      (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) from (ofReal_exp_neg_pi_pow_eq t 2).symm]
+  rw [hHj t ht0, show (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
+    (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) from (ofReal_exp_neg_pi_pow_eq t 2).symm]
   linarith [hpow', hy4, (show x ^ (4 : ℕ) - y ^ (4 : ℕ) + (y ^ (4 : ℕ) - (1 : ℂ) -
     σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))) = x ^ (4 : ℕ) - (1 : ℂ) -
