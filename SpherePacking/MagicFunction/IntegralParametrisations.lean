@@ -14,14 +14,8 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 /-!
 # Integral parametrisations
 
-This file defines explicit complex-valued parametrisations used to rewrite contour integrals in
-the magic function argument.
-
-## Main definitions
-* `MagicFunction.Parametrisations.z₁`, `MagicFunction.Parametrisations.z₂`,
-  `MagicFunction.Parametrisations.z₃`, `MagicFunction.Parametrisations.z₄`,
-  `MagicFunction.Parametrisations.z₅`, `MagicFunction.Parametrisations.z₆`
-* Their extensions `z₁'`--`z₆'` to all real parameters.
+Explicit complex-valued parametrisations `z₁`--`z₆` used to rewrite contour integrals in the magic
+function argument, together with their extensions `z₁'`--`z₆'` to all real parameters.
 -/
 
 namespace MagicFunction.Parametrisations
@@ -35,46 +29,44 @@ noncomputable section Parametrisations
 /-- Parametrisation `t ↦ -1 + i t` of the vertical segment from `-1` to `-1 + i`. -/
 @[expose] public def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 + I * t
 
-/-- Extension of `z₁` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₁` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t
 
 /-- Parametrisation `t ↦ -1 + t + i` of the horizontal segment from `-1 + i` to `i`. -/
 @[expose] public def z₂ (t : Icc (0 : ℝ) 1) : ℂ := -1 + t + I
 
-/-- Extension of `z₂` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₂` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t
 
 /-- Parametrisation `t ↦ 1 + i t` of the vertical segment from `1` to `1 + i`. -/
 @[expose] public def z₃ (t : Icc (0 : ℝ) 1) : ℂ := 1 + I * t
 
-/-- Extension of `z₃` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₃` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t
 
 /-- Parametrisation `t ↦ 1 - t + i` of the horizontal segment from `1 + i` to `i`. -/
 @[expose] public def z₄ (t : Icc (0 : ℝ) 1) : ℂ := 1 - t + I
 
-/-- Extension of `z₄` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₄` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t
 
 /-- Parametrisation `t ↦ i t` of the vertical segment from `0` to `i`. -/
 @[expose] public def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
 
-/-- Extension of `z₅` to a map `ℝ → ℂ` via `IccExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₅` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t
 
 /-- Parametrisation `t ↦ i t` of the ray `i * Ici 1`. -/
 @[expose] public def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
 
-/-- Extension of `z₆` to a map `ℝ → ℂ` via `IciExtend`. The prime indicates extension to all `t`. -/
+/-- Extension of `z₆` to `ℝ → ℂ` via `IciExtend`. -/
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
 /-- The imaginary part of `z₂'` is constantly equal to `1`. -/
-public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by
-  simp [z₂', Set.IccExtend_apply, z₂]
+public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by simp [z₂', Set.IccExtend_apply, z₂]
 
 /-- The imaginary part of `z₄'` is constantly equal to `1`. -/
-public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by
-  simp [z₄', Set.IccExtend_apply, z₄]
+public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by simp [z₄', Set.IccExtend_apply, z₄]
 
 /-- The imaginary part of `z₂'` is always positive. -/
 public lemma im_z₂'_pos_all (t : ℝ) : 0 < (z₂' t).im := by simp [im_z₂'_eq_one]
@@ -124,8 +116,7 @@ section UpperHalfPlane
 open scoped UpperHalfPlane
 
 private lemma im_pos_of_mapsto {s : Set ℝ} {f : ℝ → ℂ} (hf : MapsTo f s ℍ₀) {t : ℝ} (ht : t ∈ s) :
-    0 < (f t).im := by
-  simpa [UpperHalfPlane.upperHalfPlaneSet] using hf ht
+    0 < (f t).im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hf ht
 
 /-- The map `z₁'` sends `Ioc 0 1` into the upper half-plane. -/
 public lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := fun _ ht => by
@@ -202,7 +193,7 @@ public lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := b
 
 /-- On `Icc 0 1`, the points `z₃' t` and `z₅' t` differ by the translation `+ 1`. -/
 public lemma z₃'_eq_z₅'_add_one {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = z₅' t + 1 := by
-  simp [z₃'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht, add_comm]
+  simp [z₃'_eq_of_mem ht, z₅'_eq_of_mem ht, add_comm]
 
 end eq_of_mem
 
