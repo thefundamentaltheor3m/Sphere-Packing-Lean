@@ -25,19 +25,9 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 /-!
 # Cohn-Elkies linear programming bound
 
-This file proves the Cohn-Elkies linear programming upper bound on `SpherePackingConstant d`.
-
-Given a Schwartz function `f : 𝓢(R^d, ℂ)` with `f ≠ 0` satisfying the usual Cohn-Elkies sign
-conditions
-
-* `(f x).re ≤ 0` for `‖x‖ ≥ 1`, and
-* `(𝓕 f x).re ≥ 0` for all `x`,
-
-we obtain an explicit upper bound on the packing constant in terms of `(f 0).re`, `(𝓕 f 0).re`,
-and the volume of the ball of radius `1/2`.
-
-The main exported statements are `LinearProgrammingBound'` (for a single periodic packing) and
-`LinearProgrammingBound` (for `SpherePackingConstant d`).
+Cohn-Elkies upper bound on `SpherePackingConstant d`: a Schwartz `f ≠ 0` with `(f x).re ≤ 0` on
+`‖x‖ ≥ 1` and `(𝓕 f x).re ≥ 0` yields a bound via `(f 0).re`, `(𝓕 f 0).re`, and the unit ball
+volume. Exports `LinearProgrammingBound'` (single packing) and `LinearProgrammingBound`.
 -/
 
 open scoped FourierTransform ENNReal SchwartzMap BigOperators
@@ -73,9 +63,10 @@ theorem f_zero_pos : 0 < (f 0).re := by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
         (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
-    simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
+    simpa [fourierInv_eq, show f 0 = 0 from by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion))
-  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
+  ext x
+  simpa [show (𝓕 f x).re = 0 from by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 end Nonnegativity
 
@@ -249,6 +240,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
     haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
       nonempty_quotient_iff _ |>.2 ‹_›
+    have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
       ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero measure_ball_lt_top.ne,
       ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
@@ -258,13 +250,12 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
         ENat.toENNReal (P.numReps : ENat) ≠ 0)
         (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
-      ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
-    have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
-    rw [show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal by
+      ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc,
+      show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal from by
         simp [Real.toNNReal_mul (Nat.cast_nonneg _)],
       show (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
           ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) =
-          ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal by
+          ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal from by
         simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
           Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
             (inv_nonneg.mpr hcov_pos.le))]
