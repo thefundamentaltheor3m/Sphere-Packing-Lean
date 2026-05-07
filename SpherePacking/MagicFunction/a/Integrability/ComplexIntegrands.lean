@@ -11,32 +11,14 @@ public import SpherePacking.ModularForms.FG.Basic
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 import SpherePacking.ModularForms.Derivative
 
-/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
-
-In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
-`I₁`-`I₆` are holomorphic on the upper half-plane.
-
-## Main Results:
-
-This file includes the following (families of) theorems:
-
-* [PROVED] `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
-* [PROVED] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
-* [PROVED] `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
-* [PROVED] `φ₀''_continuous`: `φ₀''` is continuous on `Set.univ ×ℂ Ioi 0`.
--/
+/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane. -/
 
 open scoped Function Manifold
-
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
   MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
-
 open Complex Real Set Filter intervalIntegral ContDiff UpperHalfPlane
 
 local notation "ℍ₀" => upperHalfPlaneSet
-
 local notation "Holo(" f ")" => DifferentiableOn ℂ f ℍ₀
 
 namespace MagicFunction.a.ComplexIntegrands
@@ -54,14 +36,10 @@ private theorem Delta_ofComplex_ne_zero :
   simpa [UpperHalfPlane.ofComplex_apply_of_im_pos hz] using
     Δ_ne_zero (UpperHalfPlane.ofComplex z)
 
-section Holo_Lemmas
-
 private lemma mapsTo_smulAux' (g : GL (Fin 2) ℝ) :
     MapsTo (UpperHalfPlane.smulAux' g) ℍ₀ ℍ₀ := fun z hz => by
   simpa [upperHalfPlaneSet, UpperHalfPlane.smulAux] using
     (UpperHalfPlane.smulAux g ⟨z, by simpa [upperHalfPlaneSet] using hz⟩).2
-
-/-! # Complex Differentiability -/
 
 /-- `φ₀''` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem φ₀''_holo : Holo(φ₀'') := by
@@ -94,8 +72,7 @@ public theorem Φ₁'_holo : Holo(Φ₁' r) := by
   exact MapsTo.congr (mapsTo_smulAux' g) fun _ _ ↦ by simp [smulAux', g, num, denom, σ]
 
 /-- The integrand `Φ₁' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
-public theorem Φ₁'_contDiffOn_ℂ :
-    ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
+public theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
   Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
 /-- The integrand `Φ₃' r` is holomorphic on `upperHalfPlaneSet`. -/
@@ -111,8 +88,7 @@ public theorem Φ₃'_holo : Holo(Φ₃' r) := by
     simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
 
 /-- The integrand `Φ₃' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
-public theorem Φ₃'_contDiffOn_ℂ :
-    ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
+public theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
   Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
@@ -121,15 +97,8 @@ public theorem Φ₆'_holo : Holo(Φ₆' r) := by
     (by fun_prop : DifferentiableOn ℂ (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀)
 
 /-- The integrand `Φ₆' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
-public theorem Φ₆'_contDiffOn_ℂ :
-    ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
+public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
   Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
-
-end Holo_Lemmas
-
-section ContDiffOn_Real
-
-/-! ## Real differentiability -/
 
 /-- The integrand `Φ₁' r` is smooth as a real function on `upperHalfPlaneSet`. -/
 public theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ :=
@@ -143,21 +112,12 @@ public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
 public theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ :=
   (Φ₆'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
 
-end ContDiffOn_Real
-
-section Corollaries
-
-/-! # Corollaries using alternative set notation -/
-
-/-- φ₀'' is holomorphic on the upper half-plane (using `Set.univ ×ℂ Ioi 0` notation).
-    This is equivalent to `φ₀''_holo` since `Set.univ ×ℂ Ioi 0 = ℍ₀`. -/
+/-- `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0` (equivalent to `φ₀''_holo`). -/
 theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
   simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
 
-/-- φ₀'' is continuous on the upper half-plane. -/
+/-- `φ₀''` is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
   φ₀''_differentiable.continuousOn
-
-end Corollaries
 
 end MagicFunction.a.ComplexIntegrands
