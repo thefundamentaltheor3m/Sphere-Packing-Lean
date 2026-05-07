@@ -51,13 +51,12 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           have ht0 : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
           simp [Set.restrict, ResToImagAxis, ht0, φ]] using
         (hH.comp (by fun_prop : Continuous φ)).norm
-  have hcontH3 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₃ t‖) (Icc 1 T) :=
-    hcont_norm_resToImagAxis H₃ mdifferentiable_H₃.continuous
   have hcontH4 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₄ t‖) (Icc 1 T) :=
     hcont_norm_resToImagAxis H₄ mdifferentiable_H₄.continuous
   obtain ⟨m3, hm3, hm3le⟩ := SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc
     (g := fun t ↦ ‖H₃.resToImagAxis t‖)
-    (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH3)
+    (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using
+      hcont_norm_resToImagAxis H₃ mdifferentiable_H₃.continuous)
     (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₃ H₃_ne_zero t ht.1))
   obtain ⟨m4, hm4, hm4le⟩ := SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc
     (g := fun t ↦ ‖H₄.resToImagAxis t‖)
@@ -146,6 +145,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hpoly' :
       ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P := by
     simpa [hHz2, hHz4, Function.resToImagAxis] using hpoly
+  have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
   calc
     ‖ψS.resToImagAxis t‖ = ‖(-128 : ℂ) *
         (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
@@ -156,22 +156,14 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           simp [div_eq_mul_inv, mul_assoc]
     _ ≤ (128 : ℝ) * (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
           ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by
-          set p : ℂ := 2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2
-          set denInv : ℂ := ((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹
-          have hnorm : ‖(-128 : ℂ) * (H₂ z * p) * denInv‖ ≤
-              (‖(-128 : ℂ)‖ * (‖H₂ z‖ * ‖p‖)) * ‖denInv‖ :=
-            (norm_mul_le _ _).trans <| mul_le_mul_of_nonneg_right ((norm_mul_le _ _).trans <|
-              mul_le_mul_of_nonneg_left (norm_mul_le _ _) (norm_nonneg _)) (norm_nonneg _)
-          simp [p, denInv, mul_assoc]
+          simp [div_eq_mul_inv, mul_assoc]
     _ ≤ (128 : ℝ) * (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
           have h2 : (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
                 ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
             mul_le_mul (mul_le_mul_of_nonneg_left hpoly' (norm_nonneg _)) hinv (norm_nonneg _)
               (mul_nonneg (norm_nonneg _) hP0)
           grind only
     _ ≤ (128 : ℝ) * ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
           have h2 : (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ ≤
               ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
             mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hH2z hP0) (by positivity)
