@@ -46,12 +46,10 @@ public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpac
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
 public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} {r : ℝ} {g : Λ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : ball x r ⊆ D) :
-    ball (g +ᵥ x) r ⊆ g +ᵥ D := fun y hy =>
+    (hx : ball x r ⊆ D) : ball (g +ᵥ x) r ⊆ g +ᵥ D := fun y hy =>
   ⟨(- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y, hx <| by
     simpa [Metric.mem_ball, dist_eq_norm, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
-      add_assoc, add_comm, add_left_comm] using hy,
-    by simp [vadd_eq_add]⟩
+      add_assoc, add_comm, add_left_comm] using hy, by simp [vadd_eq_add]⟩
 
 /-- Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
 along a lattice `Λ`. -/
@@ -64,8 +62,7 @@ along a lattice `Λ`. -/
   centers := periodizedCenters (d := d) Λ F
   separation := S.separation
   separation_pos := S.separation_pos
-  centers_dist := by
-    intro a b hab
+  centers_dist := fun a b hab => by
     change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
     rcases mem_periodizedCenters_iff.1 a.property with ⟨ga, fa, hfa, ha⟩
     rcases mem_periodizedCenters_iff.1 b.property with ⟨gb, fb, hfb, hb⟩
@@ -74,10 +71,9 @@ along a lattice `Λ`. -/
       simpa [ha, hb] using (dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb).symm ▸
         S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb)
           (fun h => hab <| Subtype.ext <| by simp [ha, hb, h])
-    · simpa [ha, hb, two_mul, add_halves] using
-        dist_le_of_disjoint_ball_subsets
-          (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
-          (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
+    · simpa [ha, hb, two_mul, add_halves] using dist_le_of_disjoint_ball_subsets
+        (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
+        (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
   lattice := Λ
   lattice_action := fun _ _ ↦ periodizedCenters_lattice_action
   lattice_discrete := inferInstance
@@ -177,8 +173,8 @@ public lemma volume_coordCubeInner (L r : ℝ) :
   simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
 
 public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
-    coordCubeInner d L r ⊆ coordCube d L := fun _ hx i =>
-  ⟨hr.le.trans (hx i).1, (hx i).2.trans_lt (sub_lt_self L hr)⟩
+    coordCubeInner d L r ⊆ coordCube d L :=
+  fun _ hx i => ⟨hr.le.trans (hx i).1, (hx i).2.trans_lt (sub_lt_self L hr)⟩
 
 end PeriodicConstant
 
@@ -200,8 +196,8 @@ public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < 
   simpa [add_vadd, Submodule.vadd_def, vadd_eq_add, add_assoc, add_comm] using
     ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
       (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r)
-      (ball_subset_coordCube_of_mem_inner (by
-        simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx))
+      (ball_subset_coordCube_of_mem_inner
+        (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx))
 
 public lemma coordCube_subset_ball (L : ℝ) (hL : 0 < L) :
     ∃ C : ℝ, coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
