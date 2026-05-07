@@ -9,14 +9,8 @@ import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 /-!
 # Smoothness of `RealIntegrals.I₁'`
 
-This file proves `ContDiff ℝ (⊤ : ℕ∞) RealIntegrals.I₁'` by differentiating under the integral
-sign over `Ioo (0, 1)`. The heavy lifting is delegated to
-`MagicFunction.a.Schwartz.SmoothI24Common` which handles the common pattern shared with
-`SmoothI2`/`SmoothI4`; this file only provides the `I₁'`-specific parametrization
-(`z = z₁'`, `shift = 1`, `prefactor = I`) and the geometric facts about its Mobius image.
-
-## Main statement
-* `I₁'_contDiff`
+Proves `ContDiff ℝ (⊤ : ℕ∞) RealIntegrals.I₁'` via differentiation under the integral, delegating
+to `MagicFunction.a.Schwartz.SmoothI24Common` and supplying the `I₁'`-specific parametrisation.
 -/
 
 namespace MagicFunction.a.Schwartz.I1Smooth
@@ -25,10 +19,8 @@ noncomputable section
 
 open scoped Topology UpperHalfPlane
 open Complex Real Set MeasureTheory Filter intervalIntegral
-open MagicFunction.Parametrisations
-open MagicFunction.a.RealIntegrals
-open MagicFunction.a.RealIntegrands
-open MagicFunction.a.ComplexIntegrands
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
+open MagicFunction.a.RealIntegrands MagicFunction.a.ComplexIntegrands
 open MagicFunction.a.Schwartz.SmoothI24Common
 open SpherePacking.Integration SpherePacking.ForMathlib
 
