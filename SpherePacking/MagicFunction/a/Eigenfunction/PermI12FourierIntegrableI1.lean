@@ -13,16 +13,9 @@ import SpherePacking.Integration.EndpointIntegrability
 /-!
 # Integrability of the `I₁/I₂` Fourier kernels (I1 side)
 
-We prove integrability on the product measure for the kernel `permI1Kernel`, following the same
-pattern as for `permI5Kernel`: slice integrability in `x`, bounds on `t ↦ ∫ ‖kernel‖`, and then
-`integrable_prod_iff'`.
-
-We also record the a.e. slice integrability statement for `permI2Kernel`, which is used in the
-companion file for the `I₂` kernel.
-
-## Main statements
-* `integrable_perm_I₁_kernel`
-* `ae_integrable_permI2Kernel_slice`
+Integrability of `permI1Kernel` on the product measure: slice integrability in `x`, bound on
+`t ↦ ∫ ‖kernel‖`, then `integrable_prod_iff'`. Also records a.e. slice integrability for
+`permI2Kernel`.
 -/
 
 namespace MagicFunction.a.Fourier
@@ -38,12 +31,10 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 section PermI12Fourier_Integrable
 
 open MeasureTheory Set Complex Real
-open SpherePacking.ForMathlib
-open SpherePacking.Contour
-open SpherePacking.Integration
+open SpherePacking.ForMathlib SpherePacking.Contour SpherePacking.Integration
 open MagicFunction.a.ComplexIntegrands
 
-/-- A closed form for the `ℝ⁸` Gaussian integral used in the kernel bounds. -/
+/-- Closed form for the `ℝ⁸` Gaussian integral used in the kernel bounds. -/
 public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
     (∫ x : ℝ⁸, rexp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ (4 : ℕ) := by
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
@@ -136,7 +127,7 @@ lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
 
 lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
     Integrable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) μIoc01 := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  obtain ⟨C₀, _, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   have hmajor :
       Integrable (fun t : ℝ ↦ (C₀ : ℝ) * (1 / t ^ 2) * rexp (-(2 * π) / t)) μIoc01 := by
     simpa [μIoc01, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
@@ -148,15 +139,15 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
       (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))) ?_
   refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
   have ht0 : 0 < t := ht.1
-  have him : ((I : ℂ) / t).im = t⁻¹ := by norm_num
-  have hzpos : 0 < ((I : ℂ) / t).im := by simpa [him] using inv_pos.2 ht0
+  have hzpos : 0 < ((I : ℂ) / t).im := by
+    simpa [show ((I : ℂ) / t).im = t⁻¹ by norm_num] using inv_pos.2 ht0
   let z : UpperHalfPlane := ⟨(I : ℂ) / t, hzpos⟩
-  have hz_im : z.im = t⁻¹ := by simp [z, UpperHalfPlane.im, him]
+  have hz_im : z.im = t⁻¹ := by simp [z, UpperHalfPlane.im]
   have hφ_bound : ‖φ₀'' ((I : ℂ) / t)‖ ≤ (C₀ : ℝ) * rexp (-(2 * π) / t) := by
-    have hrew : rexp (-(2 * π * z.im)) = rexp (-(2 * π) / t) := by
-      rw [hz_im]; congr 1; simp [div_eq_mul_inv, mul_assoc]
     simpa [show φ₀ z = φ₀'' ((I : ℂ) / t) from by
-      simpa [z] using (φ₀''_def (z := (I : ℂ) / t) hzpos).symm, hrew] using
+        simpa [z] using (φ₀''_def (z := (I : ℂ) / t) hzpos).symm,
+      show rexp (-(2 * π * z.im)) = rexp (-(2 * π) / t) by
+        rw [hz_im]; congr 1; simp [div_eq_mul_inv, mul_assoc]] using
       hC₀ z (by rw [hz_im]
                 exact lt_of_lt_of_le (by norm_num) (one_le_inv_iff₀.2 ⟨ht0, ht.2⟩))
   rw [Real.norm_of_nonneg (integral_nonneg fun _ => norm_nonneg _)]
