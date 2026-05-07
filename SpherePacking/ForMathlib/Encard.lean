@@ -3,16 +3,11 @@ public import Mathlib.Data.ENat.Lattice
 public import Mathlib.Data.Set.Card
 public import Mathlib.Topology.Algebra.InfiniteSum.Defs
 public import Mathlib.Topology.Instances.ENat
-public import Mathlib.Data.ENat.Lattice
-
 import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 import Mathlib.Topology.Algebra.InfiniteSum.Order
 import Mathlib.Topology.Order.T5
 public import SpherePacking.ForMathlib.ENat
-
-
--- TODO (BM): make `Scott` a def so we don't end up with a weird topology on ENat
 
 /-!
 The contents of this section are taken from mathlib4 PR #23503 by Peter Nelson, and should be
@@ -23,7 +18,7 @@ namespace ENat
 
 open Function Set
 
-variable {ι : Sort*} {α β : Type*} {f g : α → ℕ∞} {s t : Set α}
+variable {α β : Type*} {f : α → ℕ∞}
 
 private theorem hasSum : HasSum f (⨆ s : Finset α, ∑ a ∈ s, f a) :=
   tendsto_atTop_iSup fun _ _ ↦ Finset.sum_le_sum_of_subset
@@ -42,9 +37,7 @@ private theorem tsum_comp_eq_tsum_of_bijective {φ : α → β} (hφ : φ.Biject
       _ ≤ ∑' x, g (φ x) :=
         tsum_comp_le_tsum_of_injective (injective_surjInv hφ.surjective) _
 
-variable {ι : Type*}
-
-private theorem tsum_subtype_iUnion_eq_tsum (f : α → ℕ∞) (t : ι → Set α)
+private theorem tsum_subtype_iUnion_eq_tsum {ι : Type*} (f : α → ℕ∞) (t : ι → Set α)
     (ht : Pairwise (Disjoint on t)) :
     ∑' x : ⋃ i, t i, f x = ∑' i, ∑' x : t i, f x :=
   calc ∑' x : ⋃ i, t i, f x = ∑' x : Σ i, t i, f x.2 :=
@@ -52,7 +45,6 @@ private theorem tsum_subtype_iUnion_eq_tsum (f : α → ℕ∞) (t : ι → Set 
     _ = _ := Summable.tsum_sigma' (fun _ ↦ summable) summable
 
 end ENat
-open Function
 
 /-- `encard` is additive on pairwise disjoint unions. -/
 public theorem Set.encard_iUnion_of_pairwiseDisjoint {ι α : Type*} {s : ι → Set α}
