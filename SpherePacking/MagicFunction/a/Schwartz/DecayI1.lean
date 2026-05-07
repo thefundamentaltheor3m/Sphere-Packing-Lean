@@ -43,11 +43,9 @@ def coeff (s : ℝ) : ℂ := (-π : ℂ) * (I + (1 / (s : ℂ)))
 def gN (n : ℕ) (r s : ℝ) : ℂ := (coeff s) ^ n * g r s
 
 /-- Constant bounding `‖φ₀ z‖` for `im z ≥ 1 / 2`, from `PolyFourierCoeffBound.norm_φ₀_le`. -/
-public noncomputable def Cφ : ℝ :=
-  (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose
+public noncomputable def Cφ : ℝ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le.choose
 
-public lemma Cφ_pos : 0 < Cφ :=
-  (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.1
+public lemma Cφ_pos : 0 < Cφ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le.choose_spec.1
 
 /-- Bound `‖φ₀'' (I * s)‖` for `s ≥ 1`. -/
 public lemma norm_φ₀''_le (s : ℝ) (hs : 1 ≤ s) :
@@ -285,7 +283,7 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
         mul_le_mul_of_nonneg_left (norm_iteratedDeriv_le (n := n) (x := x)) (by positivity)
     _ = ((2*π) ^ n * Cφ) * (x ^ k * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s))) := by
         rw [show (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) =
-          ((2 * π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s)) from by
+          ((2 * π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s)) by
           simpa [mul_assoc, mul_left_comm, mul_comm] using MeasureTheory.integral_const_mul
             (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))) ((2 * π) ^ n * Cφ)
             (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s))]; ring
