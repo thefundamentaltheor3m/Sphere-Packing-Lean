@@ -7,8 +7,7 @@ import SpherePacking.ForMathlib.GaussianFourierCommon
 /-!
 # Perm J5
 
-This file proves the `J₅`/`J₆` Fourier-permutation identities used in the `b`-eigenfunction
-argument.
+The `J₅`/`J₆` Fourier-permutation identities used in the `b`-eigenfunction argument.
 -/
 
 namespace MagicFunction.b.Fourier
@@ -16,7 +15,6 @@ namespace MagicFunction.b.Fourier
 noncomputable section
 
 open scoped FourierTransform RealInnerProductSpace Topology
-
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
@@ -24,7 +22,6 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 section Integral_Permutations
 
 open scoped Real
-
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 
 /-- Fourier permutation identity: `𝓕 J₅ = -J₆`. -/
@@ -69,17 +66,8 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor]
     rw [MeasureTheory.integral_const_mul,
       SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0]
-    calc
-      ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
-            ((s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s))
-          = (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) *
-              (((s ^ (-4 : ℤ) : ℂ) * (s ^ 4 : ℂ))) *
-                cexp (-π * (‖w‖ ^ 2) * s) := by ac_rfl
-      _ = (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
-            rw [hcancel]; simp [mul_assoc]
-  have hswap :=
-    MeasureTheory.integral_integral_swap
-      (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))) (ν := μs) (f := f) hint
+    linear_combination
+      ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) * hcancel
   have hmain :
       (∫ x : EuclideanSpace ℝ (Fin 8),
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -104,7 +92,9 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
               ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
         ∫ x : EuclideanSpace ℝ (Fin 8), (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s from
       congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew,
-      MeasureTheory.integral_const_mul, hswap]
+      MeasureTheory.integral_const_mul,
+      MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
+        (ν := μs) (f := f) hint]
     congr 1
     refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
     simpa [f] using hinner s hs
@@ -112,8 +102,7 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
     show (∫ s in Ici (1 : ℝ),
               (-I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) =
             -(∫ s in Ici (1 : ℝ),
-              (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s))
-    from by
+              (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) by
       rw [← MeasureTheory.integral_neg]
       exact integral_congr_ae <| .of_forall fun _ ↦ by ring]
   simp [mul_assoc]
@@ -126,10 +115,9 @@ public theorem perm_J₆ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
     simp only [FT, FourierTransform.fourierCLE_symm_apply, FourierTransform.fourierCLE_apply,
       fourier_coe, fourierInv_coe, fourierInv_eq_fourier_comp_neg]
     suffices (fun x ↦ J₆ (-x)) = ⇑J₆ by exact congr(𝓕 $this x)
-    ext
-    simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
-  have h₅ : FT J₅ = -J₆ := by simpa [FT] using perm_J₅
-  have h' : J₅ = -FT.symm J₆ := by simpa [map_neg] using congrArg FT.symm h₅
+    ext; simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+  have h' : J₅ = -FT.symm J₆ := by
+    simpa [map_neg] using congrArg FT.symm (show FT J₅ = -J₆ by simpa [FT] using perm_J₅)
   simpa [h] using (congrArg Neg.neg h').symm
 
 end Integral_Permutations
