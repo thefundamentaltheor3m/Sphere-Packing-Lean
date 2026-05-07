@@ -28,19 +28,13 @@ public lemma iteratedDeriv_eq_of_hasDerivAt_succ
   | zero => ext x; simp [iteratedDeriv_zero]
   | succ n ih => ext x; simpa [iteratedDeriv_succ, ih] using (hI n x).deriv
 
-/-- The iterated derivative under the recurrence hypothesis is differentiable. -/
-public lemma differentiable_iteratedDeriv_of_hasDerivAt_succ
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
-    (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) (n : ℕ) :
-    Differentiable ℝ (iteratedDeriv n (I 0)) := by
-  simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI n] using fun x => (hI n x).differentiableAt
-
 /-- If `I (n+1)` is the derivative of `I n` at every point, then `I 0` is smooth. -/
 public theorem contDiff_of_hasDerivAt_succ
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
     (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) : ContDiff ℝ (⊤ : ℕ∞) (I 0) :=
-  contDiff_of_differentiable_iteratedDeriv (n := (⊤ : ℕ∞))
-    fun m _ => differentiable_iteratedDeriv_of_hasDerivAt_succ (I := I) hI m
+  contDiff_of_differentiable_iteratedDeriv (n := (⊤ : ℕ∞)) fun m _ => by
+    simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI m] using
+      fun x => (hI m x).differentiableAt
 
 /-- If `deriv (G n) = G (n+1)` on an open set, iterated derivatives of `G m` agree with `G (n+m)`
 on that set. -/
@@ -73,15 +67,15 @@ public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x‖ ≤
       |a| ^ m := by
   let c : ℂ := (a : ℂ) * Complex.I
-  have hnorm_exp : ‖Complex.exp ((x : ℂ) * c)‖ = 1 := by
-    simp [Complex.norm_exp, show ((x : ℂ) * c).re = 0 by simp [c, mul_left_comm, mul_comm]]
   calc
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x‖
         = ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ :=
           norm_iteratedFDeriv_eq_norm_iteratedDeriv
     _ = ‖c ^ m * Complex.exp ((x : ℂ) * c)‖ := by
           simpa using congrArg (fun F : ℝ → ℂ => ‖F x‖) (iteratedDeriv_cexp_mul_const (c := c) m)
-    _ ≤ |a| ^ m := by simp [norm_pow, c, hnorm_exp]
+    _ ≤ |a| ^ m := by
+          simp [norm_pow, c, Complex.norm_exp,
+            show ((x : ℂ) * c).re = 0 by simp [c, mul_left_comm, mul_comm]]
 
 /-- Bound the norm of `m`-th iterated derivative of `t ↦ exp (t * π i)` by `π ^ m`. -/
 public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
@@ -116,24 +110,23 @@ public theorem decay_iteratedFDeriv_mul_of_bound_left
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖ ≤ C := by
   let Cg : ℕ → ℝ := fun m ↦ Classical.choose (hdec_g m)
   refine ⟨∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * B i * Cg (n - i), fun x hx => ?_⟩
-  have hmul := norm_iteratedFDeriv_mul_le (𝕜 := ℝ) (N := (⊤ : ℕ∞)) hf_cont hg_cont x (n := n)
-    (hn := WithTop.coe_le_coe.2 (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top))
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖
         ≤ ∑ i ∈ Finset.range (n + 1),
           ‖x‖ ^ k * ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖
             * ‖iteratedFDeriv ℝ (n - i) g x‖) := by
           simpa [Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm] using
-            mul_le_mul_of_nonneg_left hmul (by positivity : (0 : ℝ) ≤ ‖x‖ ^ k)
+            mul_le_mul_of_nonneg_left (norm_iteratedFDeriv_mul_le (𝕜 := ℝ) (N := (⊤ : ℕ∞))
+              hf_cont hg_cont x (n := n) (hn := WithTop.coe_le_coe.2 le_top))
+              (by positivity : (0 : ℝ) ≤ ‖x‖ ^ k)
     _ ≤ ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * B i * Cg (n - i) :=
           Finset.sum_le_sum fun i _ => by
             have hfi : ‖iteratedFDeriv ℝ i f x‖ ≤ B i := hbound_f i x
             have hgi : ‖x‖ ^ k * ‖iteratedFDeriv ℝ (n - i) g x‖ ≤ Cg (n - i) :=
               Classical.choose_spec (hdec_g (n - i)) x hx
             have hchoose0 : 0 ≤ (n.choose i : ℝ) := by positivity
-            have hBi0 : 0 ≤ B i := (norm_nonneg _).trans hfi
             have hprod := mul_le_mul (mul_le_mul_of_nonneg_left hfi hchoose0) hgi
-              (by positivity) (mul_nonneg hchoose0 hBi0)
+              (by positivity) (mul_nonneg hchoose0 ((norm_nonneg _).trans hfi))
             grind only
 
 end SpherePacking.ForMathlib
