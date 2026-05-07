@@ -58,8 +58,7 @@ public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d
 
 /-- Balls of radius `S.separation / 2` around the centers of a packing. -/
 @[expose, reducible] public def SpherePacking.balls (S : SpherePacking d) :
-    Set (EuclideanSpace ℝ (Fin d)) :=
-  ⋃ x : S.centers, ball (x : EuclideanSpace ℝ (Fin d)) (S.separation / 2)
+    Set (EuclideanSpace ℝ (Fin d)) := ⋃ x : S.centers, ball (x.val) (S.separation / 2)
 
 /-- Volume of packing balls inside `ball 0 R`, normalized by `volume (ball 0 R)`. -/
 @[expose] public noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) :
