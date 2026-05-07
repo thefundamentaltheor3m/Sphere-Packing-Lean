@@ -14,10 +14,9 @@ public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ZLattice
 
 /-!
-# Periodic packings: auxiliary finiteness and disjointness lemmas
+# Periodic packings: auxiliary finiteness and disjointness lemmas (blueprint Theorem 2.2)
 
-Technical lemmas controlling periodic sphere packings in bounded regions (blueprint Theorem 2.2):
-finiteness of `S.centers ∩ D` for bounded `D`, and disjointness of distinct lattice translates.
+Finiteness of `S.centers ∩ D` for bounded `D`, and disjointness of distinct lattice translates.
 -/
 
 open scoped ENNReal
@@ -26,14 +25,6 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 section aux_lemmas
 
 variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
-
-private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
-    IsBounded (⋃ x ∈ S.centers ∩ D, ball x (S.separation / 2)) := by
-  obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1 hD_isBounded
-  refine isBounded_iff_forall_norm_le.2 ⟨L + S.separation / 2, fun x hx ↦ ?_⟩
-  obtain ⟨y, hy, hx⟩ := Set.mem_iUnion₂.1 hx
-  exact (norm_le_norm_add_norm_sub' x y).trans
-    (add_le_add (hL y hy.2) (by simpa [mem_ball, dist_eq_norm] using hx.le))
 
 private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
@@ -61,10 +52,16 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
     Finite ↑(S.centers ∩ D) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1 hD_isBounded
+  have hbounded : IsBounded (⋃ x ∈ S.centers ∩ D, ball x (S.separation / 2)) :=
+    isBounded_iff_forall_norm_le.2 ⟨L + S.separation / 2, fun x hx ↦
+      let ⟨y, hy, hx⟩ := Set.mem_iUnion₂.1 hx
+      (norm_le_norm_add_norm_sub' x y).trans (add_le_add (hL y hy.2)
+        (by simpa [mem_ball, dist_eq_norm] using hx.le))⟩
   refine Set.finite_coe_iff.2 <| finite_of_bounded_iUnion_of_volume_lower_bound
       (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))
       (by simpa using Metric.measure_ball_pos volume _ (by linarith [S.separation_pos]))
-      (fun _ _ => measurableSet_ball) (isBounded_iUnion_ball_centers_inter S D hD_isBounded)
+      (fun _ _ => measurableSet_ball) hbounded
       (fun _ _ => by simp [Measure.addHaar_ball_center])
       fun _ hx _ hy hxy ↦ ball_disjoint_ball <| by
         simpa [add_halves] using S.centers_dist' _ _ hx.1 hy.1 hxy
@@ -99,9 +96,9 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     have hv' := (Classical.choose_spec (hD_unique_covers v)).2
     simp only [Subtype.forall] at hv'
     simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
-    exact congrArg (· + _) (Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) <| by
+    exact congrArg (· + _) <| Subtype.ext_iff.mp <| hv' _ (add_mem (SetLike.coe_mem _) hy) <| by
       simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
-        (Classical.choose_spec (hD_unique_covers (y + v))).1))
+        (Classical.choose_spec (hD_unique_covers (y + v))).1
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.1⟩⟧
   left_inv := Quotient.ind fun _ ↦ Quotient.eq.2 <| by
     simp [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range, addAction_vadd]
@@ -115,7 +112,7 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
   S.addActionOrbitRelEquiv _ fun x ↦
-    let ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+    let ⟨v, hv, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
     ⟨⟨v.val, (S.mem_basis_Z_span b _).1 v.prop⟩, by simpa using hv,
       fun s hs => by rw [← hv' ⟨s, (S.mem_basis_Z_span b _).2 s.prop⟩ hs]⟩
 
@@ -220,14 +217,6 @@ public theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePack
   simpa [PeriodicSpherePacking.numReps', Set.toFinset_card] using
     (S.card_centers_inter_isFundamentalDomain (D := D) hD_isBounded hD_unique_covers hd).symm
 
-end Pointwise
-
-section theorem_2_3
-
-variable {d : ℕ} (S : PeriodicSpherePacking d)
-
-open scoped Pointwise
-
 private theorem aux {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
@@ -276,7 +265,7 @@ private theorem aux' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
         x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) :=
   letI : Fintype ι := Fintype.ofFinite ι
   fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x,
-    ⟨by rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]; exact Submodule.coe_mem _,
+    ⟨(S.mem_basis_Z_span b _).mp (Submodule.coe_mem _),
       mem_ball_zero_iff.2 <| ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ =
             ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by simp [fract]).le.trans
           (norm_sub_le _ _)).trans_lt (add_lt_add_of_lt_of_le (mem_ball_zero_iff.1 hx)
@@ -296,4 +285,4 @@ public theorem PeriodicSpherePacking.aux_le
     S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc
 
-end theorem_2_3
+end Pointwise
