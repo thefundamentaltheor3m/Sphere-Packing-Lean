@@ -10,23 +10,7 @@ public import Mathlib.Topology.Algebra.Algebra
 public import Mathlib.Order.Interval.Set.UnorderedInterval
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
-/-!
-# Tendsto for the `Ψ₁'` integrand near `z = 1`
-
-In the `perm_J12` contour deformation, one needs a limit statement of the form
-`Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] 1) (𝓝 0)`.
-
-This file isolates that argument in a dimension-agnostic form. We assume:
-- a factorization `Ψ₁' r z = ψT' z * cexp (π * I * r * z)`;
-- a modular identity expressing `ψT'` in terms of a function `ψS` evaluated at `gAct z`; and
-- basic geometric control of `gAct z` on `closure wedgeSet`.
-
-## Main definitions
-* `TendstoPsiOneHypotheses`
-
-## Main statements
-* `tendsto_Ψ₁'_one_within_closure_wedgeSet_of`
--/
+/-! # `Tendsto` for the `Ψ₁'` integrand near `z = 1` (dimension-agnostic). -/
 
 open Set Filter
 open scoped Topology Complex
@@ -35,38 +19,24 @@ namespace SpherePacking.Contour
 
 noncomputable section
 
-/--
-`TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k` bundles the hypotheses used to prove
-`Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] 1) (𝓝 0)`.
-
-This keeps downstream call sites from having to thread a long list of modular-identity and
-geometry hypotheses.
--/
-public structure TendstoPsiOneHypotheses
-    (wedgeSet : Set ℂ)
-    (ψS : UpperHalfPlane → ℂ)
-    (ψT' : ℂ → ℂ)
-    (Ψ₁' : ℝ → ℂ → ℂ)
-    (gAct : UpperHalfPlane → UpperHalfPlane)
-    (k : ℕ) : Prop where
+/-- Bundles the hypotheses for `tendsto_Ψ₁'_one_within_closure_wedgeSet_of`. -/
+public structure TendstoPsiOneHypotheses (wedgeSet : Set ℂ) (ψS : UpperHalfPlane → ℂ)
+    (ψT' : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ) (gAct : UpperHalfPlane → UpperHalfPlane) (k : ℕ) : Prop where
   hk : (1 : ℕ) ≤ k
-  Ψ₁'_eq :
-    ∀ r : ℝ, ∀ z : ℂ, Ψ₁' r z = ψT' z * cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)
+  Ψ₁'_eq : ∀ r : ℝ, ∀ z : ℂ,
+    Ψ₁' r z = ψT' z * cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)
   ψT'_one : ψT' (1 : ℂ) = 0
   tendsto_ψS_atImInfty : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))
-  gAct_im :
-    ∀ {z : ℂ} (hz : 0 < z.im),
-      (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1)
-  ψT'_eq_neg_ψS_mul :
-    ∀ {z : ℂ} (hz : 0 < z.im),
-      ψT' z = -ψS (gAct (⟨z, hz⟩ : UpperHalfPlane)) * (z - 1) ^ k
+  gAct_im : ∀ {z : ℂ} (hz : 0 < z.im),
+    (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1)
+  ψT'_eq_neg_ψS_mul : ∀ {z : ℂ} (hz : 0 < z.im),
+    ψT' z = -ψS (gAct (⟨z, hz⟩ : UpperHalfPlane)) * (z - 1) ^ k
   mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one :
     ∀ {z : ℂ}, z ∈ closure wedgeSet → z ≠ (1 : ℂ) → z ∈ UpperHalfPlane.upperHalfPlaneSet
   closure_wedgeSet_subset_abs_re_sub_one_le_im :
     ∀ {z : ℂ}, z ∈ closure wedgeSet → |z.re - 1| ≤ z.im
 
-private def expNorm (r : ℝ) : ℂ → ℝ :=
-  fun z ↦ ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
+private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
 private lemma exists_expNorm_le_add_one (r : ℝ) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
@@ -81,9 +51,9 @@ private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
     ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
   rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
     (((tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_atImInfty).eventually
-      (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))) with ⟨A0, hA0⟩
-  exact ⟨max A0 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun τ hτ =>
-    le_of_lt (hA0 τ (le_trans (le_max_left _ _) hτ))⟩
+      (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
+  exact ⟨max A0 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _),
+    fun τ hτ => (hA0 τ (le_trans (le_max_left _ _) hτ)).le⟩
 
 private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ)) (habs_re : |z.re - 1| ≤ z.im) :
@@ -99,27 +69,14 @@ private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
         mul_le_mul_of_nonneg_left (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
     _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
 
-
-/--
-Under `TendstoPsiOneHypotheses`, the integrand `Ψ₁' r` tends to `0` as `z → 1` within
-`closure wedgeSet`.
-
-This is the analytic input used to justify the `perm_J12` contour deformation at the corner
-`z = 1`.
--/
-public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
-    {wedgeSet : Set ℂ}
-    {ψS : UpperHalfPlane → ℂ}
-    {ψT' : ℂ → ℂ}
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    {gAct : UpperHalfPlane → UpperHalfPlane}
-    {k : ℕ}
-    (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k)
-    (r : ℝ) :
+/-- Under `TendstoPsiOneHypotheses`, `Ψ₁' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
+public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
+    {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ}
+    {gAct : UpperHalfPlane → UpperHalfPlane} {k : ℕ}
+    (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k) (r : ℝ) :
     Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
   let M : ℝ := expNorm r (1 : ℂ) + 1
-  have hMpos : 0 < M := by
-    have : (0 : ℝ) ≤ expNorm r (1 : ℂ) := norm_nonneg _; linarith
+  have hMpos : 0 < M := by linarith [show 0 ≤ expNorm r 1 from norm_nonneg _]
   obtain ⟨δexp, hδexp_pos, hExpBound⟩ := exists_expNorm_le_add_one (r := r)
   obtain ⟨A, hApos, hA⟩ := exists_im_bound_norm_ψS_le_one (ψS := ψS) h.tendsto_ψS_atImInfty
   refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
