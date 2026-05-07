@@ -42,14 +42,9 @@ open MagicFunction.Parametrisations
 /-- Parametrization of the segment `1 + I → I` (for `t ∈ [0,1]`). -/
 @[expose] public def z₄line (t : ℝ) : ℂ := (1 : ℂ) - (t : ℂ) + Complex.I
 
-@[simp] public lemma z₁line_def (t : ℝ) :
-    z₁line t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
-
+@[simp] public lemma z₁line_def (t : ℝ) : z₁line t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
 @[simp] public lemma z₂line_def (t : ℝ) : z₂line t = (-1 : ℂ) + (t : ℂ) + Complex.I := rfl
-
-@[simp] public lemma z₃line_def (t : ℝ) :
-    z₃line t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
-
+@[simp] public lemma z₃line_def (t : ℝ) : z₃line t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
 @[simp] public lemma z₄line_def (t : ℝ) : z₄line t = (1 : ℂ) - (t : ℂ) + Complex.I := rfl
 
 public lemma continuous_z₁line : Continuous z₁line := by
@@ -87,18 +82,16 @@ public lemma lineMap_z₄line (t : ℝ) :
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₄line, sub_eq_add_neg, add_left_comm,
     add_comm]
 
-public lemma dir_z₁line :
-    ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
-
+public lemma dir_z₁line : ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
 public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
 
 /-! ### Matching `MagicFunction.Parametrisations.zⱼ'` with `zⱼline` on `[0,1]` -/
 
 public lemma z₁'_eq_z₁line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₁' t = z₁line t := by
-  simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using (z₁'_eq_of_mem (t := t) ht)
+  simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using z₁'_eq_of_mem (t := t) ht
 
 public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t = z₂line t := by
-  simpa [z₂line, add_assoc] using (z₂'_eq_of_mem (t := t) ht)
+  simpa [z₂line, add_assoc] using z₂'_eq_of_mem (t := t) ht
 
 /-! ### `AffineMap.lineMap` equals `zⱼ'` on `[0,1]` -/
 
@@ -124,7 +117,6 @@ public lemma lineMap_z₄_eq_z₄' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
 
 @[simp] public lemma z₁line_add_one (t : ℝ) : z₁line t + 1 = (Complex.I : ℂ) * (t : ℂ) := by
   simp [z₁line, add_left_comm, add_comm]
-
 @[simp] public lemma z₂line_add_one (t : ℝ) : z₂line t + 1 = (t : ℂ) + Complex.I := by
   simp [z₂line, add_left_comm, add_comm]
 
@@ -132,29 +124,22 @@ end
 
 end SpherePacking.Contour
 
-/-!
-### Non-vanishing facts for the left-side segments
+/-! ### Non-vanishing facts for the left-side segments
 
-Several contour-change arguments require that the two left-side segments avoid `0` so that
-`mobiusInv z = -z⁻¹` is well-defined.
-These lemmas used to live in `SpherePacking/Contour/Segments.lean`; we keep them here to reduce
-file count.
--/
+Several contour-change arguments need the two left-side segments to avoid `0` so that
+`mobiusInv z = -z⁻¹` is well-defined. -/
 
 namespace SpherePacking
-
-open Complex Real Set
-open scoped Interval
 
 noncomputable section
 
 public lemma segment_z₁_ne_zero (t : Set.Icc (0 : ℝ) 1) :
-    (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) (t : ℝ)) ≠ 0 := fun hz =>
-  by simpa [Contour.lineMap_z₁line, Contour.z₁line] using congrArg Complex.re hz
+    (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) (t : ℝ)) ≠ 0 := fun hz => by
+  simpa [Contour.lineMap_z₁line, Contour.z₁line] using congrArg Complex.re hz
 
 public lemma segment_z₂_ne_zero (t : Set.Icc (0 : ℝ) 1) :
-    (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I (t : ℝ)) ≠ 0 := fun hz =>
-  by simpa [Contour.lineMap_z₂line, Contour.z₂line] using congrArg Complex.im hz
+    (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I (t : ℝ)) ≠ 0 := fun hz => by
+  simpa [Contour.lineMap_z₂line, Contour.z₂line] using congrArg Complex.im hz
 
 end
 
