@@ -212,9 +212,8 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
     linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
 theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
-    (S.centers ∩ ball 0 R).encard ≤
-      volume (S.balls ∩ ball 0 (R + S.separation / 2))
-        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+    (S.centers ∩ ball 0 R).encard ≤ volume (S.balls ∩ ball 0 (R + S.separation / 2))
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R le_rfl,
@@ -224,9 +223,8 @@ theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (.inl MeasureTheory.measure_ball_lt_top.ne)] at h
 
 theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
-    (S.centers ∩ ball 0 R).encard ≥
-      volume (S.balls ∩ ball 0 (R - S.separation / 2))
-        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+    (S.centers ∩ ball 0 R).encard ≥ volume (S.balls ∩ ball 0 (R - S.separation / 2))
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   have h : volume _ ≤ volume _ := volume.mono <|
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ le_rfl,
@@ -247,8 +245,8 @@ public theorem SpherePacking.finiteDensity_ge (_hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.le_div_iff_mul_le
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (.inl MeasureTheory.measure_ball_lt_top.ne)).1 <| by
-      simpa [sub_add_cancel] using S.inter_ball_encard_le (R - S.separation / 2)) _
+    (.inl MeasureTheory.measure_ball_lt_top.ne)).1
+    (by simpa [sub_add_cancel] using S.inter_ball_encard_le (R - S.separation / 2))) _
 
 public theorem SpherePacking.finiteDensity_le (_hd : 0 < d) (R : ℝ) :
     S.finiteDensity R ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
@@ -257,7 +255,7 @@ public theorem SpherePacking.finiteDensity_le (_hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   exact ENNReal.div_le_div_right ((ENNReal.div_le_iff_le_mul
     (.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
-    (.inl MeasureTheory.measure_ball_lt_top.ne)).1 <| by
-      simpa [add_sub_cancel_right] using S.inter_ball_encard_ge (R + S.separation / 2)) _
+    (.inl MeasureTheory.measure_ball_lt_top.ne)).1
+    (by simpa [add_sub_cancel_right] using S.inter_ball_encard_ge (R + S.separation / 2))) _
 
 end BasicResults
