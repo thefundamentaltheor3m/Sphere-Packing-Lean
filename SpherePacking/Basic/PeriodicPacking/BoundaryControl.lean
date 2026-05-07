@@ -25,8 +25,7 @@ lemma coordCubeCover_spec (x : EuclideanSpace ℝ (Fin d)) :
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).1
 
 lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice d L hL)
-    (hg : g +ᵥ x ∈ coordCube d L) :
-    g = coordCubeCover L hL x :=
+    (hg : g +ᵥ x ∈ coordCube d L) : g = coordCubeCover L hL x :=
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 g hg
 
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
@@ -81,8 +80,7 @@ end CoverVolumeBound
 
 section BoundaryControl
 
-def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
-  WithLp.toLp 2 (fun _ : Fin d => c)
+def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) := WithLp.toLp 2 (fun _ : Fin d => c)
 
 lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
     ((coordCube d L \ coordCubeInner d L (1 / 2)) +
