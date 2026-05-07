@@ -6,15 +6,12 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 /-!
 # Gaussian Fourier transform lemmas
 
-This file provides Gaussian and Fourier transform calculations shared across the project.
-It is specialized to even-dimensional Euclidean spaces `Fin (2 * k)` so that exponents become the
-natural number `k`.
+Specialized to even-dimensional Euclidean spaces `Fin (2 * k)` so exponents become `k`.
 -/
 
 namespace SpherePacking.ForMathlib
 
 open scoped FourierTransform RealInnerProductSpace Topology
-
 open Complex Real MeasureTheory
 
 noncomputable section
@@ -56,9 +53,9 @@ public lemma fourier_gaussian_pi_mul_I_mul_even (k : ℕ) (z : ℂ) (hz : 0 < z.
       (fun x : EuclideanSpace ℝ (Fin (2 * k)) ↦ cexp (-(b * ‖x‖ ^ 2))) =
         fun x : EuclideanSpace ℝ (Fin (2 * k)) ↦ cexp ((π : ℂ) * I * (‖x‖ ^ 2 : ℝ) * z) := by
     funext x; simp [b, mul_assoc, mul_comm]
+  have hb0 : b ≠ 0 := by
+    simpa [b] using neg_ne_zero.2 (mul_ne_zero (mul_ne_zero hπ0 Complex.I_ne_zero) hz0)
   have hdiv : π / b = (I : ℂ) / z := by
-    have hb0 : b ≠ 0 := by
-      simpa [b] using (neg_ne_zero.2 (mul_ne_zero (mul_ne_zero hπ0 Complex.I_ne_zero) hz0))
     field_simp [b, hb0, hz0]
     have hIIπ : (I : ℂ) * (I * (π : ℂ)) = -(π : ℂ) := by
       rw [show (I : ℂ) * (I * (π : ℂ)) = (I * I) * (π : ℂ) by ac_rfl]; simp [Complex.I_mul_I]
