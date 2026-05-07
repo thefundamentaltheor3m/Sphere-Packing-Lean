@@ -13,17 +13,9 @@ import Mathlib.MeasureTheory.Integral.ExpDecay
 /-!
 # Laplace integral for `b'`
 
-This file defines the Laplace integrand `bLaplaceIntegrand` and proves its convergence on
-`(0, ∞)` for `u > 2`.
-
-These lemmas are used in the blueprint proposition `prop:b-double-zeros` (the main statement is
+Defines the Laplace integrand `bLaplaceIntegrand` and proves its convergence on `(0, ∞)` for
+`u > 2`. Used in the blueprint proposition `prop:b-double-zeros` (main statement
 `bRadial_eq_laplace_psiI_main`).
-
-## Main definitions
-* `MagicFunction.g.CohnElkies.IntegralReps.bLaplaceIntegrand`
-
-## Main statements
-* `MagicFunction.g.CohnElkies.IntegralReps.bLaplaceIntegral_convergent`
 -/
 
 
@@ -41,10 +33,8 @@ open MagicFunction.FourierEigenfunctions
   ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)
 
 lemma ψI_apply_eq_factor (z : ℍ) :
-    ψI z =
-      (1 / 2 : ℂ) *
-        (H₄ z ^ (3 : ℕ) *
-          (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ))) / (Δ z) := by
+    ψI z = (1 / 2 : ℂ) * (H₄ z ^ (3 : ℕ) *
+      (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ))) / (Δ z) := by
   refine eq_div_of_mul_eq (by simpa [Delta_apply] using Δ_ne_zero z) ?_
   rw [show ψI z = (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ (2 : ℕ)) +
         (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ (2 : ℕ)) by
@@ -58,11 +48,9 @@ lemma ψI_apply_eq_factor (z : ℍ) :
 /-- Exponential growth bound for `ψI` on vertical rays in the upper half-plane. -/
 public lemma exists_ψI_bound_exp :
     ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im → ‖ψI z‖ ≤ C * Real.exp (2 * π * z.im) := by
-  let num : ℍ → ℂ :=
-    fun z : ℍ =>
-      (1 / 2 : ℂ) *
-        (H₄ z ^ (3 : ℕ) *
-          (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))
+  let num : ℍ → ℂ := fun z : ℍ =>
+    (1 / 2 : ℂ) * (H₄ z ^ (3 : ℕ) *
+      (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
   have hnum : Tendsto num atImInfty (𝓝 (1 : ℂ)) := by
@@ -129,8 +117,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     filter_upwards [lt_mem_nhds ht0] with s hs
     have hsIm : 0 < (((Complex.I : ℂ) * (s : ℂ) : ℂ)).im := by simpa using hs
     simp [bLaplaceIntegrand, ψI', UpperHalfPlane.ofComplex_apply_of_im_pos hsIm, hs]
-  have hint_small :
-      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) :=
+  have hint_small : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) :=
     IntegrableOn.of_bound measure_Ioc_lt_top
       ((hcontIoi.mono fun t ht => ht.1).aestronglyMeasurable measurableSet_Ioc) Cψ0 <| by
       refine ae_restrict_of_forall_mem measurableSet_Ioc fun t ht => ?_
@@ -159,12 +146,10 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         _ ≤ Cψ0 := by simpa using hψI
   rcases exists_ψI_bound_exp with ⟨CI, AI, hCI, hI⟩
   let A : ℝ := max AI 1
-  have hint_mid :
-      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
+  have hint_mid : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
     ((hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num) ht.1).integrableOn_Icc
       (μ := (volume : Measure ℝ))).mono_set Set.Ioc_subset_Icc_self
-  have hint_tail :
-      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi A) := by
+  have hint_tail : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi A) := by
     have hmeas : AEStronglyMeasurable (fun t : ℝ => bLaplaceIntegrand u t)
           (volume.restrict (Set.Ioi A)) :=
       (hcontIoi.mono fun t ht =>
