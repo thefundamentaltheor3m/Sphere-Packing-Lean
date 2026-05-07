@@ -40,24 +40,24 @@ private lemma aestronglyMeasurable_gN_Ioo
     AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x) μIoo01 := by
   have hcont : ContinuousOn (gN (coeff := coeff) (hf := hf) n x) (Ioo (0 : ℝ) 1) := by
     simpa [gN, g] using (continuous_coeff.pow n).continuousOn.mul
-      (continuousOn_hf.mul (Continuous.continuousOn ((continuous_const.mul continuous_coeff).cexp)))
-  simpa [μIoo01] using hcont.aestronglyMeasurable (μ := (volume : Measure ℝ)) measurableSet_Ioo
+      (continuousOn_hf.mul ((continuous_const.mul continuous_coeff).cexp.continuousOn))
+  simpa [μIoo01] using hcont.aestronglyMeasurable measurableSet_Ioo
 
 private lemma norm_gN_le_const
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
     {M : ℝ} {t x x₀ : ℝ} (hx : x ∈ Metric.ball x₀ (1 : ℝ))
     (hh : ‖hf t‖ ≤ M) (n : ℕ) :
     ‖gN (coeff := coeff) (hf := hf) n x t‖ ≤
-      (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
-  calc ‖gN (coeff := coeff) (hf := hf) n x t‖
+      (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := calc
+  ‖gN (coeff := coeff) (hf := hf) n x t‖
       = ‖(coeff t) ^ n * (hf t * cexp ((x : ℂ) * coeff t))‖ := by simp [gN, g, mul_comm]
     _ ≤ ‖(coeff t) ^ n‖ * ‖hf t * cexp ((x : ℂ) * coeff t)‖ := norm_mul_le _ _
     _ ≤ (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
-          gcongr
-          · simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
-          · exact norm_mul_le_of_le hh
-              (SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
-                (B := (2 * Real.pi)) (coeff_norm_le t) hx)
+        gcongr
+        · simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
+        · exact norm_mul_le_of_le hh
+            (SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
+              (B := (2 * Real.pi)) (coeff_norm_le t) hx)
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
 public lemma hasDerivAt_integral_gN_Ioo
@@ -69,11 +69,9 @@ public lemma hasDerivAt_integral_gN_Ioo
     HasDerivAt (fun x : ℝ => ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01)
         (∫ t, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t ∂μIoo01) x₀ := by
   have hμmem : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := by
-    simpa [μIoo01] using
-      (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
+    simpa [μIoo01] using ae_restrict_mem (μ := (volume : Measure ℝ)) measurableSet_Ioo
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_hf
-  haveI : IsFiniteMeasure μIoo01 :=
-    ⟨by simp [μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
+  haveI : IsFiniteMeasure μIoo01 := ⟨by simp [μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
   exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μIoo01)
     (s := Metric.ball x₀ (1 : ℝ))
     (F := fun x t ↦ gN (coeff := coeff) (hf := hf) n x t)
@@ -81,18 +79,17 @@ public lemma hasDerivAt_integral_gN_Ioo
     (bound := fun _ : ℝ ↦
       (2 * Real.pi) ^ (n + 1) * (Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi))))
     (x₀ := x₀) (Metric.ball_mem_nhds x₀ (by norm_num))
-    (.of_forall (fun x => aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x))
+    (.of_forall fun x => aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x)
     (Integrable.of_bound (aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff n x₀) _
       (hμmem.mono fun t ht =>
         norm_gN_le_const coeff_norm_le (Metric.mem_ball_self (by norm_num)) (hMh t ht) n))
     (aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff (n + 1) x₀)
     (by filter_upwards [hμmem] with t ht x hx
         exact norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1))
-    (integrable_const _)
-    (ae_of_all _ fun t x _ => by
+    (integrable_const _) (ae_of_all _ fun t x _ => by
       simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-        ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-            (a := hf t) (c := coeff t) x).const_mul ((coeff t) ^ n)))).2
+        (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+          (a := hf t) (c := coeff t) x).const_mul ((coeff t) ^ n))).2
 
 /-- Smoothness of `x ↦ ∫_{(0,1)} g(x,t)` packaged from `hasDerivAt_integral_gN_Ioo`. -/
 public theorem contDiff_integral_g_Ioo
@@ -105,9 +102,8 @@ public theorem contDiff_integral_g_Ioo
   have h0 : (fun x : ℝ => ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) = I 0 := by
     funext x; simp [I, gN, g, μIoo01]
   simpa [h0] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I) fun n x => by
-    simpa [I] using
-      hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
-        exists_bound_norm_hf coeff_norm_le n x
+    simpa [I] using hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf
+      continuous_coeff exists_bound_norm_hf coeff_norm_le n x
 
 /-- Differentiate under the integral sign for `∫ t in (0)..1, gN n x t`, assuming continuity. -/
 public lemma hasDerivAt_integral_gN_of_continuous
@@ -121,31 +117,29 @@ public lemma hasDerivAt_integral_gN_of_continuous
   set μ : Measure ℝ := (volume : Measure ℝ).restrict (Ι (0 : ℝ) 1)
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
   have hμmem : ∀ᵐ t ∂μ, t ∈ Ι (0 : ℝ) 1 :=
-    ae_restrict_mem (μ := (volume : Measure ℝ)) (s := (Ι (0 : ℝ) 1)) (by measurability)
-  have continuous_gN : ∀ n : ℕ, ∀ x : ℝ,
-      Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := fun n x => by
+    ae_restrict_mem (μ := (volume : Measure ℝ)) (by measurability)
+  have continuous_gN (n : ℕ) (x : ℝ) :
+      Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := by
     simpa [gN, g] using (continuous_coeff.pow n).mul
       (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
-        (μ := μ) (s := Metric.ball x₀ (1 : ℝ)) (x₀ := x₀)
-        (F := fun x t => gN (coeff := coeff) (hf := hf) n x t)
-        (F' := fun x t => gN (coeff := coeff) (hf := hf) (n + 1) x t)
-        (bound := fun _ : ℝ ↦
-          (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))
-        (Metric.ball_mem_nhds x₀ (by norm_num))
-        (.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
-        ((continuous_gN n x₀).integrableOn_uIoc (μ := (volume : Measure ℝ)) (a := 0) (b := 1))
-        (continuous_gN (n + 1) x₀).aestronglyMeasurable
-        (by filter_upwards [hμmem] with t ht x hx
-            simpa [mul_assoc, mul_left_comm, mul_comm] using
-              norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1))
-        (integrable_const _)
-        (ae_of_all _ fun t x _ => by
-          simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-            ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const (hf t) (coeff t)
-              x).const_mul ((coeff t) ^ n)))).2
+      (μ := μ) (s := Metric.ball x₀ (1 : ℝ)) (x₀ := x₀)
+      (F := fun x t => gN (coeff := coeff) (hf := hf) n x t)
+      (F' := fun x t => gN (coeff := coeff) (hf := hf) (n + 1) x t)
+      (bound := fun _ : ℝ ↦ (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))
+      (Metric.ball_mem_nhds x₀ (by norm_num))
+      (.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
+      ((continuous_gN n x₀).integrableOn_uIoc (μ := (volume : Measure ℝ)) (a := 0) (b := 1))
+      (continuous_gN (n + 1) x₀).aestronglyMeasurable
+      (by filter_upwards [hμmem] with t ht x hx
+          simpa [mul_assoc, mul_left_comm, mul_comm] using
+            norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1))
+      (integrable_const _) (ae_of_all _ fun t x _ => by
+        simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+          (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const (hf t) (coeff t)
+            x).const_mul ((coeff t) ^ n))).2
 
 end
 
