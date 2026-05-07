@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -19,19 +17,8 @@ import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.Measure
 
 /-!
-# Bounds for `I₆'`
-
-This file proves the analytic estimates needed for the auxiliary integral `I₆'`: a representation
-as an integral over `Ici 1`, uniform exponential bounds, and Schwartz decay for iterated
+# Bounds for `I₆'`: integral representation, uniform bounds, and Schwartz decay for iterated
 derivatives in the parameter `r`.
-
-## Main definitions
-* `g`
-
-## Main statements
-* `I₆'_eq_integral_g_Ioo`
-* `g_norm_bound_uniform`
-* `decay'`
 -/
 
 namespace MagicFunction.a.IntegralEstimates.I₆
@@ -110,7 +97,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
       simp only [bound, mul_pow, ← show rexp (-2 * π * t) * rexp (-π * r * t) =
-        rexp (-(π * (r + 2)) * t) from by rw [← Real.exp_add]; ring_nf]; ring
+        rexp (-(π * (r + 2)) * t) by rw [← Real.exp_add]; ring_nf]; ring
 
 private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
@@ -134,7 +121,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
           (by positivity) (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
       _ = bound t := by
         simp only [bound, mul_pow, ← show rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) =
-          rexp (-(π * (r₀ + 1)) * t) from by rw [← Real.exp_add]; ring_nf]; ring
+          rexp (-(π * (r₀ + 1)) * t) by rw [← Real.exp_add]; ring_nf]; ring
   have bound_integrable : Integrable bound μ := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (show Integrable (fun t : ℝ ↦ t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) μ by
@@ -143,8 +130,8 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
             (b := π * (r₀ + 1)) (mul_pos Real.pi_pos (by linarith))).const_mul ((π ^ (n + 1)) * C₀)
   have h_diff : ∀ᵐ t ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ),
       HasDerivAt (fun r : ℝ ↦ gN n r t) (gN (n + 1) r t) r := ae_of_all _ fun t r _ ↦ by
-    simpa [gN, show ∀ y : ℝ, g y t = (I * φ₀'' (I * t)) * cexp ((y : ℂ) * coeff t) from fun y => by
-      simp [g, coeff, mul_assoc, mul_left_comm, mul_comm], pow_succ,
+    simpa [gN, show ∀ y : ℝ, g y t = (I * φ₀'' (I * t)) * cexp ((y : ℂ) * coeff t) by
+      intro y; simp [g, coeff, mul_assoc, mul_left_comm, mul_comm], pow_succ,
       mul_assoc, mul_left_comm, mul_comm] using
       SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
         (a := I * φ₀'' (I * t)) (c := coeff t) (n := n) (x := r)
@@ -162,10 +149,9 @@ lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
   | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
   | succ n hn =>
     intro r hr
-    calc
-      iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by simp [iteratedDeriv_succ]
+    calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by simp [iteratedDeriv_succ]
       _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
-        (Filter.EventuallyEq.deriv_eq (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx))
+        Filter.EventuallyEq.deriv_eq (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
       _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
         simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
 
