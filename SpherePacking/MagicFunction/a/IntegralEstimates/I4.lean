@@ -76,15 +76,6 @@ open SchwartzMap
 /-- Specialization of `I24Common.coeff` to `shift = fun t => (1 : ℂ) - (t : ℂ)`. -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (1 : ℂ) - (t : ℂ))
 
-/-- Continuity of `coeff`. -/
-public lemma continuous_coeff : Continuous coeff :=
-  I24Common.continuous_coeff (continuous_const.sub Complex.continuous_ofReal)
-
-/-- A convenient expansion of `coeff t` as a sum. -/
-public lemma coeff_eq_sum (t : ℝ) :
-    coeff t = (π * I : ℂ) + (-π * I * (t : ℂ)) + (-π : ℂ) := by
-  simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
-
 /-- The integrand for the `n`-th derivative, obtained by multiplying `g` by `(coeff t) ^ n`. -/
 @[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
@@ -100,7 +91,9 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) : ‖coeff t�
 public lemma exp_r_mul_coeff (r t : ℝ) :
     cexp ((r : ℂ) * coeff t) =
       cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
-  simp [coeff_eq_sum, Complex.exp_add, add_assoc, mul_add, mul_left_comm, mul_comm]
+  simp [show coeff t = (π * I : ℂ) + (-π * I * (t : ℂ)) + (-π : ℂ) by
+    simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm],
+    Complex.exp_add, add_assoc, mul_add, mul_left_comm, mul_comm]
 
 lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₄' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
@@ -121,7 +114,8 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
   simpa [gN] using iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
     (I := I₄') (coeff := coeff) (g := g)
     (A := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2)
-    (hI := I₄'_eq_integral_g_Ioo) (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont)
+    (hI := I₄'_eq_integral_g_Ioo) (hg_cont := hg_cont)
+    (hcoeff_cont := I24Common.continuous_coeff (continuous_const.sub Complex.continuous_ofReal))
     (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
     (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n
 
