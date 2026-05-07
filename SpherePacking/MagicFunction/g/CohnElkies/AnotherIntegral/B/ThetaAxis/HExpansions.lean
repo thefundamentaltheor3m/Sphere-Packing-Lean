@@ -76,11 +76,11 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
       (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
         (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by
-    have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-      rw [← Complex.ofReal_pow, ← Complex.ofReal_mul,
-        ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf
-    grind only [show a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) by
-      rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf]
+    grind only [show a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by
+        rw [← Complex.ofReal_pow, ← Complex.ofReal_mul,
+          ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf,
+      show a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) by
+        rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf]
   have hy_tail : ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
         (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
           176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
@@ -115,7 +115,6 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by ring) ▸ norm_add_le _ _]
 
-/-- Generic `Hj(it)` expansion (`σ = ±1` for the H₃/H₄ cases). -/
 private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ : σ = 1 ∨ σ = -1)
     (hHj : ∀ t : ℝ, 0 < t → Hj t = (Θj t) ^ (4 : ℕ)) {C1 C2 : ℝ}
     (hC1 : ∀ t : ℝ, 1 ≤ t → ‖Θj t - 1‖ ≤ C1 * Real.exp (-Real.pi * t))
@@ -126,7 +125,6 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
       ‖Hj t - (1 : ℂ) - σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
           (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-  have hC10 : 0 ≤ C1 := nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)
   have hC20 : 0 ≤ C2 := nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)
   refine ⟨(4 * (1 + C1 + 3) ^ 3) * C2 + 48, fun t ht ↦ ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -135,8 +133,8 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
   set y : ℂ := (1 : ℂ) + σ * (2 : ℂ) * q'
   have hq : ‖q'‖ ≤ 1 := by simpa [q'] using norm_exp_neg_pi_mul_le_one t ht0
   have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <| (hC1 t ht).trans <| by
-    simpa using mul_le_of_le_one_right hC10 (Real.exp_le_one_iff.2 (by
-      nlinarith [Real.pi_pos, ht0.le]))
+    simpa using mul_le_of_le_one_right (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl))
+      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le]))
   have hσ_norm : ‖σ‖ = 1 := by rcases hσ with rfl | rfl <;> simp
   have hy : ‖y‖ ≤ 3 := by
     have h := norm_add_le (1 : ℂ) (σ * (2 : ℂ) * q'); simp [hσ_norm] at h; linarith
@@ -198,7 +196,6 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     fun t ht => by simpa [sub_eq_add_neg, mul_assoc, add_left_comm, add_comm] using hC2 t ht).imp
     fun _ hC t ht => by simpa [neg_mul, sub_eq_add_neg] using hC t ht
 
-/-- Cancellation in `H₃(it) + H₄(it)` up to `exp(-3π t)`. -/
 public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖(H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
