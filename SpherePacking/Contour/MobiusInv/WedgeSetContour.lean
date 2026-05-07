@@ -30,10 +30,8 @@ noncomputable section
 
 open SpherePacking.Contour
 
-lemma perm_J12_contour_h1_mobiusInv_wedgeSet
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet)
-    (r : ℝ) :
+lemma perm_J12_contour_h1_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
+    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet) (r : ℝ) :
     (∫ᶜ z in mobiusInv_segment_z₁, scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z =
@@ -43,18 +41,16 @@ lemma perm_J12_contour_h1_mobiusInv_wedgeSet
       hyp :=
         { continuousOn_mobiusInv_segment_z₁ := continuousOn_mobiusInv_segment_z₁
           mobiusInv_neg_one := by simp [mobiusInv]
-          homotopy_mem_wedgeSet := fun hx hy =>
-            convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₁_mem_wedgeSet hy.1 hy.2)
-              (lineMap_z₃line_mem_wedgeSet hy.1) ⟨hx.1.le, hx.2.le⟩
+          homotopy_mem_wedgeSet := fun hx hy => convex_wedgeSet.lineMap_mem
+            (mobiusInv_lineMap_z₁_mem_wedgeSet hy.1 hy.2)
+            (lineMap_z₃line_mem_wedgeSet hy.1) ⟨hx.1.le, hx.2.le⟩
           contDiffOn_homotopy := by
             refine contDiffOn_lineMap_mobiusInv_lineMap (-1) (-1 + Complex.I) 1 (1 + Complex.I) ?_
             rintro ⟨_x, y⟩ ⟨h0, h1⟩
             exact segment_z₁_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ } } r
 
-lemma perm_J12_contour_h2_mobiusInv_wedgeSet
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet)
-    (r : ℝ) :
+lemma perm_J12_contour_h2_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
+    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet) (r : ℝ) :
     ∫ᶜ z in mobiusInv_segment_z₂, scalarOneForm (Ψ₁' r) z =
       (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
@@ -64,9 +60,9 @@ lemma perm_J12_contour_h2_mobiusInv_wedgeSet
       hyp :=
         { continuousOn_mobiusInv_segment_z₂ := continuousOn_mobiusInv_segment_z₂
           mobiusInv_I := by simp [mobiusInv]
-          homotopy_mem_wedgeSet := fun hx hy =>
-            convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₂_mem_wedgeSet hy.1 hy.2)
-              (lineMap_z₄line_mem_wedgeSet hy.1 hy.2) ⟨hx.1.le, hx.2.le⟩
+          homotopy_mem_wedgeSet := fun hx hy => convex_wedgeSet.lineMap_mem
+            (mobiusInv_lineMap_z₂_mem_wedgeSet hy.1 hy.2)
+            (lineMap_z₄line_mem_wedgeSet hy.1 hy.2) ⟨hx.1.le, hx.2.le⟩
           contDiffOn_homotopy := by
             refine contDiffOn_lineMap_mobiusInv_lineMap
               (-1 + Complex.I) Complex.I (1 + Complex.I) Complex.I ?_
@@ -74,27 +70,20 @@ lemma perm_J12_contour_h2_mobiusInv_wedgeSet
             exact segment_z₂_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ } } r
 
 private lemma perm_12_contour_mobiusInv_wedgeSet_aux
-    {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ}
-    (s : ℂ)
-    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet)
-    (r : ℝ)
-    (hseg1 :
-      (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
-            scalarOneForm (Ψ₁_fourier r) z) =
+    {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ} (s : ℂ)
+    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet) (r : ℝ)
+    (hseg1 : (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
+          scalarOneForm (Ψ₁_fourier r) z) =
         s * ∫ᶜ z in mobiusInv_segment_z₁, scalarOneForm (Ψ₁' r) z)
-    (hseg2 :
-      (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
-            scalarOneForm (Ψ₁_fourier r) z) =
+    (hseg2 : (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
+          scalarOneForm (Ψ₁_fourier r) z) =
         s * ∫ᶜ z in mobiusInv_segment_z₂, scalarOneForm (Ψ₁' r) z) :
     (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁_fourier r) z) +
         ∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
           scalarOneForm (Ψ₁_fourier r) z =
-      s *
-        ((∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
-              scalarOneForm (Ψ₁' r) z) +
-          ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
-            scalarOneForm (Ψ₁' r) z) := by
+      s * ((∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Ψ₁' r) z) +
+        ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm (Ψ₁' r) z) := by
   have := perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
   have := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   grind only
