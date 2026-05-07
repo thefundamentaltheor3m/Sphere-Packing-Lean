@@ -5,7 +5,6 @@ public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 
-
 /-!
 # Cancellation and integrability for `AnotherIntegral.B`
 
@@ -31,7 +30,6 @@ open Filter Topology
 
 noncomputable section
 
-
 lemma psiI_resToImagAxis_eq_mul_psiS (t : ℝ) (ht : 0 < t) :
     ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) := by
   simpa [ψS_slash_S, zpow_two, pow_two] using
@@ -49,8 +47,8 @@ lemma continuousOn_psiI'_mul_I :
   ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ)
 
 /-- Unfolding lemma for `bAnotherBase`. -/
-@[simp] public lemma bAnotherBase_eq (t : ℝ) : bAnotherBase t =
-    ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
+@[simp] public lemma bAnotherBase_eq (t : ℝ) :
+    bAnotherBase t = ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
 
 public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) :=
   (continuousOn_psiI'_mul_I.sub continuousOn_const).sub (by fun_prop)
@@ -73,8 +71,7 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
   have hψI'_small (t : ℝ) (ht0 : 0 < t) (ht1 : t ≤ 1) :
       ‖ψI' (Complex.I * (t : ℂ))‖ ≤ Cψ0 := by
-    have ht' : 1 ≤ (1 / t : ℝ) := by
-      simpa [one_div] using (one_le_div ht0).2 ht1
+    have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht1
     have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
       simpa using (hψS_bound (1 / t : ℝ) ht').trans
         (mul_le_mul_of_nonneg_left
@@ -156,7 +153,6 @@ public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
 public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (t : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ))
       (Set.Ioi (0 : ℝ)) := by
-  have hpu : 0 < π * u := mul_pos Real.pi_pos hu
   have hmul_exp :
       IntegrableOn (fun t : ℝ => t * Real.exp (-(π * u) * t)) (Set.Ioi (0 : ℝ)) := by
     let f : ℝ → ℝ := fun t => t * Real.exp (-(π * u) * t)
@@ -167,8 +163,7 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
     have hb' : 0 < b' := by positivity
     have hO : f =O[atTop] fun t : ℝ => Real.exp (-b' * t) := by
       refine Asymptotics.isBigO_of_div_tendsto_nhds (l := atTop) ?_ (c := (0 : ℝ)) ?_
-      · exact Filter.Eventually.of_forall fun t ht =>
-          False.elim ((Real.exp_ne_zero (-b' * t)) ht)
+      · exact .of_forall fun t ht => absurd ht (Real.exp_ne_zero _)
       · have htend : Tendsto (fun t : ℝ => t * Real.exp (-b' * t)) atTop (𝓝 0) := by
           simpa [Real.rpow_one] using
             tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := b') hb'
@@ -181,7 +176,7 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
                 Real.exp ((-(π * u) * t) - (-(π * u / 2) * t)) :=
             (Real.exp_sub (-(π * u) * t) (-(π * u / 2) * t)).symm
           grind only
-        exact (tendsto_congr' (Filter.Eventually.of_forall fun t => by
+        exact (tendsto_congr' (.of_forall fun t => by
           simpa using congrArg (fun g : ℝ → ℝ => g t) hEq)).2 htend
     have hf_Ioi : IntegrableOn f (Set.Ioi (1 : ℝ)) :=
       integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := b') hb' hf_cont.continuousOn hO
