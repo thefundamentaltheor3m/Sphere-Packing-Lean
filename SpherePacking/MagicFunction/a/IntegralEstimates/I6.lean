@@ -170,8 +170,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
       fun t ht ↦ by have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
-  simpa [mul_assoc, mul_left_comm, mul_comm]
-    using show ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) from calc
+  simpa [mul_assoc, mul_left_comm, mul_comm] using calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
       rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']; simp
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
