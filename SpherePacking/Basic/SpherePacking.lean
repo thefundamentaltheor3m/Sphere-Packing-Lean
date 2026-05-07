@@ -8,9 +8,7 @@ public import Mathlib.Algebra.Module.ZLattice.Basic
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.Order.CompletePartialOrder
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-public import Mathlib.Topology.Metrizable.Basic
 public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 /-!
@@ -106,8 +104,7 @@ open Real
 
 /-- Scale a periodic packing by a positive factor `c`, scaling both centers and the lattice. -/
 @[expose] public noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ}
-    (hc : 0 < c) :
-    PeriodicSpherePacking d := {
+    (hc : 0 < c) : PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
