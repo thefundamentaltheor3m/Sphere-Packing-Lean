@@ -14,10 +14,9 @@ import SpherePacking.CohnElkies.LPBoundSummability
 /-!
 # Reindexing periodic sums for the LP bound
 
-Sums over all centers of a periodic packing can be rewritten using a fundamental domain `D` for the
-lattice action. Assuming `D` uniquely covers every point up to a lattice translate, we construct an
-explicit equivalence `(P.centers ∩ D) × P.lattice ≃ P.centers` and use it to reindex `tsum`
-expressions that appear in the Cohn-Elkies argument.
+Given a fundamental domain `D` uniquely covering every point up to a lattice translate, the
+explicit equivalence `(P.centers ∩ D) × P.lattice ≃ P.centers` reindexes the `tsum` expressions
+appearing in the Cohn-Elkies argument.
 -/
 
 namespace SpherePacking.CohnElkies
@@ -28,8 +27,7 @@ open scoped BigOperators SchwartzMap
 
 variable {d : ℕ}
 
-/-- An explicit equivalence `((P.centers ∩ D) × P.lattice) ≃ P.centers` obtained from the
-`hD_unique_covers` assumption (each point has a unique lattice translate lying in `D`). -/
+/-- Equivalence `((P.centers ∩ D) × P.lattice) ≃ P.centers` from a unique-covering assumption. -/
 @[expose] public def centersInterProdEquiv (P : PeriodicSpherePacking d) [Nonempty P.centers]
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
@@ -43,8 +41,7 @@ variable {d : ℕ}
   let toCenter : ↑(P.centers ∩ D) × P.lattice → P.centers := fun p =>
     ⟨p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d)),
       P.lattice_action p.2.property (p.1.property).1⟩
-  let toPair : P.centers → ↑(P.centers ∩ D) × P.lattice := fun x =>
-    (repr x, -cover x)
+  let toPair : P.centers → ↑(P.centers ∩ D) × P.lattice := fun x => (repr x, -cover x)
   refine
     { toFun := toCenter
       invFun := toPair
@@ -60,9 +57,8 @@ variable {d : ℕ}
   · intro x
     exact Subtype.ext (by simp [toPair, repr, toCenter, neg_vadd_vadd])
 
-/-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates. This is
-the periodic decomposition used in `LPBound.lean` to pass from a sum over all centers to a sum
-over centers in a fundamental domain and lattice shifts. -/
+/-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates,
+the periodic decomposition used in `LPBound.lean`. -/
 public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
     (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
     (P : PeriodicSpherePacking d) [Nonempty P.centers]
