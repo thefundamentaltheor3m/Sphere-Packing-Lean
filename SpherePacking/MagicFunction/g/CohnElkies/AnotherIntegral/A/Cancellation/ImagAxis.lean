@@ -7,9 +7,7 @@ public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.ForMathlib.SigmaBounds
-public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.Complex.Periodic
 
 /-! # Helpers on the imaginary axis (AnotherIntegral.A): definitions (`zI`) and bounds for
