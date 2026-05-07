@@ -2,13 +2,7 @@ module
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.HExpansions
 import SpherePacking.ModularForms.JacobiTheta
 
-/-!
-# Inverse-square expansion for `H₂(it)`
-
-This file proves a refined approximation for `((H₂(it))^2)⁻¹` on `t ≥ 1`. We extract the leading
-term `exp (2π t) / 256` and the constant correction `-1/32`, and bound the remaining error term by
-`O(exp (-2π t))`.
--/
+/-! # Refined `O(exp(-2π t))` expansion for `((H₂(it))²)⁻¹` extracting `exp(2π t)/256 - 1/32`. -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
@@ -39,10 +33,9 @@ private lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
     have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
     have harg : (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
         (-(Real.pi * (r ^ 2) * t) : ℂ) := by
-      have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by simp_all
-      have hI : (I : ℂ) * ((I : ℂ) * (t : ℂ)) = -(t : ℂ) := by
-        rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
-      grind only
+      grind only [show (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) by simp_all,
+        show (I : ℂ) * ((I : ℂ) * (t : ℂ)) = -(t : ℂ) by
+          rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]]
     simpa [Θ₂_term, one_div, r, pow_two, mul_assoc, mul_left_comm, mul_comm, g, τ] using
       show Θ₂_term n τ = (Real.exp (-(Real.pi * (r ^ 2) * t)) : ℂ) from by
         simp [Θ₂_term, one_div, harg, τ]
@@ -126,21 +119,21 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     have hmain_sq :
         ‖main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤
           (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) := by
-      have hq1_sq_c : (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) = (u : ℂ) := by
-        exact_mod_cast show Real.exp (-Real.pi * t) ^ (2 : ℕ) = u by
-          simp only [u, ← Real.exp_nat_mul]; ring_nf
-      have hq1q3_c : (Real.exp (-Real.pi * t) : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) =
-          ((u ^ (2 : ℕ) : ℝ) : ℂ) := by
-        rw [show (u ^ (2 : ℕ) : ℝ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
-          simp only [u, ← Real.exp_nat_mul]; ring_nf]
-        exact_mod_cast show Real.exp (-Real.pi * t) * Real.exp (-(3 : ℝ) * Real.pi * t)
-          = Real.exp (-(4 : ℝ) * Real.pi * t) by rw [← Real.exp_add]; ring_nf
-      have hq3_sq_c : (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) ^ (2 : ℕ) =
-          (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by
-        exact_mod_cast show Real.exp (-(3 : ℝ) * Real.pi * t) ^ (2 : ℕ) =
-          Real.exp (-(6 : ℝ) * Real.pi * t) by rw [← Real.exp_nat_mul]; ring_nf
       rw [show main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ) =
-        (4096 : ℂ) * (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) from by grind only]
+        (4096 : ℂ) * (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) from by
+        grind only [show (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) = (u : ℂ) by
+            exact_mod_cast show Real.exp (-Real.pi * t) ^ (2 : ℕ) = u by
+              simp only [u, ← Real.exp_nat_mul]; ring_nf,
+          show (Real.exp (-Real.pi * t) : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) =
+              ((u ^ (2 : ℕ) : ℝ) : ℂ) by
+            rw [show (u ^ (2 : ℕ) : ℝ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
+              simp only [u, ← Real.exp_nat_mul]; ring_nf]
+            exact_mod_cast show Real.exp (-Real.pi * t) * Real.exp (-(3 : ℝ) * Real.pi * t)
+              = Real.exp (-(4 : ℝ) * Real.pi * t) by rw [← Real.exp_add]; ring_nf,
+          show (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) ^ (2 : ℕ) =
+              (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) by
+            exact_mod_cast show Real.exp (-(3 : ℝ) * Real.pi * t) ^ (2 : ℕ) =
+              Real.exp (-(6 : ℝ) * Real.pi * t) by rw [← Real.exp_nat_mul]; ring_nf]]
       simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
     have hsq : ‖x ^ (2 : ℕ) - main ^ (2 : ℕ)‖ ≤
           (160 * Real.exp (-Real.pi * t)) * (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) +
@@ -205,7 +198,6 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       _ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by grind only
   simpa [w, A, x, e, u, C0] using hw_tail
 
-/-- Refined inverse-square expansion for `H₂(it)` extracting the constant `-1/32`. -/
 public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
@@ -251,10 +243,10 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     linarith [mul_le_mul_of_nonneg_left (show (256 : ℝ) * u ≤ ‖x‖ ^ (2 : ℕ) by
         simpa [x, u] using H2_norm_pow_two_ge t ht0) he256,
       show (e / 256) * ((256 : ℝ) * u) = 1 from by linear_combination heu]
-  have hw_inv : ‖w⁻¹‖ ≤ 1 := norm_inv w ▸ inv_le_one_of_one_le₀ hw_norm_ge
   have hdiff : ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
       ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) :=
-    bound_w_inv_sub_one_sub t u C0 w hw_norm_ge hw_inv hw_tail hw_one
+    bound_w_inv_sub_one_sub t u C0 w hw_norm_ge
+      (norm_inv w ▸ inv_le_one_of_one_le₀ hw_norm_ge) hw_tail hw_one
   calc ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
           - ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ)
           + ((1 / 32 : ℝ) : ℂ)‖
@@ -263,8 +255,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
         rw [hA_norm]; exact mul_le_mul_of_nonneg_left hdiff he256
     _ = (1 / 256 : ℝ) * ((8 + C0) ^ 2 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
         have he4 : e * Real.exp (-(4 : ℝ) * Real.pi * t) =
-            Real.exp (-(2 : ℝ) * Real.pi * t) := by
-          simp only [e, ← Real.exp_add]; ring_nf
+            Real.exp (-(2 : ℝ) * Real.pi * t) := by simp only [e, ← Real.exp_add]; ring_nf
         linear_combination (((8 + C0) ^ 2 + C0) / 256 : ℝ) * he4
     _ ≤ (256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
           (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
