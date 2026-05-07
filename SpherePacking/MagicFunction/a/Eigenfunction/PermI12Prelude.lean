@@ -40,8 +40,9 @@ public lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSp
     (f.continuous.fourierInv_fourier_eq f.integrable
       (by simpa using (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f).integrable)) (-x)
 
-lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
-    φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 * w ^ 2 =
+lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
+    φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 *
+        (((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹) =
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
   have hw0 : w ≠ 0 := fun h => absurd (show w.im = 0 by simp [h]) hw.ne'
   have hw' : 0 < (w - 1).im := by simpa using hw
@@ -49,20 +50,15 @@ lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
   have hzpos : 0 < (-1 / (w - 1)).im := by
     simpa [div_eq_mul_inv, sub_eq_add_neg, Complex.inv_im] using
       div_pos hw' (Complex.normSq_pos.2 hw1)
-  rw [mul_assoc, show ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 by field_simp [hw0]; ring,
-    show (-1 / ((-1 / w) + 1) : ℂ) = (-1 / (w - 1)) - 1 by grind only,
-    show φ₀'' ((-1 / (w - 1)) - 1) = φ₀'' (-1 / (w - 1)) by
-      simpa using (MagicFunction.a.SpecialValues.φ₀''_add_one
-        (z := -1 / (w - 1) - 1) (by simpa using hzpos)).symm]
-
-lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
-    φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 *
-        (((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹) =
+  have hbase : φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 * w ^ 2 =
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
+    rw [mul_assoc, show ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 by field_simp [hw0]; ring,
+      show (-1 / ((-1 / w) + 1) : ℂ) = (-1 / (w - 1)) - 1 by grind only,
+      show φ₀'' ((-1 / (w - 1)) - 1) = φ₀'' (-1 / (w - 1)) by
+        simpa using (MagicFunction.a.SpecialValues.φ₀''_add_one
+          (z := -1 / (w - 1) - 1) (by simpa using hzpos)).symm]
   simpa [show ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) by
-    rcases eq_or_ne w 0 with rfl | hw0
-    · simp
-    · field_simp; simp [Complex.I_pow_four]] using φ₀''_inv_add_one_mul_sq (w := w) hw
+    field_simp; simp [Complex.I_pow_four]] using hbase
 
 section CurveIntegral
 open scoped Interval
@@ -88,26 +84,17 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
   exact intervalIntegral.integral_congr fun t ht => by
     simp [Φ₂_def, scalarOneForm_apply, lineMap_z₂_eq_z₂' (t := t) (uIcc_aux ht), Φ₂']
 
-lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
-    MagicFunction.a.RealIntegrals.I₃' r =
-      (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Φ₃' r) z) := by
-  rw [curveIntegral_segment (ω := scalarOneForm (Φ₃' r)) (1 : ℂ) ((1 : ℂ) + Complex.I)]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [Φ₃_def, scalarOneForm_apply, lineMap_z₃_eq_z₃' (t := t) (uIcc_aux ht)]
-
-lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
-    MagicFunction.a.RealIntegrals.I₄' r =
-      (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm (Φ₃' r) z) := by
-  rw [curveIntegral_segment (ω := scalarOneForm (Φ₃' r)) ((1 : ℂ) + Complex.I) Complex.I]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [Φ₄_def, scalarOneForm_apply, lineMap_z₄_eq_z₄' (t := t) (uIcc_aux ht), Φ₄']
-
 /-- `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along `1 → 1 + i` and `1 + i → i`. -/
 public lemma I₃'_add_I₄'_eq_curveIntegral_segments (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₃' r + MagicFunction.a.RealIntegrals.I₄' r =
       (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Φ₃' r) z) +
         ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm (Φ₃' r) z := by
-  simp [I₃'_eq_curveIntegral_segment, I₄'_eq_curveIntegral_segment]
+  rw [curveIntegral_segment (ω := scalarOneForm (Φ₃' r)) (1 : ℂ) ((1 : ℂ) + Complex.I),
+    curveIntegral_segment (ω := scalarOneForm (Φ₃' r)) ((1 : ℂ) + Complex.I) Complex.I]
+  refine congr_arg₂ _ (intervalIntegral.integral_congr fun t ht => ?_)
+    (intervalIntegral.integral_congr fun t ht => ?_)
+  · simp [Φ₃_def, scalarOneForm_apply, lineMap_z₃_eq_z₃' (t := t) (uIcc_aux ht)]
+  · simp [Φ₄_def, scalarOneForm_apply, lineMap_z₄_eq_z₄' (t := t) (uIcc_aux ht), Φ₄']
 
 /-- If `z` lies in the upper half-plane, then so does `-1 / z` (in terms of imaginary part). -/
 public lemma neg_one_div_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (-1 / z).im := by
