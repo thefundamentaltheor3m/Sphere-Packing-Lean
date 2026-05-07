@@ -4,18 +4,7 @@ public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
-/-!
-# Generic analyticity wrapper for `∫ base(t) * exp(-π u t)`
-
-This file provides a single lemma that covers both `aAnotherIntegralC_analyticOnNhd`
-and `bAnotherIntegralC_analyticOnNhd`. Given a continuous complex-valued function `base`
-on `(0, ∞)` whose product with `exp(-π u t)` is integrable for every real `u > 0`, the
-complex-parameter integral `u ↦ ∫ t in (0,∞), base(t) * Complex.exp(-π u t)` is analytic
-on the right half-plane.
-
-## Main statement
-* `analyticOnNhd_integral_base_exp`
--/
+/-! # Generic analyticity wrapper for `u ↦ ∫ t in (0, ∞), base(t) * exp(-π u t)`. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -42,16 +31,7 @@ private lemma norm_exp_le_of_re_ge {z : ℂ} {t c : ℝ} (ht0 : 0 ≤ t) (hcz : 
       mul_le_mul_of_nonpos_left hcz (by nlinarith [Real.pi_pos, ht0] : (-π * t : ℝ) ≤ 0)
   simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr hle
 
-/--
-Generic analyticity of a parameter-dependent integral of the form
-`u ↦ ∫ t ∈ (0, ∞), base(t) * Complex.exp(-π u t)` on the right half-plane.
-
-Takes:
-* `hbase_cont`: `base` is continuous on `(0, ∞)`.
-* `hbase_int`: for every real `u > 0`, `t ↦ base(t) * Real.exp(-π u t)` is
-  integrable on `(0, ∞)`.
-
-Produces analyticity of the complex integral on the right half-plane. -/
+/-- Analyticity of `u ↦ ∫ t ∈ (0, ∞), base(t) * Complex.exp(-π u t)` on the right half-plane. -/
 public theorem analyticOnNhd_integral_base_exp
     {base : ℝ → ℂ}
     (hbase_cont : ContinuousOn base (Set.Ioi (0 : ℝ)))
@@ -67,7 +47,7 @@ public theorem analyticOnNhd_integral_base_exp
     intro u hu
     have hu0 : 0 < u.re := by simpa [rightHalfPlane] using hu
     set ε : ℝ := u.re / 2
-    have hε : 0 < ε := by dsimp [ε]; nlinarith [hu0]
+    have hε : 0 < ε := by positivity
     let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
     let F : ℂ → ℝ → ℂ := fun z t => base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))
     let F' : ℂ → ℝ → ℂ := fun z t => (-(π : ℂ) * (t : ℂ)) * F z t
