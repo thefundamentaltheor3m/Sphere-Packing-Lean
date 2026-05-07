@@ -11,10 +11,6 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 
 We bound `t ↦ ∫ ‖permI2Kernel w (x, t)‖` on `Ioc 0 1` and deduce integrability of `permI2Kernel w`
 on the product measure `volume × μIoc01`.
-
-## Main statements
-* `integrable_perm_I₂_kernel`
-
 -/
 
 namespace MagicFunction.a.Fourier
@@ -31,9 +27,7 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 section PermI12Fourier_Integrable
 
 open MeasureTheory Set Complex Real
-open SpherePacking.ForMathlib
-open SpherePacking.Contour
-open SpherePacking.Integration
+open SpherePacking.ForMathlib SpherePacking.Contour SpherePacking.Integration
 open scoped Interval
 
 lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
@@ -47,8 +41,7 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
       _ = Complex.normSq ((t : ℂ) + I) := by
         simpa using congrArg Complex.normSq (z₂line_add_one (t := t))
       _ = t ^ 2 + 1 := by simpa [mul_comm] using (Complex.normSq_add_mul_I t (1 : ℝ))
-      _ ≤ 1 + 1 := by gcongr
-      _ = (2 : ℝ) := by ring
+      _ ≤ 2 := by linarith
   have hexp (x : ℝ⁸) :
       ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₂line t : ℂ))‖ = rexp (-(Real.pi * (‖x‖ ^ 2))) := by
     set r : ℝ := ‖x‖ ^ 2
@@ -59,9 +52,8 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
       ‖permI2Kernel w (x, t)‖ =
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * (‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))) := by
     have hphase' : ‖cexp (-(2 * (↑π * ↑⟪x, w⟫) * I))‖ = (1 : ℝ) := by
-      have harg : (↑(-2 * (π * ⟪x, w⟫)) : ℂ) * I = -(2 * (↑π * ↑⟪x, w⟫) * I) := by
-        push_cast; ring
-      simpa [harg] using SpherePacking.ForMathlib.norm_phase_eq_one (w := w) (x := x)
+      simpa [show (↑(-2 * (π * ⟪x, w⟫)) : ℂ) * I = -(2 * (↑π * ↑⟪x, w⟫) * I) by push_cast; ring]
+        using SpherePacking.ForMathlib.norm_phase_eq_one (w := w) (x := x)
     calc ‖permI2Kernel w (x, t)‖
         = ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * I)‖ *
             ‖MagicFunction.a.ComplexIntegrands.Φ₁' (‖x‖ ^ 2) (z₂line t)‖ := by
@@ -78,27 +70,23 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
   have hEq :
       (∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) =
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * ‖z₂line t + 1‖ ^ 2 := by
-    simp only [funext hnorm, integral_const_mul]
-    rw [hgauss_one]; ring
+    simp only [funext hnorm, integral_const_mul]; rw [hgauss_one]; ring
   simpa [hEq, mul_comm, ← norm_pow] using
     mul_le_mul_of_nonneg_left hpow (norm_nonneg (φ₀'' (-1 / (z₂line t + 1))))
 
 lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
     Integrable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) μIoc01 := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  have hmajor : Integrable (fun _t : ℝ ↦ (2 : ℝ) * (C₀ : ℝ)) μIoc01 := by
-    simpa using MeasureTheory.integrable_const (μ := μIoc01) ((2 : ℝ) * (C₀ : ℝ))
-  have hmeas :
-      AEStronglyMeasurable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) μIoc01 := by
-    simpa using ((permI2Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
-      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))
-  refine Integrable.mono' hmajor hmeas ?_
-  have hne1 : ∀ᵐ t : ℝ ∂μIoc01, t ≠ 1 := by
-    simpa [Set.mem_singleton_iff] using
-      measure_eq_zero_iff_ae_notMem.1 (by simp [μIoc01] : μIoc01 ({(1 : ℝ)} : Set ℝ) = 0)
-  have hmem : ∀ᵐ t : ℝ ∂μIoc01, t ∈ Ioc (0 : ℝ) 1 := by
-    simpa [μIoc01] using (ae_restrict_mem measurableSet_Ioc : ∀ᵐ t ∂μIoc01, t ∈ Ioc (0 : ℝ) 1)
-  filter_upwards [hmem, hne1] with t ht htne1
+  refine Integrable.mono' (g := fun _ => (2 : ℝ) * (C₀ : ℝ))
+    (by simpa using MeasureTheory.integrable_const (μ := μIoc01) ((2 : ℝ) * (C₀ : ℝ)))
+    (by simpa using ((permI2Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
+      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))) ?_
+  filter_upwards [show ∀ᵐ t : ℝ ∂μIoc01, t ∈ Ioc (0 : ℝ) 1 by
+      simpa [μIoc01] using (ae_restrict_mem measurableSet_Ioc : ∀ᵐ t ∂μIoc01, t ∈ Ioc (0 : ℝ) 1),
+    show ∀ᵐ t : ℝ ∂μIoc01, t ≠ 1 by
+      simpa [Set.mem_singleton_iff] using
+        measure_eq_zero_iff_ae_notMem.1 (by simp [μIoc01] : μIoc01 ({(1 : ℝ)} : Set ℝ) = 0)]
+    with t ht htne1
   have ht_lt1 : t < 1 := lt_of_le_of_ne ht.2 htne1
   have him_pos : 0 < ((-1 : ℂ) / ((t : ℂ) + I)).im := by
     simpa using neg_one_div_im_pos ((t : ℂ) + I) (by simp : 0 < (((t : ℂ) + I)).im)
@@ -108,15 +96,13 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
       simpa using SpherePacking.Integration.im_neg_one_div_ofReal_add_I (t := t)
     simpa [z, UpperHalfPlane.im, him] using
       SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ⟨ht.1, ht_lt1⟩
-  have hφ₀_eq : φ₀ z = φ₀'' ((-1 : ℂ) / ((t : ℂ) + I)) := by
-    simpa [z] using (φ₀''_def (z := (-1 : ℂ) / ((t : ℂ) + I)) him_pos).symm
-  have hφ₀'' : ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖ ≤ (C₀ : ℝ) := by
-    have hexp : rexp (-2 * π * z.im) ≤ 1 :=
-      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, z.2.le])
-    calc ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖
-        = ‖φ₀ z‖ := by rw [hφ₀_eq]
+  have hφ₀'' : ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖ ≤ (C₀ : ℝ) := calc
+    ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖
+        = ‖φ₀ z‖ := by
+          simpa [z] using congrArg norm (φ₀''_def (z := (-1 : ℂ) / ((t : ℂ) + I)) him_pos)
       _ ≤ (C₀ : ℝ) * rexp (-2 * π * z.im) := hC₀ z hz_half
-      _ ≤ (C₀ : ℝ) := mul_le_of_le_one_right hC₀_pos.le hexp
+      _ ≤ (C₀ : ℝ) := mul_le_of_le_one_right hC₀_pos.le
+          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, z.2.le]))
   have hφ₀''_seg : ‖φ₀'' (-1 / (z₂line t + 1))‖ ≤ (C₀ : ℝ) := by
     rw [z₂line_add_one (t := t)]; simpa using hφ₀''
   rw [Real.norm_of_nonneg (MeasureTheory.integral_nonneg fun _ => norm_nonneg _)]
