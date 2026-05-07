@@ -231,11 +231,11 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
   -- Use E₂_eq and tsum_eq_tsum_sigma to convert n*q^n/(1-q^n) → σ₁(n)*q^n
   rw [E₂_eq z]
   congr 2
-  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ3
-  have hl := tsum_pnat_eq_tsum_succ3
-    (fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
-  have hr := tsum_pnat_eq_tsum_succ3
-    (fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
+  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ
+  have hl := tsum_pnat_eq_tsum_succ
+    (f := fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
+  have hr := tsum_pnat_eq_tsum_succ
+    (f := fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
       (1 - Complex.exp (2 * π * Complex.I * n * z)))
   rw [hl, hr]
   have ht := tsum_eq_tsum_sigma z
@@ -346,7 +346,7 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
       (Function.Periodic.qParam 1 z) ^ (m + 1) =
       ∑' n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ (n : ℕ) := by
-    rw [← tsum_pnat_eq_tsum_succ3 (fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
+    rw [← tsum_pnat_eq_tsum_succ (f := fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ n)]
   rw [hconv]
   -- Now substitute the coefficients for n ≥ 1
@@ -672,8 +672,8 @@ private lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
       cexp (2 * π * Complex.I * (n - 1) * z) =
     ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
       cexp (2 * π * Complex.I * m * z) := by
-  simpa [tsum_pnat_eq_tsum_succ3] using
-    (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+  simpa [tsum_pnat_eq_tsum_succ] using
+    (tsum_pnat_eq_tsum_succ (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
       cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
 
 /-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
