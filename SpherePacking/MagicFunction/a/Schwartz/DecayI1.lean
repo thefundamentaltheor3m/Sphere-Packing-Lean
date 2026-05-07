@@ -21,14 +21,8 @@ import SpherePacking.Integration.Measure
 /-!
 # Schwartz decay for `RealIntegrals.I₁'`
 
-This file proves the inverse-power decay estimates needed for the radial profile `RealIntegrals.I₁'`
-in the construction of the Schwartz function `a'`.
-
-The proof uses the change-of-variables representation
-`MagicFunction.a.IntegralEstimates.I₁.Complete_Change_of_Variables`.
-
-## Main statement
-* `decay'`
+Inverse-power decay estimates (`decay'`) for the radial profile `RealIntegrals.I₁'`, via the
+change-of-variables representation `IntegralEstimates.I₁.Complete_Change_of_Variables`.
 -/
 
 namespace MagicFunction.a.Schwartz.I1Decay
@@ -48,16 +42,14 @@ def coeff (s : ℝ) : ℂ := (-π : ℂ) * (I + (1 / (s : ℂ)))
 
 def gN (n : ℕ) (r s : ℝ) : ℂ := (coeff s) ^ n * g r s
 
-/-- A convenient constant controlling the bound on `‖φ₀ z‖` for `im z ≥ 1 / 2`, obtained from
-`MagicFunction.PolyFourierCoeffBound.norm_φ₀_le`. -/
+/-- Constant bounding `‖φ₀ z‖` for `im z ≥ 1 / 2`, from `PolyFourierCoeffBound.norm_φ₀_le`. -/
 public noncomputable def Cφ : ℝ :=
   (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose
 
-/-- The constant `Cφ` is positive. -/
 public lemma Cφ_pos : 0 < Cφ :=
   (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.1
 
-/-- Bound `‖φ₀'' (I * s)‖` for `s ≥ 1` using the Fourier coefficient estimate for `φ₀`. -/
+/-- Bound `‖φ₀'' (I * s)‖` for `s ≥ 1`. -/
 public lemma norm_φ₀''_le (s : ℝ) (hs : 1 ≤ s) :
     ‖φ₀'' (I * (s : ℂ))‖ ≤ Cφ * rexp (-2 * π * s) := by
   have hpos : 0 < (I * (s : ℂ)).im := by simpa using lt_of_lt_of_le (by norm_num) hs
@@ -85,9 +77,9 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
 
 lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 * π := by
   have hs1 : (1 : ℝ) ≤ s := hs
-  calc ‖coeff s‖ = ‖(-π : ℂ)‖ * ‖I + (1 / (s : ℂ))‖ := by simp [coeff]
-    _ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
-        rw [show ‖(-π : ℂ)‖ = (π : ℝ) by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
+  calc ‖coeff s‖ ≤ (π : ℝ) * (‖I‖ + ‖(1 / (s : ℂ))‖) := by
+        rw [coeff, norm_mul, show ‖(-π : ℂ)‖ = (π : ℝ) by
+          simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]]
         gcongr; exact norm_add_le _ _
     _ ≤ (π : ℝ) * (1 + 1) := by
         gcongr <;> [simp; simpa [one_div, Complex.norm_real] using inv_le_one_of_one_le₀
@@ -220,10 +212,9 @@ lemma pow_mul_exp_neg_bounded (k : ℕ) :
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
       ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := calc
-    ‖iteratedDeriv n I₁' x‖ = ‖∫ s, gN n x s ∂μ‖ := by
-      simp [iteratedDeriv_eq_integral_gN (n := n)]
-    _ ≤ ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by
-      simpa [μ, SpherePacking.Integration.μIciOne] using norm_integral_le_integral_norm (gN n x)
+    ‖iteratedDeriv n I₁' x‖ ≤ ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by
+      simpa [iteratedDeriv_eq_integral_gN (n := n), μ, SpherePacking.Integration.μIciOne] using
+        norm_integral_le_integral_norm (gN n x)
     _ ≤ _ := setIntegral_mono_on
         (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
         (by simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -278,11 +269,7 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
     mul_assoc, mul_left_comm, mul_comm] using
     setIntegral_mono_on hf_int hg_int measurableSet_Ici hmono
 
-/--
-Schwartz-style decay estimate for `RealIntegrals.I₁'`.
-
-The prime in the name indicates that this is a statement about the auxiliary integral `I₁'`.
--/
+/-- Schwartz-style decay estimate for `RealIntegrals.I₁'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ ≤ C := by
   intro k n
