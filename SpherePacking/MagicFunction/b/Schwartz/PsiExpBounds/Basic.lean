@@ -7,12 +7,7 @@ import Mathlib.Topology.Order.Compact
 /-!
 # Exponential decay of `H₂` on the positive imaginary axis
 
-This file derives an exponential bound `‖H₂(it)‖ ≤ C * exp(-π t)` for `t ≥ 1`. This is a key input
-for bounding `ψS` on the imaginary axis, and hence for the Schwartz decay of the integrals
-defining Viazovska's magic function `b`.
-
-## Main statement
-* `exists_bound_norm_H₂_resToImagAxis_exp_Ici_one`
+Derives `‖H₂(it)‖ ≤ C * exp(-π t)` for `t ≥ 1`, used to bound `ψS` on the imaginary axis.
 -/
 
 namespace MagicFunction.b.PsiBounds.PsiExpBounds
@@ -20,9 +15,7 @@ namespace MagicFunction.b.PsiBounds.PsiExpBounds
 noncomputable section
 
 open scoped Topology UpperHalfPlane
-
-open Complex Real Filter Topology UpperHalfPlane Set
-open HurwitzKernelBounds
+open Complex Real Filter Topology UpperHalfPlane Set HurwitzKernelBounds
 
 lemma norm_Θ₂_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     ‖Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩‖ =
@@ -34,9 +27,9 @@ lemma norm_Θ₂_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
   have hnorm_core :
       ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
         rexp (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2)) := by
-    have h := norm_jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)
     rw [show ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
-      rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) by simpa [hτ] using h]
+      rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) by
+        simpa [hτ] using norm_jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)]
     ring_nf
   simpa [τ] using (calc
     ‖Θ₂_term n τ‖ =
@@ -56,30 +49,29 @@ lemma norm_Θ₂_resToImagAxis_le (t : ℝ) (ht : 0 < t) :
         simpa [τ] using norm_Θ₂_term_resToImagAxis n t ht]
   have hsumm : Summable (fun n : ℤ => ‖Θ₂_term n τ‖) :=
     (summable_f_int 0 (1 / 2 : ℝ) ht).congr (fun n => by simpa using (hΘ n).symm)
-  have htri : ‖Θ₂.resToImagAxis t‖ ≤ ∑' n : ℤ, ‖Θ₂_term n τ‖ := by
-    simpa [ResToImagAxis, Θ₂, τ, ht] using (norm_tsum_le_tsum_norm hsumm)
-  have hsum : (∑' n : ℤ, ‖Θ₂_term n τ‖) = F_int 0 ((1 / 2 : ℝ) : UnitAddCircle) t := by
-    simpa [HurwitzKernelBounds.F_int] using tsum_congr fun n => by simpa using hΘ n
-  have hFint :
-      F_int 0 ((1 / 2 : ℝ) : UnitAddCircle) t = F_nat 0 (1 / 2 : ℝ) t + F_nat 0 (1 / 2 : ℝ) t := by
-    have h := F_int_eq_of_mem_Icc 0 (a := (1 / 2 : ℝ))
-      ⟨by norm_num, by norm_num⟩ ht
-    simpa [show (1 : ℝ) - (2⁻¹ : ℝ) = (2⁻¹ : ℝ) by norm_num] using h
   have hbd_nat' :
       F_nat 0 (1 / 2 : ℝ) t ≤ rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) / (1 - rexp (-π * t)) := by
-    have hnonneg' : 0 ≤ F_nat 0 (2⁻¹ : ℝ) t := by
-      simpa [F_nat] using tsum_nonneg (fun n : ℕ => by
-        simp only [HurwitzKernelBounds.f_nat, pow_zero]; positivity)
+    have hnonneg' : 0 ≤ F_nat 0 (2⁻¹ : ℝ) t :=
+      tsum_nonneg (fun n : ℕ => by simp only [HurwitzKernelBounds.f_nat, pow_zero]; positivity)
     simpa [Real.norm_eq_abs, abs_of_nonneg hnonneg'] using
       (F_nat_zero_le (a := (1 / 2 : ℝ)) (ha := by norm_num) ht)
-  grind only
+  calc ‖Θ₂.resToImagAxis t‖
+      ≤ ∑' n : ℤ, ‖Θ₂_term n τ‖ := by
+        simpa [ResToImagAxis, Θ₂, τ, ht] using (norm_tsum_le_tsum_norm hsumm)
+    _ = F_int 0 ((1 / 2 : ℝ) : UnitAddCircle) t := by
+        simpa [HurwitzKernelBounds.F_int] using tsum_congr fun n => by simpa using hΘ n
+    _ = F_nat 0 (1 / 2 : ℝ) t + F_nat 0 (1 / 2 : ℝ) t := by
+        simpa [show (1 : ℝ) - (2⁻¹ : ℝ) = (2⁻¹ : ℝ) by norm_num] using
+          F_int_eq_of_mem_Icc 0 (a := (1 / 2 : ℝ)) ⟨by norm_num, by norm_num⟩ ht
+    _ ≤ _ := by rw [show (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) =
+                    rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) / (1 - rexp (-π * t)) +
+                    rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) / (1 - rexp (-π * t)) from by ring]; gcongr
 
 /-- Exponential decay bound for `H₂` on the positive imaginary axis. -/
 public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖H₂.resToImagAxis t‖ ≤ C * rexp (-π * t) := by
   let Cθ : ℝ := (2 : ℝ) / (1 - rexp (-π))
-  refine ⟨Cθ ^ 4, ?_⟩
-  intro t ht
+  refine ⟨Cθ ^ 4, fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hΘ2 : ‖Θ₂.resToImagAxis t‖ ≤ Cθ * rexp (-π * (t / 4)) := by
     have hden_pos : 0 < (1 - rexp (-π : ℝ)) :=
