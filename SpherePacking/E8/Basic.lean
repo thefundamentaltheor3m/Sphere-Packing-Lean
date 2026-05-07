@@ -13,34 +13,8 @@ public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 /-!
 # Basic properties of the E₈ lattice
 
-We define the E₈ lattice in two ways, as the ℤ-span of a chosen basis (`E8Matrix`), and as the set
-of vectors in ℝ^8 with sum of coordinates an even integer and coordinates either all integers or
-half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
-properties about the E₈ lattice.
-
-See also earlier work which inspired this one, by Gareth Ma: https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean/blob/42c839d1002f5bcc1f8d2eb73190d97cd9c52852/SpherePacking/Basic/E8.lean
-
-## Main declarations
-
-* `Submodule.E8`: The E₈ lattice as a submodule of `Fin 8 → R` for a field `R` in which `2` is
-  nonzero. We define it to be the set of vectors in `Fin 8 → R` such that the sum of coordinates is
-  even, and either all coordinates are integers, or all coordinates are half of an odd integer.
-* `Submodule.E8_eq_sup`: The E₈ lattice can be seen as the smallest submodule containing both:
-  the even lattice (the lattice of all integer points whose sum of coordinates is even); and the
-  submodule spanned by the vector which is 2⁻¹ in each coordinate.
-* `E8Matrix`: An explicit matrix whose rows form a basis for the E₈ lattice over ℤ.
-* `E8Matrix_unimodular`: A proof that `E8Matrix` has determinant 1.
-* `span_E8Matrix_eq_top`: The `ℝ`-span of `E8Matrix` is the whole of `ℝ⁸`.
-* `span_E8Matrix`: The `ℤ`-span of `E8Matrix` is the E₈ lattice. This is the third characterisation
-  of the E₈ lattice given in this file.
-* `E8_integral`: The E₈ lattice is integral, i.e., the dot product of any two vectors in E₈ is an
-  integer.
-* `E8_integral_self`: The E₈ lattice is even, i.e., the norm-squared of any vector in E₈ is an even
-  integer.
-* `E8Lattice`: The E₈ lattice as a submodule of eight-dimensional Euclidean space. This additional
-  definition is valuable, since it now puts the correct metric space structure on the lattice.
-* `E8Packing`: The E₈ packing as a periodic sphere packing.
-* `E8Packing_density`: The density of the E₈ packing is `π ^ 4 / 384`.
+We define the E₈ lattice as a submodule of `Fin 8 → R` (parity conditions) and as the ℤ-span of an
+explicit basis matrix (`E8Matrix`), prove the two are equivalent, and derive integrality facts.
 -/
 
 variable {R : Type*}
@@ -198,7 +172,7 @@ public theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] :
     Fin.forall_fin_succ] : (E8Matrix R).BlockTriangular OrderDual.toDual)]
   simp [E8Matrix, Fin.prod_univ_eight, NeZero.ne (2 : R)]
 
-lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
+private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
   rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
@@ -219,7 +193,7 @@ public lemma span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
 
 /-- Unfolding lemma for `E8Basis`. -/
 public lemma E8Basis_apply [Field R] [NeZero (2 : R)] (i : Fin 8) :
-    E8Basis R i = (E8Matrix R).row i := by rw [E8Basis, Basis.coe_mk, Matrix.row]
+    E8Basis R i = (E8Matrix R).row i := by simp [E8Basis, Matrix.row]
 
 /-- The matrix of `E8Basis` is `E8Matrix`. -/
 public lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
@@ -301,11 +275,11 @@ def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
 
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by
-  have : E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
-    rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
-      show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
-      Matrix.map_map]; ext; simp
-  simpa [Matrix.mul_apply', Matrix.col_transpose] using congrArg (· i j) this
+  simpa [Matrix.mul_apply', Matrix.col_transpose] using congrArg (· i j)
+    (show E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) by
+      rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
+        show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
+        Matrix.map_map]; ext; simp)
 
 /-- The squared norm of a vector in `E8` is an even integer. -/
 public theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
