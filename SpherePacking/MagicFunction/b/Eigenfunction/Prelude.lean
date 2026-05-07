@@ -36,32 +36,22 @@ open scoped Real
 
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 
-/-- Unfold `J₁` as the primed radial profile `J₁'` evaluated at `‖x‖^2`. -/
+/-- Unfold `Jⱼ` as the primed radial profile `Jⱼ'` evaluated at `‖x‖^2`. -/
 public lemma J₁_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₁ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₁' (‖x‖ ^ 2) := by
   simp [J₁]
-
-/-- Unfold `J₂` as the primed radial profile `J₂'` evaluated at `‖x‖^2`. -/
 public lemma J₂_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₂ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ 2) := by
   simp [J₂]
-
-/-- Unfold `J₃` as the primed radial profile `J₃'` evaluated at `‖x‖^2`. -/
 public lemma J₃_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₃ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₃' (‖x‖ ^ 2) := by
   simp [J₃]
-
-/-- Unfold `J₄` as the primed radial profile `J₄'` evaluated at `‖x‖^2`. -/
 public lemma J₄_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₄ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₄' (‖x‖ ^ 2) := by
   simp [J₄]
-
-/-- Unfold `J₅` as the primed radial profile `J₅'` evaluated at `‖x‖^2`. -/
 public lemma J₅_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₅ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₅' (‖x‖ ^ 2) := by
   simp [J₅]
-
-/-- Unfold `J₆` as the primed radial profile `J₆'` evaluated at `‖x‖^2`. -/
 public lemma J₆_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₆ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₆' (‖x‖ ^ 2) := by
   simp [J₆]
