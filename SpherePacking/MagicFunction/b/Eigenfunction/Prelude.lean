@@ -36,16 +36,6 @@ open scoped Real
 
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 
-/-- Unfold `J₅` as the primed radial profile `J₅'` evaluated at `‖x‖^2`. -/
-public lemma J₅_apply (x : EuclideanSpace ℝ (Fin 8)) :
-    (J₅ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₅' (‖x‖ ^ 2) := by
-  simp [J₅]
-
-/-- Unfold `J₆` as the primed radial profile `J₆'` evaluated at `‖x‖^2`. -/
-public lemma J₆_apply (x : EuclideanSpace ℝ (Fin 8)) :
-    (J₆ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₆' (‖x‖ ^ 2) := by
-  simp [J₆]
-
 /-- Unfold `J₁` as the primed radial profile `J₁'` evaluated at `‖x‖^2`. -/
 public lemma J₁_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₁ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₁' (‖x‖ ^ 2) := by
@@ -65,6 +55,16 @@ public lemma J₃_apply (x : EuclideanSpace ℝ (Fin 8)) :
 public lemma J₄_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₄ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₄' (‖x‖ ^ 2) := by
   simp [J₄]
+
+/-- Unfold `J₅` as the primed radial profile `J₅'` evaluated at `‖x‖^2`. -/
+public lemma J₅_apply (x : EuclideanSpace ℝ (Fin 8)) :
+    (J₅ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₅' (‖x‖ ^ 2) := by
+  simp [J₅]
+
+/-- Unfold `J₆` as the primed radial profile `J₆'` evaluated at `‖x‖^2`. -/
+public lemma J₆_apply (x : EuclideanSpace ℝ (Fin 8)) :
+    (J₆ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₆' (‖x‖ ^ 2) := by
+  simp [J₆]
 
 namespace J5Change
 
@@ -93,8 +93,6 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   congr 1
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t ht => ?_
-  have ht0 : 0 < t := ht.1
-  have ht_ne0 : t ≠ 0 := ne_of_gt ht0
   have hz5 : z₅' t = (Complex.I : ℂ) * (t : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)
   have hψS_inv : ψS' ((Complex.I : ℂ) * (t : ℂ)⁻¹) = ψS.resToImagAxis (t⁻¹) := by
@@ -104,30 +102,27 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   have hscalC : (1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ) = (t : ℂ) ^ (2 : ℕ) := by
     have : ((1 / t ^ 2) * ((1 / t : ℝ) ^ (-4 : ℤ)) : ℂ) = (t ^ 2 : ℂ) := by
       exact_mod_cast one_div_pow_two_mul_one_div_zpow
-        (k := 4) (t := t) (hk := by decide) (ht := ht_ne0)
+        (k := 4) (t := t) (hk := by decide) (ht := ne_of_gt ht.1)
     simpa [Complex.ofReal_mul] using this
   have hexp : cexp (π * (Complex.I : ℂ) * r * (z₅' t)) = cexp (-π * r * t) := by
     simpa [mul_assoc] using congrArg cexp
       (show (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * (z₅' t) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
         rw [hz5]; ring_nf; rw [Complex.I_sq]; ring)
-  have hLHS :
-      (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) =
-        (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-    rw [MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht, hexp,
-      show ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) by
-        rw [mul_pow]; simp [Complex.I_sq]]
-    ring
-  have hRHS :
-      |f' t| • g r (f t) =
-        (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-    rw [show |f' t| = 1 / t ^ 2 by simp [f', neg_div, abs_neg]]
-    calc (1 / t ^ 2) • g r (f t) = (1 / t ^ 2 : ℂ) * g r (f t) := by simp [real_smul]
-      _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) *
-            ((1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ)) * cexp (-π * r * t) := by
-          simp [g, f, hψS_inv, mul_assoc, mul_left_comm, mul_comm]
-      _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-          rw [hscalC]
-  rw [hLHS, hRHS]
+  rw [show (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) =
+        (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) by
+      rw [MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht, hexp,
+        show ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) by
+          rw [mul_pow]; simp [Complex.I_sq]]
+      ring,
+    show |f' t| • g r (f t) =
+        (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) by
+      rw [show |f' t| = 1 / t ^ 2 by simp [f', neg_div, abs_neg]]
+      calc (1 / t ^ 2) • g r (f t) = (1 / t ^ 2 : ℂ) * g r (f t) := by simp [real_smul]
+        _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) *
+              ((1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ)) * cexp (-π * r * t) := by
+            simp [g, f, hψS_inv, mul_assoc, mul_left_comm, mul_comm]
+        _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
+            rw [hscalC]]
 
 /-- Change-of-variables formula expressing `J₅'` as an integral over `Ici (1 : ℝ)`. -/
 public theorem Complete_Change_of_Variables (r : ℝ) :
