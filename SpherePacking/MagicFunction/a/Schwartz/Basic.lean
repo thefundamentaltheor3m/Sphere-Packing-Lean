@@ -220,10 +220,8 @@ public theorem a_eq_sum_integrals_RadialFunctions :
       + MagicFunction.a.RadialFunctions.I₃ + MagicFunction.a.RadialFunctions.I₄
       + MagicFunction.a.RadialFunctions.I₅ + MagicFunction.a.RadialFunctions.I₆ := by
   ext x
-  simp [a, a', MagicFunction.a.RadialFunctions.I₁, MagicFunction.a.RadialFunctions.I₂,
-    MagicFunction.a.RadialFunctions.I₃, MagicFunction.a.RadialFunctions.I₄,
-    MagicFunction.a.RadialFunctions.I₅, MagicFunction.a.RadialFunctions.I₆,
-    sq_nonneg ‖x‖, add_assoc]
+  open MagicFunction.a.RadialFunctions in
+  simp [a, a', I₁, I₂, I₃, I₄, I₅, I₆, sq_nonneg ‖x‖, add_assoc]
 
 /-- Expand `a` as the sum of the six Schwartz integrals. -/
 public theorem a_eq_sum_integrals_SchwartzIntegrals :
