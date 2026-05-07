@@ -101,12 +101,6 @@ private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuou
       abs_of_pos (by linarith : (0:ℝ) < ε / 2)]; linarith
   · exact h hu hu2
 
-lemma a'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (a' u).re = 0 :=
-  re_eq_zero_of_pos_from_ne_two a' (SchwartzMap.continuous a') a'_re_eq_zero_of_pos_ne_two hu
-
-lemma b'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (b' u).re = 0 :=
-  re_eq_zero_of_pos_from_ne_two b' (SchwartzMap.continuous b') b'_re_eq_zero_of_pos_ne_two hu
-
 end PureImaginary
 
 /-- The eigenfunction `a` is purely imaginary-valued (its real part vanishes). -/
@@ -114,15 +108,17 @@ public theorem a_pureImag (x : ℝ⁸) : (a x).re = 0 := by
   by_cases hx : x = 0
   · subst hx; simp [MagicFunction.a.SpecialValues.a_zero]
   · simpa [MagicFunction.FourierEigenfunctions.a, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using PureImaginary.a'_re_eq_zero_of_pos (u := ‖x‖ ^ 2)
-        (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
+      SchwartzMap.compCLM_apply] using PureImaginary.re_eq_zero_of_pos_from_ne_two a'
+        (SchwartzMap.continuous a') PureImaginary.a'_re_eq_zero_of_pos_ne_two
+        (u := ‖x‖ ^ 2) (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
 
 /-- The eigenfunction `b` is purely imaginary-valued (its real part vanishes). -/
 public theorem b_pureImag (x : ℝ⁸) : (b x).re = 0 := by
   by_cases hx : x = 0
   · subst hx; simp [MagicFunction.b.SpecialValues.b_zero]
   · simpa [MagicFunction.FourierEigenfunctions.b, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using PureImaginary.b'_re_eq_zero_of_pos (u := ‖x‖ ^ 2)
-        (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
+      SchwartzMap.compCLM_apply] using PureImaginary.re_eq_zero_of_pos_from_ne_two b'
+        (SchwartzMap.continuous b') PureImaginary.b'_re_eq_zero_of_pos_ne_two
+        (u := ‖x‖ ^ 2) (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
 
 end MagicFunction.g.CohnElkies
