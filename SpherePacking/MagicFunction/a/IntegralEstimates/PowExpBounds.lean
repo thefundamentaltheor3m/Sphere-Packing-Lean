@@ -5,18 +5,7 @@ public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 public import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 
-/-!
-# Elementary exponential bounds
-
-This file collects elementary estimates of the form `x ^ k * exp (-π * x) ≤ C` on `ℝ≥0`, and
-packages them into convenient decay lemmas used when proving that a function (or its derivatives)
-is Schwartz.
-
-## Main statements
-* `pow_mul_exp_neg_pi_bounded`
-* `decay_of_bounding_uniform_norm`
-* `decay_of_bounding_uniform_norm_iteratedDeriv`
--/
+/-! # Elementary exponential bounds, packaged as Schwartz decay lemmas. -/
 
 namespace MagicFunction.a.IntegralEstimates
 
@@ -45,15 +34,11 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
   · exact (hxmax ⟨hx, hxN⟩).trans (le_max_right _ _)
   · exact (hN x ((le_max_left N 0).trans (le_of_not_ge hxN))).trans (le_max_left _ _)
 
-/--
-Turn a uniform exponential bound `‖I x‖ ≤ C₁ * exp (-π * x)` into the inverse-power decay
-statement required by `SchwartzMap`.
--/
+/-- Turn a uniform exponential bound on `‖I x‖` into Schwartz inverse-power decay. -/
 public lemma decay_of_bounding_uniform_norm {E : Type*} [SeminormedAddCommGroup E] {I : ℝ → E}
-    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖I x‖ ≤ C₁ * rexp (-π * x)) :
-    ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖I x‖ ≤ C := by
-  intro k
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := hI
+    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
+    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖I x‖ ≤ C := by
+  obtain ⟨C₁, _, hC₁⟩ := hI
   obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_pi_bounded (k := k)
   refine ⟨C₁ * Cpow, fun x hx => ?_⟩
   calc
@@ -63,23 +48,17 @@ public lemma decay_of_bounding_uniform_norm {E : Type*} [SeminormedAddCommGroup 
       simp [Real.norm_of_nonneg hx, mul_left_comm, mul_comm]
     _ ≤ C₁ * Cpow := by gcongr; exact hCpow x hx
 
-/--
-Variant of `decay_of_bounding_uniform_norm` for iterated derivatives.  The input bound is stated
-using `iteratedDeriv`, and is transferred to `iteratedFDeriv`.
--/
+/-- Variant of `decay_of_bounding_uniform_norm` for iterated derivatives. -/
 public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n : ℕ)
-    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) :
-    ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C :=
+    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
+    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C :=
   let ⟨C₁, hC₁_pos, hC₁⟩ := hI
   decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
     ⟨C₁, hC₁_pos, fun x hx => by
       simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)]
-        using hC₁ x hx⟩
+        using hC₁ x hx⟩ k
 
-/--
-Combined Schwartz decay from a representation of `iteratedDeriv n I` as an integral over
-`Ioo (0, 1)` of `(coeff t) ^ n * g r t`, with uniform bounds on `coeff` and `g`.
--/
+/-- Schwartz decay from `iteratedDeriv n I = ∫ t ∈ (0,1), coeff t ^ n * g r t`. -/
 public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
     {I : ℝ → ℂ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
     (hg_bound :
@@ -88,8 +67,8 @@ public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
     (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
     (hrepr :
       ∀ n : ℕ,
-        iteratedDeriv n I = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := fun k n =>
+        iteratedDeriv n I = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) (k n : ℕ) :
+    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C :=
   let ⟨C₁, hC₁_pos, hC₁⟩ :=
     iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) hg_bound hcoeff (hrepr n)
   decay_of_bounding_uniform_norm_iteratedDeriv (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k
