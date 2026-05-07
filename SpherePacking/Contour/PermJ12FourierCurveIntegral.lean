@@ -12,17 +12,9 @@ public import SpherePacking.Integration.Measure
 /-!
 # Fourier transform as a curve integral (template lemmas)
 
-These lemmas implement the common Fubini argument used in the `perm_J1/J2` developments:
-1. rewrite `𝓕 Jⱼ` using `fourier_eq'`;
-2. express the radial profile as a `t`-integral of a kernel;
-3. swap the order of integration via `MeasureTheory.integral_integral_swap`;
-4. evaluate the inner `x`-integral to obtain a function of the segment parameter `t`;
-5. identify the resulting `t`-integral with a curve integral on a segment.
-
-The dimension-specific files only need to provide:
-- the "phase * radial profile = t-integral of the kernel" bridge lemma;
-- an `Integrable` hypothesis for Fubini; and
-- a lemma identifying the `t`-integral with the desired curve integral.
+Common Fubini argument used in the `perm_J1/J2` developments: rewrite `𝓕 Jⱼ` via `fourier_eq'`,
+express the radial profile as a `t`-integral of a kernel, swap the order of integration, evaluate
+the inner `x`-integral, identify the result with a segment curve integral.
 -/
 
 open scoped FourierTransform RealInnerProductSpace Complex
@@ -32,13 +24,6 @@ open MagicFunction
 namespace SpherePacking.Contour
 
 noncomputable section
-
-private lemma cexp_neg_two_pi_inner_mul_I
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    (x w : V) :
-    cexp (-(2 * (↑Real.pi : ℂ) * (↑⟪x, w⟫ : ℂ) * Complex.I)) =
-      cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) := by
-  simp [mul_assoc]
 
 /-- Fubini-based curve-integral formula for the Fourier transform of a radial Schwartz map. -/
 public theorem fourier_J_eq_curveIntegral_of
@@ -56,9 +41,7 @@ public theorem fourier_J_eq_curveIntegral_of
         cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) * J' (‖x‖ ^ (2 : ℕ)) =
           ∫ t : ℝ, permJKernel w (x, t) ∂μ)
     (integrable_permJKernel :
-      ∀ w : V,
-        Integrable (permJKernel w)
-          ((volume : Measure V).prod μ))
+      ∀ w : V, Integrable (permJKernel w) ((volume : Measure V).prod μ))
     (integral_permJKernel_x_ae :
       ∀ w : V,
         (fun t : ℝ => (∫ x : V, permJKernel w (x, t) ∂(volume : Measure V))) =ᵐ[μ] fun t =>
@@ -66,12 +49,10 @@ public theorem fourier_J_eq_curveIntegral_of
     (integral_g_eq_curveIntegral :
       ∀ w : V,
         (∫ t : ℝ, g w t ∂μ) =
-          (∫ᶜ z in Path.segment a b,
-            scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z))
+          (∫ᶜ z in Path.segment a b, scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z))
   (w : V) :
     (𝓕 (J : V → ℂ)) w =
-      (∫ᶜ z in Path.segment a b,
-        scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z) := by
+      (∫ᶜ z in Path.segment a b, scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z) := by
   rw [Real.fourier_eq' (J : V → ℂ) w]
   simp only [neg_mul, Complex.ofReal_neg, Complex.ofReal_mul, Complex.ofReal_ofNat, smul_eq_mul]
   have htoIter :
@@ -79,7 +60,7 @@ public theorem fourier_J_eq_curveIntegral_of
           cexp (-(2 * (↑Real.pi : ℂ) * (↑⟪x, w⟫ : ℂ) * Complex.I)) * (J : V → ℂ) x) =
         fun x : V => ∫ t : ℝ, permJKernel w (x, t) ∂μ := by
     funext x
-    simpa [J_apply (x := x), cexp_neg_two_pi_inner_mul_I (x := x) (w := w)] using
+    simpa [J_apply (x := x), mul_assoc] using
       phase_mul_J'_eq_integral_permJKernel (w := w) (x := x)
   rw [htoIter, MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ)
     (f := fun x t => permJKernel w (x, t))
