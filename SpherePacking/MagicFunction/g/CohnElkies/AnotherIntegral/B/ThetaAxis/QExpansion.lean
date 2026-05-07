@@ -17,8 +17,7 @@ namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
 open scoped BigOperators UpperHalfPlane
 
-open Real Complex Filter Topology
-open Set
+open Real Complex Filter Topology Set
 
 noncomputable section
 
