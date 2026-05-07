@@ -73,16 +73,14 @@ lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
     (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ1Kernel w (x, t)‖) =
       ‖ψT' (z₁line t)‖ * (1 / t) ^ (4 : ℕ) := by
-  have hgauss :
-      (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (integral_rexp_neg_pi_mul_sq_norm (t := t) ht.1)
   rw [show (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ1Kernel w (x, t)‖) =
         ∫ x : EuclideanSpace ℝ (Fin 8), ‖ψT' (z₁line t)‖ * rexp (-(π * (t * (‖x‖ ^ 2)))) from
       MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun x => by
         simpa [mul_assoc] using (norm_permJ1Kernel (w := w) (x := x) (t := t)),
     MeasureTheory.integral_const_mul ‖ψT' (z₁line t)‖ fun a ↦ rexp (-(π * (t * ‖a‖ ^ 2)))]
-  simp [hgauss]
+  simp [show (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ)
+    from by simpa [mul_assoc, mul_left_comm, mul_comm] using
+      (integral_rexp_neg_pi_mul_sq_norm (t := t) ht.1)]
 
 lemma integrable_permJ1Kernel_slice (w : EuclideanSpace ℝ (Fin 8))
     (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
