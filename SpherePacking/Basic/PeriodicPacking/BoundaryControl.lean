@@ -92,11 +92,10 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
     (abs_coord_le_norm y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
   refine ⟨Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => ?_, fun hz_inner => ?_⟩
   · simp only [coordCubeInner, coordCube, constVec, vadd_eq_add] at hx ⊢
-    have := abs_lt.mp (hyi i)
     refine ⟨by simpa [add_assoc, add_left_comm, add_comm] using
-      (by linarith [(hx.1 i).1] : (0:ℝ) ≤ x i + y i + (1/2:ℝ)),
+      (by linarith [(hx.1 i).1, abs_lt.mp (hyi i)] : (0:ℝ) ≤ x i + y i + (1/2:ℝ)),
       by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (by linarith [(hx.1 i).2.le] : x i + y i + (1/2:ℝ) ≤ L + 1)⟩
+        (by linarith [(hx.1 i).2.le, abs_lt.mp (hyi i)] : x i + y i + (1/2:ℝ) ≤ L + 1)⟩
   · obtain ⟨i, hi⟩ : ∃ i : Fin d, ¬ x i ∈ Set.Icc (1 / 2 : ℝ) (L - 1 / 2) := by
       simpa [coordCubeInner, Set.mem_setOf_eq] using not_forall.mp hx.2
     rw [Set.mem_Icc, not_and_or] at hi
