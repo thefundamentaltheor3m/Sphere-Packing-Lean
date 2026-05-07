@@ -45,20 +45,6 @@ open MeasureTheory Set Complex Real
 open Filter
 open scoped Interval
 
-lemma J₃'_eq_curveIntegral_segment (r : ℝ) :
-    MagicFunction.b.RealIntegrals.J₃' r =
-      (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
-        scalarOneForm (Ψ₁' r) z) := by
-  simpa [MagicFunction.b.RealIntegrals.J₃', Ψ₁', mul_assoc, mul_left_comm, mul_comm] using
-    (SpherePacking.Contour.curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
-
-lemma J₄'_eq_curveIntegral_segment (r : ℝ) :
-    MagicFunction.b.RealIntegrals.J₄' r =
-      (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
-        scalarOneForm (Ψ₁' r) z) := by
-  simpa [MagicFunction.b.RealIntegrals.J₄', Ψ₁', mul_assoc, mul_left_comm, mul_comm] using
-    (SpherePacking.Contour.curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
-
 /-- Combine the segment formulas for `J₃'` and `J₄'` into a single identity. -/
 public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
     MagicFunction.b.RealIntegrals.J₃' r + MagicFunction.b.RealIntegrals.J₄' r =
@@ -66,7 +52,10 @@ public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
           scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
           scalarOneForm (Ψ₁' r) z := by
-  simp [J₃'_eq_curveIntegral_segment (r := r), J₄'_eq_curveIntegral_segment (r := r)]
+  simpa [MagicFunction.b.RealIntegrals.J₃', MagicFunction.b.RealIntegrals.J₄', Ψ₁',
+    mul_assoc, mul_left_comm, mul_comm] using congrArg₂ (· + ·)
+      (SpherePacking.Contour.curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
+      (SpherePacking.Contour.curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
 
 /-! #### Fourier transform of the `J₁,J₂` kernels -/
 
@@ -90,8 +79,8 @@ open scoped ModularForm
 /-- Modular rewrite for `ψT'` on the line `z₁line`, in terms of `ψS` on the imaginary axis. -/
 public lemma ψT'_z₁line_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     ψT' (z₁line t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  have hz := SpherePacking.Contour.z₁'_eq_z₁line (t := t) (mem_Icc_of_Ioc ht)
-  simpa [hz] using MagicFunction.b.Schwartz.J1Smooth.ψT'_z₁'_eq (t := t) ht
+  simpa [SpherePacking.Contour.z₁'_eq_z₁line (t := t) (mem_Icc_of_Ioc ht)] using
+    MagicFunction.b.Schwartz.J1Smooth.ψT'_z₁'_eq (t := t) ht
 
 /-- Continuity of `t ↦ ψT' (z₁line t)` on `Ioc (0, 1)`. -/
 public lemma continuousOn_ψT'_z₁line :
@@ -123,8 +112,8 @@ public lemma exists_bound_norm_ψT'_z₂' :
   obtain ⟨M, hM⟩ := SpherePacking.Integration.exists_bound_norm_uIoc_zero_one_of_continuous
       (f := fun t : ℝ => ψT' (z₂line t)) continuous_ψT'_z₂line
   refine ⟨M, fun t ht => ?_⟩
-  have hz := SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)
-  simpa [hz] using hM t (by simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)
+  simpa [SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)] using
+    hM t (by simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)
 
 
 end Integral_Permutations.PermJ12
