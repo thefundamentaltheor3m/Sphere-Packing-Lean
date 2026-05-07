@@ -7,16 +7,7 @@ import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.SpecialValues
 
 
-/-!
-# Purely imaginary values of `a` and `b`
-
-This file shows that Viazovska's eigenfunctions `a` and `b` are purely imaginary-valued.
-These lemmas are used to deduce that the specific linear combination defining `g` is real-valued.
-
-## Main statements
-* `MagicFunction.g.CohnElkies.a_pureImag`
-* `MagicFunction.g.CohnElkies.b_pureImag`
--/
+/-! # Viazovska's eigenfunctions `a` and `b` are purely imaginary-valued. -/
 
 namespace MagicFunction.g.CohnElkies
 
@@ -66,22 +57,16 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
             ((φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re : ℂ) := by
         apply Complex.ext <;> simp [φ₀''_imag_axis_div_im t ht]
       simp only []; rw [hφ]; push_cast [innerR]; ring
-    have hReal :
-        (∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ)).im = 0 := by
-      simpa using
-        (setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t)))
-    simpa [hcongr] using hReal
-  have hpi3Im : ((π : ℂ) ^ (3 : ℕ)).im = 0 :=
-    Complex.im_pow_eq_zero_of_im_eq_zero (by simp) 3
-  have hu2Im : ((u : ℂ) ^ (2 : ℕ)).im = 0 :=
-    Complex.im_pow_eq_zero_of_im_eq_zero (by simp) 2
+    simpa [hcongr] using
+      setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
   have hEim : E.im = 0 := by
-    simp [E, Complex.add_im, Complex.sub_im, hIterm,
-      Complex.div_im, Complex.mul_im, hpi3Im, hu2Im]
+    simp [E, Complex.add_im, Complex.sub_im, hIterm, Complex.div_im, Complex.mul_im,
+      Complex.im_pow_eq_zero_of_im_eq_zero (show ((π : ℂ)).im = 0 by simp) 3,
+      Complex.im_pow_eq_zero_of_im_eq_zero (show ((u : ℂ)).im = 0 by simp) 2]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
       (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
   have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
-    Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
+    Complex.ofReal_im _
   simp_all
 
 lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u).re = 0 := by
@@ -107,11 +92,8 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
             ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) := by
         apply Complex.ext <;> simp [ψI'_imag_axis_im t ht]
       simp only []; rw [hψ]; push_cast [innerR]; ring
-    have hReal :
-        (∫ t in Set.Ioi (0 : ℝ), ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ)).im = 0 := by
-      simpa using
-        (setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t)))
-    simpa [hcongr] using hReal
+    simpa [hcongr] using
+      setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t))
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, Complex.div_im, Complex.mul_im]
   rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
@@ -119,8 +101,8 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
   have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
     rw [Complex.mul_im, hEim, Complex.ofReal_im]; simp
   rw [show (-4 * (Complex.I : ℂ)) * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E =
-    (-4 * (Complex.I : ℂ)) * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E) by ring,
-    Complex.mul_re, hprodIm]; simp
+    -4 * I * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E) by ring, Complex.mul_re, hprodIm]
+  simp
 
 /-- Extend `re = 0` from `(0,∞) \ {2}` to all of `(0,∞)` using continuity. -/
 private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuous f)
