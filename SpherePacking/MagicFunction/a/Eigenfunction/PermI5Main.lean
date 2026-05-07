@@ -10,16 +10,7 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Integrability
 
-/-!
-# Fourier permutation for `I₅` and `I₆`
-
-We compute the Fourier transform of `I₅` by rewriting it as an iterated integral with
-`permI5Kernel` and evaluating the inner Gaussian integral. The result is the identity
-`𝓕 I₅ = I₆` at the level of Schwartz maps.
-
-## Main statements
-* `perm_I₅`
--/
+/-! # Fourier permutation for `I₅` and `I₆`: the identity `𝓕 I₅ = I₆`. -/
 
 namespace MagicFunction.a.Fourier
 
@@ -44,23 +35,19 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   change 𝓕 (I₅ : ℝ⁸ → ℂ) w = _
   rw [fourier_eq' (I₅ : ℝ⁸ → ℂ) w]
   simp only [smul_eq_mul, I₅_apply]
-  have hI5' (x : ℝ⁸) :
-      MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
-        -2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-    simpa only [neg_mul] using
-      MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2)
-  simp only [hI5', mul_assoc]
+  simp only [show ∀ x : ℝ⁸, MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
+        -2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s from
+      fun x ↦ by simpa only [neg_mul] using
+        MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2),
+    mul_assoc]
   let μs : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
   let f : ℝ⁸ → ℝ → ℂ := fun x s => permI5Kernel w (x, s)
   have hint : Integrable (Function.uncurry f) ((volume : Measure ℝ⁸).prod μs) := by
     simpa only [μIciOne] using integrable_perm_I₅_kernel (w := w)
-  -- Compute the inner integral using the Gaussian Fourier transform.
   have hinner (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
       (∫ x : ℝ⁸, f x s) =
       (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
     have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-    have hcancel : ((s : ℂ) ^ (-4 : ℤ)) * (s ^ 4 : ℂ) = 1 :=
-      zpow_neg_four_mul_pow_four (s := s) hs0.ne'
     have hfactor :
         (fun x : ℝ⁸ ↦ f x s) =
           fun x : ℝ⁸ ↦
@@ -71,10 +58,8 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       ac_rfl
     rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor, integral_const_mul,
       integral_phase_gaussian (w := w) (s := s) hs0,
-      ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _, hcancel, mul_one]
-  -- Pull the outer `-2` out and switch order via Fubini, then apply `hinner`.
-  have hswap :=
-    MeasureTheory.integral_integral_swap (μ := (volume : Measure ℝ⁸)) (ν := μs) (f := f) hint
+      ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _,
+      zpow_neg_four_mul_pow_four (s := s) hs0.ne', mul_one]
   have hmain :
       (∫ x : ℝ⁸,
           cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -92,14 +77,12 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
           from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase],
         MeasureTheory.integral_const_mul (μ := μs)]
       ring
-    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew,
-      MeasureTheory.integral_const_mul, hswap]
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew, MeasureTheory.integral_const_mul,
+      MeasureTheory.integral_integral_swap (μ := (volume : Measure ℝ⁸)) (ν := μs) (f := f) hint]
     congr 1
     refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
     simpa [f] using hinner s hs
-  rw [hmain]
-  -- Transform `(-2) * ∫ (-I) * … = 2 * ∫ I * …` and match `I₆'`.
-  rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
+  rw [hmain, show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
             (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
           2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) by
     rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
@@ -107,8 +90,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
         (-2 : ℂ) * -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) by
       congr 1
       rw [← MeasureTheory.integral_neg]
-      refine integral_congr_ae <| .of_forall fun _ ↦ ?_
-      ring]
+      exact integral_congr_ae <| .of_forall fun _ ↦ by ring]
     ring]
   simp only [neg_mul, mul_comm, mul_neg, mul_assoc,
     MagicFunction.a.RadialFunctions.I₆'_eq, ofReal_pow]
