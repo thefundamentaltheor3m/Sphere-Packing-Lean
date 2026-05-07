@@ -265,8 +265,7 @@ lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
 
 /-- The squared norm of a vector in `E8` is an even integer. -/
 public theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
-    (hv : v ∈ Submodule.E8 R) :
-    ∃ z : ℤ, Even z ∧ z = v ⬝ᵥ v := by
+    (hv : v ∈ Submodule.E8 R) : ∃ z : ℤ, Even z ∧ z = v ⬝ᵥ v := by
   rw [← span_E8Matrix, Submodule.mem_span_range_iff_exists_fun] at hv
   obtain ⟨c, rfl⟩ := hv
   simp_rw [sum_dotProduct, dotProduct_sum, dotProduct_smul, smul_dotProduct, dotProduct_eq_inn,
