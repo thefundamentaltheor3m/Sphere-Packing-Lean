@@ -1,16 +1,7 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
 
-/-!
-# Asymptotic bounds for `φ₂'` and `φ₄'` (AnotherIntegral.A)
-
-Along the imaginary axis `z = it`, the modular forms `φ₂'` and `φ₄'` admit simple leading terms.
-This file proves uniform bounds for the corresponding error terms once `t` is large enough.
-
-## Main statements
-* `exists_phi2'_sub_720_bound_ge`
-* `exists_phi4'_sub_exp_sub_504_bound_ge`
--/
+/-! Uniform asymptotic error bounds for `φ₂'` and `φ₄'` along the imaginary axis. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
