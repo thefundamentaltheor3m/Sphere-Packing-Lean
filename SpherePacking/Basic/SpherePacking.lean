@@ -9,9 +9,7 @@ public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
-/-!
-# Density of Sphere Packings: definitions and basic notions for periodic packings.
--/
+/-! # Density of Sphere Packings: definitions and basic notions for periodic packings. -/
 
 open MeasureTheory Metric Filter Module
 
