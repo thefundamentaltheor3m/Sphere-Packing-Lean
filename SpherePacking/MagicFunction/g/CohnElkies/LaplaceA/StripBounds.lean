@@ -4,12 +4,7 @@ import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.ModularForms.PhiTransformLemmas
 
-/-!
-# Strip bounds for the `a'` contour deformation
-
-Strip estimates to deform the vertical-segment integrals of `a'` to the imaginary axis. Only
-decay along the top edge as `m → ∞` is needed, so no global uniform `re z` hypotheses.
--/
+/-! # Strip bounds for the `a'` contour deformation. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -21,8 +16,7 @@ open MeasureTheory Real Complex Filter MagicFunction.FourierEigenfunctions
 local notation "c12π" => ‖(12 * (I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
 
-/-- Turn an `IsBoundedAtImInfty` hypothesis into an explicit uniform bound with a positive
-constant. -/
+/-- `IsBoundedAtImInfty` as an explicit uniform bound with positive constant. -/
 lemma exists_bound_of_isBoundedAtImInfty {f : ℍ → ℂ}
     (hbdd : UpperHalfPlane.IsBoundedAtImInfty f) :
     ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im → ‖f z‖ ≤ C :=
@@ -92,7 +86,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
       Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]).trans ?_
   rw [mul_assoc, ← Real.exp_add, show -2 * π * t + -π * u * t = -(b * t) by dsimp [b]; ring]
 
-/-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`, via `aLaplaceIntegrand`. -/
+/-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`. -/
 public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume :=
   IntegrableOn.congr_fun (((aLaplaceIntegral_convergent (u := u) hu).mono_set
@@ -100,7 +94,7 @@ public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
     (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)).symm)
     measurableSet_Ioi
 
-/-- Integrability of `Φ₂'` on the imaginary-axis bounded interval `(1,A]`. -/
+/-- Integrability of `Φ₂'` on the bounded interval `(1,A]`. -/
 lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioc (1 : ℝ) A) volume :=
   (((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
@@ -129,7 +123,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     rw [show φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) =
         φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) - (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH -
           (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH by simpa using _root_.φ₀_S_transform_mul_sq wH]
-    exact (norm_sub_le _ _).trans <| by gcongr; exact norm_sub_le _ _
+    exact (norm_sub_le _ _).trans (by gcongr; exact norm_sub_le _ _)
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
     have h1 : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤ C₀ * (2 * t) ^ 2 := (norm_mul_le _ _).trans
@@ -190,7 +184,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 <
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
         rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
-/-- Integrability of `Φ₂'` on the imaginary-axis tail `(A,∞)` using modular bounds. -/
+/-- Integrability of `Φ₂'` on the tail `(A,∞)` via modular bounds. -/
 lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A : ℝ} (hC₀_pos : 0 < C₀)
     (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
     (hφbd : ∀ z : ℍ, Aφ ≤ z.im → ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
@@ -221,9 +215,7 @@ public lemma integrableOn_Φ₂'_imag_axis {u : ℝ} (hu : 2 < u) :
       (integrableOn_Φ₂'_imag_axis_Ioi (u := u) hu (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀) (A := A)
         hC₀_pos hC₀ hφbd (le_max_left _ _) (le_max_right _ _))
 
-/--
-Integrability of `Φ₄'` on the imaginary-axis tail `t > 1`, via the finite-difference identity.
--/
+/-- Integrability of `Φ₄'` on the imaginary-axis tail `t > 1` via finite differences. -/
 public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₄' u ((t : ℂ) * I)) (Set.Ioi (1 : ℝ)) volume := by
   have hcomb : IntegrableOn
@@ -237,10 +229,7 @@ public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
   have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht)
   grind only
 
-/--
-Rewrite the vertical-segment part `I₁' + I₃' + I₅'` as the imaginary-axis segment integral of
-`Φ₅'`.
--/
+/-- Rewrite `I₁' + I₃' + I₅'` as the imaginary-axis segment integral of `Φ₅'`. -/
 public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
     I₁' u + I₃' u + I₅' u =
       (I : ℂ) *
