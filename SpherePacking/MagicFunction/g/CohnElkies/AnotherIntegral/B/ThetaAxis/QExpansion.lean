@@ -46,12 +46,11 @@ lemma Theta4_eq_jacobiTheta_add_one (τ : ℍ) : Θ₄ τ = jacobiTheta ((τ : �
     have hpiI : Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) = (-1 : ℂ) ^ n := by
       rw [show (Real.pi * Complex.I * (n : ℂ) ^ 2 : ℂ) = (n ^ 2 : ℤ) * (Real.pi * Complex.I) by
         push_cast; ring, Complex.exp_int_mul, Complex.exp_pi_mul_I]
-      simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n by
+      simp [neg_one_zpow_eq_ite, show Even (n ^ 2 : ℤ) ↔ Even n from by
         simpa using Int.even_pow' (m := n) (n := 2) two_ne_zero]
     rw [show Θ₄_term n τ = Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ)) *
       Complex.exp (Real.pi * Complex.I * (n : ℂ) ^ 2) from by
-        simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm], ← Complex.exp_add]
-    ring_nf
+      simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm], ← Complex.exp_add]; ring_nf
 
 public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖Θ₂.resToImagAxis t‖ ≤ C := by
