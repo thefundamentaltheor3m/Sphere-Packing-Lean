@@ -8,12 +8,10 @@ import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 public import Mathlib.Analysis.Complex.RealDeriv
 public import SpherePacking.ForMathlib.DerivHelpers
 
-
 /-!
 # Iterated derivative helpers
 
-This file collects small lemmas about `iteratedDeriv` and `iteratedFDeriv` that are duplicated
-across the project.
+Small lemmas about `iteratedDeriv` and `iteratedFDeriv` duplicated across the project.
 -/
 
 namespace SpherePacking.ForMathlib
@@ -77,8 +75,7 @@ public lemma iteratedDeriv_cexp_mul_const (c : ℂ) (m : ℕ) :
   | succ m ih => funext x; simpa [iteratedDeriv_succ, ih, mul_assoc] using
       (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
 
-/-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m` for any
-real `a`. -/
+/-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m`. -/
 public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x : ℝ) :
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x‖ ≤
       |a| ^ m := by
@@ -106,26 +103,23 @@ public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
         (fun t : ℝ ↦ (-1 / 2 : ℂ) • Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x‖ ≤
       (1 / 2 : ℝ) * Real.pi ^ m := by
   let e : ℝ → ℂ := fun t ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))
-  have hsmul : ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ =
-      ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
-    rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-      norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := m) (f := e) (x := x)]
-    simp
   calc
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖
-        = ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := hsmul
+        = ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
+          rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := m) (f := e) (x := x)]
+          simp
     _ ≤ ‖(-1 / 2 : ℂ)‖ * Real.pi ^ m := by
           gcongr; simpa [e] using norm_iteratedFDeriv_cexp_mul_pi_I_le (m := m) (x := x)
     _ = (1 / 2 : ℝ) * Real.pi ^ m := by simp
 
-/-- If `f` has bounded derivatives and `g` has one-sided decay of all derivatives, then the product
-`f * g` has one-sided decay for a fixed iterated derivative order. -/
+/-- If `f` has bounded derivatives and `g` has one-sided decay of all derivatives, then `f * g`
+has one-sided decay for a fixed iterated derivative order. -/
 public theorem decay_iteratedFDeriv_mul_of_bound_left
     {f g : ℝ → ℂ} (k n : ℕ) (B : ℕ → ℝ)
     (hf_cont : ContDiff ℝ (⊤ : ℕ∞) f) (hg_cont : ContDiff ℝ (⊤ : ℕ∞) g)
     (hbound_f : ∀ m : ℕ, ∀ x : ℝ, ‖iteratedFDeriv ℝ m f x‖ ≤ B m)
-    (hdec_g :
-      ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ m g x‖ ≤ C) :
+    (hdec_g : ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ m g x‖ ≤ C) :
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖ ≤ C := by
   let Cg : ℕ → ℝ := fun m ↦ Classical.choose (hdec_g m)
   refine ⟨∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * B i * Cg (n - i), fun x hx => ?_⟩
