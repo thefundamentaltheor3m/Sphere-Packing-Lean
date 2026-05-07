@@ -9,17 +9,14 @@ Boundary control argument for approximating arbitrary sphere packings by periodi
 coordinate cubes and pigeonhole. Main result: `periodic_constant_eq_constant`.
 -/
 
-open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
-open scoped Pointwise Topology
+open scoped ENNReal Pointwise Topology BigOperators
+open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module Filter
 
 variable {d : ℕ}
 
 namespace PeriodicConstantApprox
 
 section CoordCubeCover
-
-open Metric
 
 variable (L : ℝ) (hL : 0 < L)
 
@@ -60,8 +57,6 @@ end CoordCubeCover
 
 section CoverVolumeBound
 
-open scoped BigOperators
-
 lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} (hL : 0 < L)
     {R C : ℝ} (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
@@ -89,8 +84,6 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
 end CoverVolumeBound
 
 section BoundaryControl
-
-open scoped ENNReal Pointwise BigOperators
 
 def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun _ : Fin d => c)
@@ -163,8 +156,6 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
 
 end BoundaryControl
 
-open Filter
-
 lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
@@ -183,9 +174,6 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
 
 section CubeLatticeCovolume
 
-open scoped ENNReal
-open ZSpan
-
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
       (volume (coordCube d L)).toNNReal := by
@@ -201,9 +189,6 @@ lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
 end CubeLatticeCovolume
 
 section PeriodizeCubeDensity
-
-open scoped ENNReal Pointwise
-open SpherePacking EuclideanSpace MeasureTheory Metric Bornology
 
 variable {d : ℕ}
 
@@ -276,9 +261,6 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
 end PeriodicConstantApprox
 
 namespace SpherePacking
-
-open Filter
-open scoped ENNReal BigOperators
 
 variable {d : ℕ}
 
@@ -411,9 +393,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
     simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by exact_mod_cast
       (Finset.card_filter_add_card_filter_not (s := sg) (p := fun x => x ∈ innerSet)).symm, add_mul]
-  have hcubeShell : cubeShellErr L = shellVol / volCube := by simp [cubeShellErr, shellVol, volCube]
-  simpa [hPdens', div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using
-    ENNReal.div_le_div_right (hsplit ▸ add_le_add_right hsb_vol _ :
+  simpa [hPdens', div_eq_mul_inv, mul_add, add_mul, mul_assoc,
+    show cubeShellErr L = shellVol / volCube by simp [cubeShellErr, shellVol, volCube],
+    shellVol] using ENNReal.div_le_div_right (hsplit ▸ add_le_add_right hsb_vol _ :
       (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol) volCube
 
 end SpherePacking
