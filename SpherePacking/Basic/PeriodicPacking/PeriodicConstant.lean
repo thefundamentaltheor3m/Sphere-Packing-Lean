@@ -18,17 +18,15 @@ public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x
 /-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
 public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
     {A B : Set (EuclideanSpace ℝ (Fin d))}
-    (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) :
-    2 * r ≤ dist x y := by
+    (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) : 2 * r ≤ dist x y := by
   by_contra hlt
-  have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith [lt_of_not_ge hlt]
   refine Set.disjoint_left.1 hAB (hx (a := midpoint ℝ x y) ?_) (hy (a := midpoint ℝ x y) ?_) <;>
-    simpa [Metric.mem_ball, dist_comm] using hhalf
+    simpa [Metric.mem_ball, dist_comm] using
+      (by nlinarith [lt_of_not_ge hlt] : (1 / 2 : ℝ) * dist x y < r)
 
 /-- The union of all lattice translates of a set `F` of representatives. -/
 @[expose] public noncomputable def periodizedCenters (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
-    (F : Set (EuclideanSpace ℝ (Fin d))) : Set (EuclideanSpace ℝ (Fin d)) :=
-  ⋃ g : Λ, g +ᵥ F
+    (F : Set (EuclideanSpace ℝ (Fin d))) : Set (EuclideanSpace ℝ (Fin d)) := ⋃ g : Λ, g +ᵥ F
 
 /-- Membership in `periodizedCenters` is equivalent to being a translate of a point in `F`. -/
 public lemma mem_periodizedCenters_iff {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
@@ -43,7 +41,7 @@ public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpac
     x + y ∈ periodizedCenters (d := d) Λ F := by
   rcases mem_periodizedCenters_iff.1 hy with ⟨g, f, hf, rfl⟩
   exact mem_periodizedCenters_iff.2
-    ⟨(⟨x, hx⟩ : Λ) + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
+    ⟨⟨x, hx⟩ + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
 
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
 public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
@@ -116,16 +114,15 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
       by simpa [mul_inv_cancel₀ hL.ne'] using
         (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
           (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
-  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
-      simpa [mul_assoc, inv_mul_cancel₀ hL.ne', one_mul] using
-        mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
+  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1,
+      by simpa [mul_assoc, inv_mul_cancel₀ hL.ne'] using mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
   have hsub := abs_lt.mp <| lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i :
     |y i - x i| ≤ ‖y - x‖)
     (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy : ‖y - x‖ < r)
-  exact ⟨by linarith [(hx i).1, hsub.1], by linarith [(hx i).2, hsub.2]⟩
+  refine ⟨?_, ?_⟩ <;> linarith [(hx i).1, (hx i).2, hsub.1, hsub.2]
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
@@ -152,8 +149,7 @@ public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     fundamentalDomain_isBounded (cubeBasis d L hL)
 
-public lemma measurableSet_coordCube (L : ℝ) (hL : 0 < L) :
-    MeasurableSet (coordCube d L) := by
+public lemma measurableSet_coordCube (L : ℝ) (hL : 0 < L) : MeasurableSet (coordCube d L) := by
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     fundamentalDomain_measurableSet (cubeBasis d L hL)
 
@@ -163,8 +159,7 @@ public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
         (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
   ext x; simp [coordCube, Set.mem_pi]
 
-public lemma volume_coordCube (L : ℝ) :
-    volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
+public lemma volume_coordCube (L : ℝ) : volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
   rw [coordCube_eq_preimage_ofLp, volume_preimage_ofLp _
     (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
@@ -196,7 +191,7 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L) (v : cubeLattic
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
-  exact ⟨g + v, (hvadd _).2 (by simpa), fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ ((hvadd _).1 ha))⟩
+  exact ⟨g + v, (hvadd _).2 (by simpa), fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ <| (hvadd _).1 ha)⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
