@@ -86,8 +86,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have hexp_le : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
       rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
         simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))]
-      exact Real.exp_le_one_iff.2 <| by
-        linarith [mul_nonneg (mul_nonneg Real.pi_pos.le (lt_trans two_pos hu).le) ht0.le]
+      exact Real.exp_le_one_iff.2
+        (by linarith [mul_nonneg (mul_nonneg Real.pi_pos.le (lt_trans two_pos hu).le) ht0.le])
     calc ‖aLaplaceIntegrand u t‖
           ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
             ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
