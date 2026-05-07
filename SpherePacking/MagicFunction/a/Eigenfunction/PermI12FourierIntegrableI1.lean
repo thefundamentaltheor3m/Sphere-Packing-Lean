@@ -76,30 +76,25 @@ lemma integrable_permI2Kernel_slice (w : ℝ⁸) (t : ℝ) :
 
 lemma ae_integrable_permI1Kernel_slice (w : ℝ⁸) :
     (∀ᵐ t : ℝ ∂μIoc01, Integrable (fun x : ℝ⁸ ↦ permI1Kernel w (x, t)) (volume : Measure ℝ⁸)) :=
-  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht =>
-    integrable_permI1Kernel_slice (w := w) (t := t) ht
+  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall (integrable_permI1Kernel_slice w)
 
 /-- For almost every `t ∈ Ioc 0 1`, the slice `x ↦ permI2Kernel w (x, t)` is integrable. -/
 public lemma ae_integrable_permI2Kernel_slice (w : ℝ⁸) :
     (∀ᵐ t : ℝ ∂μIoc01, Integrable (fun x : ℝ⁸ ↦ permI2Kernel w (x, t)) (volume : Measure ℝ⁸)) :=
-  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t _ =>
-    integrable_permI2Kernel_slice (w := w) (t := t)
+  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t _ => integrable_permI2Kernel_slice w t
 
 lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) ≤ ‖φ₀'' ((I : ℂ) / t)‖ * (1 / t ^ 2) := by
   have ht0 : 0 < t := ht.1
   have harg : (-1 / (z₁line t + 1) : ℂ) = (I : ℂ) / t := by
-    simpa [z₁line_add_one] using
-      (show (-1 / ((I : ℂ) * (t : ℂ)) : ℂ) = (I : ℂ) / t by
-        field_simp [ht0.ne']; simp [Complex.I_sq])
-  have hexp (x : ℝ⁸) :
-      ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
-        rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
+    simpa [z₁line_add_one] using show (-1 / ((I : ℂ) * (t : ℂ)) : ℂ) = (I : ℂ) / t by
+      field_simp [ht0.ne']; simp [Complex.I_sq]
+  have hexp (x : ℝ⁸) : ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
+      rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
     rw [show ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
-        rexp (-Real.pi * (‖x‖ ^ 2) * t) by
+        rexp (-Real.pi * (‖x‖ ^ 2) * t) from by
       simpa [z₁line_im, mul_assoc, mul_left_comm, mul_comm] using
-        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
-    congr 1; ring
+        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]; ring_nf
   have hnorm (x : ℝ⁸) :
       ‖permI1Kernel w (x, t)‖ =
         ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := calc
@@ -114,16 +109,13 @@ lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
       _ = ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
             rw [harg, show ‖(z₁line t + 1) ^ 2‖ = t ^ 2 by simp, hexp x]
   refine le_of_eq ?_
-  calc (∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖)
-      = ∫ x : ℝ⁸, ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
-        simp only [funext hnorm]
-    _ = ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * ∫ x : ℝ⁸, rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) :=
-        integral_const_mul _ _
-    _ = ‖φ₀'' ((I : ℂ) / t)‖ * (1 / t ^ 2) := by
-        rw [show (∫ x : ℝ⁸, rexp (-(Real.pi * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ) from by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            integral_rexp_neg_pi_mul_sq_norm (t := t) ht0, mul_assoc]
-        field_simp
+  rw [show (fun x : ℝ⁸ => ‖permI1Kernel w (x, t)‖) =
+        fun x : ℝ⁸ => ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) from
+      funext hnorm, integral_const_mul,
+    show (∫ x : ℝ⁸, rexp (-(Real.pi * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ) from by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        integral_rexp_neg_pi_mul_sq_norm (t := t) ht0]
+  field_simp
 
 lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
     Integrable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) μIoc01 := by
@@ -135,7 +127,7 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
         simpa [div_eq_mul_inv] using
           integrableOn_one_div_sq_mul_exp_neg_div (c := (2 * π)) (by positivity)).const_mul C₀)
   refine Integrable.mono' hmajor (by
-    simpa using ((permI1Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
+    simpa using ((permI1Kernel_measurable w).norm.prod_swap.integral_prod_right'
       (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))) ?_
   refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
   have ht0 : 0 < t := ht.1
@@ -158,9 +150,8 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
 /-- Integrability of `permI1Kernel` on the product measure `volume × μIoc01`. -/
 public lemma integrable_perm_I₁_kernel (w : ℝ⁸) :
     Integrable (permI1Kernel w) ((volume : Measure ℝ⁸).prod μIoc01) :=
-  (integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIoc01)
-    (permI1Kernel_measurable (w := w))).2
-    ⟨ae_integrable_permI1Kernel_slice (w := w), integrable_integral_norm_permI1Kernel (w := w)⟩
+  (integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIoc01) (permI1Kernel_measurable w)).2
+    ⟨ae_integrable_permI1Kernel_slice w, integrable_integral_norm_permI1Kernel w⟩
 
 end Integral_Permutations.PermI12Fourier_Integrable
 end
