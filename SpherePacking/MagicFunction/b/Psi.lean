@@ -76,6 +76,10 @@ lemma slashST'' (z : ℍ) (F : ℍ → ℂ) :
     F ((S * T) • z) = (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, zpow_two, pow_two, z_plus_one_nonzero z,
     mul_assoc]
+
+private lemma H₂_MF_coe : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+private lemma H₃_MF_coe : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+private lemma H₄_MF_coe : (H₄_MF : ℍ → ℂ) = H₄ := rfl
 end aux
 
 /-- Explicit formula for `ψI` in terms of `H₂`, `H₃`, `H₄` (Lemma 7.16 in the blueprint). -/
@@ -93,8 +97,7 @@ public lemma ψI_eq :
       simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
         Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply],
     slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action,
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action,
     H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
     H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
@@ -116,8 +119,7 @@ public lemma ψT_eq :
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.sub_apply, smul_add,
     nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
   rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 
 -- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
@@ -131,8 +133,7 @@ public lemma ψS_eq' :
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_S_action, H₃_S_action, H₄_S_action]
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   simp only [Pi.neg_apply]
   field_simp; ring
@@ -158,8 +159,7 @@ public lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.smul_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
   rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
 
 /-- Modular relation: `ψS ∣[-2] S = ψI`. -/
@@ -179,8 +179,7 @@ public lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   rw [ψS_eq', slashT']
   simp only [Pi.mul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.sub_apply]
   rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [sub_eq_add_neg, add_comm]; ring
 
 /-- Modular relation: `ψT ∣[-2] S = -ψT`. -/
@@ -189,8 +188,7 @@ public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   rw [ψT_eq, slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.neg_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
-    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
+    H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   field_simp; ring
