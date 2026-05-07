@@ -24,16 +24,12 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
   {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
   {E' : Type*} [NormedRing E'] [NormedAlgebra 𝕜 E']
 
-/--
-`fun_prop` leaf-rule: numerals (as constant functions) are `MDifferentiable`.
-
-Without this, `fun_prop` can get stuck on goals like `MDifferentiable ... fun x => 3 x`,
-whose head symbol is `OfNat.ofNat` (for the `OfNat (M → E') 3` instance).
--/
+/-- `fun_prop` leaf-rule: numerals (as constant functions) are `MDifferentiable`. Without this,
+`fun_prop` can get stuck on goals like `MDifferentiable ... fun x => 3 x`, whose head symbol is
+`OfNat.ofNat` (for the `OfNat (M → E') 3` instance). -/
 public theorem mdifferentiable_ofNat (n : ℕ) :
-    MDifferentiable I 𝓘(𝕜, E') (OfNat.ofNat (α := M → E') n) := by
-  simpa using (mdifferentiable_const :
-    MDifferentiable I 𝓘(𝕜, E') (fun _ : M => (OfNat.ofNat (α := E') n)))
+    MDifferentiable I 𝓘(𝕜, E') (OfNat.ofNat (α := M → E') n) :=
+  mdifferentiable_const (c := (OfNat.ofNat (α := E') n))
 
 attribute [fun_prop] mdifferentiable_ofNat MDifferentiable.pow
 
