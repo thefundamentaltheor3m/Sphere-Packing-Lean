@@ -28,37 +28,31 @@ noncomputable section Parametrisations
 
 /-- Parametrisation `t ↦ -1 + i t` of the vertical segment from `-1` to `-1 + i`. -/
 @[expose] public def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 + I * t
-
 /-- Extension of `z₁` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t
 
 /-- Parametrisation `t ↦ -1 + t + i` of the horizontal segment from `-1 + i` to `i`. -/
 @[expose] public def z₂ (t : Icc (0 : ℝ) 1) : ℂ := -1 + t + I
-
 /-- Extension of `z₂` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t
 
 /-- Parametrisation `t ↦ 1 + i t` of the vertical segment from `1` to `1 + i`. -/
 @[expose] public def z₃ (t : Icc (0 : ℝ) 1) : ℂ := 1 + I * t
-
 /-- Extension of `z₃` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t
 
 /-- Parametrisation `t ↦ 1 - t + i` of the horizontal segment from `1 + i` to `i`. -/
 @[expose] public def z₄ (t : Icc (0 : ℝ) 1) : ℂ := 1 - t + I
-
 /-- Extension of `z₄` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t
 
 /-- Parametrisation `t ↦ i t` of the vertical segment from `0` to `i`. -/
 @[expose] public def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
-
 /-- Extension of `z₅` to `ℝ → ℂ` via `IccExtend`. -/
 @[expose] public def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t
 
 /-- Parametrisation `t ↦ i t` of the ray `i * Ici 1`. -/
 @[expose] public def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
-
 /-- Extension of `z₆` to `ℝ → ℂ` via `IciExtend`. -/
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
