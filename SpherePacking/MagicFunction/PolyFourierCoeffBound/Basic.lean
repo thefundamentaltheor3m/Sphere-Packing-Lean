@@ -58,8 +58,6 @@ public def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
-section summable_aux
-
 include hpoly in
 lemma summable_norm_mul_rexp_neg_pi_div_two :
     Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) := by
@@ -79,10 +77,6 @@ lemma summable_norm_mul_rexp_neg_pi_div_two :
       simp [Complex.norm_exp, div_eq_mul_inv], ← Real.exp_nat_mul]
   congr 2; ring
 
-end summable_aux
-
-section calc_aux
-
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ :=
   summable_norm_iff.mpr <|
@@ -99,16 +93,19 @@ lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑
 lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 :=
   (aux_5 z).symm ▸ norm_nonneg _
 
+private lemma summable_log_one_sub_rexp_pow_24 {c : ℝ} (hc : 0 < c) :
+    Summable fun b : ℕ+ ↦ Real.log ((1 - rexp (-c * (b : ℝ))) ^ 24) := by
+  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
+    (Real.summable_log_one_add_of_summable ((by
+      simpa [mul_assoc, mul_comm, mul_left_comm] using
+        ((Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)).comp_injective
+          PNat.coe_injective :
+      Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
+
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod (fun i ↦ by simp_all)]
-  exacts [Real.exp_pos _,
-    by simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using
-      Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable ((by
-        simpa [mul_assoc, mul_comm, mul_left_comm] using
-          ((Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)).comp_injective
-            PNat.coe_injective :
-        Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))]
+  exacts [Real.exp_pos _, summable_log_one_sub_rexp_pow_24 hc]
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -131,12 +128,7 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
   refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
   · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
     nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
-  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable ((by
-      simpa [mul_assoc, mul_comm, mul_left_comm] using
-        ((Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)).comp_injective
-          PNat.coe_injective :
-      Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
+  exact summable_log_one_sub_rexp_pow_24 hr
 
 lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -188,10 +180,6 @@ lemma step_12 :
     (by simpa [mul_assoc, mul_left_comm, mul_comm] using
       step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
 
-end calc_aux
-
-section main_theorem
-
 include f hf z hz c n₀ hcsum k hpoly in
 /-- A uniform bound on `‖(f z) / (Δ z)‖` for a function given by a Fourier series with polynomially
 bounded coefficients, in terms of `DivDiscBound` and an exponential factor depending on `n₀`. -/
@@ -240,8 +228,6 @@ public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
     (fun _ => by positivity) 0 ?_) aux_11
   simpa using norm_pos_iff.2 hcn₀
-
-end main_theorem
 
 end
 
