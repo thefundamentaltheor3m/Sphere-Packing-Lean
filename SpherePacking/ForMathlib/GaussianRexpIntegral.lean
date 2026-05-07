@@ -19,11 +19,9 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 /-- For `s > 0`, `∫ exp (-π ‖x‖² / s)` over `ℝ^(2k)` equals `s ^ k`. -/
 public lemma integral_gaussian_rexp_even (k : ℕ) (s : ℝ) (hs : 0 < s) :
     (∫ x : EuclideanSpace ℝ (Fin (2 * k)), rexp (-π * (‖x‖ ^ 2) / s)) = s ^ k := by
-  have hb : 0 < (π / s) := div_pos Real.pi_pos hs
-  have hcong : (∫ x : EuclideanSpace ℝ (Fin (2 * k)), rexp (-π * (‖x‖ ^ 2) / s)) =
-      ∫ x : EuclideanSpace ℝ (Fin (2 * k)), rexp (-(π / s) * ‖x‖ ^ 2) :=
-    integral_congr_ae (ae_of_all _ fun x => by ring_nf)
-  rw [hcong, GaussianFourier.integral_rexp_neg_mul_sq_norm hb]
+  rw [integral_congr_ae (ae_of_all _ fun x => show rexp (-π * (‖x‖ ^ 2) / s) =
+        rexp (-(π / s) * ‖x‖ ^ 2) by ring_nf),
+    GaussianFourier.integral_rexp_neg_mul_sq_norm (div_pos Real.pi_pos hs)]
   simp [show (π / (π / s)) = s from by field_simp]
 
 /-- Gaussian `rexp` integral over `ℝ⁸` with a scale parameter. -/
