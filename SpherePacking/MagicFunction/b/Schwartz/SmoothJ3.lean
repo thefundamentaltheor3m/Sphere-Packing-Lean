@@ -7,7 +7,6 @@ import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.MagicFunction.b.PsiParamRelations
 
-
 /-!
 # Smooth J3
 
@@ -21,23 +20,16 @@ the parametrisations `z₃'` and `z₅'`.
 * `decay_J₃'`
 -/
 
-
 namespace MagicFunction.b.Schwartz.J3Smooth
 
 noncomputable section
 
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
-
 open Complex Real Set intervalIntegral
+open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals
+open Matrix ModularGroup ModularForm
 
-open MagicFunction.Parametrisations
-open MagicFunction.b.RealIntegrals
-open Matrix ModularGroup
-open ModularForm
-
-/-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`.
-
-The primes refer to the extensions `ψT'`, `ψI' : ℂ → ℂ` and the parametrisations `z₃'`, `z₅'`. -/
+/-- Compatibility of `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`. -/
 public lemma ψT'_z₃'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ψT' (z₃' t) = ψI' (z₅' t) := by
   simpa using MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t) ht
@@ -84,9 +76,7 @@ lemma J₃'_eq (x : ℝ) :
     J₃' x = ((-1 / 2 : ℂ) * J₅' x) * cexp (π * (Complex.I : ℂ) * x) := by simpa [hK] using hJ3
     _ = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by ring_nf
 
-/-- Smoothness of `J₃'`.
-
-The prime in `contDiff_J₃'` refers to the function `J₃'`. -/
+/-- Smoothness of `J₃'`. -/
 public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
   have hExp : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ cexp ((π : ℂ) * Complex.I * (x : ℂ))) :=
     ((contDiff_const.mul contDiff_const).mul ofRealCLM.contDiff).cexp
@@ -98,9 +88,7 @@ public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
       simpa [mul_assoc, mul_left_comm, mul_comm] using (J₃'_eq (x := x)).symm
   simpa [hEq] using hmul
 
-/-- Schwartz-type decay bounds for `J₃'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₃'` refers to the function `J₃'`. -/
+/-- Schwartz-type decay bounds for `J₃'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₃' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₃' x‖ ≤ C := by
   intro k n
@@ -109,13 +97,11 @@ public theorem decay_J₃' :
   let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • e x
   have hf_cont : ContDiff ℝ (⊤ : ℕ∞) f := by
     simpa [f, e] using ((ofRealCLM.contDiff.mul contDiff_const).cexp.const_smul (-1 / 2 : ℂ))
-  have hbound_f : ∀ m : ℕ, ∀ x : ℝ, ‖iteratedFDeriv ℝ m f x‖ ≤ (1 / 2 : ℝ) * Real.pi ^ m :=
-    fun m x => SpherePacking.ForMathlib.norm_iteratedFDeriv_smul_cexp_mul_pi_I_le m x
-  have hdec5 : ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ m J₅' x‖ ≤ C :=
-    fun m => by simpa using (MagicFunction.b.Schwartz.J5Smooth.decay_J₅' (k := k) (n := m))
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left
     (f := f) (g := J₅') (k := k) (n := n) (B := fun m ↦ (1 / 2 : ℝ) * Real.pi ^ m)
-    hf_cont MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅' hbound_f hdec5
+    hf_cont MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
+    (fun m x => SpherePacking.ForMathlib.norm_iteratedFDeriv_smul_cexp_mul_pi_I_le m x)
+    (fun m => by simpa using (MagicFunction.b.Schwartz.J5Smooth.decay_J₅' (k := k) (n := m)))
   refine ⟨C, fun x hx => ?_⟩
   have hJ3fun : J₃' = fun y : ℝ ↦ f y * J₅' y :=
     funext fun y => by simp [f, e, c, mul_assoc, mul_left_comm, mul_comm, J₃'_eq (x := y)]
