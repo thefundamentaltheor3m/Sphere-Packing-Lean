@@ -72,8 +72,6 @@ public lemma g_norm_bound_uniform :
   gcongr
   simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith)
 
-lemma gN_norm (n : ℕ) (r t : ℝ) : ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
-
 private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
@@ -88,7 +86,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   have ht0 : 0 ≤ t := zero_le_one.trans ht
   have hcoeff : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by
     simpa using (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le
-  calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
+  calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
       simp only [bound, mul_pow, ← show rexp (-2 * π * t) * rexp (-π * r * t) =
@@ -104,7 +102,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     have ht0 : 0 ≤ t := zero_le_one.trans ht
     have hr_lower : r₀ - 1 ≤ r := by
       nlinarith [abs_lt.1 (by simpa [Metric.mem_ball, dist_eq_norm] using hr : |r - r₀| < 1) |>.1]
-    calc ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
+    calc ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := by simp [gN]
       _ ≤ (π * t) ^ (n + 1) * (C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t)) :=
         mul_le_mul (by simpa using (coeff_norm_pow_of_nonneg (n := n + 1) (t := t) ht0).le)
           (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (Real.exp_le_exp.2 <| by
@@ -173,7 +171,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
         (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
         measurableSet_Ici fun t ht ↦ by
         have ht0 : 0 ≤ t := zero_le_one.trans ht
-        calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
+        calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
           _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
             mul_le_mul (by simpa [mul_pow] using
                 (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le)
