@@ -42,16 +42,17 @@ public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   exact (E8_norm_lower_bound v hv).resolve_right (not_le_of_gt (lt_trans
     (by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx') Real.one_lt_sqrt_two))
 
-lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ :=
-  eq_top_iff.2 (by simpa [span_E8Matrix_eq_top ℝ] using
-    Submodule.span_mono (R := ℝ) (range_E8Matrix_row_subset ℝ))
+/-- `E8Lattice` spans the ambient space over `ℝ`. -/
+public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
+  span_top := by
+    have hE8 : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ :=
+      eq_top_iff.2 (by simpa [span_E8Matrix_eq_top ℝ] using
+        Submodule.span_mono (R := ℝ) (range_E8Matrix_row_subset ℝ))
+    change Submodule.span ℝ
+      ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
+    rw [Submodule.span_image, hE8]; simp
 
-lemma span_E8_eq_top' : Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
-  change Submodule.span ℝ
-    ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
-  rw [Submodule.span_image, span_E8_eq_top]; simp
-
-lemma span_E8Matrix_eq_E8Lattice :
+private lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
       (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
       E8Lattice := by
@@ -63,10 +64,6 @@ lemma span_E8Matrix_eq_E8Lattice :
     ← Submodule.map_span, span_E8Matrix ℝ]
   simp [E8Lattice]
 
-/-- `E8Lattice` spans the ambient space over `ℝ`. -/
-public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
-  span_top := span_E8_eq_top'
-
 noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   refine Basis.mk
       (v := fun i ↦ ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
@@ -77,10 +74,6 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp),
       Submodule.map_top, Submodule.range_subtype, Submodule.map_span, ← Set.range_comp]
     exact span_E8Matrix_eq_E8Lattice.ge
-
-lemma coe_E8_ℤBasis_apply (i : Fin 8) :
-    E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
-  rw [E8_ℤBasis, Basis.coe_mk]
 
 open scoped Real
 
@@ -100,12 +93,11 @@ open scoped Real
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=
   PeriodicSpherePacking.numReps_eq_one _ rfl
 
-lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
-  simp [E8Basis, E8Matrix, EuclideanSpace.norm_eq, Fin.forall_fin_succ, Fin.sum_univ_eight]
-  norm_num [show (√2 : ℝ) ≤ 2 by rw [Real.sqrt_le_iff]; norm_num]
-
-lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
-  simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using E8Basis_apply_norm
+private lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
+  have hbase : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
+    simp [E8Basis, E8Matrix, EuclideanSpace.norm_eq, Fin.forall_fin_succ, Fin.sum_univ_eight]
+    norm_num [show (√2 : ℝ) ≤ 2 by rw [Real.sqrt_le_iff]; norm_num]
+  simpa [E8_ℤBasis, Basis.coe_mk, E8Basis_apply] using hbase
 
 open MeasureTheory ZSpan in
 public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
@@ -113,17 +105,14 @@ public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
     E8Matrix_unimodular (R := ℝ)]
 
 open MeasureTheory ZSpan in
-lemma same_domain :
-    (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
-      fundamentalDomain (E8Basis ℝ) := by
-  rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
-  congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
-
-open MeasureTheory ZSpan in
-lemma E8_Basis_volume :
+private lemma E8_Basis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
+  have hpreim : (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain
+      (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) = fundamentalDomain (E8Basis ℝ) := by
+    rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
+    congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
   rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).symm.measure_preimage_equiv]
-  erw [same_domain, E8Basis_volume]
+  erw [hpreim, E8Basis_volume]
 
 open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
