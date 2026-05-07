@@ -5,8 +5,6 @@ Authors: Sidharth Hariharan, Gareth Ma
 -/
 module
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Data.Real.StarOrdered
-public import Mathlib.Order.CompletePartialOrder
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
