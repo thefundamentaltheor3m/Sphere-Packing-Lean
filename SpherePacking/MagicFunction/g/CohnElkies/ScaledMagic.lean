@@ -7,14 +7,8 @@ import SpherePacking.ForMathlib.FourierLinearEquiv
 /-!
 # Scaling the Cohn-Elkies hypotheses
 
-This file transfers the Cohn-Elkies sign conditions from `g` to the scaled function `scaledMagic`
-used in `SpherePacking.UpperBound`.
-
-## Main statements
-* `SpherePacking.scaledMagic_real'`
-* `SpherePacking.scaledMagic_real_fourier'`
-* `SpherePacking.scaledMagic_cohnElkies₁'`
-* `SpherePacking.scaledMagic_cohnElkies₂'`
+Transfers the Cohn-Elkies sign conditions from `g` to the scaled function `scaledMagic` used in
+`SpherePacking.UpperBound`.
 -/
 
 namespace SpherePacking
@@ -29,37 +23,18 @@ open MagicFunction.g.CohnElkies
 private noncomputable def scaleEquiv : ℝ⁸ ≃ₗ[ℝ] ℝ⁸ :=
   LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) (Real.sqrt 2) sqrt2_ne_zero
 
-/--
-`scaledMagic` is real-valued.
-
-The prime `'` indicates this is the scaled variant of the corresponding real-valuedness lemma
-for `g`.
--/
+/-- `scaledMagic` is real-valued (scaled variant of `g_real`). -/
 public theorem scaledMagic_real' : ∀ x : ℝ⁸, (↑(scaledMagic x).re : ℂ) = scaledMagic x := by
   simpa [SpherePacking.scaledMagic] using fun x => g_real (x := (Real.sqrt 2) • x)
-
-lemma fourier_scaledMagic_fun_eq (x : ℝ⁸) :
-    (𝓕 (fun y : ℝ⁸ => scaledMagic y) x) =
-      |LinearMap.det
-          (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ •
-  𝓕 (fun y : ℝ⁸ => g y)
-          ((LinearMap.adjoint
-              ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x) := by
-  simpa [SpherePacking.scaledMagic, scaleEquiv] using
-    SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
 
 private lemma fourier_scaledMagic_eq (x : ℝ⁸) :
     (𝓕 scaledMagic x) =
       |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ •
         𝓕 g ((LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x) := by
-  simpa [SchwartzMap.fourier_coe, scaleEquiv] using fourier_scaledMagic_fun_eq (x := x)
+  simpa [SpherePacking.scaledMagic, scaleEquiv, SchwartzMap.fourier_coe] using
+    SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
 
-/--
-The Fourier transform `𝓕 scaledMagic` is real-valued.
-
-The prime `'` indicates this is the scaled variant of the corresponding real-valuedness lemma
-for `𝓕 g`.
--/
+/-- The Fourier transform `𝓕 scaledMagic` is real-valued (scaled variant of `g_real_fourier`). -/
 public theorem scaledMagic_real_fourier' :
     ∀ x : ℝ⁸, (↑((𝓕 scaledMagic x).re : ℂ)) = (𝓕 scaledMagic x) := by
   intro x
@@ -70,11 +45,7 @@ public theorem scaledMagic_real_fourier' :
     simpa [y0, Complex.smul_im, hImG] using congrArg Complex.im (fourier_scaledMagic_eq (x := x))
   exact Complex.ext (by simp) (by simp [hImScaled])
 
-/--
-Cohn-Elkies sign condition for `scaledMagic` outside the unit ball.
-
-The prime `'` indicates this is the scaled variant of the corresponding lemma for `g`.
--/
+/-- Cohn-Elkies sign condition for `scaledMagic` outside the unit ball (scaled variant). -/
 public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (scaledMagic x).re ≤ 0 := by
   intro x hx
   have h2 : (2 : ℝ) ≤ ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) := by
@@ -84,16 +55,12 @@ public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (s
   simpa [SpherePacking.scaledMagic] using
     g_nonpos_of_norm_sq_ge_two (x := (Real.sqrt 2) • x) h2
 
-/--
-Cohn-Elkies nonnegativity condition for the Fourier transform `𝓕 scaledMagic`.
-
-The prime `'` indicates this is the scaled variant of the corresponding lemma for `𝓕 g`.
--/
+/-- Cohn-Elkies nonnegativity for `𝓕 scaledMagic` (scaled variant). -/
 public theorem scaledMagic_cohnElkies₂' : ∀ x : ℝ⁸, (𝓕 scaledMagic x).re ≥ 0 := by
   intro x
   let y0 : ℝ⁸ := (LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x
-  have hre :
-      (𝓕 scaledMagic x).re = |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • (𝓕 g y0).re := by
+  have hre : (𝓕 scaledMagic x).re =
+      |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • (𝓕 g y0).re := by
     have hre' : (𝓕 scaledMagic x).re =
         (|LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • 𝓕 g y0).re := by
       simpa [y0] using congrArg Complex.re (fourier_scaledMagic_eq (x := x))
