@@ -27,11 +27,6 @@ public lemma exists_upper_bound_on_uIoc {g : ℝ → ℝ} {a b : ℝ} (hab : a �
   let ⟨C, hC⟩ := exists_upper_bound_on_Icc (g := g) hab hg
   ⟨C, fun x hx => hC x (Ioc_subset_Icc_self (by simpa [uIoc_of_le hab] using hx))⟩
 
-/-- Variant of `exists_upper_bound_on_Icc` for a globally continuous function. -/
-public lemma Continuous.exists_upper_bound_on_Icc {g : ℝ → ℝ} (hg : Continuous g) {a b : ℝ}
-    (hab : a ≤ b) : ∃ C, ∀ x ∈ Icc a b, g x ≤ C :=
-  SpherePacking.ForMathlib.exists_upper_bound_on_Icc (g := g) hab hg.continuousOn
-
 /-- If `g` is positive and continuous on `Icc a b`, then it admits a positive uniform lower bound. -/
 public lemma exists_lower_bound_pos_on_Icc {g : ℝ → ℝ} {a b : ℝ}
     (hg : ContinuousOn g (Icc a b)) (hpos : ∀ x ∈ Icc a b, 0 < g x) :

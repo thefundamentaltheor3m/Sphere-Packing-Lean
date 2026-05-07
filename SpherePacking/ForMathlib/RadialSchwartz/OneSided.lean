@@ -48,9 +48,9 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
     simpa using (continuous_norm.pow k).mul
       (continuous_norm.comp (hg_smooth.continuous_iteratedFDeriv (m := n) hn))
   obtain ⟨Cmid, hCmid⟩ :=
-    SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc
-      (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖) hcont
-      (a := (-1 : ℝ)) (b := 0) (by norm_num)
+    SpherePacking.ForMathlib.exists_upper_bound_on_Icc
+      (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖)
+      (a := (-1 : ℝ)) (b := 0) (by norm_num) hcont.continuousOn
   refine ⟨max (max Cmid Cpos) 0, fun x => ?_⟩
   by_cases hx₁ : x < -1
   · simp [iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n]
