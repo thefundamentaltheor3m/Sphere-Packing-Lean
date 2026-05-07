@@ -11,14 +11,9 @@ import SpherePacking.Contour.MobiusInv.ContourChange
 /-!
 # Contour identities for `mobiusInv` on `wedgeSet`
 
-This file specializes the abstract contour deformation lemmas in
-`SpherePacking.Contour.PermJ12Contour` to the concrete domain `SpherePacking.wedgeSet`
-and map `SpherePacking.mobiusInv`.
-
-It provides the shared "assembled contour identity" lemmas used in the `perm_J1/J2` and
-`perm_I1/I2` developments, factoring out:
-- the two Mobius segment contour-change lemmas; and
-- the two wedge-set contour deformation steps (`h1`/`h2`).
+Specializes the abstract contour deformation lemmas in `SpherePacking.Contour.PermJ12Contour`
+to the concrete domain `wedgeSet` and map `mobiusInv`, providing assembled identities used in
+the `perm_J1/J2` and `perm_I1/I2` developments.
 -/
 
 open MeasureTheory
@@ -88,13 +83,8 @@ private lemma perm_12_contour_mobiusInv_wedgeSet_aux
   have := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   grind only
 
-/--
-Assembled contour identity for the `perm_J12` argument, specialized to `mobiusInv` and `wedgeSet`.
-
-This combines:
-- the segment contour-change lemmas under `mobiusInv`, and
-- the wedge-set contour deformations (`perm_J12_contour_h1`/`perm_J12_contour_h2`).
--/
+/-- Assembled contour identity for the `perm_J12` argument, specialized to `mobiusInv` and
+`wedgeSet`. Combines segment contour-change lemmas with wedge-set contour deformations. -/
 public lemma perm_J12_contour_mobiusInv_wedgeSet
     {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ}
     (Ψ₁_fourier_eq_neg_deriv_mul :
@@ -119,9 +109,8 @@ public lemma perm_J12_contour_mobiusInv_wedgeSet
         simpa [neg_one_mul] using SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
           (Ψ₁' := Ψ₁') ((-1 : ℂ) + Complex.I) Complex.I Ψ₁_fourier_eq_neg_deriv_mul r)
 
-/--
-Assembled contour identity for the `perm_I12` argument, specialized to `mobiusInv` and `wedgeSet`.
--/
+/-- Assembled contour identity for the `perm_I12` argument, specialized to `mobiusInv` and
+`wedgeSet`. -/
 public lemma perm_I12_contour_mobiusInv_wedgeSet
     {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ}
     (Ψ₁_fourier_eq_deriv_mul :
