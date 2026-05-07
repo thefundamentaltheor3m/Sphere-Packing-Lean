@@ -13,12 +13,9 @@ import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 namespace MagicFunction.g.CohnElkies
 
 open scoped FourierTransform SchwartzMap
-open Real Complex
+open Real Complex MagicFunction.FourierEigenfunctions
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-open MagicFunction.FourierEigenfunctions
-
 local notation "FT" => FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ)
 
 private theorem ofReal_re_eq (z : ℂ) (hz : z.im = 0) : (↑z.re : ℂ) = z :=
