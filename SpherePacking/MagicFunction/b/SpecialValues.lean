@@ -11,7 +11,6 @@ import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import Mathlib.Analysis.Complex.Periodic
 import Mathlib.MeasureTheory.Integral.ExpDecay
 
 /-! Special values for Viazovska's magic function `b`, notably `b 0 = 0`. -/
@@ -57,7 +56,7 @@ lemma continuous_ψT'_add_I : Continuous fun t : ℝ => ψT' ((t : ℂ) + Comple
 lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ψT' (z₂' t) = ψI' ((t : ℂ) + Complex.I) := by
   have hz2 : 0 < (z₂' t).im := im_z₂'_pos (t := t) (by simpa using ht)
-  simpa [ψT', ψI', hz2, show ((1 : ℝ) +ᵥ ⟨z₂' t, hz2⟩ : ℍ) = ⟨(t : ℂ) + Complex.I, by simp⟩ from by
+  simpa [ψT', ψI', hz2, show ((1 : ℝ) +ᵥ ⟨z₂' t, hz2⟩ : ℍ) = ⟨(t : ℂ) + Complex.I, by simp⟩ by
     ext1; simp [z₂'_eq_of_mem (t := t) ht, add_left_comm, add_comm]] using
     (show ψT ⟨z₂' t, hz2⟩ = ψI ((1 : ℝ) +ᵥ ⟨z₂' t, hz2⟩) by simp [ψT, modular_slash_T_apply])
 
@@ -75,8 +74,8 @@ lemma ψS'_add_one (t : ℝ) (ht : 0 < t) :
   have hz0 : 0 < (t * Complex.I).im := by simpa using ht
   have hz1 : 0 < ((1 : ℂ) + t * Complex.I).im := by simpa using ht
   let z0H : ℍ := ⟨t * Complex.I, hz0⟩
-  simpa [ψS', hz0, hz1, ht, z0H, show ((1 : ℝ) +ᵥ z0H : ℍ) = ⟨(1 : ℂ) + t * Complex.I, hz1⟩ from by
-    ext1; simp [z0H, add_comm]] using show ψS ((1 : ℝ) +ᵥ z0H) = -ψS z0H from by
+  simpa [ψS', hz0, hz1, ht, z0H, show ((1 : ℝ) +ᵥ z0H : ℍ) = ⟨(1 : ℂ) + t * Complex.I, hz1⟩ by
+    ext1; simp [z0H, add_comm]] using show ψS ((1 : ℝ) +ᵥ z0H) = -ψS z0H by
       simpa [modular_slash_T_apply] using congrArg (fun F : ℍ → ℂ => F z0H) ψS_slash_T
 
 lemma integrableOn_ψS'_vertical_left :
@@ -114,18 +113,18 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
         simp [ψT'_z₂'_eq_ψI'_add_one (t := t)
           (by simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)]
     have hJ4 : J₄' (0 : ℝ) = -∫ t in (0 : ℝ)..1, ψT' ((t : ℂ) + Complex.I) := by
-      rw [show J₄' (0 : ℝ) = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) from by simp [J₄']]
+      rw [show J₄' (0 : ℝ) = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) by simp [J₄']]
       have hEq :
           (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t)) =
             ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' ((1 - t : ℂ) + Complex.I) :=
         intervalIntegral.integral_congr fun t ht => by
           have htIcc : t ∈ Icc (0 : ℝ) 1 := by
             simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
-          simp [show z₄' t = (1 - (t : ℂ)) + Complex.I from by simpa using z₄'_eq_of_mem htIcc]
+          simp [show z₄' t = (1 - (t : ℂ)) + Complex.I by simpa using z₄'_eq_of_mem htIcc]
       let f : ℝ → ℂ := fun u => ψT' ((u : ℂ) + Complex.I)
       rw [hEq, intervalIntegral.integral_const_mul,
         (intervalIntegral.integral_congr fun t _ => by
-          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) from by push_cast; ring] :
+          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) by push_cast; ring] :
             (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
         (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
     have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
@@ -190,7 +189,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
   have hJ6 : J₆' (0 : ℝ) =
       (-2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) := by
     rw [show J₆' (0 : ℝ) = (-2 : ℂ) *
-        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) from by simp [J₆'],
+        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) by simp [J₆'],
       MeasureTheory.integral_Ici_eq_integral_Ioi,
       MeasureTheory.integral_congr_ae (g := fun t : ℝ => (Complex.I : ℂ) * ψS' (t * Complex.I))
         (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
@@ -199,7 +198,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     simp [MeasureTheory.integral_const_mul, smul_eq_mul]
   exact hJ24.trans (eq_neg_of_add_eq_zero_left (by
     simp [show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) =
-        (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) from by
+        (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) by
       simpa [sub_eq_zero] using hhor, hJ6]))
 
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
