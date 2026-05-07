@@ -3,13 +3,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.StripBounds
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 
-/-!
-# Tail deformation for `a'`
-
-This file proves the tail contour deformation for the pieces `I₂' + I₄' + I₆'` in the
-definition of `a'`. The deformation is carried out on the rectangle strip `t ≥ 1`, using
-`rect_deform_of_tendsto_top` together with explicit exponential bounds.
--/
+/-! # Tail deformation for `a'`: rewrite `I₂' + I₄' + I₆'` via `rect_deform_of_tendsto_top`. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -26,9 +20,8 @@ public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
   simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
     (aLaplaceIntegral_convergent hu).neg'
 
-/-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
-`F (x + t*I) = (φ₀''(-1/w) * w^2) * exp(π*I*u*(x + t*I))` where `w = s + t*I` with `|s| ≤ 1`,
-bound `‖F (x + t*I)‖` by the standard envelope. -/
+/-- Strip-bound core: given `F (x + tI) = (φ₀''(-1/w) * w^2) * exp(πIu(x + tI))` with
+`w = s + tI`, `|s| ≤ 1`, bound `‖F (x + tI)‖` by the standard envelope. -/
 private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
     (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
@@ -71,8 +64,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [mul_assoc, mul_assoc, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
 
-/-- Generic top-edge decay: reduces a `tendsto` statement on an interval integral to a pointwise
-strip bound. -/
+/-- Top-edge decay: reduce `tendsto` of an interval integral to a pointwise strip bound. -/
 private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u) {F : ℂ → ℂ}
     {x₁ x₂ : ℝ} (hlen : |x₂ - x₁| ≤ 1)
     (hF : ∀ Cφ Aφ C₀ x t : ℝ, 0 < C₀ →
@@ -248,15 +240,14 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         rw [integral_sub (μ := μ) hf2 (hf5.const_mul 2),
           integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
 
-/-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
-`Ioi 1` equals `E` times the central ray integral. -/
+/-- If `G t = E * Φ₅' u (tI)` for `t > 1`, then `∫ G = E * ∫ central` over `Ioi 1`. -/
 private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E : ℂ}
     (hG : ∀ t, 1 < t → G t = E * Φ₅' u ((t : ℂ) * Complex.I)) :
     (∫ t in Set.Ioi (1 : ℝ), G t) =
       E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
   rw [setIntegral_congr_fun measurableSet_Ioi hG, integral_const_mul]
 
-/-- Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`. -/
+/-- Rewrite `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`. -/
 public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) :
     MagicFunction.a.RealIntegrals.I₂' u + MagicFunction.a.RealIntegrals.I₄' u +
         MagicFunction.a.RealIntegrals.I₆' u =
