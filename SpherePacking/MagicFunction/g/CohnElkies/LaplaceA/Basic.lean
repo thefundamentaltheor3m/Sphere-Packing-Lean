@@ -16,15 +16,8 @@ import SpherePacking.ForMathlib.ModularFormsHelpers
 /-!
 # Laplace integral for `a'`
 
-This file defines the Laplace integrand `aLaplaceIntegrand` and proves the basic
-measurability/integrability lemmas needed for the blueprint proposition `prop:a-double-zeros`
-(the main statement is `aRadial_eq_laplace_phi0_main` in the `IntegralReps` namespace).
-
-## Main definitions
-* `MagicFunction.g.CohnElkies.IntegralReps.aLaplaceIntegrand`
-
-## Main statements
-* `MagicFunction.g.CohnElkies.IntegralReps.aLaplaceIntegral_convergent`
+Defines `aLaplaceIntegrand` and proves the measurability/integrability lemmas for blueprint
+proposition `prop:a-double-zeros` (main statement: `aRadial_eq_laplace_phi0_main`).
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -44,7 +37,7 @@ lemma continuousOn_phi0''_div_Ioi :
     ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
   MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
     (continuousOn_const.div Complex.continuous_ofReal.continuousOn
-      fun _ ht => by exact_mod_cast (ne_of_gt ht))
+      fun _ ht => mod_cast ht.ne')
     fun _ ht => by simp_all
 
 lemma aestronglyMeasurable_phi0''_div_Ioi :
@@ -67,9 +60,10 @@ lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
       (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
     ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
         (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
-  have hexp : AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
-      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by fun_prop
-  simpa [aLaplaceIntegrand, mul_assoc] using (ht2.mul aestronglyMeasurable_phi0''_div_Ioi).mul hexp
+  simpa [aLaplaceIntegrand, mul_assoc] using
+    (ht2.mul aestronglyMeasurable_phi0''_div_Ioi).mul (by fun_prop :
+      AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
+        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))))
 
 /-- Convergence of the Laplace integral defining `a'` (integrability on `(0, ∞)` for `u > 2`). -/
 public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
