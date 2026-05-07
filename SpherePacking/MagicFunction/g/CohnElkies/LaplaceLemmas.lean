@@ -1,17 +1,11 @@
 module
 public import Mathlib.MeasureTheory.Integral.Gamma
 
-
 /-!
 # Laplace-type integrals
 
-This file evaluates basic Laplace integrals over `Set.Ioi (0 : ℝ)` that occur in the
-"another integral" representations for `a'` and `b'`.
-
-## Main statements
-* `MagicFunction.g.CohnElkies.integral_exp_neg_pi_mul_Ioi`
-* `MagicFunction.g.CohnElkies.integral_mul_exp_neg_pi_mul_Ioi`
-* `MagicFunction.g.CohnElkies.integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi`
+Basic Laplace integrals over `Set.Ioi (0 : ℝ)` used in the "another integral" representations
+for `a'` and `b'`.
 -/
 
 namespace MagicFunction.g.CohnElkies
@@ -52,10 +46,10 @@ public lemma exp_two_pi_mul_mul_exp_neg_pi_mul (u t : ℝ) :
 public lemma integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 2 < u) :
     (∫ t in Set.Ioi (0 : ℝ), Real.exp (2 * π * t) * Real.exp (-π * u * t)) =
       1 / (π * (u - 2)) := by
-  have hpu : 0 < π * (u - 2) := by positivity [Real.pi_pos, sub_pos.2 hu]
   rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
     (g := fun t => Real.exp (-(π * (u - 2)) * t))
     (fun t _ => by simpa using exp_two_pi_mul_mul_exp_neg_pi_mul u t)]
-  simpa [mul_assoc] using (integral_exp_neg_mul_Ioi (a := π * (u - 2)) hpu)
+  simpa [mul_assoc] using
+    (integral_exp_neg_mul_Ioi (a := π * (u - 2)) (by positivity [Real.pi_pos, sub_pos.2 hu]))
 
 end MagicFunction.g.CohnElkies
