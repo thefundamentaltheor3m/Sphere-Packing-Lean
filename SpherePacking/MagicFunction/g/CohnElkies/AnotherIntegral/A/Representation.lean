@@ -6,23 +6,17 @@ import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Continuation
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 
-
 /-!
 # "Another integral" representation for `a'` (`AnotherIntegral.A`)
 
-This file proves the blueprint proposition `prop:a-another-integral`: for real `u` with `0 < u`
-and `u ≠ 2`, the function `a' u` is given by an explicit algebraic prefactor times an integral of
-`aAnotherIntegrand u`. The proof combines the `u > 2` computation with analytic continuation.
-
-## Main statement
-* `aRadial_eq_another_integral_main`
+Proves blueprint `prop:a-another-integral`: for `0 < u` and `u ≠ 2`, `a' u` equals an explicit
+algebraic prefactor times an integral of `aAnotherIntegrand u` (analytic continuation from `u > 2`).
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open MeasureTheory Real Complex
 open SpherePacking.Integration (μIoi0)
-
 open MagicFunction.FourierEigenfunctions
 
 lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
@@ -31,28 +25,20 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
     (hc8640 : c8640 = ((8640 / π : ℝ) : ℂ))
     (hc18144 : c18144 = ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
     {corr : ℝ → ℂ}
-    (hcorr :
-      corr =
-        fun t : ℝ =>
-          (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t))
+    (hcorr : corr =
+      fun t : ℝ => (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t))
     (hIexp :
         (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ))
-    (hItexp :
-        (∫ t in Set.Ioi (0 : ℝ), (t * Real.exp (-π * u * t) : ℂ)) =
-          ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ))
-    (hI2exp :
-        (∫ t in Set.Ioi (0 : ℝ),
-            (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) =
-          ((1 / (π * (u - 2)) : ℝ) : ℂ))
-    (hExpInt :
-        IntegrableOn (μ := (volume : Measure ℝ))
-          (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
-    (hTExpInt :
-        IntegrableOn (μ := (volume : Measure ℝ))
-          (fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
-    (h2ExpInt :
-        IntegrableOn (μ := (volume : Measure ℝ))
-          (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ))) :
+    (hItexp : (∫ t in Set.Ioi (0 : ℝ), (t * Real.exp (-π * u * t) : ℂ)) =
+        ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ))
+    (hI2exp : (∫ t in Set.Ioi (0 : ℝ), (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) =
+        ((1 / (π * (u - 2)) : ℝ) : ℂ))
+    (hExpInt : IntegrableOn (μ := (volume : Measure ℝ))
+        (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
+    (hTExpInt : IntegrableOn (μ := (volume : Measure ℝ))
+        (fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
+    (h2ExpInt : IntegrableOn (μ := (volume : Measure ℝ))
+        (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ))) :
     (∫ t in Set.Ioi (0 : ℝ), corr t) =
       (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
         (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
@@ -69,26 +55,22 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
       ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) from
     congrArg (integral (volume.restrict (Set.Ioi 0))) <| by
       funext t; dsimp [f0, f1, f2, g0, g1, g2]; ring]
-  let μ0 : Measure ℝ := μIoi0
-  change (∫ t, ((g2 t + g1 t) + g0 t) ∂ μ0) =
+  change (∫ t, ((g2 t + g1 t) + g0 t) ∂ μIoi0) =
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
       (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u)
   have hIntegrable (f : ℝ → ℂ)
-      (hf : IntegrableOn (μ := (volume : Measure ℝ)) f (Set.Ioi (0 : ℝ))) : Integrable f μ0 := by
-    simpa [MeasureTheory.IntegrableOn, μ0, μIoi0] using hf
-  have hG0 : (∫ t, g0 t ∂ μ0) = c18144 * ((1 / (π * u) : ℝ) : ℂ) := by
-    simpa [g0, f0, μ0, μIoi0] using
-      (MeasureTheory.integral_const_mul (μ := μ0) c18144 f0).trans
-        (by simpa [f0, μ0, μIoi0] using congrArg (c18144 * ·) hIexp)
-  have hG1 : (∫ t, g1 t ∂ μ0) = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    simpa [g1, f1, μ0, μIoi0] using
-      (MeasureTheory.integral_const_mul (μ := μ0) (-c8640) f1).trans
-        (by simpa [f1, μ0, μIoi0] using congrArg ((-c8640) * ·) hItexp)
-  have hG2 : (∫ t, g2 t ∂ μ0) = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-    simpa [g2, f2, μ0, μIoi0] using
-      (MeasureTheory.integral_const_mul (μ := μ0) c36 f2).trans
-        (by simpa [f2, μ0, μIoi0] using congrArg (c36 * ·) hI2exp)
-  rw [integral_add_add (μ := μ0) ((hIntegrable f2 h2ExpInt).const_mul c36)
+      (hf : IntegrableOn (μ := (volume : Measure ℝ)) f (Set.Ioi (0 : ℝ))) : Integrable f μIoi0 := by
+    simpa [MeasureTheory.IntegrableOn, μIoi0] using hf
+  have hG0 : (∫ t, g0 t ∂ μIoi0) = c18144 * ((1 / (π * u) : ℝ) : ℂ) := by
+    simpa [g0, f0, μIoi0] using (MeasureTheory.integral_const_mul (μ := μIoi0) c18144 f0).trans
+      (by simpa [f0, μIoi0] using congrArg (c18144 * ·) hIexp)
+  have hG1 : (∫ t, g1 t ∂ μIoi0) = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
+    simpa [g1, f1, μIoi0] using (MeasureTheory.integral_const_mul (μ := μIoi0) (-c8640) f1).trans
+      (by simpa [f1, μIoi0] using congrArg ((-c8640) * ·) hItexp)
+  have hG2 : (∫ t, g2 t ∂ μIoi0) = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
+    simpa [g2, f2, μIoi0] using (MeasureTheory.integral_const_mul (μ := μIoi0) c36 f2).trans
+      (by simpa [f2, μIoi0] using congrArg (c36 * ·) hI2exp)
+  rw [integral_add_add (μ := μIoi0) ((hIntegrable f2 h2ExpInt).const_mul c36)
       ((hIntegrable f1 hTExpInt).const_mul (-c8640)) ((hIntegrable f0 hExpInt).const_mul c18144),
     hG2, hG1, hG0, hc36, hc8640, hc18144]
   have hu2ne : (u - 2 : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hu)
@@ -149,7 +131,8 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi fun t _ ↦ by
           simp [-Complex.ofReal_exp, aLaplaceIntegrand, aAnotherIntegrand, c36, c8640, c18144,
-            sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm, corr]; ring]
+            sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm, corr]
+          ring]
     exact integral_add (by simpa [MeasureTheory.IntegrableOn] using
       aAnotherIntegrand_integrable_of_pos hu0)
       (by simpa [MeasureTheory.IntegrableOn] using hCorrInt)
