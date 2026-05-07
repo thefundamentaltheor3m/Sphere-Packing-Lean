@@ -147,8 +147,7 @@ namespace SpherePacking
   ⨆ S : PeriodicSpherePacking d, S.density
 
 /-- Supremum of density over all packings in dimension `d`. -/
-@[expose] public def _root_.SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
-  ⨆ S : SpherePacking d, S.density
+@[expose] public def _root_.SpherePackingConstant (d : ℕ) : ℝ≥0∞ := ⨆ S : SpherePacking d, S.density
 
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
