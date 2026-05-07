@@ -17,17 +17,12 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 /-!
 # `b` is a Schwartz function
 
-This file builds Schwartz functions from the radial integrals `J₁', ..., J₆'` and assembles the
+Builds Schwartz functions from the radial integrals `J₁', ..., J₆'` and assembles the
 `(-1)`-Fourier eigenfunction `b`.
-
-## Main definitions
-* `MagicFunction.b.SchwartzIntegrals.J₁'` (and `J₂'`, ..., `J₆'`)
-* `MagicFunction.FourierEigenfunctions.b'`, `MagicFunction.FourierEigenfunctions.b`
 -/
 
--- NOTE: On `ℝ`, the radial profiles are only used at `r = ‖x‖^2 ≥ 0`. We therefore use a smooth
--- cutoff to build global Schwartz functions on `ℝ` without changing the induced functions on
--- `EuclideanSpace ℝ (Fin 8)`.
+-- On `ℝ`, the radial profiles are only used at `r = ‖x‖^2 ≥ 0`. A smooth cutoff builds global
+-- Schwartz functions on `ℝ` without changing the induced functions on `EuclideanSpace ℝ (Fin 8)`.
 
 noncomputable section
 
@@ -38,34 +33,24 @@ open MagicFunction MagicFunction.b MagicFunction.b.RealIntegrals
 open Set Complex Real SchwartzMap RadialSchwartz.Bridge
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₁'`. -/
-public def J₁' : 𝓢(ℝ, ℂ) :=
-  RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₁')
-    MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁'
-    MagicFunction.b.Schwartz.J1Smooth.decay_J₁'
+public def J₁' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₁')
+  MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁' MagicFunction.b.Schwartz.J1Smooth.decay_J₁'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₂'`. -/
-public def J₂' : 𝓢(ℝ, ℂ) :=
-  RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₂')
-    MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂'
-    MagicFunction.b.Schwartz.J2Smooth.decay_J₂'
+public def J₂' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₂')
+  MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂' MagicFunction.b.Schwartz.J2Smooth.decay_J₂'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₃'`. -/
-public def J₃' : 𝓢(ℝ, ℂ) :=
-  RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₃')
-    MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃'
-    MagicFunction.b.Schwartz.J3Smooth.decay_J₃'
+public def J₃' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₃')
+  MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃' MagicFunction.b.Schwartz.J3Smooth.decay_J₃'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₄'`. -/
-public def J₄' : 𝓢(ℝ, ℂ) :=
-  RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₄')
-    MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄'
-    MagicFunction.b.Schwartz.J4Smooth.decay_J₄'
+public def J₄' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₄')
+  MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄' MagicFunction.b.Schwartz.J4Smooth.decay_J₄'
 
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₅'`. -/
-public def J₅' : 𝓢(ℝ, ℂ) :=
-  RadialSchwartz.Bridge.fCutSchwartz (f := MagicFunction.b.RealIntegrals.J₅')
-    MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
-    MagicFunction.b.Schwartz.J5Smooth.decay_J₅'
+public def J₅' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₅')
+  MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅' MagicFunction.b.Schwartz.J5Smooth.decay_J₅'
 
 private theorem J₆'_smooth_aux :
     ContDiff ℝ ∞ (fun r ↦ RadialSchwartz.cutoffC r * RealIntegrals.J₆' r) := by
@@ -83,46 +68,35 @@ public def J₆' : 𝓢(ℝ, ℂ) where
 
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₁'`. -/
 @[expose] public def J₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₁'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₁'
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₂'`. -/
 @[expose] public def J₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₂'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₂'
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₃'`. -/
 @[expose] public def J₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₃'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₃'
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₄'`. -/
 @[expose] public def J₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₄'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₄'
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₅'`. -/
 @[expose] public def J₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₅'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₅'
 /-- The Schwartz function on `ℝ⁸` obtained from the radial profile `J₆'`. -/
 @[expose] public def J₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₆'
+  schwartzMap_multidimensional_of_schwartzMap_real _ J₆'
 
 @[simp] public lemma J₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₁' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₁' r :=
-  fCut_apply_of_nonneg _ hr
-
+    (J₁' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₁' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₂' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₂' r :=
-  fCut_apply_of_nonneg _ hr
-
+    (J₂' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₂' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₃' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₃' r :=
-  fCut_apply_of_nonneg _ hr
-
+    (J₃' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₃' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₄' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₄' r :=
-  fCut_apply_of_nonneg _ hr
-
+    (J₄' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₄' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₅' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₅' r :=
-  fCut_apply_of_nonneg _ hr
-
+    (J₅' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₅' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₆' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₆' r :=
-  fCut_apply_of_nonneg _ hr
+    (J₆' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₆' r := fCut_apply_of_nonneg _ hr
 
 end MagicFunction.b.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
@@ -131,12 +105,9 @@ open SchwartzMap
 
 /-- The radial component of the -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[expose] public def b' : 𝓢(ℝ, ℂ) :=
-    MagicFunction.b.SchwartzIntegrals.J₁'
-  + MagicFunction.b.SchwartzIntegrals.J₂'
-  + MagicFunction.b.SchwartzIntegrals.J₃'
-  + MagicFunction.b.SchwartzIntegrals.J₄'
-  + MagicFunction.b.SchwartzIntegrals.J₅'
-  + MagicFunction.b.SchwartzIntegrals.J₆'
+  MagicFunction.b.SchwartzIntegrals.J₁' + MagicFunction.b.SchwartzIntegrals.J₂' +
+    MagicFunction.b.SchwartzIntegrals.J₃' + MagicFunction.b.SchwartzIntegrals.J₄' +
+    MagicFunction.b.SchwartzIntegrals.J₅' + MagicFunction.b.SchwartzIntegrals.J₆'
 
 /-- The -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[expose] public def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
@@ -144,12 +115,9 @@ open SchwartzMap
 
 /-- Expand `b` as a sum of the radial-kernel integrals `MagicFunction.b.RadialFunctions.J₁`-`J₆`. -/
 public theorem b_eq_sum_integrals_RadialFunctions : b =
-    MagicFunction.b.RadialFunctions.J₁
-  + MagicFunction.b.RadialFunctions.J₂
-  + MagicFunction.b.RadialFunctions.J₃
-  + MagicFunction.b.RadialFunctions.J₄
-  + MagicFunction.b.RadialFunctions.J₅
-  + MagicFunction.b.RadialFunctions.J₆ := by
+    MagicFunction.b.RadialFunctions.J₁ + MagicFunction.b.RadialFunctions.J₂ +
+      MagicFunction.b.RadialFunctions.J₃ + MagicFunction.b.RadialFunctions.J₄ +
+      MagicFunction.b.RadialFunctions.J₅ + MagicFunction.b.RadialFunctions.J₆ := by
   ext x
   have hr : 0 ≤ ‖x‖ ^ 2 := sq_nonneg ‖x‖
   simp [b, b', MagicFunction.b.RadialFunctions.J₁, MagicFunction.b.RadialFunctions.J₂,
@@ -158,12 +126,9 @@ public theorem b_eq_sum_integrals_RadialFunctions : b =
 
 /-- Expand `b` as a sum of the Schwartz kernels `MagicFunction.b.SchwartzIntegrals.J₁`-`J₆`. -/
 public theorem b_eq_sum_integrals_SchwartzIntegrals : b =
-    MagicFunction.b.SchwartzIntegrals.J₁
-  + MagicFunction.b.SchwartzIntegrals.J₂
-  + MagicFunction.b.SchwartzIntegrals.J₃
-  + MagicFunction.b.SchwartzIntegrals.J₄
-  + MagicFunction.b.SchwartzIntegrals.J₅
-  + MagicFunction.b.SchwartzIntegrals.J₆ := by
+    MagicFunction.b.SchwartzIntegrals.J₁ + MagicFunction.b.SchwartzIntegrals.J₂ +
+      MagicFunction.b.SchwartzIntegrals.J₃ + MagicFunction.b.SchwartzIntegrals.J₄ +
+      MagicFunction.b.SchwartzIntegrals.J₅ + MagicFunction.b.SchwartzIntegrals.J₆ := by
   rfl
 
 end MagicFunction.FourierEigenfunctions
