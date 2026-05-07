@@ -25,9 +25,8 @@ public lemma permJ12_Ψ₁_fourier_eq_neg_deriv_mul
   have hmob : mobiusInv z = (-1 : ℂ) / z := by simp [mobiusInv, div_eq_mul_inv]
   by_cases hψz : ψ z = 0
   · simp [hψz, show ψ (mobiusInv z) = 0 by simpa [hψz] using hψ, mul_assoc]
-  · simp [hmob, deriv_mobiusInv,
-      show ψ ((-1 : ℂ) / z) = -(ψ z) / z ^ q by simpa [hmob] using hψ,
-      div_pow, hI, mul_assoc, mul_comm, mul_left_comm]
-    field_simp [hz0, hψz]; ring_nf
+  simp [hmob, deriv_mobiusInv, show ψ ((-1 : ℂ) / z) = -(ψ z) / z ^ q by simpa [hmob] using hψ,
+    div_pow, hI, mul_assoc, mul_comm, mul_left_comm]
+  field_simp [hz0, hψz]; ring_nf
 
 end SpherePacking.Contour
