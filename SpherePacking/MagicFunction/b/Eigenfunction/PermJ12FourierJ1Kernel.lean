@@ -6,7 +6,6 @@ import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.MagicFunction.PsiTPrimeZ1Integrability
 
-
 /-! # Kernel used to rewrite the Fourier transform of `J₁` using Fubini. -/
 
 namespace MagicFunction.b.Fourier
@@ -16,7 +15,6 @@ noncomputable section
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral Filter
 open SpherePacking.ForMathlib SpherePacking.Integration SpherePacking.Contour
 open scoped FourierTransform RealInnerProductSpace Topology Real Interval
-
 
 /-- Rewrite `J₁'` using the explicit line parametrisation `z₁line`. -/
 public lemma J₁'_eq_integral_z₁line (r : ℝ) :
@@ -134,7 +132,6 @@ public lemma integrable_integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 
           MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
             (ψZ := ψT') (z := z₁line) (hCψ := hCψ)
             (hEq := fun s hs => ψT'_z₁line_eq (t := s) hs) (t := t) ht
-
 
 end
 
