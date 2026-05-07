@@ -23,8 +23,7 @@ local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
 noncomputable section defs
 
-/-- Auxiliary function used to define the `ψ`-functions (the `ψ`s are defined in terms of `h`
-via slash actions). -/
+/-- Auxiliary function used to define the `ψ`-functions via slash actions. -/
 @[expose] public def h : ℍ → ℂ := 128 • (H₃_MF + H₄_MF) / (H₂_MF ^ 2)
 
 /-- The function `ψI`, defined from `h` and its slash transform by `S * T` (weight `-2`). -/
@@ -36,19 +35,13 @@ via slash actions). -/
 /-- The function `ψS`, obtained from `ψI` by the slash action of `S` (weight `-2`). -/
 @[expose] public def ψS : ℍ → ℂ := ψI ∣[-2] S
 
-/-- Extend `ψI` to a function on `ℂ`, defined as `0` outside the upper half-plane.
-
-The prime in `ψI'` indicates this extension-to-`ℂ` convention. -/
+/-- Extend `ψI` to `ℂ`, defined as `0` outside the upper half-plane. -/
 @[expose] public def ψI' (z : ℂ) : ℂ := if hz : 0 < z.im then ψI ⟨z, hz⟩ else 0
 
-/-- Extend `ψS` to a function on `ℂ`, defined as `0` outside the upper half-plane.
-
-The prime in `ψS'` indicates this extension-to-`ℂ` convention. -/
+/-- Extend `ψS` to `ℂ`, defined as `0` outside the upper half-plane. -/
 @[expose] public def ψS' (z : ℂ) : ℂ := if hz : 0 < z.im then ψS ⟨z, hz⟩ else 0
 
-/-- Extend `ψT` to a function on `ℂ`, defined as `0` outside the upper half-plane.
-
-The prime in `ψT'` indicates this extension-to-`ℂ` convention. -/
+/-- Extend `ψT` to `ℂ`, defined as `0` outside the upper half-plane. -/
 @[expose] public def ψT' (z : ℂ) : ℂ := if hz : 0 < z.im then ψT ⟨z, hz⟩ else 0
 
 end defs
@@ -61,34 +54,33 @@ lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := fun hz =>
   lt_irrefl (0 : ℝ) (by simpa [hz] using (by simpa using z.2 : 0 < (z + 1 : ℂ).im))
 
 /-- Slash-action formula for `S` in weight `-2`. -/
-public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
-    F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
+public lemma slashS' (z : ℍ) (F : ℍ → ℂ) :
+    (F ∣[(-2 : ℤ)] (S)) (z) = F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, S, denom, zpow_two, pow_two]
 
-lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
-    (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
+lemma slashS'' (z : ℍ) (F : ℍ → ℂ) :
+    F (S • z) = (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, S, denom, zpow_two, pow_two, UpperHalfPlane.ne_zero z, mul_assoc]
 
 lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
 
-lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) =  (F) (T • z) := by
+lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) = (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
 
 /-- Slash-action formula for `S * T` in weight `-2`. -/
-public lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)) (z) =
-    F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
+public lemma slashST' (z : ℍ) (F : ℍ → ℂ) :
+    ((F) ∣[(-2 : ℤ)] (S * T)) (z) = F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, sl_moeb, zpow_two, pow_two]
 
-lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
-    (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
+lemma slashST'' (z : ℍ) (F : ℍ → ℂ) :
+    F ((S * T) • z) = (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, zpow_two, pow_two, z_plus_one_nonzero z,
     mul_assoc]
 
 end aux
 
-/-- Explicit formula for `ψI` in terms of the Jacobi theta functions `H₂`, `H₃`, and `H₄`
-(Lemma 7.16 in the blueprint). -/
+/-- Explicit formula for `ψI` in terms of `H₂`, `H₃`, `H₄` (Lemma 7.16 in the blueprint). -/
 public lemma ψI_eq :
     ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H₂_MF) / H₃_MF ^ 2) := by
   rw [ψI, h]
@@ -133,10 +125,7 @@ public lemma ψT_eq :
 
 -- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
 -- here is the description that can be found in Maryna's paper.
-/-- A first explicit formula for `ψS` in terms of `H₂`, `H₃`, and `H₄`.
-
-The prime in `ψS_eq'` indicates that this is a variant expression for `ψS` (used for comparison
-with external references). -/
+/-- A first explicit formula for `ψS` in terms of `H₂`, `H₃`, and `H₄`. -/
 public lemma ψS_eq' :
     ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
   rw [ψS, ψI_eq]
