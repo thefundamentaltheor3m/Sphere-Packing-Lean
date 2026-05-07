@@ -9,7 +9,6 @@ import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import Mathlib.MeasureTheory.Integral.ExpDecay
 
-
 /-!
 # Laplace integral for `b'`
 
@@ -18,15 +17,12 @@ Defines the Laplace integrand `bLaplaceIntegrand` and proves its convergence on 
 `bRadial_eq_laplace_psiI_main`).
 -/
 
-
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 noncomputable section
 
 open scoped BigOperators Topology UpperHalfPlane
-open MeasureTheory Real Complex Filter
-open UpperHalfPlane
-open MagicFunction.FourierEigenfunctions
+open MeasureTheory Real Complex Filter UpperHalfPlane MagicFunction.FourierEigenfunctions
 
 /-- The Laplace integrand appearing in the representation of the radial profile `b'`. -/
 @[expose] public def bLaplaceIntegrand (u t : ℝ) : ℂ :=
@@ -69,8 +65,8 @@ public lemma exists_ψI_bound_exp :
   have hEvNum : ∀ᶠ z in atImInfty, ‖num z‖ ≤ (2 : ℝ) := by
     filter_upwards [hnum.eventually (Metric.ball_mem_nhds (1 : ℂ) (by norm_num : (0 : ℝ) < 1))]
       with z hz
-    have hdist : ‖num z - (1 : ℂ)‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hz
     nlinarith [show ‖(1 : ℂ)‖ = (1 : ℝ) by simp,
+      (by simpa [Metric.mem_ball, dist_eq_norm] using hz : ‖num z - (1 : ℂ)‖ < 1),
       (by simpa [sub_add_cancel] using norm_add_le (num z - (1 : ℂ)) (1 : ℂ) :
         ‖num z‖ ≤ ‖num z - (1 : ℂ)‖ + ‖(1 : ℂ)‖)]
   rcases (UpperHalfPlane.atImInfty_mem _).1 (by simpa using hEvNum) with ⟨A0, hA0⟩
