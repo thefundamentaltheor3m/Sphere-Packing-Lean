@@ -31,7 +31,7 @@ public def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) �
   map_add' _ _ := by ext; simp
   map_smul' _ _ := by ext; simp
 
-/-- The submodule of integer vectors in `Fin n → ℤ` whose coordinate sum is even. -/
+/-- Integer vectors in `Fin n → ℤ` with even coordinate sum. -/
 public def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) where
   carrier := {v | ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' {a b} ha hb := by
@@ -39,11 +39,11 @@ public def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) wh
   zero_mem' := by simp
   smul_mem' c a ha := by simpa [Finset.mul_sum] using ha.zsmul' (n := c)
 
-/-- The `ℤ`-submodule of `Fin n → R` consisting of integer vectors with even coordinate sum. -/
+/-- `evenLatticeInt n` cast into `Fin n → R`. -/
 public def Submodule.evenLattice (R : Type*) (n : ℕ) [Ring R] : Submodule ℤ (Fin n → R) :=
   (evenLatticeInt n).map (LinearMap.intCast R)
 
-/-- A membership characterization for `evenLattice` in terms of coordinates and an even sum. -/
+/-- Coordinatewise characterization of `evenLattice`: integer entries with even sum. -/
 public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
     (Submodule.evenLattice R n : Set (Fin n → R)) =
     {v | (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2]} := by
@@ -57,7 +57,6 @@ public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero 
   simpa [evenLatticeInt] using (AddCommGroup.intCast_modEq_intCast' (G := R)
     (a := ∑ i, w i) (b := 0) (n := 2)).1 (by simpa [← hw, Int.cast_sum] using hv')
 
-/-- Membership in `evenLattice` (as a proposition). -/
 public lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ) {v : Fin n → R} :
     v ∈ Submodule.evenLattice R n ↔
       (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -141,14 +140,13 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
   exact ⟨by simp, by simpa using (AddCommGroup.add_nsmul_modEq _).symm.trans hx'⟩
 
-/-- A concrete matrix whose rows form a basis for the `E8` lattice. -/
+/-- Concrete matrix whose rows form a basis for the `E8` lattice. -/
 @[expose] public def E8Matrix (R : Type*) [Field R] : Matrix (Fin 8) (Fin 8) R :=
   !![2, 0, 0, 0, 0, 0, 0, 0; -1, 1, 0, 0, 0, 0, 0, 0;
      0, -1, 1, 0, 0, 0, 0, 0; 0, 0, -1, 1, 0, 0, 0, 0;
      0, 0, 0, -1, 1, 0, 0, 0; 0, 0, 0, 0, -1, 1, 0, 0;
      0, 0, 0, 0, 0, -1, 1, 0; 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹]
 
-/-- Each row of `E8Matrix` lies in the `E8` submodule. -/
 public lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
     ∀ i, (E8Matrix R).row i ∈ Submodule.E8 R := by
   rw [Submodule.E8_eq_sup, Fin.forall_fin_succ']
@@ -163,7 +161,6 @@ lemma E8Matrix_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Matrix R = (E8Matrix ℚ).map (Rat.castHom R) := by
   rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Matrix]
 
-/-- The determinant of `E8Matrix` is `1`. -/
 public theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] :
     (E8Matrix R).det = 1 := by
   rw [Matrix.det_of_lowerTriangular _ (by simp [Matrix.BlockTriangular, E8Matrix,
@@ -176,28 +173,23 @@ private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
   rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
     E8Matrix_unimodular]; simp
 
-/-- The rows of `E8Matrix` are linearly independent. -/
 public lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
 
-/-- The rows of `E8Matrix` span the whole space. -/
 public lemma span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := (E8Matrix_is_basis _).2
 
-/-- The basis of `Fin 8 → R` given by the rows of `E8Matrix`. -/
+/-- Basis of `Fin 8 → R` given by the rows of `E8Matrix`. -/
 @[expose] public noncomputable def E8Basis (R : Type*) [Field R] [NeZero (2 : R)] :
     Basis (Fin 8) R (Fin 8 → R) :=
   Basis.mk (linearIndependent_E8Matrix R) (span_E8Matrix_eq_top R).ge
 
-/-- Unfolding lemma for `E8Basis`. -/
 public lemma E8Basis_apply [Field R] [NeZero (2 : R)] (i : Fin 8) :
     E8Basis R i = (E8Matrix R).row i := by simp [E8Basis, Matrix.row]
 
-/-- The matrix of `E8Basis` is `E8Matrix`. -/
 public lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
   ext; simp [E8Basis_apply]
 
-/-- The row vectors of `E8Matrix` all lie in the `E8` submodule. -/
 public theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
     Set.range (E8Matrix R).row ⊆ Submodule.E8 R :=
   Set.range_subset_iff.2 (E8Matrix_row_mem_E8 (R := R))
@@ -220,13 +212,12 @@ lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
   set c' := Matrix.vecMul v (E8Inverse R)
   have aux (w : Fin 8 → ℤ) (hw : ∑ i, w i = 0) (k : Fin 8)
       (hk : c' k = ∑ i, v i * w i := by
-        simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) : ∃ n : ℤ, (n : R) = c' k :=
-    have : ∃ c : ℤ, (c : R) = ∑ i, v i * w i := by
-      obtain ⟨hv' | hv', _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
-      exacts [⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩,
-        ⟨∑ i, v' i * w i, by simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
-          Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
-    this.imp fun _ hn => hn.trans hk.symm
+        simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]) :
+      ∃ n : ℤ, (n : R) = c' k := by
+    obtain ⟨hv' | hv', _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
+    exacts [⟨∑ i, v' i * w i, by simp [hk, ← hv', Int.cast_sum, Int.cast_mul]⟩,
+      ⟨∑ i, v' i * w i, by simp [hk, ← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
+        Int.cast_sum, Int.cast_mul, show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩]
   obtain ⟨c0, hc0⟩ : ∃ n : ℤ, (n : R) = c' 0 := by
     have h0' : c' 0 = (∑ i, v i) * 2⁻¹ - 4 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]; ring
