@@ -95,16 +95,14 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
 @[fun_prop]
 theorem F_holo : MDiff F := by unfold F; fun_prop
 
+@[fun_prop]
 theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
 theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
 
 theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
 
-theorem L₁₀_holo : MDiff L₁₀ := by
-  unfold L₁₀
-  exact (D_differentiable F_holo).mul G_holo
-    |>.sub (F_holo.mul (D_differentiable G_holo))
+theorem L₁₀_holo : MDiff L₁₀ := by unfold L₁₀; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
