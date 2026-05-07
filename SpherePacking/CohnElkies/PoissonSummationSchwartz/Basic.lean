@@ -23,11 +23,10 @@ local notation "Λ" => SchwartzMap.standardLattice d
     ⟨fun a b hab => funext fun i => by
       simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
         congrArg (fun x : E => x i) (congrArg Subtype.val hab),
-    fun ℓ => by
-      obtain ⟨n, hn⟩ :=
-        SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
-          (d := d) (x := (ℓ : E)) ℓ.property
-      exact ⟨n, Subtype.ext hn.symm⟩⟩
+    fun ℓ =>
+      let ⟨n, hn⟩ := SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
+        (d := d) (x := (ℓ : E)) ℓ.property
+      ⟨n, Subtype.ext hn.symm⟩⟩
 
 /-- Coercion lemma for `equivIntVec`. -/
 @[simp] public lemma coe_equivIntVec (n : Fin d → ℤ) :
@@ -40,9 +39,8 @@ variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
   measurable_const_vadd c := by
     simpa [Submodule.vadd_def, vadd_eq_add] using (continuous_const.add continuous_id).measurable
-  measurable_vadd_const x := by
-    simpa [Submodule.vadd_def, vadd_eq_add] using
-      (continuous_subtype_val.add continuous_const).measurable
+  measurable_vadd_const x := by simpa [Submodule.vadd_def, vadd_eq_add] using
+    (continuous_subtype_val.add continuous_const).measurable
 
 /-- Invariance of Lebesgue measure under translations by standard lattice vectors. -/
 public instance instVAddInvariantMeasure_standardLattice :
@@ -52,7 +50,7 @@ public instance instVAddInvariantMeasure_standardLattice :
 
 /-- Translate the Schwartz function `f` by a lattice vector, as a continuous map. -/
 @[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) :=
-  (⟨(fun x => f x), f.continuous⟩ : C(E, ℂ)).comp (ContinuousMap.addRight (ℓ : E))
+  (⟨f, f.continuous⟩ : C(E, ℂ)).comp (ContinuousMap.addRight (ℓ : E))
 
 /-- Pointwise formula for `translate`. -/
 @[simp] public lemma translate_apply (ℓ : Λ) (x : E) :
@@ -142,10 +140,9 @@ public lemma periodized_factorsThrough :
   obtain ⟨n, hn⟩ := PoissonSummation.Standard.exists_intVec_eq_sub_of_coeFunE_eq
     (d := d) (x := x) (y := y) (by simpa [coeFunEC] using hxy)
   simpa [show x = y + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n by
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using congrArg (fun t => t + y) hn]
-    using periodized_vadd_eq (d := d) (f := f) y
-      ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
-        SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      congrArg (fun t => t + y) hn] using periodized_vadd_eq (d := d) (f := f) y
+    ⟨_, SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩
 
 /-- Descend the periodization to the torus `(ℝ/ℤ)^d` via the quotient. -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
@@ -155,8 +152,8 @@ public lemma periodized_factorsThrough :
 /-- Compatibility of `descended` with `coeFunE`: pulling back gives `periodized`. -/
 public lemma descended_comp (x : E) :
     descended (d := d) f (PoissonSummation.Standard.coeFunE (d := d) x) =
-      periodized (d := d) f x := by
-  simpa [coeFunEC] using congrArg (fun g : C(E, ℂ) => g x)
+      periodized (d := d) f x :=
+  congrArg (fun g : C(E, ℂ) => g x)
     (by simp [descended] : (descended (d := d) f).comp (coeFunEC (d := d)) = periodized (d := d) f)
 
 /-- Evaluate `mFourier (-n)` after composing with `coeFunE`, in terms of an inner product. -/
@@ -187,28 +184,27 @@ public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
     RCLike.inner_eq_wInner_one x (intVec n)] using mFourier_apply_coeFunE (d := d) (n := n) (x := x)
 
 /-- `mFourier (-n) ∘ coeFunE` is invariant under adding an element of the standard lattice. -/
-public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ)
-    (ℓ : Λ) (x : E) :
+public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ) (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) =
-      UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) := by
-  obtain ⟨m, hm⟩ := PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
+      UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) :=
+  let ⟨m, hm⟩ := PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice
     (d := d) (x := (ℓ : E)) ℓ.property
-  simp [hm]
+  by simp [hm]
 
 /-- The fundamental cube `iocCube` is contained in the closed ball of radius `sqrt d`. -/
 public lemma iocCube_subset_closedBall :
     SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆
       Metric.closedBall (0 : E) (Real.sqrt d) := fun x hx => by
-  refine (by simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using
+  simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using
     Real.sqrt_le_sqrt (show (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) by
       simpa using (Finset.sum_le_sum fun i _ => show ‖x i‖ ^ 2 ≤ (1 : ℝ) by
         nlinarith [norm_nonneg (x i), show ‖x i‖ ≤ (1 : ℝ) by
-          simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2]).trans_eq (by simp)))
+          simpa [Real.norm_eq_abs, abs_of_nonneg (hx i).1.le] using (hx i).2]).trans_eq (by simp))
 
 /-- The fundamental cube `iocCube` has finite Lebesgue measure. -/
 public lemma volume_iocCube_lt_top :
-    (volume : Measure E) (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) < ⊤ := by
-  simpa using ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
+    (volume : Measure E) (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) < ⊤ :=
+  ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
     (iocCube_subset_closedBall (d := d))).measure_lt_top
 
 /-- Integrability of `mFourier (-n) * translate` on the fundamental cube `iocCube`. -/
@@ -221,21 +217,20 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
   let K : TopologicalSpace.Compacts E :=
     ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
   refine Measure.integrableOn_of_bounded (μ := (volume : Measure E))
-      (s := SchwartzMap.PoissonSummation.Standard.iocCube (d := d))
-      (s_finite := (volume_iocCube_lt_top (d := d)).ne)
-      (M := ‖(translate (d := d) f ℓ).restrict K‖)
-      (((UnitAddTorus.mFourier (-n)).continuous.comp
-          (PoissonSummation.Standard.continuous_coeFunE (d := d))).mul
-          (f.continuous.comp (continuous_id.add continuous_const))).aestronglyMeasurable
-      (ae_restrict_of_forall_mem
-        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x hx => ?_)
+    (s := SchwartzMap.PoissonSummation.Standard.iocCube (d := d))
+    (s_finite := (volume_iocCube_lt_top (d := d)).ne)
+    (M := ‖(translate (d := d) f ℓ).restrict K‖)
+    (((UnitAddTorus.mFourier (-n)).continuous.comp
+        (PoissonSummation.Standard.continuous_coeFunE (d := d))).mul
+        (f.continuous.comp (continuous_id.add continuous_const))).aestronglyMeasurable
+    (ae_restrict_of_forall_mem (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube
+      (d := d)) fun x hx => ?_)
   calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
         f (x + (ℓ : E))‖
       ≤ 1 * ‖f (x + (ℓ : E))‖ := by
         rw [norm_mul]; gcongr
         simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-          ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-            (PoissonSummation.Standard.coeFunE (d := d) x)
+          ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) _
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
       simpa [translate_apply, ContinuousMap.restrict_apply] using
         ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
