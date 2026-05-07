@@ -10,8 +10,7 @@ import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 /-!
 # Cancellation estimate for `ψI'(it)` (AnotherIntegral.B)
 
-After subtracting the main terms `exp (2π t)` and `144`, the remainder decays like
-`O(exp (-π t))`.
+After subtracting `exp (2π t)` and `144`, the remainder decays like `O(exp (-π t))`.
 -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation
@@ -29,10 +28,8 @@ private lemma exp_neg_scaled_pi_le (c : ℝ) (hc : 1 ≤ c) {t : ℝ} (ht : 0 �
     Real.exp (-c * Real.pi * t) ≤ Real.exp (-Real.pi * t) :=
   Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, mul_nonneg (sub_nonneg.mpr hc) ht])
 
-/--
-If `A = err + main` where `‖err‖ ≤ Cerr * exp(-k π t)` with `k ≥ 1` and
-`‖main‖ ≤ Cm * exp(-π t)`, then `‖A‖ ≤ (Cerr + Cm) * exp(-π t)`.
--/
+/-- If `A = err + main`, `‖err‖ ≤ Cerr * exp(-k π t)` with `k ≥ 1`, and
+`‖main‖ ≤ Cm * exp(-π t)`, then `‖A‖ ≤ (Cerr + Cm) * exp(-π t)`. -/
 private lemma norm_le_err_plus_main {A err main : ℂ} (hdec : A = err + main)
     {Cerr k Cm : ℝ} (hCerr : 0 ≤ Cerr) (hk : 1 ≤ k) {t : ℝ} (ht : 0 ≤ t)
     (herr : ‖err‖ ≤ Cerr * Real.exp (-k * Real.pi * t))
@@ -56,11 +53,8 @@ public lemma psiI'_mul_I_eq_resToImagAxis (t : ℝ) (ht : 0 < t) :
     ψI' (Complex.I * (t : ℂ)) = ψI.resToImagAxis t := by
   simp [ψI', Function.resToImagAxis, ResToImagAxis, ht]
 
-/--
-Cancellation estimate for `ψI'(it)` on `t ≥ 1`.
-
-After subtracting `144` and `exp (2π t)`, the remainder is `O(exp (-π t))`.
--/
+/-- Cancellation estimate for `ψI'(it)` on `t ≥ 1`: after subtracting `144` and `exp (2π t)`,
+the remainder is `O(exp (-π t))`. -/
 public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ)‖
