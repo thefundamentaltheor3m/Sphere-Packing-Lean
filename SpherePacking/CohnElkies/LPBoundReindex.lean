@@ -42,20 +42,14 @@ variable {d : ℕ}
     ⟨p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d)),
       P.lattice_action p.2.property (p.1.property).1⟩
   let toPair : P.centers → ↑(P.centers ∩ D) × P.lattice := fun x => (repr x, -cover x)
-  refine
-    { toFun := toCenter
-      invFun := toPair
-      left_inv := ?_
-      right_inv := ?_ }
+  refine { toFun := toCenter, invFun := toPair, left_inv := ?_, right_inv := ?_ }
   · intro p
     have hcover : cover (toCenter p) = -p.2 :=
       ((Classical.choose_spec (hcover (toCenter p))).2 (-p.2)
         (by simp [toCenter, p.1.property])).symm
-    refine Prod.ext ?_ ?_
-    · exact Subtype.ext (by simp [toPair, repr, toCenter, hcover])
-    · simp [toPair, hcover]
-  · intro x
-    exact Subtype.ext (by simp [toPair, repr, toCenter, neg_vadd_vadd])
+    refine Prod.ext (Subtype.ext (by simp [toPair, repr, toCenter, hcover])) ?_
+    simp [toPair, hcover]
+  · exact fun x => Subtype.ext (by simp [toPair, repr, toCenter, neg_vadd_vadd])
 
 /-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates,
 the periodic decomposition used in `LPBound.lean`. -/
@@ -114,31 +108,21 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
           ∑' y : ↑(P.centers ∩ D),
             (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re from by
       simpa using hSummable_p.tsum_prod]
-  have hy_comm :
-      ∀ x : ↑(P.centers ∩ D),
-        (∑' ℓ : P.lattice,
-              ∑' y : ↑(P.centers ∩ D),
-                (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) -
-                  (y : EuclideanSpace ℝ (Fin d)))).re)
-          =
-          ∑' y : ↑(P.centers ∩ D),
-            ∑' ℓ : P.lattice,
-              (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) -
-                (y : EuclideanSpace ℝ (Fin d)))).re := fun x => by
-    have hℓ :
-        ∀ y ∈ (Finset.univ : Finset ↑(P.centers ∩ D)),
-          Summable fun ℓ : P.lattice =>
-            (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) -
-              (y : EuclideanSpace ℝ (Fin d)))).re := fun y _ =>
-      (summable_congr fun b => congrArg Complex.re (congrArg (⇑f) (he_sub x y b))).mpr
-        (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
-          (Λ := P.lattice) (f := f)
-          ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))
+  have hy_comm : ∀ x : ↑(P.centers ∩ D),
+      (∑' ℓ : P.lattice, ∑' y : ↑(P.centers ∩ D),
+            (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re) =
+        ∑' y : ↑(P.centers ∩ D), ∑' ℓ : P.lattice,
+          (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) -
+            (y : EuclideanSpace ℝ (Fin d)))).re := fun x => by
     simpa [tsum_fintype] using
       (Summable.tsum_finsetSum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
-            (f := fun (y : ↑(P.centers ∩ D)) (ℓ : P.lattice) =>
-              (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) -
-                (y : EuclideanSpace ℝ (Fin d)))).re) hℓ)
+        (f := fun (y : ↑(P.centers ∩ D)) (ℓ : P.lattice) =>
+          (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re)
+        (fun y _ =>
+          (summable_congr fun b => congrArg Complex.re (congrArg (⇑f) (he_sub x y b))).mpr
+            (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
+              (Λ := P.lattice) (f := f)
+              ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))))
   simp_rw [hy_comm]
   exact tsum_congr fun x =>
     tsum_congr₂ fun b c => congrArg Complex.re (congrArg (⇑f) (he_sub x b c))
