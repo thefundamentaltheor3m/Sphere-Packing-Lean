@@ -91,8 +91,7 @@ open Real
   separation := c * S.separation
   separation_pos := mul_pos hc S.separation_pos
   centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ hxy ↦ by
-    obtain ⟨x', hx', rfl⟩ := Set.mem_smul_set.mp hx
-    obtain ⟨y', hy', rfl⟩ := Set.mem_smul_set.mp hy
+    obtain ⟨x', hx', rfl⟩ := Set.mem_smul_set.mp hx; obtain ⟨y', hy', rfl⟩ := Set.mem_smul_set.mp hy
     change c * S.separation ≤ ‖c • x' - c • y'‖
     rw [← smul_sub, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le]
     exact (mul_le_mul_iff_right₀ hc).mpr <| S.centers_dist (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩)
