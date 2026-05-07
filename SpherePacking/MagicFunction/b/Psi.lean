@@ -43,7 +43,6 @@ noncomputable section defs
 
 /-- Extend `ψT` to `ℂ`, defined as `0` outside the upper half-plane. -/
 @[expose] public def ψT' (z : ℂ) : ℂ := if hz : 0 < z.im then ψT ⟨z, hz⟩ else 0
-
 end defs
 
 section eq
@@ -77,7 +76,6 @@ lemma slashST'' (z : ℍ) (F : ℍ → ℂ) :
     F ((S * T) • z) = (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, zpow_two, pow_two, z_plus_one_nonzero z,
     mul_assoc]
-
 end aux
 
 /-- Explicit formula for `ψI` in terms of `H₂`, `H₃`, `H₄` (Lemma 7.16 in the blueprint). -/
@@ -96,15 +94,14 @@ public lemma ψI_eq :
         Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply],
     slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF,
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, slash_mul, slash_mul, slash_mul,
-    H₂_S_action, H₃_S_action, H₄_S_action,
-    SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
+    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action,
+    H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
     H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
   rw [← mul_assoc, mul_div_mul_comm, div_self hz1, mul_one]
   nth_rw 2 [mul_comm]
-  rw [← mul_assoc, ← pow_two, ← div_div, smul_mul_assoc, div_mul_comm,
-    div_self hz1, one_mul, ← neg_nsmul, neg_div', add_comm ]
+  rw [← mul_assoc, ← pow_two, ← div_div, smul_mul_assoc, div_mul_comm, div_self hz1, one_mul,
+    ← neg_nsmul, neg_div', add_comm ]
   simp only [Pi.neg_apply, neg_add_rev, neg_neg, even_two, Even.neg_pow, nsmul_eq_mul,
     Nat.cast_ofNat, Pi.smul_apply, Pi.div_apply, Pi.sub_apply, Pi.pow_apply, mul_eq_mul_left_iff,
     OfNat.ofNat_ne_zero, or_false]
@@ -138,14 +135,13 @@ public lemma ψS_eq' :
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   simp only [Pi.neg_apply]
-  field_simp
-  ring
+  field_simp; ring
 
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/
 public lemma ψS_eq :
     ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H₄_MF) / (H₃_MF ^ 2)) := by
-  rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _,
-    ← sub_neg_eq_add, ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
+  rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _, ← sub_neg_eq_add,
+    ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
 
 /-- Decomposition of `ψI` as the sum `ψT + ψS`. -/
 public lemma ψI_eq_add_ψT_ψS : ψI = ψT + ψS := by
@@ -168,8 +164,7 @@ public lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
 
 /-- Modular relation: `ψS ∣[-2] S = ψI`. -/
 public lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
-  rw [ψS, ← slash_mul, ModularGroup.modular_S_sq]
-  norm_num
+  rw [ψS, ← slash_mul, ModularGroup.modular_S_sq]; norm_num
 
 /-- Modular relation: `ψS ∣[-2] (S * T) = ψT`. -/
 public lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
@@ -186,22 +181,19 @@ public lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
-  simp [sub_eq_add_neg, add_comm]
-  ring
+  simp [sub_eq_add_neg, add_comm]; ring
 
 /-- Modular relation: `ψT ∣[-2] S = -ψT`. -/
 public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   ext z
   rw [ψT_eq, slashS']
-  simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
-    Pi.pow_apply, Pi.neg_apply]
+  simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.neg_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have hz : (z : ℂ) ≠ 0 := ne_zero z
-  field_simp
-  ring
+  field_simp; ring
 
 /-- Modular relation: `ψS ∣[-2] (S * T * S) = -ψT`. -/
 public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
