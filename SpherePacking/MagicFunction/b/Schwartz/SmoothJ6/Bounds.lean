@@ -19,13 +19,8 @@ import SpherePacking.Integration.Measure
 /-!
 # Smoothness and decay for `J₆'` on `(-1, ∞)`
 
-This file proves regularity of the primed radial integral `RealIntegrals.J₆'` on the open half-line
-`Ioi (-1)`. The proofs differentiate under the integral sign using dominated differentiation, with
-the exponential decay of `ψS` on the imaginary axis providing the integrable domination.
-
-## Main statements
-* `contDiffOn_J₆'_Ioi_neg1`
-* `decay_J₆'`
+Regularity of the primed radial integral `RealIntegrals.J₆'` on `Ioi (-1)`, proved by
+differentiating under the integral sign with the exponential decay of `ψS` providing domination.
 -/
 
 
@@ -46,15 +41,12 @@ open SpherePacking.Integration
 
 def μ : Measure ℝ := μIciOne
 
--- The open set of parameters where the integral is dominated by an exponentially decaying bound.
 def s : Set ℝ := Ioi (-1 : ℝ)
 
 lemma isOpen_s : IsOpen s := isOpen_Ioi
 
 abbrev coeff (t : ℝ) : ℂ := SmoothIntegralIciOne.coeff t
-
 abbrev g (x t : ℝ) : ℂ := SmoothIntegralIciOne.g (hf := ψS.resToImagAxis) x t
-
 abbrev gN (n : ℕ) (x t : ℝ) : ℂ := SmoothIntegralIciOne.gN (hf := ψS.resToImagAxis) n x t
 
 lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := by
@@ -78,13 +70,13 @@ lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ 
 lemma coeff_norm (t : ℝ) (ht : t ∈ Ici (1 : ℝ)) : ‖coeff t‖ = π * t := by
   simpa [coeff] using SmoothIntegralIciOne.coeff_norm (t := t) ht
 
-lemma g_norm_bound (x : ℝ) (t : ℝ) :
+lemma g_norm_bound (x t : ℝ) :
     ‖g x t‖ ≤ ‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t) := by
   simpa [g] using SmoothIntegralIciOne.g_norm_bound (hf := ψS.resToImagAxis) (x := x) (t := t)
 
 def F (n : ℕ) (x : ℝ) : ℂ := ∫ t in Ici (1 : ℝ), gN n x t
 
--- Incorporate the outer constant factor from the definition of `J₆'`.
+/-- `G` incorporates the outer `-2` factor from the definition of `J₆'`. -/
 def G (n : ℕ) (x : ℝ) : ℂ := (-2 : ℂ) * F n x
 
 lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
@@ -101,8 +93,7 @@ lemma hasDerivAt_G (n : ℕ) (x : ℝ) (hx : x ∈ s) :
     HasDerivAt (fun y : ℝ => G n y) (G (n + 1) x) x := by
   simpa [G] using (hasDerivAt_F (n := n) (x := x) hx).const_mul (-2 : ℂ)
 
-lemma iteratedDeriv_G_eq :
-    ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s :=
+lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s :=
   SpherePacking.ForMathlib.eqOn_iteratedDeriv_eq_of_deriv_eq (hs := isOpen_s) (G := G)
     (hderiv := fun n x hx => (hasDerivAt_G (n := n) (x := x) hx).deriv)
 
@@ -134,9 +125,7 @@ public theorem contDiffOn_J₆'_Ioi_neg1 :
         (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)) :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 
-/-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₆'` refers to the function `RealIntegrals.J₆'`. -/
+/-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₆' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := by
   intro k n
