@@ -8,40 +8,26 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 
-/-!
-# Shared contour deformation lemmas for `J₁/J₂`
+/-! # Shared contour deformation lemmas for `J₁/J₂`
 
-Deformation lemmas underlying the `perm_J12_contour_h1` and `perm_J12_contour_h2` identities
-in the `b`-eigenfunction Fourier permutation proof. Packaged here to reuse between the two
-contours and to keep the topological hypotheses factored through `ClosedOneFormOn`.
--/
+Underlies `perm_J12_contour_h1` and `perm_J12_contour_h2` in the `b`-eigenfunction Fourier
+permutation proof. Topological hypotheses are factored through `ClosedOneFormOn`. -/
 
 open MeasureTheory
 open MagicFunction
 
 namespace SpherePacking.Contour
 
-/--
-`ClosedOneFormOn ω s` packages the hypotheses needed to apply the Poincaré lemma for curve
-integrals on a set `s`: regularity (`DiffContOnCl`) plus symmetry of the `fderivWithin`
-(`dω = 0`).
-
-This is a convenience wrapper to keep lemma statements readable (and to avoid repeating the long
-`fderivWithin` symmetry predicate at every call site).
--/
+/-- `ClosedOneFormOn ω s` packages the hypotheses needed to apply the Poincaré lemma for curve
+integrals on `s`: regularity (`DiffContOnCl`) plus symmetry of the `fderivWithin`. -/
 public structure ClosedOneFormOn (ω : ℂ → ℂ →L[ℂ] ℂ) (s : Set ℂ) : Prop where
   diffContOnCl : DiffContOnCl ℝ ω s
   fderivWithin_symm :
     ∀ x ∈ s, ∀ u ∈ tangentConeAt ℝ s x, ∀ v ∈ tangentConeAt ℝ s x,
       fderivWithin ℝ ω s x u v = fderivWithin ℝ ω s x v u
 
-/--
-Hypotheses for `perm_J12_contour_h1` that are independent of the specific 1-form `scalarOneForm`.
-
-Callers are expected to provide the two "geometric" facts needed to apply the Poincaré lemma:
-1) the homotopy stays inside `wedgeSet`; and
-2) the homotopy map is `C²` on `Icc (0,1)²`.
--/
+/-- Hypotheses for `perm_J12_contour_h1` independent of the specific 1-form `scalarOneForm`:
+the homotopy stays inside `wedgeSet` and is `C²` on `Icc (0,1)²`. -/
 public structure PermJ12ContourH1Hyp (mobiusInv : ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
   continuousOn_mobiusInv_segment_z₁ :
     ContinuousOn mobiusInv (Set.range (Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I)))
@@ -59,11 +45,7 @@ public structure PermJ12ContourH1Hyp (mobiusInv : ℂ → ℂ) (wedgeSet : Set �
           (AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) xy.2)) xy.1)
       (Set.Icc (0 : ℝ × ℝ) 1)
 
-/--
-Hypotheses for `perm_J12_contour_h2` that are independent of the specific 1-form `scalarOneForm`.
-
-See `PermJ12ContourH1Hyp` for the guiding principle.
--/
+/-- Hypotheses for `perm_J12_contour_h2` (analogue of `PermJ12ContourH1Hyp`). -/
 public structure PermJ12ContourH2Hyp (mobiusInv : ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
   continuousOn_mobiusInv_segment_z₂ :
     ContinuousOn mobiusInv (Set.range (Path.segment ((-1 : ℂ) + Complex.I) Complex.I))
@@ -81,19 +63,13 @@ public structure PermJ12ContourH2Hyp (mobiusInv : ℂ → ℂ) (wedgeSet : Set �
           (AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I xy.2)) xy.1)
       (Set.Icc (0 : ℝ × ℝ) 1)
 
-/--
-All inputs to `perm_J12_contour_h1` except for the parameter `r`.
-
-This is a convenience wrapper so call sites can pass a single structured argument.
--/
+/-- Bundled inputs to `perm_J12_contour_h1` (excluding the parameter `r`). -/
 public structure PermJ12ContourH1Args
     (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
   closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet
   hyp : PermJ12ContourH1Hyp mobiusInv wedgeSet
 
-/--
-All inputs to `perm_J12_contour_h2` except for the parameter `r`.
--/
+/-- Bundled inputs to `perm_J12_contour_h2` (excluding the parameter `r`). -/
 public structure PermJ12ContourH2Args
     (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
   closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet
@@ -177,12 +153,8 @@ private lemma perm_J12_contour_h_aux
       exact curveIntegral_cast ω _ _ _]
   simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
 
-/--
-Contour deformation identity for the first segment in the `perm_J12` argument.
-
-This is the `h1` step in the assembled contour identity, moving from the mapped segment
-`(-1 → -1 + I)` to the vertical segment `(1 → 1 + I)` inside `wedgeSet`.
--/
+/-- Contour deformation `h1`: from mapped segment `(-1 → -1 + I)` to vertical
+segment `(1 → 1 + I)` inside `wedgeSet`. -/
 public lemma perm_J12_contour_h1
     {mobiusInv : ℂ → ℂ}
     {Ψ₁' : ℝ → ℂ → ℂ}
@@ -203,12 +175,8 @@ public lemma perm_J12_contour_h1
       h.hyp.continuousOn_mobiusInv_segment_z₁ (@h.hyp.homotopy_mem_wedgeSet)
       h.hyp.contDiffOn_homotopy r
 
-/--
-Contour deformation identity for the second segment in the `perm_J12` argument.
-
-This is the `h2` step in the assembled contour identity, relating the mapped segment
-`(-1 + I → I)` to the vertical segment `((1 + I) → I)` inside `wedgeSet`.
--/
+/-- Contour deformation `h2`: from mapped segment `(-1 + I → I)` to vertical
+segment `(1 + I → I)` inside `wedgeSet`. -/
 public lemma perm_J12_contour_h2
     {mobiusInv : ℂ → ℂ}
     {Ψ₁' : ℝ → ℂ → ℂ}
