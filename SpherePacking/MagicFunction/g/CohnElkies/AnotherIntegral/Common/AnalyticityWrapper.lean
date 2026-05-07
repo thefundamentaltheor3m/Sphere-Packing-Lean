@@ -74,10 +74,8 @@ public theorem analyticOnNhd_integral_base_exp
     have hbound_int : Integrable bound μ := by
       simpa [bound] using hBase_ε2.norm.const_mul (2 / ε)
     have hbound : ∀ᵐ t ∂μ, ∀ z ∈ Metric.ball u ε, ‖F' z t‖ ≤ bound t := by
-      filter_upwards [hmem_Ioi] with t ht
-      intro z hz
+      filter_upwards [hmem_Ioi] with t ht z hz
       have htpos : (0 : ℝ) < t := ht
-      have ht0 : 0 ≤ t := ht.le
       have hzre : ε ≤ z.re := by
         have hlt : |z.re - u.re| < ε := by
           simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
@@ -86,18 +84,12 @@ public theorem analyticOnNhd_integral_base_exp
         dsimp [ε] at hlt ⊢; nlinarith [(abs_lt.mp hlt).1]
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
-        have h1 := mul_le_mul_of_nonneg_left
-          (t_mul_exp_le (t := t) (by positivity : (0 : ℝ) < π * ε)) Real.pi_pos.le
-        have h2 : (π * (t * Real.exp (-(π * ε) * t))) ≤
-            (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
-          simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv, Real.pi_ne_zero,
-            ne_of_gt hε, mul_add, add_mul, sub_eq_add_neg, mul_neg, neg_mul, neg_add,
-            add_assoc, add_left_comm, add_comm] using h1
-        simpa [mul_assoc, mul_left_comm, mul_comm] using h2
-      have hbase_nonneg : 0 ≤ ‖base t‖ := norm_nonneg _
+        simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv, Real.pi_ne_zero,
+          ne_of_gt hε] using mul_le_mul_of_nonneg_left
+            (t_mul_exp_le (t := t) (by positivity : (0 : ℝ) < π * ε)) Real.pi_pos.le
       have hnorm_integ : ‖F z t‖ ≤ ‖base t‖ * Real.exp (-π * ε * t) := by
         simpa [F, norm_mul, mul_assoc, mul_left_comm, mul_comm] using
-          mul_le_mul_of_nonneg_left (norm_exp_le_of_re_ge ht0 hzre) hbase_nonneg
+          mul_le_mul_of_nonneg_left (norm_exp_le_of_re_ge htpos.le hzre) (norm_nonneg _)
       have hnorm_base_exp : ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖ =
           ‖base t‖ * Real.exp (-π * (ε / 2) * t) := by
         rw [norm_mul, Complex.norm_of_nonneg (Real.exp_nonneg _)]
@@ -105,21 +97,20 @@ public theorem analyticOnNhd_integral_base_exp
         _ ≤ (π * t) * ‖F z t‖ := by rw [show ‖(-(π : ℂ) * (t : ℂ))‖ = π * t from by
               simp [abs_of_pos htpos, Real.pi_pos.le]]
         _ ≤ (π * t) * (‖base t‖ * Real.exp (-π * ε * t)) :=
-          mul_le_mul_of_nonneg_left hnorm_integ (by nlinarith [Real.pi_pos, ht0])
+          mul_le_mul_of_nonneg_left hnorm_integ (by nlinarith [Real.pi_pos, htpos.le])
         _ ≤ (2 / ε) * (‖base t‖ * Real.exp (-π * (ε / 2) * t)) := by
           simpa [mul_assoc, mul_left_comm, mul_comm] using
-            mul_le_mul_of_nonneg_left hExpTrade hbase_nonneg
+            mul_le_mul_of_nonneg_left hExpTrade (norm_nonneg (base t))
         _ = bound t := by rw [← hnorm_base_exp]
     have hdiff : ∀ᵐ t ∂μ, ∀ z ∈ Metric.ball u ε,
-        HasDerivAt (fun w : ℂ => F w t) (F' z t) z := by
-      refine Filter.Eventually.of_forall (fun t z _hz => ?_)
-      have hexp : HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
-          (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z := by
-        simpa using (by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            ((hasDerivAt_id z).const_mul (-(π : ℂ) * (t : ℂ))) :
-          HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z).cexp
-      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using hexp.const_mul (base t)
+        HasDerivAt (fun w : ℂ => F w t) (F' z t) z :=
+      Filter.Eventually.of_forall fun t z _hz => by
+        simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
+          (show HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
+              (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z from
+            (show HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z by
+              simpa [mul_assoc, mul_left_comm, mul_comm] using
+                ((hasDerivAt_id z).const_mul (-(π : ℂ) * (t : ℂ)))).cexp).const_mul (base t)
     have hDeriv : HasDerivAt (fun z : ℂ => ∫ t, F z t ∂μ) (∫ t, F' u t ∂μ) u :=
       (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
         (s := Metric.ball u ε) (Metric.ball_mem_nhds u hε) (x₀ := u)
