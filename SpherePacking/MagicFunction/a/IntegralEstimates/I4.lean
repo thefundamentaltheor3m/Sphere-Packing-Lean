@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -31,12 +29,9 @@ variable (r : ℝ)
 section Setup
 
 /-- The integrand on `Ioo (0, 1)` whose set integral is `I₄'`. -/
-@[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ -1
-    * φ₀'' (-1 / (-t + I))
-    * (-t + I) ^ 2
-    * cexp (π * I * r)
-    * cexp (-π * I * r * t)
-    * cexp (-π * r)
+@[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦
+  -1 * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r) * cexp (-π * I * r * t) *
+    cexp (-π * r)
 
 /-- Rewrite `I₄' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
 public lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
@@ -47,8 +42,7 @@ end Setup
 section Bounding
 
 lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
-    ‖φ₀'' (-1 / (-t + I))‖ * 2 * rexp (-π * r) := by
-  intro t ht
+    ‖φ₀'' (-1 / (-t + I))‖ * 2 * rexp (-π * r) := fun t ht => by
   rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul, norm_mul, norm_neg,
     norm_one, one_mul]
   gcongr
@@ -62,11 +56,11 @@ lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     · simp [norm_exp]
 
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
-public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im := by
-  intro t ht
-  simpa [show (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) from by
-    simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)]
-    using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
+public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im :=
+  fun t ht => by
+    simpa [show (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) from by
+      simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)]
+      using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
@@ -99,7 +93,7 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) : ‖coeff t�
   I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ))
     (fun t ht => by
       change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
-      rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real]
+      rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) by push_cast; ring, Complex.norm_real]
       exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1)) t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
@@ -112,7 +106,7 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₄' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
   have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
     refine ((MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
-      (fun _ hx => mem_Icc_of_Ioo hx)).congr fun t ht => ?_
+      fun _ hx => mem_Icc_of_Ioo hx).congr fun t ht => ?_
     have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
     have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
       simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
