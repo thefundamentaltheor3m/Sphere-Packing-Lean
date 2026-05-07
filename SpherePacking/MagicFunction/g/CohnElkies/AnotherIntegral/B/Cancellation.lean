@@ -93,13 +93,15 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
       ‖bAnotherBase t‖ ≤ Csmall).trans (le_max_left _ _)
   · exact (htail t (le_of_not_ge ht1)).trans (le_max_right _ _)
 
+private lemma exists_bound_norm_bAnotherBase_nonneg :
+    ∃ C0 : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
+  let ⟨C, hC⟩ := exists_bound_norm_bAnotherBase_Ioi
+  ⟨max C 0, fun t ht => (hC t ht).trans (le_max_left _ _)⟩
+
 /-- Integrability of `t ↦ bAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
 public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
-  rcases exists_bound_norm_bAnotherBase_Ioi with ⟨C, hC⟩
-  let C0 : ℝ := max C 0
-  have hb : ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
-    fun t ht => (hC t ht).trans (le_max_left _ _)
+  obtain ⟨C0, hb⟩ := exists_bound_norm_bAnotherBase_nonneg
   have hg :
       Integrable (fun t : ℝ => C0 * Real.exp (-(π * u) * t))
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
@@ -156,10 +158,7 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
     have hset : Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) :=
       (Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one).symm
     rw [hset]; exact hf_Ioc.union hf_Ioi
-  rcases exists_bound_norm_bAnotherBase_Ioi with ⟨C, hC⟩
-  let C0 : ℝ := max C 0
-  have hb : ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
-    fun t ht => (hC t ht).trans (le_max_left _ _)
+  obtain ⟨C0, hb⟩ := exists_bound_norm_bAnotherBase_nonneg
   have hg :
       Integrable (fun t : ℝ => C0 * (t * Real.exp (-(π * u) * t)))
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
