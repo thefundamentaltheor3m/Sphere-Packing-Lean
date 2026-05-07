@@ -6,20 +6,10 @@ public import SpherePacking.MagicFunction.IntegralParametrisations
 
 public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
 
-/-!
-# Shared segment parametrisations for the `J₁/J₂` permutation developments
+/-! # Shared segment parametrisations for the `J₁/J₂` permutation developments
 
-The dimension-specific `b`-eigenfunction developments use the same four vertical/horizontal
-segments in the upper half-plane:
-
-* `z₁line` : `-1 → -1 + I`
-* `z₂line` : `-1 + I → I`
-* `z₃line` : `1 → 1 + I`
-* `z₄line` : `1 + I → I`
-
-We centralize their definitions and basic continuity/imaginary-part facts here to avoid
-duplicating boilerplate across developments.
--/
+Centralizes parametrisations and continuity/imaginary-part facts for the four segments
+`-1 → -1+I`, `-1+I → I`, `1 → 1+I`, `1+I → I`. -/
 
 open Set
 open scoped Interval Topology
@@ -47,11 +37,9 @@ open MagicFunction.Parametrisations
 @[simp] public lemma z₃line_def (t : ℝ) : z₃line t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
 @[simp] public lemma z₄line_def (t : ℝ) : z₄line t = (1 : ℂ) - (t : ℂ) + Complex.I := rfl
 
-public lemma continuous_z₁line : Continuous z₁line := by
-  simpa [z₁line] using (continuous_const.add (continuous_const.mul Complex.continuous_ofReal))
+public lemma continuous_z₁line : Continuous z₁line := by unfold z₁line; fun_prop
 
-public lemma continuous_z₂line : Continuous z₂line := by
-  simpa [z₂line] using (continuous_const.add Complex.continuous_ofReal).add continuous_const
+public lemma continuous_z₂line : Continuous z₂line := by unfold z₂line; fun_prop
 
 public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by simp [z₁line]
 
@@ -126,8 +114,7 @@ end SpherePacking.Contour
 
 /-! ### Non-vanishing facts for the left-side segments
 
-Several contour-change arguments need the two left-side segments to avoid `0` so that
-`mobiusInv z = -z⁻¹` is well-defined. -/
+Needed so `mobiusInv z = -z⁻¹` is well-defined on the left-side segments. -/
 
 namespace SpherePacking
 
