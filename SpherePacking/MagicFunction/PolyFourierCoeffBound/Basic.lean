@@ -100,10 +100,6 @@ lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   simpa using aux_tprod_one_sub_rexp_pow_24_pos (c := π) pi_pos
 
-lemma multipliable_pow {ι : Type*} (f : ι → ℝ) (hf : Multipliable f) (n : ℕ) :
-    Multipliable (fun i => f i ^ n) := by
-  induction n with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul hf
-
 lemma step_12a {r : ℝ} (hr : 0 < r) :
     Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
   refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
@@ -116,10 +112,12 @@ lemma step_10 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
+  have hpow : Multipliable fun b : ℕ+ ↦ ‖(1 - cexp (2 * ↑π * I * (b : ℂ) * z))‖ ^ 24 := by
+    have h := (MultipliableEtaProductExpansion_pnat z).norm
+    induction (24 : ℕ) with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul h
   gcongr
   · exact aux_8 z
-  refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_
-    (multipliable_pow _ (MultipliableEtaProductExpansion_pnat z).norm 24)
+  refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_ hpow
   · simp only [neg_mul]; gcongr
     · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
     · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
