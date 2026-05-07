@@ -55,28 +55,19 @@ public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin 
       add_assoc, add_comm, add_left_comm] using hy,
     by simp [vadd_eq_add]⟩
 
-/--
-Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
-along a lattice `Λ`.
--/
+/-- Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
+along a lattice `Λ`. -/
 @[expose] public noncomputable def periodize_to_periodicSpherePacking
     (S : SpherePacking d)
     (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
     (D F : Set (EuclideanSpace ℝ (Fin d)))
-    (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D)
-    (hF_centers : F ⊆ S.centers)
-    (hF_ball : ∀ x ∈ F, ball x (S.separation / 2) ⊆ D) :
-    PeriodicSpherePacking d := by
-  refine
-    { centers := periodizedCenters (d := d) Λ F
-      separation := S.separation
-      separation_pos := S.separation_pos
-      centers_dist := ?_
-      lattice := Λ
-      lattice_action := ?_
-      lattice_discrete := inferInstance
-      lattice_isZLattice := inferInstance }
-  · intro a b hab
+    (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) (hF_centers : F ⊆ S.centers)
+    (hF_ball : ∀ x ∈ F, ball x (S.separation / 2) ⊆ D) : PeriodicSpherePacking d where
+  centers := periodizedCenters (d := d) Λ F
+  separation := S.separation
+  separation_pos := S.separation_pos
+  centers_dist := by
+    intro a b hab
     change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
     rcases mem_periodizedCenters_iff.1 a.property with ⟨ga, fa, hfa, ha⟩
     rcases mem_periodizedCenters_iff.1 b.property with ⟨gb, fb, hfb, hb⟩
@@ -89,7 +80,10 @@ along a lattice `Λ`.
         dist_le_of_disjoint_ball_subsets
           (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
           (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
-  · exact fun _ _ ↦ periodizedCenters_lattice_action
+  lattice := Λ
+  lattice_action := fun _ _ ↦ periodizedCenters_lattice_action
+  lattice_discrete := inferInstance
+  lattice_isZLattice := inferInstance
 
 /-- The coordinate cube `[0,L)^d` as a set in `EuclideanSpace`. -/
 @[expose] public def coordCube (d : ℕ) (L : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
@@ -138,8 +132,7 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
     (hF_sub : F ⊆ D) (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) :
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
-  refine ⟨?_, fun hxF =>
-    ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, by simp⟩, hF_sub hxF⟩⟩
+  refine ⟨?_, fun hxF => ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, by simp⟩, hF_sub hxF⟩⟩
   rintro ⟨⟨_, ⟨g, rfl⟩, ⟨f, hfF, rfl⟩⟩, hxD⟩
   obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
   simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
@@ -196,8 +189,7 @@ end PeriodicConstant
 
 namespace PeriodicConstantApprox
 
-public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L)
-    (v : cubeLattice d L hL) :
+public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L) (v : cubeLattice d L hL) :
     ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ v +ᵥ coordCube d L := fun x => by
   have hvadd (a : cubeLattice d L hL) :
       a +ᵥ x ∈ v +ᵥ coordCube d L ↔ (a - v) +ᵥ x ∈ coordCube d L := by
