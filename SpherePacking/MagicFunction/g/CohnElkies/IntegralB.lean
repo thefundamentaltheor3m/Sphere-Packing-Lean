@@ -35,12 +35,10 @@ noncomputable local instance : FourierTransform (𝓢(ℝ⁸, ℂ)) (𝓢(ℝ⁸
 
 namespace IntegralB
 
-lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
-    (B t : ℂ) * Real.exp (-π * u * t) =
-      -(aAnotherIntegrand u t) +
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t +
-          ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-            ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
+lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) : (B t : ℂ) * Real.exp (-π * u * t) =
+    -(aAnotherIntegrand u t) + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t +
+      ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
+        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
   have hB : (B t : ℂ) = (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
       ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
     apply Complex.ext <;> simp [B, φ₀''_imag_axis_div_im (t := t) ht, ψI'_imag_axis_im (t := t) ht]
@@ -64,18 +62,15 @@ lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
 lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
       -(∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) +
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-          (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) +
-        ((8640 / π : ℝ) : ℂ) *
-            (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-          ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-            (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) +
+        ((8640 / π : ℝ) : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
+        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+          (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
   let f1 : ℝ → ℂ := fun t => -(aAnotherIntegrand u t)
   let f2 : ℝ → ℂ := fun t => ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * bAnotherIntegrand u t
   let f3 : ℝ → ℂ := fun t => ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
-  let f4 : ℝ → ℂ := fun t =>
-    -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
+  let f4 : ℝ → ℂ := fun t => -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
   have hf1 : Integrable f1 μ := (aAnotherIntegrand_integrable_of_pos hu).neg
   have hf2 : Integrable f2 μ := (integrable_bAnother hu).const_mul _
   have hf3 : Integrable f3 μ := (integrableOn_mul_exp_neg_pi_mul_Ioi_complex hu).const_mul _
@@ -96,42 +91,30 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
 
 end IntegralB
 
-theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
-    (hx2 : ‖x‖ ^ 2 ≠ 2) :
-    ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
-      (π / 2160 : ℂ) *
-        (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
+theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) (hx2 : ‖x‖ ^ 2 ≠ 2) :
+    ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) = (π / 2160 : ℂ) * (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
+      (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   set u : ℝ := ‖x‖ ^ 2
-  have hFourier :
-      ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
-        ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
+  have hFourier : ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
+      ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
     change (FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g) x = _
     simp [u, show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
         ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b from by
       simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
-        -FourierTransform.fourierCLE_apply],
-      SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul,
-      MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
+        -FourierTransform.fourierCLE_apply], SchwartzMap.add_apply, SchwartzMap.smul_apply,
+      smul_eq_mul, MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
       schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
-  set IA : ℂ :=
-    ∫ t in Set.Ioi (0 : ℝ),
-      ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
-          Real.exp (-π * u * t))
-  set IB : ℂ :=
-    ∫ t in Set.Ioi (0 : ℝ),
-      (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
-        Real.exp (-π * u * t)
-  have hAterm :
-      ((↑π * I) / 8640 : ℂ) * a' u =
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
+  set IA : ℂ := ∫ t in Set.Ioi (0 : ℝ),
+    ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+        ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) * Real.exp (-π * u * t))
+  set IB : ℂ := ∫ t in Set.Ioi (0 : ℝ),
+    (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
+      Real.exp (-π * u * t)
+  have hAterm : ((↑π * I) / 8640 : ℂ) * a' u =
+      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (-(π / 2160 : ℂ)) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
     rw [show a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
         ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
           (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) from by
@@ -140,11 +123,9 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
         (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) * (by field_simp; rw [Complex.I_sq]; ring :
         (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ))
-  have hBterm :
-      (I / (240 * (↑π)) : ℂ) * b' u =
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (1 / (60 * π) : ℂ) *
-            ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
+  have hBterm : (I / (240 * (↑π)) : ℂ) * b' u =
+      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (1 / (60 * π) : ℂ) *
+        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
     rw [show b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
         ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) from by
       simpa [IB] using bRadial_eq_another_integral_main hx hx2]
@@ -152,19 +133,16 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) *
       (by field_simp; rw [Complex.I_sq]; ring :
         (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ))
-  have hBracket :
-      (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
+  have hBracket : (-(π / 2160 : ℂ)) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
+      (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
+      (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
     rw [show (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
-          ((8640 / π : ℝ) : ℂ) *
-              (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-            ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-              (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) from by
+          ((8640 / π : ℝ) : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
+          ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+            (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) from by
         simpa [IA, IB, aAnotherIntegrand, bAnotherIntegrand]
           using IntegralB.integral_B_mul_exp_decomp hx,
       integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
@@ -176,10 +154,8 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
 
 /-- Integral representation of `𝓕 g` in terms of `B(t)` (for `0 < ‖x‖ ^ 2`). -/
 public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
-    ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
-      (π / 2160 : ℂ) *
-        (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
+    ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) = (π / 2160 : ℂ) * (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
+      (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   by_cases hx2 : ‖x‖ ^ 2 = 2
   · let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
     let xseq : ℕ → ℝ⁸ := fun n => (c n) • x
