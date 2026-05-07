@@ -8,9 +8,6 @@ import SpherePacking.ForMathlib.GaussianRexpIntegral
 
 /-!
 Shared Gaussian integral wrappers used across the contour/Fourier developments.
-
-This module consolidates two small "inner integral evaluation" lemmas that were previously split
-across several tiny files.
 -/
 
 open scoped FourierTransform RealInnerProductSpace
@@ -19,12 +16,7 @@ namespace SpherePacking.Contour
 
 noncomputable section
 
-/--
-Evaluate a Fourier-type Gaussian integral in even real dimension.
-
-This is a thin wrapper around `SpherePacking.ForMathlib.integral_phase_gaussian_pi_mul_I_mul_even`,
-pulling out the constant factor `c`.
--/
+/-- Evaluate a Fourier-type Gaussian integral in even real dimension, pulling out a constant `c`. -/
 public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
     (w : EuclideanSpace ℝ (Fin (2 * k))) (z : ℂ) (hz : 0 < z.im) (c : ℂ) :
     (∫ x : EuclideanSpace ℝ (Fin (2 * k)),
@@ -36,11 +28,7 @@ public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
   simpa [MeasureTheory.integral_const_mul] using congrArg (fun I : ℂ => c * I)
     (ForMathlib.integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz)
 
-/--
-Evaluate the real Gaussian integral `∫ exp (-pi * t * ‖x‖^2)` in even dimension.
-
-The result is the expected scaling law `(1 / t) ^ k`.
--/
+/-- Evaluate `∫ exp (-π t ‖x‖²)` in even dimension: the result is `(1/t)^k`. -/
 public lemma integral_rexp_neg_pi_mul_sq_norm_even (k : ℕ) (t : ℝ) (ht : 0 < t) :
     (∫ x : EuclideanSpace ℝ (Fin (2 * k)),
         Real.exp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ k := by
