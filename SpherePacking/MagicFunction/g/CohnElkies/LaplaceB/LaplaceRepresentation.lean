@@ -8,9 +8,7 @@ import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.ContourIdentities
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 
 /-!
-# Laplace representation for `b'`
-
-Main lemma `bRadial_eq_laplace_psiI_main` for blueprint `prop:b-double-zeros`.
+# Laplace representation for `b'` (blueprint `prop:b-double-zeros`).
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -28,7 +26,7 @@ private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (μ := (volume : Measure ℝ)) (f := f) Set.Ioc_disjoint_Ioi_same measurableSet_Ioi
     (hf.mono_set fun _ ht ↦ ht.1) (hf.mono_set (Set.Ioi_subset_Ioi zero_le_one))
 
-/-- Main lemma for blueprint proposition `prop:b-double-zeros`. -/
+/-- Blueprint `prop:b-double-zeros`. -/
 public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     b' u =
       (-4 * (Complex.I : ℂ)) *
@@ -38,24 +36,23 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
                 Real.exp (-π * u * t)) := by
   open MagicFunction.b.RealIntegrals in
   rw [MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (by linarith : 0 ≤ u)]
-  have hLap : (∫ t in Set.Ioi (0 : ℝ),
-        ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
-      -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-    rw [← MeasureTheory.integral_neg]
-    exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
-      simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
   rw [MagicFunction.b.RealIntegrals.b', show (-4 * (Complex.I : ℂ)) *
         (Real.sin (π * u / 2)) ^ (2 : ℕ) * (∫ t in Set.Ioi (0 : ℝ),
           ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
       (Complex.I : ℂ) * (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
         Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
-      rw [hLap, show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+      rw [show (∫ t in Set.Ioi (0 : ℝ),
+            ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) = -VI by
+        rw [← MeasureTheory.integral_neg]
+        exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
+          simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc],
+        show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
             Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
             ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
         simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
           (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
-      dsimp [VI]; simp [mul_assoc, mul_comm]]
+      simp [mul_assoc, mul_comm]]
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun _ hz =>
     lt_of_lt_of_le zero_lt_one (by simpa [Set.mem_Ici] using hz.2)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
@@ -219,12 +216,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) -
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     simpa [hJ4_top] using eq_sub_of_add_eq (sub_eq_zero.mp hRectRight)
-  have hJ_vert_aux : ∀ (a : ℂ) (zp : ℝ → ℂ)
-      (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)),
-      (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
-          cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
-        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) :=
-      fun a zp hzp => by
+  have hJ_vert_aux (a : ℂ) (zp : ℝ → ℂ)
+      (hzp : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)) :
+      (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) * cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
+        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
     rw [intervalIntegral.integral_congr (fun t ht => show
         (I : ℂ) * ψT' (zp t) * cexp (π * (I : ℂ) * (u : ℂ) * zp t) =
         (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) by

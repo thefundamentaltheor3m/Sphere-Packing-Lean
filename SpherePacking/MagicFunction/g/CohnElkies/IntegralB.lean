@@ -16,26 +16,20 @@ import Mathlib.Analysis.SpecificLimits.Basic
 /-!
 # Integral representation for `𝓕 g`
 
-This file proves a Laplace-type integral representation of the Fourier transform `𝓕 g`
-in terms of the kernel `B(t)`.
+Laplace-type integral representation of `𝓕 g` in terms of `B(t)`
+(blueprint equation "g B" in `subsections/modform-ineq.tex`).
 
-This corresponds to the equation "g B" in `blueprint/src/subsections/modform-ineq.tex`.
-
-## Main statements
-* `MagicFunction.g.CohnElkies.fourier_g_eq_integral_B`
+Main statement: `MagicFunction.g.CohnElkies.fourier_g_eq_integral_B`.
 -/
 
 namespace MagicFunction.g.CohnElkies
 
 open scoped BigOperators FourierTransform SchwartzMap Topology
-open MeasureTheory Real Complex
-open MagicFunction.g.CohnElkies.IntegralReps
+open MeasureTheory Real Complex MagicFunction.FourierEigenfunctions
+  MagicFunction.g.CohnElkies.IntegralReps
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
-open MagicFunction.FourierEigenfunctions
-
--- Help typeclass inference for the notation `𝓕` on Schwartz maps.
 noncomputable local instance : FourierTransform (𝓢(ℝ⁸, ℂ)) (𝓢(ℝ⁸, ℂ)) :=
   ⟨FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ)⟩
 
@@ -113,11 +107,11 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
     change (FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g) x = _
-    rw [show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
+    simp [u, show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
         ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b from by
       simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
-        -FourierTransform.fourierCLE_apply]]
-    simp [u, SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul,
+        -FourierTransform.fourierCLE_apply],
+      SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul,
       MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
       schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
   set IA : ℂ :=
@@ -144,8 +138,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       simpa [IA] using aRadial_eq_another_integral_main hx hx2]
     linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
       ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-        (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) *
-      (by field_simp; rw [Complex.I_sq]; ring :
+        (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) * (by field_simp; rw [Complex.I_sq]; ring :
         (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ))
   have hBterm :
       (I / (240 * (↑π)) : ℂ) * b' u =
@@ -176,12 +169,10 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           using IntegralB.integral_B_mul_exp_decomp hx,
       integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
     push_cast; field_simp; ring
-  simpa [u, mul_assoc] using
-    (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
-        (π / 2160 : ℂ) *
-          (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) from by
-      rw [hFourier, hAterm, hBterm]; grind only)
+  simpa [u, mul_assoc] using show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
+      (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) by
+    rw [hFourier, hAterm, hBterm]; grind only
 
 /-- Integral representation of `𝓕 g` in terms of `B(t)` (for `0 < ‖x‖ ^ 2`). -/
 public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :

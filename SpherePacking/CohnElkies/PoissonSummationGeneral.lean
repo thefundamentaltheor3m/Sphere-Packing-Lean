@@ -11,12 +11,8 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 /-!
 # Poisson summation for general lattices
 
-This file proves Poisson summation for Schwartz functions over a full-rank `ℤ`-lattice `L ⊆ ℝ^d`.
-It provides the lattice statement used by `SpherePacking.CohnElkies.Prereqs`.
-
-The proof transports the standard-lattice result from
-`SpherePacking.CohnElkies.PoissonSummationSchwartz.PoissonSummation` along a linear equivalence
-sending `ℤ^d` to the given lattice.
+Poisson summation for Schwartz functions over a full-rank `ℤ`-lattice `L ⊆ ℝ^d`,
+obtained from the standard-lattice case via a linear equivalence sending `ℤ^d` to `L`.
 -/
 
 open scoped BigOperators FourierTransform Real
@@ -34,9 +30,9 @@ public noncomputable abbrev dualLattice (L : Submodule ℤ E) : Submodule ℤ E 
   LinearMap.BilinForm.dualSubmodule (B := (innerₗ E : LinearMap.BilinForm ℝ E)) L
 
 noncomputable def zBasis (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
-    Basis (Fin d) ℤ L := by
+    Basis (Fin d) ℤ L :=
   haveI : Module.Finite ℤ L := ZLattice.module_finite ℝ L
-  exact (Module.Free.chooseBasis ℤ L).reindex <| Fintype.equivOfCardEq <| by
+  (Module.Free.chooseBasis ℤ L).reindex <| Fintype.equivOfCardEq <| by
     simpa [(ZLattice.rank (K := ℝ) (L := L)).trans (by simp : _ = d)] using
       (Module.finrank_eq_card_chooseBasisIndex (R := ℤ) (M := L)).symm
 
@@ -100,13 +96,13 @@ private lemma volume_real_fundamentalDomain_stdBasis :
 lemma covolume_eq_abs_det_A :
     ZLattice.covolume L =
       abs ((LinearMap.det : (E →ₗ[ℝ] E) →* ℝ) ((A L).toLinearMap)) := by
-  let bZ : Basis (Fin d) ℤ L := zBasis L
-  have hr : rBasis (d := d) L = fun i : Fin d => (bZ i : E) := by funext i; simp [rBasis, bZ]
+  have hr : rBasis (d := d) L = fun i : Fin d => (zBasis (d := d) L i : E) := by
+    funext i; simp [rBasis]
   have hcovol : ZLattice.covolume L =
-      |(stdBasis (d := d)).det (fun i : Fin d => (bZ i : E))| := by
+      |(stdBasis (d := d)).det (fun i : Fin d => (zBasis (d := d) L i : E))| := by
     simpa [stdBasis, volume_real_fundamentalDomain_stdBasis (d := d)] using
-      ZLattice.covolume_eq_det_mul_measureReal
-        (L := L) (b := bZ) (b₀ := stdBasis (d := d)) (μ := (volume : Measure E))
+      ZLattice.covolume_eq_det_mul_measureReal (L := L) (b := zBasis (d := d) L)
+        (b₀ := stdBasis (d := d)) (μ := (volume : Measure E))
   rw [hcovol, ← hr]; simp [A, stdBasis]
 
 end CovolumeDet
@@ -141,9 +137,8 @@ noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E where
   left_inv x := by
     simpa using congrArg (fun f : E →ₗ[ℝ] E => f x)
       (show (Aadjₗ L ∘ₗ Bₗ L) = (LinearMap.id : E →ₗ[ℝ] E) by
-        simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-          show (Aₗ L).symm.toLinearMap ∘ₗ (Aₗ L).toLinearMap = LinearMap.id
-          from by ext x; simp])
+        simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp, show (Aₗ L).symm.toLinearMap ∘ₗ
+          (Aₗ L).toLinearMap = LinearMap.id from by ext x; simp])
   right_inv x := by simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ L)
 
 lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
@@ -176,20 +171,15 @@ lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
 
 noncomputable def equivStandardLatticeToDual :
     SchwartzMap.standardLattice d ≃ₗ[ℤ] dualLattice (d := d) L :=
-  (LinearEquiv.restrictScalars ℤ (adjointSymmEquiv L)).ofSubmodules
-    (SchwartzMap.standardLattice d) (dualLattice (d := d) L) <| by
-      simpa [LinearEquiv.restrictScalars_apply] using
-        map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)
+  (LinearEquiv.restrictScalars ℤ (adjointSymmEquiv L)).ofSubmodules _ _ <| by
+    simpa [LinearEquiv.restrictScalars_apply] using
+      map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)
 
 noncomputable def equivIntVecToDual : (Fin d → ℤ) ≃ dualLattice (d := d) L :=
   (PoissonSummation.Standard.equivIntVec (d := d)).trans (equivStandardLatticeToDual L).toEquiv
 
-/--
-Poisson summation over a full-rank `ℤ`-lattice `L`.
-
-The sum of a Schwartz function over `L` is expressed as a (normalized) sum of its Fourier transform
-over the dual lattice.
--/
+/-- Poisson summation: the sum of a Schwartz function over a full-rank `ℤ`-lattice `L` equals
+the (normalized) sum of its Fourier transform over the dual lattice. -/
 public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     (∑' ℓ : L, f (v + (ℓ : E))) =
       (1 / ZLattice.covolume L) *
@@ -200,13 +190,11 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A.toContinuousLinearEquiv f
   have hlhs :
       (∑' ℓ : SchwartzMap.standardLattice d, g (A.symm v + (ℓ : E))) =
-        ∑' ℓ : L, f (v + (ℓ : E)) := calc
-    (∑' ℓ : SchwartzMap.standardLattice d, g (A.symm v + (ℓ : E))) =
-        ∑' ℓ : SchwartzMap.standardLattice d, f (v + A (ℓ : E)) :=
-          tsum_congr fun ℓ ↦ by simp [g, map_add]
-    _ = ∑' ℓ : L, f (v + (ℓ : E)) := by
-        simpa [equivStandardLattice_apply] using
-          (equivStandardLattice (d := d) L).toEquiv.tsum_eq (f := fun ℓ : L => f (v + (ℓ : E)))
+        ∑' ℓ : L, f (v + (ℓ : E)) := by
+    rw [tsum_congr (fun ℓ : SchwartzMap.standardLattice d => by simp [g, map_add] :
+      ∀ ℓ : SchwartzMap.standardLattice d, g (A.symm v + (ℓ : E)) = f (v + A (ℓ : E)))]
+    simpa [equivStandardLattice_apply] using
+      (equivStandardLattice (d := d) L).toEquiv.tsum_eq (f := fun ℓ : L => f (v + (ℓ : E)))
   have hrhs :
       (∑' n : Fin d → ℤ,
           (𝓕 (fun x : E => g x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) *
@@ -231,20 +219,15 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
       simp [show ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ L) w⟫_[ℝ] by
         simpa [RCLike.inner_eq_wInner_one, A, Bₗ] using
           (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm]
-    have hsum :
-        (∑' n : Fin d → ℤ,
-            (𝓕 (fun x : E => g x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) *
-              Complex.exp
-                (2 * π * Complex.I *
-                  ⟪A.symm v, SchwartzMap.PoissonSummation.Standard.intVec (d := d) n⟫_[ℝ])) =
-          cC * ∑' m : dualLattice (d := d) L, F m := by
+    let iv : (Fin d → ℤ) → E := SchwartzMap.PoissonSummation.Standard.intVec (d := d)
+    rw [show (∑' n : Fin d → ℤ, (𝓕 (fun x : E => g x) (iv n)) *
+            Complex.exp (2 * π * Complex.I * ⟪A.symm v, iv n⟫_[ℝ])) =
+          cC * ∑' m : dualLattice (d := d) L, F m from by
       rw [← (equivIntVecToDual L).tsum_eq (f := F), ← tsum_mul_left]
-      refine tsum_congr fun n ↦ ?_
-      simpa [F, mul_assoc] using
-        congrArg₂ (· * ·)
-          (hfourier (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
-          (hexp (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
-    simp [hsum, F, cC, show ZLattice.covolume L = abs detA from by
+      exact tsum_congr fun n ↦ by
+        simpa [F, mul_assoc] using congrArg₂ (· * ·)
+          (hfourier (w := iv n)) (hexp (w := iv n))]
+    simp [F, cC, show ZLattice.covolume L = abs detA from by
       simpa [A, Aₗ, detA] using covolume_eq_abs_det_A (d := d) (L := L), one_div]
   simpa [hlhs, hrhs] using SchwartzMap.PoissonSummation.Standard.poissonSummation_standard
     (d := d) (f := g) (v := A.symm v)
