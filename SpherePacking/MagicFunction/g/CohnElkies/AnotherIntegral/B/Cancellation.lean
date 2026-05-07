@@ -5,21 +5,7 @@ public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 
-/-!
-# Cancellation and integrability for `AnotherIntegral.B`
-
-This file proves boundedness and weighted integrability estimates for the bracket `bAnotherBase`,
-used to justify dominated differentiation for the complex-parameter "another integral" of `b'`.
-We split `t > 0` into the ranges `t ≤ 1` (use the `S`-relation to reduce to the `ψS` bound at
-infinity) and `1 ≤ t` (use the cancellation estimate from `PsiICancellation`).
-
-## Main definition
-* `bAnotherBase`
-
-## Main statements
-* `bAnotherBase_integrable_exp`
-* `bAnotherBase_integrable_mul_exp`
--/
+/-! Cancellation and integrability estimates for the `bAnotherBase` bracket. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -46,18 +32,11 @@ lemma continuousOn_psiI'_mul_I :
 @[expose] public def bAnotherBase (t : ℝ) : ℂ :=
   ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ)
 
-/-- Unfolding lemma for `bAnotherBase`. -/
 @[simp] public lemma bAnotherBase_eq (t : ℝ) :
     bAnotherBase t = ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
 
 public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) :=
   (continuousOn_psiI'_mul_I.sub continuousOn_const).sub (by fun_prop)
-
-/-!
-## Global boundedness on the positive imaginary axis
-
-This is the cancellation estimate needed for convergence for all `u > 0`.
--/
 
 lemma exists_bound_norm_bAnotherBase_Ioi :
     ∃ C : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C := by
@@ -113,12 +92,6 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
       grind only [hψI'_small t ht0 ht1, show ‖(144 : ℂ)‖ = (144 : ℝ) from by norm_num] :
       ‖bAnotherBase t‖ ≤ Csmall).trans (le_max_left _ _)
   · exact (htail t (le_of_not_ge ht1)).trans (le_max_right _ _)
-
-/-!
-## Weighted integrability
-
-These are the integrability inputs needed for the parametric-integral analyticity proof.
--/
 
 /-- Integrability of `t ↦ bAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
 public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
