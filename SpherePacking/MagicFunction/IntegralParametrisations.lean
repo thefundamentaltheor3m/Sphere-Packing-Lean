@@ -26,55 +26,48 @@ local notation "ℍ₀" => UpperHalfPlane.upperHalfPlaneSet
 
 noncomputable section Parametrisations
 
-/-- Parametrisation `t ↦ -1 + i t` of the vertical segment from `-1` to `-1 + i`. -/
+/-- Vertical segment `-1 → -1 + i`. -/
 @[expose] public def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 + I * t
-/-- Extension of `z₁` to `ℝ → ℂ` via `IccExtend`. -/
-@[expose] public def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t
-
-/-- Parametrisation `t ↦ -1 + t + i` of the horizontal segment from `-1 + i` to `i`. -/
+/-- Horizontal segment `-1 + i → i`. -/
 @[expose] public def z₂ (t : Icc (0 : ℝ) 1) : ℂ := -1 + t + I
-/-- Extension of `z₂` to `ℝ → ℂ` via `IccExtend`. -/
-@[expose] public def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t
-
-/-- Parametrisation `t ↦ 1 + i t` of the vertical segment from `1` to `1 + i`. -/
+/-- Vertical segment `1 → 1 + i`. -/
 @[expose] public def z₃ (t : Icc (0 : ℝ) 1) : ℂ := 1 + I * t
-/-- Extension of `z₃` to `ℝ → ℂ` via `IccExtend`. -/
-@[expose] public def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t
-
-/-- Parametrisation `t ↦ 1 - t + i` of the horizontal segment from `1 + i` to `i`. -/
+/-- Horizontal segment `1 + i → i`. -/
 @[expose] public def z₄ (t : Icc (0 : ℝ) 1) : ℂ := 1 - t + I
-/-- Extension of `z₄` to `ℝ → ℂ` via `IccExtend`. -/
-@[expose] public def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t
-
-/-- Parametrisation `t ↦ i t` of the vertical segment from `0` to `i`. -/
+/-- Vertical segment `0 → i`. -/
 @[expose] public def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
-/-- Extension of `z₅` to `ℝ → ℂ` via `IccExtend`. -/
-@[expose] public def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t
-
-/-- Parametrisation `t ↦ i t` of the ray `i * Ici 1`. -/
+/-- Imaginary ray `i * Ici 1`. -/
 @[expose] public def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
-/-- Extension of `z₆` to `ℝ → ℂ` via `IciExtend`. -/
+
+/-- `IccExtend` of `z₁`. -/
+@[expose] public def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t
+/-- `IccExtend` of `z₂`. -/
+@[expose] public def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t
+/-- `IccExtend` of `z₃`. -/
+@[expose] public def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t
+/-- `IccExtend` of `z₄`. -/
+@[expose] public def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t
+/-- `IccExtend` of `z₅`. -/
+@[expose] public def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t
+/-- `IciExtend` of `z₆`. -/
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
-/-- The imaginary part of `z₂'` is constantly equal to `1`. -/
+/-- `(z₂' t).im = 1`. -/
 public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by simp [z₂', Set.IccExtend_apply, z₂]
-
-/-- The imaginary part of `z₄'` is constantly equal to `1`. -/
+/-- `(z₄' t).im = 1`. -/
 public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by simp [z₄', Set.IccExtend_apply, z₄]
-
-/-- The imaginary part of `z₂'` is always positive. -/
+/-- `(z₂' t).im > 0`. -/
 public lemma im_z₂'_pos_all (t : ℝ) : 0 < (z₂' t).im := by simp [im_z₂'_eq_one]
-
-/-- The imaginary part of `z₄'` is always positive. -/
+/-- `(z₄' t).im > 0`. -/
 public lemma im_z₄'_pos_all (t : ℝ) : 0 < (z₄' t).im := by simp [im_z₄'_eq_one]
 
-/-- The extended parametrisation `z₅'` stays in the closed unit disk. -/
+/-- `‖z₅' t‖ ≤ 1`. -/
 public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
   set u : ℝ := max 0 (min 1 t) with hu
   simpa [show ‖z₅' t‖ = u from by simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]]
     using (by simp [hu] : u ≤ 1)
 
-/-- The extended parametrisation `z₁'` stays in the closed ball of radius `2` centered at `0`. -/
+/-- `‖z₁' t‖ ≤ 2`. -/
 public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   rw [show z₁' t = (-1 : ℂ) + (I : ℂ) * (u : ℂ) from by simp [z₁', Set.IccExtend_apply, z₁, hu]]
@@ -82,7 +75,7 @@ public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
   simp [Complex.norm_real, abs_of_nonneg (by simp [hu] : (0 : ℝ) ≤ u)]
   linarith [show u ≤ 1 by simp [hu]]
 
-/-- The extended parametrisation `z₂'` stays in the closed ball of radius `2` centered at `0`. -/
+/-- `‖z₂' t‖ ≤ 2`. -/
 public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hnorm : ‖(-1 : ℂ) + (u : ℂ)‖ ≤ 1 := by
@@ -92,7 +85,7 @@ public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   rw [show z₂' t = ((-1 : ℂ) + (u : ℂ)) + (I : ℂ) from by simp [z₂', Set.IccExtend_apply, z₂, hu]]
   exact (norm_add_le _ _).trans (by linarith [hnorm, show ‖(I : ℂ)‖ = 1 by simp])
 
-/-- The extended parametrisation `z₄'` stays in the closed ball of radius `2` centered at `0`. -/
+/-- `‖z₄' t‖ ≤ 2`. -/
 public lemma norm_z₄'_le_two (t : ℝ) : ‖z₄' t‖ ≤ 2 := by
   set u : ℝ := max 0 (min 1 t) with hu
   have hnorm : ‖(1 : ℂ) - (u : ℂ)‖ ≤ 1 := by
@@ -112,83 +105,74 @@ open scoped UpperHalfPlane
 private lemma im_pos_of_mapsto {s : Set ℝ} {f : ℝ → ℂ} (hf : MapsTo f s ℍ₀) {t : ℝ} (ht : t ∈ s) :
     0 < (f t).im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hf ht
 
-/-- The map `z₁'` sends `Ioc 0 1` into the upper half-plane. -/
+/-- `z₁'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₁', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₁] using ht.1
 
-/-- For `t ∈ Ioc 0 1`, the point `z₁' t` has positive imaginary part. -/
+/-- For `t ∈ Ioc 0 1`, `(z₁' t).im` is positive. -/
 public lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im :=
   im_pos_of_mapsto z₁'_mapsto ht
 
-/-- The map `z₂'` sends `Icc 0 1` into the upper half-plane. -/
+/-- `z₂'` sends `Icc 0 1` into ℍ. -/
 public lemma z₂'_mapsto : MapsTo z₂' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
 
-/-- For `t ∈ Icc 0 1`, the point `z₂' t` has positive imaginary part. -/
+/-- For `t ∈ Icc 0 1`, `(z₂' t).im` is positive. -/
 public lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im :=
   im_pos_of_mapsto z₂'_mapsto ht
 
-/-- The map `z₃'` sends `Ioc 0 1` into the upper half-plane. -/
+/-- `z₃'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₃'_mapsto : MapsTo z₃' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₃', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₃] using ht.1
 
-/-- For `t ∈ Ioc 0 1`, the point `z₃' t` has positive imaginary part. -/
+/-- For `t ∈ Ioc 0 1`, `(z₃' t).im` is positive. -/
 public lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im :=
   im_pos_of_mapsto z₃'_mapsto ht
 
-/-- The map `z₄'` sends `Icc 0 1` into the upper half-plane. -/
+/-- `z₄'` sends `Icc 0 1` into ℍ. -/
 public lemma z₄'_mapsto : MapsTo z₄' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
 
-/-- For `t ∈ Icc 0 1`, the point `z₄' t` has positive imaginary part. -/
+/-- For `t ∈ Icc 0 1`, `(z₄' t).im` is positive. -/
 public lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im :=
   im_pos_of_mapsto z₄'_mapsto ht
 
-/-- The map `z₅'` sends `Ioc 0 1` into the upper half-plane. -/
+/-- `z₅'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₅'_mapsto : MapsTo z₅' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₅', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₅] using ht.1
 
-/-- For `t ∈ Ioc 0 1`, the point `z₅' t` has positive imaginary part. -/
+/-- For `t ∈ Ioc 0 1`, `(z₅' t).im` is positive. -/
 public lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im :=
   im_pos_of_mapsto z₅'_mapsto ht
 
-/-- The map `z₆'` sends `Ici 1` into the upper half-plane. -/
+/-- `z₆'` sends `Ici 1` into ℍ. -/
 public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using
     lt_of_lt_of_le one_pos ht
 
 end UpperHalfPlane
 
-section eq_of_mem
-
-/-- On `Icc 0 1`, the extension `z₁'` agrees with the original parametrisation `z₁`. -/
+/-- `z₁' = z₁` on `Icc 0 1`. -/
 public lemma z₁'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = -1 + I * t := by
   rw [z₁', IccExtend_of_mem zero_le_one z₁ ht, z₁]
-
-/-- On `Icc 0 1`, the extension `z₂'` agrees with the original parametrisation `z₂`. -/
+/-- `z₂' = z₂` on `Icc 0 1`. -/
 public lemma z₂'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₂' t = -1 + t + I := by
   rw [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
-
-/-- On `Icc 0 1`, the extension `z₃'` agrees with the original parametrisation `z₃`. -/
+/-- `z₃' = z₃` on `Icc 0 1`. -/
 public lemma z₃'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = 1 + I * t := by
   rw [z₃', IccExtend_of_mem zero_le_one z₃ ht, z₃]
-
-/-- On `Icc 0 1`, the extension `z₄'` agrees with the original parametrisation `z₄`. -/
+/-- `z₄' = z₄` on `Icc 0 1`. -/
 public lemma z₄'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₄' t = 1 - t + I := by
   rw [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
-
-/-- On `Icc 0 1`, the extension `z₅'` agrees with the original parametrisation `z₅`. -/
+/-- `z₅' = z₅` on `Icc 0 1`. -/
 public lemma z₅'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₅' t = I * t := by
   rw [z₅', IccExtend_of_mem zero_le_one z₅ ht, z₅]
-
-/-- On `Ici 1`, the extension `z₆'` agrees with the original parametrisation `z₆`. -/
+/-- `z₆' = z₆` on `Ici 1`. -/
 public lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
   rw [z₆', IciExtend_of_mem z₆ ht, z₆]
 
-/-- On `Icc 0 1`, the points `z₃' t` and `z₅' t` differ by the translation `+ 1`. -/
+/-- `z₃' t = z₅' t + 1` on `Icc 0 1`. -/
 public lemma z₃'_eq_z₅'_add_one {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = z₅' t + 1 := by
   simp [z₃'_eq_of_mem ht, z₅'_eq_of_mem ht, add_comm]
-
-end eq_of_mem
 
 end MagicFunction.Parametrisations
