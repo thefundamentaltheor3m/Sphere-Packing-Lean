@@ -25,15 +25,8 @@ import SpherePacking.MagicFunction.b.Schwartz.BoundsAux
 /-!
 # Smooth J5
 
-This file defines `coeff`, `g`, `gN`, ... and proves smoothness/decay bounds for
-`RealIntegrals.J₅'` by differentiating under the integral sign.
-
-## Main statements
-* `ψI'_z₅'_eq`
-* `contDiff_J₅'`
-* `decay_J₅'`
+Smoothness and decay bounds for `RealIntegrals.J₅'` via differentiation under the integral sign.
 -/
-
 
 namespace MagicFunction.b.Schwartz.J5Smooth
 
@@ -43,13 +36,8 @@ open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
 
 open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane SpherePacking.ForMathlib
 
-open MagicFunction.Parametrisations
-open MagicFunction.b.RealIntegrals
-open MagicFunction.b.PsiBounds
-open MagicFunction.b.PsiBounds.PsiExpBounds
-open SpherePacking.Integration
-open Matrix ModularGroup
-open ModularForm
+open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
+  MagicFunction.b.PsiBounds.PsiExpBounds SpherePacking.Integration Matrix ModularGroup ModularForm
 
 def μ : Measure ℝ := μIoo01
 
@@ -59,7 +47,6 @@ instance : IsFiniteMeasure μ :=
   ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
 
 def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₅' t
-
 def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψI' (z₅' t)
 
 def gN (n : ℕ) (x t : ℝ) : ℂ :=
@@ -146,9 +133,7 @@ lemma J₅'_eq_integral_g_Ioo (x : ℝ) :
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
     mul_assoc, mul_left_comm, mul_comm]
 
-/-- Smoothness of `J₅'`.
-
-The prime in `contDiff_J₅'` refers to the function `J₅'`. -/
+/-- Smoothness of `J₅'`. -/
 public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
   have hmul : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ (-2 : ℂ) * I 0 x) :=
     contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I) (fun n x => by
@@ -157,9 +142,7 @@ public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
   simpa [show (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' from
     funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm] using hmul
 
-/-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₅'` refers to the function `J₅'`. -/
+/-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₅' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := by
   intro k n
