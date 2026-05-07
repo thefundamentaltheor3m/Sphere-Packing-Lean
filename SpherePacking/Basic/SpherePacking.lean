@@ -113,13 +113,12 @@ open Real
     use ?_; rw [← S.lattice_isZLattice.span_top]
     ext v; simp_rw [Submodule.mem_span]; refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
     · simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c
-          (h _ <| by rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp))
+        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c (h _ <| by
+          rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp))
     · simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹
-          (h _ <| by
-            rw [Submodule.coe_pointwise_smul] at *
-            simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp))
+        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ (h _ <| by
+          rw [Submodule.coe_pointwise_smul] at *
+          simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp))
 }
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
