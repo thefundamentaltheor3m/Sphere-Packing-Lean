@@ -65,8 +65,7 @@ public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d
 
 /-- Volume of packing balls inside `ball 0 R`, normalized by `volume (ball 0 R)`. -/
 @[expose] public noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) :
-    ℝ≥0∞ :=
-  volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
+    ℝ≥0∞ := volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
 
 /-- The (upper) density: `limsup` of `finiteDensity` as `R → ∞`. -/
 @[expose] public noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
