@@ -6,17 +6,7 @@ Authors: Bhavik Mehta, Gareth Ma
 module
 public import SpherePacking.E8.Basic
 
-/-!
-# The E8 packing
-
-Defines the periodic packing from the `E8` lattice, and computes its density `π^4 / 384`.
-
-## Main definitions
-* `E8Lattice`, `E8Packing`
-
-## Main statements
-* `E8Packing_density`
--/
+/-! # The E8 packing — density `π^4 / 384`. Main: `E8Lattice`, `E8Packing`, `E8Packing_density`. -/
 
 variable {R : Type*}
 
@@ -36,8 +26,8 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   have hn2 : 2 ≤ n := by
     have : 0 ≤ n := by exact_mod_cast (by simp [hn'] : (0 : ℝ) ≤ (n : ℝ))
     obtain ⟨k, rfl⟩ := hn; omega
-  exact le_of_sq_le_sq (by simpa [hn', Real.sq_sqrt zero_le_two] using
-    (show (2 : ℝ) ≤ n from mod_cast hn2)) (by simp)
+  exact le_of_sq_le_sq
+    (by simpa [hn', Real.sq_sqrt zero_le_two] using (show (2 : ℝ) ≤ n from mod_cast hn2)) (by simp)
 
 /-- The `E8` lattice as a `ℤ`-submodule of `EuclideanSpace ℝ (Fin 8)`. -/
 public noncomputable def E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
@@ -56,8 +46,7 @@ lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ
   eq_top_iff.2 (by simpa [span_E8Matrix_eq_top ℝ] using
     Submodule.span_mono (R := ℝ) (range_E8Matrix_row_subset ℝ))
 
-lemma span_E8_eq_top' :
-    Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
+lemma span_E8_eq_top' : Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   change Submodule.span ℝ
     ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
   rw [Submodule.span_image, span_E8_eq_top]; simp
@@ -82,9 +71,9 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   refine Basis.mk
       (v := fun i ↦ ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
   · exact Submodule.mem_map_of_mem (E8Matrix_row_mem_E8 i)
-  · refine LinearIndependent.of_comp (Submodule.subtype _) ?_
-    exact LinearIndependent.of_comp (M' := (Fin 8 → ℝ)) (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ))
-      ((linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ)
+  · exact LinearIndependent.of_comp (Submodule.subtype _) <|
+      LinearIndependent.of_comp (M' := (Fin 8 → ℝ)) (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ))
+        ((linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ)
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp),
       Submodule.map_top, Submodule.range_subtype, Submodule.map_span, ← Set.range_comp]
     exact span_E8Matrix_eq_E8Lattice.ge
@@ -132,8 +121,7 @@ open MeasureTheory ZSpan
 
 lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
     (b : Basis ι ℝ (ι → ℝ)) :
-    volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| :=
-  volume_fundamentalDomain b
+    volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| := volume_fundamentalDomain b
 
 public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
   simp [ZSpan.volume_fundamentalDomain' (b := E8Basis ℝ), of_basis_eq_matrix, E8Matrix_myDet_eq_one]
