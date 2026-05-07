@@ -189,17 +189,6 @@ private lemma k_bound_two_pi {s : ℝ} (hs : |s| = 1) (t : ℝ) (ht : t ∈ Ι (
   linarith [(norm_add_le ((s * π : ℂ) * (Complex.I : ℂ)) (-π * (t : ℂ))).trans
     (add_le_add (norm_sign_pi_I_eq_pi hs).le (norm_neg_pi_mul_t_le ht))]
 
-lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := fun t ht => by
-  simpa [k₁, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring] using
-    k_bound_two_pi (s := -1) (by norm_num) t ht
-
-lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := fun t ht => by
-  simpa [k₃, show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
-    k_bound_two_pi (s := 1) (by norm_num) t ht
-
-lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := fun t ht => by
-  simpa [k₅] using norm_neg_pi_mul_t_le ht
-
 /-- Shared wrapper: `u ↦ ∫ t in 0..1, base₁ t * exp (u * k t)` is differentiable at `u0`. -/
 private lemma base₁_integral_differentiableAt {k : ℝ → ℂ} (u0 : ℂ) (K : ℝ)
     (hk : ContinuousOn k (Ι (0 : ℝ) 1)) (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ K) :
@@ -212,18 +201,24 @@ private lemma base₁_integral_differentiableAt {k : ℝ → ℂ} (u0 : ℂ) (K 
 lemma I₁'C_differentiableOn : DifferentiableOn ℂ I₁'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₁'C_eq] using
-    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₁; fun_prop) k₁_bound
+    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₁; fun_prop)
+      (fun t ht => by
+        simpa [k₁, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring] using
+          k_bound_two_pi (s := -1) (by norm_num) t ht)
 
 lemma I₃'C_differentiableOn : DifferentiableOn ℂ I₃'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext I₃'C_eq] using
-    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₃; fun_prop) k₃_bound
+    base₁_integral_differentiableAt u (2 * Real.pi) (by unfold k₃; fun_prop)
+      (fun t ht => by
+        simpa [k₃, show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
+          k_bound_two_pi (s := 1) (by norm_num) t ht)
 
 lemma I₅'C_differentiableOn : DifferentiableOn ℂ I₅'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
   simpa [funext fun u => by simpa [mul_assoc] using I₅'C_eq u, mul_assoc] using
-    (base₁_integral_differentiableAt u Real.pi (by unfold k₅; fun_prop) k₅_bound).const_mul
-      (-2 : ℂ)
+    (base₁_integral_differentiableAt u Real.pi (by unfold k₅; fun_prop)
+      (fun t ht => by simpa [k₅] using norm_neg_pi_mul_t_le ht)).const_mul (-2 : ℂ)
 
 def arg₂ (t : ℝ) : ℂ := (-1 : ℂ) / ((t : ℂ) + (Complex.I : ℂ))
 def base₂ (t : ℝ) : ℂ := φ₀'' (arg₂ t) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))
@@ -339,10 +334,6 @@ def base₆ (t : ℝ) : ℂ := (Complex.I : ℂ) * φ₀'' ((t : ℂ) * (Complex
 def I₆IntegrandC (u : ℂ) (t : ℝ) : ℂ := base₆ t * Complex.exp (-(π : ℂ) * u * (t : ℂ))
 def I₆IntegrandC_deriv (u : ℂ) (t : ℝ) : ℂ := (-(π : ℂ) * (t : ℂ)) * I₆IntegrandC u t
 
-lemma I₆'C_eq_integrandC (u : ℂ) :
-    I₆'C u = 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC u t := by
-  simp [I₆'C, I₆IntegrandC, base₆, mul_assoc, mul_left_comm, mul_comm]
-
 lemma base₆_continuousOn : ContinuousOn base₆ (Set.Ici (1 : ℝ)) := by
   simpa [base₆, mul_assoc] using continuousOn_const.mul
     (MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
@@ -444,7 +435,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
   have hμ : (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ) =
       fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t := funext fun _ => by simp [μ]
   exact (show HasDerivAt I₆'C (2 * ∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 by
-    simpa [funext I₆'C_eq_integrandC, mul_assoc] using
+    simpa [funext fun u => show I₆'C u = 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC u t by
+        simp [I₆'C, I₆IntegrandC, base₆, mul_assoc, mul_left_comm, mul_comm], mul_assoc] using
       (hμ ▸ (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
         (F := I₆IntegrandC) (F' := I₆IntegrandC_deriv) (bound := bound)
         (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
@@ -452,15 +444,13 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
         (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2).const_mul
       (2 : ℂ)).differentiableAt
 
-lemma I₆'C_differentiableOn : DifferentiableOn ℂ I₆'C rightHalfPlane :=
-  fun u hu => (I₆'C_differentiableAt u hu).differentiableWithinAt
-
 /-- `aPrimeC` is analytic on the right half-plane. -/
 public lemma aPrimeC_analyticOnNhd : AnalyticOnNhd ℂ aPrimeC rightHalfPlane :=
   (show DifferentiableOn ℂ aPrimeC rightHalfPlane by
     simpa [aPrimeC] using ((((I₁'C_differentiableOn.add I₂'C_differentiableOn).add
       I₃'C_differentiableOn).add I₄'C_differentiableOn).add
-      I₅'C_differentiableOn).add I₆'C_differentiableOn).analyticOnNhd rightHalfPlane_isOpen
+      I₅'C_differentiableOn).add (fun u hu =>
+        (I₆'C_differentiableAt u hu).differentiableWithinAt)).analyticOnNhd rightHalfPlane_isOpen
 end
 
 end MagicFunction.g.CohnElkies.IntegralReps
