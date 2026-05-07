@@ -30,65 +30,31 @@ open Set Complex Real MagicFunction.Parametrisations
 
 namespace MagicFunction.b.RealIntegrals
 
-/--
-The first auxiliary contour integral defining the radial profile of `b`.
+/-- The first auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₁' (x : ℝ) : ℂ :=
+  ∫ t in (0 : ℝ)..1, I * ψT' (z₁' t) * cexp (π * I * x * (z₁' t))
 
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- CV factor.
-  * ψT' (z₁' t)
-  * cexp (π * I * x * (z₁' t))
+/-- The second auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₂' (x : ℝ) : ℂ :=
+  ∫ t in (0 : ℝ)..1, ψT' (z₂' t) * cexp (π * I * x * (z₂' t))
 
-/--
-The second auxiliary contour integral defining the radial profile of `b`.
+/-- The third auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₃' (x : ℝ) : ℂ :=
+  ∫ t in (0 : ℝ)..1, I * ψT' (z₃' t) * cexp (π * I * x * (z₃' t))
 
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  ψT' (z₂' t)
-  * cexp (π * I * x * (z₂' t))
+/-- The fourth auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₄' (x : ℝ) : ℂ :=
+  ∫ t in (0 : ℝ)..1, -1 * ψT' (z₄' t) * cexp (π * I * x * (z₄' t))
 
-/--
-The third auxiliary contour integral defining the radial profile of `b`.
+/-- The fifth auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₅' (x : ℝ) : ℂ :=
+  -2 * ∫ t in (0 : ℝ)..1, I * ψI' (z₅' t) * cexp (π * I * x * (z₅' t))
 
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- CV factor.
-  * ψT' (z₃' t)
-  * cexp (π * I * x * (z₃' t))
+/-- The sixth auxiliary contour integral defining the radial profile of `b`. -/
+@[expose] public def J₆' (x : ℝ) : ℂ :=
+  -2 * ∫ t in Ici (1 : ℝ), I * ψS' (z₆' t) * cexp (π * I * x * (z₆' t))
 
-/--
-The fourth auxiliary contour integral defining the radial profile of `b`.
-
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, -1 -- CV factor.
-  * ψT' (z₄' t)
-  * cexp (π * I * x * (z₄' t))
-
-/--
-The fifth auxiliary contour integral defining the radial profile of `b`.
-
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- CV factor.
-  * ψI' (z₅' t)
-  * cexp (π * I * x * (z₅' t))
-
-/--
-The sixth auxiliary contour integral defining the radial profile of `b`.
-
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
-@[expose] public def J₆' (x : ℝ) : ℂ := -2 * ∫ t in Ici (1 : ℝ), I -- CV factor.
-  * ψS' (z₆' t)
-  * cexp (π * I * x * (z₆' t))
-
-/--
-The radial profile defining the magic function `b` as a function of `x = ‖v‖^2`.
-
-The prime indicates that this is a function of the real parameter `x = ‖v‖^2`.
--/
+/-- The radial profile defining the magic function `b` as a function of `x = ‖v‖^2`. -/
 @[expose] public def b' (x : ℝ) := J₁' x + J₂' x + J₃' x + J₄' x + J₅' x + J₆' x
 
 end MagicFunction.b.RealIntegrals
@@ -117,12 +83,8 @@ namespace MagicFunction.b.RadialFunctions
 /-- The magic function `b` on `V`, obtained from the radial profile `b'` by `x = ‖v‖^2`. -/
 @[expose] public def b (x : V) : ℂ := b' (‖x‖ ^ 2)
 
-section Eq
-
 /-- Expand `b` as the sum of the six defining integrals. -/
 public lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
-
-end Eq
 
 end MagicFunction.b.RadialFunctions
 
