@@ -8,7 +8,6 @@ public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.ModularForms.PhiTransform
-public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import SpherePacking.ForMathlib.ModularFormsHelpers
@@ -25,9 +24,7 @@ namespace MagicFunction.g.CohnElkies.IntegralReps
 noncomputable section
 
 open scoped BigOperators UpperHalfPlane
-open MeasureTheory Real Complex Filter
-open UpperHalfPlane
-open MagicFunction.FourierEigenfunctions
+open MeasureTheory Real Complex Filter MagicFunction.FourierEigenfunctions
 
 /-- The Laplace integrand appearing in the representation of the radial profile `a'`. -/
 @[expose] public def aLaplaceIntegrand (u t : ℝ) : ℂ :=
@@ -36,8 +33,7 @@ open MagicFunction.FourierEigenfunctions
 lemma continuousOn_phi0''_div_Ioi :
     ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
   MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
-    (continuousOn_const.div Complex.continuous_ofReal.continuousOn
-      fun _ ht => mod_cast ht.ne')
+    (continuousOn_const.div Complex.continuous_ofReal.continuousOn fun _ ht => mod_cast ht.ne')
     fun _ ht => by simp_all
 
 lemma aestronglyMeasurable_phi0''_div_Ioi :
@@ -47,11 +43,10 @@ lemma aestronglyMeasurable_phi0''_div_Ioi :
 
 /-- Integrability of `t^2 * exp(-a * t)` on a ray `Set.Ioi A` (for `0 < a`). -/
 public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
-    IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) := by
-  refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) (half_pos ha) (by fun_prop)
+    IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) :=
+  integrable_of_isBigO_exp_neg (a := A) (b := a / 2) (half_pos ha) (by fun_prop)
     (((isLittleO_pow_exp_pos_mul_atTop (k := 2) (half_pos ha)).isBigO.mul
-      (Asymptotics.isBigO_refl _ _)).congr_right fun t => ?_)
-  rw [← Real.exp_add]; congr 1; ring
+      (Asymptotics.isBigO_refl _ _)).congr_right fun t => by rw [← Real.exp_add]; congr 1; ring)
 
 lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
     AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
@@ -77,19 +72,17 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         fun t ht => ht.1) C₀ ?_
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
     have ht0 : 0 < t := ht.1
-    have ht1 : t ≤ 1 := ht.2
     have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
     have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ :=
       (show ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) by
         simpa [div_eq_mul_inv, Complex.ofReal_inv, C₀] using
           MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹)
-            (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)).trans <|
-        (mul_le_mul_of_nonneg_left
-          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 ht0.le])) hC₀).trans_eq
-          (by simp)
+            (one_le_inv_iff₀.2 ⟨ht0, ht.2⟩)).trans <| by
+        simpa using mul_le_mul_of_nonneg_left
+          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 ht0.le])) hC₀
     have ht2_le : ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤ 1 := by
       simpa [Complex.norm_real] using
-        pow_le_one₀ (n := 2) (abs_nonneg t) (by simpa [abs_of_pos ht0] using ht1)
+        pow_le_one₀ (n := 2) (abs_nonneg t) (by simpa [abs_of_pos ht0] using ht.2)
     have hexp_le : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
       rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
         simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))]
@@ -113,9 +106,9 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have hmid : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
       (((show ContinuousOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) by
           simpa [aLaplaceIntegrand, mul_assoc] using
-            (((by fun_prop : Continuous fun t : ℝ =>
-                ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul continuousOn_phi0''_div_Ioi).mul
-              (by fun_prop : Continuous fun t : ℝ => (Real.exp (-π * u * t) : ℂ)).continuousOn)
+            (((by fun_prop : Continuous fun t : ℝ ↦ ((t ^ (2 : ℕ) : ℝ) : ℂ)
+              ).continuousOn.mul continuousOn_phi0''_div_Ioi).mul
+              (by fun_prop : Continuous fun t : ℝ ↦ (Real.exp (-π * u * t) : ℂ)).continuousOn)
         ).mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
         (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
@@ -125,10 +118,6 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       let C2 : ℝ := ‖(12 * Complex.I : ℂ) / (π : ℂ)‖
       let C4 : ℝ := ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
       let Cφ : ℝ := (BA ^ (2 : ℕ) + C2 * (B4 * BA) + C4 * (B4 ^ (2 : ℕ))) * CΔ
-      have hMeasA : AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
-            (MeasureTheory.volume.restrict (Set.Ioi A)) :=
-        hMeasIoi.mono_measure <| Measure.restrict_mono_set _
-          fun _ ht => zero_lt_one.trans_le (hA1.trans ht.le)
       have hdomReal : Integrable (fun t : ℝ => Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)))
             (MeasureTheory.volume.restrict (Set.Ioi A)) :=
         (integrableOn_sq_mul_exp_neg A a ha).const_mul Cφ
@@ -215,7 +204,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                 gcongr
           _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by rw [← hExpRew]; ring
       exact MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
-        hdomReal hMeasA hdom
+        hdomReal (hMeasIoi.mono_measure <| Measure.restrict_mono_set _
+          fun _ ht => zero_lt_one.trans_le (hA1.trans ht.le)) hdom
     rw [← Set.Ioc_union_Ioi_eq_Ioi hA1]; exact hmid.union hbig
   rw [← Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]; exact hsmall.union htail
 
