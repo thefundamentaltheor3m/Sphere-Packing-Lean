@@ -16,21 +16,8 @@ import SpherePacking.Contour.Segments
 /-!
 # Prelude for `perm_I₁_I₂`
 
-The identity `perm_I₁_I₂` is proved by rewriting `I₁ + I₂` and `I₃ + I₄` as curve integrals of the
-same holomorphic `1`-form and applying the Poincare lemma (contour deformation in the upper
-half-plane).
-
-This file bridges the existing `intervalIntegral` definitions to `curveIntegral` along straight
-segments, and defines the auxiliary Fourier-side integrand `Φ₁_fourier`.
-
-## Main definitions
-* `Φ₁_fourier`
-
-## Main statements
-* `I₁'_eq_curveIntegral_segment`
-* `I₂'_eq_curveIntegral_segment`
-* `I₃'_add_I₄'_eq_curveIntegral_segments`
-* `Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃'`
+Bridges `intervalIntegral` definitions to `curveIntegral` along straight segments, and defines
+the auxiliary Fourier-side integrand `Φ₁_fourier`.
 -/
 
 namespace MagicFunction.a.Fourier
@@ -42,9 +29,7 @@ open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions Schwa
 
 section Integral_Permutations
 
-/-- If `f` is an even Schwartz function, then applying the Fourier transform twice gives back `f`.
-
-This is used to invert permutation identities for radial (hence even) functions. -/
+/-- For even Schwartz `f`, applying the Fourier transform twice gives back `f`. -/
 public lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) (hf : Function.Even f) :
@@ -130,8 +115,7 @@ lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
       SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t) (uIcc_aux ht),
       MagicFunction.a.ComplexIntegrands.Φ₄']
 
-/-- Rewrite `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along the two segments
-`1 → 1 + i` and `1 + i → i`. -/
+/-- `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along `1 → 1 + i` and `1 + i → i`. -/
 public lemma I₃'_add_I₄'_eq_curveIntegral_segments (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₃' r + MagicFunction.a.RealIntegrals.I₄' r =
       (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
@@ -145,10 +129,7 @@ public lemma neg_one_div_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (-1 / z).im := b
   have hz0 : z ≠ 0 := fun h => absurd (by simp [h] : z.im = 0) hz.ne'
   simpa [div_eq_mul_inv, Complex.inv_im] using div_pos hz (Complex.normSq_pos.2 hz0)
 
-/-- The Fourier-side integrand corresponding to `Φ₁'`, including the Mobius inversion Jacobian.
-
-This is the holomorphic function whose curve integral appears in `fourier_I₁_eq_curveIntegral` and
-`fourier_I₂_eq_curveIntegral`. -/
+/-- The Fourier-side integrand corresponding to `Φ₁'`, including the Mobius inversion Jacobian. -/
 @[expose] public def Φ₁_fourier (r : ℝ) (z : ℂ) : ℂ :=
   φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 *
     (((Complex.I : ℂ) / z) ^ (4 : ℕ)) *
@@ -165,9 +146,7 @@ lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im)
       (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) from by grind only,
     mul_assoc, mul_left_comm, mul_comm]
 
-/-- Modular identity relating `Φ₁_fourier` to `Φ₃'` via `mobiusInv` and its derivative.
-
-The prime at the end of the name comes from the integrand `Φ₃'`. -/
+/-- Modular identity relating `Φ₁_fourier` to `Φ₃'` via `mobiusInv` and its derivative. -/
 public lemma Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
     Φ₁_fourier r z = (deriv SpherePacking.mobiusInv z) *
       MagicFunction.a.ComplexIntegrands.Φ₃' r (SpherePacking.mobiusInv z) := by
