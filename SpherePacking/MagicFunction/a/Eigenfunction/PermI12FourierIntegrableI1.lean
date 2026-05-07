@@ -74,10 +74,6 @@ lemma integrable_permI2Kernel_slice (w : ℝ⁸) (t : ℝ) :
       (by simpa [phase] using ae_norm_phase_le_one (V := ℝ⁸) (w := w))
   simpa [phase, g, permI2Kernel, permI5Phase, mul_assoc] using hprod
 
-lemma ae_integrable_permI1Kernel_slice (w : ℝ⁸) :
-    (∀ᵐ t : ℝ ∂μIoc01, Integrable (fun x : ℝ⁸ ↦ permI1Kernel w (x, t)) (volume : Measure ℝ⁸)) :=
-  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall (integrable_permI1Kernel_slice w)
-
 /-- For almost every `t ∈ Ioc 0 1`, the slice `x ↦ permI2Kernel w (x, t)` is integrable. -/
 public lemma ae_integrable_permI2Kernel_slice (w : ℝ⁸) :
     (∀ᵐ t : ℝ ∂μIoc01, Integrable (fun x : ℝ⁸ ↦ permI2Kernel w (x, t)) (volume : Measure ℝ⁸)) :=
@@ -151,7 +147,8 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
 public lemma integrable_perm_I₁_kernel (w : ℝ⁸) :
     Integrable (permI1Kernel w) ((volume : Measure ℝ⁸).prod μIoc01) :=
   (integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIoc01) (permI1Kernel_measurable w)).2
-    ⟨ae_integrable_permI1Kernel_slice w, integrable_integral_norm_permI1Kernel w⟩
+    ⟨(ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall (integrable_permI1Kernel_slice w),
+      integrable_integral_norm_permI1Kernel w⟩
 
 end Integral_Permutations.PermI12Fourier_Integrable
 end
