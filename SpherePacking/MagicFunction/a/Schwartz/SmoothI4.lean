@@ -50,13 +50,6 @@ private lemma arg_z₄'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (arg z₄' (-1 : ℂ) t).im = 1 / (t ^ 2 + 1) := by
   simpa [arg_z₄'_eq_neg_one_div (t := t) ht] using im_neg_one_div_neg_ofReal_add_I (t := t)
 
-private lemma arg_z₄'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    0 < (arg z₄' (-1 : ℂ) t).im := by rw [arg_z₄'_im_eq t ht]; positivity
-
-private lemma arg_z₄'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    (1 / 2 : ℝ) < (arg z₄' (-1 : ℂ) t).im := by
-  simpa [arg_z₄'_im_eq (t := t) ht] using one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
-
 private lemma den_z₄'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     z₄' t + (-1 : ℂ) ≠ 0 := fun h0 => by
   simpa [z₄'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), sub_eq_add_neg,
@@ -66,7 +59,9 @@ private lemma den_z₄'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 public theorem I₄'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₄' :=
   contDiff_of_eq_integral_g_Ioo (z := z₄') (shift := (-1 : ℂ)) (prefactor := (-1 : ℂ))
     (f := I₄') I₄'_eq_integral_g_Ioo continuous_z₄' norm_z₄'_le_two (by norm_num)
-    den_z₄'_ne_zero arg_z₄'_im_pos arg_z₄'_im_half
+    den_z₄'_ne_zero (fun t ht => by rw [arg_z₄'_im_eq t ht]; positivity)
+    (fun t ht => by
+      simpa [arg_z₄'_im_eq (t := t) ht] using one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht)
 
 end
 
