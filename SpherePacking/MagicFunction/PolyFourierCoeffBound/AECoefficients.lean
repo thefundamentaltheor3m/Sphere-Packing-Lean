@@ -7,22 +7,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound.Basic
 
-/-!
-# Fourier coefficients of `(A_E)^2`
-
-This file specializes the general `DivDiscBound` framework from
-`SpherePacking.MagicFunction.PolyFourierCoeffBound.Basic` to the function
-`(A_E)^2` arising from the Eisenstein series expansion `E₂ * E₄ - E₆`.
-
-We compute the `ℕ`-indexed Cauchy product of the `A_E` coefficients with itself
-and repackage it as an `ℤ`-indexed `fouterm` Fourier series in the `π i`
-convention, vanishing on odd indices. The main summability statements feed into
-the bound `DivDiscBoundOfPolyFourierCoeff` in `Application.lean`.
-
-## Main definitions
-* `MagicFunction.PolyFourierCoeffBound.A_E_sq_coeff`
-* `MagicFunction.PolyFourierCoeffBound.A_E_sq_fourierCoeff`
--/
+/-! # Fourier coefficients of `(A_E)^2` (Cauchy product, repackaged as `fouterm`). -/
 
 namespace MagicFunction.PolyFourierCoeffBound
 
