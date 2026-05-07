@@ -5,18 +5,10 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Contour.Segments
 
 /-!
-Shared "curve integral = interval integral" lemmas for the four standard J12 segments.
-
-These are used to present the real integrals `J₁'` to `J₄'` as curve integrals of the scalar 1-form
-`scalarOneForm f` along the segments
-
-* `-1 → -1 + I`
-* `-1 + I → I`
-* `1 → 1 + I`
-* `1 + I → I`.
-
-They are dimension-agnostic: callers instantiate `f` with the appropriate integrand (typically
-`Ψ₁' r`).
+Shared "curve integral = interval integral" lemmas for the four standard J12 segments. Used to
+present the real integrals `J₁'` to `J₄'` as curve integrals of the scalar 1-form `scalarOneForm f`
+along the segments `-1 → -1 + I`, `-1 + I → I`, `1 → 1 + I`, `1 + I → I`. Dimension-agnostic:
+callers instantiate `f` with the appropriate integrand (typically `Ψ₁' r`).
 -/
 
 open scoped Interval
@@ -31,8 +23,8 @@ private lemma curveIntegral_segment_eq_intervalIntegral (a b : ℂ) (f : ℂ →
     (hg : ∀ t : ℝ, t ∈ Set.Icc (0 : ℝ) 1 → AffineMap.lineMap a b t = g t) :
     (∫ᶜ z in Path.segment a b, scalarOneForm f z) = ∫ t in (0 : ℝ)..1, (b - a) * f (g t) := by
   rw [curveIntegral_segment (ω := scalarOneForm f) a b]
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => ?_
-  simp [scalarOneForm_apply, hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht)]
+  exact intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => by
+    simp [scalarOneForm_apply, hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht)]
 
 /-- Rewrite the segment integral on `1 → 1 + I` as an interval integral in the parameter `t`. -/
 public lemma curveIntegral_segment_z₃ (f : ℂ → ℂ) :
