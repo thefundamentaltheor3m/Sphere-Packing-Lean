@@ -3,19 +3,15 @@ public import Mathlib.Algebra.Module.ZLattice.Summable
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import SpherePacking.CohnElkies.LPBoundAux
 
-
 /-!
 # Summability lemmas for the LP bound
 
 For a Schwartz function `f` on `ℝᵈ`, the restriction of `f` to any translate of a discrete
-`ℤ`-lattice is absolutely summable, by Schwartz decay.
-
-We use this to justify exchanging lattice `tsum`s with other operations in the Cohn-Elkies
-argument.
+`ℤ`-lattice is absolutely summable, by Schwartz decay. Used to justify exchanging lattice `tsum`s
+with other operations in the Cohn-Elkies argument.
 -/
 
-open scoped BigOperators
-open scoped SchwartzMap
+open scoped BigOperators SchwartzMap
 
 namespace SpherePacking.CohnElkies
 
