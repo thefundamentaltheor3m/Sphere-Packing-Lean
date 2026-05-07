@@ -51,8 +51,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
           (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
       simp [mul_assoc, mul_comm]]
-  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun _ hz =>
-    lt_of_lt_of_le zero_lt_one (by simpa [Set.mem_Ici] using hz.2)
+  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} :=
+    fun _ hz => lt_of_lt_of_le zero_lt_one (by simpa using hz.2)
   have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       (Set.Ioi (0 : ℝ)) := by
     have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=

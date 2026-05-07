@@ -38,7 +38,7 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   let wH : ℍ := ⟨((s : ℝ) : ℂ) + (t : ℂ) * Complex.I, by
-    simpa using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
+    simpa using lt_of_lt_of_le zero_lt_one ht1⟩
   have hw_im : (wH : ℂ).im = t := by simp [wH]
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
@@ -157,7 +157,7 @@ lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
           simp [g, show MagicFunction.Parametrisations.z₂' t =
               (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) by
             simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem
-              (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht), add_comm],
+              (by simpa [Set.uIcc_of_le zero_le_one] using ht), add_comm],
       show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x by norm_num]]
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₂' u)
     (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ))
@@ -184,7 +184,7 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         simp [g, sub_eq_add_neg,
           show MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) by
             simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t)
-              (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)],
+              (by simpa [Set.uIcc_of_le zero_le_one] using ht)],
       intervalIntegral.integral_const_mul,
       show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num]
     simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]
