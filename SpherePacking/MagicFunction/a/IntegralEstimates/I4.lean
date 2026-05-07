@@ -41,20 +41,6 @@ end Setup
 
 section Bounding
 
-lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
-    ‖φ₀'' (-1 / (-t + I))‖ * 2 * rexp (-π * r) := fun t ht => by
-  rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul, norm_mul, norm_neg,
-    norm_one, one_mul]
-  gcongr
-  · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, neg_re, ofReal_re, I_re, add_zero,
-      mul_neg, neg_mul, neg_neg, add_im, neg_im, ofReal_im, neg_zero, I_im, zero_add, mul_one]
-    nlinarith [ht.1, ht.2]
-  · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
-    gcongr <;> apply le_of_eq
-    · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r)
-    · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r * t)
-    · simp [norm_exp]
-
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im :=
   fun t ht => by
@@ -65,7 +51,18 @@ public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 /
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) :=
-  I24Common.g_norm_bound_uniform_of I₄'_bounding_aux_1 im_parametrisation_lower
+  I24Common.g_norm_bound_uniform_of (fun r t ht => by
+    rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul, norm_mul, norm_neg,
+      norm_one, one_mul]
+    gcongr
+    · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, neg_re, ofReal_re, I_re, add_zero,
+        mul_neg, neg_mul, neg_neg, add_im, neg_im, ofReal_im, neg_zero, I_im, zero_add, mul_one]
+      nlinarith [ht.1, ht.2]
+    · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
+      gcongr <;> apply le_of_eq
+      · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r)
+      · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r * t)
+      · simp [norm_exp]) im_parametrisation_lower
 
 end Bounding
 
@@ -81,11 +78,10 @@ open SchwartzMap
 
 /-- Uniform bound `‖coeff t‖ ≤ 2 * π` for `t ∈ Ioo (0, 1)`. -/
 public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) : ‖coeff t‖ ≤ 2 * π :=
-  I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ))
-    (fun t ht => by
-      change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
-      rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) by push_cast; ring, Complex.norm_real]
-      exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1)) t ht
+  I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ)) (fun t ht => by
+    change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
+    rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) by push_cast; ring, Complex.norm_real]
+    exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |1 - t| ≤ 1)) t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
 public lemma exp_r_mul_coeff (r t : ℝ) :
@@ -97,24 +93,24 @@ public lemma exp_r_mul_coeff (r t : ℝ) :
 
 lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₄' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
-  have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
-    refine ((MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
-      fun _ hx => mem_Icc_of_Ioo hx).congr fun t ht => ?_
-    have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
-    have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
-      simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
-    simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
-      MagicFunction.a.ComplexIntegrands.Φ₃', g,
-      show z₄' t - 1 = (-t : ℂ) + I by simp [hz, sub_eq_add_neg, add_assoc, add_comm],
-      show cexp (π * I * r * (z₄' t : ℂ)) =
-          cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) by
-        simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
-          rw [← hz_coeff]; ring] using exp_r_mul_coeff (r := r) (t := t)]
-    ac_rfl
   simpa [gN] using iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
     (I := I₄') (coeff := coeff) (g := g)
     (A := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2)
-    (hI := I₄'_eq_integral_g_Ioo) (hg_cont := hg_cont)
+    (hI := I₄'_eq_integral_g_Ioo) (hg_cont := fun r => by
+      refine ((MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
+        fun _ hx => mem_Icc_of_Ioo hx).congr fun t ht => ?_
+      have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
+      have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
+        simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm,
+          add_comm]
+      simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
+        MagicFunction.a.ComplexIntegrands.Φ₃', g,
+        show z₄' t - 1 = (-t : ℂ) + I by simp [hz, sub_eq_add_neg, add_assoc, add_comm],
+        show cexp (π * I * r * (z₄' t : ℂ)) =
+            cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) by
+          simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
+            rw [← hz_coeff]; ring] using exp_r_mul_coeff (r := r) (t := t)]
+      ac_rfl)
     (hcoeff_cont := I24Common.continuous_coeff (continuous_const.sub Complex.continuous_ofReal))
     (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
     (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n
