@@ -45,31 +45,23 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
   let f0 : ℝ → ℂ := fun t : ℝ => (Real.exp (-π * u * t) : ℂ)
   let f1 : ℝ → ℂ := fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)
   let f2 : ℝ → ℂ := fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)
-  let g0 : ℝ → ℂ := fun t : ℝ => c18144 * f0 t
-  let g1 : ℝ → ℂ := fun t : ℝ => (-c8640) * f1 t
-  let g2 : ℝ → ℂ := fun t : ℝ => c36 * f2 t
   rw [show (∫ t in Set.Ioi (0 : ℝ),
       (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
-      ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) from
-    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by
-      funext t; dsimp [f0, f1, f2, g0, g1, g2]; ring]
-  change (∫ t, ((g2 t + g1 t) + g0 t) ∂ μIoi0) =
+      ∫ t in Set.Ioi (0 : ℝ), ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) from
+    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by funext t; dsimp [f0, f1, f2]; ring]
+  change (∫ t, ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) ∂ μIoi0) =
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
       (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u)
-  have hIntegrable (f : ℝ → ℂ) (hf : IntegrableOn f (Set.Ioi (0 : ℝ))) : Integrable f μIoi0 := by
+  have hI (f : ℝ → ℂ) (hf : IntegrableOn f (Set.Ioi (0 : ℝ))) : Integrable f μIoi0 := by
     simpa [MeasureTheory.IntegrableOn, μIoi0] using hf
-  have hG0 : (∫ t, g0 t ∂ μIoi0) = c18144 * ((1 / (π * u) : ℝ) : ℂ) := by
-    simpa [g0, f0, μIoi0] using (integral_const_mul (μ := μIoi0) c18144 f0).trans
-      (by simpa [f0, μIoi0] using congrArg (c18144 * ·) hIexp)
-  have hG1 : (∫ t, g1 t ∂ μIoi0) = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    simpa [g1, f1, μIoi0] using (integral_const_mul (μ := μIoi0) (-c8640) f1).trans
-      (by simpa [f1, μIoi0] using congrArg ((-c8640) * ·) hItexp)
-  have hG2 : (∫ t, g2 t ∂ μIoi0) = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-    simpa [g2, f2, μIoi0] using (integral_const_mul (μ := μIoi0) c36 f2).trans
-      (by simpa [f2, μIoi0] using congrArg (c36 * ·) hI2exp)
-  rw [integral_add_add (μ := μIoi0) ((hIntegrable f2 h2ExpInt).const_mul c36)
-      ((hIntegrable f1 hTExpInt).const_mul (-c8640)) ((hIntegrable f0 hExpInt).const_mul c18144),
-    hG2, hG1, hG0, hc36, hc8640, hc18144]
+  rw [integral_add_add (μ := μIoi0) ((hI f2 h2ExpInt).const_mul c36)
+      ((hI f1 hTExpInt).const_mul (-c8640)) ((hI f0 hExpInt).const_mul c18144),
+    integral_const_mul (μ := μIoi0) c36 f2, integral_const_mul (μ := μIoi0) (-c8640) f1,
+    integral_const_mul (μ := μIoi0) c18144 f0,
+    show (∫ t, f2 t ∂μIoi0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) by simpa [f2, μIoi0] using hI2exp,
+    show (∫ t, f1 t ∂μIoi0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) by simpa [f1, μIoi0] using hItexp,
+    show (∫ t, f0 t ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) by simpa [f0, μIoi0] using hIexp,
+    hc36, hc8640, hc18144]
   have hu2ne : (u - 2 : ℝ) ≠ 0 := (sub_pos.mpr hu).ne'
   have hune : (u : ℝ) ≠ 0 := hu0.ne'
   push_cast [Complex.ofReal_div, Complex.ofReal_mul]
