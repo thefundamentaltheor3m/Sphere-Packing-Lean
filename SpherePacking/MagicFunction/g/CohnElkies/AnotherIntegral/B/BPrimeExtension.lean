@@ -22,9 +22,8 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 /-!
 # Complex analytic extension of `b'` (`bPrimeC`)
 
-Defines `bPrimeC` as the sum of complexified integrals `J₁'C`, ..., `J₆'C`, proves it agrees
-with `b'` on the positive real axis (`bPrimeC_ofReal`) and is analytic on the right half-plane
-(`bPrimeC_analyticOnNhd`).
+`bPrimeC := J₁'C + ... + J₆'C` agrees with `b'` on the positive real axis (`bPrimeC_ofReal`) and
+is analytic on the right half-plane (`bPrimeC_analyticOnNhd`).
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -37,27 +36,22 @@ open MagicFunction.b.RealIntegrals MagicFunction.Parametrisations
 
 noncomputable section
 
-/-- Complexification of `J₁'`. -/
+/-- Complexifications `J₁'C` … `J₆'C` of the real integrals `J₁'` … `J₆'`. -/
 def J₁'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψT' (z₁' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₁' t))
 
-/-- Complexification of `J₂'`. -/
 def J₂'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   ψT' (z₂' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₂' t))
 
-/-- Complexification of `J₃'`. -/
 def J₃'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψT' (z₃' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₃' t))
 
-/-- Complexification of `J₄'`. -/
 def J₄'C (u : ℂ) : ℂ := ∫ t in (0 : ℝ)..1,
   (-1 : ℂ) * ψT' (z₄' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₄' t))
 
-/-- Complexification of `J₅'`. -/
 def J₅'C (u : ℂ) : ℂ := -2 * ∫ t in (0 : ℝ)..1,
   (Complex.I : ℂ) * ψI' (z₅' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₅' t))
 
-/-- Complexification of `J₆'`. -/
 def J₆'C (u : ℂ) : ℂ := -2 * ∫ t in Set.Ici (1 : ℝ),
   (Complex.I : ℂ) * ψS' (z₆' t) * Complex.exp (π * (Complex.I : ℂ) * u * (z₆' t))
 
@@ -95,10 +89,6 @@ private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : 
   Integration.exists_bound_norm_uIoc_zero_one_of_continuous (fun t => ψT' (z t))
     (SpherePacking.Integration.continuous_comp_upperHalfPlane_mk (ψT := ψT) (ψT' := ψT')
       MagicFunction.b.PsiBounds.continuous_ψT (z := z) hz hIm fun t => by simp [ψT', hIm t])
-
-lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
-    ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  simpa using MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq (ht := mem_Ioc_of_mem_uIoc ht)
 
 lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
@@ -159,11 +149,11 @@ private lemma integral_ψ_exp_differentiable
     Differentiable ℂ
       (fun u : ℂ => ∫ t in (0 : ℝ)..1,
         ψ (z t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z t)) := fun u0 => by
-  let k : ℝ → ℂ := fun t => (π : ℂ) * (Complex.I : ℂ) * z t
-  have hEq : (fun u : ℂ => ∫ t in (0 : ℝ)..1, ψ (z t) * Complex.exp (u * k t)) =
-        fun u : ℂ => ∫ t in (0 : ℝ)..1,
-          ψ (z t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z t) := by
-    funext u; congr 1; funext t; congr 2; simp [k, mul_left_comm, mul_comm]
+  have hEq : (fun u : ℂ => ∫ t in (0 : ℝ)..1,
+        ψ (z t) * Complex.exp (u * ((π : ℂ) * (Complex.I : ℂ) * z t))) =
+      fun u : ℂ => ∫ t in (0 : ℝ)..1,
+        ψ (z t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z t) := by
+    funext u; congr 1; funext t; congr 2; ring
   exact hEq ▸ differentiableAt_intervalIntegral_mul_exp (u0 := u0) (Cbase := Mψ) (K := Cz * π)
     hψz_cont (continuous_const.mul hz_cont).continuousOn hψz_bound
     (fun t ht => norm_pi_mul_I_mul_le (z := z t) (N := Cz) (hz_bound t ht))
@@ -330,10 +320,9 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
 /-- `bPrimeC` is analytic on the right half-plane. -/
 public lemma bPrimeC_analyticOnNhd : AnalyticOnNhd ℂ bPrimeC rightHalfPlane := by
   simpa [bPrimeC] using
-    (((((J₁'C_differentiable.differentiableOn.add J₂'C_differentiable.differentiableOn).add
-      J₃'C_differentiable.differentiableOn).add J₄'C_differentiable.differentiableOn).add
-      J₅'C_differentiable.differentiableOn).add J₆'C_differentiableOn).analyticOnNhd
-      rightHalfPlane_isOpen
+    ((((J₁'C_differentiable.add J₂'C_differentiable).add J₃'C_differentiable).add
+      J₄'C_differentiable).add J₅'C_differentiable).differentiableOn.add
+      J₆'C_differentiableOn |>.analyticOnNhd rightHalfPlane_isOpen
 
 end
 
