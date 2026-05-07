@@ -72,22 +72,6 @@ public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ 
   simpa [Real.exp_add] using Real.exp_le_exp.2 (by
     nlinarith [Real.pi_pos, abs_lt.1 this |>.1] : (-π * r : ℝ) ≤ π + (-π * r₀))
 
-/-- Almost-everywhere bound for `‖(coeff t) ^ n * g r t‖`, uniform in `r ∈ Metric.ball r₀ 1`. -/
-public lemma ae_forall_mem_ball_norm_pow_mul_mul_le {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
-    (n : ℕ) (r₀ C₀ : ℝ) (hC₀ : 0 ≤ C₀)
-    (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
-    (hg : ∀ r : ℝ, ∀ t : ℝ, t ∈ Ioo (0 : ℝ) 1 →
-      ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
-    ∀ᵐ t ∂(volume.restrict (Ioo (0 : ℝ) 1)), ∀ r ∈ Metric.ball r₀ (1 : ℝ),
-      ‖(coeff t) ^ n * g r t‖ ≤
-        (2 * π) ^ n * (C₀ * rexp (-π) * 2) * rexp (π) * rexp (-π * r₀) := by
-  refine (ae_restrict_iff' measurableSet_Ioo).2 <| .of_forall fun t ht r hr ↦ ?_
-  refine (norm_pow_mul_mul_le (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n)
-    (by positivity) (hcoeff t ht) (hg r t ht)).trans ?_
-  simpa [mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
-    (rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball hr)
-    (by positivity : (0 : ℝ) ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2))
-
 /-- Differentiate `x ↦ ∫ (coeff t) ^ n * g x t` under the integral, given uniform bounds on `g` and
 the representation `g x t = A t * cexp ((x : ℂ) * coeff t)`. -/
 public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
@@ -107,10 +91,14 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
   exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := x₀)
     (s := Metric.ball x₀ 1) (Metric.ball_mem_nhds x₀ one_pos) (.of_forall (hmeas n))
     (hint n x₀) (hmeas (n + 1) x₀)
-    (show ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ), ‖(coeff t) ^ (n + 1) * g x t‖ ≤ K by
-      simpa [hμ, K, mul_assoc, mul_left_comm, mul_comm] using
-        ae_forall_mem_ball_norm_pow_mul_mul_le (n := n + 1) (r₀ := x₀) (C₀ := C₀)
-          hC₀_pos.le hcoeff hC₀)
+    (show ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ), ‖(coeff t) ^ (n + 1) * g x t‖ ≤ K from by
+      rw [hμ]
+      refine (ae_restrict_iff' measurableSet_Ioo).2 <| .of_forall fun t ht r hr ↦ ?_
+      refine (norm_pow_mul_mul_le (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n + 1)
+        (by positivity) (hcoeff t ht) (hC₀ r t ht)).trans ?_
+      simpa [K, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
+        (rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball hr)
+        (by positivity : (0 : ℝ) ≤ (2 * π) ^ (n + 1) * (C₀ * rexp (-π) * 2)))
     (integrable_const K) <| ae_of_all _ fun t x _hx ↦ by
       simpa [hg_repr, mul_assoc, mul_left_comm, mul_comm] using
         SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
