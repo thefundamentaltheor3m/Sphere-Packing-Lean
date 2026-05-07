@@ -120,22 +120,20 @@ public lemma neg_one_div_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (-1 / z).im := b
     (((Complex.I : ℂ) / z) ^ (4 : ℕ)) *
       cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * (-1 / z))
 
-lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
-    Φ₁_fourier r z = (1 / z ^ (2 : ℕ)) * Φ₃' r (-1 / z) := by
+/-- Modular identity relating `Φ₁_fourier` to `Φ₃'` via `mobiusInv` and its derivative. -/
+public lemma Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
+    Φ₁_fourier r z = (deriv SpherePacking.mobiusInv z) * Φ₃' r (SpherePacking.mobiusInv z) := by
   have hz0 : z ≠ 0 := fun h => absurd (show z.im = 0 by simp [h]) hz.ne'
   have hz2 : z ^ (2 : ℕ) ≠ 0 := pow_ne_zero 2 hz0
   have hφ := φ₀''_inv_add_one_mul_sq' (w := -1 / z) (neg_one_div_im_pos z hz)
   have hrew : (-1 / (-1 / z) : ℂ) = z := by field_simp
-  simp [Φ₁_fourier, Φ₃',
-    show φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
-      (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) from by grind only,
-    mul_assoc, mul_left_comm, mul_comm]
-
-/-- Modular identity relating `Φ₁_fourier` to `Φ₃'` via `mobiusInv` and its derivative. -/
-public lemma Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
-    Φ₁_fourier r z = (deriv SpherePacking.mobiusInv z) * Φ₃' r (SpherePacking.mobiusInv z) := by
+  have h₁ : Φ₁_fourier r z = (1 / z ^ (2 : ℕ)) * Φ₃' r (-1 / z) := by
+    simp [Φ₁_fourier, Φ₃',
+      show φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
+        (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) from by grind only,
+      mul_assoc, mul_left_comm, mul_comm]
   simpa [SpherePacking.mobiusInv, SpherePacking.deriv_mobiusInv (z := z), div_eq_mul_inv, mul_assoc,
-    mul_left_comm, mul_comm] using Φ₁_fourier_eq_one_div_sq_mul_Φ₃' r z hz
+    mul_left_comm, mul_comm] using h₁
 
 end CurveIntegral
 
