@@ -16,10 +16,8 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Real
 /-!
 # Specific limits
 
-This file collects auxiliary limit results not available in Mathlib.
-It proves results such as `summable_real_norm_mul_geometric_of_norm_lt_one`.
+Auxiliary limit results not available in Mathlib (e.g. `summable_real_norm_mul_geometric_of_norm_lt_one`).
 -/
-
 
 open Filter
 
