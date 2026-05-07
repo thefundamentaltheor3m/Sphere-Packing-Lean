@@ -150,12 +150,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           simpa [f] using ((differentiableOn_bContourIntegrandT (u := u) (z - 1)
             hzpos').differentiableAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')).comp
             z (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z))
-        (show IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
-          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+        (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
             mul_left_comm] using hintT_shift (-1 : ℂ) fun t ht0 ↦
               by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
-        (show IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume by
-          simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+        (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
             mul_left_comm] using hintT_center)
         (fun ε hε => let ⟨M, hM⟩ := htendstoT ε hε
           ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩)
@@ -174,15 +172,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
           (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
             (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos))
-        (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
-            (Set.Ioi (1 : ℝ)) volume by
-          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-            hintT_shift (1 : ℂ) fun t ht0 ↦
-              by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
-        (show IntegrableOn (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
-            (Set.Ioi (1 : ℝ)) volume by
-          simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
-            using hintT_center) htendstoT
+        (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
+          hintT_shift (1 : ℂ) fun t ht0 ↦
+            by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
+        (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
+          using hintT_center) htendstoT
   have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 :=
     fun hx => by simpa [Set.uIcc_of_le zero_le_one] using hx
   have hJ2_top : J₂' u =
