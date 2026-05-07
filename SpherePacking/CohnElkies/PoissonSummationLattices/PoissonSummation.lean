@@ -12,7 +12,6 @@ public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 public import Mathlib.Topology.ContinuousMap.Compact
 
 public import SpherePacking.CohnElkies.PoissonSummationLattices.UnitAddTorus
-public import SpherePacking.ForMathlib.FourierLinearEquiv
 
 /-! Poisson summation for full-rank `ℤ`-lattices in Euclidean space (Cohn-Elkies). -/
 
