@@ -37,18 +37,16 @@ variable {d : ℕ}
     PeriodicSpherePacking.unique_covers_of_centers (d := d) (S := P) (D := D) hD_unique_covers
   let cover : P.centers → P.lattice := fun x => Classical.choose (hcover x)
   let repr : P.centers → ↑(P.centers ∩ D) := fun x =>
-    ⟨(cover x) +ᵥ (x : EuclideanSpace ℝ (Fin d)), (Classical.choose_spec (hcover x)).1⟩
+    ⟨cover x +ᵥ (x : EuclideanSpace ℝ (Fin d)), (Classical.choose_spec (hcover x)).1⟩
   let toCenter : ↑(P.centers ∩ D) × P.lattice → P.centers := fun p =>
-    ⟨p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d)),
-      P.lattice_action p.2.property (p.1.property).1⟩
+    ⟨p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d)), P.lattice_action p.2.property p.1.property.1⟩
   let toPair : P.centers → ↑(P.centers ∩ D) × P.lattice := fun x => (repr x, -cover x)
   refine { toFun := toCenter, invFun := toPair, left_inv := ?_, right_inv := ?_ }
   · intro p
-    have hcover : cover (toCenter p) = -p.2 :=
+    have hcov : cover (toCenter p) = -p.2 :=
       ((Classical.choose_spec (hcover (toCenter p))).2 (-p.2)
         (by simp [toCenter, p.1.property])).symm
-    refine Prod.ext (Subtype.ext (by simp [toPair, repr, toCenter, hcover])) ?_
-    simp [toPair, hcover]
+    exact Prod.ext (Subtype.ext (by simp [toPair, repr, toCenter, hcov])) (by simp [toPair, hcov])
   · exact fun x => Subtype.ext (by simp [toPair, repr, toCenter, neg_vadd_vadd])
 
 /-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates,
@@ -81,22 +79,17 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
       simpa [e] using (e.tsum_eq (f := fun x : P.centers =>
         ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re)).symm]
   have hSummable_p :
-      Summable
-        (fun p : ↑(P.centers ∩ D) × P.lattice =>
-          ∑' y : ↑(P.centers ∩ D),
-            (f ((e p : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re) := by
+      Summable (fun p : ↑(P.centers ∩ D) × P.lattice => ∑' y : ↑(P.centers ∩ D),
+        (f ((e p : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re) := by
     simp_rw [tsum_fintype]
-    refine summable_sum fun y _ => ?_
-    refine Summable.of_norm_bounded
+    refine summable_sum fun y _ => Summable.of_norm_bounded
       (g := fun p : ↑(P.centers ∩ D) × P.lattice =>
         ‖f ((p.1 : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
-          (p.2 : EuclideanSpace ℝ (Fin d)))‖)
-      ?_ ?_
-    · refine (summable_prod_of_nonneg (fun _ => norm_nonneg _)).2 ?_
-      refine ⟨fun x => ?_, Summable.of_finite⟩
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
-          ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))
+          (p.2 : EuclideanSpace ℝ (Fin d)))‖) ?_ ?_
+    · refine (summable_prod_of_nonneg fun _ => norm_nonneg _).2
+        ⟨fun x => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+          (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
+            ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))), Summable.of_finite⟩
     · rintro ⟨x, ℓ⟩
       simpa [he_sub x y ℓ, Real.norm_eq_abs] using
         Complex.abs_re_le_norm (f
