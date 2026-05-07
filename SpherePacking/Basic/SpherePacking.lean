@@ -12,7 +12,6 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 /-! # Density of Sphere Packings: definitions and basic notions for periodic packings. -/
 
 open MeasureTheory Metric Filter Module
-
 open scoped BigOperators ENNReal Pointwise
 
 section Definitions
@@ -33,8 +32,7 @@ public structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
 
 variable {d : ℕ}
 
-attribute [instance] PeriodicSpherePacking.lattice_discrete
-  PeriodicSpherePacking.lattice_isZLattice
+attribute [instance] PeriodicSpherePacking.lattice_discrete PeriodicSpherePacking.lattice_isZLattice
 
 public theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace ℝ (Fin d))
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) : S.separation ≤ dist x y :=
@@ -50,9 +48,8 @@ public noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpher
   add_vadd _ _ _ := Subtype.ext (add_assoc ..)
 
 @[simp]
-public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d)
-    {x : S.lattice} {y : S.centers} :
-    x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ := rfl
+public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d) {x : S.lattice}
+    {y : S.centers} : x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ := rfl
 
 /-- Balls of radius `S.separation / 2` around the centers of a packing. -/
 @[expose, reducible] public def SpherePacking.balls (S : SpherePacking d) :
@@ -60,19 +57,18 @@ public theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d
 
 /-- Volume of packing balls inside `ball 0 R`, normalized by `volume (ball 0 R)`. -/
 @[expose] public noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) :
-    ℝ≥0∞ := volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
+    ℝ≥0∞ := volume (S.balls ∩ ball 0 R) / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
 
 /-- The (upper) density: `limsup` of `finiteDensity` as `R → ∞`. -/
 @[expose] public noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
 
-public theorem PeriodicSpherePacking.basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
+public theorem PeriodicSpherePacking.basis_Z_span (S : PeriodicSpherePacking d) {ι : Type*}
+    (b : Basis ι ℤ S.lattice) : Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
   Basis.ofZLatticeBasis_span ℝ S.lattice b
 
-public theorem PeriodicSpherePacking.mem_basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) (v) :
+public theorem PeriodicSpherePacking.mem_basis_Z_span (S : PeriodicSpherePacking d) {ι : Type*}
+    (b : Basis ι ℤ S.lattice) (v) :
     v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
@@ -151,8 +147,7 @@ public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   rw [finiteDensity, scale_balls, show ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R by
       simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
-        (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm,
-    ← Set.smul_set_inter₀ hc.ne.symm,
+        (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm, ← Set.smul_set_inter₀ hc.ne.symm,
     Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
     ENNReal.mul_div_mul_left _ _ (by simp; positivity) ENNReal.ofReal_ne_top, finiteDensity]
 
@@ -197,15 +192,14 @@ lemma biUnion_balls_inter_subset_biUnion_inter_balls
   obtain ⟨⟨y, hy₁, hy₂⟩, hx⟩ := hx
   refine ⟨y, ⟨hy₁, ?_⟩, hy₂⟩
   rw [← sub_add_cancel R r]
-  exact (norm_le_norm_add_norm_sub x y).trans_lt <|
-    add_lt_add hx (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
+  exact (norm_le_norm_add_norm_sub x y).trans_lt <| add_lt_add hx
+    (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
 
-theorem SpherePacking.volume_iUnion_balls_eq_tsum
-    (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
+theorem SpherePacking.volume_iUnion_balls_eq_tsum (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
     volume (⋃ x : ↑(S.centers ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
       = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') :=
-  have _ : Countable ↑(S.centers ∩ ball 0 R) := Set.Countable.mono
-    Set.inter_subset_left (countable_of_Lindelof_of_discrete (X := S.centers))
+  have _ : Countable ↑(S.centers ∩ ball 0 R) := Set.Countable.mono Set.inter_subset_left
+    (countable_of_Lindelof_of_discrete (X := S.centers))
   measure_iUnion (fun ⟨x, hx⟩ ⟨y, hy⟩ h ↦ ball_disjoint_ball <| by
     linarith [S.centers_dist' x y hx.1 hy.1 (by simpa using h)]) fun _ ↦ measurableSet_ball
 
