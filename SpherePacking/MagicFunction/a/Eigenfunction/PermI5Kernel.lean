@@ -44,11 +44,7 @@ noncomputable section
 open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
 
-section Integral_Permutations
-
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-section PermI5
 
 open MeasureTheory Set Complex Real
 
@@ -57,12 +53,9 @@ public lemma continuousOn_I₅_g :
     ContinuousOn
       (fun p : ℝ⁸ × ℝ ↦ MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2)
       (univ ×ˢ Ici (1 : ℝ)) := by
-  have hφ' :
-      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ φ₀'' (I * (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) :=
-    MagicFunction.a.Schwartz.I1Decay.φ₀''_I_mul_continuousOn.comp continuousOn_snd
-      mapsTo_snd_prod
-  have hzpow' :
-      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) :=
+  have hφ' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ φ₀'' (I * (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) :=
+    MagicFunction.a.Schwartz.I1Decay.φ₀''_I_mul_continuousOn.comp continuousOn_snd mapsTo_snd_prod
+  have hzpow' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) :=
     MagicFunction.a.Schwartz.I1Decay.zpow_neg_four_continuousOn.comp continuousOn_snd
       mapsTo_snd_prod
   refine ((((continuousOn_const (c := (-I : ℂ))).mul hφ').mul hzpow').mul
@@ -77,8 +70,7 @@ public lemma continuousOn_I₅_g :
 @[expose] public def permI5Kernel (w : ℝ⁸) : ℝ⁸ × ℝ → ℂ :=
   fun p ↦ permI5Phase w p.1 * MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2
 
-/-- Measurability of `permI5Kernel` with respect to the product measure
-`volume × (volume.restrict (Ici 1))`. -/
+/-- Measurability of `permI5Kernel` w.r.t. `volume × (volume.restrict (Ici 1))`. -/
 public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
     AEStronglyMeasurable
       (permI5Kernel w)
@@ -117,6 +109,5 @@ public lemma I₃_apply (x : ℝ⁸) :
 public lemma I₄_apply (x : ℝ⁸) :
     (I₄ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₄' (‖x‖ ^ 2) := by simp [I₄]
 
-end Integral_Permutations.PermI5
 end
 end MagicFunction.a.Fourier
