@@ -16,9 +16,9 @@ private lemma t_mul_exp_le {c t : ℝ} (hc : 0 < c) :
     t * Real.exp (-c * t) ≤ (2 / c) * Real.exp (-(c / 2) * t) := by
   have hc2 : (0 : ℝ) ≤ 2 / c := (div_pos (by norm_num) hc).le
   have ht_le : t ≤ (2 / c) * Real.exp ((c / 2) * t) := by
-    have hmul := mul_le_mul_of_nonneg_left
-      (by linarith [Real.add_one_le_exp ((c / 2) * t)] : (c / 2) * t ≤ Real.exp ((c / 2) * t)) hc2
-    simpa [mul_assoc, show (2 / c) * ((c / 2) * t) = t by field_simp [hc.ne']] using hmul
+    simpa [mul_assoc, show (2 / c) * ((c / 2) * t) = t by field_simp [hc.ne']] using
+      mul_le_mul_of_nonneg_left
+        (by linarith [Real.add_one_le_exp ((c / 2) * t)] : (c / 2) * t ≤ Real.exp ((c / 2) * t)) hc2
   refine (mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-c * t))).trans_eq ?_
   rw [mul_assoc, ← Real.exp_add]; ring_nf
 
@@ -26,10 +26,9 @@ private lemma norm_exp_le_of_re_ge {z : ℂ} {t c : ℝ} (ht0 : 0 ≤ t) (hcz : 
     ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * c * t) := by
   have hre : (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t := by
     simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-  have hle : -π * z.re * t ≤ -π * c * t := by
+  simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr <| by
     simpa [mul_assoc, mul_left_comm, mul_comm] using
       mul_le_mul_of_nonpos_left hcz (by nlinarith [Real.pi_pos, ht0] : (-π * t : ℝ) ≤ 0)
-  simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr hle
 
 /-- Analyticity of `u ↦ ∫ t ∈ (0, ∞), base(t) * Complex.exp(-π u t)` on the right half-plane. -/
 public theorem analyticOnNhd_integral_base_exp
@@ -59,11 +58,10 @@ public theorem analyticOnNhd_integral_base_exp
         Integrable (fun t : ℝ => base t * (Real.exp (-π * (ε / 2) * t) : ℂ)) μ := by
       simpa [μ, IntegrableOn] using (hbase_int (ε / 2) (by positivity))
     have hmem_Ioi : ∀ᵐ t ∂μ, t ∈ Set.Ioi (0 : ℝ) := by
-      simpa [μ] using
-        (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi)
+      simpa [μ] using ae_restrict_mem (μ := (volume : Measure ℝ))
+        (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi
     have hF_int : Integrable (F u) μ := by
-      refine Integrable.mono'
-        (g := fun t : ℝ => ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖)
+      refine Integrable.mono' (g := fun t : ℝ => ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖)
         hBase_ε2.norm (hF_meas u) ?_
       filter_upwards [hmem_Ioi] with t ht
       calc ‖F u t‖ = ‖base t‖ * ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ := by simp [F]
