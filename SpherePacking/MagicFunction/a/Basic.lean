@@ -54,17 +54,12 @@ namespace MagicFunction.a.RealIntegrands
 
 open MagicFunction.a.ComplexIntegrands
 
-/-- Real-variable integrand from `Φ₁'` via `z₁'`. -/
+/-- Real-variable integrand from `Φᵢ'` via `zᵢ'`. -/
 @[expose] public def Φ₁ : ℝ → ℂ := fun t ↦ I * Φ₁' r (z₁' t)
-/-- Real-variable integrand from `Φ₂'` via `z₂'`. -/
 @[expose] public def Φ₂ : ℝ → ℂ := fun t ↦ Φ₂' r (z₂' t)
-/-- Real-variable integrand from `Φ₃'` via `z₃'`. -/
 @[expose] public def Φ₃ : ℝ → ℂ := fun t ↦ I * Φ₃' r (z₃' t)
-/-- Real-variable integrand from `Φ₄'` via `z₄'`. -/
 @[expose] public def Φ₄ : ℝ → ℂ := fun t ↦ -1 * Φ₄' r (z₄' t)
-/-- Real-variable integrand from `Φ₅'` via `z₅'`. -/
 @[expose] public def Φ₅ : ℝ → ℂ := fun t ↦ I * Φ₅' r (z₅' t)
-/-- Real-variable integrand from `Φ₆'` via `z₆'`. -/
 @[expose] public def Φ₆ : ℝ → ℂ := fun t ↦ I * Φ₆' r (z₆' t)
 
 @[simp] public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
@@ -80,17 +75,12 @@ namespace MagicFunction.a.RealIntegrals
 
 open MagicFunction.a.RealIntegrands
 
-/-- First scalar integral for `a'`. -/
+/-- Scalar integrals `Iᵢ'` for `a'`. -/
 @[expose] public def I₁' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₁ x t
-/-- Second scalar integral for `a'`. -/
 @[expose] public def I₂' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₂ x t
-/-- Third scalar integral for `a'`. -/
 @[expose] public def I₃' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₃ x t
-/-- Fourth scalar integral for `a'`. -/
 @[expose] public def I₄' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₄ x t
-/-- Fifth scalar integral for `a'`. -/
 @[expose] public def I₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
-/-- Sixth scalar integral for `a'`. -/
 @[expose] public def I₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
 
 /-- Scalar `a'` as the sum of `I₁'`, ..., `I₆'`. -/
@@ -102,17 +92,12 @@ open MagicFunction.a.RealIntegrals
 
 namespace MagicFunction.a.RadialFunctions
 
-/-- Radial function on `V` from `I₁'` via `r = ‖x‖^2`. -/
+/-- Radial functions on `V` from `Iᵢ'` via `r = ‖x‖^2`. -/
 @[expose] public def I₁ : V → ℂ := fun x ↦ I₁' (‖x‖ ^ 2)
-/-- Radial function on `V` from `I₂'` via `r = ‖x‖^2`. -/
 @[expose] public def I₂ : V → ℂ := fun x ↦ I₂' (‖x‖ ^ 2)
-/-- Radial function on `V` from `I₃'` via `r = ‖x‖^2`. -/
 @[expose] public def I₃ : V → ℂ := fun x ↦ I₃' (‖x‖ ^ 2)
-/-- Radial function on `V` from `I₄'` via `r = ‖x‖^2`. -/
 @[expose] public def I₄ : V → ℂ := fun x ↦ I₄' (‖x‖ ^ 2)
-/-- Radial function on `V` from `I₅'` via `r = ‖x‖^2`. -/
 @[expose] public def I₅ : V → ℂ := fun x ↦ I₅' (‖x‖ ^ 2)
-/-- Radial function on `V` from `I₆'` via `r = ‖x‖^2`. -/
 @[expose] public def I₆ : V → ℂ := fun x ↦ I₆' (‖x‖ ^ 2)
 
 /-- Magic function `a` as a radial function on `V`. -/
