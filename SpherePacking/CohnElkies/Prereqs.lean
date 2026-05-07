@@ -27,12 +27,8 @@ public import SpherePacking.CohnElkies.PoissonSummationGeneral
 /-!
 # Cohn-Elkies prerequisites
 
-This file collects auxiliary imports, instances, and small lemmas used across the Cohn-Elkies
-development (in particular `SpherePacking.CohnElkies.LPBound`).
-
-Many statements here are general-purpose, but keeping them together provides a stable import
-boundary for the analytic part of the argument (Poisson summation, Fourier inversion, and
-integration/positivity lemmas).
+Auxiliary imports, instances, and small lemmas used across the Cohn-Elkies development
+(in particular `SpherePacking.CohnElkies.LPBound`).
 -/
 
 variable {d : ℕ} [Fact (0 < d)]
@@ -56,8 +52,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E
 
 /-- Fourier inversion for Schwartz functions. -/
 @[simp]
-public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
-  rw [← fourier_coe, ← fourierInv_coe]; simp
+public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by rw [← fourier_coe, ← fourierInv_coe]; simp
 
 end FourierSchwartz
 
@@ -70,10 +65,6 @@ theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f)
     0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y :=
   ⟨fun hx => ⟨{y : E | 0 < f y}, (isOpen_lt continuous_const hf₁).mem_nhds hx, fun _ hy => hy⟩,
     fun ⟨_, hU, hUpos⟩ => hUpos x (mem_of_mem_nhds hU)⟩
-
-open MeasureTheory
-
-variable [MeasureSpace E] [BorelSpace E]
 
 end Positivity_on_Nhd
 
@@ -88,22 +79,17 @@ variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular
 
 instance : (volume : Measure E).IsOpenPosMeasure := isOpenPosMeasure_of_addLeftInvariant_of_regular
 
-/--
-If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` iff `f = 0`.
-
-This uses that an additive-invariant regular measure is positive on nonempty open sets.
--/
+/-- If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` iff `f = 0`.
+This uses that an additive-invariant regular measure is positive on nonempty open sets. -/
 public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
     (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
-  refine ⟨fun hintf => ?_, fun hf => by simp [hf]⟩
-  have hne_zero : (volume : Measure E) {y | f y ≠ 0} = 0 :=
-    (integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf
-  funext x
+  refine ⟨fun hintf => funext fun x => ?_, fun hf => by simp [hf]⟩
   by_contra hx
   obtain ⟨U, hU₁, hU₃⟩ :=
     (hf₁.pos_iff_exists_nhd_pos x).1 (lt_of_le_of_ne (hnn x) (Ne.symm hx))
   exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁).ne'
-    (measure_mono_null (fun y hy => (hU₃ y hy).ne') hne_zero)
+    (measure_mono_null (fun y hy => (hU₃ y hy).ne')
+      ((integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf))
 
 end Integration
 
@@ -111,17 +97,13 @@ section Misc
 
 omit [Fact (0 < d)]
 local notation "conj" => starRingEnd ℂ
-/--
-Complex exponential conjugation identity for real inner products.
-
-This is used to relate `cexp (2 * pi * I * <x,m>)` and its conjugate.
--/
+/-- Complex exponential conjugation identity for real inner products.
+Used to relate `cexp (2 * pi * I * <x,m>)` and its conjugate. -/
 public theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
     Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) =
       conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := calc
   Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
-      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by
-        rw [Circle.coe_exp]; push_cast; ring_nf
+      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by rw [Circle.coe_exp]; push_cast; ring_nf
     _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ])) := by
         rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
     _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
