@@ -43,16 +43,6 @@ public lemma bContourWeight_mul_I (u t : ℝ) :
   simp [bContourWeight, show (π : ℂ) * (Complex.I : ℂ) * (u : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) =
     (-(π : ℂ) * (u : ℂ) * (t : ℂ)) by ring_nf; simp [pow_two, Complex.I_mul_I]]
 
-private lemma bContourIntegrandI_mul_I (u t : ℝ) :
-    bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) =
-      -(ψI' ((Complex.I : ℂ) * (t : ℂ)) * (Real.exp (-π * u * t) : ℂ)) := by
-  simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]
-
-/-- On the imaginary axis, `bContourIntegrandI` agrees with `-bLaplaceIntegrand`. -/
-public lemma bContourIntegrandI_mul_I_eq_bLaplaceIntegrand (u t : ℝ) :
-    bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) = -bLaplaceIntegrand u t := by
-  simp [bLaplaceIntegrand, bContourIntegrandI_mul_I]
-
 /-- Translate `ψT'` into `ψI'` by adding `1` in the upper half-plane. -/
 public lemma ψT'_eq_ψI'_add_one (z : ℂ) (hz : 0 < z.im) :
     ψT' z = ψI' (z + (1 : ℂ)) := by

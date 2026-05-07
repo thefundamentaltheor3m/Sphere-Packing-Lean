@@ -57,7 +57,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (Set.Ioi (0 : ℝ)) := by
     have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
       (bLaplaceIntegral_convergent (u := u) hu).neg
-    simpa [bContourIntegrandI_mul_I_eq_bLaplaceIntegrand] using hneg
+    simpa [bContourIntegrandI, bContourWeight_mul_I, bLaplaceIntegrand, mul_assoc] using hneg
   rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
   have hintT_center : IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
       (Set.Ioi (1 : ℝ)) := by
