@@ -15,21 +15,22 @@ private lemma norm_pow4_sub_le (x y : ℂ) :
     ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤ 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by
   have hx : ‖x‖ ≤ ‖x‖ + ‖y‖ := le_add_of_nonneg_right (norm_nonneg _)
   have hy : ‖y‖ ≤ ‖x‖ + ‖y‖ := le_add_of_nonneg_left (norm_nonneg _)
-  have hx3 : ‖x ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hx 3
-  have hy3 : ‖y ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hy 3
-  have hx2y : ‖x ^ (2 : ℕ) * y‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow, pow_succ, mul_comm] using
-      mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hx 2) hy (norm_nonneg _) (by positivity)
-  have hxy2 : ‖x * y ^ (2 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    simpa [norm_pow, pow_succ, mul_comm] using
-      mul_le_mul hx (pow_le_pow_left₀ (norm_nonneg _) hy 2) (by positivity) (by positivity)
   rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) =
     (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) by ring, norm_mul]
   nlinarith [norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ)) (y ^ (3 : ℕ)),
     norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y) (x * y ^ (2 : ℕ)),
-    norm_add_le (x ^ (3 : ℕ)) (x ^ (2 : ℕ) * y), hx3, hx2y, hxy2, hy3, norm_nonneg (x - y)]
+    norm_add_le (x ^ (3 : ℕ)) (x ^ (2 : ℕ) * y),
+    show ‖x ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 by
+      simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hx 3,
+    show ‖y ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 by
+      simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hy 3,
+    show ‖x ^ (2 : ℕ) * y‖ ≤ (‖x‖ + ‖y‖) ^ 3 by
+      simpa [norm_pow, pow_succ, mul_comm] using
+        mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hx 2) hy (norm_nonneg _) (by positivity),
+    show ‖x * y ^ (2 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 by
+      simpa [norm_pow, pow_succ, mul_comm] using
+        mul_le_mul hx (pow_le_pow_left₀ (norm_nonneg _) hy 2) (by positivity) (by positivity),
+    norm_nonneg (x - y)]
 
 private lemma ofReal_exp_neg_pi_pow_eq (t : ℝ) (N : ℕ) :
     (Real.exp (-Real.pi * t) : ℂ) ^ N = (Real.exp (-(N : ℝ) * Real.pi * t) : ℂ) := by
