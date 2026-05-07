@@ -5,10 +5,7 @@ Authors: Bhavik Mehta, Gareth Ma
 -/
 module
 public import SpherePacking.Basic.PeriodicPacking.Aux
-public import SpherePacking.Basic.PeriodicPacking.Theorem22
 public import SpherePacking.Basic.PeriodicPacking.DensityFormula
-public import SpherePacking.Basic.PeriodicPacking.PeriodicConstant
-public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 
 /-!
 # Basic properties of the E₈ lattice
