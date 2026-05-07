@@ -99,8 +99,7 @@ public theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
       simpa [g3, mul_assoc, mul_left_comm, mul_comm, abs_of_nonneg Real.pi_pos.le] using
         SpherePacking.ForMathlib.norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a := 2 * π) m x)
     (I₁'_decay' (k := k))
-  exact ⟨C, fun x hx => by
-    simpa [I₃'_eq_exp_mul_I₁', g3, mul_comm, mul_left_comm] using hC x hx⟩
+  exact ⟨C, fun x hx => by simpa [I₃'_eq_exp_mul_I₁', g3, mul_comm, mul_left_comm] using hC x hx⟩
 
 public theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C :=
