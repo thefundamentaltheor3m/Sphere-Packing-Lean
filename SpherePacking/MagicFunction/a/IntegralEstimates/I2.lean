@@ -28,8 +28,6 @@ open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegra
 
 variable (r : ℝ)
 
-section Setup
-
 /-- The integrand on `Ioo (0, 1)` whose set integral is `I₂'`. -/
 @[expose] public noncomputable def g (r t : ℝ) : ℂ :=
   φ₀'' (-1 / (t + I)) * (t + I) ^ 2 * cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r)
@@ -37,12 +35,6 @@ section Setup
 /-- Rewrite `I₂' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
 public lemma I₂'_eq_integral_g_Ioo (r : ℝ) : I₂' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
   simp [I₂'_eq, intervalIntegral_eq_integral_uIoc, zero_le_one, g, integral_Ioc_eq_integral_Ioo]
-
-end Setup
-
-section Bounding
-
-section Bounding_Integrand
 
 lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
     ‖φ₀'' (-1 / (t + I))‖ * 2 * rexp (-π * r) := fun t ht => by
@@ -64,33 +56,21 @@ public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 /
         simpa using SpherePacking.Integration.im_neg_one_div_ofReal_add_I (t := t)] using
       SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
-end Bounding_Integrand
-
-section Bounding_Integral
-
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) :=
   I24Common.g_norm_bound_uniform_of I₂'_bounding_aux_1 im_parametrisation_lower
 
-end Bounding.Bounding_Integral
-
 noncomputable section Schwartz_Decay
 
 open SchwartzMap
 
-section Higher_iteratedFDerivs
-
-open scoped Topology
-
 /-- Specialization of `I24Common.coeff` to `shift = fun t => (t : ℂ) - 1`. -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (t : ℂ) - 1)
 
-/-- Continuity of `coeff`. -/
 public lemma continuous_coeff : Continuous coeff :=
   I24Common.continuous_coeff (Complex.continuous_ofReal.sub continuous_const)
 
-/-- A convenient expansion of `coeff t` as a sum. -/
 public lemma coeff_eq_sum (t : ℝ) :
     coeff t = (-π * I : ℂ) + (π * I * (t : ℂ)) + (-π : ℂ) := by
   simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
@@ -98,7 +78,6 @@ public lemma coeff_eq_sum (t : ℝ) :
 /-- The integrand for the `n`-th derivative, obtained by multiplying `g` by `(coeff t) ^ n`. -/
 @[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
-/-- Uniform bound `‖coeff t‖ ≤ 2 * π` for `t ∈ Ioo (0, 1)`. -/
 public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     ‖coeff t‖ ≤ 2 * π :=
   I24Common.coeff_norm_le (shift := fun t => (t : ℂ) - 1)
@@ -107,7 +86,6 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       rw [show ((t : ℂ) - 1) = ((t - 1 : ℝ) : ℂ) by push_cast; ring, Complex.norm_real]
       exact (by grind only [= mem_Ioo, = abs.eq_1, = max_def] : |t - 1| ≤ 1)) t ht
 
-/-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
 public lemma exp_r_mul_coeff (r t : ℝ) :
     cexp ((r : ℂ) * coeff t) =
       cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
@@ -140,7 +118,7 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     g_norm_bound_uniform coeff_norm_le
     (fun n => by simpa [gN] using iteratedDeriv_I₂'_eq_integral_gN (n := n))
 
-end Schwartz_Decay.Higher_iteratedFDerivs
+end Schwartz_Decay
 end I₂
 
 end MagicFunction.a.IntegralEstimates
