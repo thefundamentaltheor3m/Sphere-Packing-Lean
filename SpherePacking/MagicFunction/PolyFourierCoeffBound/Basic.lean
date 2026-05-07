@@ -12,21 +12,9 @@ public import SpherePacking.ModularForms.Eisenstein
 /-!
 # Polynomial Fourier coefficient bounds — core definitions and main bound
 
-This file contains the core definitions and the main quantitative bound
-`DivDiscBoundOfPolyFourierCoeff`, which gives an explicit upper bound on the
-ratio `‖f / Δ‖` for a function `f : ℍ → ℂ` whose Fourier expansion (in the
-`π i` convention) has polynomially bounded coefficients.
-
-This is Lemma 7.4 in the blueprint. Corollaries for the specific magic function
-setup live in sibling files under `SpherePacking.MagicFunction.PolyFourierCoeffBound`.
-
-## Main definitions
-* `MagicFunction.PolyFourierCoeffBound.fouterm`
-* `MagicFunction.PolyFourierCoeffBound.DivDiscBound`
-
-## Main statements
-* `MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff`
-* `MagicFunction.PolyFourierCoeffBound.DivDiscBound_pos`
+The main quantitative bound `DivDiscBoundOfPolyFourierCoeff` (Lemma 7.4 in the blueprint) gives an
+explicit upper bound on `‖f / Δ‖` for `f : ℍ → ℂ` whose Fourier expansion (in the `π i`
+convention) has polynomially bounded coefficients.
 -/
 
 namespace MagicFunction.PolyFourierCoeffBound
@@ -37,11 +25,7 @@ open scoped UpperHalfPlane BigOperators
 
 open Filter Complex Real Asymptotics
 
-/-- A single Fourier term in the `π i` convention.
-
-This is the basic building block used to express `f : ℍ → ℂ` as a Fourier series in `cexp (π * I *
-z)`.
--/
+/-- A single Fourier term in the `π i` convention. -/
 @[expose] public def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
@@ -50,10 +34,7 @@ variable (z : ℍ) (hz : 1 / 2 < z.im) (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : 
   (hpoly : c =O[atTop] fun n ↦ (n ^ k : ℝ))
   (f : ℍ → ℂ) (hf : ∀ x : ℍ, f x = ∑' n : ℕ, fouterm c x (n + n₀))
 
-/-- A constant bounding the ratio `f / Δ` in terms of Fourier coefficients.
-
-This is the explicit factor which appears in `DivDiscBoundOfPolyFourierCoeff`.
--/
+/-- The explicit factor in `DivDiscBoundOfPolyFourierCoeff` bounding `f / Δ`. -/
 public def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
