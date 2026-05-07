@@ -17,12 +17,8 @@ import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.Measure
 
-/-!
-# Schwartz decay for `RealIntegrals.I₁'`
-
-Inverse-power decay estimates (`decay'`) for the radial profile `RealIntegrals.I₁'`, via the
-change-of-variables representation `IntegralEstimates.I₁.Complete_Change_of_Variables`.
--/
+/-! # Schwartz decay for `RealIntegrals.I₁'`: inverse-power decay (`decay'`) via the
+change-of-variables representation `IntegralEstimates.I₁.Complete_Change_of_Variables`. -/
 
 namespace MagicFunction.a.Schwartz.I1Decay
 
