@@ -8,13 +8,7 @@ import SpherePacking.Contour.MobiusInv.LineMap
 import SpherePacking.Contour.Segments
 import SpherePacking.Contour.MobiusInv.ContourChange
 
-/-!
-# Contour identities for `mobiusInv` on `wedgeSet`
-
-Specializes the abstract contour deformation lemmas in `SpherePacking.Contour.PermJ12Contour`
-to the concrete domain `wedgeSet` and map `mobiusInv`, providing assembled identities used in
-the `perm_J1/J2` and `perm_I1/I2` developments.
--/
+/-! # Contour identities for `mobiusInv` on `wedgeSet`. -/
 
 open MeasureTheory
 open MagicFunction
@@ -83,8 +77,7 @@ private lemma perm_12_contour_mobiusInv_wedgeSet_aux
   have := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   grind only
 
-/-- Assembled contour identity for the `perm_J12` argument, specialized to `mobiusInv` and
-`wedgeSet`. Combines segment contour-change lemmas with wedge-set contour deformations. -/
+/-- Assembled `perm_J12` contour identity for `mobiusInv` and `wedgeSet`. -/
 public lemma perm_J12_contour_mobiusInv_wedgeSet
     {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ}
     (Ψ₁_fourier_eq_neg_deriv_mul :
@@ -109,8 +102,7 @@ public lemma perm_J12_contour_mobiusInv_wedgeSet
         simpa [neg_one_mul] using SpherePacking.MobiusInv.curveIntegral_segment_neg_inv
           (Ψ₁' := Ψ₁') ((-1 : ℂ) + Complex.I) Complex.I Ψ₁_fourier_eq_neg_deriv_mul r)
 
-/-- Assembled contour identity for the `perm_I12` argument, specialized to `mobiusInv` and
-`wedgeSet`. -/
+/-- Assembled `perm_I12` contour identity for `mobiusInv` and `wedgeSet`. -/
 public lemma perm_I12_contour_mobiusInv_wedgeSet
     {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ}
     (Ψ₁_fourier_eq_deriv_mul :
