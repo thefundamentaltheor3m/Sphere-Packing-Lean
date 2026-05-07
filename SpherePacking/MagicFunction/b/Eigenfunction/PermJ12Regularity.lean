@@ -5,18 +5,10 @@ public import SpherePacking.Basic.Domains.WedgeSet
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.Contour.PermJ12Tendsto
 
-
 /-!
 # Regularity and contour deformation for `perm_J₁_J₂`
 
-This file packages the analytic input for the Poincare-lemma based contour deformation used in
-the `b`-side permutation argument: holomorphicity of `ψT'` and `Ψ₁'`, and vanishing of `Ψ₁'` at the
-cusp `1` within `closure wedgeSet`.
-
-## Main statements
-* `differentiableOn_ψT'_upper`
-* `differentiableOn_Ψ₁'_upper`
-* `tendsto_Ψ₁'_one_within_closure_wedgeSet`
+Holomorphicity of `ψT'`, `Ψ₁'` and vanishing of `Ψ₁'` at the cusp `1` within `closure wedgeSet`.
 -/
 
 namespace MagicFunction.b.Fourier
@@ -24,26 +16,18 @@ namespace MagicFunction.b.Fourier
 noncomputable section
 
 open scoped FourierTransform RealInnerProductSpace Topology
-
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
-
 open SpherePacking
 
 section Integral_Permutations
 
 open scoped Real
-
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
-
 
 section PermJ12
 
-open MeasureTheory Set Complex Real
-open Filter
-open scoped Interval
-
-open scoped ModularForm
-
+open MeasureTheory Set Complex Real Filter
+open scoped Interval ModularForm
 
 /-- Holomorphicity of `ψT` when viewed as a complex function on the upper half-plane. -/
 public lemma differentiableOn_ψT_ofComplex :
@@ -71,16 +55,15 @@ public lemma differentiableOn_ψT_ofComplex :
 
 /-- Holomorphicity of `ψT'` on the upper half-plane. -/
 public lemma differentiableOn_ψT'_upper :
-    DifferentiableOn ℂ ψT' UpperHalfPlane.upperHalfPlaneSet := by
-  refine (differentiableOn_ψT_ofComplex).congr fun z hz => ?_
-  have hz' : 0 < z.im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hz
-  simp [ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
+    DifferentiableOn ℂ ψT' UpperHalfPlane.upperHalfPlaneSet :=
+  differentiableOn_ψT_ofComplex.congr fun z hz => by
+    have hz' : 0 < z.im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hz
+    simp [ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
 
 /-- Holomorphicity of `Ψ₁' r` on the upper half-plane. -/
 public lemma differentiableOn_Ψ₁'_upper (r : ℝ) :
-    DifferentiableOn ℂ (Ψ₁' r) UpperHalfPlane.upperHalfPlaneSet := by
-  unfold Ψ₁'
-  exact differentiableOn_ψT'_upper.mul
+    DifferentiableOn ℂ (Ψ₁' r) UpperHalfPlane.upperHalfPlaneSet :=
+  differentiableOn_ψT'_upper.mul
     ((differentiable_id.const_mul
       ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
 
@@ -92,10 +75,9 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
     Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
   let g : Matrix.SpecialLinearGroup (Fin 2) ℤ :=
     ModularGroup.S * ModularGroup.T * ModularGroup.S
-  let gAct : UpperHalfPlane → UpperHalfPlane :=
-    fun zH =>
-      HSMul.hSMul (α := Matrix.SpecialLinearGroup (Fin 2) ℤ) (β := UpperHalfPlane)
-        (γ := UpperHalfPlane) g zH
+  let gAct : UpperHalfPlane → UpperHalfPlane := fun zH =>
+    HSMul.hSMul (α := Matrix.SpecialLinearGroup (Fin 2) ℤ) (β := UpperHalfPlane)
+      (γ := UpperHalfPlane) g zH
   have hg : g = ⟨!![-1, 0; 1, -1], by norm_num [Matrix.det_fin_two_of]⟩ := by
     ext i j; fin_cases i <;> fin_cases j <;> simp [g, ModularGroup.S, ModularGroup.T]
   have hdenom : ∀ {z : ℂ} (hz : 0 < z.im),
@@ -110,14 +92,12 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
       ∀ {z : ℂ} (hz : 0 < z.im),
         ψT' z = -ψS (gAct (⟨z, hz⟩ : UpperHalfPlane)) * (z - 1) ^ (2 : ℕ) := fun {z} hz => by
     let zH : UpperHalfPlane := ⟨z, hz⟩
-    have hrel : (ψS ∣[(-2 : ℤ)] g) zH = -ψT zH := by
-      simpa [g] using congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψS_slash_STS
     have h1 : ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) = -ψT zH := by
-      simpa [ModularForm.SL_slash_apply, gAct] using hrel
-    have h2 : ψT zH = -ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) := by
-      simpa [neg_mul, mul_assoc] using (congrArg Neg.neg h1).symm
+      simpa [ModularForm.SL_slash_apply, gAct, g] using
+        congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψS_slash_STS
     calc ψT' z = ψT zH := by simp [ψT', hz, zH]
-      _ = -ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) := h2
+      _ = -ψS (gAct zH) * UpperHalfPlane.denom g zH ^ (2 : ℤ) := by
+            simpa [neg_mul, mul_assoc] using (congrArg Neg.neg h1).symm
       _ = -ψS (gAct zH) * ((z : ℂ) - 1) ^ (2 : ℤ) := by rw [hdenom hz]
       _ = -ψS (gAct zH) * (z - 1) ^ (2 : ℕ) := by
             simpa using congrArg (fun t : ℂ => -ψS (gAct zH) * t) (zpow_ofNat (z - 1) 2)
