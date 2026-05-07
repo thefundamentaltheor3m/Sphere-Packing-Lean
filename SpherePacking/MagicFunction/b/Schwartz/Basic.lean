@@ -71,28 +71,26 @@ public def J₆' : 𝓢(ℝ, ℂ) where
   schwartzMap_multidimensional_of_schwartzMap_real _ J₆'
 
 @[simp] public lemma J₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₁' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₁' r := fCut_apply_of_nonneg _ hr
+    (J₁' : ℝ → ℂ) r = RealIntegrals.J₁' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₂' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₂' r := fCut_apply_of_nonneg _ hr
+    (J₂' : ℝ → ℂ) r = RealIntegrals.J₂' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₃' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₃' r := fCut_apply_of_nonneg _ hr
+    (J₃' : ℝ → ℂ) r = RealIntegrals.J₃' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₄' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₄' r := fCut_apply_of_nonneg _ hr
+    (J₄' : ℝ → ℂ) r = RealIntegrals.J₄' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₅' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₅' r := fCut_apply_of_nonneg _ hr
+    (J₅' : ℝ → ℂ) r = RealIntegrals.J₅' r := fCut_apply_of_nonneg _ hr
 @[simp] public lemma J₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₆' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₆' r := fCut_apply_of_nonneg _ hr
+    (J₆' : ℝ → ℂ) r = RealIntegrals.J₆' r := fCut_apply_of_nonneg _ hr
 
 end MagicFunction.b.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
 
-open SchwartzMap
+open SchwartzMap MagicFunction.b.SchwartzIntegrals
 
 /-- Radial component of the -1-Fourier eigenfunction of Viazovska's magic function. -/
 @[expose] public def b' : 𝓢(ℝ, ℂ) :=
-  MagicFunction.b.SchwartzIntegrals.J₁' + MagicFunction.b.SchwartzIntegrals.J₂' +
-    MagicFunction.b.SchwartzIntegrals.J₃' + MagicFunction.b.SchwartzIntegrals.J₄' +
-    MagicFunction.b.SchwartzIntegrals.J₅' + MagicFunction.b.SchwartzIntegrals.J₆'
+  J₁' + J₂' + J₃' + J₄' + J₅' + J₆'
 
 /-- The -1-Fourier eigenfunction of Viazovska's magic function. -/
 @[expose] public def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
@@ -110,10 +108,7 @@ public theorem b_eq_sum_integrals_RadialFunctions : b =
     sq_nonneg ‖x‖, add_assoc]
 
 /-- Expand `b` as a sum of `MagicFunction.b.SchwartzIntegrals.J₁`-`J₆`. -/
-public theorem b_eq_sum_integrals_SchwartzIntegrals : b =
-    MagicFunction.b.SchwartzIntegrals.J₁ + MagicFunction.b.SchwartzIntegrals.J₂ +
-      MagicFunction.b.SchwartzIntegrals.J₃ + MagicFunction.b.SchwartzIntegrals.J₄ +
-      MagicFunction.b.SchwartzIntegrals.J₅ + MagicFunction.b.SchwartzIntegrals.J₆ := rfl
+public theorem b_eq_sum_integrals_SchwartzIntegrals : b = J₁ + J₂ + J₃ + J₄ + J₅ + J₆ := rfl
 
 end MagicFunction.FourierEigenfunctions
 
