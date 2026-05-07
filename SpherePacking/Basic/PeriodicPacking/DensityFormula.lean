@@ -58,16 +58,6 @@ public theorem periodic_constant_eq_periodic_constant_normalized :
   exact le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
     ⟨S.scale (inv_pos.mpr S.separation_pos), inv_mul_cancel₀ S.separation_pos.ne.symm⟩
 
-/-- If `D` meets each lattice orbit in exactly one point, then the same is true for each center of
-a periodic packing. -/
-public theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d)
-    {D : Set (EuclideanSpace ℝ (Fin d))}
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
-    ∀ x : S.centers, ∃! g : S.lattice,
-      (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := fun x =>
-  let ⟨g, hg, hguniq⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
-  ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
-
 section Fundamental_Domains_in_terms_of_Basis
 
 open Submodule

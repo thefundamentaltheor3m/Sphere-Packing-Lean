@@ -34,7 +34,9 @@ variable {d : ℕ}
     (↑(P.centers ∩ D) × P.lattice) ≃ P.centers := by
   have hcover :
       ∀ x : P.centers, ∃! g : P.lattice, g +ᵥ (x : EuclideanSpace ℝ (Fin d)) ∈ P.centers ∩ D :=
-    PeriodicSpherePacking.unique_covers_of_centers (d := d) (S := P) (D := D) hD_unique_covers
+    fun x =>
+      let ⟨g, hg, hguniq⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
+      ⟨g, ⟨P.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
   let cover : P.centers → P.lattice := fun x => Classical.choose (hcover x)
   let repr : P.centers → ↑(P.centers ∩ D) := fun x =>
     ⟨cover x +ᵥ (x : EuclideanSpace ℝ (Fin d)), (Classical.choose_spec (hcover x)).1⟩
