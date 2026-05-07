@@ -34,21 +34,13 @@ open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.
   MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 
-noncomputable section Change_of_Variables
+noncomputable section
 
 variable (r : ℝ)
 
-/-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
-way `intervalIntegral` is defined. -/
-
 /-- The integrand on `Ici 1` obtained from `I₁'` after an inversion change of variables. -/
-@[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦ -I
-  * φ₀'' (I * s)
-  * (s ^ (-4 : ℤ))
-  * cexp (-π * I * r)
-  * cexp (-π * r / s)
-
-section Change
+@[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦
+  -I * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * I * r) * cexp (-π * r / s)
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
     I₁' r = ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
@@ -66,12 +58,6 @@ public theorem Complete_Change_of_Variables (r : ℝ) :
       (SpherePacking.Integration.InvChangeOfVariables.integral_Ici_one_eq_integral_abs_deriv_smul
         (g := g r)).symm
 
-end Change_of_Variables.Change
-
-section Bounding
-
-section Bounding_Integrand
-
 lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
   intro s (hs : (1 : ℝ) ≤ s)
   simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
@@ -86,8 +72,7 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
 lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
-  refine ⟨C₀, hC₀_pos, fun s (hs : (1 : ℝ) ≤ s) =>
-    (I₁'_bounding_aux_1 r s hs).trans ?_⟩
+  refine ⟨C₀, hC₀_pos, fun s (hs : (1 : ℝ) ≤ s) => (I₁'_bounding_aux_1 r s hs).trans ?_⟩
   have hs_pos : 0 < s := by positivity
   gcongr
   let z : ℍ := ⟨I * s, by simpa using hs_pos⟩
@@ -95,10 +80,6 @@ lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
   have hC₀z := hC₀ z (him'.symm ▸ by linarith)
   simpa [z, him', φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add,
     hs_pos] using hC₀z
-
-end Bounding_Integrand
-
-section Bounding_Integral
 
 lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
@@ -115,15 +96,9 @@ theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 r
   refine ⟨C₀, hC₀_pos, ?_⟩
-  calc ‖I₁' r‖
-      = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
-    _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
-    _ ≤ _ := hC₀
+  rw [Complete_Change_of_Variables]
+  exact (norm_integral_le_integral_norm (g r)).trans hC₀
 
-end Bounding_Integral
+end
 
-end Bounding
-
-end I₁
-
-end MagicFunction.a.IntegralEstimates
+end MagicFunction.a.IntegralEstimates.I₁
