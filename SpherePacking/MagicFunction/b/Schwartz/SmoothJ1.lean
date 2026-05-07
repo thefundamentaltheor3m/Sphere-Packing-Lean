@@ -30,32 +30,24 @@ by differentiating under the integral sign on `Ioo (0,1)` and using a modular re
 `ψT' (z₁' t)` near `t = 0`.
 
 ## Main statements
-* `ψT'_z₁'_eq`
-* `contDiff_J₁'`
-* `decay_J₁'`
+* `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`
 -/
-
 
 namespace MagicFunction.b.Schwartz.J1Smooth
 
 noncomputable section
 
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
-
 open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane
-
-open MagicFunction.Parametrisations
-open MagicFunction.b.RealIntegrals
-open MagicFunction.b.PsiBounds
-open Matrix ModularGroup
-open ModularForm
+open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
+open Matrix ModularGroup ModularForm
 
 def μ : Measure ℝ := SpherePacking.Integration.μIoo01
 
 attribute [irreducible] μ
 
-instance : IsFiniteMeasure μ := by
-  refine ⟨by simp [μ, SpherePacking.Integration.μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
+instance : IsFiniteMeasure μ :=
+  ⟨by simp [μ, SpherePacking.Integration.μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
 
 def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₁' t
 
@@ -105,8 +97,8 @@ lemma continuousOn_hf :
 
 lemma exists_bound_norm_hf :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
-  rcases MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
-    exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq with ⟨Mψ, hMψ⟩
+  obtain ⟨Mψ, hMψ⟩ := MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+    exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq
   exact ⟨Mψ, fun t ht => by simpa [hf] using hMψ t ht⟩
 
 def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
@@ -131,24 +123,20 @@ lemma iteratedDeriv_J₁'_eq_integral_gN (n : ℕ) :
     (SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
       (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)
 
-/-- Smoothness of `J₁'` (the primed radial profile).
-
-The prime in `contDiff_J₁'` refers to the function `J₁'`. -/
+/-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
   simpa [I_zero_eq_J₁'] using
     (SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I)
       (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
 
-/-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₁'` refers to the function `J₁'`. -/
+/-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := by
   intro k n
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
-  rcases MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with
-    ⟨Cψ, hCψ⟩
+  obtain ⟨Cψ, hCψ⟩ :=
+    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   have hCψ0 : 0 ≤ Cψ :=
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
@@ -195,13 +183,12 @@ public theorem decay_J₁' :
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
-  calc
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
-        = x ^ k * ‖I n x‖ := by
-          simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-            congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))]
+  calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
+      = x ^ k * ‖I n x‖ := by
+        simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+          congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
-    _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
+    _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring
     _ ≤ Kn * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx) hKn_nonneg
 
 end
