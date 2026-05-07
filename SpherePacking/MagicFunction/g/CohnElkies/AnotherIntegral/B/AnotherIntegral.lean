@@ -12,7 +12,6 @@ public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
-
 /-!
 # "Another integral" representation for `b'` (`AnotherIntegral.B`)
 
@@ -31,12 +30,9 @@ and `u ≠ 2`, the function `b' u` is given by an explicit algebraic prefactor t
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators
-
-open MeasureTheory Real Complex
+open MeasureTheory Real Complex MagicFunction.FourierEigenfunctions
 
 noncomputable section
-
-open MagicFunction.FourierEigenfunctions
 
 /-- The integrand used in the "another integral" representation of `b'`. -/
 @[expose] public def bAnotherIntegrand (u t : ℝ) : ℂ :=
@@ -55,27 +51,22 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
           ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) := by
     simp [bLaplaceIntegrand, bAnotherIntegrand, bAnotherBase, sub_eq_add_neg, add_assoc,
       add_left_comm, add_comm, mul_left_comm, mul_comm, mul_add]
-  have hExpInt :
-      IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
+  have hExpInt : IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
     integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu0
   have h2ExpInt :
-      IntegrableOn
-        (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ))
+      IntegrableOn (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ))
         (Set.Ioi (0 : ℝ)) :=
     integrableOn_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu
   have hCorrInt :
       IntegrableOn
-        (fun t : ℝ =>
-          ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t))
+        (fun t : ℝ => ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t))
         (Set.Ioi (0 : ℝ)) :=
     ((hExpInt.const_mul (144 : ℂ)).add h2ExpInt).congr <|
       MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t _ => by
         simp [-Complex.ofReal_exp, add_mul, mul_assoc]
-  have hAnotherInt :
-      IntegrableOn (fun t : ℝ => bAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
+  have hAnotherInt : IntegrableOn (fun t : ℝ => bAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
     simpa [show (fun t : ℝ => bAnotherIntegrand u t) =
-        fun t : ℝ =>
-          bLaplaceIntegrand u t -
+        fun t : ℝ => bLaplaceIntegrand u t -
             ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) from
       funext fun t => by
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
@@ -87,8 +78,7 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
           (∫ t in Set.Ioi (0 : ℝ),
               ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) := by
     rw [show (∫ t in Set.Ioi (0 : ℝ), bLaplaceIntegrand u t) =
-          ∫ t in Set.Ioi (0 : ℝ),
-            bAnotherIntegrand u t +
+          ∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t +
               ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t) from
       MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ))
         (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi (fun t _ => by simp [hpoint t])]
@@ -120,17 +110,11 @@ lemma bRadial_eq_another_integral_analytic_continuation {u : ℝ} (hu : 0 < u) (
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
               ∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) := by
-  have h_gt2 :
-      ∀ r : ℝ, 2 < r →
-        b' r =
-          (-4 * (Complex.I : ℂ)) *
-            (Real.sin (π * r / 2)) ^ (2 : ℕ) *
-              ((144 : ℂ) / (π * r) + (1 : ℂ) / (π * (r - 2)) +
-                ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * r * t) : ℂ)) :=
-    fun r hr => by
-      simpa [bAnotherIntegrand] using bRadial_eq_another_integral_of_gt2 (u := r) hr
   simpa [bAnotherIntegrand] using
-    bRadial_eq_another_integral_analytic_continuation_of_gt2 (h_gt2 := h_gt2) (u := u) hu hu2
+    bRadial_eq_another_integral_analytic_continuation_of_gt2
+      (h_gt2 := fun r hr => by
+        simpa [bAnotherIntegrand] using bRadial_eq_another_integral_of_gt2 (u := r) hr)
+      (u := u) hu hu2
 
 /-- Main lemma for blueprint proposition `prop:b-another-integral`. -/
 public theorem bRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
