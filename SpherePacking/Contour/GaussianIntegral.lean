@@ -1,14 +1,10 @@
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
-public import Mathlib.Analysis.SpecialFunctions.Exp
-
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.GaussianRexpIntegral
 
-/-!
-Shared Gaussian integral wrappers used across the contour/Fourier developments.
--/
+/-! Shared Gaussian integral wrappers used across the contour/Fourier developments. -/
 
 open scoped FourierTransform RealInnerProductSpace
 
@@ -19,10 +15,9 @@ noncomputable section
 /-- Evaluate a Fourier-type Gaussian integral in even real dimension, pulling out a constant `c`. -/
 public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
     (w : EuclideanSpace ℝ (Fin (2 * k))) (z : ℂ) (hz : 0 < z.im) (c : ℂ) :
-    (∫ x : EuclideanSpace ℝ (Fin (2 * k)),
-        c *
-          (Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
-            Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))) =
+    (∫ x : EuclideanSpace ℝ (Fin (2 * k)), c *
+        (Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
+          Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))) =
       c * ((((Complex.I : ℂ) / z) ^ k) *
         Complex.exp ((Real.pi : ℂ) * Complex.I * (‖w‖ ^ 2 : ℝ) * (-1 / z))) := by
   simpa [MeasureTheory.integral_const_mul] using congrArg (fun I : ℂ => c * I)
@@ -33,7 +28,7 @@ public lemma integral_rexp_neg_pi_mul_sq_norm_even (k : ℕ) (t : ℝ) (ht : 0 <
     (∫ x : EuclideanSpace ℝ (Fin (2 * k)),
         Real.exp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ k := by
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-    (ForMathlib.integral_gaussian_rexp_even (k := k) (s := (1 / t)) (one_div_pos.2 ht))
+    ForMathlib.integral_gaussian_rexp_even (k := k) (s := 1 / t) (one_div_pos.2 ht)
 
 end
 
