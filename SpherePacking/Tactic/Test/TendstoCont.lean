@@ -1,11 +1,6 @@
 module
 
 public import SpherePacking.Tactic.TendstoCont
-public import Mathlib.Topology.Algebra.Ring.Basic
-public import Mathlib.Topology.Order.Basic
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 
 /-!
