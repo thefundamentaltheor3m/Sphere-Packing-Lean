@@ -3,7 +3,6 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
 public import Mathlib.Topology.Order
 public import SpherePacking.ForMathlib.BoundsOnIcc
 
-
 /-!
 # Helpers for real parametrisations in `ℍ`
 
@@ -29,27 +28,23 @@ public lemma im_neg_one_div_neg_ofReal_add_I (t : ℝ) :
 /-- For `t ∈ (0,1)`, we have `1/2 < 1 / (t^2 + 1)`. -/
 public lemma one_half_lt_one_div_sq_add_one_of_mem_Ioo01 {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < 1 / (t ^ 2 + 1) := by
-  have hlt : t ^ 2 + 1 < 2 := by
-    linarith [(sq_lt_one_iff₀ (le_of_lt ht.1)).2 ht.2]
-  simpa using (one_div_lt_one_div_of_lt (by positivity) hlt)
+  simpa using one_div_lt_one_div_of_lt (by positivity)
+    (by linarith [(sq_lt_one_iff₀ ht.1.le).2 ht.2] : t ^ 2 + 1 < 2)
 
-/-- A continuity helper for expressions that pass through `UpperHalfPlane.mk`.
-
-This is useful when a function is stated on `ℍ`, but a computation is carried out on `ℂ` with an
-explicit proof of positivity of the imaginary part.
--/
+/-- A continuity helper for expressions that pass through `UpperHalfPlane.mk`. Useful when a
+function is stated on `ℍ`, but a computation is carried out on `ℂ` with an explicit proof of
+positivity of the imaginary part. -/
 public lemma continuous_comp_upperHalfPlane_mk {α β : Type*} [TopologicalSpace α]
     [TopologicalSpace β] {ψT : UpperHalfPlane → β} (hψT : Continuous ψT) {z : α → ℂ}
     (hz : Continuous z) (him : ∀ a : α, 0 < (z a).im) {ψT' : ℂ → β}
     (hEq : ∀ a : α, ψT' (z a) = ψT (⟨z a, him a⟩ : UpperHalfPlane)) :
-    Continuous fun a : α => ψT' (z a) :=
-  by simpa [hEq] using hψT.comp (hz.upperHalfPlaneMk him)
+    Continuous fun a : α => ψT' (z a) := by
+  simpa [hEq] using hψT.comp (hz.upperHalfPlaneMk him)
 
 /-- A continuous function on `[0,1]` is bounded on `Ι (0,1)`. -/
 public lemma exists_bound_norm_uIoc_zero_one_of_continuous (f : ℝ → ℂ) (hf : Continuous f) :
     ∃ M : ℝ, ∀ t ∈ (Ι (0 : ℝ) 1), ‖f t‖ ≤ M := by
-  simpa using
-    (SpherePacking.ForMathlib.exists_upper_bound_on_uIoc (g := fun t : ℝ => ‖f t‖)
-      (a := (0 : ℝ)) (b := 1) (zero_le_one : (0 : ℝ) ≤ 1) (hg := (hf.norm).continuousOn))
+  simpa using SpherePacking.ForMathlib.exists_upper_bound_on_uIoc (g := fun t : ℝ => ‖f t‖)
+    (a := (0 : ℝ)) (b := 1) zero_le_one (hg := hf.norm.continuousOn)
 
 end SpherePacking.Integration
