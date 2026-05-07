@@ -8,8 +8,7 @@ import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 /-!
 # Smooth J2
 
-This file proves smoothness/decay bounds for `RealIntegrals.J₂'` by differentiating under the
-integral sign.
+Smoothness/decay bounds for `RealIntegrals.J₂'` by differentiating under the integral sign.
 -/
 
 namespace MagicFunction.b.Schwartz.J2Smooth
@@ -17,9 +16,8 @@ namespace MagicFunction.b.Schwartz.J2Smooth
 noncomputable section
 
 open scoped Interval Manifold Topology UpperHalfPlane
-open Complex Real Set MeasureTheory Filter intervalIntegral
-open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals
-  MagicFunction.b.PsiBounds SpherePacking.ForMathlib
+open Complex Real Set MeasureTheory Filter intervalIntegral MagicFunction.Parametrisations
+  MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds SpherePacking.ForMathlib
 
 private lemma hfEq_J₂' (x : ℝ) :
     J₂' x = SpherePacking.Integration.SmoothIntegralCommon.I
@@ -29,16 +27,12 @@ private lemma hfEq_J₂' (x : ℝ) :
     SpherePacking.Integration.DifferentiationUnderIntegral.gN,
     SpherePacking.Integration.DifferentiationUnderIntegral.g, mul_assoc, mul_left_comm, mul_comm]
 
-/-- Smoothness of `J₂'` (the primed radial profile used to define the Schwartz kernel `J₂`).
-
-The prime in `contDiff_J₂'` refers to the function `J₂'`. -/
+/-- Smoothness of `J₂'` (the primed radial profile used to define the Schwartz kernel `J₂`). -/
 public theorem contDiff_J₂' : ContDiff ℝ (⊤ : ℕ∞) J₂' :=
   SmoothJ24Common.contDiff_of_eq_I0_mul (z := z₂') (c := (1 : ℂ)) hfEq_J₂'
     continuous_z₂' (fun t => by simpa using im_z₂'_pos_all t) norm_z₂'_le_two
 
-/-- Schwartz-type decay bounds for `J₂'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₂'` refers to the function `J₂'`. -/
+/-- Schwartz-type decay bounds for `J₂'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₂' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₂' x‖ ≤ C :=
   SmoothJ24Common.decay_of_eq_I0_of_coeff_re_mul (z := z₂') (c := (1 : ℂ)) hfEq_J₂'
