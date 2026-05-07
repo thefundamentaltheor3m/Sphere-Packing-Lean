@@ -12,7 +12,6 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IntegrablePowMulExp
