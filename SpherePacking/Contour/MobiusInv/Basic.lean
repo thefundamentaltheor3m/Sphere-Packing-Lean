@@ -14,9 +14,6 @@ import Mathlib.Tactic.Ring
 # Mobius inversion
 
 Basic API for the Mobius inversion map `z ↦ -z⁻¹` used throughout the project.
-
-This module defines `SpherePacking.mobiusInv` and records elementary algebraic and derivative
-facts, so downstream contour developments do not duplicate wrapper lemmas.
 -/
 
 namespace SpherePacking
@@ -30,11 +27,10 @@ noncomputable section
 public lemma mobiusInv_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (mobiusInv z).im := by
   have him : (mobiusInv z).im = z.im / Complex.normSq z := by
     simp [mobiusInv, Complex.inv_im, div_eq_mul_inv]
-  simpa [him] using div_pos hz (Complex.normSq_pos.2 (fun hz0 => hz.ne' (by simp [hz0])))
+  simpa [him] using div_pos hz (Complex.normSq_pos.2 fun hz0 => hz.ne' (by simp [hz0]))
 
 /-- Complex derivative of `mobiusInv`. -/
-public lemma deriv_mobiusInv (z : ℂ) :
-    deriv mobiusInv z = (1 : ℂ) / z ^ (2 : ℕ) := by
+public lemma deriv_mobiusInv (z : ℂ) : deriv mobiusInv z = (1 : ℂ) / z ^ (2 : ℕ) := by
   simp [show mobiusInv = (fun z : ℂ => -z⁻¹) from rfl, deriv_inv, div_eq_mul_inv]
 
 /-- Derivative of `mobiusInv` composed with a line segment `AffineMap.lineMap a b`. -/
