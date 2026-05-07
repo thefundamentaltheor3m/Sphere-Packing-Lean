@@ -8,12 +8,8 @@ import Mathlib.Analysis.Normed.Operator.Banach
 import Mathlib.LinearAlgebra.Determinant
 public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 
-/-!
-# Poisson summation for general lattices
-
-Poisson summation for Schwartz functions over a full-rank `ℤ`-lattice `L ⊆ ℝ^d`,
-obtained from the standard-lattice case via a linear equivalence sending `ℤ^d` to `L`.
--/
+/-! # Poisson summation for Schwartz functions over a full-rank `ℤ`-lattice `L ⊆ ℝ^d`,
+reduced to the standard case via a linear equivalence sending `ℤ^d` to `L`. -/
 
 open scoped BigOperators FourierTransform Real
 
@@ -61,8 +57,7 @@ lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLatt
           simpa [show (fun a : E => (A (d := d) L) a) ∘ stdBasis (d := d) = rBasis (d := d) L from
             by funext i; simp [Function.comp]] using
             (Set.range_comp (g := fun a : E => (A (d := d) L) a) (f := stdBasis (d := d))).symm]
-    _ = L := by
-      simpa [rBasis] using
+    _ = L := by simpa [rBasis] using
         Module.Basis.ofZLatticeBasis_span (K := ℝ) (L := L) (b := zBasis (d := d) L)
 
 section CovolumeDet
@@ -115,8 +110,7 @@ noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[�
   (LinearEquiv.restrictScalars ℤ (Aₗ L)).ofSubmodules (SchwartzMap.standardLattice d) L
     (by simpa [LinearEquiv.restrictScalars_apply] using map_standardLattice_eq (d := d) L)
 
-@[simp]
-lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
+@[simp] lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
     ((equivStandardLattice (d := d) L x : L) : E) = (Aₗ L) x := by simp [equivStandardLattice]
 
 lemma Bₗ_comp_Aadjₗ : (Bₗ L ∘ₗ Aadjₗ L) = (LinearMap.id : E →ₗ[ℝ] E) := by
@@ -127,10 +121,9 @@ noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E where
   toLinearMap := Bₗ L
   invFun := Aadjₗ L
   left_inv x := by
-    simpa using congrArg (fun f : E →ₗ[ℝ] E => f x)
-      (show (Aadjₗ L ∘ₗ Bₗ L) = (LinearMap.id : E →ₗ[ℝ] E) by
-        simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-          show (Aₗ L).symm.toLinearMap ∘ₗ (Aₗ L).toLinearMap = LinearMap.id from by ext x; simp])
+    simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (show Aadjₗ L ∘ₗ Bₗ L = LinearMap.id by
+      simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
+        show (Aₗ L).symm.toLinearMap ∘ₗ (Aₗ L).toLinearMap = LinearMap.id from by ext x; simp])
   right_inv x := by simpa using congrArg (fun f : E →ₗ[ℝ] E => f x) (Bₗ_comp_Aadjₗ L)
 
 lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
@@ -170,8 +163,7 @@ noncomputable def equivStandardLatticeToDual :
 noncomputable def equivIntVecToDual : (Fin d → ℤ) ≃ dualLattice (d := d) L :=
   PoissonSummation.Standard.equivIntVec.trans (equivStandardLatticeToDual L).toEquiv
 
-/-- Poisson summation: the sum of a Schwartz function over a full-rank `ℤ`-lattice `L` equals
-the (normalized) sum of its Fourier transform over the dual lattice. -/
+/-- Poisson summation over a full-rank `ℤ`-lattice `L`. -/
 public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     (∑' ℓ : L, f (v + (ℓ : E))) =
       (1 / ZLattice.covolume L) *
