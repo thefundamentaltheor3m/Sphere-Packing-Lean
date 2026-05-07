@@ -28,14 +28,13 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 lemma continuousOn_J₅_g :
     ContinuousOn (fun p : ℝ⁸ × ℝ ↦ J5Change.g (‖p.1‖ ^ 2) p.2) (univ ×ˢ Ici (1 : ℝ)) := by
+  have hpos : ∀ s ∈ Ici (1 : ℝ), 0 < s := fun _ hs => lt_of_lt_of_le (by norm_num) hs
   have hψ : ContinuousOn (fun s : ℝ ↦ ψS' ((Complex.I : ℂ) * (s : ℂ))) (Ici (1 : ℝ)) :=
     (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
       MagicFunction.b.PsiBounds.continuous_ψS).congr fun s hs => by
-      simp [ψS', Function.resToImagAxis, ResToImagAxis,
-        lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) hs, mul_comm]
+      simp [ψS', Function.resToImagAxis, ResToImagAxis, hpos s hs, mul_comm]
   have hzpow : ContinuousOn (fun s : ℝ ↦ (s : ℂ) ^ (-4 : ℤ)) (Ici (1 : ℝ)) := fun s hs =>
-    ((continuousAt_zpow₀ (s : ℂ) (-4 : ℤ) (Or.inl (by exact_mod_cast
-      (lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) hs).ne'))).comp
+    ((continuousAt_zpow₀ (s : ℂ) (-4 : ℤ) (Or.inl (by exact_mod_cast (hpos s hs).ne'))).comp
       Complex.continuous_ofReal.continuousAt).continuousWithinAt
   refine (show ContinuousOn
       (fun p : ℝ⁸ × ℝ ↦ (-I : ℂ) * ψS' ((Complex.I : ℂ) * (p.2 : ℂ)) * ((p.2 : ℂ) ^ (-4 : ℤ)) *
@@ -52,9 +51,10 @@ lemma continuousOn_J₅_g :
 
 lemma aestronglyMeasurable_kernel (w : ℝ⁸) :
     AEStronglyMeasurable (kernel w) ((volume : Measure ℝ⁸).prod μIciOne) := by
-  have hphase : Continuous fun p : ℝ⁸ × ℝ => cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) := by fun_prop
   have hker : ContinuousOn (kernel w) (univ ×ˢ Ici (1 : ℝ)) :=
-    (hphase.continuousOn.mul continuousOn_J₅_g).congr fun p _ => by simp [kernel]
+    ((by fun_prop : Continuous fun p : ℝ⁸ × ℝ =>
+      cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I)).continuousOn.mul continuousOn_J₅_g).congr fun p _ => by
+      simp [kernel]
   simpa [show ((volume : Measure ℝ⁸).prod μIciOne) =
       (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) by
         simpa [μIciOne, Measure.restrict_univ] using
@@ -76,7 +76,6 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
 
 lemma integrable_kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
     Integrable (fun x : ℝ⁸ ↦ kernel w (x, s)) (volume : Measure ℝ⁸) := by
-  have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
   have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
     simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
       (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
@@ -84,7 +83,8 @@ lemma integrable_kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
         fun _ _ => ⟨Set.mem_univ _, hs⟩)
   exact Integrable.mono' (by
       simpa [mul_assoc] using
-        (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s) hs0).const_mul
+        (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s)
+          (lt_of_lt_of_le (by norm_num) hs)).const_mul
           (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
     ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
       hg).aestronglyMeasurable <| .of_forall fun x =>
@@ -123,17 +123,16 @@ public lemma integrable_kernel (w : ℝ⁸) :
       rw [habs, show (s ^ (-4 : ℤ)) = (s ^ 4)⁻¹ by simpa using zpow_negSucc s 3]
       exact inv_mul_cancel₀ (pow_ne_zero 4 hs0.ne')
     refine le_of_eq ?_
-    calc
-      (∫ x : ℝ⁸, ‖kernel w (x, s)‖)
-          = (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
-              (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) := by
-            rw [funext fun x => kernel_norm_eq (w := w) (x := x) (s := s)]
-            exact MeasureTheory.integral_const_mul _ _
+    calc (∫ x : ℝ⁸, ‖kernel w (x, s)‖)
+        = (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
+            (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) := by
+          rw [funext fun x => kernel_norm_eq (w := w) (x := x) (s := s)]
+          exact MeasureTheory.integral_const_mul _ _
       _ = ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ := by
-            rw [SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0, mul_assoc, hscal,
-              mul_one]
+          rw [SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0, mul_assoc, hscal,
+            mul_one]
       _ = ‖ψS.resToImagAxis s‖ :=
-            congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
+          congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
   simpa [Real.norm_eq_abs, abs_of_nonneg (show 0 ≤ ∫ x : ℝ⁸, ‖kernel w (x, s)‖ from
     MeasureTheory.integral_nonneg fun _ => norm_nonneg _)] using hval.trans (hC s hs)
 
