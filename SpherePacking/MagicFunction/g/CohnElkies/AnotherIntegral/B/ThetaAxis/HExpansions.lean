@@ -1,11 +1,7 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.QExpansion
 
-/-!
-# Expansions for `H₂`, `H₃`, and `H₄` on the imaginary axis
-
-`q`-expansion style bounds used to control `ψI' (it)` in `AnotherIntegral.B`.
--/
+/-! # Expansions for `H₂`, `H₃`, and `H₄` on the imaginary axis. -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
@@ -46,7 +42,6 @@ private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
 private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C :=
   by linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by simpa [sub_add_cancel] using norm_add_le (x - 1) (1 : ℂ)]
 
-/-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖H₂.resToImagAxis t - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -120,8 +115,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by ring) ▸ norm_add_le _ _]
 
-/-- Generic `H_j(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`, parametrized by sign.
-The sign `σ = +1` gives the H₃ case (`y = 1 + 2q`), `σ = -1` gives H₄ (`y = 1 - 2q`). -/
+/-- Generic `Hj(it)` expansion (`σ = ±1` for the H₃/H₄ cases). -/
 private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ : σ = 1 ∨ σ = -1)
     (hHj : ∀ t : ℝ, 0 < t → Hj t = (Θj t) ^ (4 : ℕ)) {C1 C2 : ℝ}
     (hC1 : ∀ t : ℝ, 1 ≤ t → ‖Θj t - 1‖ ≤ C1 * Real.exp (-Real.pi * t))
@@ -180,7 +174,6 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
     σ * (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
     (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ)) by ring) ▸ norm_add_le _ _]
 
-/-- `H₃(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
 lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -193,7 +186,6 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
     fun t ht => by simpa [sub_eq_add_neg, mul_assoc] using hC2 t ht).imp fun _ hC t ht => by
     simpa [one_mul] using hC t ht
 
-/-- `H₄(it)` expansion up to the `exp(-2π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -206,7 +198,7 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     fun t ht => by simpa [sub_eq_add_neg, mul_assoc, add_left_comm, add_comm] using hC2 t ht).imp
     fun _ hC t ht => by simpa [neg_mul, sub_eq_add_neg] using hC t ht
 
-/-- `H₃(it) + H₄(it)` cancellation up to the `exp(-2π t)` term on `t ≥ 1`. -/
+/-- Cancellation in `H₃(it) + H₄(it)` up to `exp(-3π t)`. -/
 public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖(H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
@@ -222,7 +214,6 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
   linarith [hC3 t ht, hC4 t ht, (show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - 2 -
     48 * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring) ▸ norm_add_le A B]
 
-/-- Crude inverse-square bound for `H₃(it)` on `t ≥ 1`. -/
 public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ C * Real.exp (-Real.pi * t) := by
@@ -249,11 +240,10 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     set τ : ℂ := (Complex.I : ℂ) * (t : ℂ)
     let f : ℕ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + 1) ^ 2) * t)
     have hterm : ∀ n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ) = (f n : ℂ) :=
-      fun n => by
-        simp [f, show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ) =
-            (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) by
-          rw [show τ = Complex.I * (t : ℂ) from rfl]; push_cast
-          linear_combination (Complex.I_mul_I) * (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * (t : ℂ)]
+      fun n => by simp [f, show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ) =
+        (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) by
+        rw [show τ = Complex.I * (t : ℂ) from rfl]; push_cast
+        linear_combination (Complex.I_mul_I) * (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * (t : ℂ)]
     have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
       rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
         simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ],
