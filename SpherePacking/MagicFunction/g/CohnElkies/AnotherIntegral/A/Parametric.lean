@@ -38,19 +38,12 @@ noncomputable section
 @[expose] public def aAnotherIntegralC (u : ℂ) : ℂ :=
   ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrandC u t
 
-lemma aAnotherIntegrand_eq (u t : ℝ) :
-    aAnotherIntegrand u t = aAnotherBase t * Real.exp (-π * u * t) := by
-  simp [aAnotherIntegrand, aAnotherBase, mul_assoc]
-
-lemma aAnotherIntegrandC_ofReal (u t : ℝ) :
-    aAnotherIntegrandC (u : ℂ) t = aAnotherIntegrand u t := by
-  simp [aAnotherIntegrandC, aAnotherBase, aAnotherIntegrand]
-
 /-- On real parameters, `aAnotherIntegralC` agrees with the real "another integral". -/
 public lemma aAnotherIntegralC_ofReal (u : ℝ) :
     aAnotherIntegralC (u : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t :=
   MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-    measurableSet_Ioi (fun t _ => by simpa using aAnotherIntegrandC_ofReal u t)
+    measurableSet_Ioi (fun t _ => by
+      simp [aAnotherIntegrandC, aAnotherBase, aAnotherIntegrand])
 
 /-- Continuity of `aAnotherBase` on `(0, ∞)`. -/
 lemma continuousOn_aAnotherBase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) := by
@@ -72,7 +65,8 @@ public lemma aAnotherIntegralC_analyticOnNhd :
     AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by
   convert analyticOnNhd_integral_base_exp (base := aAnotherBase)
     continuousOn_aAnotherBase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
-      Filter.Eventually.of_forall fun t => by simp [aAnotherIntegrand_eq]) using 1
+      Filter.Eventually.of_forall fun t => by
+        simp [aAnotherIntegrand, aAnotherBase, mul_assoc]) using 1
 
 end
 
