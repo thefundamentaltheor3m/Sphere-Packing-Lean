@@ -16,13 +16,8 @@ public import SpherePacking.ForMathlib.ZLattice
 /-!
 # Periodic packings: auxiliary finiteness and disjointness lemmas
 
-This file collects technical lemmas used to control periodic sphere packings in bounded regions
-(blueprint Theorem 2.2).
-
-The main ingredients are disjointness of the balls of radius `S.separation / 2` around distinct
-centers and a uniform lower bound on their volume. From this we deduce finiteness of `S.centers ∩ D`
-for bounded `D`, and disjointness of distinct lattice translates under a uniqueness-of-covers
-hypothesis.
+Technical lemmas controlling periodic sphere packings in bounded regions (blueprint Theorem 2.2):
+finiteness of `S.centers ∩ D` for bounded `D`, and disjointness of distinct lattice translates.
 -/
 
 open scoped ENNReal
@@ -130,8 +125,8 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   letI : Fintype ι := Fintype.ofFinite ι
   set b' := b.ofZLatticeBasis ℝ _
-  have hact : ∀ (w u : EuclideanSpace ℝ (Fin d)), u ∈ S.centers →
-      u - floor b' w ∈ S.centers := fun w u hu ↦ by
+  have hact (w u : EuclideanSpace ℝ (Fin d)) (hu : u ∈ S.centers) :
+      u - floor b' w ∈ S.centers := by
     rw [sub_eq_neg_add]; exact S.lattice_action (Submodule.neg_mem _ <|
       (mem_basis_Z_span ..).mp <| Submodule.coe_mem _) hu
   refine (S.addActionOrbitRelEquiv' b).trans {
@@ -150,10 +145,10 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         _ = b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) := by
           rw [show u - floor b' u - v = u - v - floor b' u by abel]; simp
         _ = b'.repr u i := by
-          rw [show b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋)
-            = b'.repr u i - ⌊b'.repr (u - v) i⌋ by abel_nf, sub_eq_self,
-            ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp (by
-              rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd)]
+          rw [show b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) =
+            b'.repr u i - ⌊b'.repr (u - v) i⌋ by abel_nf, sub_eq_self, ← repr_floor_apply,
+            (ZSpan.floor_eq_zero ..).mp (by rwa [Set.mem_vadd_set_iff_neg_vadd_mem,
+              vadd_eq_add, neg_add_eq_sub] at hu_fd)]
           simp }
 
 public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
@@ -278,16 +273,16 @@ public theorem PeriodicSpherePacking.aux_ge
 private theorem aux' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     ball 0 R ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
-        x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
+        x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) :=
   letI : Fintype ι := Fintype.ofFinite ι
-  refine fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x, ⟨?_, ?_⟩, ?_⟩
-  · rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]; exact Submodule.coe_mem _
-  · rw [mem_ball_zero_iff] at hx ⊢
-    exact ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ = ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by
-        simp [fract]).le.trans (norm_sub_le _ _)).trans_lt
-      (add_lt_add_of_lt_of_le hx (hL _ (fract_mem_fundamentalDomain _ _)))
-  · simpa [Set.mem_vadd_set_iff_neg_vadd_mem, neg_add_eq_sub] using
-      fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
+  fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x,
+    ⟨by rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]; exact Submodule.coe_mem _,
+      mem_ball_zero_iff.2 <| ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ =
+            ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by simp [fract]).le.trans
+          (norm_sub_le _ _)).trans_lt (add_lt_add_of_lt_of_le (mem_ball_zero_iff.1 hx)
+            (hL _ (fract_mem_fundamentalDomain _ _)))⟩,
+    by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, neg_add_eq_sub] using
+      fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x⟩
 
 /-- Theorem 2.3, upper bound. -/
 public theorem PeriodicSpherePacking.aux_le

@@ -10,8 +10,6 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 
 section theorem_2_2
 
-/-! ## Theorem 2.2 -/
-
 open scoped Pointwise
 variable {d : ℕ} (S : PeriodicSpherePacking d)
   {ι : Type*} [Finite ι]
@@ -24,8 +22,8 @@ theorem hD_isAddFundamentalDomain
 
 private theorem ball_subset_iUnion_lattice_inter_ball_vadd
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
-    ball 0 (R - L) ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) := by
-  intro x hx
+    ball 0 (R - L) ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) :=
+    fun x hx => by
   obtain ⟨g, hg, -⟩ := hD_unique_covers x
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
   refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
@@ -115,15 +113,11 @@ public theorem PeriodicSpherePacking.aux2_le'
 
 section finiteDensity_limit
 
-open Measure
-
 variable
   {d : ℕ} {S : PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
-/--
-Upper bound for `S.finiteDensity R` in terms of a fundamental domain, up to a ball-volume ratio.
--/
+/-- Upper bound for `S.finiteDensity R` in terms of a fundamental domain. -/
 public theorem aux_big_le
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     S.finiteDensity R ≤
@@ -155,9 +149,7 @@ public theorem aux_big_le
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← add_assoc, ← ENNReal.mul_div_right_comm,
       ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc, mul_comm (volume _) (volume _)]
 
-/--
-Lower bound for `S.finiteDensity R` in terms of a fundamental domain, up to a ball-volume ratio.
--/
+/-- Lower bound for `S.finiteDensity R` in terms of a fundamental domain. -/
 public theorem aux_big_ge
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     S.finiteDensity R ≥
@@ -208,9 +200,7 @@ lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
   rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
     ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
 
-/--
-As `R → ∞`, the ratio `volume (ball 0 R) / volume (ball 0 (R + C))` tends to `1` (for `C ≥ 0`).
--/
+/-- As `R → ∞`, `volume (ball 0 R) / volume (ball 0 (R + C))` → `1` for `C ≥ 0`. -/
 public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
@@ -236,10 +226,7 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
   convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
   rw [div_add_one, div_div_div_cancel_right₀, div_pow] <;> positivity
 
-/--
-As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`
-for nonnegative constants `C` and `C'`.
--/
+/-- As `R → ∞`, `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` → `1` for `C, C' ≥ 0`. -/
 public theorem volume_ball_ratio_tendsto_nhds_one'
     {d : ℕ} {C C' : ℝ} (hd : 0 < d) (hC : 0 ≤ C) (hC' : 0 ≤ C') :
       Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
@@ -264,10 +251,7 @@ public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) 
   exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
     fun hf => by simpa [hmap] using tendsto_map'_iff.mpr hf⟩
 
-/--
-As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,
-without assuming signs on `C` and `C'`.
--/
+/-- Same as `volume_ball_ratio_tendsto_nhds_one'`, without sign assumptions on `C, C'`. -/
 public theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
