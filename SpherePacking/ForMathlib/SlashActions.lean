@@ -1,5 +1,6 @@
 module
 
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
@@ -11,6 +12,7 @@ local notation "GL(" n ", " R ")" "⁺" => @Matrix.GLPos (Fin n) R (instDecidabl
   (Fin.fintype n) Real.linearOrderedCommRing
 
 open ModularForm MatrixGroups UpperHalfPlane
+open scoped Manifold
 
 /- Looks like the way to fix the errors is to replace each GL(n, ℝ)⁺ with
   `@Matrix.GLPos (Fin 2) ℝ (instDecidableEqFin 2) (Fin.fintype 2) Real.linearOrderedCommRing :
@@ -41,3 +43,45 @@ theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk 
   rw [SL_slash, ← slash_neg _ _ hk]
   congr
   aesop
+
+/--
+Bridge `MDifferentiableAt` on the upper half-plane with ordinary complex differentiability.
+-/
+lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
+    (h : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) F z) :
+    DifferentiableAt ℂ (F ∘ ofComplex) ↑z := by
+  have h₁ : DifferentiableWithinAt ℂ (F ∘ ofComplex) Set.univ ↑z := by
+    simpa [writtenInExtChartAt, extChartAt, Set.range_id] using
+      MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
+  exact differentiableWithinAt_univ.1 h₁
+
+/--
+Ordinary complex differentiability near a point of `ℍ` gives `MDifferentiableAt` after coercion.
+-/
+lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
+    (h : DifferentiableAt ℂ G ↑z) :
+    MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (G ∘ (↑) : ℍ → ℂ) z := by
+  rw [mdifferentiableAt_iff]
+  apply DifferentiableAt.congr_of_eventuallyEq h
+  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+  simp [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+
+section SlashActionDifferentiableHelpers
+
+open ModularGroup
+
+variable (γ : SL(2, ℤ))
+
+/-- Differentiability of `denom`. -/
+lemma differentiableAt_denom (z : ℂ) :
+    DifferentiableAt ℂ (fun w => denom γ w) z := by
+  simp only [denom]
+  fun_prop
+
+/-- Differentiability of `num`. -/
+lemma differentiableAt_num (z : ℂ) :
+    DifferentiableAt ℂ (fun w => num γ w) z := by
+  simp only [num]
+  fun_prop
+
+end SlashActionDifferentiableHelpers

@@ -36,35 +36,27 @@ noncomputable def jacobi_f : ℍ → ℂ := jacobi_g ^ 2
 
 /-- S-action on `g`: `g|[2]S = -g`. -/
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
-  change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] S) = -(H₂ + H₄ - H₃)
-  simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
+  simp only [jacobi_g, sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_S_action, H₃_S_action, H₄_S_action]
-  ext z
-  simp only [Pi.add_apply, Pi.neg_apply]
-  ring
+  ext z; simp only [Pi.add_apply, Pi.neg_apply]; ring
 
 /-- T-action on `g`: `g|[2]T = -g`. -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
-  change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] T) = -(H₂ + H₄ - H₃)
-  simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
+  simp only [jacobi_g, sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_T_action, H₃_T_action, H₄_T_action]
-  ext z
-  simp only [Pi.add_apply, Pi.neg_apply]
-  ring
+  ext z; simp only [Pi.add_apply, Pi.neg_apply]; ring
 
 /-- Rewrite `jacobi_f` as a pointwise product. -/
-lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
-  ext
-  simp [jacobi_f, sq]
+lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := sq jacobi_g
 
 /-- S-invariance of `f`: `f|[4]S = f`, because `g|[2]S = -g`. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
-  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num,
+  simp only [jacobi_f_eq_mul, (by norm_num : (4 : ℤ) = 2 + 2),
     mul_slash_SL2 2 2 S _ _, jacobi_g_S_action, neg_mul_neg]
 
 /-- T-invariance of `f`: `f|[4]T = f`, because `g|[2]T = -g`. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
-  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num,
+  simp only [jacobi_f_eq_mul, (by norm_num : (4 : ℤ) = 2 + 2),
     mul_slash_SL2 2 2 T _ _, jacobi_g_T_action, neg_mul_neg]
 
 /-- Full `SL₂(ℤ)` invariance of `f` with weight 4. -/
@@ -76,19 +68,8 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   toFun := jacobi_f
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
-/-- `jacobi_g` is holomorphic since `H₂`, `H₃`, and `H₄` are. -/
-lemma jacobi_g_MDifferentiable : MDiff jacobi_g := by
-  unfold jacobi_g
-  fun_prop
-
 /-- `jacobi_f` is holomorphic since `jacobi_g` is. -/
-lemma jacobi_f_MDifferentiable : MDiff jacobi_f := by
-  unfold jacobi_f
-  have _ := jacobi_g_MDifferentiable
-  fun_prop
-
-/-- `jacobi_f_SIF` is holomorphic. -/
-lemma jacobi_f_SIF_MDifferentiable : MDiff jacobi_f_SIF := jacobi_f_MDifferentiable
+lemma jacobi_f_MDifferentiable : MDiff jacobi_f := by unfold jacobi_f jacobi_g; fun_prop
 
 end JacobiIdentity
 
@@ -115,8 +96,7 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   tendsto_cont
 
 private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
-  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
-    jacobi_f_tendsto_atImInfty
+  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable jacobi_f_tendsto_atImInfty
 
 /-- `jacobi_f = 0` by dimension argument: weight-4 cusp forms vanish. -/
 theorem jacobi_f_eq_zero : jacobi_f = 0 :=
@@ -136,33 +116,27 @@ theorem jacobi_identity : H₂ + H₄ = H₃ := by
 private noncomputable def theta_prod : ℍ → ℂ := H₂ * H₃ * H₄
 
 private lemma theta_prod_S_action : (theta_prod ∣[(6 : ℤ)] S) = -theta_prod := by
-  simp only [theta_prod, show (6 : ℤ) = (2 + 2) + 2 from by norm_num,
+  simp only [theta_prod, (by norm_num : (6 : ℤ) = 2 + 2 + 2),
     mul_slash_SL2 (2 + 2) 2 S _ _, mul_slash_SL2 2 2 S _ _,
     H₂_S_action, H₃_S_action, H₄_S_action]
-  ext z
-  simp [Pi.mul_apply, Pi.neg_apply]
-  ring
+  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
 
 private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod := by
-  simp only [theta_prod, show (6 : ℤ) = (2 + 2) + 2 from by norm_num,
+  simp only [theta_prod, (by norm_num : (6 : ℤ) = 2 + 2 + 2),
     mul_slash_SL2 (2 + 2) 2 T _ _, mul_slash_SL2 2 2 T _ _,
     H₂_T_action, H₃_T_action, H₄_T_action]
-  ext z
-  simp [Pi.mul_apply, Pi.neg_apply]
-  ring
+  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
 
-private noncomputable def theta_prod_sq : ℍ → ℂ := fun z => (H₂ z * H₃ z * H₄ z) ^ 2
+private noncomputable def theta_prod_sq : ℍ → ℂ := (H₂ * H₃ * H₄) ^ 2
 
-private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := by
-  ext z
-  simp [theta_prod_sq, theta_prod, sq, Pi.mul_apply]
+private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := sq theta_prod
 
 private lemma theta_prod_sq_S_action : (theta_prod_sq ∣[(12 : ℤ)] S) = theta_prod_sq := by
-  rw [theta_prod_sq_eq_mul, show (12 : ℤ) = 6 + 6 from by norm_num,
+  rw [theta_prod_sq_eq_mul, (by norm_num : (12 : ℤ) = 6 + 6),
     mul_slash_SL2 6 6 S _ _, theta_prod_S_action, neg_mul_neg]
 
 private lemma theta_prod_sq_T_action : (theta_prod_sq ∣[(12 : ℤ)] T) = theta_prod_sq := by
-  rw [theta_prod_sq_eq_mul, show (12 : ℤ) = 6 + 6 from by norm_num,
+  rw [theta_prod_sq_eq_mul, (by norm_num : (12 : ℤ) = 6 + 6),
     mul_slash_SL2 6 6 T _ _, theta_prod_T_action, neg_mul_neg]
 
 private lemma theta_prod_sq_SL2Z_invariant :
@@ -171,8 +145,7 @@ private lemma theta_prod_sq_SL2Z_invariant :
     theta_prod_sq_S_action theta_prod_sq_T_action
 
 private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
-  change MDiff (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
-  exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
+  unfold theta_prod_sq; fun_prop
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
   change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
@@ -205,42 +178,27 @@ private lemma theta_prod_sq_proportional :
     ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=
   (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp finrank_cuspform_12 theta_prod_sq_CF
 
-private lemma Θ₂_div_exp_tendsto :
-    Tendsto (fun z : ℍ ↦ Θ₂ z / cexp (π * I * ↑z / 4)) atImInfty (nhds 2) := by
-  simp_rw [Θ₂_as_jacobiTheta₂, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
-  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-
 private lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
-    rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow]
-    have he : cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) := by
-      rw [← Complex.exp_nat_mul]
-      congr 1
-      ring
-    rw [he, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+    rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow,
+      show cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) from by
+        rw [← Complex.exp_nat_mul]; ring_nf,
+      mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
   simp_rw [h_eq]
-  have h16 : (2 : ℂ) ^ 4 = (16 : ℂ) := by norm_num
-  rw [← h16]
-  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty.pow 4
+  convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty.pow 4 using 1; norm_num
 
-lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
-    Delta τ = ((H₂ τ) * (H₃ τ) * (H₄ τ))^2 / (256 : ℂ) := by
+lemma Delta_eq_H₂_H₃_H₄ : (Delta : ℍ → ℂ) = (1 / 256 : ℂ) • (H₂ * H₃ * H₄) ^ 2 := by
   obtain ⟨c, hc⟩ := theta_prod_sq_proportional
-  have hc_pw : ∀ z : ℍ, c * Delta z = theta_prod_sq z := by
-    intro z
-    have h := DFunLike.congr_fun hc z
-    rw [show (c • Delta : CuspForm _ _) z = c * Delta z from rfl] at h
-    rwa [theta_prod_sq_CF_apply] at h
+  have hc_pw : ∀ z : ℍ, c * Delta z = theta_prod_sq z :=
+    fun z => (DFunLike.congr_fun hc z).trans (theta_prod_sq_CF_apply z)
   have hc_eq : c = 256 := by
-    have hD_asymp : Tendsto (fun z : ℍ ↦ Delta z / cexp (2 * ↑π * I * ↑z))
-        atImInfty (nhds 1) := by
+    have hD_asymp : Tendsto (fun z : ℍ ↦ Delta z / cexp (2 * ↑π * I * ↑z)) atImInfty (nhds 1) := by
       have h_eq : ∀ z : ℍ, Delta z / cexp (2 * ↑π * I * ↑z) =
           ∏' (n : ℕ), (1 - cexp (2 * ↑π * I * (↑n + 1) * ↑z)) ^ 24 := by
         intro z
-        rw [Delta_apply, Δ]
-        rw [mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+        rw [Delta_apply, Δ, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
       simp_rw [h_eq]
       exact Delta_boundedfactor
     have hP_asymp : Tendsto (fun z : ℍ ↦ theta_prod_sq z / cexp (2 * ↑π * I * ↑z))
@@ -248,28 +206,27 @@ lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       have h_rewrite : ∀ z : ℍ, theta_prod_sq z / cexp (2 * ↑π * I * ↑z) =
           (H₂ z / cexp (↑π * I * ↑z)) ^ 2 * (H₃ z) ^ 2 * (H₄ z) ^ 2 := by
         intro z
-        have hq : cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 := by
-          rw [← Complex.exp_nat_mul]
-          ring_nf
-        simp only [theta_prod_sq]
-        rw [hq]
+        simp only [theta_prod_sq, Pi.mul_apply, Pi.pow_apply]
+        rw [show cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 from by
+          rw [← Complex.exp_nat_mul]; ring_nf]
         field_simp
       simp_rw [h_rewrite]
       have : (256 : ℂ) = 16 ^ 2 * 1 ^ 2 * 1 ^ 2 := by norm_num
       rw [this]
-      exact ((H₂_div_exp_tendsto.pow 2).mul (H₃_tendsto_atImInfty.pow 2)).mul
-        (H₄_tendsto_atImInfty.pow 2)
+      have := H₂_div_exp_tendsto
+      have := H₃_tendsto_atImInfty
+      have := H₄_tendsto_atImInfty
+      tendsto_cont
     have h_eq_fns : ∀ z : ℍ, c * (Delta z / cexp (2 * ↑π * I * ↑z)) =
         theta_prod_sq z / cexp (2 * ↑π * I * ↑z) := by
       intro z
       rw [← mul_div_assoc, hc_pw]
     have hc_lim : Tendsto (fun z : ℍ ↦ c * (Delta z / cexp (2 * ↑π * I * ↑z)))
-        atImInfty (nhds c) := by
-      have := hD_asymp.const_mul c
-      rwa [mul_one] at this
+        atImInfty (nhds c) := by simpa using hD_asymp.const_mul c
     exact tendsto_nhds_unique (hc_lim.congr h_eq_fns) hP_asymp
-  have h := hc_pw τ
+  ext z
+  have h := hc_pw z
   rw [hc_eq] at h
-  simp only [theta_prod_sq] at h
-  rw [eq_div_iff (show (256 : ℂ) ≠ 0 by norm_num), mul_comm]
-  exact h
+  simp only [theta_prod_sq, Pi.mul_apply, Pi.pow_apply] at h
+  simp only [Pi.smul_apply, Pi.mul_apply, Pi.pow_apply, smul_eq_mul]
+  linear_combination (1 / (256 : ℂ)) * h
