@@ -30,23 +30,15 @@ open scoped ContDiff Topology
 open MagicFunction MagicFunction.b MagicFunction.b.RealIntegrals
 open Set Complex Real SchwartzMap RadialSchwartz.Bridge
 
-/-- 1-D Schwartz function from the primed radial integral `J₁'`. -/
+/-- 1-D Schwartz functions from the primed radial integrals `J₁'`-`J₅'`. -/
 public def J₁' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₁')
   MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁' MagicFunction.b.Schwartz.J1Smooth.decay_J₁'
-
-/-- 1-D Schwartz function from the primed radial integral `J₂'`. -/
 public def J₂' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₂')
   MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂' MagicFunction.b.Schwartz.J2Smooth.decay_J₂'
-
-/-- 1-D Schwartz function from the primed radial integral `J₃'`. -/
 public def J₃' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₃')
   MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃' MagicFunction.b.Schwartz.J3Smooth.decay_J₃'
-
-/-- 1-D Schwartz function from the primed radial integral `J₄'`. -/
 public def J₄' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₄')
   MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄' MagicFunction.b.Schwartz.J4Smooth.decay_J₄'
-
-/-- 1-D Schwartz function from the primed radial integral `J₅'`. -/
 public def J₅' : 𝓢(ℝ, ℂ) := RadialSchwartz.Bridge.fCutSchwartz (f := RealIntegrals.J₅')
   MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅' MagicFunction.b.Schwartz.J5Smooth.decay_J₅'
 
@@ -64,22 +56,17 @@ public def J₆' : 𝓢(ℝ, ℂ) where
       (f := MagicFunction.b.RealIntegrals.J₆') (hg_smooth := J₆'_smooth_aux)
       MagicFunction.b.Schwartz.J6Smooth.decay_J₆')
 
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₁'`. -/
+/-- Schwartz functions on `ℝ⁸` from the radial profiles `J₁'`-`J₆'`. -/
 @[expose] public def J₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₁'
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₂'`. -/
 @[expose] public def J₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₂'
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₃'`. -/
 @[expose] public def J₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₃'
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₄'`. -/
 @[expose] public def J₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₄'
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₅'`. -/
 @[expose] public def J₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₅'
-/-- Schwartz function on `ℝ⁸` from the radial profile `J₆'`. -/
 @[expose] public def J₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real _ J₆'
 
