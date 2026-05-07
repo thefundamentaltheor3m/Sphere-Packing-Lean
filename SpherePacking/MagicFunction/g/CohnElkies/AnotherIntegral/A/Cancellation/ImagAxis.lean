@@ -12,12 +12,8 @@ public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.Complex.Periodic
 
-/-!
-# Helpers on the imaginary axis (AnotherIntegral.A)
-
-Definitions (`zI`) and bounds (`norm_φ₀_imag_le`, `exists_E4_sub_one_bound`, …) for evaluating
-modular objects on the positive imaginary axis.
--/
+/-! # Helpers on the imaginary axis (AnotherIntegral.A): definitions (`zI`) and bounds for
+evaluating modular objects on the positive imaginary axis. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -64,7 +60,7 @@ public lemma norm_φ₀_imag_le :
     ⟨hCpos, fun t ht => have ht0 := zero_lt_one.trans_le ht
       by simpa [show φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) by
           simpa [zI] using (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm,
-        zI_im t ht0] using hC (zI t ht0) (by linarith [zI_im t ht0])⟩
+        zI_im] using hC (zI t ht0) (by linarith [zI_im t ht0])⟩
 
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
@@ -205,9 +201,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
     rw [show ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
-        ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ from by simp [f, mul_assoc],
-      show q ^ (2 : ℕ) * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) from by
-        simp [b]; ring]
+        ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ by simp [f, mul_assoc],
+      show q ^ (2 : ℕ) * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) by simp [b]; ring]
     gcongr
     · exact_mod_cast norm_mul_sigma_le (n + 2) (n + 2) le_rfl
     · simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
@@ -216,8 +211,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   let g : ℕ → ℂ := fun n => (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
   have hg_summ : Summable g := .of_norm_bounded (hb_summ.mul_left q) fun n => by
     rw [show ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
-        ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ from by simp [g, mul_assoc],
-      show q * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) from by simp [b]; ring]
+        ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ by simp [g, mul_assoc],
+      show q * b n = ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) by simp [b]; ring]
     gcongr
     · exact_mod_cast norm_mul_sigma_le (n + 1) (n + 2) (by omega)
     · simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
