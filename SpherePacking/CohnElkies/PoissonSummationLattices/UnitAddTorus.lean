@@ -51,7 +51,6 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
           (QuotientAddGroup.isOpenQuotientMap_mk (G := ℝ) (N := AddSubgroup.zmultiples (1 : ℝ)))
       let eX := (finSuccPiHomeomorph (α := ℝ) n).symm
       let eY := finSuccPiHomeomorph (α := UnitAddCircle) n
-      have hprod := IsOpenQuotientMap.prodMap h₁ ih
       have hconj : coeFun n.succ =
           (fun x => eY (Prod.map (fun x : ℝ => (x : UnitAddCircle)) (coeFun n) (eX x))) := by
         funext x; ext i
@@ -60,7 +59,7 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
         | succ i => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map, Fin.tail]
       simpa [hconj] using
         (IsOpenQuotientMap.comp eY.isOpenQuotientMap
-          (IsOpenQuotientMap.comp hprod eX.isOpenQuotientMap))
+          (IsOpenQuotientMap.comp (IsOpenQuotientMap.prodMap h₁ ih) eX.isOpenQuotientMap))
 
 theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
     MeasurePreserving (coeFun n)
@@ -80,28 +79,20 @@ theorem volume_restrict_pi_eq_pi_restrict (n : ℕ) (t : ℝ) :
 
 theorem mFourier_apply_coeFun (n : ℕ) (k : Fin n → ℤ) (x : Fin n → ℝ) :
     UnitAddTorus.mFourier k (coeFun n x) =
-      Complex.exp
-        (2 * π * Complex.I *
-          (∑ i : Fin n, (k i : ℝ) * x i)) := by
+      Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
   simpa [UnitAddTorus.mFourier, ContinuousMap.coe_mk, coeFun, fourier_coe_apply, Finset.mul_sum,
     mul_assoc, mul_left_comm, mul_comm] using
     (Complex.exp_sum (s := (Finset.univ : Finset (Fin n)))
         (f := fun i : Fin n => 2 * π * Complex.I * ((k i : ℝ) * x i))).symm
 
-/--
-Evaluate the additive character `mFourier k` on a point `x : ℝ^n`
-viewed in the torus via `coeFun`.
--/
+/-- Evaluate the additive character `mFourier k` on a point `x : ℝ^n` viewed in the torus
+via `coeFun`. -/
 public theorem mFourier_apply_coeFun_ofLp (n : ℕ) (k : Fin n → ℤ) (x : EuclideanSpace ℝ (Fin n)) :
     UnitAddTorus.mFourier k (coeFun n (WithLp.ofLp x)) =
-      Complex.exp
-        (2 * π * Complex.I *
-          (∑ i : Fin n, (k i : ℝ) * x i)) := by
+      Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
   simpa using (mFourier_apply_coeFun (n := n) (k := k) (x := WithLp.ofLp x))
 
-/--
-Pull back Haar integration on `(ℝ/ℤ)^n` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^n`.
--/
+/-- Pull back Haar integration on `(ℝ/ℤ)^n` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^n`. -/
 public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : UnitAddTorus (Fin n) → ℂ)
     (hg : AEStronglyMeasurable g (volume : Measure (UnitAddTorus (Fin n)))) :
     (∫ y : UnitAddTorus (Fin n), g y) =
