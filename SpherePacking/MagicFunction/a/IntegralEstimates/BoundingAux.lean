@@ -19,15 +19,8 @@ import SpherePacking.ForMathlib.DerivHelpers
 /-!
 # Auxiliary bounds on integrals over `(0, 1)`
 
-This file collects reusable lemmas used in the `IntegralEstimates` development for integrals over
-`Ioo (0, 1)`. It includes basic norm and monotonicity estimates for set integrals, as well as
-lemmas that justify differentiating under the integral sign for integrands of the form
-`(coeff t) ^ n * g r t`.
-
-## Main statements
-* `bounding_of_eq_integral_g_Ioo01`, `bounding_uniform_of_eq_integral_g_Ioo01`
-* `iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul`
-* `iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one`
+Reusable norm/monotonicity estimates for set integrals on `Ioo (0, 1)` and lemmas justifying
+differentiation under the integral sign for integrands `(coeff t) ^ n * g r t`.
 -/
 
 open Complex Real Set MeasureTheory Filter intervalIntegral
@@ -41,10 +34,7 @@ public lemma norm_pow_mul_mul_le {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
   simpa [norm_mul, norm_pow] using
     mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hcoeff n) hg (norm_nonneg _) (pow_nonneg hC _)
 
-/--
-Bound `iteratedDeriv n I` when it is represented as a set integral of `(coeff t) ^ n * g r t` with
-uniform bounds on `g` and `coeff`.
--/
+/-- Bound `iteratedDeriv n I` from a set-integral representation with uniform bounds. -/
 public lemma iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
     {I : ℝ → ℂ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ} (n : ℕ)
     (hg_bound :
@@ -63,11 +53,8 @@ public lemma iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
         simpa [mul_assoc, mul_left_comm, mul_comm] using norm_pow_mul_mul_le (n := n)
           (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (by positivity) (hcoeff t ht) (hC₀ r t ht)
 
-/--
-Integrability of `(coeff t) ^ n * g r t` from a uniform bound on `coeff` and a uniform (in `r`)
-bound on `g`, assuming `μ` is finite and the integrand is supported on `Ioo (0, 1)` almost
-everywhere.
--/
+/-- Integrability of `(coeff t) ^ n * g r t` from uniform bounds, with `μ` finite and a.e. on
+`Ioo (0, 1)`. -/
 public lemma integrable_pow_mul_of_ae_mem_Ioo01 {μ : Measure ℝ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
     {n : ℕ} {r : ℝ}
     (hμ_ne : μ univ ≠ ⊤)
@@ -100,20 +87,14 @@ public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {
   integrable_pow_mul_of_ae_mem_Ioo01 (measure_ne_top _ univ) hmeas
     (ae_restrict_mem measurableSet_Ioo) hcoeff hg
 
-/--
-For `r` in a unit ball around `r₀`, compare `rexp (-π * r)` to `rexp (-π * r₀)` up to a factor
-`rexp π`.
--/
+/-- For `r` in a unit ball around `r₀`, `rexp (-π * r) ≤ rexp π * rexp (-π * r₀)`. -/
 public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ : ℝ}
-    (hr : r ∈ Metric.ball r₀ (1 : ℝ)) :
-    rexp (-π * r) ≤ rexp (π) * rexp (-π * r₀) := by
+    (hr : r ∈ Metric.ball r₀ (1 : ℝ)) : rexp (-π * r) ≤ rexp π * rexp (-π * r₀) := by
   have : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
   simpa [Real.exp_add] using Real.exp_le_exp.2
     (by nlinarith [Real.pi_pos, abs_lt.1 this |>.1] : (-π * r : ℝ) ≤ π + (-π * r₀))
 
-/--
-Almost-everywhere bound for `‖(coeff t) ^ n * g r t‖` which is uniform in `r` on `Metric.ball r₀ 1`.
--/
+/-- Almost-everywhere bound for `‖(coeff t) ^ n * g r t‖`, uniform in `r ∈ Metric.ball r₀ 1`. -/
 public lemma ae_forall_mem_ball_norm_pow_mul_mul_le {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
     (n : ℕ) (r₀ C₀ : ℝ)
     (hC₀ : 0 ≤ C₀)
@@ -131,10 +112,8 @@ public lemma ae_forall_mem_ball_norm_pow_mul_mul_le {coeff : ℝ → ℂ} {g : �
     (rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball hr)
     (by positivity : (0 : ℝ) ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2))
 
-/--
-Differentiate `x ↦ ∫ (coeff t) ^ n * g x t` under the integral sign, assuming a uniform bound on
-`g` on `Ioo (0, 1)` and a representation `g x t = A t * cexp ((x : ℂ) * coeff t)`.
--/
+/-- Differentiate `x ↦ ∫ (coeff t) ^ n * g x t` under the integral, given uniform bounds on `g` and
+the representation `g x t = A t * cexp ((x : ℂ) * coeff t)`. -/
 public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
     {μ : Measure ℝ} [IsFiniteMeasure μ]
     {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ} {A : ℝ → ℂ} {n : ℕ} {x₀ : ℝ}
@@ -162,10 +141,8 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
         SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
           (a := A t) (c := coeff t) (n := n) (x := x)).2
 
-/--
-Express iterated derivatives of `I` as set integrals of `(coeff t) ^ n * g r t`, under uniform
-bounds that allow differentiation under the integral sign.
--/
+/-- Express `iteratedDeriv n I` as a set integral of `(coeff t) ^ n * g r t` under suitable
+uniform bounds. -/
 public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
     {I : ℝ → ℂ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ} {A : ℝ → ℂ}
     (hI : ∀ r : ℝ, I r = ∫ t in Ioo (0 : ℝ) 1, g r t)
