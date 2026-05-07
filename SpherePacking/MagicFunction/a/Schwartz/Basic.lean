@@ -25,13 +25,7 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 
-/-!
-# The magic function `a` is Schwartz
-
-On `ℝ`, the radial profiles are only used at `r = ‖x‖^2 ≥ 0`. We use a smooth cutoff to build
-global Schwartz functions on `ℝ` without changing the induced functions on
-`EuclideanSpace ℝ (Fin 8)`.
--/
+/-! Schwartz property for the magic function `a` via smooth cutoff of radial profiles. -/
 
 noncomputable section
 
@@ -145,16 +139,12 @@ open RadialSchwartz.Bridge MagicFunction.a.SchwartzProperties
 /-- Schwartz function on `ℝ` from primed radial integral `I₁'`. -/
 @[expose] public def I₁' : 𝓢(ℝ, ℂ) :=
   fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁') I₁'_smooth' I₁'_decay'
-/-- Schwartz function on `ℝ` from primed radial integral `I₂'`. -/
 @[expose] public def I₂' : 𝓢(ℝ, ℂ) :=
   fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂') I₂'_smooth' I₂'_decay'
-/-- Schwartz function on `ℝ` from primed radial integral `I₃'`. -/
 @[expose] public def I₃' : 𝓢(ℝ, ℂ) :=
   fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃') I₃'_smooth' I₃'_decay'
-/-- Schwartz function on `ℝ` from primed radial integral `I₄'`. -/
 @[expose] public def I₄' : 𝓢(ℝ, ℂ) :=
   fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄') I₄'_smooth' I₄'_decay'
-/-- Schwartz function on `ℝ` from primed radial integral `I₅'`. -/
 @[expose] public def I₅' : 𝓢(ℝ, ℂ) :=
   fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅') I₅'_smooth' I₅'_decay'
 
@@ -171,15 +161,10 @@ public abbrev liftSchwartz (f : 𝓢(ℝ, ℂ)) : 𝓢(EuclideanSpace ℝ (Fin 8
 
 /-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₁'`. -/
 @[expose] public def I₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₁'
-/-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₂'`. -/
 @[expose] public def I₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₂'
-/-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₃'`. -/
 @[expose] public def I₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₃'
-/-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₄'`. -/
 @[expose] public def I₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₄'
-/-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₅'`. -/
 @[expose] public def I₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₅'
-/-- Schwartz function on `EuclideanSpace ℝ (Fin 8)` from radial profile `I₆'`. -/
 @[expose] public def I₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := liftSchwartz I₆'
 
 @[simp] public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
