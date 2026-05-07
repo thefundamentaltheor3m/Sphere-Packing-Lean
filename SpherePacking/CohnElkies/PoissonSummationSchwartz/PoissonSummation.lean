@@ -2,14 +2,9 @@ module
 public import SpherePacking.CohnElkies.PoissonSummationLattices.PoissonSummation
 import SpherePacking.CohnElkies.PoissonSummationSchwartz.Basic
 
-/-!
-# Poisson summation for Schwartz functions over the standard lattice
-
-Main result: `poissonSummation_standard`.
--/
+/-! Poisson summation for Schwartz functions over the standard lattice. -/
 
 open scoped BigOperators FourierTransform
-
 open MeasureTheory
 
 namespace SchwartzMap.PoissonSummation.Standard
@@ -38,7 +33,7 @@ lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ)
   simpa using (mul_le_mul hmFourier
     (by simpa [translate_apply, ContinuousMap.restrict_apply] using
         ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
-          ⟨x, (iocCube_subset_closedBall (d := d)) hx⟩ :
+          ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
       ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
     (norm_nonneg _) (by norm_num)).trans (one_mul _).le
 
