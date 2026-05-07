@@ -15,7 +15,6 @@ import SpherePacking.Integration.J6Integrable
 import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.Integration.Measure
 
-
 /-!
 # Smoothness and decay for `J₆'` on `(-1, ∞)`
 
@@ -23,24 +22,16 @@ Regularity of the primed radial integral `RealIntegrals.J₆'` on `Ioi (-1)`, pr
 differentiating under the integral sign with the exponential decay of `ψS` providing domination.
 -/
 
-
 namespace MagicFunction.b.Schwartz.J6Smooth
 
 noncomputable section
 
 open scoped Topology ContDiff
-
-open Complex Real Set MeasureTheory Filter
-
-open MagicFunction.Parametrisations
-open MagicFunction.b.RealIntegrals
-open MagicFunction.b.PsiBounds
-open MagicFunction.b.PsiBounds.PsiExpBounds
-open SpherePacking.ForMathlib
-open SpherePacking.Integration
+open Complex Real Set MeasureTheory Filter MagicFunction.Parametrisations
+  MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
+  MagicFunction.b.PsiBounds.PsiExpBounds SpherePacking.ForMathlib SpherePacking.Integration
 
 def μ : Measure ℝ := μIciOne
-
 def s : Set ℝ := Ioi (-1 : ℝ)
 
 lemma isOpen_s : IsOpen s := isOpen_Ioi
@@ -66,13 +57,6 @@ lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ 
     (integrable_gN_J6 (f := ψS.resToImagAxis)
       (hBound := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
       (n := n) (x := x) hx (hmeas := gN_measurable (n := n) (x := x)))
-
-lemma coeff_norm (t : ℝ) (ht : t ∈ Ici (1 : ℝ)) : ‖coeff t‖ = π * t := by
-  simpa [coeff] using SmoothIntegralIciOne.coeff_norm (t := t) ht
-
-lemma g_norm_bound (x t : ℝ) :
-    ‖g x t‖ ≤ ‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t) := by
-  simpa [g] using SmoothIntegralIciOne.g_norm_bound (hf := ψS.resToImagAxis) (x := x) (t := t)
 
 def F (n : ℕ) (x : ℝ) : ℂ := ∫ t in Ici (1 : ℝ), gN n x t
 
@@ -132,20 +116,18 @@ public theorem decay_J₆' :
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
   obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
-  have hCψ0 : 0 ≤ Cψ :=
-    SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
-      (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
-      (by simpa using hCψ 1 le_rfl)
+  have hCψ0 : 0 ≤ Cψ := SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
+    (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
+    (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ
   have hbound_int : Integrable bound (μ) := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
       (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
         Real.pi_pos).const_mul ((Real.pi ^ n) * Cψ)
   let Kn : ℝ := ∫ t, bound t ∂μ
-  have hKn_nonneg : 0 ≤ Kn :=
-    integral_nonneg_of_ae <|
-      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht =>
-        by have ht0 : 0 ≤ t := zero_le_one.trans ht; positivity
+  have hKn_nonneg : 0 ≤ Kn := integral_nonneg_of_ae <|
+    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht =>
+      by have : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
     have hbound_ae :
@@ -153,7 +135,8 @@ public theorem decay_J₆' :
       refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
       intro t ht
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-      have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by simp [coeff_norm t ht]
+      have hcoeff' : ‖coeff t‖ ^ n ≤ (Real.pi * t) ^ n := by
+        simp [coeff, SmoothIntegralIciOne.coeff_norm (t := t) ht]
       have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
         SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
           (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
@@ -161,7 +144,9 @@ public theorem decay_J₆' :
         ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
               simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
         _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by
-              gcongr; exact g_norm_bound (x := x) (t := t)
+              gcongr
+              simpa [g] using SmoothIntegralIciOne.g_norm_bound
+                (hf := ψS.resToImagAxis) (x := x) (t := t)
         _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
               gcongr; exact hCψ t ht
         _ = bound t * Real.exp (-Real.pi * x) := by ring
