@@ -64,38 +64,29 @@ public structure PermJ12ContourH2Hyp (mobiusInv : ℂ → ℂ) (wedgeSet : Set �
       (Set.Icc (0 : ℝ × ℝ) 1)
 
 /-- Bundled inputs to `perm_J12_contour_h1` (excluding the parameter `r`). -/
-public structure PermJ12ContourH1Args
-    (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
+public structure PermJ12ContourH1Args (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ)
+    (wedgeSet : Set ℂ) : Prop where
   closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet
   hyp : PermJ12ContourH1Hyp mobiusInv wedgeSet
 
 /-- Bundled inputs to `perm_J12_contour_h2` (excluding the parameter `r`). -/
-public structure PermJ12ContourH2Args
-    (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ) (wedgeSet : Set ℂ) : Prop where
+public structure PermJ12ContourH2Args (mobiusInv : ℂ → ℂ) (Ψ₁' : ℝ → ℂ → ℂ)
+    (wedgeSet : Set ℂ) : Prop where
   closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet
   hyp : PermJ12ContourH2Hyp mobiusInv wedgeSet
 
-private lemma perm_J12_contour_h_aux
-    {mobiusInv : ℂ → ℂ}
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    {wedgeSet : Set ℂ}
-    (closed_ω_wedgeSet :
-      ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet)
+private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ} {wedgeSet : Set ℂ}
+    (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet)
     (p0 p1 q0 q1 : ℂ)
     (continuousOn_mobiusInv_segment :
       ContinuousOn mobiusInv (Set.range (Path.segment p0 p1)))
-    (homotopy_mem_wedgeSet :
-      ∀ {x y : ℝ}, x ∈ Set.Ioo (0 : ℝ) 1 → y ∈ Set.Ioo (0 : ℝ) 1 →
-        (AffineMap.lineMap (k := ℝ)
-              (mobiusInv (AffineMap.lineMap p0 p1 y))
-              (AffineMap.lineMap q0 q1 y)) x ∈ wedgeSet)
-    (contDiffOn_homotopy :
-      ContDiffOn ℝ 2
-        (fun xy : ℝ × ℝ =>
-          (AffineMap.lineMap (k := ℝ)
-            (mobiusInv (AffineMap.lineMap p0 p1 xy.2))
-            (AffineMap.lineMap q0 q1 xy.2)) xy.1)
-        (Set.Icc (0 : ℝ × ℝ) 1))
+    (homotopy_mem_wedgeSet : ∀ {x y : ℝ}, x ∈ Set.Ioo (0 : ℝ) 1 → y ∈ Set.Ioo (0 : ℝ) 1 →
+      (AffineMap.lineMap (k := ℝ) (mobiusInv (AffineMap.lineMap p0 p1 y))
+        (AffineMap.lineMap q0 q1 y)) x ∈ wedgeSet)
+    (contDiffOn_homotopy : ContDiffOn ℝ 2
+      (fun xy : ℝ × ℝ => (AffineMap.lineMap (k := ℝ) (mobiusInv (AffineMap.lineMap p0 p1 xy.2))
+        (AffineMap.lineMap q0 q1 xy.2)) xy.1)
+      (Set.Icc (0 : ℝ × ℝ) 1))
     (r : ℝ) :
     (∫ᶜ z in (Path.segment p0 p1).map' continuousOn_mobiusInv_segment,
           scalarOneForm (Ψ₁' r) z) +
@@ -109,7 +100,7 @@ private lemma perm_J12_contour_h_aux
     (Path.segment p0 p1).map' continuousOn_mobiusInv_segment
   let δ : Path q0 q1 := Path.segment q0 q1
   let I01 : Set ℝ := unitInterval
-  let φ : (γ : C(I01, ℂ)).Homotopy δ := .affine (γ : C(I01, ℂ)) δ
+  let φ : (γ : C(I01, ℂ)).Homotopy δ := .affine ..
   have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := fun a ha b hb => by
     simpa [φ, γ, δ, Path.map', Path.segment_apply] using
       (homotopy_mem_wedgeSet (x := (a : ℝ)) (y := (b : ℝ)) ha hb)
@@ -153,14 +144,10 @@ private lemma perm_J12_contour_h_aux
       exact curveIntegral_cast ω _ _ _]
   simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
 
-/-- Contour deformation `h1`: from mapped segment `(-1 → -1 + I)` to vertical
-segment `(1 → 1 + I)` inside `wedgeSet`. -/
-public lemma perm_J12_contour_h1
-    {mobiusInv : ℂ → ℂ}
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    {wedgeSet : Set ℂ}
-    (h : PermJ12ContourH1Args mobiusInv Ψ₁' wedgeSet)
-    (r : ℝ) :
+/-- Contour deformation `h1`: from mapped segment `(-1 → -1 + I)` to vertical segment
+`(1 → 1 + I)` inside `wedgeSet`. -/
+public lemma perm_J12_contour_h1 {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ} {wedgeSet : Set ℂ}
+    (h : PermJ12ContourH1Args mobiusInv Ψ₁' wedgeSet) (r : ℝ) :
     (∫ᶜ z in
           (Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I)).map'
             (h.hyp.continuousOn_mobiusInv_segment_z₁),
@@ -175,14 +162,10 @@ public lemma perm_J12_contour_h1
       h.hyp.continuousOn_mobiusInv_segment_z₁ (@h.hyp.homotopy_mem_wedgeSet)
       h.hyp.contDiffOn_homotopy r
 
-/-- Contour deformation `h2`: from mapped segment `(-1 + I → I)` to vertical
-segment `(1 + I → I)` inside `wedgeSet`. -/
-public lemma perm_J12_contour_h2
-    {mobiusInv : ℂ → ℂ}
-    {Ψ₁' : ℝ → ℂ → ℂ}
-    {wedgeSet : Set ℂ}
-    (h : PermJ12ContourH2Args mobiusInv Ψ₁' wedgeSet)
-    (r : ℝ) :
+/-- Contour deformation `h2`: from mapped segment `(-1 + I → I)` to vertical segment
+`(1 + I → I)` inside `wedgeSet`. -/
+public lemma perm_J12_contour_h2 {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ} {wedgeSet : Set ℂ}
+    (h : PermJ12ContourH2Args mobiusInv Ψ₁' wedgeSet) (r : ℝ) :
     ∫ᶜ z in
           (Path.segment ((-1 : ℂ) + Complex.I) Complex.I).map'
             (h.hyp.continuousOn_mobiusInv_segment_z₂),
