@@ -154,16 +154,12 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 @[simp] lemma intVec_neg (n : Fin d → ℤ) :
     intVec (d := d) (-n) = -intVec (d := d) n := by ext i; simp [intVec_apply]
 
-lemma mFourier_apply_coeFunE (n : Fin d → ℤ) (x : E) :
-    UnitAddTorus.mFourier n (coeFunE (d := d) x) =
-      (𝐞 (inner ℝ x (intVec (d := d) n)) : ℂ) := by
-  simpa [inner_neg_right] using mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
-
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (coeFunE (d := d) x) =
       Complex.exp (2 * Real.pi * Complex.I * ⟪x, intVec (d := d) n⟫_[ℝ]) := by
-  simpa [Real.fourierChar_apply, mul_assoc, mul_comm,
-    RCLike.inner_eq_wInner_one x (intVec n)] using mFourier_apply_coeFunE (d := d) (n := n) (x := x)
+  simpa [Real.fourierChar_apply, mul_assoc, mul_comm, inner_neg_right,
+    RCLike.inner_eq_wInner_one x (intVec n)] using
+    mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
 
 public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ) (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE (d := d) (x + (ℓ : E))) =
