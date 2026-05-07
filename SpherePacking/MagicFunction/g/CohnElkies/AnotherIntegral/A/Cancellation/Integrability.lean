@@ -1,25 +1,18 @@
 module
 public import Mathlib.Init
-public import
-SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
 
 /-!
 # Integrability of the `AnotherIntegral.A` integrand
 
-This file proves that the integrand `aAnotherIntegrand u` is integrable on `(0, ∞)` for `0 < u`.
-The main work is on the tail `[1, ∞)`, where we use cancellation and exponential decay coming from
-large-imaginary-part bounds for `φ₂'` and `φ₄'`.
-
-## Main statement
-* `aAnotherIntegrand_integrable_of_pos`
+Proves `aAnotherIntegrand_integrable_of_pos`: integrability on `(0, ∞)` for `0 < u`. The tail
+`[1, ∞)` uses cancellation and exponential decay from large-imaginary-part bounds for `φ₂'`/`φ₄'`.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped Topology
-open Real Complex MeasureTheory Filter
-open MagicFunction.FourierEigenfunctions
-open UpperHalfPlane
+open Real Complex MeasureTheory Filter MagicFunction.FourierEigenfunctions UpperHalfPlane
 
 noncomputable section
 
@@ -29,16 +22,13 @@ private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
     ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im})).comp
     (continuous_const.continuousOn.div continuous_ofReal.continuousOn
       fun t ht => mod_cast (hs t ht).ne')
-    fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+    fun t ht => by simpa [imag_I_div] using inv_pos.2 (hs t ht)
 
 /-- Internal abbreviation for the cancellation integrand on the imaginary axis. -/
 private def cancelExpr (t : ℝ) : ℂ :=
   ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
     ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-    ((8640 / π : ℝ) : ℂ) * t -
-    ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-
-/-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
+    ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
 
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
@@ -57,9 +47,9 @@ lemma exists_phi0_cancellation_bound :
     intro t ht0
     let z : ℍ := zI t ht0
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
-      dsimp [z, zI]; push_cast; rw [mul_pow]; simp
+      dsimp [z, zI]; push_cast; simp [mul_pow]
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [modular_S_smul_zI t ht0]; simp [zI, div_eq_mul_inv]
+      rw [modular_S_smul_zI]; simp [zI, div_eq_mul_inv]
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
@@ -92,15 +82,14 @@ lemma exists_phi0_cancellation_bound :
     unfold cancelExpr; push_cast; linear_combination hSTpow
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
   obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A → ‖cancelExpr t‖ ≤ M := by
-    let g : ℝ → ℝ := fun t => ‖cancelExpr t‖
     obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn (s := Set.Icc (1 : ℝ) A)
       ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩
-      (show ContinuousOn g (Set.Icc (1 : ℝ) A) by
-        simpa [g, cancelExpr] using (((((by fun_prop :
+      (show ContinuousOn (fun t => ‖cancelExpr t‖) (Set.Icc (1 : ℝ) A) by
+        simpa [cancelExpr] using (((((by fun_prop :
           ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
           (continuousOn_phi0''_Idiv fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).sub
           (by fun_prop)).add (by fun_prop)).sub (by fun_prop)).norm)
-    exact ⟨g t₀, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
+    exact ⟨_, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, fun t ht1 => ?_⟩
   have ht0 : 0 < t := zero_lt_one.trans_le ht1
@@ -165,8 +154,6 @@ lemma exists_phi0_cancellation_bound :
     nlinarith [hbound, hscale, mul_le_mul_of_nonneg_right (le_max_right Clarge _ : _ ≤ C)
       (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))]
 
-/-! ## Integrability of the "another integrand" for `0 < u`. -/
-
 private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) (u : ℝ) :
     ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s :=
@@ -177,17 +164,16 @@ private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨Cφ₀, hCφ₀_pos, hCφ₀⟩
-  let M : ℝ := Cφ₀ + ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-    ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖
   refine MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Set.Ioc 0 1) < ⊤)
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi (fun t ht => ht.1) u).aestronglyMeasurable
-      measurableSet_Ioc) M
+      measurableSet_Ioc) (Cφ₀ + ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
+        ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖)
     ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun t ht => ?_))
   have him_pos : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
-    simpa [imag_I_div t] using inv_pos.2 ht.1
+    simpa [imag_I_div] using inv_pos.2 ht.1
   let z : ℍ := ⟨(Complex.I : ℂ) / (t : ℂ), him_pos⟩
   have hzHalf : (1 / 2 : ℝ) < z.im := by
-    linarith [(by simpa [z, UpperHalfPlane.im, imag_I_div t] using (one_le_inv₀ ht.1).2 ht.2 :
+    linarith [(by simpa [z, UpperHalfPlane.im, imag_I_div] using (one_le_inv₀ ht.1).2 ht.2 :
       (1 : ℝ) ≤ z.im)]
   have hφ0'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
     simpa [show φ₀ z = φ₀'' ((Complex.I : ℂ) / (t : ℂ)) by
