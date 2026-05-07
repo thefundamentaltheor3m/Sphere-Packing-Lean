@@ -2,15 +2,7 @@ module
 public import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
-/-!
-# Calculus lemmas for the `AnotherIntegral` files
-
-This file provides a helper lemma about differentiability of parameter-dependent interval
-integrals of the form `∫ t in (0 : ℝ)..1, base t * exp (u * k t)`.
-
-## Main statement
-* `differentiableAt_intervalIntegral_mul_exp`
--/
+/-! # Differentiability of `u ↦ ∫ t in (0:ℝ)..1, base t * exp (u * k t)`. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
@@ -20,12 +12,7 @@ open MeasureTheory Real Complex Filter Set
 
 open intervalIntegral
 
-/--
-Differentiability of a parameter-dependent interval integral with an exponential factor.
-
-This is a convenient wrapper around dominated differentiation for
-`u ↦ ∫ t in (0 : ℝ)..1, base t * Complex.exp (u * k t)`.
--/
+/-- Differentiability of a parameter-dependent interval integral with an exponential factor. -/
 public lemma differentiableAt_intervalIntegral_mul_exp
     {base k : ℝ → ℂ} (u0 : ℂ) (Cbase K : ℝ)
     (hbase : ContinuousOn base (Ι (0 : ℝ) 1))
@@ -38,15 +25,11 @@ public lemma differentiableAt_intervalIntegral_mul_exp
   have hK : 0 ≤ K := (norm_nonneg (k 1)).trans (hk_bound 1 (by simp))
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * (k t) * Complex.exp (u * k t)
-  have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by
-    fun_prop
-  have hF_meas :
-      ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) :=
-    Filter.Eventually.of_forall fun u =>
-      (hbase.mul (hexp u)).aestronglyMeasurable
-        (μ := (volume : Measure ℝ)) measurableSet_uIoc
-  have hF'_meas :
-      AEStronglyMeasurable (F' u0) (volume.restrict (Ι (0 : ℝ) 1)) := by
+  have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by fun_prop
+  have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) :=
+    Filter.Eventually.of_forall fun u => (hbase.mul (hexp u)).aestronglyMeasurable
+      (μ := (volume : Measure ℝ)) measurableSet_uIoc
+  have hF'_meas : AEStronglyMeasurable (F' u0) (volume.restrict (Ι (0 : ℝ) 1)) := by
     simpa [F', mul_assoc] using (hbase.mul (hk.mul (hexp u0))).aestronglyMeasurable
       (μ := (volume : Measure ℝ)) measurableSet_uIoc
   have hF_int : IntervalIntegrable (F u0) volume (0 : ℝ) 1 := by
@@ -59,9 +42,8 @@ public lemma differentiableAt_intervalIntegral_mul_exp
       ((norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)))
   let E : ℝ := Real.exp ((‖u0‖ + 1) * K)
   let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
-  have h_bound :
-      ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
-        ∀ u ∈ Metric.ball u0 (1 : ℝ), ‖F' u t‖ ≤ bound t := by
+  have h_bound : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
+      ∀ u ∈ Metric.ball u0 (1 : ℝ), ‖F' u t‖ ≤ bound t := by
     refine Filter.Eventually.of_forall (fun t ht u hu => ?_)
     have hk' : ‖k t‖ ≤ K := hk_bound t ht
     have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
@@ -78,9 +60,8 @@ public lemma differentiableAt_intervalIntegral_mul_exp
           exact (Complex.norm_exp_le_exp_norm _).trans
             (Real.exp_le_exp.2 (norm_mul_le_of_le hu' hk'))
     simpa [bound, E, mul_assoc] using hstep1.trans (by gcongr; exact hbase_bound t ht)
-  have h_diff :
-      ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
-        ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
+  have h_diff : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
+      ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
     Filter.Eventually.of_forall fun t _ u _ => by
       simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
         ((Complex.hasDerivAt_exp (u * k t)).comp u
