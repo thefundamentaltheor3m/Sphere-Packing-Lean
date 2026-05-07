@@ -173,9 +173,9 @@ public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
     (hd : 0 < d) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
-    (S.centers ∩ D).toFinset.card = S.numReps := by
-  rw [numReps]; exact card_eq_of_equiv_fintype
-    (by simpa using (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
+    (S.centers ∩ D).toFinset.card = S.numReps :=
+  card_eq_of_equiv_fintype (by simpa [numReps] using
+    (S.addActionOrbitRelEquiv D hD_unique_covers).symm)
 
 public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
@@ -187,9 +187,8 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S _
       ((ZSpan.fundamentalDomain_isBounded (b.ofZLatticeBasis ℝ _)).vadd v) hd
-    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
-  rw [numReps]; exact card_eq_of_equiv_fintype
-    (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
+    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps :=
+  card_eq_of_equiv_fintype (by simpa [numReps] using (S.addActionOrbitRelEquiv'' b v).symm)
 
 theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
