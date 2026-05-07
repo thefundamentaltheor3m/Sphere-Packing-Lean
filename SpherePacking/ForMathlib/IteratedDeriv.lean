@@ -19,37 +19,31 @@ namespace SpherePacking.ForMathlib
 open scoped Topology
 open Filter
 
-/-- If `I (n+1)` is the derivative of `I n` at every point, then the `n`-th iterated derivative of
-`I 0` is `I n`. -/
+/-- If `I (n+1)` is the derivative of `I n`, then iteratedDeriv `n` of `I 0` is `I n`. -/
 public lemma iteratedDeriv_eq_of_hasDerivAt_succ
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (I : ℕ → ℝ → E)
-    (hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x) (n : ℕ) :
-    iteratedDeriv n (fun x : ℝ => I 0 x) = fun x : ℝ => I n x := by
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
+    (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) (n : ℕ) :
+    iteratedDeriv n (I 0) = I n := by
   induction n with
   | zero => ext x; simp [iteratedDeriv_zero]
   | succ n ih => ext x; simpa [iteratedDeriv_succ, ih] using (hI n x).deriv
 
-/-- Under the same recurrence hypothesis as `iteratedDeriv_eq_of_hasDerivAt_succ`, the iterated
-derivative is differentiable. -/
+/-- The iterated derivative under the recurrence hypothesis is differentiable. -/
 public lemma differentiable_iteratedDeriv_of_hasDerivAt_succ
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (I : ℕ → ℝ → E)
-    (hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x) (n : ℕ) :
-    Differentiable ℝ (iteratedDeriv n (fun x : ℝ => I 0 x)) := by
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
+    (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) (n : ℕ) :
+    Differentiable ℝ (iteratedDeriv n (I 0)) := by
   simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI n] using fun x => (hI n x).differentiableAt
 
 /-- If `I (n+1)` is the derivative of `I n` at every point, then `I 0` is smooth. -/
 public theorem contDiff_of_hasDerivAt_succ
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (I : ℕ → ℝ → E)
-    (hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ => I 0 x) :=
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
+    (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) : ContDiff ℝ (⊤ : ℕ∞) (I 0) :=
   contDiff_of_differentiable_iteratedDeriv (n := (⊤ : ℕ∞))
     fun m _ => differentiable_iteratedDeriv_of_hasDerivAt_succ (I := I) hI m
 
-/-- If `deriv (G n) = G (n+1)` holds on an open set, then iterated derivatives of `G m` agree with
-`G (n+m)` on that set. -/
+/-- If `deriv (G n) = G (n+1)` on an open set, iterated derivatives of `G m` agree with `G (n+m)`
+on that set. -/
 public lemma eqOn_iteratedDeriv_eq_of_deriv_eq
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {s : Set ℝ} (hs : IsOpen s) (G : ℕ → ℝ → E)
@@ -61,8 +55,7 @@ public lemma eqOn_iteratedDeriv_eq_of_deriv_eq
   | succ n ih =>
       intro m x hx
       have hEq : iteratedDeriv n (G m) =ᶠ[𝓝 x] G (n + m) := by
-        filter_upwards [hs.mem_nhds hx] with y hy
-        exact ih (m := m) hy
+        filter_upwards [hs.mem_nhds hx] with y hy using ih (m := m) hy
       simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
         (Filter.EventuallyEq.deriv_eq hEq).trans (hderiv (n + m) x hx)
 
