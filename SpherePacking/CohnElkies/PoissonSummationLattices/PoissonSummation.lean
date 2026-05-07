@@ -14,12 +14,7 @@ public import Mathlib.Topology.ContinuousMap.Compact
 public import SpherePacking.CohnElkies.PoissonSummationLattices.UnitAddTorus
 public import SpherePacking.ForMathlib.FourierLinearEquiv
 
-/-!
-# Poisson summation for `ℤ`-lattices
-
-Poisson summation for full-rank `ℤ`-lattices in Euclidean space, in the form needed by the
-Cohn-Elkies argument.
--/
+/-! Poisson summation for full-rank `ℤ`-lattices in Euclidean space (Cohn-Elkies). -/
 
 open scoped BigOperators
 open MeasureTheory
@@ -40,11 +35,9 @@ section StandardLattice
 
 namespace standardLattice
 
-/-- The standard lattice has the discrete topology. -/
 public instance instDiscreteTopology : DiscreteTopology (standardLattice d) := by
   unfold standardLattice; infer_instance
 
-/-- The standard lattice is a full-rank `ℤ`-lattice in `ℝ^d`. -/
 public instance instIsZLattice : IsZLattice ℝ (standardLattice d) := by
   unfold standardLattice; infer_instance
 
@@ -60,13 +53,10 @@ namespace Standard
 @[expose] public noncomputable def intVec (k : Fin d → ℤ) : E :=
   WithLp.toLp (2 : ENNReal) (fun i : Fin d => (k i : ℝ))
 
-/-- Coordinatewise evaluation of `intVec`. -/
 @[simp]
 public lemma intVec_apply (k : Fin d → ℤ) (i : Fin d) :
-    intVec (d := d) k i = (k i : ℝ) := by
-  simp [intVec]
+    intVec (d := d) k i = (k i : ℝ) := by simp [intVec]
 
-/-- The image of `intVec` lies in the standard lattice. -/
 public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
     intVec (d := d) k ∈ SchwartzMap.standardLattice d := by
   rw [show intVec (d := d) k =
@@ -77,19 +67,15 @@ public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
 
 open TopologicalSpace UnitAddTorus
 
-/-! #### The integer cube as a fundamental domain -/
-
 /-- The half-open cube `(0,1]^d`, used as a fundamental domain for the action of `ℤ^d` on `ℝ^d`. -/
 @[expose] public def iocCube : Set E := {x | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
 
-/-- Measurability of the fundamental cube `iocCube`. -/
 public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
   rw [show iocCube (d := d) = ⋂ i : Fin d, {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} from by
     ext x; simp [iocCube]]
   exact .iInter fun i => ((PiLp.continuous_apply (p := (2 : ENNReal))
     (β := fun _ : Fin d => ℝ) i).measurable) measurableSet_Ioc
 
-/-- `iocCube` is null-measurable (useful for integrals over its indicator). -/
 public lemma nullMeasurableSet_iocCube : NullMeasurableSet (iocCube (d := d)) :=
   (measurableSet_iocCube (d := d)).nullMeasurableSet
 
@@ -106,8 +92,6 @@ public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
         (show ∀ j : Fin d, (x + intVec (d := d) n') j ∈
           Set.Ioc (0:ℝ) 1 from by simpa [iocCube] using hn') i)⟩
 
-/-! #### Elements of the standard lattice are integer vectors -/
-
 /-- Every element of the standard lattice comes from an integer vector via `intVec`. -/
 public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
     (hx : x ∈ SchwartzMap.standardLattice d) :
@@ -116,8 +100,6 @@ public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
     (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) x).1
     (by simpa [SchwartzMap.standardLattice, standardLattice] using hx)
   exact ⟨n, by ext i; simpa [intVec_apply] using (hn i).symm⟩
-
-/-! #### Dual lattice of the standard lattice -/
 
 /-- The dual of the standard lattice (for the Euclidean inner product) is the standard lattice. -/
 public lemma dualSubmodule_standardLattice_eq :
@@ -144,19 +126,16 @@ public lemma dualSubmodule_standardLattice_eq :
 @[expose] public def coeFunE : E → UnitAddTorus (Fin d) :=
   fun x => UnitAddTorus.coeFun d ((WithLp.ofLp : E → (Fin d → ℝ)) x)
 
-/-- Continuity of the quotient map `coeFunE`. -/
 @[continuity]
 public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) := by
   simpa [coeFunE] using (UnitAddTorus.continuous_coeFun (n := d)).comp
     (PiLp.continuous_ofLp (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ))
 
-/-- `coeFunE` is an open quotient map (so `UnitAddTorus` is the quotient `ℝ^d/ℤ^d`). -/
 public theorem isOpenQuotientMap_coeFunE : IsOpenQuotientMap (coeFunE (d := d)) := by
   simpa [coeFunE] using
     IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
       (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ)).isOpenQuotientMap
 
-/-- Adding an integer vector does not change the image in `(ℝ/ℤ)^d`. -/
 @[simp]
 public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
     coeFunE (d := d) (x + intVec (d := d) n) = coeFunE (d := d) x := by
