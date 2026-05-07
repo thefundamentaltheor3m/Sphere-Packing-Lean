@@ -21,7 +21,6 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 import SpherePacking.MagicFunction.b.Schwartz.BoundsAux
 
-
 /-! # Smoothness and decay for `J₁'`. Main: `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`. -/
 
 namespace MagicFunction.b.Schwartz.J1Smooth
