@@ -15,19 +15,11 @@ public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 import SpherePacking.Integration.InvChangeOfVariables
 
-
 /-!
 # Change of variables for `J₅'`
 
-This file performs the `t ↦ 1 / t` substitution in the definition of `J₅'`, producing an integral
-representation over `Ici 1`. This is the form used in the `J₅`/`J₆` Fourier permutation argument,
-where the factors `s ^ (-4)` and `s ^ 4` cancel.
-
-## Main definitions
-* `J5Change.g`
-
-## Main statement
-* `J5Change.Complete_Change_of_Variables`
+The `t ↦ 1 / t` substitution rewrites `J₅'` as an integral over `Ici 1`, the form used in the
+`J₅`/`J₆` Fourier permutation argument where `s ^ (-4)` and `s ^ 4` cancel.
 -/
 
 namespace MagicFunction.b.Fourier
@@ -78,9 +70,7 @@ namespace J5Change
 
 open SpherePacking.Integration.InvChangeOfVariables
 
-
 def f : ℝ → ℝ := fun t ↦ 1 / t
-
 def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 
 /-- The integrand appearing after the `t ↦ 1 / t` substitution in `J₅'`. -/
@@ -107,17 +97,14 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   have ht_ne0 : t ≠ 0 := ne_of_gt ht0
   have hz5 : z₅' t = (Complex.I : ℂ) * (t : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)
-  have hψI :
-      ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) :=
-    MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht
   have hψS_inv : ψS' ((Complex.I : ℂ) * (t : ℂ)⁻¹) = ψS.resToImagAxis (t⁻¹) := by
     simpa [one_div] using
       (show ψS' ((Complex.I : ℂ) * ((1 / t : ℝ) : ℂ)) = ψS.resToImagAxis (1 / t) by
         simp [ψS', Function.resToImagAxis, ResToImagAxis, one_div, mul_comm])
   have hscalC : (1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ) = (t : ℂ) ^ (2 : ℕ) := by
     have : ((1 / t ^ 2) * ((1 / t : ℝ) ^ (-4 : ℤ)) : ℂ) = (t ^ 2 : ℂ) := by
-      exact_mod_cast (one_div_pow_two_mul_one_div_zpow
-        (k := 4) (t := t) (hk := by decide) (ht := ht_ne0))
+      exact_mod_cast one_div_pow_two_mul_one_div_zpow
+        (k := 4) (t := t) (hk := by decide) (ht := ht_ne0)
     simpa [Complex.ofReal_mul] using this
   have hexp : cexp (π * (Complex.I : ℂ) * r * (z₅' t)) = cexp (-π * r * t) := by
     simpa [mul_assoc] using congrArg cexp
@@ -126,7 +113,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   have hLHS :
       (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) =
         (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-    rw [hψI, hexp,
+    rw [MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht, hexp,
       show ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) by
         rw [mul_pow]; simp [Complex.I_sq]]
     ring
@@ -140,7 +127,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
           simp [g, f, hψS_inv, mul_assoc, mul_left_comm, mul_comm]
       _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
           rw [hscalC]
-  simp [hLHS, hRHS]
+  rw [hLHS, hRHS]
 
 /-- Change-of-variables formula expressing `J₅'` as an integral over `Ici (1 : ℝ)`. -/
 public theorem Complete_Change_of_Variables (r : ℝ) :
