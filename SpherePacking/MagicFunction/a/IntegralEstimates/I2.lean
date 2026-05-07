@@ -17,22 +17,7 @@ public import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 
-/-!
-# Bounds for `I₂'`
-
-This file proves the analytic estimates needed for the auxiliary integral `I₂'`: a representation
-as an integral over `Ioo (0, 1)`, uniform exponential bounds, and Schwartz decay for iterated
-derivatives in the parameter `r`.
-
-## Main definitions
-* `g`
-* `coeff`, `gN`
-
-## Main statements
-* `I₂'_eq_integral_g_Ioo`
-* `g_norm_bound_uniform`
-* `decay'`
--/
+/-! # Bounds for `I₂'`: representation, uniform exponential bound, and Schwartz decay. -/
 
 namespace MagicFunction.a.IntegralEstimates.I₂
 
@@ -46,7 +31,7 @@ variable (r : ℝ)
 section Setup
 
 /-- The integrand on `Ioo (0, 1)` whose set integral is `I₂'`. -/
-@[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦
+@[expose] public noncomputable def g (r t : ℝ) : ℂ :=
   φ₀'' (-1 / (t + I)) * (t + I) ^ 2 * cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r)
 
 /-- Rewrite `I₂' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
@@ -98,10 +83,7 @@ section Higher_iteratedFDerivs
 
 open scoped Topology
 
-/--
-The coefficient in the exponent when rewriting `g r t` as `A t * cexp ((r : ℂ) * coeff t)`.
-This is the specialization of `I24Common.coeff` to `shift = fun t => (t : ℂ) - 1`.
--/
+/-- Specialization of `I24Common.coeff` to `shift = fun t => (t : ℂ) - 1`. -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (t : ℂ) - 1)
 
 /-- Continuity of `coeff`. -/
@@ -114,8 +96,7 @@ public lemma coeff_eq_sum (t : ℝ) :
   simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
 
 /-- The integrand for the `n`-th derivative, obtained by multiplying `g` by `(coeff t) ^ n`. -/
-@[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ :=
-  (coeff t) ^ n * g r t
+@[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
 /-- Uniform bound `‖coeff t‖ ≤ 2 * π` for `t ∈ Ioo (0, 1)`. -/
 public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
@@ -140,25 +121,19 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
     have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem (mem_Icc_of_Ioo ht)
     have hexp' : cexp (π * I * r * (z₂' t : ℂ)) =
         cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-      rw [show π * I * r * (z₂' t : ℂ) =
-          (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
-            rw [hz]; ring_nf; rw [I_sq]; ring, Complex.exp_add, Complex.exp_add]
+      rw [show π * I * r * (z₂' t : ℂ) = (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
+        rw [hz]; ring_nf; rw [I_sq]; ring, Complex.exp_add, Complex.exp_add]
     simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
       MagicFunction.a.ComplexIntegrands.Φ₁', g,
       show z₂' t + 1 = t + I by simp [hz, add_left_comm, add_comm], hexp']
     ac_rfl
-  let A : ℝ → ℂ := fun t : ℝ => φ₀'' (-1 / (t + I)) * (t + I) ^ 2
   simpa [gN] using iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
-    (I := I₂') (coeff := coeff) (g := g) (A := A) (hI := I₂'_eq_integral_g_Ioo)
-    (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont)
+    (I := I₂') (coeff := coeff) (g := g) (A := fun t => φ₀'' (-1 / (t + I)) * (t + I) ^ 2)
+    (hI := I₂'_eq_integral_g_Ioo) (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont)
     (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
-    (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [A, g]; ring) n
+    (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n
 
-/--
-Schwartz-style decay estimate for `I₂'`: all iterated derivatives decay faster than any power.
-
-The prime in the name indicates that this result is about the auxiliary integral `I₂'`.
--/
+/-- Schwartz-style decay estimate for the auxiliary integral `I₂'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.decay_of_iteratedDeriv_eq_integral_pow_mul
