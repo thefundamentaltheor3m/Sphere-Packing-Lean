@@ -8,8 +8,7 @@ import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 /-!
 # Smooth J4
 
-This file proves smoothness/decay bounds for `RealIntegrals.J₄'` by differentiating under the
-integral sign.
+Smoothness/decay bounds for `RealIntegrals.J₄'` by differentiating under the integral sign.
 
 ## Main statements
 * `contDiff_J₄'`
@@ -33,16 +32,13 @@ private lemma hfEq_J₄' (x : ℝ) :
     SpherePacking.Integration.DifferentiationUnderIntegral.gN,
     SpherePacking.Integration.DifferentiationUnderIntegral.g, mul_assoc, mul_left_comm, mul_comm]
 
-/-- Smoothness of `J₄'` (the primed radial profile).
-
-The prime in `contDiff_J₄'` refers to the function `J₄'`. -/
+/-- Smoothness of `J₄'` (the primed radial profile). The prime refers to the function `J₄'`. -/
 public theorem contDiff_J₄' : ContDiff ℝ (⊤ : ℕ∞) J₄' :=
   SmoothJ24Common.contDiff_of_eq_I0_mul (z := z₄') (c := (-1 : ℂ)) hfEq_J₄'
     continuous_z₄' (fun t => by simpa using im_z₄'_pos_all t) norm_z₄'_le_two
 
-/-- Schwartz-type decay bounds for `J₄'` and its iterated derivatives on `0 ≤ x`.
-
-The prime in `decay_J₄'` refers to the function `J₄'`. -/
+/-- Schwartz-type decay bounds for `J₄'` and its iterated derivatives on `0 ≤ x`. The prime in
+`decay_J₄'` refers to the function `J₄'`. -/
 public theorem decay_J₄' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₄' x‖ ≤ C :=
   SmoothJ24Common.decay_of_eq_I0_of_coeff_re_mul (z := z₄') (c := (-1 : ℂ)) hfEq_J₄'
