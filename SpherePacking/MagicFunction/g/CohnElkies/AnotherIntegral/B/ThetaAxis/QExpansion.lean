@@ -11,14 +11,7 @@ public import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.Topology.Order.Compact
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 
-/-!
-# Theta-function bounds on the imaginary axis (AnotherIntegral.B)
-
-This file proves `q`-expansion bounds for the Jacobi theta functions along the imaginary axis,
-specialized to the modular forms `Θ₂`, `Θ₃`, and `Θ₄`. These estimates feed into the bounds on
-`H₂`, `H₃`, `H₄` used to extract the constant term `144` in the cancellation estimate for
-`ψI'(it)`.
--/
+/-! # Theta-function `q`-expansion bounds on the imaginary axis (`Θ₂`, `Θ₃`, `Θ₄`). -/
 
 namespace MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
@@ -29,7 +22,6 @@ open Set
 
 noncomputable section
 
-/-- For `t > 0`, the norm of `exp (-π t)` in `ℂ` is at most `1`. -/
 public lemma norm_exp_neg_pi_mul_le_one (t : ℝ) (ht : 0 < t) :
     ‖(Real.exp (-Real.pi * t) : ℂ)‖ ≤ 1 := by
   simpa [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp] using
@@ -46,7 +38,6 @@ lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Complex.norm_exp_ofReal]
   simp [r]
 
-/-- Rewrite `Θ₃` in terms of the one-variable Jacobi theta function `jacobiTheta`. -/
 public lemma Theta3_eq_jacobiTheta (τ : ℍ) : Θ₃ τ = jacobiTheta (τ : ℂ) := by
   simp [Θ₃, Θ₃_term, jacobiTheta]
 
@@ -62,7 +53,6 @@ lemma Theta4_eq_jacobiTheta_add_one (τ : ℍ) : Θ₄ τ = jacobiTheta ((τ : �
         simp [Θ₄_term, mul_assoc, mul_comm, hpiI.symm], ← Complex.exp_add]
     ring_nf
 
-/-- Uniform bound for `Θ₂` on `t ≥ 1` along the imaginary axis. -/
 public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖Θ₂.resToImagAxis t‖ ≤ C := by
   let majorant : ℤ → ℝ := fun n ↦ Real.exp (-Real.pi / 4) *
@@ -113,21 +103,18 @@ private lemma norm_jacobiTheta_I_mul_add_real_sub_one_le (a : ℝ) {t : ℝ} (ht
   simpa using norm_jacobiTheta_sub_one_le (τ := ((Complex.I : ℂ) * (t : ℂ)) + a)
     (by simpa using lt_of_lt_of_le zero_lt_one ht)
 
-/-- Exponential bound for `Θ₃(it) - 1` on `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖Θ₃.resToImagAxis t - 1‖ ≤ C * Real.exp (-Real.pi * t) :=
   ⟨2 / (1 - Real.exp (-Real.pi)), fun t ht => by
     simpa [Function.resToImagAxis, ResToImagAxis, lt_of_lt_of_le zero_lt_one ht,
       Theta3_eq_jacobiTheta] using norm_jacobiTheta_I_mul_add_real_sub_one_le (a := 0) ht⟩
 
-/-- Exponential bound for `Θ₄(it) - 1` on `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖Θ₄.resToImagAxis t - 1‖ ≤ C * Real.exp (-Real.pi * t) :=
   ⟨2 / (1 - Real.exp (-Real.pi)), fun t ht => by
     simpa [Function.resToImagAxis, ResToImagAxis, lt_of_lt_of_le zero_lt_one ht,
       Theta4_eq_jacobiTheta_add_one] using norm_jacobiTheta_I_mul_add_real_sub_one_le (a := 1) ht⟩
 
-/-- Isolate the first two terms of `Θ₂(it)` for `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖Θ₂.resToImagAxis t
@@ -216,7 +203,6 @@ private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (h
       (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) from by simp [r]; ring]
   gcongr; exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(4 : ℝ) * Real.pi * t))) hterm
 
-/-- Setup for Θ₃/Θ₄ `q`-expansion: q-series identity and shift. -/
 private lemma jacobiTheta_setup {τ : ℂ} (hτ : 0 < τ.im) :
     let a : ℕ → ℂ := fun n ↦ Complex.exp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)
     jacobiTheta τ = (1 : ℂ) + (2 : ℂ) * ∑' n : ℕ, a n ∧
@@ -225,7 +211,6 @@ private lemma jacobiTheta_setup {τ : ℂ} (hτ : 0 < τ.im) :
     simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
       ((hasSum_nat_jacobiTheta (τ := τ) hτ).summable.sum_add_tsum_nat_add 1).symm⟩
 
-/-- Isolate the `n = ±1` contribution to `Θ₃(it)` for `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖Θ₃.resToImagAxis t - (1 : ℂ) - (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖
@@ -245,7 +230,6 @@ public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one 
       hjac, ← ha0, ← hshift]; ring]
   exact jacobiTheta_tail_bound (by simp [τ]) ht
 
-/-- Isolate the `n = ±1` contribution to `Θ₄(it)` for `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖Θ₄.resToImagAxis t - (1 : ℂ) + (2 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖
