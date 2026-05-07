@@ -3,12 +3,9 @@ module
 public import Mathlib.Analysis.Complex.Exponential
 public import SpherePacking.Contour.MobiusInv.Basic
 
-/-!
-Shared algebraic lemma for the Möbius-change step in the `perm_J12` contour arguments.
-
-Dimension-agnostic: the dimension-specific input is the exponent `q` in the modular
-transformation law for `ψ` under `z ↦ -1/z`.
--/
+/-! Shared algebraic lemma for the Möbius-change step in the `perm_J12` contour arguments.
+Dimension-agnostic; the exponent `q` in the modular transformation law `ψ(-1/z) = -ψ(z)/z^q`
+is the dimension-specific input. -/
 
 namespace SpherePacking.Contour
 
