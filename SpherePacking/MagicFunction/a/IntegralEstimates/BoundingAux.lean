@@ -65,13 +65,6 @@ public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {
   simpa [IntegrableOn] using
     Measure.integrableOn_of_bounded (s := Set.univ) (measure_ne_top _ _) hmeas (by simpa using hbd)
 
-/-- For `r` in a unit ball around `r₀`, `rexp (-π * r) ≤ rexp π * rexp (-π * r₀)`. -/
-public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ : ℝ}
-    (hr : r ∈ Metric.ball r₀ (1 : ℝ)) : rexp (-π * r) ≤ rexp π * rexp (-π * r₀) := by
-  have : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
-  simpa [Real.exp_add] using Real.exp_le_exp.2 (by
-    nlinarith [Real.pi_pos, abs_lt.1 this |>.1] : (-π * r : ℝ) ≤ π + (-π * r₀))
-
 /-- Differentiate `x ↦ ∫ (coeff t) ^ n * g x t` under the integral, given uniform bounds on `g` and
 the representation `g x t = A t * cexp ((x : ℂ) * coeff t)`. -/
 public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
@@ -97,7 +90,10 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
       refine (norm_pow_mul_mul_le (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n + 1)
         (by positivity) (hcoeff t ht) (hC₀ r t ht)).trans ?_
       simpa [K, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
-        (rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball hr)
+        (show rexp (-π * r) ≤ rexp π * rexp (-π * x₀) by
+          have : |r - x₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
+          simpa [Real.exp_add] using Real.exp_le_exp.2 (by
+            nlinarith [Real.pi_pos, abs_lt.1 this |>.1] : (-π * r : ℝ) ≤ π + (-π * x₀)))
         (by positivity : (0 : ℝ) ≤ (2 * π) ^ (n + 1) * (C₀ * rexp (-π) * 2)))
     (integrable_const K) <| ae_of_all _ fun t x _hx ↦ by
       simpa [hg_repr, mul_assoc, mul_left_comm, mul_comm] using
