@@ -40,10 +40,6 @@ private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   rw [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)]
   field_simp; ring_nf; simp [Complex.I_sq]
 
-private lemma arg_z₁'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    0 < (arg z₁' (1 : ℂ) t).im := by
-  simpa [arg_z₁'_eq_I_div (t := t) ht] using one_div_pos.2 ht.1
-
 private lemma arg_z₁'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < (arg z₁' (1 : ℂ) t).im := by
   have him : (arg z₁' (1 : ℂ) t).im = 1 / t := by simp [arg_z₁'_eq_I_div (t := t) ht]
@@ -58,7 +54,8 @@ private lemma den_z₁'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
   contDiff_of_eq_integral_g_Ioo (z := z₁') (shift := (1 : ℂ)) (prefactor := I)
     (f := I₁') I₁'_eq_integral_g_Ioo continuous_z₁' norm_z₁'_le_two (by norm_num)
-    den_z₁'_ne_zero arg_z₁'_im_pos arg_z₁'_im_half
+    den_z₁'_ne_zero (fun t ht => by simpa [arg_z₁'_eq_I_div (t := t) ht] using one_div_pos.2 ht.1)
+    arg_z₁'_im_half
 
 end
 
