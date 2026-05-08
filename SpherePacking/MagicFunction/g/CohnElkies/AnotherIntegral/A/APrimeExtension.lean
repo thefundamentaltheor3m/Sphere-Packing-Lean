@@ -338,20 +338,6 @@ lemma base₆_continuousOn : ContinuousOn base₆ (Set.Ici (1 : ℝ)) := by
       fun t ht => by
         simpa [UpperHalfPlane.upperHalfPlaneSet, mul_assoc] using lt_of_lt_of_le (by norm_num) ht)
 
-lemma integrable_mul_exp_neg_mul_Ici {C b : ℝ} (hb : 0 < b) :
-    MeasureTheory.Integrable (fun t : ℝ => C * t * Real.exp (-b * t))
-      (MeasureTheory.volume.restrict (Set.Ici (1 : ℝ))) := by
-  have hIoi1 : MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ioi (1 : ℝ))
-      MeasureTheory.volume :=
-    ((by simpa [Real.rpow_one] using
-      (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
-        (hs := by linarith) (hp := le_rfl) (b := b) hb) :
-      MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ioi (0:ℝ))
-        MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
-  simpa [MeasureTheory.IntegrableOn] using
-    (integrableOn_Ici_iff_integrableOn_Ioi (f := fun t : ℝ => C * t * Real.exp (-b * t))
-      (b := (1 : ℝ)) (by finiteness)).2 (by simpa [mul_assoc] using hIoi1.const_mul C)
-
 lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     DifferentiableAt ℂ I₆'C u0 := by
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
@@ -417,8 +403,18 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
           gcongr; simp [Complex.norm_real, abs_of_nonneg ht0, abs_of_nonneg Real.pi_pos.le]
       _ = bound t := by simp [bound]; ring
   have hbound_int : MeasureTheory.Integrable bound μ := by
-    simpa [bound, μ, mul_assoc] using
-      integrable_mul_exp_neg_mul_Ici (C := C₀ * Real.pi) (b := Real.pi * ε) (by positivity)
+    have hb : 0 < Real.pi * ε := by positivity
+    have hIoi1 : MeasureTheory.IntegrableOn
+        (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t)) (Set.Ioi (1 : ℝ)) MeasureTheory.volume :=
+      ((by simpa [Real.rpow_one] using
+        (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
+          (hs := by linarith) (hp := le_rfl) (b := Real.pi * ε) hb) :
+        MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t))
+          (Set.Ioi (0:ℝ)) MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
+    simpa [bound, μ, MeasureTheory.IntegrableOn, mul_assoc] using
+      (integrableOn_Ici_iff_integrableOn_Ioi
+        (f := fun t : ℝ => (C₀ * Real.pi) * t * Real.exp (-(Real.pi * ε) * t))
+        (b := (1 : ℝ)) (by finiteness)).2 (by simpa [mul_assoc] using hIoi1.const_mul (C₀ * Real.pi))
   have hdiff :
       ∀ᵐ (t : ℝ) ∂μ, ∀ z ∈ Metric.ball u0 ε,
         HasDerivAt (fun w : ℂ => I₆IntegrandC w t) (I₆IntegrandC_deriv z t) z :=
