@@ -36,11 +36,6 @@ lemma continuousOn_phi0''_div_Ioi :
     (continuousOn_const.div Complex.continuous_ofReal.continuousOn fun _ ht => mod_cast ht.ne')
     fun _ ht => by simp_all
 
-lemma aestronglyMeasurable_phi0''_div_Ioi :
-    AEStronglyMeasurable (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ)))
-      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
-  (continuousOn_phi0''_div_Ioi).aestronglyMeasurable measurableSet_Ioi
-
 /-- Integrability of `t^2 * exp(-a * t)` on a ray `Set.Ioi A` (for `0 < a`). -/
 public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) :=
@@ -56,7 +51,7 @@ lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
     ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
         (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
   simpa [aLaplaceIntegrand, mul_assoc] using
-    (ht2.mul aestronglyMeasurable_phi0''_div_Ioi).mul (by fun_prop :
+    (ht2.mul (continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi)).mul (by fun_prop :
       AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
         (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))))
 
