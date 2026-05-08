@@ -112,7 +112,8 @@ public lemma fourier_J₂_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
   simpa using
     SpherePacking.Contour.fourier_J_eq_curveIntegral_of
       (a := (-1 : ℂ) + I) (b := I)
-      (fun x => by simpa using J₂_apply (x := x))
+      (fun x => show (J₂ : EuclideanSpace ℝ (Fin 8) → ℂ) x =
+        MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ 2) by simp [J₂])
       (fun w x => by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x))

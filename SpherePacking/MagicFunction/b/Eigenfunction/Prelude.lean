@@ -37,12 +37,6 @@ open scoped Real
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 
 /-- Unfold `Jⱼ` as the primed radial profile `Jⱼ'` evaluated at `‖x‖^2`. -/
-public lemma J₁_apply (x : EuclideanSpace ℝ (Fin 8)) :
-    (J₁ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₁' (‖x‖ ^ 2) := by
-  simp [J₁]
-public lemma J₂_apply (x : EuclideanSpace ℝ (Fin 8)) :
-    (J₂ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ 2) := by
-  simp [J₂]
 public lemma J₃_apply (x : EuclideanSpace ℝ (Fin 8)) :
     (J₃ : EuclideanSpace ℝ (Fin 8) → ℂ) x = MagicFunction.b.RealIntegrals.J₃' (‖x‖ ^ 2) := by
   simp [J₃]

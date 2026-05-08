@@ -99,7 +99,7 @@ public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
   simpa using
     SpherePacking.Contour.fourier_J_eq_curveIntegral_of
       (a := (-1 : ℂ)) (b := (-1 : ℂ) + I)
-      (fun x => by simpa using (J₁_apply (x := x)))
+      (fun x => by simp [J₁])
       phase_mul_J₁'_eq_integral_permJ1Kernel
       integrable_permJ1Kernel
       (fun w' => by
