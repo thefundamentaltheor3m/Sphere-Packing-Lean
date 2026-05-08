@@ -52,18 +52,6 @@ public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
       ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap '' (Submodule.E8 ℝ : Set _)) = ⊤
     rw [Submodule.span_image, hE8]; simp
 
-private lemma span_E8Matrix_eq_E8Lattice :
-    Submodule.span ℤ
-      (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
-      E8Lattice := by
-  rw [show Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
-        ((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm :
-            (Fin 8 → ℝ) →ₗ[ℤ] EuclideanSpace ℝ (Fin 8)) '' Set.range (E8Matrix ℝ).row by
-      simpa [Function.comp] using
-        Set.range_comp (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (E8Matrix ℝ).row,
-    ← Submodule.map_span, span_E8Matrix ℝ]
-  simp [E8Lattice]
-
 noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   refine Basis.mk
       (v := fun i ↦ ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
@@ -73,7 +61,16 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
         ((linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ)
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp),
       Submodule.map_top, Submodule.range_subtype, Submodule.map_span, ← Set.range_comp]
-    exact span_E8Matrix_eq_E8Lattice.ge
+    refine (?_ : Submodule.span ℤ
+        (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
+        E8Lattice).ge
+    rw [show Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
+          ((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm :
+              (Fin 8 → ℝ) →ₗ[ℤ] EuclideanSpace ℝ (Fin 8)) '' Set.range (E8Matrix ℝ).row by
+        simpa [Function.comp] using
+          Set.range_comp (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (E8Matrix ℝ).row,
+      ← Submodule.map_span, span_E8Matrix ℝ]
+    simp [E8Lattice]
 
 open scoped Real
 
