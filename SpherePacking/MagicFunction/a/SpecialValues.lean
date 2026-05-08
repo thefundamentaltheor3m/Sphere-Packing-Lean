@@ -353,15 +353,6 @@ private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
       mul_add, mul_one, Complex.exp_add]; ring, hrel]
   field_simp
 
-private lemma A_div_q_eq_nat_tsum (z : ℍ)
-    (a : ℕ → ℂ) (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
-    ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z) =
-      (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n) := by
-  rw [show (E₂ z) * (E₄ z) - (E₆ z) = (720 : ℂ) *
-      ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) from by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ z),
-    mul_div_assoc, ← tsum_div_const, tsum_pnat_div_q_eq_nat_tsum z a hrel]
-
 lemma tendsto_A_div_q :
     Tendsto (fun z : ℍ =>
         ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z))
@@ -370,7 +361,12 @@ lemma tendsto_A_div_q :
   have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) :=
     SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
       fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
-  refine (tendsto_congr fun z => A_div_q_eq_nat_tsum z a fun _ => rfl).mpr ?_
+  refine (tendsto_congr (f₂ := fun z : ℍ =>
+    (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n)) fun z => ?_).mpr ?_
+  · rw [show (E₂ z) * (E₄ z) - (E₆ z) = (720 : ℂ) *
+        ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) from by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ z),
+      mul_div_assoc, ← tsum_div_const, tsum_pnat_div_q_eq_nat_tsum z a fun _ => rfl]
   simpa [a] using tendsto_const_nhds.mul (QExp.tendsto_nat (a := a) (ha := ha))
 
 private lemma tendsto_A_over_Delta :
