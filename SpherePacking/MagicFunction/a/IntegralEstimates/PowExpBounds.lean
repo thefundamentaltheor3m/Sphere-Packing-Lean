@@ -34,29 +34,23 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
   · exact (hxmax ⟨hx, hxN⟩).trans (le_max_right _ _)
   · exact (hN x ((le_max_left N 0).trans (le_of_not_ge hxN))).trans (le_max_left _ _)
 
-/-- Turn a uniform exponential bound on `‖I x‖` into Schwartz inverse-power decay. -/
-public lemma decay_of_bounding_uniform_norm {E : Type*} [SeminormedAddCommGroup E] {I : ℝ → E}
-    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
-    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖I x‖ ≤ C := by
+/-- Variant for iterated derivatives: a uniform exponential bound on `‖iteratedDeriv n I x‖`
+implies Schwartz inverse-power decay. -/
+public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n : ℕ)
+    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
+    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
   obtain ⟨C₁, _, hC₁⟩ := hI
   obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_pi_bounded (k := k)
   refine ⟨C₁ * Cpow, fun x hx => ?_⟩
   calc
-    ‖x‖ ^ k * ‖I x‖ ≤ ‖x‖ ^ k * (C₁ * rexp (-π * x)) :=
-      mul_le_mul_of_nonneg_left (hC₁ x hx) (by positivity)
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖
+        ≤ ‖x‖ ^ k * (C₁ * rexp (-π * x)) := by
+          refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+          simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)]
+            using hC₁ x hx
     _ = C₁ * (x ^ k * rexp (-π * x)) := by
       simp [Real.norm_of_nonneg hx, mul_left_comm, mul_comm]
     _ ≤ C₁ * Cpow := by gcongr; exact hCpow x hx
-
-/-- Variant of `decay_of_bounding_uniform_norm` for iterated derivatives. -/
-public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n : ℕ)
-    (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
-    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C :=
-  let ⟨C₁, hC₁_pos, hC₁⟩ := hI
-  decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
-    ⟨C₁, hC₁_pos, fun x hx => by
-      simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)]
-        using hC₁ x hx⟩ k
 
 /-- Schwartz decay from `iteratedDeriv n I = ∫ t ∈ (0,1), coeff t ^ n * g r t`. -/
 public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
