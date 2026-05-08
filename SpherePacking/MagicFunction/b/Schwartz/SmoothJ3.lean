@@ -34,12 +34,6 @@ public lemma ψT'_z₃'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ψT' (z₃' t) = ψI' (z₅' t) := by
   simpa using MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t) ht
 
-lemma cexp_mul_z₃'_eq (x t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
-    cexp (π * (Complex.I : ℂ) * x * (z₃' t)) =
-      cexp (π * (Complex.I : ℂ) * x * (z₅' t)) * cexp (π * (Complex.I : ℂ) * x) := by
-  have hz : z₃' t = z₅' t + 1 := z₃'_eq_z₅'_add_one (t := t) ht
-  simp [hz, mul_add, mul_assoc, mul_left_comm, mul_comm, Complex.exp_add]
-
 lemma J₃'_eq (x : ℝ) :
     J₃' x = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by
   have hJ3 :
@@ -59,7 +53,11 @@ lemma J₃'_eq (x : ℝ) :
               have htIcc : t ∈ Icc (0 : ℝ) 1 := by
                 simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
               have hψ := ψT'_z₃'_eq_ψI'_z₅' (t := t) htIcc
-              have hcexp := cexp_mul_z₃'_eq (x := x) (t := t) htIcc
+              have hcexp : cexp (π * (Complex.I : ℂ) * x * (z₃' t)) =
+                  cexp (π * (Complex.I : ℂ) * x * (z₅' t)) *
+                    cexp (π * (Complex.I : ℂ) * x) := by
+                have hz : z₃' t = z₅' t + 1 := z₃'_eq_z₅'_add_one (t := t) htIcc
+                simp [hz, mul_add, mul_assoc, mul_left_comm, mul_comm, Complex.exp_add]
               grind only
       _ = (∫ t in (0 : ℝ)..1,
               (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))) *
