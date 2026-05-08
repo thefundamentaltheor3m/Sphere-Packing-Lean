@@ -21,20 +21,6 @@ variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 noncomputable def ball : TopologicalSpace.Compacts E :=
   ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
 
-lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ)
-    (x : E) (hx : x ∈ iocCube (d := d)) :
-    ‖UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-          f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by
-  have hmFourier : ‖UnitAddTorus.mFourier (-n) (coeFunE (d := d) x)‖ ≤ 1 := by
-    simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-      ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)
-  simpa using (mul_le_mul hmFourier
-    (by simpa [translate_apply, ContinuousMap.restrict_apply] using
-        ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
-          ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
-      ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
-    (norm_nonneg _) (by norm_num)).trans (one_mul _).le
-
 lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) :
     Summable
         (fun ℓ : Λ =>
@@ -52,8 +38,16 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
   simpa [μ, s, MeasureTheory.integral_const (μ := μ), smul_eq_mul, mul_comm, mul_left_comm,
     mul_assoc] using integral_mono_of_nonneg (ae_of_all _ fun _ => by positivity)
       (integrable_const ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
-      (ae_restrict_of_forall_mem (measurableSet_iocCube (d := d))
-        (norm_mFourier_mul_translate_le (d := d) (f := f) n ℓ))
+      (ae_restrict_of_forall_mem (measurableSet_iocCube (d := d)) fun x hx => by
+        have hmFourier : ‖UnitAddTorus.mFourier (-n) (coeFunE (d := d) x)‖ ≤ 1 := by
+          simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+            ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)
+        simpa using (mul_le_mul hmFourier
+          (by simpa [translate_apply, ContinuousMap.restrict_apply] using
+              ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
+                ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
+            ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
+          (norm_nonneg _) (by norm_num)).trans (one_mul _).le)
 
 lemma mFourierCoeff_descended (n : Fin d → ℤ) :
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
