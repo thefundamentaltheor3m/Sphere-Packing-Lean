@@ -15,16 +15,13 @@ namespace SpherePacking.ForMathlib
 
 open scoped Complex
 
-/-- Derivative of `y ↦ exp((y : ℂ) * c)` is `exp((x : ℂ) * c) * c`. -/
-public lemma hasDerivAt_cexp_ofReal_mul_const (c : ℂ) (x : ℝ) :
-    HasDerivAt (fun y : ℝ ↦ cexp ((y : ℂ) * c)) (cexp ((x : ℂ) * c) * c) x := by
-  simpa using ((hasDerivAt_mul_const (x := (x : ℂ)) c).comp_ofReal).cexp
-
 /-- Derivative of `y ↦ a * exp((y : ℂ) * c)`. -/
 public lemma hasDerivAt_mul_cexp_ofReal_mul_const (a c : ℂ) (x : ℝ) :
     HasDerivAt (fun y : ℝ ↦ a * cexp ((y : ℂ) * c))
       (c * (a * cexp ((x : ℂ) * c))) x := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using (hasDerivAt_cexp_ofReal_mul_const c x).const_mul a
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (show HasDerivAt (fun y : ℝ ↦ cexp ((y : ℂ) * c)) (cexp ((x : ℂ) * c) * c) x by
+      simpa using ((hasDerivAt_mul_const (x := (x : ℂ)) c).comp_ofReal).cexp).const_mul a
 
 /-- Derivative of `y ↦ (c ^ n) * (a * exp((y : ℂ) * c))`. -/
 public lemma hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a c : ℂ) (n : ℕ) (x : ℝ) :
