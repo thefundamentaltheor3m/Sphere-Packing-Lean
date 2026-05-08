@@ -160,9 +160,6 @@ noncomputable def equivStandardLatticeToDual :
     simpa [LinearEquiv.restrictScalars_apply] using
       map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)
 
-noncomputable def equivIntVecToDual : (Fin d → ℤ) ≃ dualLattice (d := d) L :=
-  PoissonSummation.Standard.equivIntVec.trans (equivStandardLatticeToDual L).toEquiv
-
 /-- Poisson summation over a full-rank `ℤ`-lattice `L`. -/
 public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     (∑' ℓ : L, f (v + (ℓ : E))) =
@@ -207,7 +204,8 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     rw [show (∑' n : Fin d → ℤ, (𝓕 (fun x : E => g x) (iv n)) *
             Complex.exp (2 * π * Complex.I * ⟪A.symm v, iv n⟫_[ℝ])) =
           cC * ∑' m : dualLattice (d := d) L, F m from by
-      rw [← (equivIntVecToDual L).tsum_eq (f := F), ← tsum_mul_left]
+      rw [← (PoissonSummation.Standard.equivIntVec.trans
+        (equivStandardLatticeToDual L).toEquiv).tsum_eq (f := F), ← tsum_mul_left]
       exact tsum_congr fun n ↦ by
         simpa [F, mul_assoc] using congrArg₂ (· * ·) (hfourier (w := iv n)) (hexp (w := iv n))]
     simp [F, cC, show ZLattice.covolume L = abs detA from by
