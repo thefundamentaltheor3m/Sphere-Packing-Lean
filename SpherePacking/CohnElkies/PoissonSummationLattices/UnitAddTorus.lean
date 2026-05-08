@@ -61,16 +61,6 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
         (IsOpenQuotientMap.comp eY.isOpenQuotientMap
           (IsOpenQuotientMap.comp (IsOpenQuotientMap.prodMap h₁ ih) eX.isOpenQuotientMap))
 
-theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
-    MeasurePreserving (coeFun n)
-      (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
-      (volume : Measure (UnitAddTorus (Fin n))) := by
-  simpa [coeFun] using
-    (MeasureTheory.measurePreserving_pi
-      (μ := fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
-      (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
-      (hf := fun _ => UnitAddCircle.measurePreserving_mk t))
-
 /-- Evaluate the additive character `mFourier k` on a point `x : ℝ^n` viewed in the torus
 via `coeFun`. -/
 public theorem mFourier_apply_coeFun_ofLp (n : ℕ) (k : Fin n → ℤ) (x : EuclideanSpace ℝ (Fin n)) :
@@ -87,7 +77,14 @@ public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : Uni
     (∫ y : UnitAddTorus (Fin n), g y) =
       ∫ x, g (coeFun n x) ∂(volume : Measure (Fin n → ℝ)).restrict
         (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) := by
-  have hmp := measurePreserving_coeFun n t
+  have hmp : MeasurePreserving (coeFun n)
+      (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
+      (volume : Measure (UnitAddTorus (Fin n))) := by
+    simpa [coeFun] using
+      (MeasureTheory.measurePreserving_pi
+        (μ := fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
+        (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
+        (hf := fun _ => UnitAddCircle.measurePreserving_mk t))
   have h1 : (∫ y : UnitAddTorus (Fin n), g y) =
       ∫ x, g (coeFun n x) ∂(Measure.pi fun _ : Fin n =>
         (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) := by
