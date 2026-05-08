@@ -251,11 +251,6 @@ private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
     simpa using this.congr' (Eventually.of_forall fun m => by ring_nf)
   simpa [mul_assoc] using hmain.const_mul C₀
 
-lemma tendsto_top_f0 :
-    Tendsto (fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I)) atTop (𝓝 (0 : ℂ)) := by
-  rcases f0_norm_bound_on_strip with ⟨C₀, _, hC₀⟩
-  exact squeeze_zero_norm' (norm_integral_f0_strip_le hC₀) (tendsto_two_m_plus_one_mul_exp_decay C₀)
-
 private lemma intervalIntegrable_f0_vert {m : ℝ} (hm : 1 ≤ m) (x : ℝ) :
     IntervalIntegrable (fun y : ℝ => f0 ((x : ℝ) + y * Complex.I)) MeasureTheory.volume 1 m := by
   simpa using (f0_continuousOn.comp
@@ -301,10 +296,13 @@ lemma integral_f0_height_one_eq_neg_I6 :
     (f := fun y : ℝ => (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) (a := (1 : ℝ))
     (hfi := by simpa [MeasureTheory.IntegrableOn] using
       integrableOn_phi0_imag.const_mul (2 : ℂ)) (hb := tendsto_id)
-  have hA0 : bottom + Complex.I • J = 0 := tendsto_nhds_unique
-    ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
-      filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
-    tendsto_top_f0
+  have hA0 : bottom + Complex.I • J = 0 := by
+    obtain ⟨C₀, _, hC₀⟩ := f0_norm_bound_on_strip
+    exact tendsto_nhds_unique
+      ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
+        filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
+      (squeeze_zero_norm' (norm_integral_f0_strip_le hC₀)
+        (tendsto_two_m_plus_one_mul_exp_decay C₀))
   rw [I6_zero_eq_I_smul_integral]; linear_combination hA0
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
