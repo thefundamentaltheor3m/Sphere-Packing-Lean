@@ -31,24 +31,19 @@ private lemma integral_Ioi_ofReal_mul_exp (u : ℝ) (f : ℝ → ℝ) :
     (integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
       (f := fun t : ℝ => f t * Real.exp (-π * u * t)))
 
-lemma gRadial_re_nonpos_of_two_le {u : ℝ} (hu : 2 ≤ u) : (gRadial u).re ≤ 0 := by
-  have hclosed : IsClosed {u : ℝ | (gRadial u).re ≤ 0} :=
-    isClosed_Iic.preimage (Complex.continuous_re.comp (SchwartzMap.continuous gRadial))
-  have hmem : u ∈ closure (Set.Ioi (2 : ℝ)) := by simpa [closure_Ioi] using hu
-  refine hclosed.closure_subset_iff.2 (fun u' hu' => ?_) hmem
+/-- If `‖x‖ ^ 2 ≥ 2`, then the real part of `g x` is nonpositive. -/
+public theorem g_nonpos_of_norm_sq_ge_two (x : ℝ⁸) (hx : 2 ≤ ‖x‖ ^ 2) : (g x).re ≤ 0 := by
+  rw [g_apply_eq_gRadial_norm_sq]
+  refine (isClosed_Iic.preimage
+      (Complex.continuous_re.comp (SchwartzMap.continuous gRadial))).closure_subset_iff.2
+    (fun u' hu' => ?_) (by simpa [closure_Ioi] using hx : ‖x‖ ^ 2 ∈ closure (Set.Ioi (2 : ℝ)))
   have hEqReal : gRadial u' = (((π / 2160 : ℝ) * (Real.sin (π * u' / 2)) ^ (2 : ℕ) *
       ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u' * t) : ℝ) : ℂ) := by
     rw [gRadial_eq_integral_A (u := u') hu', integral_Ioi_ofReal_mul_exp u' A]; push_cast; ring
-  have hIntegral : (∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u' * t)) ≤ 0 :=
-    MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+  exact (congrArg Complex.re hEqReal).le.trans (mul_nonpos_of_nonneg_of_nonpos (by positivity)
+    (MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
       measurableSet_Ioi fun t ht =>
-        mul_nonpos_of_nonpos_of_nonneg (A_neg (t := t) ht).le (Real.exp_pos _).le
-  exact (congrArg Complex.re hEqReal).le.trans
-    (mul_nonpos_of_nonneg_of_nonpos (by positivity) hIntegral)
-
-/-- If `‖x‖ ^ 2 ≥ 2`, then the real part of `g x` is nonpositive. -/
-public theorem g_nonpos_of_norm_sq_ge_two (x : ℝ⁸) (hx : 2 ≤ ‖x‖ ^ 2) : (g x).re ≤ 0 := by
-  simpa [g_apply_eq_gRadial_norm_sq] using gRadial_re_nonpos_of_two_le (u := ‖x‖ ^ 2) hx
+        mul_nonpos_of_nonpos_of_nonneg (A_neg (t := t) ht).le (Real.exp_pos _).le))
 
 /-- The real part of the Fourier transform `𝓕 g` is nonnegative. -/
 public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
