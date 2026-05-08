@@ -43,22 +43,19 @@ public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
     (((isLittleO_pow_exp_pos_mul_atTop (k := 2) (half_pos ha)).isBigO.mul
       (Asymptotics.isBigO_refl _ _)).congr_right fun t => by rw [← Real.exp_add]; congr 1; ring)
 
-lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
-    AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
-      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by
-  have ht2 : AEStronglyMeasurable (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ))
-      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
-    ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
-        (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
-  simpa [aLaplaceIntegrand, mul_assoc] using
-    (ht2.mul (continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi)).mul (by fun_prop :
-      AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
-        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))))
-
 /-- Convergence of the Laplace integral defining `a'` (integrability on `(0, ∞)` for `u > 2`). -/
 public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  have hMeasIoi := aestronglyMeasurable_aLaplaceIntegrand_Ioi (u := u)
+  have hMeasIoi : AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
+      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by
+    have ht2 : AEStronglyMeasurable (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ))
+        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
+      ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
+          (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
+    simpa [aLaplaceIntegrand, mul_assoc] using
+      (ht2.mul (continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi)).mul
+        (by fun_prop : AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
+          (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))))
   have hsmall : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
     let C₀ : ℝ := MagicFunction.a.Schwartz.I1Decay.Cφ
     refine MeasureTheory.IntegrableOn.of_bound (by simp : (MeasureTheory.volume : Measure ℝ)
