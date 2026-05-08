@@ -64,14 +64,6 @@ theorem PeriodicSpherePacking.aux2_ge
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
 
-private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
-    ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) ⊆ ball 0 (R + L) := by
-  intro x hx
-  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
-  obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
-  exact lt_of_le_of_lt ((show ‖x‖ = ‖i + (-i + x)‖ by congr; abel).le.trans (norm_add_le _ _))
-    (add_lt_add_of_lt_of_le hi_ball (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)))
-
 /-- Theorem 2.2, upper bound. -/
 theorem PeriodicSpherePacking.aux2_le
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
@@ -83,7 +75,11 @@ theorem PeriodicSpherePacking.aux2_le
     (NeZero.ne volume)) (.inl <| (Bornology.IsBounded.measure_lt_top
       (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne),
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-  exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
+  refine volume.mono fun x hx => ?_
+  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
+  obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
+  exact lt_of_le_of_lt ((show ‖x‖ = ‖i + (-i + x)‖ by congr; abel).le.trans (norm_add_le _ _))
+    (add_lt_add_of_lt_of_le hi_ball (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)))
 
 variable (b : Basis ι ℤ S.lattice)
 
