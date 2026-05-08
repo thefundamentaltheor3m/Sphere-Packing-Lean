@@ -12,16 +12,6 @@ open MeasureTheory Real Complex SpherePacking
 
 noncomputable section
 
-private lemma t_mul_exp_le {c t : ℝ} (hc : 0 < c) :
-    t * Real.exp (-c * t) ≤ (2 / c) * Real.exp (-(c / 2) * t) := by
-  have hc2 : (0 : ℝ) ≤ 2 / c := (div_pos (by norm_num) hc).le
-  have ht_le : t ≤ (2 / c) * Real.exp ((c / 2) * t) := by
-    simpa [mul_assoc, show (2 / c) * ((c / 2) * t) = t by field_simp [hc.ne']] using
-      mul_le_mul_of_nonneg_left
-        (by linarith [Real.add_one_le_exp ((c / 2) * t)] : (c / 2) * t ≤ Real.exp ((c / 2) * t)) hc2
-  refine (mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-c * t))).trans_eq ?_
-  rw [mul_assoc, ← Real.exp_add]; ring_nf
-
 private lemma norm_exp_le_of_re_ge {z : ℂ} {t c : ℝ} (ht0 : 0 ≤ t) (hcz : c ≤ z.re) :
     ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * c * t) := by
   simpa [Complex.norm_exp, show (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t by
@@ -83,9 +73,18 @@ public theorem analyticOnNhd_integral_base_exp
         dsimp [ε] at hlt ⊢; nlinarith [(abs_lt.mp hlt).1]
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
+        have hπε : (0 : ℝ) < π * ε := by positivity
+        have hc2 : (0 : ℝ) ≤ 2 / (π * ε) := (div_pos (by norm_num) hπε).le
+        have ht_le : t ≤ (2 / (π * ε)) * Real.exp ((π * ε / 2) * t) := by
+          simpa [mul_assoc, show (2 / (π * ε)) * ((π * ε / 2) * t) = t by field_simp [hπε.ne']]
+            using mul_le_mul_of_nonneg_left
+              (by linarith [Real.add_one_le_exp ((π * ε / 2) * t)] :
+                (π * ε / 2) * t ≤ Real.exp ((π * ε / 2) * t)) hc2
+        have hbase : t * Real.exp (-(π * ε) * t) ≤ (2 / (π * ε)) * Real.exp (-(π * ε / 2) * t) := by
+          refine (mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-(π * ε) * t))).trans_eq ?_
+          rw [mul_assoc, ← Real.exp_add]; ring_nf
         simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv, Real.pi_ne_zero,
-          ne_of_gt hε] using mul_le_mul_of_nonneg_left
-            (t_mul_exp_le (t := t) (by positivity : (0 : ℝ) < π * ε)) Real.pi_pos.le
+          ne_of_gt hε] using mul_le_mul_of_nonneg_left hbase Real.pi_pos.le
       have hnorm_integ : ‖F z t‖ ≤ ‖base t‖ * Real.exp (-π * ε * t) := by
         simpa [F, norm_mul, mul_assoc, mul_left_comm, mul_comm] using
           mul_le_mul_of_nonneg_left (norm_exp_le_of_re_ge htpos.le hzre) (norm_nonneg _)
