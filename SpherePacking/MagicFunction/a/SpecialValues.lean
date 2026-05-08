@@ -404,16 +404,14 @@ private lemma tendsto_A_over_Delta :
   rw [hrew]
   simpa using tendsto_A_div_q.div tendsto_Delta_div_q (by norm_num : (1 : ℂ) ≠ 0)
 
-lemma tendsto_phi2'_atImInfty :
-    Tendsto (fun z : ℍ => φ₂' z) atImInfty (𝓝 (720 : ℂ)) := by
-  simpa [φ₂', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, one_mul] using
-    SpherePacking.ModularForms.tendsto_E₄_atImInfty.mul tendsto_A_over_Delta
-
 lemma tendsto_top_phi2 :
     Tendsto (fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) atTop (𝓝 (720 : ℂ)) := by
   refine Metric.tendsto_atTop.2 fun ε hε => ?_
   rcases (UpperHalfPlane.atImInfty_mem _).1
-    (tendsto_phi2'_atImInfty (Metric.ball_mem_nhds (720 : ℂ) (half_pos hε))) with ⟨A, hA⟩
+    ((show Tendsto (fun z : ℍ => φ₂' z) atImInfty (𝓝 (720 : ℂ)) by
+      simpa [φ₂', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, one_mul] using
+        SpherePacking.ModularForms.tendsto_E₄_atImInfty.mul tendsto_A_over_Delta)
+      (Metric.ball_mem_nhds (720 : ℂ) (half_pos hε))) with ⟨A, hA⟩
   refine ⟨max A 1, fun m hm => ?_⟩
   have hm0 : 0 < m := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans hm)
   have hII : IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I))
