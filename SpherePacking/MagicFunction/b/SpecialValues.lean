@@ -24,12 +24,6 @@ open Set SchwartzMap Real Complex Filter UpperHalfPlane ModularForm
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
-lemma b_zero_reduction :
-    MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) =
-      J₁' (0 : ℝ) + J₂' 0 + J₃' 0 + J₄' 0 + J₅' 0 + J₆' 0 := by
-  open MagicFunction.b.RadialFunctions in
-  simpa [J₁, J₂, J₃, J₄, J₅, J₆] using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
-    MagicFunction.FourierEigenfunctions.b_eq_sum_integrals_RadialFunctions
 
 lemma J₁'_J₃_eq_neg_J₅'_zero : J₁' (0 : ℝ) + J₃' 0 = -J₅' 0 := by
   have hI (z : ℝ → ℂ) (hz : ∀ t ∈ Icc (0 : ℝ) 1, ψT' (z t) = ψI' (z₅' t)) :
@@ -202,7 +196,12 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
       simpa [sub_eq_zero] using hhor, hJ6]))
 
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
-  rw [b_zero_reduction]; linear_combination J₂'_J₄_eq_neg_J₆'_zero + J₁'_J₃_eq_neg_J₅'_zero
+  rw [show MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) =
+      J₁' (0 : ℝ) + J₂' 0 + J₃' 0 + J₄' 0 + J₅' 0 + J₆' 0 from by
+    open MagicFunction.b.RadialFunctions in
+    simpa [J₁, J₂, J₃, J₄, J₅, J₆] using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
+      MagicFunction.FourierEigenfunctions.b_eq_sum_integrals_RadialFunctions]
+  linear_combination J₂'_J₄_eq_neg_J₆'_zero + J₁'_J₃_eq_neg_J₅'_zero
 
 end MagicFunction.b.SpecialValuesProof
 
