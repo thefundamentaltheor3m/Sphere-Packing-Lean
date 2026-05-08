@@ -42,16 +42,6 @@ lemma phase_mul_J₂'_eq_integral_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)
       (f := fun t => ψT' (z₂line t) *
         cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t)))).symm
 
-lemma norm_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
-    ‖permJ2Kernel w (x, t)‖ = ‖ψT' (z₂line t)‖ * rexp (-(π * ‖x‖ ^ 2)) := by
-  have hgauss :
-      ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₂line t))‖ = rexp (-(π * ‖x‖ ^ 2)) := by
-    simpa [z₂line, show (-π * (‖x‖ ^ 2) : ℝ) = -(π * ‖x‖ ^ 2) from by ring] using
-      norm_cexp_pi_mul_I_mul_sq (z := z₂line t) (x := x)
-  dsimp [permJ2Kernel]
-  rw [norm_mul, norm_phase_eq_one (w := w) (x := x)]
-  simp_all
-
 lemma integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ2Kernel w (x, t))
       (volume : Measure (EuclideanSpace ℝ (Fin 8))) := by
@@ -84,7 +74,15 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
     rw [show (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) =
         ‖ψT' (z₂line t)‖ * Cgauss from by
-      simpa [funext fun x => norm_permJ2Kernel (w := w) (x := x) (t := t), Cgauss, mul_assoc]
+      simpa [funext fun x : EuclideanSpace ℝ (Fin 8) =>
+        show ‖permJ2Kernel w (x, t)‖ = ‖ψT' (z₂line t)‖ * rexp (-(π * ‖x‖ ^ 2)) by
+          have hgauss :
+              ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₂line t))‖ = rexp (-(π * ‖x‖ ^ 2)) := by
+            simpa [z₂line, show (-π * (‖x‖ ^ 2) : ℝ) = -(π * ‖x‖ ^ 2) from by ring] using
+              norm_cexp_pi_mul_I_mul_sq (z := z₂line t) (x := x)
+          dsimp [permJ2Kernel]
+          rw [norm_mul, norm_phase_eq_one (w := w) (x := x)]
+          simp_all, Cgauss, mul_assoc]
         using MeasureTheory.integral_const_mul (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
           (r := ‖ψT' (z₂line t)‖) (f := fun x => rexp (-(π * ‖x‖ ^ 2)))]
     refine mul_le_mul_of_nonneg_right ?_ hCgauss
