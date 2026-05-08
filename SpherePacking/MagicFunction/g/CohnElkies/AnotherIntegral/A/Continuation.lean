@@ -73,18 +73,6 @@ lemma aAnotherRHS_analyticOnNhd :
     analyticOnNhd_sinSq_prefactor_mul (sign := 4 * Complex.I) hinner
 
 /-!
-## Analytic extension of `a'`
--/
-
-lemma exists_a'_analytic_extension :
-    ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
-      (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = a' u) := by
-  refine ⟨aPrimeC, aPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => ?_⟩
-  simpa [show MagicFunction.a.RealIntegrals.a' u = a' u by
-    simpa using (MagicFunction.g.CohnElkies.a'_eq_realIntegrals_a' (u := u) (hu := hu.le)).symm]
-    using aPrimeC_ofReal u
-
-/-!
 ## Final wrapper theorem
 -/
 
@@ -106,7 +94,12 @@ public theorem aRadial_eq_another_integral_analytic_continuation_of_gt2
           (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
           (18144 : ℂ) / (π ^ (3 : ℕ) * u) +
             ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) := by
-  refine analytic_continuation_of_gt2 exists_a'_analytic_extension aAnotherRHS_analyticOnNhd
+  refine analytic_continuation_of_gt2
+    ⟨aPrimeC, aPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => by
+      simpa [show MagicFunction.a.RealIntegrals.a' u = a' u by
+        simpa using (MagicFunction.g.CohnElkies.a'_eq_realIntegrals_a' (u := u) (hu := hu.le)).symm]
+        using aPrimeC_ofReal u⟩
+    aAnotherRHS_analyticOnNhd
     (rhsR := fun r : ℝ =>
       (4 * Complex.I) * (Real.sin (π * r / 2)) ^ (2 : ℕ) *
         ((36 : ℂ) / (π ^ (3 : ℕ) * (r - 2)) -
