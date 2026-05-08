@@ -112,7 +112,10 @@ public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       integrable_permJ1Kernel
       integral_permJ1Kernel_x_ae
       (fun w' => by
-        simpa using (integral_I_mul_muIoc01_z₁line (F := Ψ₁_fourier (‖w'‖ ^ 2))))
+        simpa [SpherePacking.Contour.dir_z₁line] using
+          SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
+            (F := Ψ₁_fourier (‖w'‖ ^ 2)) (a := (-1 : ℂ)) (b := (-1 : ℂ) + Complex.I)
+            (zline := z₁line) SpherePacking.Contour.lineMap_z₁line)
       w
 
 end

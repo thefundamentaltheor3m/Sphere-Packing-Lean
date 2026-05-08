@@ -68,24 +68,6 @@ public theorem fourier_J_eq_curveIntegral_of
     MeasureTheory.integral_congr_ae (integral_permJKernel_x_ae w)]
   exact integral_g_eq_curveIntegral w
 
-/-! ### `μIoc01` segment integral helpers -/
-
-public lemma integral_I_mul_muIoc01_z₁line (F : ℂ → ℂ) :
-    (∫ t : ℝ, (Complex.I : ℂ) * F (z₁line t) ∂SpherePacking.Integration.μIoc01) =
-      (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I), scalarOneForm F z) := by
-  simpa [SpherePacking.Contour.dir_z₁line] using
-    SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
-      (F := F) (a := (-1 : ℂ)) (b := (-1 : ℂ) + Complex.I) (zline := z₁line)
-      SpherePacking.Contour.lineMap_z₁line
-
-public lemma integral_muIoc01_z₂line (F : ℂ → ℂ) :
-    (∫ t : ℝ, F (z₂line t) ∂SpherePacking.Integration.μIoc01) =
-      (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I, scalarOneForm F z) := by
-  simpa [SpherePacking.Contour.dir_z₂line, one_mul] using
-    SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
-      (F := F) (a := (-1 : ℂ) + Complex.I) (b := Complex.I) (zline := z₂line)
-      SpherePacking.Contour.lineMap_z₂line
-
 end
 
 end SpherePacking.Contour
