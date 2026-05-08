@@ -115,11 +115,6 @@ public lemma periodized_apply (x : E) :
 @[expose] public noncomputable def coeFunEC : C(E, UnitAddTorus (Fin d)) :=
   ⟨coeFunE (d := d), continuous_coeFunE⟩
 
-public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) :=
-  (show IsOpenQuotientMap (coeFunE (d := d)) by
-    simpa [coeFunE] using IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
-      (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap).isQuotientMap
-
 /-- The periodization is invariant under lattice translates, so it factors through the torus. -/
 public lemma periodized_factorsThrough :
     Function.FactorsThrough (periodized (d := d) f) (coeFunEC (d := d)) := fun x y hxy => by
@@ -136,7 +131,10 @@ public lemma periodized_factorsThrough :
 
 /-- Descend the periodization to the torus `(ℝ/ℤ)^d` via the quotient. -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
-  Topology.IsQuotientMap.lift (hf := isQuotientMap_coeFunEC (d := d))
+  Topology.IsQuotientMap.lift (hf := (show IsOpenQuotientMap (coeFunE (d := d)) by
+      simpa [coeFunE] using IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
+        (PiLp.homeomorph (p := (2 : ENNReal))
+          (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap).isQuotientMap)
     (g := periodized (d := d) f) (periodized_factorsThrough (d := d) (f := f))
 
 /-- Compatibility of `descended` with `coeFunE`: pulling back gives `periodized`. -/
