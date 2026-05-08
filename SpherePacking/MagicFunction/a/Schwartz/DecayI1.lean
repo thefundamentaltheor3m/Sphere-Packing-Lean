@@ -179,19 +179,6 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
               (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
         simpa [gN, pow_succ, mul_assoc] using hg.const_mul (coeff s ^ n))).2
 
-lemma pow_mul_exp_neg_bounded (k : ℕ) :
-    ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
-  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
-    (((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).eventually
-      (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))).mono fun _ => le_of_lt)
-  obtain ⟨u0, _, hu0max⟩ := isCompact_Icc.exists_isMaxOn (s := Icc 0 (max N 0))
-    ⟨0, le_refl _, le_max_right _ _⟩
-    (show Continuous fun u : ℝ ↦ u ^ k * rexp (-u) by fun_prop).continuousOn
-  refine ⟨max 1 (u0 ^ k * rexp (-u0)), fun u hu => ?_⟩
-  by_cases huN : u ≤ max N 0
-  exacts [(hu0max ⟨hu, huN⟩).trans (le_max_right _ _),
-    (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)]
-
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
       ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := calc
@@ -262,7 +249,17 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ ≤ C := by
   intro k n
-  obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_bounded (k := k)
+  obtain ⟨Cpow, hCpow⟩ : ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
+    obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
+      (((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).eventually
+        (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))).mono fun _ => le_of_lt)
+    obtain ⟨u0, _, hu0max⟩ := isCompact_Icc.exists_isMaxOn (s := Icc 0 (max N 0))
+      ⟨0, le_refl _, le_max_right _ _⟩
+      (show Continuous fun u : ℝ ↦ u ^ k * rexp (-u) by fun_prop).continuousOn
+    refine ⟨max 1 (u0 ^ k * rexp (-u0)), fun u hu => ?_⟩
+    by_cases huN : u ≤ max N 0
+    exacts [(hu0max ⟨hu, huN⟩).trans (le_max_right _ _),
+      (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)]
   let I : ℝ := ∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)
   refine ⟨(2 * π) ^ n * (Cφ * ((π ^ k)⁻¹ * Cpow) * I), fun x hx => ?_⟩
   calc
