@@ -42,15 +42,6 @@ public lemma norm_mul_pi_I_le_two_pi {z : ℂ} (hz : ‖z‖ ≤ 2) :
   simpa [mul_assoc, abs_of_nonneg Real.pi_pos.le, mul_comm] using
     mul_le_mul_of_nonneg_left hz Real.pi_pos.le
 
-/-- Bound `‖exp((x : ℂ) * c)‖` when `x ∈ ball x₀ 1`, `‖c‖ ≤ B`, by `exp((|x₀| + 1) * B)`. -/
-public lemma norm_cexp_ofReal_mul_le_exp_mul_of_norm_le {x x₀ : ℝ} {c : ℂ} {B : ℝ}
-    (hc : ‖c‖ ≤ B) (hx : x ∈ Metric.ball x₀ (1 : ℝ)) :
-    ‖cexp ((x : ℂ) * c)‖ ≤ Real.exp ((|x₀| + 1) * B) := by
-  have hre : ((x : ℂ) * c).re ≤ (|x₀| + 1) * B := (Complex.re_le_norm _).trans <| by
-    have : |x| * ‖c‖ ≤ (|x₀| + 1) * B := by gcongr; exact abs_le_abs_add_of_mem_ball hx
-    simpa [norm_mul, Complex.norm_real, mul_assoc] using this
-  simpa [Complex.norm_exp] using Real.exp_le_exp.2 hre
-
 /-- If `0 ≤ a ≤ C * b` with `0 < b`, then `0 ≤ C`. -/
 public lemma nonneg_of_nonneg_le_mul {a b C : ℝ} (ha : 0 ≤ a) (hb : 0 < b) (h : a ≤ C * b) :
     0 ≤ C :=

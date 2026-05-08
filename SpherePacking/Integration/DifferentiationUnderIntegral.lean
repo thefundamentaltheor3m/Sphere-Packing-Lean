@@ -54,9 +54,15 @@ private lemma norm_gN_le_const
     _ ≤ (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
         gcongr
         · simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
-        · exact norm_mul_le_of_le hh
-            (SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
-              (B := 2 * Real.pi) (coeff_norm_le t) hx)
+        · refine norm_mul_le_of_le hh ?_
+          have hre : ((x : ℂ) * coeff t).re ≤ (|x₀| + 1) * (2 * Real.pi) :=
+            (Complex.re_le_norm _).trans <| by
+            have : |x| * ‖coeff t‖ ≤ (|x₀| + 1) * (2 * Real.pi) := by
+              gcongr
+              · exact SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hx
+              · exact coeff_norm_le t
+            simpa [norm_mul, Complex.norm_real, mul_assoc] using this
+          simpa [Complex.norm_exp] using Real.exp_le_exp.2 hre
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
 public lemma hasDerivAt_integral_gN_Ioo
