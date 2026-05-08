@@ -36,23 +36,22 @@ public theorem contDiff_of_hasDerivAt_succ
     simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI m] using
       fun x => (hI m x).differentiableAt
 
-/-- Closed form for iterated derivatives of `x ↦ exp (x * c)`. -/
-public lemma iteratedDeriv_cexp_mul_const (c : ℂ) (m : ℕ) :
-    iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =
-      fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := by
-  induction m with
-  | zero => funext x; simp [iteratedDeriv_zero]
-  | succ m ih => funext x; simpa [iteratedDeriv_succ, ih, mul_assoc] using
-      (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
-
 /-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m`. -/
 public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x : ℝ) :
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x‖ ≤
       |a| ^ m := by
+  have hiter : ∀ (c : ℂ) (m : ℕ),
+      iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =
+        fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := by
+    intro c m
+    induction m with
+    | zero => funext x; simp [iteratedDeriv_zero]
+    | succ m ih => funext x; simpa [iteratedDeriv_succ, ih, mul_assoc] using
+        (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv,
     show iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x =
       ((a : ℂ) * Complex.I) ^ m * Complex.exp ((x : ℂ) * ((a : ℂ) * Complex.I)) from
-      congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_cexp_mul_const ((a : ℂ) * Complex.I) m)]
+      congrArg (fun F : ℝ → ℂ => F x) (hiter ((a : ℂ) * Complex.I) m)]
   simp [norm_pow, Complex.norm_exp,
     show ((x : ℂ) * ((a : ℂ) * Complex.I)).re = 0 by simp [mul_left_comm, mul_comm]]
 
