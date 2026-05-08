@@ -54,15 +54,6 @@ lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ext1; simp [z₂'_eq_of_mem (t := t) ht, add_left_comm, add_comm]] using
     (show ψT ⟨z₂' t, hz2⟩ = ψI ((1 : ℝ) +ᵥ ⟨z₂' t, hz2⟩) by simp [ψT, modular_slash_T_apply])
 
-lemma htendsto_ψS' :
-    ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖ψS' z‖ < ε := fun ε hε => by
-  obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
-    ‖ψS z‖ < ε by simpa [dist_eq_norm] using
-      (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
-  refine ⟨max M 1, fun z hz => ?_⟩
-  have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
-  simpa [ψS', hzpos] using hM ⟨z, hzpos⟩ ((le_max_left _ _).trans hz)
-
 lemma ψS'_add_one (t : ℝ) (ht : 0 < t) :
     ψS' ((1 : ℂ) + t * Complex.I) = -ψS' (t * Complex.I) := by
   have hz0 : 0 < (t * Complex.I).im := by simpa using ht
@@ -166,7 +157,13 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     (Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := ψS') (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ)) hcont (s := (∅ : Set ℂ))
         (by simp) hdiff (by simpa using integrableOn_ψS'_vertical_left)
-        integrableOn_ψS'_vertical_right htendsto_ψS')
+        integrableOn_ψS'_vertical_right (fun ε hε => by
+          obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
+            ‖ψS z‖ < ε by simpa [dist_eq_norm] using
+              (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
+          refine ⟨max M 1, fun z hz => ?_⟩
+          have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
+          simpa [ψS', hzpos] using hM ⟨z, hzpos⟩ ((le_max_left _ _).trans hz)))
   have hright : (∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((1 : ℂ) + t * Complex.I)) =
       -∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I) := by
     simpa [MeasureTheory.integral_neg] using MeasureTheory.integral_congr_ae
