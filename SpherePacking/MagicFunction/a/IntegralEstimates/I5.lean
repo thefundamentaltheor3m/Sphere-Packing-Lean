@@ -40,18 +40,16 @@ noncomputable section Change_of_Variables
 @[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦
   -I * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
 
-private lemma Reconciling_Change_of_Variables (r : ℝ) :
-    I₅' r = -2 * ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
-  simp only [I₅'_eq_Ioc, g]
-  congr 1
-  refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht ↦ ?_)
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r (1 : ℂ)
-
 /-- Rewrite `I₅' r` as an integral of `g r` over `Ici 1` (up to the factor `-2`). -/
 public theorem Complete_Change_of_Variables (r : ℝ) :
     I₅' r = -2 * ∫ s in Ici (1 : ℝ), g r s := by
-  refine (Reconciling_Change_of_Variables (r := r)).trans ?_
+  have hRecon : I₅' r = -2 * ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
+    simp only [I₅'_eq_Ioc, g]
+    congr 1
+    refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht ↦ ?_)
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r (1 : ℂ)
+  refine hRecon.trans ?_
   simpa using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z)
     (integral_Ici_one_eq_integral_abs_deriv_smul (g := g r)).symm
 
