@@ -207,8 +207,11 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1) (norm_nonneg _)
   nlinarith [hmul.trans hbr, mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le]
 
-lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ici (1 : ℝ)) := by
+/-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
+public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
+    IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
+  rw [← Set.Ioc_union_Ici_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_lt_one]
+  refine (aAnotherIntegrand_integrableOn_Ioc hu).union ?_
   rcases exists_phi0_cancellation_bound with ⟨C, hC⟩
   have hbound : ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ‖aAnotherIntegrand u t‖ ≤
       C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := fun t ht => by
@@ -226,12 +229,6 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi
       (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici)
     ((ae_restrict_iff' measurableSet_Ici).2 (Filter.Eventually.of_forall hbound))
-
-/-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
-public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  rw [← Set.Ioc_union_Ici_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_lt_one]
-  exact (aAnotherIntegrand_integrableOn_Ioc hu).union (aAnotherIntegrand_integrableOn_Ici hu)
 
 end
 
