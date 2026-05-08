@@ -11,19 +11,6 @@ open Real Complex
 
 noncomputable section
 
-private lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
-    (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
-    (hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C * (u ^ (2 : ℕ))) :
-    ‖w - (1 : ℂ)‖ ≤ (8 + |C|) * u := by
-  linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
-    simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring] using
-      norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ),
-    hw_tail.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
-      (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
-        (abs_nonneg C)),
-    show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u from by
-      simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
-
 private lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
     (2 : ℝ) * Real.exp (-Real.pi * t / 4) ≤ ‖Θ₂.resToImagAxis t‖ := by
   set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
@@ -233,11 +220,21 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   have hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [w, A, x, e, u, C0] using hw_tail_bound t ht CH2 (by simpa [x] using hH2 t ht)
   have hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    simpa [u, abs_of_nonneg (show (0:ℝ) ≤ C0 by positivity)] using
-      norm_sub_one_le_of_norm_sub_one_sub w u C0 (Real.exp_pos _).le
-        (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])) (by
-          simpa [show u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
-            simp only [u, ← Real.exp_nat_mul]; ring_nf] using hw_tail)
+    have hu0 : (0 : ℝ) ≤ u := (Real.exp_pos _).le
+    have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])
+    have hw_tail' : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * (u ^ (2 : ℕ)) := by
+      simpa [show u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
+        simp only [u, ← Real.exp_nat_mul]; ring_nf] using hw_tail
+    refine (show ‖w - (1 : ℂ)‖ ≤ (8 + |C0|) * u from ?_).trans <| by
+      simp [u, abs_of_nonneg (show (0:ℝ) ≤ C0 by positivity)]
+    linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
+      simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 from by ring]
+        using norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ),
+      hw_tail'.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C0) (pow_nonneg hu0 _)).trans
+        (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
+          (abs_nonneg C0)),
+      show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u from by
+        simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
   have hw_norm_ge : (1 : ℝ) ≤ ‖w‖ := by
     rw [show ‖w‖ = (e / 256) * ‖x‖ ^ (2 : ℕ) from by simp [w, hA_norm, norm_pow]]
     linarith [mul_le_mul_of_nonneg_left (show (256 : ℝ) * u ≤ ‖x‖ ^ (2 : ℕ) by
