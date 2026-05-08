@@ -77,15 +77,6 @@ lemma integrableOn_ψS'_vertical_left :
     MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
       simpa [hEq t (lt_trans (by norm_num) ht)] using hC t ht.le
 
-lemma integrableOn_ψS'_vertical_right :
-    MeasureTheory.IntegrableOn (fun t : ℝ => ψS' ((1 : ℂ) + t * Complex.I)) (Ioi (1 : ℝ))
-      MeasureTheory.volume := by
-  simpa [MeasureTheory.IntegrableOn] using (integrableOn_ψS'_vertical_left.neg).congr
-    (show (fun t : ℝ => -ψS' (t * Complex.I)) =ᵐ[MeasureTheory.volume.restrict (Ioi (1 : ℝ))]
-        fun t : ℝ => ψS' ((1 : ℂ) + t * Complex.I) from
-      MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-        simp [ψS'_add_one t (lt_trans (by norm_num) ht)])
-
 lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
   have hJ24 : J₂' (0 : ℝ) + J₄' 0 = ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
     have hJ2 : J₂' (0 : ℝ) = ∫ t in (0 : ℝ)..1, ψI' ((t : ℂ) + Complex.I) := by
@@ -156,7 +147,12 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     (Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := ψS') (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ)) hcont (s := (∅ : Set ℂ))
         (by simp) hdiff (by simpa using integrableOn_ψS'_vertical_left)
-        integrableOn_ψS'_vertical_right (fun ε hε => by
+        (by
+          simpa [MeasureTheory.IntegrableOn] using (integrableOn_ψS'_vertical_left.neg).congr
+            (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+              simp [ψS'_add_one t (lt_trans (by norm_num) ht)] :
+              (fun t : ℝ => -ψS' (t * Complex.I)) =ᵐ[MeasureTheory.volume.restrict (Ioi (1 : ℝ))]
+                fun t : ℝ => ψS' ((1 : ℂ) + t * Complex.I))) (fun ε hε => by
           obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
             ‖ψS z‖ < ε by simpa [dist_eq_norm] using
               (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
