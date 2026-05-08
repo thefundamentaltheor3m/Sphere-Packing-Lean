@@ -182,13 +182,6 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       (h_diff := (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s _ r _ =>
         hasDerivAt_gN (n := n) (r := r) (s := s))).2
 
-lemma iteratedDeriv_eq_integral_gN (n : ℕ) :
-    iteratedDeriv n I₁' = fun r : ℝ ↦ ∫ s, gN n r s ∂μ := by
-  induction n with
-  | zero => funext r; simp [iteratedDeriv_zero, gN, μ, μIciOne, Complete_Change_of_Variables]
-  | succ n ih => funext r; simpa [iteratedDeriv_succ, ih] using
-      (hasDerivAt_integral_gN (n := n) (r₀ := r)).deriv
-
 lemma pow_mul_exp_neg_bounded (k : ℕ) :
     ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
   obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
@@ -206,7 +199,13 @@ lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
       ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := calc
     ‖iteratedDeriv n I₁' x‖ ≤ ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by
-      simpa [iteratedDeriv_eq_integral_gN (n := n), μ, SpherePacking.Integration.μIciOne] using
+      have iteratedDeriv_eq_integral_gN :
+          iteratedDeriv n I₁' = fun r : ℝ ↦ ∫ s, gN n r s ∂μ := by
+        induction n with
+        | zero => funext r; simp [iteratedDeriv_zero, gN, μ, μIciOne, Complete_Change_of_Variables]
+        | succ n ih => funext r; simpa [iteratedDeriv_succ, ih] using
+            (hasDerivAt_integral_gN (n := n) (r₀ := r)).deriv
+      simpa [iteratedDeriv_eq_integral_gN, μ, SpherePacking.Integration.μIciOne] using
         norm_integral_le_integral_norm (gN n x)
     _ ≤ _ := setIntegral_mono_on
         (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
