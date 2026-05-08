@@ -105,12 +105,6 @@ lemma exists_bound_norm_ψT'_z₃' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z
     simpa [MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t)
       (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
 
-lemma exists_bound_norm_ψT'_z₂' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
-  simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₂' continuous_z₂' im_z₂'_pos_all
-
-lemma exists_bound_norm_ψT'_z₄' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₄' t)‖ ≤ M := by
-  simpa using exists_bound_norm_ψT'_comp_of_im_pos_all z₄' continuous_z₄' im_z₄'_pos_all
-
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
   have h := norm_add_le (1 : ℂ) ((Complex.I : ℂ) * (t : ℂ))
@@ -129,9 +123,6 @@ lemma norm_z₄'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₄' t‖ ≤ 3
   (show z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) by
     simp [z₄'_eq_of_mem (t := t) ht, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ ht
     ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg ht.1]))
-
-lemma norm_z₅'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₅' t‖ ≤ 1 := by
-  simpa [z₅'_eq_of_mem (t := t) ht, Complex.norm_real, abs_of_nonneg ht.1] using ht.2
 
 /-- Shared differentiability wrapper for `J₁'C`–`J₅'C`. -/
 private lemma integral_ψ_exp_differentiable
@@ -165,7 +156,7 @@ lemma J₁'C_differentiable : Differentiable ℂ J₁'C :=
       continuous_z₁' hMψ (fun t _ => norm_z₁'_le_two t))
 
 lemma J₂'C_differentiable : Differentiable ℂ J₂'C :=
-  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₂'
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_comp_of_im_pos_all z₂' continuous_z₂' im_z₂'_pos_all
   integral_ψ_exp_differentiable (Cz := 3)
     (continuousOn_ψT'_comp z₂' continuous_z₂'
       fun _ ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
@@ -181,7 +172,7 @@ lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
       continuous_z₃' hMψ (fun t ht => norm_z₃'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
 lemma J₄'C_differentiable : Differentiable ℂ J₄'C :=
-  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₄'
+  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_comp_of_im_pos_all z₄' continuous_z₄' im_z₄'_pos_all
   (show J₄'C = fun u : ℂ => (-1 : ℂ) * ∫ t in (0 : ℝ)..1,
       ψT' (z₄' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₄' t) from
     funext fun u => by simp [J₄'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
@@ -211,7 +202,9 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
       mul_left_comm, mul_comm]) ▸
     (differentiable_const (-2 * Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 1)
       continuousOn_ψI'_z₅' continuous_z₅' hMψ
-      (fun t ht => norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
+      (fun t ht => by
+        have htic := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
+        simpa [z₅'_eq_of_mem (t := t) htic, Complex.norm_real, abs_of_nonneg htic.1] using htic.2))
 
 set_option maxHeartbeats 1000000 in
 lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
