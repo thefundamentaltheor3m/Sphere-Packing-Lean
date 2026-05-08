@@ -42,19 +42,6 @@ open scoped Interval
   cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) *
     MagicFunction.a.ComplexIntegrands.Φ₁' (‖p.1‖ ^ 2) (z₂line p.2)
 
-/-- Helper: continuity of `φ₀'' ∘ (-1 / (z · + 1))` at `t` given `(z t + 1).im > 0`. -/
-private lemma continuousAt_φ₀''_inv_add_one {z : ℝ → ℂ} (hz : Continuous z) {t : ℝ}
-    (hpos : 0 < (z t + 1).im) :
-    ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) t := by
-  have hden : z t + 1 ≠ 0 := fun h => hpos.ne' (by simp [h])
-  have hmem : (-1 : ℂ) / (z t + 1) ∈ UpperHalfPlane.upperHalfPlaneSet := by
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using neg_one_div_im_pos (z t + 1) hpos
-  have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z t + 1)) :=
-    (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
-      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hmem)).continuousAt
-  exact ContinuousAt.comp (f := fun s : ℝ => (-1 : ℂ) / (z s + 1)) hφ
-    (continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden))
-
 /-- Continuity of `(x, t) ↦ Φ₁'(‖x‖², z t)` at points where `(z p.2 + 1).im > 0`. -/
 private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
     {p : (EuclideanSpace ℝ (Fin 8)) × ℝ} (hpos : 0 < (z p.2 + 1).im) :
@@ -62,7 +49,16 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
       MagicFunction.a.ComplexIntegrands.Φ₁' (‖q.1‖ ^ 2) (z q.2)) p := by
   have hφterm : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => φ₀'' ((-1 : ℂ) / (z q.2 + 1))) p := by
-    simpa [Function.comp] using (continuousAt_φ₀''_inv_add_one hz hpos).comp continuousAt_snd
+    have hcont : ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) p.2 := by
+      have hden : z p.2 + 1 ≠ 0 := fun h => hpos.ne' (by simp [h])
+      have hmem : (-1 : ℂ) / (z p.2 + 1) ∈ UpperHalfPlane.upperHalfPlaneSet := by
+        simpa [UpperHalfPlane.upperHalfPlaneSet] using neg_one_div_im_pos (z p.2 + 1) hpos
+      have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z p.2 + 1)) :=
+        (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
+          (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hmem)).continuousAt
+      exact ContinuousAt.comp (f := fun s : ℝ => (-1 : ℂ) / (z s + 1)) hφ
+        (continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden))
+    simpa [Function.comp] using hcont.comp continuousAt_snd
   have hz_pt : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => z q.2) p :=
     (hz.continuousAt).comp continuousAt_snd
   have hpow : ContinuousAt
