@@ -99,7 +99,14 @@ public lemma curveIntegral_segment_neg_inv
   have hz_im : 0 < (AffineMap.lineMap a b t).im := hs.lineMap_im_pos t ht
   have hz0 : AffineMap.lineMap a b t ≠ 0 := fun hz0 => (ne_of_gt hz_im) (by simp [hz0])
   have hderiv :=
-    (SpherePacking.hasDerivAt_mobiusInv_comp_lineMap (a := a) (b := b) (t := t) hz0).deriv
+    (show HasDerivAt (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s))
+        ((b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ)) t by
+      simpa [mobiusInv, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
+        ((by simpa [mobiusInv] using (hasFDerivAt_inv' (𝕜 := ℝ) (R := ℂ) hz0).neg :
+          HasFDerivAt (𝕜 := ℝ) mobiusInv
+            (ContinuousLinearMap.mulLeftRight ℝ ℂ (AffineMap.lineMap a b t)⁻¹
+              (AffineMap.lineMap a b t)⁻¹) (AffineMap.lineMap a b t)).comp_hasDerivAt t
+          (AffineMap.hasDerivAt_lineMap (a := a) (b := b) (x := t)))).deriv
   simpa [hderiv, _root_.SpherePacking.deriv_mobiusInv, div_eq_mul_inv, mul_assoc, mul_left_comm,
     mul_comm] using
     congrArg (fun z => (b - a) * z)
