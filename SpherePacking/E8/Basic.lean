@@ -191,12 +191,6 @@ def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R 
      2⁻¹, 1, 1, 1, 1, 0, 0, 0; 2⁻¹, 1, 1, 1, 1, 1, 0, 0;
      2⁻¹, 1, 1, 1, 1, 1, 1, 0; -7 * 2⁻¹, -6, -5, -4, -3, -2, -1, 2]
 
-lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
-    E8Inverse R * E8Matrix R = 1 := by
-  rw [E8Matrix_eq_cast, show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
-      rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse],
-    ← Matrix.map_mul, show E8Inverse ℚ * E8Matrix ℚ = 1 by decide +kernel]; simp
-
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
     ∃ c : Fin 8 → ℤ, LinearMap.intCast R c = Matrix.vecMul v (E8Inverse R) := by
@@ -241,7 +235,11 @@ public theorem span_E8Matrix (R : Type*) [Field R] [CharZero R] :
   exact ⟨c, by
     simpa [Matrix.vecMul_eq_sum, Matrix.row, LinearMap.intCast_apply, zsmul_eq_mul] using
       show Matrix.vecMul (LinearMap.intCast R c) (E8Matrix R) = v by
-        rw [hc, Matrix.vecMul_vecMul, E8Inverse_mul_E8Matrix]; simp⟩
+        rw [hc, Matrix.vecMul_vecMul, show E8Inverse R * E8Matrix R = 1 by
+          rw [E8Matrix_eq_cast, show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
+              rw [← Matrix.ext_iff]; norm_num [Fin.forall_fin_succ, E8Inverse],
+            ← Matrix.map_mul, show E8Inverse ℚ * E8Matrix ℚ = 1 by decide +kernel]; simp]
+        simp⟩
 
 def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
   !![4, -2, 0, 0, 0, 0, 0, 1; -2, 2, -1, 0, 0, 0, 0, 0;
