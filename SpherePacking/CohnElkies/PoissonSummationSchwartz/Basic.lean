@@ -111,11 +111,6 @@ public lemma periodized_apply (x : E) :
     (ContinuousMap.tsum_apply (ContinuousMap.summable_of_locally_summable_norm
       (summable_norm_translate_restrict (d := d) f)) x).symm
 
-@[simp] lemma periodized_vadd_eq (x : E) (ℓ₀ : Λ) :
-    periodized (d := d) f (x + ℓ₀) = periodized (d := d) f x := by
-  simpa [periodized_apply (d := d) f, add_assoc] using
-    (Equiv.addLeft ℓ₀).tsum_eq fun ℓ => f (x + (ℓ : E))
-
 /-- The quotient map `E = ℝ^d → (ℝ/ℤ)^d`, bundled as a continuous map. -/
 @[expose] public noncomputable def coeFunEC : C(E, UnitAddTorus (Fin d)) :=
   ⟨coeFunE (d := d), continuous_coeFunE⟩
@@ -132,8 +127,12 @@ public lemma periodized_factorsThrough :
     (by simpa [coeFunEC] using hxy)
   simpa [show x = y + intVec (d := d) n by
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      congrArg (fun t => t + y) hn] using periodized_vadd_eq (d := d) (f := f) y
-    ⟨_, intVec_mem_standardLattice (d := d) n⟩
+      congrArg (fun t => t + y) hn] using
+    show periodized (d := d) f (y + (⟨_, intVec_mem_standardLattice (d := d) n⟩ : Λ)) =
+        periodized (d := d) f y by
+      simpa [periodized_apply (d := d) f, add_assoc] using
+        (Equiv.addLeft (⟨_, intVec_mem_standardLattice (d := d) n⟩ : Λ)).tsum_eq
+          fun ℓ => f (y + (ℓ : E))
 
 /-- Descend the periodization to the torus `(ℝ/ℤ)^d` via the quotient. -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
