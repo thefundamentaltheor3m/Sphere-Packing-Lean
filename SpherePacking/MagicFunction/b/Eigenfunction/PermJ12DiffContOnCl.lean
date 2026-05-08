@@ -41,8 +41,13 @@ public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
     ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
       fderivWithin ℝ (scalarOneForm (Ψ₁' r)) wedgeSet x u v =
         fderivWithin ℝ (scalarOneForm (Ψ₁' r)) wedgeSet x v u := by
-  simpa using (SpherePacking.Contour.fderivWithin_scalarOneForm_wedgeSet_symm_of (f := Ψ₁' r)
-    (hdiffC := differentiableOn_Ψ₁'_upper (r := r)))
+  intro x hx u _ v _
+  simpa using
+    (SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen (f := Ψ₁' r)
+      (s := wedgeSet) isOpen_wedgeSet hx (u := u) (v := v)
+      ((differentiableOn_Ψ₁'_upper (r := r)).differentiableAt
+        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
+          (wedgeSet_subset_upperHalfPlaneSet hx))))
 
 end PermJ12
 end Integral_Permutations

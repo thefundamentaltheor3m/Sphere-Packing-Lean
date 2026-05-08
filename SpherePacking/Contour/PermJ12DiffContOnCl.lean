@@ -44,25 +44,6 @@ public lemma diffContOnCl_wedgeSet_of
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
         (mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl h1))).continuousWithinAt
 
-/--
-On `wedgeSet`, the `fderivWithin` of `scalarOneForm f` is symmetric when `f` is complex
-differentiable on the upper half-plane.
-
-This supplies the "closedness" hypothesis used by the Poincare lemma.
--/
-public lemma fderivWithin_scalarOneForm_wedgeSet_symm_of
-    {f : ℂ → ℂ}
-    (hdiffC : DifferentiableOn ℂ f UpperHalfPlane.upperHalfPlaneSet) :
-    ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
-      fderivWithin ℝ (MagicFunction.scalarOneForm f) wedgeSet x u v =
-        fderivWithin ℝ (MagicFunction.scalarOneForm f) wedgeSet x v u := by
-  intro x hx u _ v _
-  simpa using
-    (SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen (f := f) (s := wedgeSet)
-      isOpen_wedgeSet hx (u := u) (v := v)
-      (hdiffC.differentiableAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
-        (wedgeSet_subset_upperHalfPlaneSet hx))))
-
 end
 
 end SpherePacking.Contour
