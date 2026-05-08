@@ -45,8 +45,9 @@ public lemma aAnotherIntegralC_ofReal (u : ℝ) :
     measurableSet_Ioi (fun t _ => by
       simp [aAnotherIntegrandC, aAnotherBase, aAnotherIntegrand])
 
-/-- Continuity of `aAnotherBase` on `(0, ∞)`. -/
-lemma continuousOn_aAnotherBase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) := by
+/-- `aAnotherIntegralC` is analytic on the right half-plane. -/
+public lemma aAnotherIntegralC_analyticOnNhd :
+    AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ)) :=
     continuous_const.continuousOn.div continuous_ofReal.continuousOn fun t ht => by
       exact_mod_cast ne_of_gt ht
@@ -55,16 +56,13 @@ lemma continuousOn_aAnotherBase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) 
       ContinuousOn (fun z : ℂ => φ₀'' z) upperHalfPlaneSet).comp hcontIdiv fun t ht => by
         change 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
         rw [imag_I_div t]; exact inv_pos.2 (by simpa using ht)
-  exact ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
-    hφcomp).sub (continuousOn_const.mul (by fun_prop : Continuous fun t : ℝ =>
-    ((Real.exp (2 * π * t)) : ℂ)).continuousOn)).add
-    (continuousOn_const.mul continuous_ofReal.continuousOn)).sub continuousOn_const
-
-/-- `aAnotherIntegralC` is analytic on the right half-plane. -/
-public lemma aAnotherIntegralC_analyticOnNhd :
-    AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by
+  have hbase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) :=
+    ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
+      hφcomp).sub (continuousOn_const.mul (by fun_prop : Continuous fun t : ℝ =>
+      ((Real.exp (2 * π * t)) : ℂ)).continuousOn)).add
+      (continuousOn_const.mul continuous_ofReal.continuousOn)).sub continuousOn_const
   convert analyticOnNhd_integral_base_exp (base := aAnotherBase)
-    continuousOn_aAnotherBase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
+    hbase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
       Filter.Eventually.of_forall fun t => by
         simp [aAnotherIntegrand, aAnotherBase, mul_assoc]) using 1
 
