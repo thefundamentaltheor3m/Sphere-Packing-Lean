@@ -41,8 +41,9 @@ public lemma continuous_comp_upperHalfPlane_mk {α β : Type*} [TopologicalSpace
 
 /-- A continuous function on `[0,1]` is bounded on `Ι (0,1)`. -/
 public lemma exists_bound_norm_uIoc_zero_one_of_continuous (f : ℝ → ℂ) (hf : Continuous f) :
-    ∃ M : ℝ, ∀ t ∈ (Ι (0 : ℝ) 1), ‖f t‖ ≤ M := by
-  simpa using SpherePacking.ForMathlib.exists_upper_bound_on_uIoc (g := fun t : ℝ => ‖f t‖)
-    (a := (0 : ℝ)) (b := 1) zero_le_one (hg := hf.norm.continuousOn)
+    ∃ M : ℝ, ∀ t ∈ (Ι (0 : ℝ) 1), ‖f t‖ ≤ M :=
+  let ⟨C, hC⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc (g := fun t : ℝ => ‖f t‖)
+    (a := (0 : ℝ)) (b := 1) zero_le_one hf.norm.continuousOn
+  ⟨C, fun x hx => hC x (Set.Ioc_subset_Icc_self (by simpa [Set.uIoc_of_le zero_le_one] using hx))⟩
 
 end SpherePacking.Integration

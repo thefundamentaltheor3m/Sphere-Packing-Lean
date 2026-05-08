@@ -20,13 +20,6 @@ public lemma exists_upper_bound_on_Icc {g : ℝ → ℝ} {a b : ℝ} (hab : a �
   let ⟨x0, _, hxmax⟩ := isCompact_Icc.exists_isMaxOn (nonempty_Icc.2 hab) hg
   ⟨g x0, fun _ hx => hxmax hx⟩
 
-/-- A continuous function on `Icc a b` admits a (global) upper bound on the unordered interval
-`Ι a b`. -/
-public lemma exists_upper_bound_on_uIoc {g : ℝ → ℝ} {a b : ℝ} (hab : a ≤ b)
-    (hg : ContinuousOn g (Icc a b)) : ∃ C, ∀ x ∈ Ι a b, g x ≤ C :=
-  let ⟨C, hC⟩ := exists_upper_bound_on_Icc (g := g) hab hg
-  ⟨C, fun x hx => hC x (Ioc_subset_Icc_self (by simpa [uIoc_of_le hab] using hx))⟩
-
 /-- If `g` is positive and continuous on `Icc a b`, then it admits a positive uniform lower bound. -/
 public lemma exists_lower_bound_pos_on_Icc {g : ℝ → ℝ} {a b : ℝ}
     (hg : ContinuousOn g (Icc a b)) (hpos : ∀ x ∈ Icc a b, 0 < g x) :
