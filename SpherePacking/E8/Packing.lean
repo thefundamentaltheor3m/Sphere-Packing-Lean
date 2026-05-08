@@ -90,9 +90,6 @@ open scoped Real
       (sub_ne_zero.mpr (by contrapose! hab; simp [hab])) using 2
   lattice_action x y := add_mem
 
-lemma E8Packing_numReps : E8Packing.numReps = 1 :=
-  PeriodicSpherePacking.numReps_eq_one _ rfl
-
 private lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
   have hbase : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
     simp [E8Basis, E8Matrix, EuclideanSpace.norm_eq, Fin.forall_fin_succ, Fin.sum_univ_eight]
@@ -118,7 +115,8 @@ open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
 public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
-  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, finrank_euclideanSpace,
+  · rw [PeriodicSpherePacking.numReps_eq_one _ rfl, Nat.cast_one, one_mul, volume_ball,
+      finrank_euclideanSpace,
       Fintype.card_fin, Nat.cast_ofNat]
     simp only [E8Packing]
     have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := by
