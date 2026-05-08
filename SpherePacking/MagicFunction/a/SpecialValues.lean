@@ -379,13 +379,6 @@ lemma tendsto_A_div_q :
   refine (tendsto_congr fun z => A_div_q_eq_nat_tsum z a fun _ => rfl).mpr ?_
   simpa [a] using tendsto_const_nhds.mul (QExp.tendsto_nat (a := a) (ha := ha))
 
-private lemma tendsto_Delta_div_q :
-    Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
-  have hrew : (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
-      fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 :=
-    funext fun z => by simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
-  simpa [hrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
-
 private lemma tendsto_A_over_Delta :
     Tendsto (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z))
       atImInfty (𝓝 (720 : ℂ)) := by
@@ -394,8 +387,13 @@ private lemma tendsto_A_over_Delta :
         ((Δ z) / cexp (2 * π * Complex.I * z)) :=
     funext fun z => by
       field_simp [(by simp : (cexp (2 * π * Complex.I * z) : ℂ) ≠ 0), Δ_ne_zero z]
+  have hΔrew : (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
+      fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 :=
+    funext fun z => by simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
+  have hΔ : Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
+    simpa [hΔrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
   rw [hrew]
-  simpa using tendsto_A_div_q.div tendsto_Delta_div_q (by norm_num : (1 : ℂ) ≠ 0)
+  simpa using tendsto_A_div_q.div hΔ (by norm_num : (1 : ℂ) ≠ 0)
 
 lemma tendsto_top_phi2 :
     Tendsto (fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) atTop (𝓝 (720 : ℂ)) := by
