@@ -19,23 +19,6 @@ namespace SpherePacking.Contour
 
 noncomputable section
 
-/-- Compute the norm of the `perm_J5` kernel, extracting the unit-modulus factors. -/
-public lemma permJ5_kernel_norm_eq_of
-    {k : ℕ}
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    (ψS' : ℂ → ℂ)
-    (w x : V) (s : ℝ) :
-    ‖Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
-        ((-Complex.I : ℂ) *
-              ψS' ((Complex.I : ℂ) * (s : ℂ)) *
-              (s ^ (-(k : ℤ)) : ℂ) *
-              Complex.exp ((-Real.pi * (‖x‖ ^ 2) / s : ℝ) : ℂ))‖ =
-      (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-(k : ℤ)) : ℂ)‖) *
-        Real.exp (-Real.pi * (‖x‖ ^ 2) / s) := by
-  have hphase : ‖Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I)‖ = (1 : ℝ) := by
-    simpa using Complex.norm_exp_ofReal_mul_I (-2 * (Real.pi * ⟪x, w⟫))
-  simp only [norm_mul, hphase, Complex.norm_exp_ofReal, norm_neg, Complex.norm_I, one_mul]
-
 end
 
 end SpherePacking.Contour

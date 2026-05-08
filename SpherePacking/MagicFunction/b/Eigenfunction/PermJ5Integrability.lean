@@ -72,7 +72,16 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
     ‖kernel w (x, s)‖ =
       (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
         rexp (-π * (‖x‖ ^ 2) / s) := by
-  simpa [kernel, J5Change.g] using (permJ5_kernel_norm_eq_of (ψS' := ψS') (k := 4) w x s)
+  have hphase : ‖Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I)‖ = (1 : ℝ) := by
+    simpa using Complex.norm_exp_ofReal_mul_I (-2 * (Real.pi * ⟪x, w⟫))
+  rw [show ‖kernel w (x, s)‖ =
+      ‖Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
+          ((-Complex.I : ℂ) *
+                ψS' ((Complex.I : ℂ) * (s : ℂ)) *
+                (s ^ (-(4 : ℤ)) : ℂ) *
+                Complex.exp ((-Real.pi * (‖x‖ ^ 2) / s : ℝ) : ℂ))‖ from by
+    simp [kernel, J5Change.g]]
+  simp only [norm_mul, hphase, Complex.norm_exp_ofReal, norm_neg, Complex.norm_I, one_mul]
 
 /-- Integrability of `kernel w` for the product measure `volume × μIciOne`. -/
 public lemma integrable_kernel (w : ℝ⁸) :
