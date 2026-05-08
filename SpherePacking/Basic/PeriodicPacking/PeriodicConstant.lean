@@ -145,15 +145,12 @@ public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     fundamentalDomain_isBounded (cubeBasis d L hL)
 
-public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
-    coordCube d L =
-      (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-        (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
-  ext x; simp [coordCube, Set.mem_pi]
-
 public lemma volume_coordCube (L : ℝ) : volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
-  rw [coordCube_eq_preimage_ofLp, volume_preimage_ofLp _
-    (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
+  rw [show coordCube d L = (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
+        (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) from
+      Set.ext fun x => by simp [coordCube, Set.mem_pi],
+    volume_preimage_ofLp _
+      (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
 
 public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
