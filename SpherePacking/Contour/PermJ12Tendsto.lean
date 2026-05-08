@@ -36,15 +36,6 @@ public structure TendstoPsiOneHypotheses (wedgeSet : Set ℂ) (ψS : UpperHalfPl
 
 private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
-private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
-    (tendsto_ψS_atImInfty : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))) :
-    ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
-  rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
-    (((tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_atImInfty).eventually
-      (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
-  exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
-    fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
-
 /-- Under `TendstoPsiOneHypotheses`, `Ψ₁' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
 public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
     {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ}
@@ -60,7 +51,12 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
       ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
     exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
       (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
-  obtain ⟨A, hApos, hA⟩ := exists_im_bound_norm_ψS_le_one (ψS := ψS) h.tendsto_ψS_atImInfty
+  obtain ⟨A, hApos, hA⟩ : ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
+    rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
+      (((tendsto_zero_iff_norm_tendsto_zero).1 h.tendsto_ψS_atImInfty).eventually
+        (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
+    exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
+      fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
   refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
   refine ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
     lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
