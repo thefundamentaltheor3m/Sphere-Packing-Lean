@@ -29,18 +29,16 @@ private theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective
   (summable (f := fun x => g (φ x))).tsum_le_tsum_of_inj φ hφ (fun _ _ ↦ zero_le _)
     (fun _ ↦ le_rfl) (summable (f := g))
 
-private theorem tsum_comp_eq_tsum_of_bijective {φ : α → β} (hφ : φ.Bijective) (g : β → ℕ∞) :
-    ∑' x, g (φ x) = ∑' y, g y :=
-  (tsum_comp_le_tsum_of_injective hφ.injective g).antisymm <|
-    calc ∑' y, g y = ∑' y, g (φ (surjInv hφ.surjective y)) := by simp [surjInv_eq hφ.surjective]
-      _ ≤ ∑' x, g (φ x) :=
-        tsum_comp_le_tsum_of_injective (injective_surjInv hφ.surjective) _
-
 private theorem tsum_subtype_iUnion_eq_tsum {ι : Type*} (f : α → ℕ∞) (t : ι → Set α)
     (ht : Pairwise (Disjoint on t)) :
     ∑' x : ⋃ i, t i, f x = ∑' i, ∑' x : t i, f x :=
+  have hbij := sigmaToiUnion_bijective t (fun _ _ hij ↦ ht hij)
   calc ∑' x : ⋃ i, t i, f x = ∑' x : Σ i, t i, f x.2 :=
-    (tsum_comp_eq_tsum_of_bijective (sigmaToiUnion_bijective t (fun _ _ hij ↦ ht hij)) _).symm
+    ((tsum_comp_le_tsum_of_injective hbij.injective fun x : ⋃ i, t i => f x).antisymm <|
+      calc ∑' y : ⋃ i, t i, f y
+            = ∑' y : ⋃ i, t i, f (sigmaToiUnion t (surjInv hbij.surjective y)) := by
+              simp [surjInv_eq hbij.surjective]
+        _ ≤ _ := tsum_comp_le_tsum_of_injective (injective_surjInv hbij.surjective) _).symm
     _ = _ := Summable.tsum_sigma' (fun _ ↦ summable) summable
 
 end ENat
