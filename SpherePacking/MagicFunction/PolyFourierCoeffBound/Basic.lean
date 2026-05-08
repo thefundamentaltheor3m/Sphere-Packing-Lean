@@ -107,39 +107,6 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
     nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
   exact summable_log_one_sub_rexp_pow_24 hr
 
-include hz hcsum hpoly in
-lemma step_11 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-  gcongr ?_ * ?_ / _
-  · exact (aux_8 z).le
-  refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left
-    (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (aux_10 z c n₀ hcsum)
-    (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
-    neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
-
-include hz in
-lemma step_12 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-    (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
-  have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
-    sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
-  gcongr
-  · exact aux_11
-  refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n =>
-    pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 (by
-      simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
-        neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
-          (by positivity : 0 ≤ (π : ℝ) * (n : ℝ))))) 1) 24)
-    (step_12a pi_pos)
-    (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
-
 include f hf z hz c n₀ hcsum k hpoly in
 /-- A uniform bound on `‖(f z) / (Δ z)‖` for a function given by a Fourier series with polynomially
 bounded coefficients, in terms of `DivDiscBound` and an exponential factor depending on `n₀`. -/
@@ -188,9 +155,28 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
     · simpa [mul_assoc, mul_left_comm, mul_comm] using
         step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
+    gcongr ?_ * ?_ / _
+    · exact (aux_8 z).le
+    refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left
+      (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (aux_10 z c n₀ hcsum)
+      (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
+    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
+      neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z hz c n₀
+      (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
+    have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
+      sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
+    gcongr
+    · exact aux_11
+    refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n =>
+      pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 (by
+        simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
+          neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
+            (by positivity : 0 ≤ (π : ℝ) * (n : ℝ))))) 1) 24)
+      (step_12a pi_pos)
+      (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+        step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
   _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
       simp [DivDiscBound, mul_div_assoc, mul_comm, mul_assoc]
 
