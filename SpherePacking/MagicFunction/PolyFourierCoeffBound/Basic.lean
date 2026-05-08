@@ -107,25 +107,6 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
     nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
   exact summable_log_one_sub_rexp_pow_24 hr
 
-lemma step_10 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-  have hpow : Multipliable fun b : ℕ+ ↦ ‖(1 - cexp (2 * ↑π * I * (b : ℂ) * z))‖ ^ 24 := by
-    have h := (MultipliableEtaProductExpansion_pnat z).norm
-    induction (24 : ℕ) with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul h
-  gcongr
-  · exact aux_8 z
-  refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_ hpow
-  · simp only [neg_mul]; gcongr
-    · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
-    · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
-      exact (le_abs_self _).trans <| by
-        simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp (2 * π * I * n * z))
-  · simpa [mul_assoc, mul_left_comm, mul_comm] using
-      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
-
 include hz hcsum hpoly in
 lemma step_11 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -192,7 +173,20 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
         gcongr; exacts [aux_6 z, by simpa [norm_mul] using aux_3 z c n₀ hcsum,
           aux_10 z c n₀ hcsum, by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z c n₀
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
+    have hpow : Multipliable fun b : ℕ+ ↦ ‖(1 - cexp (2 * ↑π * I * (b : ℂ) * z))‖ ^ 24 := by
+      have h := (MultipliableEtaProductExpansion_pnat z).norm
+      induction (24 : ℕ) with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul h
+    gcongr
+    · exact aux_8 z
+    refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_ hpow
+    · simp only [neg_mul]; gcongr
+      · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
+      · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
+        exact (le_abs_self _).trans <| by
+          simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp (2 * π * I * n * z))
+    · simpa [mul_assoc, mul_left_comm, mul_comm] using
+        step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
