@@ -20,12 +20,6 @@ lemma integral_exp_neg_mul_Ioi {a : ℝ} (ha : 0 < a) :
   simpa [Real.rpow_one, one_add_one_eq_two, gamma_two, Real.rpow_neg_one, one_div] using
     (integral_exp_neg_mul_rpow (p := (1 : ℝ)) (b := a) (hp := by norm_num) (hb := ha))
 
-lemma integral_mul_exp_neg_mul_Ioi {a : ℝ} (ha : 0 < a) :
-    (∫ t in Set.Ioi (0 : ℝ), t * Real.exp (-a * t)) = 1 / a ^ (2 : ℕ) := by
-  simpa [Real.rpow_one, one_add_one_eq_two, gamma_two, Real.rpow_neg ha.le, one_div, div_one]
-    using (integral_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (q := (1 : ℝ)) (b := a)
-      (hp := by norm_num) (hq := by norm_num) (hb := ha))
-
 /-- Evaluate `∫ exp(-π * u * t)` over `t ∈ (0, ∞)` (for `0 < u`). -/
 public lemma integral_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), Real.exp (-π * u * t)) = 1 / (π * u) := by
@@ -34,8 +28,10 @@ public lemma integral_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 0 < u) :
 /-- Evaluate `∫ t * exp(-π * u * t)` over `t ∈ (0, ∞)` (for `0 < u`). -/
 public lemma integral_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), t * Real.exp (-π * u * t)) = 1 / (π * u) ^ (2 : ℕ) := by
-  simpa [mul_assoc] using
-    (integral_mul_exp_neg_mul_Ioi (a := π * u) (by positivity [Real.pi_pos, hu]))
+  have ha : 0 < π * u := by positivity [Real.pi_pos, hu]
+  simpa [mul_assoc, Real.rpow_one, one_add_one_eq_two, gamma_two, Real.rpow_neg ha.le, div_one]
+    using (integral_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (q := (1 : ℝ)) (b := π * u)
+      (hp := by norm_num) (hq := by norm_num) (hb := ha))
 
 /-- Algebraic identity: `exp(2πt) · exp(-πut) = exp(-(π(u-2))t)`. -/
 public lemma exp_two_pi_mul_mul_exp_neg_pi_mul (u t : ℝ) :
