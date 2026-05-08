@@ -42,7 +42,10 @@ public lemma Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u t : ℝ) :
   have hpow : ((t : ℂ) * Complex.I) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
     rw [mul_pow]; simp [pow_two, Complex.I_mul_I]
   dsimp [MagicFunction.a.ComplexIntegrands.Φ₅', aLaplaceIntegrand]
-  rw [harg, hpow, SpherePacking.ForMathlib.exp_pi_I_mul_mul_I_eq_real_exp (u := u) (t := t)]
+  rw [harg, hpow, show Complex.exp (Real.pi * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
+    (Real.exp (-Real.pi * u * t) : ℂ) by
+    simp [show (Real.pi : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I) = (-Real.pi * u * t : ℂ)
+      from by ring_nf; simp [Complex.I_sq]]]
   ring_nf
 
 /-- Imaginary-axis specialization of the finite-difference identity for `φ₀`. -/

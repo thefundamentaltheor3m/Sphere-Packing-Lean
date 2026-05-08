@@ -11,13 +11,6 @@ namespace SpherePacking.ForMathlib
 open Complex
 open scoped Complex
 
-/-- Rewrite `exp (π i * u * (t i))` as a real exponential: `exp (-π * u * t)`. -/
-public lemma exp_pi_I_mul_mul_I_eq_real_exp (u t : ℝ) :
-    Complex.exp (Real.pi * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
-      (Real.exp (-Real.pi * u * t) : ℂ) := by
-  simp [show (Real.pi : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I) = (-Real.pi * u * t : ℂ)
-    from by ring_nf; simp [Complex.I_sq]]
-
 /-- If `δ ≤ Im z` then `‖exp (2π i * n * z)‖ ≤ (exp (-2π * δ)) ^ n` for all `n : ℕ`. -/
 public lemma norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im (n : ℕ) {δ : ℝ} {z : ℂ}
     (hδ : δ ≤ z.im) :
