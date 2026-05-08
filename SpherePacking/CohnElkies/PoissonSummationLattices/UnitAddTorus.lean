@@ -71,20 +71,15 @@ theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
       (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
       (hf := fun _ => UnitAddCircle.measurePreserving_mk t))
 
-theorem mFourier_apply_coeFun (n : ℕ) (k : Fin n → ℤ) (x : Fin n → ℝ) :
-    UnitAddTorus.mFourier k (coeFun n x) =
-      Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
-  simpa [UnitAddTorus.mFourier, ContinuousMap.coe_mk, coeFun, fourier_coe_apply, Finset.mul_sum,
-    mul_assoc, mul_left_comm, mul_comm] using
-    (Complex.exp_sum (s := (Finset.univ : Finset (Fin n)))
-        (f := fun i : Fin n => 2 * π * Complex.I * ((k i : ℝ) * x i))).symm
-
 /-- Evaluate the additive character `mFourier k` on a point `x : ℝ^n` viewed in the torus
 via `coeFun`. -/
 public theorem mFourier_apply_coeFun_ofLp (n : ℕ) (k : Fin n → ℤ) (x : EuclideanSpace ℝ (Fin n)) :
     UnitAddTorus.mFourier k (coeFun n (WithLp.ofLp x)) =
       Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
-  simpa using (mFourier_apply_coeFun (n := n) (k := k) (x := WithLp.ofLp x))
+  simpa [UnitAddTorus.mFourier, ContinuousMap.coe_mk, coeFun, fourier_coe_apply, Finset.mul_sum,
+    mul_assoc, mul_left_comm, mul_comm] using
+    (Complex.exp_sum (s := (Finset.univ : Finset (Fin n)))
+        (f := fun i : Fin n => 2 * π * Complex.I * ((k i : ℝ) * (WithLp.ofLp x i)))).symm
 
 /-- Pull back Haar integration on `(ℝ/ℤ)^n` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^n`. -/
 public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : UnitAddTorus (Fin n) → ℂ)
