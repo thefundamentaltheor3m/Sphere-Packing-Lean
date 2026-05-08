@@ -207,13 +207,6 @@ public theorem a_eq_sum_integrals_RadialFunctions :
   open MagicFunction.a.RadialFunctions in
   simp [a, a', I₁, I₂, I₃, I₄, I₅, I₆, sq_nonneg ‖x‖, add_assoc]
 
-/-- Expand `a` as the sum of the six Schwartz integrals. -/
-public theorem a_eq_sum_integrals_SchwartzIntegrals :
-    a = MagicFunction.a.SchwartzIntegrals.I₁ + MagicFunction.a.SchwartzIntegrals.I₂
-      + MagicFunction.a.SchwartzIntegrals.I₃ + MagicFunction.a.SchwartzIntegrals.I₄
-      + MagicFunction.a.SchwartzIntegrals.I₅ + MagicFunction.a.SchwartzIntegrals.I₆ :=
-  rfl
-
 end MagicFunction.FourierEigenfunctions
 
 end

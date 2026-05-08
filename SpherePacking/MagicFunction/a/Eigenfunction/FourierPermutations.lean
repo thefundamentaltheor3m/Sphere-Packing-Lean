@@ -55,7 +55,7 @@ section Eigenfunction
 
 /-- The magic function `a` is invariant under the Fourier transform. -/
 public theorem eig_a : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) a = a := by
-  rw [a_eq_sum_integrals_SchwartzIntegrals,
+  rw [show a = I₁ + I₂ + I₃ + I₄ + I₅ + I₆ from rfl,
     show I₁ + I₂ + I₃ + I₄ + I₅ + I₆ = (I₁ + I₂) + (I₃ + I₄) + I₅ + I₆ by ac_rfl,
     map_add, map_add, map_add, perm_I₁_I₂, perm_I₅, perm_I₃_I₄, perm_I₆]
   ac_rfl
