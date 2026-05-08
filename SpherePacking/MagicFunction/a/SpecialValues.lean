@@ -337,12 +337,6 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
       simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using hadd
   have hrect := rect_phi2 m hm; grind only
 
-lemma summable_coeff_A_over_q :
-    Summable (fun n : ℕ =>
-      ‖(((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))‖ * Real.exp (-2 * Real.pi * n)) :=
-  SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
-    fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
-
 private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
     (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
     (∑' (n : ℕ+),
@@ -379,8 +373,9 @@ lemma tendsto_A_div_q :
         ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z))
       atImInfty (𝓝 (720 : ℂ)) := by
   let a : ℕ → ℂ := fun n => (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
-  have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) := by
-    simpa [a] using summable_coeff_A_over_q
+  have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) :=
+    SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
+      fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
   refine (tendsto_congr fun z => A_div_q_eq_nat_tsum z a fun _ => rfl).mpr ?_
   simpa [a] using tendsto_const_nhds.mul (QExp.tendsto_nat (a := a) (ha := ha))
 
