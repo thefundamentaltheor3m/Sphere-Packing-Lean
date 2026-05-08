@@ -71,12 +71,6 @@ theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
       (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
       (hf := fun _ => UnitAddCircle.measurePreserving_mk t))
 
-theorem volume_restrict_pi_eq_pi_restrict (n : ℕ) (t : ℝ) :
-    (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) =
-      Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)) := by
-  simpa using (Measure.restrict_pi_pi
-    (μ := fun _ : Fin n => (volume : Measure ℝ)) (s := fun _ : Fin n => Set.Ioc t (t + 1)))
-
 theorem mFourier_apply_coeFun (n : ℕ) (k : Fin n → ℤ) (x : Fin n → ℝ) :
     UnitAddTorus.mFourier k (coeFun n x) =
       Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
@@ -105,6 +99,9 @@ public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : Uni
     rw [← hmp.map_eq]
     simpa using MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
       (hfm := by simpa [hmp.map_eq] using hg)
-  simpa [(volume_restrict_pi_eq_pi_restrict n t).symm] using h1
+  simpa [(by simpa using (Measure.restrict_pi_pi
+    (μ := fun _ : Fin n => (volume : Measure ℝ)) (s := fun _ : Fin n => Set.Ioc t (t + 1))) :
+    (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) =
+    Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))).symm] using h1
 
 end SchwartzMap.UnitAddTorus
