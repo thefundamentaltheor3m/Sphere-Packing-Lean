@@ -107,9 +107,6 @@ public theorem b_eq_sum_integrals_RadialFunctions : b =
     MagicFunction.b.RadialFunctions.J₅, MagicFunction.b.RadialFunctions.J₆,
     sq_nonneg ‖x‖, add_assoc]
 
-/-- Expand `b` as a sum of `MagicFunction.b.SchwartzIntegrals.J₁`-`J₆`. -/
-public theorem b_eq_sum_integrals_SchwartzIntegrals : b = J₁ + J₂ + J₃ + J₄ + J₅ + J₆ := rfl
-
 end MagicFunction.FourierEigenfunctions
 
 end

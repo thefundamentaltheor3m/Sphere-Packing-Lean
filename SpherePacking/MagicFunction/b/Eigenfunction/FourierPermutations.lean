@@ -75,7 +75,7 @@ section Eigenfunction
 The Schwartz function `b` is a `(-1)`-eigenfunction of the Fourier transform on `ℝ⁸`.
 -/
 public theorem eig_b : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) b = -b := by
-  rw [b_eq_sum_integrals_SchwartzIntegrals]
+  rw [show b = J₁ + J₂ + J₃ + J₄ + J₅ + J₆ from rfl]
   have hrw : J₁ + J₂ + J₃ + J₄ + J₅ + J₆ = (J₁ + J₂) + (J₃ + J₄) + J₅ + J₆ := by ac_rfl
   rw [hrw, map_add, map_add, map_add, perm_J₁_J₂, perm_J₅, perm_₃_J₄, perm_J₆]
   abel
