@@ -74,30 +74,26 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
         rexp (-π * (‖x‖ ^ 2) / s) := by
   simpa [kernel, J5Change.g] using (permJ5_kernel_norm_eq_of (ψS' := ψS') (k := 4) w x s)
 
-lemma integrable_kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
-    Integrable (fun x : ℝ⁸ ↦ kernel w (x, s)) (volume : Measure ℝ⁸) := by
-  have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
-    simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
-      (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
-      (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
-        fun _ _ => ⟨Set.mem_univ _, hs⟩)
-  exact Integrable.mono' (by
-      simpa [mul_assoc] using
-        (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s)
-          (lt_of_lt_of_le (by norm_num) hs)).const_mul
-          (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
-    ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
-      hg).aestronglyMeasurable <| .of_forall fun x =>
-    le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s))
-
 /-- Integrability of `kernel w` for the product measure `volume × μIciOne`. -/
 public lemma integrable_kernel (w : ℝ⁸) :
     Integrable (kernel w) ((volume : Measure ℝ⁸).prod μIciOne) := by
   haveI : MeasureTheory.SFinite μIciOne := by dsimp [μIciOne]; infer_instance
   refine (MeasureTheory.integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIciOne)
     (aestronglyMeasurable_kernel (w := w))).2
-    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs =>
-      integrable_kernel_slice (w := w) (s := s) hs, ?_⟩
+    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => by
+      have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
+        simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
+          (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
+          (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
+            fun _ _ => ⟨Set.mem_univ _, hs⟩)
+      exact Integrable.mono' (by
+          simpa [mul_assoc] using
+            (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s)
+              (lt_of_lt_of_le (by norm_num) hs)).const_mul
+              (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
+        ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
+          hg).aestronglyMeasurable <| .of_forall fun x =>
+        le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s)), ?_⟩
   obtain ⟨C, hC⟩ :=
     MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   have hmajor : Integrable (fun s : ℝ ↦ C * rexp (-π * s)) μIciOne := by
