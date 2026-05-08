@@ -19,11 +19,6 @@ namespace Complex
 open Set Real intervalIntegral Metric Filter MeasureTheory
 open scoped Interval Topology
 
-@[simp] theorem re_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).re = x := by simp
-
-/-- Imaginary part of `x + y * I` is `y`. -/
-@[simp] public theorem im_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).im = y := by simp
-
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {f : ℂ → E} {x₁ x₂ : ℝ} (y : ℝ)
 
 /-- If `f(z) → 0` as `Im(z) → ∞`, then `∫_{x₁}^{x₂} f(x + mI) dx → 0` as `m → ∞`. -/
