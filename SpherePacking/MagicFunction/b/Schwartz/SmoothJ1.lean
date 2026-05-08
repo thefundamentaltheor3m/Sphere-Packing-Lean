@@ -105,11 +105,6 @@ private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
     SpherePacking.Integration.DifferentiationUnderIntegral.gN, mul_assoc, mul_left_comm, mul_comm,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
 
-lemma iteratedDeriv_J₁'_eq_integral_gN (n : ℕ) :
-    iteratedDeriv n J₁' = fun x : ℝ ↦ I n x := by
-  simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
-    (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n
-
 /-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
   simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I)
@@ -172,7 +167,9 @@ public theorem decay_J₁' :
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
       = x ^ k * ‖I n x‖ := by
         simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-          congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_J₁'_eq_integral_gN (n := n))]
+          congrArg (fun F : ℝ → ℂ => F x) (show iteratedDeriv n J₁' = fun x : ℝ ↦ I n x by
+            simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+              (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
     _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring
     _ ≤ Kn * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx) hKn_nonneg
