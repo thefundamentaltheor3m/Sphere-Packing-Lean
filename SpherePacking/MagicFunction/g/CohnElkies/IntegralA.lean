@@ -21,11 +21,6 @@ namespace MagicFunction.g.CohnElkies
 open MeasureTheory Real Complex
 open MagicFunction.FourierEigenfunctions
 
-private lemma A_as_complex {t : ℝ} (ht : 0 < t) : (A t : ℂ) =
-    (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
-      (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
-  apply Complex.ext <;> simp [A, sub_eq_add_neg, φ₀''_imag_axis_div_im t ht, ψI'_imag_axis_im t ht]
-
 /-- Laplace-type integral formula for `gRadial` in terms of the kernel `A(t)` (for `u > 2`). -/
 public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) : gRadial u =
     (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -56,7 +51,11 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) : gRadial u =
           (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ))) *
           Real.exp (-π * u * t)) :=
       MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-        measurableSet_Ioi (fun t ht => by simp [A_as_complex (t := t) ht])
+        measurableSet_Ioi (fun t ht => by
+          simp [show (A t : ℂ) = (-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
+              (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ)) by
+            apply Complex.ext <;> simp [A, sub_eq_add_neg, φ₀''_imag_axis_div_im t ht,
+              ψI'_imag_axis_im t ht]])
     rw [hset]
     have hIntA : IntegrableOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) *
         φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
