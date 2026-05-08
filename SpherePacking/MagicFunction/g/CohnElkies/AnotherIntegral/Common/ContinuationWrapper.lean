@@ -17,23 +17,19 @@ open Real Complex SpherePacking
 
 noncomputable section
 
-/-- The function `u ↦ (sin (π u / 2))^2` is analytic on `ACDomain`. -/
-public lemma analyticOnNhd_sinSqHalfPi :
-    AnalyticOnNhd ℂ (fun u : ℂ => (Complex.sin ((π : ℂ) * u / 2)) ^ (2 : ℕ)) ACDomain := by
-  have hsin : AnalyticOnNhd ℂ (fun u : ℂ => Complex.sin ((π : ℂ) * u / 2)) ACDomain := by
-    simpa [Function.comp] using ((by simpa using (analyticOnNhd_sin (s := (Set.univ : Set ℂ)))) :
-        AnalyticOnNhd ℂ (fun z : ℂ => Complex.sin z) (Set.univ : Set ℂ)).comp
-      (AnalyticOnNhd.div_const (analyticOnNhd_const.mul analyticOnNhd_id) :
-        AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u / 2) ACDomain) (by intro _ _; simp)
-  exact hsin.pow 2
-
 /-- If `inner` is analytic on `ACDomain`, then so is
 `u ↦ sign * (sin (π u / 2))^2 * inner u` for any constant `sign : ℂ`. -/
 public lemma analyticOnNhd_sinSq_prefactor_mul
     (sign : ℂ) {inner : ℂ → ℂ} (hinner : AnalyticOnNhd ℂ inner ACDomain) :
     AnalyticOnNhd ℂ
       (fun u : ℂ => sign * (Complex.sin ((π : ℂ) * u / 2)) ^ (2 : ℕ) * inner u) ACDomain :=
-  (analyticOnNhd_const.mul analyticOnNhd_sinSqHalfPi).mul hinner
+  (analyticOnNhd_const.mul (by
+    have hsin : AnalyticOnNhd ℂ (fun u : ℂ => Complex.sin ((π : ℂ) * u / 2)) ACDomain := by
+      simpa [Function.comp] using ((by simpa using (analyticOnNhd_sin (s := (Set.univ : Set ℂ)))) :
+          AnalyticOnNhd ℂ (fun z : ℂ => Complex.sin z) (Set.univ : Set ℂ)).comp
+        (AnalyticOnNhd.div_const (analyticOnNhd_const.mul analyticOnNhd_id) :
+          AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u / 2) ACDomain) (by intro _ _; simp)
+    exact hsin.pow 2)).mul hinner
 
 end
 
