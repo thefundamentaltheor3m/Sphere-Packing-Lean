@@ -206,7 +206,8 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
       periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
         (F := Fset) (fun x hx => by
           rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
-          exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩)
+          exact ⟨a, fun i => ⟨(by norm_num : (0:ℝ) < _).le.trans (ha i).1,
+            (ha i).2.trans_lt (sub_lt_self _ (by norm_num))⟩, rfl⟩)
         hD_unique
   have hnumReps : P.numReps = F.card := by
     exact_mod_cast show (P.numReps : ENat) = (F.card : ENat) by

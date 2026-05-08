@@ -168,10 +168,6 @@ public lemma volume_coordCubeInner (L r : ℝ) :
     (.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc), volume_pi, Measure.pi_pi]
   simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
 
-public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
-    coordCubeInner d L r ⊆ coordCube d L :=
-  fun _ hx i => ⟨hr.le.trans (hx i).1, (hx i).2.trans_lt (sub_lt_self L hr)⟩
-
 end PeriodicConstant
 
 namespace PeriodicConstantApprox
