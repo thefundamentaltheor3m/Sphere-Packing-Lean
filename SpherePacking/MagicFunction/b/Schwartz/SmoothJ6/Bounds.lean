@@ -73,10 +73,6 @@ lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
       (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
       (n := n) (x := x) hx (hF_int := by simpa [μ] using gN_integrable (n := n) (x := x) hx))
 
-lemma hasDerivAt_G (n : ℕ) (x : ℝ) (hx : x ∈ s) :
-    HasDerivAt (fun y : ℝ => G n y) (G (n + 1) x) x := by
-  simpa [G] using (hasDerivAt_F (n := n) (x := x) hx).const_mul (-2 : ℂ)
-
 lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := by
   intro n
   induction n with
@@ -87,7 +83,8 @@ lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n
         filter_upwards [isOpen_s.mem_nhds hx] with y hy using ih (m := m) hy
       simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
         (Filter.EventuallyEq.deriv_eq hEq).trans
-          ((hasDerivAt_G (n := n + m) (x := x) hx).deriv)
+          ((by simpa [G] using (hasDerivAt_F (n := n + m) (x := x) hx).const_mul (-2 : ℂ) :
+            HasDerivAt (fun y : ℝ => G (n + m) y) (G (n + m + 1) x) x).deriv)
 
 private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
     (∫ t in Ici (1 : ℝ),
