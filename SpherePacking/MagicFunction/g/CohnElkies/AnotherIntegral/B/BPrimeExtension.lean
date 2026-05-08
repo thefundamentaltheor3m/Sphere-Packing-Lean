@@ -77,12 +77,6 @@ private lemma continuousOn_ψT'_comp (z : ℝ → ℂ) (hz : Continuous z)
       (z := fun t : Ι (0 : ℝ) 1 => z (t : ℝ)) (hz.comp continuous_subtype_val)
       (fun t => hIm (t : ℝ) t.2) (fun t => by simp [ψT', hIm (t : ℝ) t.2])
 
-private lemma norm_pi_mul_I_mul_le (z : ℂ) {N : ℝ} (hz : ‖z‖ ≤ N) :
-    ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ N * π := by
-  rw [norm_mul, show ‖(π : ℂ) * (Complex.I : ℂ)‖ = (π : ℝ) by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le], mul_comm]
-  gcongr
-
 private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : Continuous z)
     (hIm : ∀ t : ℝ, 0 < (z t).im) :
     ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z t)‖ ≤ M :=
@@ -156,7 +150,10 @@ private lemma integral_ψ_exp_differentiable
     funext u; congr 1; funext t; congr 2; ring
   exact hEq ▸ differentiableAt_intervalIntegral_mul_exp (u0 := u0) (Cbase := Mψ) (K := Cz * π)
     hψz_cont (continuous_const.mul hz_cont).continuousOn hψz_bound
-    (fun t ht => norm_pi_mul_I_mul_le (z := z t) (N := Cz) (hz_bound t ht))
+    (fun t ht => by
+      rw [norm_mul, show ‖(π : ℂ) * (Complex.I : ℂ)‖ = (π : ℝ) by
+        simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le], mul_comm]
+      gcongr; exact hz_bound t ht)
 
 lemma J₁'C_differentiable : Differentiable ℂ J₁'C :=
   let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₁'
