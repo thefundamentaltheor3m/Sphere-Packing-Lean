@@ -175,19 +175,6 @@ section VolumeBallRatio
 
 open ENNReal
 
-lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
-    ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  obtain ⟨k, hk⟩ := (ENNReal.tendsto_atTop (by simp)).mp
-    (Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
-      tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id) :
-      Filter.Tendsto (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop
-        (𝓝 (ENNReal.ofReal (1 - 0) ^ d))) ε hε
-  refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
-  obtain ⟨hk₀, hk₁⟩ := max_le_iff.mp hk'
-  have := hk k' hk₁
-  rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
-    ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
-
 /-- As `R → ∞`, `volume (ball 0 R) / volume (ball 0 (R + C))` → `1` for `C ≥ 0`. -/
 public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
@@ -208,7 +195,19 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
   intro ε hε
   obtain ⟨k, _, hk₂⟩ : ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k,
       ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-    simpa using aux_bhavik (Nat.cast_nonneg d) hε
+    obtain ⟨k, hk⟩ := (ENNReal.tendsto_atTop (by simp)).mp
+      (Tendsto.ennrpow_const (d : ℝ) <| tendsto_ofReal <| Tendsto.const_sub 1 <|
+        tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id) :
+        Filter.Tendsto (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ (d : ℝ))) atTop
+          (𝓝 (ENNReal.ofReal (1 - 0) ^ (d : ℝ)))) ε hε
+    refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
+    obtain ⟨_, hk₁⟩ := max_le_iff.mp hk'
+    have := hk k' hk₁
+    have hgoal :
+        ENNReal.ofReal ((k' / (k' + 1)) ^ (d : ℝ)) ∈ Set.Icc (1 - ε) (1 + ε) := by
+      rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
+        ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
+    simpa using hgoal
   refine ⟨k * C, fun n hn => ?_⟩
   rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
   convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
