@@ -72,23 +72,22 @@ public lemma ψT'_I_mul (t : ℝ) (ht : 0 < t) :
   simpa [add_assoc] using
     (ψT'_eq_ψI'_add_one (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht))
 
-private lemma differentiableOn_ψT_ofComplex :
-    DifferentiableOn ℂ (fun z : ℂ => ψT (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
-  have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
-  have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
-  have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-  have hleft := (hH3.add hH4).div (hH2.pow 2) fun _ _ => pow_ne_zero 2 (H₂_ne_zero _)
-  have hright := (hH2.add hH3).div (hH4.pow 2) fun _ _ => pow_ne_zero 2 (H₄_ne_zero _)
-  refine (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ)).congr fun z _ => ?_
-  simpa [mul_assoc] using congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
-
 /-- Holomorphy of `bContourIntegrandT` on the open upper half-plane. -/
 public lemma differentiableOn_bContourIntegrandT (u : ℝ) :
     DifferentiableOn ℂ (bContourIntegrandT u) {z : ℂ | 0 < z.im} := by
   have hExp : DifferentiableOn ℂ (bContourWeight u) {z : ℂ | 0 < z.im} := by
     simpa [bContourWeight] using (by fun_prop :
       Differentiable ℂ fun z : ℂ => cexp (π * (Complex.I : ℂ) * (u : ℂ) * z)).differentiableOn
-  refine (differentiableOn_ψT_ofComplex.mul hExp).congr fun z hz => ?_
+  have hψT : DifferentiableOn ℂ (fun z : ℂ => ψT (UpperHalfPlane.ofComplex z))
+      {z : ℂ | 0 < z.im} := by
+    have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
+    have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
+    have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
+    have hleft := (hH3.add hH4).div (hH2.pow 2) fun _ _ => pow_ne_zero 2 (H₂_ne_zero _)
+    have hright := (hH2.add hH3).div (hH4.pow 2) fun _ _ => pow_ne_zero 2 (H₄_ne_zero _)
+    refine (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ)).congr fun z _ => ?_
+    simpa [mul_assoc] using congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
+  refine (hψT.mul hExp).congr fun z hz => ?_
   have hz' : 0 < z.im := hz
   simp [bContourIntegrandT, ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
 
