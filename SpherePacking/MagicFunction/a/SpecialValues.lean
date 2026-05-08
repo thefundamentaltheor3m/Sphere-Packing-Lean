@@ -427,12 +427,6 @@ lemma tendsto_top_phi2 :
         intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ)) hbound)
     (half_lt_self hε)
 
-lemma integral_phi2_height_one :
-    (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) := by
-  simpa using tendsto_const_nhds_iff.mp (tendsto_top_phi2.congr' <| by
-    filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm
-    simpa [zI] using (strip_identity_phi2 m hm).symm)
-
 private lemma intervalIntegrable_F_comp
     (w : ℝ → ℂ) (hw : ContinuousOn w (Set.uIcc (0 : ℝ) 1)) (hwim : ∀ x, 0 < (w x).im) :
     IntervalIntegrable (fun x : ℝ => F (w x)) MeasureTheory.volume (0 : ℝ) 1 := by
@@ -479,7 +473,11 @@ private lemma hI246_eq :
         ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) from by
       simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm],
     show (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) = -I₆' (0 : ℝ) by
-      simpa [zI] using integral_f0_height_one_eq_neg_I6, integral_phi2_height_one]
+      simpa [zI] using integral_f0_height_one_eq_neg_I6,
+    show (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) by
+      simpa using tendsto_const_nhds_iff.mp (tendsto_top_phi2.congr' <| by
+        filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm
+        simpa [zI] using (strip_identity_phi2 m hm).symm)]
   field_simp; ring
 
 end StripContour
