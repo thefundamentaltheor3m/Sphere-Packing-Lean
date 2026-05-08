@@ -38,13 +38,6 @@ noncomputable section
 @[expose] public def aAnotherIntegralC (u : ℂ) : ℂ :=
   ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrandC u t
 
-/-- On real parameters, `aAnotherIntegralC` agrees with the real "another integral". -/
-public lemma aAnotherIntegralC_ofReal (u : ℝ) :
-    aAnotherIntegralC (u : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t :=
-  MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-    measurableSet_Ioi (fun t _ => by
-      simp [aAnotherIntegrandC, aAnotherBase, aAnotherIntegrand])
-
 /-- `aAnotherIntegralC` is analytic on the right half-plane. -/
 public lemma aAnotherIntegralC_analyticOnNhd :
     AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by

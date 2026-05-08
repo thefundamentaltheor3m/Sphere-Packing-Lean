@@ -109,7 +109,10 @@ public theorem aRadial_eq_another_integral_analytic_continuation_of_gt2
     (fun r => by
       simp only [aAnotherRHS, show (Complex.sin ((π : ℂ) * (r : ℂ) / 2)) ^ (2 : ℕ) =
         ((Real.sin (π * r / 2)) ^ (2 : ℕ) : ℂ) by simp,
-        by simpa using aAnotherIntegralC_ofReal r])
+        show aAnotherIntegralC (r : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t from
+          MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+            measurableSet_Ioi (fun t _ => by
+              simp [aAnotherIntegrandC, aAnotherBase, aAnotherIntegrand])])
     h_gt2 hu hu2
 
 end
