@@ -25,17 +25,6 @@ namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ}
 
-private theorem differentiableOn_Delta_ofComplex :
-    DifferentiableOn ℂ ((Δ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ :=
-  (UpperHalfPlane.mdifferentiable_iff (f := (Δ : ℍ → ℂ))).1 <| by
-    simpa [Delta_apply] using
-      (Delta.holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (Delta z : ℂ)))
-
-private theorem Delta_ofComplex_ne_zero :
-    ∀ z ∈ ℍ₀, Δ (UpperHalfPlane.ofComplex z) ≠ 0 := fun z hz => by
-  simpa [UpperHalfPlane.ofComplex_apply_of_im_pos hz] using
-    Δ_ne_zero (UpperHalfPlane.ofComplex z)
-
 private lemma mapsTo_smulAux' (g : GL (Fin 2) ℝ) :
     MapsTo (UpperHalfPlane.smulAux' g) ℍ₀ ℍ₀ := fun z hz => by
   simpa [upperHalfPlaneSet, UpperHalfPlane.smulAux] using
@@ -55,8 +44,13 @@ public theorem φ₀''_holo : Holo(φ₀'') := by
 public theorem φ₂''_holo : Holo(φ₂'') := by
   have hE₄ := (mdifferentiable_iff (f := (E₄ : ℍ → ℂ))).1 E₄.holo'
   refine ((hE₄.mul (((mdifferentiable_iff (f := E₂)).1 E₂_holo').mul hE₄ |>.sub
-      ((mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo'))).div differentiableOn_Delta_ofComplex
-    Delta_ofComplex_ne_zero).congr fun z hz => ?_
+      ((mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo'))).div
+    ((UpperHalfPlane.mdifferentiable_iff (f := (Δ : ℍ → ℂ))).1 <| by
+      simpa [Delta_apply] using
+        (Delta.holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (Delta z : ℂ))))
+    (fun z hz => by
+      simpa [UpperHalfPlane.ofComplex_apply_of_im_pos hz] using
+        Δ_ne_zero (UpperHalfPlane.ofComplex z))).congr fun z hz => ?_
   have hz' : 0 < z.im := by simpa [upperHalfPlaneSet] using hz
   simp [φ₂'', φ₂', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
 
