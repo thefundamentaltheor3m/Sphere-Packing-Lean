@@ -73,25 +73,13 @@ variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
 /-- A cutoff-modified radial profile, used to build a Schwartz function on `ℝ`. -/
 @[expose] public def fCut (f : ℝ → ℂ) (r : ℝ) : ℂ := cutoffC r * f r
 
-/-- If `f` is smooth then `fCut f` is smooth. -/
-public lemma fCut_contDiff (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fCut f) := by simpa [fCut] using cutoffC_contDiff.mul hf
-
-/-- If `f` has one-sided Schwartz decay, then `fCut f` has global Schwartz decay. -/
-public lemma fCut_decay (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ,
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fCut f) x‖ ≤ C := by
-  simpa [fCut] using cutoffC_mul_decay_of_nonneg (f := f) hf hf_decay
-
 /-- Package `fCut f` as an element of `𝓢(ℝ, ℂ)`. -/
 @[expose] public def fCutSchwartz (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) : 𝓢(ℝ, ℂ) where
   toFun := fCut f
-  smooth' := fCut_contDiff f hf
-  decay' := fCut_decay f hf hf_decay
+  smooth' := by simpa [fCut] using cutoffC_contDiff.mul hf
+  decay' := by simpa [fCut] using cutoffC_mul_decay_of_nonneg (f := f) hf hf_decay
 
 /-- On `0 ≤ r`, `fCut f` agrees with `f`. -/
 public lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) : fCut f r = f r := by
