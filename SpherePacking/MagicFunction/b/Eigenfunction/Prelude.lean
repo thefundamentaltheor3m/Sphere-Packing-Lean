@@ -63,17 +63,14 @@ def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
   * (s ^ (-4 : ℤ))
   * cexp (-π * r / s)
 
-lemma J₅'_eq_Ioc (r : ℝ) :
-    MagicFunction.b.RealIntegrals.J₅' r =
-      (-2 : ℂ) * ∫ (t : ℝ) in Ioc 0 1,
-        (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) := by
-  simp [MagicFunction.b.RealIntegrals.J₅', intervalIntegral_eq_integral_uIoc, zero_le_one,
-    uIoc_of_le, mul_assoc]
-
 lemma Reconciling_Change_of_Variables (r : ℝ) :
     MagicFunction.b.RealIntegrals.J₅' r =
       (-2 : ℂ) * ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) := by
-  rw [J₅'_eq_Ioc]
+  rw [show MagicFunction.b.RealIntegrals.J₅' r =
+      (-2 : ℂ) * ∫ (t : ℝ) in Ioc 0 1,
+        (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) by
+    simp [MagicFunction.b.RealIntegrals.J₅', intervalIntegral_eq_integral_uIoc, zero_le_one,
+      uIoc_of_le, mul_assoc]]
   congr 1
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t ht => ?_
