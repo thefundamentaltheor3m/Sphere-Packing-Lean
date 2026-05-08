@@ -93,22 +93,16 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) : b' u =
     hLapInt_decomp, hCorr_eval]
   ring_nf
 
-lemma bRadial_eq_another_integral_analytic_continuation {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
-    b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
-        ∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrand u t) := by
-  simpa [bAnotherIntegrand] using bRadial_eq_another_integral_analytic_continuation_of_gt2
-    (h_gt2 := fun r hr => by
-      simpa [bAnotherIntegrand] using bRadial_eq_another_integral_of_gt2 (u := r) hr)
-    (u := u) hu hu2
-
 /-- Main lemma for blueprint proposition `prop:b-another-integral`. -/
 public theorem bRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
     b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
       ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + ∫ t in Set.Ioi (0 : ℝ),
         (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
           Real.exp (-π * u * t)) := by
-  simpa [bAnotherIntegrand] using bRadial_eq_another_integral_analytic_continuation (u := u) hu hu2
+  simpa [bAnotherIntegrand] using bRadial_eq_another_integral_analytic_continuation_of_gt2
+    (h_gt2 := fun r hr => by
+      simpa [bAnotherIntegrand] using bRadial_eq_another_integral_of_gt2 (u := r) hr)
+    (u := u) hu hu2
 
 end
 
