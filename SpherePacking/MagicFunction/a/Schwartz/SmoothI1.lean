@@ -40,16 +40,14 @@ private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   rw [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)]
   field_simp; ring_nf; simp [Complex.I_sq]
 
-private lemma den_z₁'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    z₁' t + (1 : ℂ) ≠ 0 := fun h0 => by
-  have h1 := congrArg Complex.im h0
-  simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1; exact ht.1.ne' h1
-
 /-- Smoothness of `RealIntegrals.I₁'` as a function `ℝ → ℂ`. -/
 public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
   contDiff_of_eq_integral_g_Ioo (z := z₁') (shift := (1 : ℂ)) (prefactor := I)
     (f := I₁') I₁'_eq_integral_g_Ioo continuous_z₁' norm_z₁'_le_two (by norm_num)
-    den_z₁'_ne_zero (fun t ht => by simpa [arg_z₁'_eq_I_div (t := t) ht] using one_div_pos.2 ht.1)
+    (fun t ht h0 => by
+      have h1 := congrArg Complex.im h0
+      simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1; exact ht.1.ne' h1)
+    (fun t ht => by simpa [arg_z₁'_eq_I_div (t := t) ht] using one_div_pos.2 ht.1)
     (fun t ht => by linarith [(one_lt_one_div ht.1) ht.2,
       show (arg z₁' (1 : ℂ) t).im = 1 / t from by simp [arg_z₁'_eq_I_div (t := t) ht]])
 
