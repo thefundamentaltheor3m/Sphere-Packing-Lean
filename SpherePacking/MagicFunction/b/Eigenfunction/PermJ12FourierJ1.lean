@@ -90,14 +90,6 @@ lemma integral_permJ1Kernel_x (w : EuclideanSpace ℝ (Fin 8))
     _ = (Complex.I : ℂ) * Ψ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
           simp [c, Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm]
 
-private lemma integral_permJ1Kernel_x_ae (w : EuclideanSpace ℝ (Fin 8)) :
-    (fun t : ℝ =>
-        (∫ x : EuclideanSpace ℝ (Fin 8), permJ1Kernel w (x, t) ∂(volume : Measure _))) =ᵐ[μIoc01]
-      fun t : ℝ => (Complex.I : ℂ) * Ψ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
-  simpa [SpherePacking.Integration.μIoc01] using
-    (ae_restrict_iff' (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc).2 <|
-      .of_forall fun t ht => by simpa using (integral_permJ1Kernel_x (w := w) (t := t) ht)
-
 /-- Fourier transform of `J₁` as a curve integral of `Ψ₁_fourier` along the segment
 `Path.segment (-1) (-1 + I)`. -/
 public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
@@ -110,7 +102,10 @@ public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       (fun x => by simpa using (J₁_apply (x := x)))
       phase_mul_J₁'_eq_integral_permJ1Kernel
       integrable_permJ1Kernel
-      integral_permJ1Kernel_x_ae
+      (fun w' => by
+        simpa [SpherePacking.Integration.μIoc01] using
+          (ae_restrict_iff' (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc).2 <|
+            .of_forall fun t ht => by simpa using (integral_permJ1Kernel_x (w := w') (t := t) ht))
       (fun w' => by
         simpa [SpherePacking.Contour.dir_z₁line] using
           SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
