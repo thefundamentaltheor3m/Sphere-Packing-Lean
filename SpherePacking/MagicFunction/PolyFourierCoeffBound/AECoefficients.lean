@@ -29,9 +29,6 @@ public lemma norm_A_E_coeff_le (n : ℕ) :
     show (σ 3 (n + 1) : ℝ) ≤ ((n + 1 : ℕ) : ℝ) ^ 4 from mod_cast sigma_bound 3 (n + 1),
     Nat.zero_le n]
 
-public lemma norm_A_E_coeff_le_of_le {n m : ℕ} (hn : n ≤ m) :
-    ‖A_E_coeff n‖ ≤ (720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5 := (norm_A_E_coeff_le n).trans (by gcongr)
-
 public lemma norm_A_E_sq_coeff_le (m : ℕ) :
     ‖A_E_sq_coeff m‖ ≤ (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 11 := by
   calc ‖A_E_sq_coeff m‖
@@ -42,7 +39,7 @@ public lemma norm_A_E_sq_coeff_le (m : ℕ) :
           rw [Finset.mem_antidiagonal] at hp
           rw [norm_mul, show (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 =
             ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) * ((720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5) by ring]
-          gcongr <;> exact norm_A_E_coeff_le_of_le (by omega)
+          gcongr <;> exact (norm_A_E_coeff_le _).trans (by gcongr; omega)
     _ = (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 11 := by simp [Finset.Nat.card_antidiagonal]; ring
 
 public lemma A_E_sq_eq_tsum (z : ℍ) :
