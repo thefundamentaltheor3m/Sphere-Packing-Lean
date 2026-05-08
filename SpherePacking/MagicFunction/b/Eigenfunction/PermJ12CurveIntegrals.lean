@@ -10,6 +10,7 @@ public import SpherePacking.Integration.Measure
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.Contour.GaussianIntegral
+import SpherePacking.ForMathlib.GaussianRexpIntegral
 
 
 /-!
@@ -64,7 +65,8 @@ public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
 /-- Gaussian integral in dimension `8`: `∫ exp (-π * t * ‖x‖^2) = (1 / t)^4`. -/
 public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
     (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ (4 : ℕ) := by
-  simpa using (SpherePacking.Contour.integral_rexp_neg_pi_mul_sq_norm_even (k := 4) (t := t) ht)
+  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+    SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) (s := 1 / t) (one_div_pos.2 ht)
 
 /-- Rewrite `J₁'` as a set integral over `Ioc (0, 1)`. -/
 public lemma J₁'_eq_Ioc (r : ℝ) :
