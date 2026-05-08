@@ -132,7 +132,9 @@ private lemma exists_bound_H3_or_H4_aux {Hj Θj : ℝ → ℂ} {σ : ℂ} (hσ :
   set q' : ℂ := (Real.exp (-Real.pi * t) : ℂ)
   set x : ℂ := Θj t
   set y : ℂ := (1 : ℂ) + σ * (2 : ℂ) * q'
-  have hq : ‖q'‖ ≤ 1 := by simpa [q'] using norm_exp_neg_pi_mul_le_one t ht0
+  have hq : ‖q'‖ ≤ 1 := by
+    simpa [q', abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp] using
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le] : (-Real.pi * t) ≤ 0)
   have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <| (hC1 t ht).trans <| by
     simpa using mul_le_of_le_one_right (nonneg_of_norm_le_mul_exp (hC1 1 le_rfl))
       (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le]))

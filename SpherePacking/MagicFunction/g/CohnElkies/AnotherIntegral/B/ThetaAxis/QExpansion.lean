@@ -21,11 +21,6 @@ open Real Complex Filter Topology Set
 
 noncomputable section
 
-public lemma norm_exp_neg_pi_mul_le_one (t : ℝ) (ht : 0 < t) :
-    ‖(Real.exp (-Real.pi * t) : ℂ)‖ ≤ 1 := by
-  simpa [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp] using
-    Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht.le] : (-Real.pi * t) ≤ 0)
-
 lemma norm_Theta2_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     ‖Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩‖ =
       Real.exp (-Real.pi * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
