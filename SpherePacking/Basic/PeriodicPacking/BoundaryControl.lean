@@ -66,7 +66,8 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
         (fun _ _ _ _ hgh => disjoint_vadd_of_unique_covers (d := d)
           (PeriodicConstant.coordCube_unique_covers L hL) hgh)
         (fun g _ => by simpa using
-          MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube L hL) g)).symm
+          MeasurableSet.const_vadd (by simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
+            fundamentalDomain_measurableSet (cubeBasis d L hL)) g)).symm
     _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := volume.mono <| by
         rintro y hy
         obtain ⟨g, hgT, x, hx, rfl⟩ := Set.mem_iUnion₂.1 hy

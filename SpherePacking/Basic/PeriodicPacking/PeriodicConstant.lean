@@ -145,10 +145,6 @@ public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     fundamentalDomain_isBounded (cubeBasis d L hL)
 
-public lemma measurableSet_coordCube (L : ℝ) (hL : 0 < L) : MeasurableSet (coordCube d L) := by
-  simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-    fundamentalDomain_measurableSet (cubeBasis d L hL)
-
 public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
     coordCube d L =
       (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
