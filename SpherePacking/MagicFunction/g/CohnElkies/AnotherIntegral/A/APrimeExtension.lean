@@ -177,12 +177,6 @@ private lemma norm_sign_pi_I_eq_pi {s : ℝ} (hs : |s| = 1) :
     ‖(s * π : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
   simp [Complex.norm_real, hs, abs_of_nonneg Real.pi_pos.le]
 
-private lemma norm_sign_pi_I_mul_t_le {s : ℝ} (hs : |s| = 1) {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) :
-    ‖(s * π : ℂ) * (Complex.I : ℂ) * (t : ℂ)‖ ≤ Real.pi := by
-  have h : ‖(s * π : ℂ) * (Complex.I : ℂ) * (t : ℂ)‖ = Real.pi * ‖(t : ℂ)‖ := by
-    simpa [mul_assoc] using congrArg (· * ‖(t : ℂ)‖) (norm_sign_pi_I_eq_pi hs)
-  nlinarith [Real.pi_pos, norm_of_mem_uIoc_le_one ht]
-
 /-- Shared bound for `k₁` and `k₃`: `‖±π * I + (-π * t)‖ ≤ 2π`. -/
 private lemma k_bound_two_pi {s : ℝ} (hs : |s| = 1) (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
     ‖(s * π : ℂ) * (Complex.I : ℂ) + (-π * (t : ℂ))‖ ≤ (2 * Real.pi) := by
@@ -260,9 +254,12 @@ private lemma k_bound_three_pi {s₁ s₂ : ℝ} (hs₁ : |s₁| = 1) (hs₂ : |
     ‖(s₁ * π : ℂ) * (Complex.I : ℂ) + (s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ) + (-π)‖ ≤
       (3 * Real.pi) := by
   have hpi : ‖(-π : ℂ)‖ = Real.pi := by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
+  have h_t_le : ‖(s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ)‖ ≤ Real.pi := by
+    have h : ‖(s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ)‖ = Real.pi * ‖(t : ℂ)‖ := by
+      simpa [mul_assoc] using congrArg (· * ‖(t : ℂ)‖) (norm_sign_pi_I_eq_pi hs₂)
+    nlinarith [Real.pi_pos, norm_of_mem_uIoc_le_one ht]
   linarith [(norm_add_le _ (-π : ℂ)).trans (add_le_add
-    ((norm_add_le _ _).trans (add_le_add (norm_sign_pi_I_eq_pi hs₁).le
-      (norm_sign_pi_I_mul_t_le hs₂ ht))) hpi.le)]
+    ((norm_add_le _ _).trans (add_le_add (norm_sign_pi_I_eq_pi hs₁).le h_t_le)) hpi.le)]
 
 lemma k₂_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₂ t‖ ≤ (3 * Real.pi) := fun t ht => by
   simpa [k₂, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
