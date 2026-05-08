@@ -45,16 +45,13 @@ section Nonnegativity
 theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
   (FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
-include hCohnElkies₂ in
-theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
-  rw [← f.fourierInversion, fourierInv_eq]
-  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re,
-    ← integral_re hIntegrable]
-  exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v
-
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  refine lt_of_le_of_ne (f_nonneg_at_zero (f := f) hCohnElkies₂) fun hf0re => hne_zero <|
+  refine lt_of_le_of_ne (show 0 ≤ (f 0).re by
+    rw [← f.fourierInversion, fourierInv_eq]
+    simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re,
+      ← integral_re hIntegrable]
+    exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v) fun hf0re => hne_zero <|
     (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 ?_
   have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
     (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1 (by
