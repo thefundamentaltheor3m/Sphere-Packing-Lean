@@ -85,16 +85,6 @@ lemma gN_norm_bound (n : ℕ) (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le (s := s) hs) n)
       (g_norm_bound (r := r) (s := s) hs) (norm_nonneg _) (by positivity)
 
-lemma hasDerivAt_gN (n : ℕ) (r s : ℝ) :
-    HasDerivAt (fun r : ℝ ↦ gN n r s) (gN (n + 1) r s) r := by
-  have hg : HasDerivAt (fun r : ℝ ↦ g r s) (coeff s * g r s) r := by
-    simpa [g, show ∀ r : ℝ, cexp ((r : ℂ) * coeff s) =
-        cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ)) from fun r => by
-        rw [← Complex.exp_add]; congr 1; simp [coeff]; ring, mul_assoc, mul_left_comm, mul_comm]
-      using SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-        (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
-  simpa [gN, pow_succ, mul_assoc] using hg.const_mul (coeff s ^ n)
-
 /-- Continuity of `s ↦ φ₀'' (I * s)` on `Ici 1`. -/
 public lemma φ₀''_I_mul_continuousOn :
     ContinuousOn (fun s : ℝ ↦ φ₀'' (I * (s : ℂ))) (Ici (1 : ℝ)) :=
@@ -179,8 +169,15 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       (hF_int := integrable_gN (n := n) (r := r₀))
       (hF'_meas := gN_measurable (n := n + 1) (r := r₀))
       (h_bound := h_bound) (bound_integrable := hbound_int)
-      (h_diff := (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s _ r _ =>
-        hasDerivAt_gN (n := n) (r := r) (s := s))).2
+      (h_diff := (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s _ r _ => by
+        have hg : HasDerivAt (fun r : ℝ ↦ g r s) (coeff s * g r s) r := by
+          simpa [g, show ∀ r : ℝ, cexp ((r : ℂ) * coeff s) =
+              cexp ((-π : ℂ) * I * (r : ℂ)) * cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ)) from fun r => by
+              rw [← Complex.exp_add]; congr 1; simp [coeff]; ring,
+            mul_assoc, mul_left_comm, mul_comm]
+            using SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+              (a := (-I) * φ₀'' (I * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) (c := coeff s) (x := r)
+        simpa [gN, pow_succ, mul_assoc] using hg.const_mul (coeff s ^ n))).2
 
 lemma pow_mul_exp_neg_bounded (k : ℕ) :
     ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
