@@ -95,16 +95,6 @@ lemma exists_bound_norm_ψI'_z₅' :
     (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ))
     ((norm_nonneg (ψS.resToImagAxis 1)).trans (hM 1 (by norm_num)))
 
-lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M :=
-  exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
-    simpa [MagicFunction.b.PsiParamRelations.ψT'_z₁'_eq_ψI'_z₅' (t := t)
-      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
-
-lemma exists_bound_norm_ψT'_z₃' : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M :=
-  exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
-    simpa [MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t)
-      (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
-
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
   have h := norm_add_le (1 : ℂ) ((Complex.I : ℂ) * (t : ℂ))
@@ -147,7 +137,10 @@ private lemma integral_ψ_exp_differentiable
       gcongr; exact hz_bound t ht)
 
 lemma J₁'C_differentiable : Differentiable ℂ J₁'C :=
-  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₁'
+  let ⟨_, hMψ⟩ : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M :=
+    exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
+      simpa [MagicFunction.b.PsiParamRelations.ψT'_z₁'_eq_ψI'_z₅' (t := t)
+        (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
   (show J₁'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψT' (z₁' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₁' t) from
     funext fun u => by simp [J₁'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
@@ -163,7 +156,10 @@ lemma J₂'C_differentiable : Differentiable ℂ J₂'C :=
     continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
 
 lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
-  let ⟨_, hMψ⟩ := exists_bound_norm_ψT'_z₃'
+  let ⟨_, hMψ⟩ : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M :=
+    exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by
+      simpa [MagicFunction.b.PsiParamRelations.ψT'_z₃'_eq_ψI'_z₅' (t := t)
+        (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
   (show J₃'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψT' (z₃' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₃' t) from
     funext fun u => by simp [J₃'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
