@@ -41,16 +41,14 @@ private lemma arg_z₂'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       congrArg (fun z : ℂ => (-1 : ℂ) / (z + 1)) (z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht))
   simpa [harg] using im_neg_one_div_ofReal_add_I (t := t)
 
-private lemma den_z₂'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    z₂' t + (1 : ℂ) ≠ 0 := fun h0 => by
-  simpa [z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), add_left_comm, add_comm] using
-    congrArg Complex.im h0
-
 /-- Smoothness of `RealIntegrals.I₂'` as a function `ℝ → ℂ`. -/
 public theorem I₂'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₂' :=
   contDiff_of_eq_integral_g_Ioo (z := z₂') (shift := (1 : ℂ)) (prefactor := (1 : ℂ))
     (f := I₂') I₂'_eq_integral_g_Ioo continuous_z₂' norm_z₂'_le_two (by norm_num)
-    den_z₂'_ne_zero (fun t ht => by rw [arg_z₂'_im_eq t ht]; positivity)
+    (fun t ht h0 => by
+      simpa [z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), add_left_comm, add_comm] using
+        congrArg Complex.im h0)
+    (fun t ht => by rw [arg_z₂'_im_eq t ht]; positivity)
     (fun t ht => by
       simpa [arg_z₂'_im_eq (t := t) ht] using one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht)
 
