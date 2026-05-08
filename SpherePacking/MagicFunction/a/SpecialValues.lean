@@ -253,15 +253,6 @@ private lemma intervalIntegrable_f0_vert {m : ℝ} (hm : 1 ≤ m) (x : ℝ) :
       simpa using lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
         ((Set.uIcc_of_le hm ▸ hy).1))).intervalIntegrable
 
-private lemma integral_f0_vertical_diff_eq {m : ℝ} (hm : 1 ≤ m) :
-    (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-        ∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I) =
-      ∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
-  rw [(integral_sub (intervalIntegrable_f0_vert hm 1) (intervalIntegrable_f0_vert hm 0)).symm]
-  exact intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
-    simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
-      f0_vertical_diff y (lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1))
-
 lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) =
@@ -269,7 +260,12 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
   have hVertTerm : Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
       Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) =
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) := by
-    rw [← smul_sub, integral_f0_vertical_diff_eq hm]
+    rw [← smul_sub,
+      (integral_sub (intervalIntegrable_f0_vert hm 1) (intervalIntegrable_f0_vert hm 0)).symm]
+    exact congrArg (Complex.I • ·) <|
+      intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
+        simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
+          f0_vertical_diff y (lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1))
   linear_combination rect_f0 m hm - hVertTerm
 
 private lemma I6_zero_eq_I_smul_integral :
