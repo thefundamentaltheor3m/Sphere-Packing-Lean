@@ -25,22 +25,6 @@ variable {coeff hf : ℝ → ℂ}
 @[expose] public def I (n : ℕ) (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) n x t
 
-/-- Identify `iteratedDeriv` of `I 0` with `I n`, using the derivative recurrence. -/
-public lemma iteratedDeriv_eq_I
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (n : ℕ) :
-    iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
-      fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x := by
-  simpa using
-    SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
-      (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
-      (fun n x => by
-        simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
-          continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x)) n
-
 /-- Smoothness of `x ↦ I 0 x` under the hypotheses needed for dominated differentiation. -/
 public theorem contDiff_integral
     (continuous_hf : Continuous hf)
@@ -69,9 +53,15 @@ private theorem decay_integral
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
   have hMh0 : 0 ≤ Mh := (norm_nonneg (hf 1)).trans (hMh 1 (by simp))
   refine ⟨(2 * Real.pi) ^ n * Mh * B, fun x hx => ?_⟩
-  have hrepr := congrArg (fun f : ℝ → ℂ => f x)
-    (iteratedDeriv_eq_I (coeff := coeff) (hf := hf)
-      continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n))
+  have hrepr := congrArg (fun f : ℝ → ℂ => f x) <|
+    show iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
+        fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x by
+      simpa using
+        SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+          (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
+          (fun n x => by
+            simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
+              continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n) (x₀ := x)) n
   have hnormI :
       ‖I (coeff := coeff) (hf := hf) n x‖ ≤
         (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
