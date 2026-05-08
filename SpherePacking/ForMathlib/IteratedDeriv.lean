@@ -36,23 +36,6 @@ public theorem contDiff_of_hasDerivAt_succ
     simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI m] using
       fun x => (hI m x).differentiableAt
 
-/-- If `deriv (G n) = G (n+1)` on an open set, iterated derivatives of `G m` agree with `G (n+m)`
-on that set. -/
-public lemma eqOn_iteratedDeriv_eq_of_deriv_eq
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {s : Set ℝ} (hs : IsOpen s) (G : ℕ → ℝ → E)
-    (hderiv : ∀ n x, x ∈ s → deriv (G n) x = G (n + 1) x) :
-    ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := by
-  intro n
-  induction n with
-  | zero => intro m x _; simp [iteratedDeriv_zero]
-  | succ n ih =>
-      intro m x hx
-      have hEq : iteratedDeriv n (G m) =ᶠ[𝓝 x] G (n + m) := by
-        filter_upwards [hs.mem_nhds hx] with y hy using ih (m := m) hy
-      simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
-        (Filter.EventuallyEq.deriv_eq hEq).trans (hderiv (n + m) x hx)
-
 /-- Closed form for iterated derivatives of `x ↦ exp (x * c)`. -/
 public lemma iteratedDeriv_cexp_mul_const (c : ℂ) (m : ℕ) :
     iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =

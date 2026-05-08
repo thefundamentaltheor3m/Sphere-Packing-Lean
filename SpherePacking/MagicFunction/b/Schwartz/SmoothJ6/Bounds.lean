@@ -77,9 +77,17 @@ lemma hasDerivAt_G (n : ℕ) (x : ℝ) (hx : x ∈ s) :
     HasDerivAt (fun y : ℝ => G n y) (G (n + 1) x) x := by
   simpa [G] using (hasDerivAt_F (n := n) (x := x) hx).const_mul (-2 : ℂ)
 
-lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s :=
-  SpherePacking.ForMathlib.eqOn_iteratedDeriv_eq_of_deriv_eq (hs := isOpen_s) (G := G)
-    (hderiv := fun n x hx => (hasDerivAt_G (n := n) (x := x) hx).deriv)
+lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := by
+  intro n
+  induction n with
+  | zero => intro m x _; simp [iteratedDeriv_zero]
+  | succ n ih =>
+      intro m x hx
+      have hEq : iteratedDeriv n (G m) =ᶠ[𝓝 x] G (n + m) := by
+        filter_upwards [isOpen_s.mem_nhds hx] with y hy using ih (m := m) hy
+      simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
+        (Filter.EventuallyEq.deriv_eq hEq).trans
+          ((hasDerivAt_G (n := n + m) (x := x) hx).deriv)
 
 private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
     (∫ t in Ici (1 : ℝ),
