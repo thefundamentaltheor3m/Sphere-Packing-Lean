@@ -40,27 +40,24 @@ public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
     integral_gaussian_rexp (s := (1 / t)) (by positivity)
 
-lemma integrable_permI2Kernel_slice (w : ℝ⁸) (t : ℝ) :
-    Integrable (fun x : ℝ⁸ ↦ permI2Kernel w (x, t)) (volume : Measure ℝ⁸) := by
-  have hz : 0 < (z₂line t).im := by simp
-  let phase : ℝ⁸ → ℂ := fun x : ℝ⁸ ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * I)
-  let g : ℝ⁸ → ℂ := fun x : ℝ⁸ ↦ Φ₁' (‖x‖ ^ 2) (z₂line t)
-  have hg : Integrable g (volume : Measure ℝ⁸) := by
-    have hc : Integrable (fun x : ℝ⁸ ↦
-        (φ₀'' (-1 / (z₂line t + 1)) * (z₂line t + 1) ^ 2) *
-          cexp ((π : ℂ) * I * (‖x‖ ^ 2 : ℝ) * z₂line t)) (volume : Measure ℝ⁸) :=
-      (integrable_gaussian_cexp_pi_mul_I_mul (z := z₂line t) hz).const_mul _
-    simpa [g, Φ₁'] using hc
-  have hprod : Integrable (fun x : ℝ⁸ ↦ phase x * g x) (volume : Measure ℝ⁸) :=
-    hg.bdd_mul (c := (1 : ℝ))
-      (by simpa [phase] using aestronglyMeasurable_phase (V := ℝ⁸) (w := w))
-      (by simpa [phase] using ae_norm_phase_le_one (V := ℝ⁸) (w := w))
-  simpa [phase, g, permI2Kernel, permI5Phase, mul_assoc] using hprod
-
 /-- For almost every `t ∈ Ioc 0 1`, the slice `x ↦ permI2Kernel w (x, t)` is integrable. -/
 public lemma ae_integrable_permI2Kernel_slice (w : ℝ⁸) :
     (∀ᵐ t : ℝ ∂μIoc01, Integrable (fun x : ℝ⁸ ↦ permI2Kernel w (x, t)) (volume : Measure ℝ⁸)) :=
-  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t _ => integrable_permI2Kernel_slice w t
+  (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t _ => by
+    have hz : 0 < (z₂line t).im := by simp
+    let phase : ℝ⁸ → ℂ := fun x : ℝ⁸ ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * I)
+    let g : ℝ⁸ → ℂ := fun x : ℝ⁸ ↦ Φ₁' (‖x‖ ^ 2) (z₂line t)
+    have hg : Integrable g (volume : Measure ℝ⁸) := by
+      have hc : Integrable (fun x : ℝ⁸ ↦
+          (φ₀'' (-1 / (z₂line t + 1)) * (z₂line t + 1) ^ 2) *
+            cexp ((π : ℂ) * I * (‖x‖ ^ 2 : ℝ) * z₂line t)) (volume : Measure ℝ⁸) :=
+        (integrable_gaussian_cexp_pi_mul_I_mul (z := z₂line t) hz).const_mul _
+      simpa [g, Φ₁'] using hc
+    have hprod : Integrable (fun x : ℝ⁸ ↦ phase x * g x) (volume : Measure ℝ⁸) :=
+      hg.bdd_mul (c := (1 : ℝ))
+        (by simpa [phase] using aestronglyMeasurable_phase (V := ℝ⁸) (w := w))
+        (by simpa [phase] using ae_norm_phase_le_one (V := ℝ⁸) (w := w))
+    simpa [phase, g, permI2Kernel, permI5Phase, mul_assoc] using hprod
 
 lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) ≤ ‖φ₀'' ((I : ℂ) / t)‖ * (1 / t ^ 2) := by
