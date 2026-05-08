@@ -34,10 +34,6 @@ public lemma integrable_gaussian_cexp_pi_mul_I_mul
       (c := (0 : ℂ)) (w := (0 : V))
       (by simpa [Complex.mul_re, Complex.mul_im, mul_comm] using mul_pos Real.pi_pos hz))
 
-private lemma finrank_div_two_eq_even (k : ℕ) :
-    ((Module.finrank ℝ (EuclideanSpace ℝ (Fin (2 * k))) : ℂ) / 2) = (k : ℂ) := by
-  simp [Nat.cast_mul]
-
 /-- Fourier transform of the complex Gaussian in even dimension `2k`. -/
 public lemma fourier_gaussian_pi_mul_I_mul_even (k : ℕ) (z : ℂ) (hz : 0 < z.im)
     (w : EuclideanSpace ℝ (Fin (2 * k))) :
@@ -87,7 +83,9 @@ public lemma fourier_gaussian_norm_sq_div_even (k : ℕ) (s : ℝ) (hs : 0 < s)
   have hbase : (π : ℂ) / (π / s : ℂ) = (s : ℂ) := by
     field_simp [(by exact_mod_cast (ne_of_gt hs) : (s : ℂ) ≠ 0),
       (by exact_mod_cast Real.pi_ne_zero : (π : ℂ) ≠ 0)]
-  simpa [div_eq_mul_inv, hbase, finrank_div_two_eq_even (k := k), pow_two, mul_assoc,
+  have hfinrank : ((Module.finrank ℝ (EuclideanSpace ℝ (Fin (2 * k))) : ℂ) / 2) = (k : ℂ) := by
+    simp [Nat.cast_mul]
+  simpa [div_eq_mul_inv, hbase, hfinrank, pow_two, mul_assoc,
     mul_left_comm, mul_comm] using
     (fourier_gaussian_innerProductSpace
       (V := EuclideanSpace ℝ (Fin (2 * k))) (b := (π / s : ℂ))
