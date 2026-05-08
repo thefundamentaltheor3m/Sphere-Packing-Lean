@@ -18,18 +18,6 @@ theorem hD_isAddFundamentalDomain (hD_unique_covers : ∀ x, ∃! g : S.lattice,
     (hD_measurable : MeasurableSet D) : IsAddFundamentalDomain S.lattice D :=
   .mk' (μ := volume) hD_measurable.nullMeasurableSet hD_unique_covers
 
-private theorem ball_subset_iUnion_lattice_inter_ball_vadd
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
-    ball 0 (R - L) ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) :=
-    fun x hx => by
-  obtain ⟨g, hg, -⟩ := hD_unique_covers x
-  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
-  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
-  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
-    (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
-      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
-    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
-
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
@@ -62,7 +50,14 @@ theorem PeriodicSpherePacking.aux2_ge
     ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
     (Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne,
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-  exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
+  refine volume.mono fun x hx => ?_
+  obtain ⟨g, hg, -⟩ := hD_unique_covers x
+  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
+  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
+  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
+    (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
+      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
+    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
 
 /-- Theorem 2.2, upper bound. -/
 theorem PeriodicSpherePacking.aux2_le
