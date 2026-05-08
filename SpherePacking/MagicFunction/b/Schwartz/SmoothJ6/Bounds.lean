@@ -86,24 +86,21 @@ lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n
           ((by simpa [G] using (hasDerivAt_F (n := n + m) (x := x) hx).const_mul (-2 : ℂ) :
             HasDerivAt (fun y : ℝ => G (n + m) y) (G (n + m + 1) x) x).deriv)
 
-private lemma integral_J6_integrand_eq_integral_g (x : ℝ) :
-    (∫ t in Ici (1 : ℝ),
-          (Complex.I : ℂ) * ψS' (z₆' t) * cexp (π * (Complex.I : ℂ) * x * (z₆' t))) =
-      ∫ t in Ici (1 : ℝ), g x t := by
-  refine integral_congr_ae <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
-  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  have hz : z₆' t = (Complex.I : ℂ) * t := z₆'_eq_of_mem ht
-  dsimp
-  rw [show ψS' (z₆' t) = ψS.resToImagAxis t by
-    simp [ψS', Function.resToImagAxis, ResToImagAxis, hz, ht0, mul_comm],
-    show cexp ((π : ℂ) * (Complex.I : ℂ) * (x : ℂ) * (z₆' t)) = cexp ((x : ℂ) * coeff t) from
-      congrArg cexp (by simp [coeff, SmoothIntegralIciOne.coeff, hz]; ring_nf; simp)]
-  simp [g, SmoothIntegralIciOne.g, Function.resToImagAxis, ResToImagAxis, mul_assoc]
-
 private lemma J₆'_eq_G0 (x : ℝ) : RealIntegrals.J₆' x = G 0 x := by
+  have hint : (∫ t in Ici (1 : ℝ),
+          (Complex.I : ℂ) * ψS' (z₆' t) * cexp (π * (Complex.I : ℂ) * x * (z₆' t))) =
+        ∫ t in Ici (1 : ℝ), g x t := by
+    refine integral_congr_ae <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_
+    have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
+    have hz : z₆' t = (Complex.I : ℂ) * t := z₆'_eq_of_mem ht
+    dsimp
+    rw [show ψS' (z₆' t) = ψS.resToImagAxis t by
+      simp [ψS', Function.resToImagAxis, ResToImagAxis, hz, ht0, mul_comm],
+      show cexp ((π : ℂ) * (Complex.I : ℂ) * (x : ℂ) * (z₆' t)) = cexp ((x : ℂ) * coeff t) from
+        congrArg cexp (by simp [coeff, SmoothIntegralIciOne.coeff, hz]; ring_nf; simp)]
+    simp [g, SmoothIntegralIciOne.g, Function.resToImagAxis, ResToImagAxis, mul_assoc]
   simpa [G, F, gN, SmoothIntegralIciOne.gN, g, RealIntegrals.J₆', mul_assoc, mul_left_comm,
-    mul_comm] using
-    congrArg (fun J : ℂ => (-2 : ℂ) * J) (integral_J6_integrand_eq_integral_g (x := x))
+    mul_comm] using congrArg (fun J : ℂ => (-2 : ℂ) * J) hint
 
 /-- Smoothness of `RealIntegrals.J₆'` on the open half-line `Ioi (-1)`. -/
 public theorem contDiffOn_J₆'_Ioi_neg1 :
