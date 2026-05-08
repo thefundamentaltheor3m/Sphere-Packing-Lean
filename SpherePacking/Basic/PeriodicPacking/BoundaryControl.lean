@@ -267,7 +267,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
           PeriodicConstantApprox.tendsto_volume_cubeShell_div_volume_coordCube_zero :
         Tendsto cubeShellErr atTop (𝓝 (0 : ℝ≥0∞)))).eventually
           (Iio_mem_nhds (tsub_pos_of_lt hbc)))).exists
-  obtain ⟨C, hC⟩ := PeriodicConstantApprox.coordCube_subset_ball L hLpos
+  obtain ⟨C, hC⟩ : ∃ C : ℝ, coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
+    simpa using (PeriodicConstant.isBounded_coordCube L hLpos).subset_ball 0
   have hCpos : 0 < C := by
     simpa [Metric.mem_ball, dist_eq_norm] using
       hC (by simp [coordCube, hLpos] : (0 : EuclideanSpace ℝ (Fin d)) ∈ coordCube d L)

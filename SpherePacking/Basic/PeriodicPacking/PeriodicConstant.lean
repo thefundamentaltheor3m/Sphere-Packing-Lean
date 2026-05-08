@@ -191,10 +191,6 @@ public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < 
       (ball_subset_coordCube_of_mem_inner
         (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx))
 
-public lemma coordCube_subset_ball (L : ℝ) (hL : 0 < L) :
-    ∃ C : ℝ, coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
-  simpa using (PeriodicConstant.isBounded_coordCube L hL).subset_ball 0
-
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
   refine (Set.Finite.preimage_embedding (f := ⟨fun g : cubeLattice d L hL =>
