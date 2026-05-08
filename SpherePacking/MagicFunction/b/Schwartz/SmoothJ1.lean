@@ -129,9 +129,10 @@ public theorem decay_J₁' :
         (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   have hKn_nonneg : 0 ≤ Kn := by
-    simpa [Kn, bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
-      (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
+    refine integral_nonneg_of_ae <| ?_
+    filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+      simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
+    exact mul_nonneg (by positivity [hCψ0]) (pow_nonneg ht.1.le _)
   refine ⟨Kn * B, fun x hx => ?_⟩
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :

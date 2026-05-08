@@ -60,13 +60,6 @@ public lemma integrable_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A)
     refine ⟨mul_nonneg hA (pow_nonneg ht.1.le _), ?_⟩
     simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht.1.le ht.2.le) hA
 
-/-- The integral of `t ↦ A * t ^ p` with respect to `μIoo01` is nonnegative when `0 ≤ A`. -/
-public lemma integral_nonneg_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A) :
-    0 ≤ (∫ t : ℝ, A * t ^ p ∂μIoo01) :=
-  integral_nonneg_of_ae <| by
-    filter_upwards [ae_mem_Ioo01_muIoo01] with t ht
-    exact mul_nonneg hA (pow_nonneg ht.1.le _)
-
 /-! #### `μIoc01` helper lemmas (downstream uses are curve-integral arguments). -/
 
 /-- Product with `μIoc01` agrees with restricting the product measure. -/
