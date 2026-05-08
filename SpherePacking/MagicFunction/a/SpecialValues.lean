@@ -44,12 +44,6 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 section Zero
 
-lemma a_zero_reduction :
-    FourierEigenfunctions.a (0 : ℝ⁸) =
-      I₁' (0 : ℝ) + I₂' 0 + I₃' 0 + I₄' 0 + I₅' 0 + I₆' 0 := by
-  simpa using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
-    FourierEigenfunctions.a_eq_sum_integrals_RadialFunctions
-
 /-- A second-order finite difference identity for `φ₀` obtained from its modular transformation
 under `S`, together with periodicity. -/
 public theorem φ₀_finite_difference (z : ℍ) :
@@ -487,7 +481,11 @@ public theorem a_zero :
     FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := by
   have h135 : (I₁' (0 : ℝ) + I₃' 0 + I₅' 0 : ℂ) = 0 := by
     simp [I₁'_eq, I₃'_eq, I₅'_eq]; ring
-  linear_combination a_zero_reduction + h135 + hI246_eq
+  have h_red : FourierEigenfunctions.a (0 : ℝ⁸) =
+      I₁' (0 : ℝ) + I₂' 0 + I₃' 0 + I₄' 0 + I₅' 0 + I₆' 0 := by
+    simpa using congrArg (fun f : ℝ⁸ → ℂ => f (0 : ℝ⁸))
+      FourierEigenfunctions.a_eq_sum_integrals_RadialFunctions
+  linear_combination h_red + h135 + hI246_eq
 
 end Zero
 
