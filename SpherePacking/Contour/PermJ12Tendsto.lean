@@ -36,14 +36,6 @@ public structure TendstoPsiOneHypotheses (wedgeSet : Set ℂ) (ψS : UpperHalfPl
 
 private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
-private lemma exists_expNorm_le_add_one (r : ℝ) :
-    ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
-  rcases (Metric.continuousAt_iff.1 (by
-    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
-    ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
-  exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
-    (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
-
 private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
     (tendsto_ψS_atImInfty : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))) :
     ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
@@ -75,7 +67,13 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
     Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
   let M : ℝ := expNorm r (1 : ℂ) + 1
   have hMpos : 0 < M := by linarith [show 0 ≤ expNorm r 1 from norm_nonneg _]
-  obtain ⟨δexp, hδexp_pos, hExpBound⟩ := exists_expNorm_le_add_one (r := r)
+  obtain ⟨δexp, hδexp_pos, hExpBound⟩ : ∃ δ : ℝ, 0 < δ ∧
+      ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
+    rcases (Metric.continuousAt_iff.1 (by
+      simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
+      ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
+    exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
+      (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
   obtain ⟨A, hApos, hA⟩ := exists_im_bound_norm_ψS_le_one (ψS := ψS) h.tendsto_ψS_atImInfty
   refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
   refine ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
