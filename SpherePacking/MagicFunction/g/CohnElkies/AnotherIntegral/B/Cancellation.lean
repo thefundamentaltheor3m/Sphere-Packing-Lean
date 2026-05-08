@@ -16,11 +16,6 @@ open Filter Topology
 
 noncomputable section
 
-lemma psiI_resToImagAxis_eq_mul_psiS (t : ℝ) (ht : 0 < t) :
-    ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) := by
-  simpa [ψS_slash_S, zpow_two, pow_two] using
-    ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht
-
 lemma continuousOn_psiI'_mul_I :
     ContinuousOn (fun t : ℝ => ψI' (Complex.I * (t : ℂ))) (Set.Ioi (0 : ℝ)) := by
   refine (Function.continuousOn_resToImagAxis_Ioi_of (F := ψI)
@@ -57,7 +52,9 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
           (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (one_div_pos.2 ht0).le]))
           hCψ0)
     rw [MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis
-      t ht0, psiI_resToImagAxis_eq_mul_psiS t ht0, norm_mul]
+      t ht0, show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
+        simpa [ψS_slash_S, zpow_two, pow_two] using
+          ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0, norm_mul]
     nlinarith [show ‖(-(t ^ (2 : ℕ)) : ℂ)‖ = t ^ (2 : ℕ) from by simp, hψS', hCψ0,
       show t ^ (2 : ℕ) ≤ 1 from by simpa using pow_le_one₀ (n := 2) ht0.le ht1]
   open MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation in
