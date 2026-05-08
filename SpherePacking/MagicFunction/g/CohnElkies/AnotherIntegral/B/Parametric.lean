@@ -28,17 +28,12 @@ open SpherePacking
 @[expose] public def bAnotherIntegralC (u : ℂ) : ℂ :=
   ∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrandC u t
 
-/-- Restriction of `bAnotherIntegrandC` to real parameters. -/
-public lemma bAnotherIntegrandC_ofReal (u t : ℝ) :
-    bAnotherIntegrandC (u : ℂ) t = bAnotherBase t * (Real.exp (-π * u * t) : ℂ) := by
-  simp [bAnotherIntegrandC, mul_assoc]
-
 /-- Restriction of `bAnotherIntegralC` to real parameters. -/
 public lemma bAnotherIntegralC_ofReal (u : ℝ) :
     bAnotherIntegralC (u : ℂ) =
       ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * u * t) : ℂ) :=
   MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
-    (fun t _ ↦ bAnotherIntegrandC_ofReal u t)
+    (fun t _ ↦ by simp [bAnotherIntegrandC, mul_assoc])
 
 end
 
