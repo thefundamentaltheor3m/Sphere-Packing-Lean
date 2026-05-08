@@ -213,14 +213,6 @@ public theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePack
   simpa [PeriodicSpherePacking.numReps', Set.toFinset_card] using
     (S.card_centers_inter_isFundamentalDomain (D := D) hD_isBounded hD_unique_covers hd).symm
 
-private theorem aux {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
-    ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
-      x +ᵥ (fundamentalDomain b : Set (EuclideanSpace ℝ (Fin d)))
-        ⊆ ball 0 R := fun x hx => by
-  obtain ⟨y, ⟨_, hy⟩, z, hz, rfl⟩ := by simpa using hx
-  simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢; linarith [norm_add_le y z, hL z hz]
-
 private theorem disjoint_vadd_fundamentalDomain
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {x y : EuclideanSpace ℝ (Fin d)} (hx : x ∈ S.lattice) (hy : y ∈ S.lattice) (hxy : x ≠ y) :
@@ -249,7 +241,12 @@ public theorem PeriodicSpherePacking.aux_ge
     (↑S.centers ∩ ball 0 R).encard ≥
       S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard := by
   have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers
-    (aux S (b.ofZLatticeBasis ℝ _) hL R)
+    (show ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
+        x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d)))
+          ⊆ ball 0 R from fun x hx => by
+      obtain ⟨y, ⟨_, hy⟩, z, hz, rfl⟩ := by simpa using hx
+      simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢
+      linarith [norm_add_le y z, hL z hz])
   simp_rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
     Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b),
     S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
