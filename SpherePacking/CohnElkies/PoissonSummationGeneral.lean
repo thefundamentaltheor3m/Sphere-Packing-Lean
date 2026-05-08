@@ -64,34 +64,32 @@ section CovolumeDet
 
 variable (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L] [IsZLattice ℝ L]
 
-private lemma volume_real_fundamentalDomain_stdBasis :
-    (volume : Measure E).real
-        (ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) = 1 := by
-  let f : E ≃L[ℝ] (Fin d → ℝ) := EuclideanSpace.equiv (Fin d) ℝ
-  simpa [show f ⁻¹' (ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d))) =
-      ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) by
-    rw [show ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d)) =
-        f.toLinearEquiv '' ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)
-      from by simpa [show ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).map f.toLinearEquiv =
-          Pi.basisFun ℝ (Fin d) from rfl] using
-        (ZSpan.map_fundamentalDomain
-          (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) f.toLinearEquiv).symm]
-    exact Set.preimage_image_eq _ f.injective, ZSpan.volume_real_fundamentalDomain,
-    show (Matrix.of (Pi.basisFun ℝ (Fin d)) : Matrix (Fin d) (Fin d) ℝ) = 1 by
-      ext; simp [Matrix.of_apply, Matrix.one_apply, Pi.basisFun_apply, Pi.single_apply, eq_comm]]
-    using (show MeasurePreserving (fun x : E => (f x)) volume volume by
-      simpa [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv] using
-        PiLp.volume_preserving_ofLp (ι := Fin d)).measureReal_preimage
-    (ZSpan.fundamentalDomain_measurableSet (b := (Pi.basisFun ℝ (Fin d)))).nullMeasurableSet
-
 lemma covolume_eq_abs_det_A :
     ZLattice.covolume L =
       abs ((LinearMap.det : (E →ₗ[ℝ] E) →* ℝ) ((A L).toLinearMap)) := by
+  have hvol : (volume : Measure E).real
+      (ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) = 1 := by
+    let f : E ≃L[ℝ] (Fin d → ℝ) := EuclideanSpace.equiv (Fin d) ℝ
+    simpa [show f ⁻¹' (ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d))) =
+        ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) by
+      rw [show ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d)) =
+          f.toLinearEquiv '' ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)
+        from by simpa [show ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).map f.toLinearEquiv =
+            Pi.basisFun ℝ (Fin d) from rfl] using
+          (ZSpan.map_fundamentalDomain
+            (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) f.toLinearEquiv).symm]
+      exact Set.preimage_image_eq _ f.injective, ZSpan.volume_real_fundamentalDomain,
+      show (Matrix.of (Pi.basisFun ℝ (Fin d)) : Matrix (Fin d) (Fin d) ℝ) = 1 by
+        ext; simp [Matrix.of_apply, Matrix.one_apply, Pi.basisFun_apply, Pi.single_apply, eq_comm]]
+      using (show MeasurePreserving (fun x : E => (f x)) volume volume by
+        simpa [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv] using
+          PiLp.volume_preserving_ofLp (ι := Fin d)).measureReal_preimage
+      (ZSpan.fundamentalDomain_measurableSet (b := (Pi.basisFun ℝ (Fin d)))).nullMeasurableSet
   have hr : rBasis (d := d) L = fun i : Fin d => (zBasis (d := d) L i : E) :=
     funext fun i => by simp [rBasis]
   have hcovol : ZLattice.covolume L =
       |(stdBasis (d := d)).det (fun i : Fin d => (zBasis (d := d) L i : E))| := by
-    simpa [stdBasis, volume_real_fundamentalDomain_stdBasis (d := d)] using
+    simpa [stdBasis, hvol] using
       ZLattice.covolume_eq_det_mul_measureReal (L := L) (b := zBasis (d := d) L)
         (b₀ := stdBasis (d := d)) (μ := (volume : Measure E))
   rw [hcovol, ← hr]; simp [A, stdBasis]
