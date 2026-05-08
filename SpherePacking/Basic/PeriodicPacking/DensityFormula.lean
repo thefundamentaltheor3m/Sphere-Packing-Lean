@@ -64,10 +64,6 @@ open Submodule
 
 variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
 
-theorem PeriodicSpherePacking.exists_bound_on_fundamental_domain :
-  ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L :=
-  isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))
-
 /-- Every point has a unique translate in the fundamental domain associated to a lattice basis. -/
 public theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
     ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := fun x =>
@@ -96,7 +92,8 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) /
     Real.toNNReal (ZLattice.covolume S.lattice) := by
   let b : Basis (Fin d) ℤ ↥S.lattice := S.defaultBasis
-  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
+  obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.1
+    (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))
   rw [Real.toNNReal_of_nonneg (ZLattice.covolume_pos S.lattice volume).le,
     S.density_eq b hL hd, ENat.toENNReal_coe]
   refine congrArg _ ((ENNReal.toReal_eq_toReal_iff' (IsBounded.measure_lt_top
