@@ -136,9 +136,10 @@ public theorem decay_J₆' :
       refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
       intro t ht
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-      have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) :=
-        SpherePacking.ForMathlib.exp_neg_mul_mul_le_exp_neg_mul_of_one_le
-          (b := Real.pi) (x := x) (t := t) Real.pi_pos.le hx ht
+      have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) := by
+        simpa [mul_assoc, mul_left_comm, mul_comm] using
+          Real.exp_le_exp.2 (neg_le_neg (le_mul_of_one_le_right
+            (mul_nonneg Real.pi_pos.le hx) ht))
       calc
         ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
               simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]

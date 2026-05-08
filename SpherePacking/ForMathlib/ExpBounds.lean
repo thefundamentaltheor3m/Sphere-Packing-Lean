@@ -54,10 +54,4 @@ public lemma exp_neg_pi_div_mul_exp_neg_pi_mul_le (x t : ℝ) (hx : 0 ≤ x) (ht
     show -2 * Real.pi * Real.sqrt x = -(Real.pi * (2 * Real.sqrt x)) from by ring]
   exact neg_le_neg (mul_le_mul_of_nonneg_left hIneq Real.pi_pos.le)
 
-/-- For `b, x ≥ 0` and `t ≥ 1`, we have `exp (-b*x*t) ≤ exp (-b*x)`. -/
-public lemma exp_neg_mul_mul_le_exp_neg_mul_of_one_le {b x t : ℝ} (hb : 0 ≤ b) (hx : 0 ≤ x)
-    (ht : (1 : ℝ) ≤ t) : Real.exp (-b * x * t) ≤ Real.exp (-b * x) := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    Real.exp_le_exp.2 (neg_le_neg (le_mul_of_one_le_right (mul_nonneg hb hx) ht))
-
 end SpherePacking.ForMathlib
