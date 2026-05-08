@@ -24,10 +24,6 @@ lemma coordCubeCover_spec (x : EuclideanSpace ℝ (Fin d)) :
     coordCubeCover L hL x +ᵥ x ∈ coordCube d L :=
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).1
 
-lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice d L hL)
-    (hg : g +ᵥ x ∈ coordCube d L) : g = coordCubeCover L hL x :=
-  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 g hg
-
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
@@ -44,8 +40,10 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
 lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice d L hL)
     (x : EuclideanSpace ℝ (Fin d)) :
     x ∈ g +ᵥ coordCube d L ↔ g = -coordCubeCover L hL x :=
-  ⟨fun hx => by rw [← neg_neg g, coordCubeCover_unique L hL x (-g)
-      (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)],
+  ⟨fun hx => by rw [← neg_neg g,
+      show (-g : cubeLattice d L hL) = coordCubeCover L hL x from
+        (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 (-g)
+          (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)],
    fun h => h ▸ by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec L hL x⟩
 
 end CoordCubeCover
