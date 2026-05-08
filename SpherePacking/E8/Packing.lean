@@ -102,16 +102,6 @@ public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
     E8Matrix_unimodular (R := ℝ)]
 
 open MeasureTheory ZSpan in
-private lemma E8_Basis_volume :
-    volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
-  have hpreim : (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain
-      (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) = fundamentalDomain (E8Basis ℝ) := by
-    rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
-    congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
-  rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).symm.measure_preimage_equiv]
-  erw [hpreim, E8Basis_volume]
-
-open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
 public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
@@ -125,7 +115,13 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
       div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
     · norm_num [Nat.factorial, mul_one_div]
       convert div_one _
-      · rw [E8_Basis_volume]
+      · have hpreim : (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain
+            (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) = fundamentalDomain (E8Basis ℝ) := by
+          rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
+          congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
+        rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp
+          _).symm.measure_preimage_equiv]
+        erw [hpreim, E8Basis_volume]
       · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
     · positivity
     · positivity
