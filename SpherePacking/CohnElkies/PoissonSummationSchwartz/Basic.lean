@@ -121,7 +121,9 @@ public lemma periodized_apply (x : E) :
   ⟨coeFunE (d := d), continuous_coeFunE⟩
 
 public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d)) :=
-  (isOpenQuotientMap_coeFunE (d := d)).isQuotientMap
+  (show IsOpenQuotientMap (coeFunE (d := d)) by
+    simpa [coeFunE] using IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
+      (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap).isQuotientMap
 
 /-- The periodization is invariant under lattice translates, so it factors through the torus. -/
 public lemma periodized_factorsThrough :

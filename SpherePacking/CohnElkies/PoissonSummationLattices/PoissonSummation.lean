@@ -118,10 +118,6 @@ public lemma dualSubmodule_standardLattice_eq :
   simpa [coeFunE] using (UnitAddTorus.continuous_coeFun (n := d)).comp
     (PiLp.continuous_ofLp (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ))
 
-public theorem isOpenQuotientMap_coeFunE : IsOpenQuotientMap (coeFunE (d := d)) := by
-  simpa [coeFunE] using IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
-    (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap
-
 @[simp] public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
     coeFunE (d := d) (x + intVec (d := d) n) = coeFunE (d := d) x := by
   ext i; simp [coeFunE, UnitAddTorus.coeFun]
