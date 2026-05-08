@@ -72,18 +72,6 @@ public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
   exact .iInter fun i ↦ ((PiLp.continuous_apply (p := (2 : ENNReal))
     (β := fun _ : Fin d ↦ ℝ) i).measurable) measurableSet_Ioc
 
-/-- Every point `x : ℝ^d` has a unique translate by an integer vector that lies in `iocCube`. -/
-public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
-    ∃! n : Fin d → ℤ, x + intVec (d := d) n ∈ iocCube (d := d) := by
-  choose n hn hn_unique using fun i : Fin d ↦ by
-    simpa [one_smul, add_assoc] using
-      existsUnique_add_zsmul_mem_Ioc (G := ℝ) (ha := zero_lt_one) (b := (x i : ℝ)) (c := (0 : ℝ))
-  refine ⟨n, fun i ↦ by simpa [intVec_apply, iocCube, zsmul_one] using hn i,
-    fun n' hn' ↦ funext fun i ↦ hn_unique i (n' i) (by
-      simpa [intVec_apply, zsmul_one] using
-        (show ∀ j : Fin d, (x + intVec (d := d) n') j ∈
-          Set.Ioc (0:ℝ) 1 by simpa [iocCube] using hn') i)⟩
-
 /-- Every element of the standard lattice comes from an integer vector via `intVec`. -/
 public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
     (hx : x ∈ SchwartzMap.standardLattice d) : ∃ n : Fin d → ℤ, x = intVec (d := d) n := by
@@ -139,7 +127,16 @@ public theorem isAddFundamentalDomain_iocCube :
       (iocCube (d := d)) (volume : Measure E) := by
   refine MeasureTheory.IsAddFundamentalDomain.mk'
     (measurableSet_iocCube (d := d)).nullMeasurableSet fun x ↦ ?_
-  rcases existsUnique_add_intVec_mem_iocCube (d := d) x with ⟨n, hn, hn_unique⟩
+  choose n hn hn_unique using fun i : Fin d ↦ by
+    simpa [one_smul, add_assoc] using
+      existsUnique_add_zsmul_mem_Ioc (G := ℝ) (ha := zero_lt_one) (b := (x i : ℝ)) (c := (0 : ℝ))
+  have hn : x + intVec (d := d) n ∈ iocCube (d := d) := fun i ↦ by
+    simpa [intVec_apply, iocCube, zsmul_one] using hn i
+  have hn_unique : ∀ n' : Fin d → ℤ, x + intVec (d := d) n' ∈ iocCube (d := d) → n' = n :=
+    fun n' hn' ↦ funext fun i ↦ hn_unique i (n' i) (by
+      simpa [intVec_apply, zsmul_one] using
+        (show ∀ j : Fin d, (x + intVec (d := d) n') j ∈
+          Set.Ioc (0:ℝ) 1 by simpa [iocCube] using hn') i)
   refine ⟨⟨intVec (d := d) n, intVec_mem_standardLattice (d := d) n⟩,
     by simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn,
     fun ℓ hℓ ↦ ?_⟩
