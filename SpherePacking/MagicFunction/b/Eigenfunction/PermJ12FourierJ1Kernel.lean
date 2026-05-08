@@ -54,21 +54,6 @@ public lemma phase_mul_J₁'_eq_integral_permJ1Kernel (w x : EuclideanSpace ℝ 
   exact MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun t => by
     simp [permJ1Kernel, mul_assoc, mul_left_comm, mul_comm]
 
-lemma norm_permJ1Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
-    ‖permJ1Kernel w (x, t)‖ = ‖ψT' (z₁line t)‖ * rexp (-(π * t * (‖x‖ ^ 2))) := by
-  rw [show ‖permJ1Kernel w (x, t)‖ =
-      ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ *
-        (‖ψT' (z₁line t)‖ *
-          ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖) from by
-    simp [permJ1Kernel, mul_assoc],
-    show ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) by
-      simpa using Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)),
-    show ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖ =
-        rexp (-(π * t * (‖x‖ ^ 2))) by
-      simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using
-        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
-  simp [mul_assoc]
-
 lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
     (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ1Kernel w (x, t)‖) =
@@ -76,7 +61,20 @@ lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
   rw [show (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ1Kernel w (x, t)‖) =
         ∫ x : EuclideanSpace ℝ (Fin 8), ‖ψT' (z₁line t)‖ * rexp (-(π * (t * (‖x‖ ^ 2)))) from
       MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun x => by
-        simpa [mul_assoc] using (norm_permJ1Kernel (w := w) (x := x) (t := t)),
+        simpa [mul_assoc] using
+          show ‖permJ1Kernel w (x, t)‖ = ‖ψT' (z₁line t)‖ * rexp (-(π * t * (‖x‖ ^ 2))) by
+            rw [show ‖permJ1Kernel w (x, t)‖ =
+                ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ *
+                  (‖ψT' (z₁line t)‖ *
+                    ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖) from by
+              simp [permJ1Kernel, mul_assoc],
+              show ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) by
+                simpa using Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)),
+              show ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖ =
+                  rexp (-(π * t * (‖x‖ ^ 2))) by
+                simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using
+                  norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
+            simp [mul_assoc],
     MeasureTheory.integral_const_mul ‖ψT' (z₁line t)‖ fun a ↦ rexp (-(π * (t * ‖a‖ ^ 2)))]
   simp [show (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ)
     from by simpa [mul_assoc, mul_left_comm, mul_comm] using
