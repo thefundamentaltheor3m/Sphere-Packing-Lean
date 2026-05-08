@@ -16,13 +16,6 @@ open Filter Topology
 
 noncomputable section
 
-lemma continuousOn_psiI'_mul_I :
-    ContinuousOn (fun t : ℝ => ψI' (Complex.I * (t : ℂ))) (Set.Ioi (0 : ℝ)) := by
-  refine (Function.continuousOn_resToImagAxis_Ioi_of (F := ψI)
-    MagicFunction.b.PsiBounds.continuous_ψI).congr fun t ht => ?_
-  simpa using
-    MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis t ht
-
 /-- The bracket appearing in the "another integral" representation of `b'`. -/
 @[expose] public def bAnotherBase (t : ℝ) : ℂ :=
   ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ)
@@ -30,8 +23,12 @@ lemma continuousOn_psiI'_mul_I :
 @[simp] public lemma bAnotherBase_eq (t : ℝ) :
     bAnotherBase t = ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
 
-public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) :=
-  (continuousOn_psiI'_mul_I.sub continuousOn_const).sub (by fun_prop)
+public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) := by
+  refine (((Function.continuousOn_resToImagAxis_Ioi_of (F := ψI)
+    MagicFunction.b.PsiBounds.continuous_ψI).congr fun t ht => ?_).sub continuousOn_const).sub
+      (by fun_prop)
+  simpa using
+    MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis t ht
 
 lemma exists_bound_norm_bAnotherBase_Ioi :
     ∃ C : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C := by
