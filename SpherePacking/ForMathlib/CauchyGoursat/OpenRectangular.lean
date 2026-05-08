@@ -21,24 +21,6 @@ open scoped Interval Topology
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {f : ℂ → E} {x₁ x₂ : ℝ} (y : ℝ)
 
-/-- If `f(z) → 0` as `Im(z) → ∞`, then `∫_{x₁}^{x₂} f(x + mI) dx → 0` as `m → ∞`. -/
-lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
-    (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
-    Tendsto (fun (m : ℝ) ↦ ∫ (x : ℝ) in x₁..x₂, f (x + m * I)) atTop (𝓝 0) := by
-  by_cases h : x₁ = x₂
-  · subst h; simp
-  simp only [NormedAddCommGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
-  intro ε hε
-  have hx : 0 < |x₂ - x₁| := abs_sub_pos.mpr (ne_comm.mp h)
-  obtain ⟨M, hM⟩ :=
-    htendsto ((1 / 2 : ℝ) * (ε / |x₂ - x₁|)) (mul_pos (by norm_num) (div_pos hε hx))
-  refine ⟨M, fun m hm => ?_⟩
-  calc ‖∫ (x : ℝ) in x₁..x₂, f (x + m * I)‖
-  _ ≤ ((1 / 2) * (ε / |x₂ - x₁|)) * |x₂ - x₁| :=
-      intervalIntegral.norm_integral_le_of_norm_le_const fun x _ =>
-        (hM (x + m * I) (by simpa using hm)).le
-  _ < ε := by field_simp [hx.ne']; linarith
-
 lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
     (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
     (m : ℝ) (hm : m ≥ y) :
@@ -88,7 +70,20 @@ public theorem
     rw [tendsto_congr' heventually.symm, ← sub_zero (∫ (t : ℝ) in x₁..x₂, f (↑t + ↑y * I))]
     refine (Tendsto.sub ?_ ?_).add hC₂
     · rw [sub_zero, tendsto_const_nhds_iff]
-    · exact tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero htendsto
+    · show Tendsto (fun (m : ℝ) ↦ ∫ (x : ℝ) in x₁..x₂, f (x + m * I)) atTop (𝓝 0)
+      by_cases h : x₁ = x₂
+      · subst h; simp
+      simp only [NormedAddCommGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
+      intro ε hε
+      have hx : 0 < |x₂ - x₁| := abs_sub_pos.mpr (ne_comm.mp h)
+      obtain ⟨M, hM⟩ :=
+        htendsto ((1 / 2 : ℝ) * (ε / |x₂ - x₁|)) (mul_pos (by norm_num) (div_pos hε hx))
+      refine ⟨M, fun m hm => ?_⟩
+      calc ‖∫ (x : ℝ) in x₁..x₂, f (x + m * I)‖
+      _ ≤ ((1 / 2) * (ε / |x₂ - x₁|)) * |x₂ - x₁| :=
+          intervalIntegral.norm_integral_le_of_norm_le_const fun x _ =>
+            (hM (x + m * I) (by simpa using hm)).le
+      _ < ε := by field_simp [hx.ne']; linarith
   exact sub_eq_zero.2 (tendsto_nhds_unique hC₁ hC₁').symm
 
 /-- Finite-rectangle deformation when the top-edge integral tends to `0` as height → ∞. -/
