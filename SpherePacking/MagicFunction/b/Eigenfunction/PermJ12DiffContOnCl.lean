@@ -26,10 +26,15 @@ section PermJ12
 /-- `Ψ₁' r` is `DiffContOnCl` on `wedgeSet`. -/
 public lemma diffContOnCl_Ψ₁'_wedgeSet (r : ℝ) :
     DiffContOnCl ℝ (Ψ₁' r) wedgeSet := by
-  refine SpherePacking.Contour.diffContOnCl_wedgeSet_of (f := Ψ₁' r)
-    (differentiableOn_Ψ₁'_upper (r := r)) ?_ ?_
-  · simpa using (tendsto_Ψ₁'_one_within_closure_wedgeSet (r := r))
-  · simp [Ψ₁', ψT']
+  refine ⟨((differentiableOn_Ψ₁'_upper (r := r)).restrictScalars ℝ).mono
+    wedgeSet_subset_upperHalfPlaneSet, fun z hzcl => ?_⟩
+  by_cases h1 : z = (1 : ℂ)
+  · subst h1
+    have hval : Ψ₁' r 1 = 0 := by simp [Ψ₁', ψT']
+    simpa [ContinuousWithinAt, hval] using (tendsto_Ψ₁'_one_within_closure_wedgeSet (r := r))
+  · exact ((differentiableOn_Ψ₁'_upper (r := r)).continuousOn.continuousAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
+        (mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl h1))).continuousWithinAt
 
 /-- The scalar one-form `scalarOneForm (Ψ₁' r)` is `DiffContOnCl` on `wedgeSet`. -/
 public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
