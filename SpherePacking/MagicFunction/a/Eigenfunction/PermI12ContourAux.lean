@@ -27,24 +27,21 @@ open Filter SpherePacking
 
 section Integral_Permutations
 
-private lemma diffContOnCl_Φ₃'_wedgeSet (r : ℝ) :
-    DiffContOnCl ℝ (MagicFunction.a.ComplexIntegrands.Φ₃' r) wedgeSet := by
-  refine ⟨((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
-      (by simp)).mono wedgeSet_subset_upperHalfPlaneSet, fun z hz => ?_⟩
-  by_cases h1 : z = (1 : ℂ)
-  · subst h1
-    have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
-      simp [MagicFunction.a.ComplexIntegrands.Φ₃']
-    simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
-  · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
-      mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
-    exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
-      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
-
 /-- The `1`-form built from `Φ₃'` is differentiable on `wedgeSet` with continuous extension. -/
 public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
     DiffContOnCl ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet :=
-  ForMathlib.diffContOnCl_scalarOneForm (s := wedgeSet) (diffContOnCl_Φ₃'_wedgeSet (r := r))
+  ForMathlib.diffContOnCl_scalarOneForm (s := wedgeSet) <| by
+    refine ⟨((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
+        (by simp)).mono wedgeSet_subset_upperHalfPlaneSet, fun z hz => ?_⟩
+    by_cases h1 : z = (1 : ℂ)
+    · subst h1
+      have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
+        simp [MagicFunction.a.ComplexIntegrands.Φ₃']
+      simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
+    · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
+        mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
+      exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
+        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
 
 /-- Symmetry of the derivative of `scalarOneForm (Φ₃' r)` on `wedgeSet`.
 
