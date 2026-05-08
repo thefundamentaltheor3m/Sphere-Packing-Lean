@@ -20,10 +20,9 @@ open Function Set
 
 variable {α β : Type*} {f : α → ℕ∞}
 
-private theorem hasSum : HasSum f (⨆ s : Finset α, ∑ a ∈ s, f a) :=
-  tendsto_atTop_iSup fun _ _ ↦ Finset.sum_le_sum_of_subset
-
-private theorem summable : Summable f := hasSum.summable
+private theorem summable : Summable f :=
+  HasSum.summable (a := ⨆ s : Finset α, ∑ a ∈ s, f a)
+    (tendsto_atTop_iSup fun _ _ ↦ Finset.sum_le_sum_of_subset)
 
 private theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective φ) (g : β → ℕ∞) :
     ∑' x, g (φ x) ≤ ∑' y, g y :=
