@@ -41,14 +41,13 @@ public lemma φ₀''_imag_axis_div_im (t : ℝ) (ht : 0 < t) :
     (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).im = 0 := by
   simpa [div_eq_mul_inv] using (φ₀''_imag_axis_im (t := (1 / t)) (by positivity))
 
-lemma H₃_imag_axis_real : ResToImagAxis.Real H₃ := by
-  simpa [jacobi_identity] using H₂_imag_axis_real.add H₄_imag_axis_real
-
 lemma ψI_imag_axis_real : ResToImagAxis.Real ψI := by
   intro t ht
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hH2 : (H₂_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₂ t ht H₂_imag_axis_real
-  have hH3 : (H₃_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₃ t ht H₃_imag_axis_real
+  have hH3 : (H₃_MF z).im = 0 := by
+    simpa [z] using imagAxis_im_eq_zero H₃ t ht (by
+      simpa [jacobi_identity] using H₂_imag_axis_real.add H₄_imag_axis_real)
   have hH4 : (H₄_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₄ t ht H₄_imag_axis_real
   simpa [Function.resToImagAxis, ResToImagAxis, ht, z] using show (ψI z).im = 0 by
     rw [ψI_eq]
