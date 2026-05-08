@@ -33,11 +33,6 @@ public lemma norm_tsum_exp_inner_zero_sq_eq_numReps_sq {d : ℕ} (P : PeriodicSp
   letI := P.instFintypeNumReps' hd hD_isBounded
   simp [PeriodicSpherePacking.numReps']
 
-/-- A small algebraic rearrangement used to normalize factors in the LP bound inequality. -/
-public lemma one_div_mul_mul_eq_mul_mul_div {α : Type*} [DivisionCommMonoid α] (c a b : α) :
-    (1 / c) * a * b = b * a / c := by
-  simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-
 /-- Nonnegativity of the dual-lattice series in the LP bound: each summand is nonnegative
 when `Re (𝓕 f) ≥ 0`. -/
 public lemma tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg {d : ℕ}

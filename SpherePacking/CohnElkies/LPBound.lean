@@ -201,8 +201,9 @@ theorem calc_steps_part2 (hd : 0 < d) :
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         ↑(P.numReps' hd hD_isBounded) ^ 2 := by
         rw [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq (P := P) (D := D)]
-    _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
-      SpherePacking.CohnElkies.one_div_mul_mul_eq_mul_mul_div _ _ _
+    _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
+      simp [div_eq_mul_inv, mul_left_comm, mul_comm,
+        show 𝓕 (⇑f) (0 : EuclideanSpace ℝ (Fin d)) = 𝓕 f 0 from rfl]
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
