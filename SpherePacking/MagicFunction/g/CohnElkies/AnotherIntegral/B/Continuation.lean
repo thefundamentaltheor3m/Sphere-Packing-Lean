@@ -53,15 +53,6 @@ lemma bAnotherRHS_analyticOnNhd :
         convert analyticOnNhd_integral_base_exp (base := bAnotherBase) continuousOn_bAnotherBase
           (fun u hu ↦ bAnotherBase_integrable_exp (u := u) hu) using 1).mono fun u hu => hu.1)
 
-lemma bAnotherRHS_ofReal (u : ℝ) :
-    bAnotherRHS (u : ℂ) =
-      (-4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
-            ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) := by
-  simp [bAnotherRHS, bAnotherIntegralC_ofReal, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
-    mul_assoc]
-
 /--
 Analytic-continuation step: extend the "another integral" identity for `b'` from `u > 2` to all
 real `0 < u` with `u ≠ 2`.
@@ -87,7 +78,11 @@ public theorem bRadial_eq_another_integral_analytic_continuation_of_gt2
       simpa [show MagicFunction.b.RealIntegrals.b' u = b' u by
         simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm]
         using bPrimeC_ofReal u⟩
-    bAnotherRHS_analyticOnNhd bAnotherRHS_ofReal h_gt2 hu hu2
+    bAnotherRHS_analyticOnNhd
+    (fun u => by
+      simp [bAnotherRHS, bAnotherIntegralC_ofReal, sub_eq_add_neg, add_assoc, add_comm,
+        add_left_comm, mul_assoc])
+    h_gt2 hu hu2
 
 end
 
