@@ -91,11 +91,14 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
 @[fun_prop]
 theorem F_holo : MDiff F := by unfold F; fun_prop
 
+@[fun_prop]
 theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
 theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
 
 theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
+
+theorem L₁₀_holo : MDiff L₁₀ := by unfold L₁₀; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -984,7 +987,7 @@ end AsymptoticAnalysis
 
 /- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
 lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
-  antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
+    antiSerreDerPos L₁₀_holo SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
 
 /-!
 ## Monotonicity of F/G on the Imaginary Axis
