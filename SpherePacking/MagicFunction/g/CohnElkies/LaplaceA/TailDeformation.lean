@@ -15,12 +15,6 @@ open MeasureTheory Real Complex Filter UpperHalfPlane MagicFunction.FourierEigen
 local notation "c12π" => ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
 
-/-- Integrability of `Φ₅'` on the full ray `t > 0` (via `aLaplaceIntegrand`). -/
-public lemma integrableOn_Φ₅'_imag_axis_Ioi0 {u : ℝ} (hu : 2 < u) :
-    IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (0 : ℝ)) volume := by
-  simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
-    (aLaplaceIntegral_convergent hu).neg'
-
 /-- Strip-bound core: bound `‖F (x + tI)‖` by the standard envelope when
 `F (x + tI) = (φ₀''(-1/w) * w²) * exp(πIu(x + tI))` with `w = s + tI`, `|s| ≤ 1`. -/
 private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)

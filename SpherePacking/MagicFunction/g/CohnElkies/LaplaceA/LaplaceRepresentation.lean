@@ -55,7 +55,9 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioc (0 : ℝ) 1, Φ₅' u ((t : ℂ) * Complex.I)) +
           (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) =
         ∫ t in Set.Ioi (0 : ℝ), Φ₅' u ((t : ℂ) * Complex.I) := by
-    have h5Ioi0 := integrableOn_Φ₅'_imag_axis_Ioi0 (u := u) hu
+    have h5Ioi0 : IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (0 : ℝ)) volume :=
+      by simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
+        (aLaplaceIntegral_convergent hu).neg'
     have h5Ioc := h5Ioi0.mono_set (fun t (ht : t ∈ Set.Ioc (0 : ℝ) 1) => ht.1)
     rw [show (Set.Ioi (0 : ℝ)) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) by
       simp [Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]]
