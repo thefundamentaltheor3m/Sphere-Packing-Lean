@@ -8,6 +8,20 @@ public import SpherePacking.Basic.PeriodicPacking.Aux
 open scoped ENNReal
 open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 
+/-- Cancel a common numerator in a ratio of `ENNReal` divisions.
+If `a` is nonzero and finite, and `c` is finite, then `(a / b) / (a / c) = c / b`. -/
+private theorem ENNReal.div_div_div_cancel_left {a b c : ENNReal} (ha : a ≠ 0) (ha' : a ≠ ⊤)
+    (hc : c ≠ ⊤) : (a / b) / (a / c) = c / b := by
+  by_cases hb : b = 0
+  · simp [ha, hb, div_zero, top_div, div_eq_top, hc, ha']
+    split_ifs with hct <;> simp [hct, eq_comm, div_eq_top]
+  · rw [← ENNReal.toReal_eq_toReal_iff', ENNReal.toReal_div, ENNReal.toReal_div,
+      ENNReal.toReal_div, ENNReal.toReal_div]
+    · rw [div_div_div_cancel_left']
+      rw [ne_eq, ENNReal.toReal_eq_zero_iff, not_or]; tauto
+    · simp [*, ne_eq, ENNReal.div_eq_top]
+    · simp [*, ne_eq, ENNReal.div_eq_top]
+
 section theorem_2_2
 
 open scoped Pointwise

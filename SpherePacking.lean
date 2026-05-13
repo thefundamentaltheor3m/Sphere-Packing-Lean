@@ -43,7 +43,6 @@ public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.ContDiffOnByDeriv
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
-public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ExpBounds

@@ -9,7 +9,6 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.LinearAlgebra.Basis.SMul
 
 public import SpherePacking.Basic.SpherePacking
-public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ZLattice
 
