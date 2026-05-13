@@ -4,7 +4,6 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ParametricIntegral
-import SpherePacking.ForMathlib.ContDiffOnByDeriv
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.Measure

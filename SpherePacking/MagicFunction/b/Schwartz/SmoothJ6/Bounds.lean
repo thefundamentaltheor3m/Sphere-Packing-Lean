@@ -8,7 +8,6 @@ import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.ContDiffOnByDeriv
 import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.SmoothIntegralIciOne

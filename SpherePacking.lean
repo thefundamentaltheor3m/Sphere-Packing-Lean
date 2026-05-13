@@ -33,7 +33,6 @@ public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
 public import SpherePacking.ForMathlib.BoundsOnIcc
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-public import SpherePacking.ForMathlib.ContDiffOnByDeriv
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.Encard
