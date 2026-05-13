@@ -4,17 +4,101 @@ public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.ContourIdentities
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 
-/-! # Laplace representation for `b'` (blueprint `prop:b-double-zeros`). -/
+/-!
+# Laplace representation for `b'` (blueprint `prop:b-double-zeros`)
+
+Also includes the contour-integrand definitions (`bContourWeight`, `bContourIntegrand{I,T,S}`)
+and the supporting `ψT' = ψI' (· + 1)` identities used in the rectangle deformation argument.
+-/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
+
+noncomputable section
 
 open scoped BigOperators Topology UpperHalfPlane intervalIntegral
 open MeasureTheory Real Complex Filter
 open MagicFunction.FourierEigenfunctions MagicFunction.Parametrisations
   MagicFunction.g.CohnElkies.Trig
+
+/-! ## Contour integrands -/
+
+/-- Exponential weight `exp(π i u z)` used in the contour integrands for `b'`. -/
+@[expose] public def bContourWeight (u : ℝ) (z : ℂ) : ℂ :=
+  cexp (π * (Complex.I : ℂ) * (u : ℂ) * z)
+
+/-- Multiplicativity of `bContourWeight` with respect to addition. -/
+public lemma bContourWeight_add (u : ℝ) (z w : ℂ) :
+    bContourWeight u (z + w) = bContourWeight u z * bContourWeight u w := by
+  simp [bContourWeight, mul_add, Complex.exp_add, mul_assoc]
+
+/-- Contour integrand for the `ψI'` term (with a minus sign). -/
+@[expose] public def bContourIntegrandI (u : ℝ) (z : ℂ) : ℂ :=
+  -(ψI' z * bContourWeight u z)
+
+/-- Contour integrand for the `ψT'` term. -/
+@[expose] public def bContourIntegrandT (u : ℝ) (z : ℂ) : ℂ :=
+  ψT' z * bContourWeight u z
+
+/-- Contour integrand for the `ψS'` term. -/
+@[expose] public def bContourIntegrandS (u : ℝ) (z : ℂ) : ℂ :=
+  ψS' z * bContourWeight u z
+
+/-- Evaluate `bContourWeight` on the imaginary axis: `bContourWeight u (I * t) = exp(-π u t)`. -/
+public lemma bContourWeight_mul_I (u t : ℝ) :
+    bContourWeight u ((Complex.I : ℂ) * (t : ℂ)) = (Real.exp (-π * u * t) : ℂ) := by
+  simp [bContourWeight, show (π : ℂ) * (Complex.I : ℂ) * (u : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) =
+    (-(π : ℂ) * (u : ℂ) * (t : ℂ)) by ring_nf; simp [pow_two, Complex.I_mul_I]]
+
+/-- Translate `ψT'` into `ψI'` by adding `1` in the upper half-plane. -/
+public lemma ψT'_eq_ψI'_add_one (z : ℂ) (hz : 0 < z.im) :
+    ψT' z = ψI' (z + (1 : ℂ)) := by
+  simp [ψT', ψI', hz, ψT, modular_slash_T_apply,
+    show ((1 : ℝ) +ᵥ ⟨z, hz⟩ : ℍ) = ⟨z + (1 : ℂ), by simpa using hz⟩ by ext1; simp; ring_nf]
+
+/-- Specialize `ψT'_eq_ψI'_add_one` at `z = -1 + I * t`. -/
+public lemma ψT'_neg_one_add_I_mul (t : ℝ) (ht : 0 < t) :
+    ψT' ((-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) = ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
+  simpa [add_assoc, mul_assoc] using
+    (ψT'_eq_ψI'_add_one (z := (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) (by simpa [mul_assoc] using ht))
+
+/-- Specialize `ψT'_eq_ψI'_add_one` at `z = 1 + I * t`. -/
+public lemma ψT'_one_add_I_mul (t : ℝ) (ht : 0 < t) :
+    ψT' ((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) = ψI' ((Complex.I : ℂ) * (t : ℂ)) := by
+  have hz0 : 0 < (((Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa using ht
+  have hz1 : 0 < (((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa [mul_assoc] using ht
+  have htrans :
+      ((1 : ℝ) +ᵥ ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩ : ℍ) =
+        ⟨(1 : ℂ) + (Complex.I : ℂ) * (t : ℂ), hz1⟩ := by ext1; simp
+  simpa [ψT', ψI', ht, modular_slash_T_apply, htrans] using
+    congrArg (fun F : ℍ → ℂ => F ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩) ψT_slash_T
+
+/-- Holomorphy of `bContourIntegrandT` on the open upper half-plane. -/
+public lemma differentiableOn_bContourIntegrandT (u : ℝ) :
+    DifferentiableOn ℂ (bContourIntegrandT u) {z : ℂ | 0 < z.im} := by
+  have hExp : DifferentiableOn ℂ (bContourWeight u) {z : ℂ | 0 < z.im} := by
+    simpa [bContourWeight] using (by fun_prop :
+      Differentiable ℂ fun z : ℂ => cexp (π * (Complex.I : ℂ) * (u : ℂ) * z)).differentiableOn
+  have hψT : DifferentiableOn ℂ (fun z : ℂ => ψT (UpperHalfPlane.ofComplex z))
+      {z : ℂ | 0 < z.im} := by
+    have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
+    have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
+    have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
+    have hleft := (hH3.add hH4).div (hH2.pow 2) fun _ _ => pow_ne_zero 2 (H₂_ne_zero _)
+    have hright := (hH2.add hH3).div (hH4.pow 2) fun _ _ => pow_ne_zero 2 (H₄_ne_zero _)
+    refine (DifferentiableOn.const_mul (hleft.add hright) (128 : ℂ)).congr fun z _ => ?_
+    simpa [mul_assoc] using congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
+  refine (hψT.mul hExp).congr fun z hz => ?_
+  have hz' : 0 < z.im := hz
+  simp [bContourIntegrandT, ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
+
+/-- Continuity of `bContourIntegrandT` on the open upper half-plane. -/
+public lemma continuousOn_bContourIntegrandT (u : ℝ) :
+    ContinuousOn (bContourIntegrandT u) {z : ℂ | 0 < z.im} :=
+  (differentiableOn_bContourIntegrandT (u := u)).continuousOn
+
+/-! ## Laplace representation -/
 
 private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (hf : IntegrableOn f (Set.Ioi (0 : ℝ)) (μ := (volume : Measure ℝ))) :
@@ -296,5 +380,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     simp only [smul_eq_mul, neg_mul]; grind only
   simpa [bContourWeight, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm,
     mul_comm] using hsum
+
+end
 
 end MagicFunction.g.CohnElkies.IntegralReps
