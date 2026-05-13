@@ -16,7 +16,6 @@ import SpherePacking.ModularForms.Lv1Lv2Identities
 import SpherePacking.ModularForms.PhiTransformLemmas
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ForMathlib.SigmaBounds
-import SpherePacking.ForMathlib.SigmaSummability
 import SpherePacking.ForMathlib.SpecificLimits
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
@@ -353,9 +352,18 @@ lemma tendsto_A_div_q :
         ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z))
       atImInfty (𝓝 (720 : ℂ)) := by
   let a : ℕ → ℂ := fun n => (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
-  have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) :=
-    SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
-      fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
+  have hsigma : ∀ n : ℕ, (σ 3 (n + 1) : ℝ) ≤ (n + 1 : ℝ) ^ 4 := fun n => by
+    exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
+  have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) := by
+    refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => ?_)
+      (by simpa using summable_pow_shift_mul_exp (4 + 1) 1)
+    have hnorm : ‖a n‖ ≤ (n + 1 : ℝ) ^ (4 + 1) := calc
+      ‖a n‖ = (n + 1 : ℝ) * (σ 3 (n + 1) : ℝ) := by
+              simp only [a, Complex.norm_mul, Complex.norm_natCast]; push_cast; ring
+      _ ≤ (n + 1 : ℝ) * (n + 1 : ℝ) ^ 4 := by gcongr; exact hsigma n
+      _ = (n + 1 : ℝ) ^ (4 + 1) := by ring
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      (mul_le_mul_of_nonneg_right hnorm (by positivity : (0 : ℝ) ≤ Real.exp (-2 * Real.pi * n)))
   refine (tendsto_congr (f₂ := fun z : ℍ =>
     (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n)) fun z => ?_).mpr ?_
   · rw [show (E₂ z) * (E₄ z) - (E₆ z) = (720 : ℂ) *

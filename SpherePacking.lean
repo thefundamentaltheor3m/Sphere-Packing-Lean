@@ -59,7 +59,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.ForMathlib.SigmaBounds
-public import SpherePacking.ForMathlib.SigmaSummability
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.Integration.DifferentiationUnderIntegral
