@@ -24,15 +24,6 @@ open MagicFunction.a.RealIntegrands MagicFunction.a.ComplexIntegrands
 open MagicFunction.a.Schwartz.SmoothI24Common
 open SpherePacking.Integration SpherePacking.ForMathlib
 
-private lemma I₁'_eq_integral_g_Ioo (x : ℝ) :
-    I₁' x = ∫ t in Ioo (0 : ℝ) 1,
-      DifferentiationUnderIntegral.g (coeff := coeff z₁')
-        (hf := hf z₁' (1 : ℂ) I) x t := by
-  simp [RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def,
-    DifferentiationUnderIntegral.g, Φ₁', coeff, hf, SmoothI24Common.arg,
-    intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
-    mul_assoc, mul_left_comm, mul_comm]
-
 private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     arg z₁' (1 : ℂ) t = I / t := by
   have htne : (t : ℂ) ≠ 0 := mod_cast ht.1.ne'
@@ -43,7 +34,12 @@ private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 /-- Smoothness of `RealIntegrals.I₁'` as a function `ℝ → ℂ`. -/
 public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
   contDiff_of_eq_integral_g_Ioo (z := z₁') (shift := (1 : ℂ)) (prefactor := I)
-    (f := I₁') I₁'_eq_integral_g_Ioo continuous_z₁' norm_z₁'_le_two (by norm_num)
+    (f := I₁') (fun x => by
+      simp [RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def,
+        DifferentiationUnderIntegral.g, Φ₁', coeff, hf, SmoothI24Common.arg,
+        intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
+        mul_assoc, mul_left_comm, mul_comm])
+    continuous_z₁' norm_z₁'_le_two (by norm_num)
     (fun t ht h0 => by
       have h1 := congrArg Complex.im h0
       simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1; exact ht.1.ne' h1)
