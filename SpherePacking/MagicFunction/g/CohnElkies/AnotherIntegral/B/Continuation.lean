@@ -4,7 +4,6 @@ public import SpherePacking.Basic.Domains.RightHalfPlane
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.AnalyticityWrapper
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.ContinuationWrapper
 

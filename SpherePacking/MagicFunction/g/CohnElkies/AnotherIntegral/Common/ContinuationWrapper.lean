@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import Mathlib.Analysis.Analytic.Composition
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv

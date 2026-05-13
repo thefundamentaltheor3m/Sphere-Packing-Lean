@@ -151,7 +151,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.IntegralA
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralB
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
