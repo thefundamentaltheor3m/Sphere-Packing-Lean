@@ -21,11 +21,13 @@ variable
   {S : PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
-lemma PeriodicSpherePacking.tendsto_finiteDensity
+/-- Compute the density of a periodic packing using a (bounded) fundamental domain. -/
+public theorem PeriodicSpherePacking.density_eq
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
-    Tendsto S.finiteDensity atTop
-      (𝓝 (S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)))) := by
+    S.density
+      = S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
+  refine limsSup_eq_of_le_nhds ?_
   have hmul_one : ∀ a : ENNReal, 𝓝 a = 𝓝 (a * 1) := fun _ => by rw [mul_one]
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le ?_ ?_
       (aux_big_ge b · hL hd) (aux_big_le b · hL hd) <;>
@@ -36,14 +38,6 @@ lemma PeriodicSpherePacking.tendsto_finiteDensity
   · simp_rw [add_assoc]
     convert volume_ball_ratio_tendsto_nhds_one'' hd (C := S.separation / 2 + L * 2)
     rw [add_zero]
-
-/-- Compute the density of a periodic packing using a (bounded) fundamental domain. -/
-public theorem PeriodicSpherePacking.density_eq
-    (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
-    S.density
-      = S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
-  limsSup_eq_of_le_nhds (S.tendsto_finiteDensity b hL hd)
 
 end DensityEqFdDensity
 
