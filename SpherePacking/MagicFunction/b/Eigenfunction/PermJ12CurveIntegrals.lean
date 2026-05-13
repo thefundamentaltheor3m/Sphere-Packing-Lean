@@ -1,8 +1,9 @@
 module
+public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.Contour.Segments
-import SpherePacking.Contour.PermJ12CurveIntegral
+public import SpherePacking.ForMathlib.ScalarOneForm
 import SpherePacking.Integration.EndpointIntegrability
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
@@ -46,6 +47,27 @@ open MeasureTheory Set Complex Real
 open Filter
 open scoped Interval
 
+private lemma curveIntegral_segment_eq_intervalIntegral (a b : ℂ) (f : ℂ → ℂ) (g : ℝ → ℂ)
+    (hg : ∀ t : ℝ, t ∈ Set.Icc (0 : ℝ) 1 → AffineMap.lineMap a b t = g t) :
+    (∫ᶜ z in Path.segment a b, scalarOneForm f z) = ∫ t in (0 : ℝ)..1, (b - a) * f (g t) := by
+  rw [curveIntegral_segment (ω := scalarOneForm f) a b]
+  exact intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => by
+    simp [scalarOneForm_apply, hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht)]
+
+/-- Rewrite the segment integral on `1 → 1 + I` as an interval integral in the parameter `t`. -/
+public lemma curveIntegral_segment_z₃ (f : ℂ → ℂ) :
+    (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm f z) =
+      ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * f (z₃' t) := by
+  simpa using curveIntegral_segment_eq_intervalIntegral (1 : ℂ) ((1 : ℂ) + Complex.I) f z₃'
+    lineMap_z₃_eq_z₃'
+
+/-- Rewrite the segment integral on `1 + I → I` as an interval integral in the parameter `t`. -/
+public lemma curveIntegral_segment_z₄ (f : ℂ → ℂ) :
+    (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm f z) =
+      ∫ t in (0 : ℝ)..1, (-1 : ℂ) * f (z₄' t) := by
+  simpa using curveIntegral_segment_eq_intervalIntegral ((1 : ℂ) + Complex.I) Complex.I f z₄'
+    lineMap_z₄_eq_z₄'
+
 /-- Combine the segment formulas for `J₃'` and `J₄'` into a single identity. -/
 public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
     MagicFunction.b.RealIntegrals.J₃' r + MagicFunction.b.RealIntegrals.J₄' r =
@@ -55,8 +77,8 @@ public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
           scalarOneForm (Ψ₁' r) z := by
   simpa [MagicFunction.b.RealIntegrals.J₃', MagicFunction.b.RealIntegrals.J₄', Ψ₁',
     mul_assoc, mul_left_comm, mul_comm] using congrArg₂ (· + ·)
-      (SpherePacking.Contour.curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
-      (SpherePacking.Contour.curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
+      (curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
+      (curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
 
 /-! #### Fourier transform of the `J₁,J₂` kernels -/
 
