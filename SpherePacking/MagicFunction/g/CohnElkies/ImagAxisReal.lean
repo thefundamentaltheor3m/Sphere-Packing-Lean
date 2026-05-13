@@ -21,20 +21,18 @@ private lemma imagAxis_im_eq_zero (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) (hF :
     (F ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
   simpa [Function.resToImagAxis, ResToImagAxis, ht] using hF t ht
 
-lemma φ₀_imag_axis_im (t : ℝ) (ht : 0 < t) : (φ₀ ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
-  set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  have hE2 : (E₂ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₂ t ht E₂_imag_axis_real
-  have hE4 : (E₄ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₄ t ht E₄_imag_axis_real
-  have hE6 : (E₆ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₆ t ht E₆_imag_axis_real
-  have hΔ : (Δ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero Δ t ht Delta_imag_axis_pos.1
-  simp [-E4_apply, -E6_apply, φ₀, z, Complex.div_im, hΔ,
-    Complex.im_pow_eq_zero_of_im_eq_zero (show ((E₂ z) * (E₄ z) - (E₆ z)).im = 0 by
-      simp [-E4_apply, -E6_apply, Complex.sub_im, Complex.mul_im, hE2, hE4, hE6]) 2]
-
 /-- The value `φ₀'' (it)` is real for `t > 0`. -/
 public lemma φ₀''_imag_axis_im (t : ℝ) (ht : 0 < t) :
     (φ₀'' ((Complex.I : ℂ) * (t : ℂ))).im = 0 := by
-  simpa [φ₀'', ht] using φ₀_imag_axis_im t ht
+  simpa [φ₀'', ht] using show (φ₀ ⟨Complex.I * t, by simp [ht]⟩).im = 0 by
+    set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+    have hE2 : (E₂ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₂ t ht E₂_imag_axis_real
+    have hE4 : (E₄ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₄ t ht E₄_imag_axis_real
+    have hE6 : (E₆ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero E₆ t ht E₆_imag_axis_real
+    have hΔ : (Δ z).im = 0 := by simpa [z] using imagAxis_im_eq_zero Δ t ht Delta_imag_axis_pos.1
+    simp [-E4_apply, -E6_apply, φ₀, z, Complex.div_im, hΔ,
+      Complex.im_pow_eq_zero_of_im_eq_zero (show ((E₂ z) * (E₄ z) - (E₆ z)).im = 0 by
+        simp [-E4_apply, -E6_apply, Complex.sub_im, Complex.mul_im, hE2, hE4, hE6]) 2]
 
 /-- The value `φ₀'' (i / t)` is real for `t > 0`. -/
 public lemma φ₀''_imag_axis_div_im (t : ℝ) (ht : 0 < t) :
