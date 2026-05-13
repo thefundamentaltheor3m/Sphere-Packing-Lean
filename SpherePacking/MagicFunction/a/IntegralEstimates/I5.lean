@@ -9,7 +9,6 @@ module
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAuxIci
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.Integration.InvChangeOfVariables
 

@@ -7,7 +7,7 @@ module
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAuxIci
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import SpherePacking.Integration.InvChangeOfVariables
 
 /-!
@@ -60,8 +60,19 @@ public lemma I₃'_bounding_aux_1 (r : ℝ) :
 
 /-- The model bound integrand is integrable on `Ici 1`. -/
 public lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume :=
-  MagicFunction.a.IntegralEstimates.bound_integrableOn_Ici r C₀
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+  set μ := volume.restrict (Ici (1 : ℝ))
+  have h_g : Integrable (fun s ↦ C₀ * rexp (-2 * π * s)) μ :=
+    ((integrableOn_Ici_iff_integrableOn_Ioi).mpr
+      (integrableOn_exp_mul_Ioi (by linarith [pi_pos]) 1)).const_mul C₀
+  have hφ : AEStronglyMeasurable (fun s ↦ rexp (-π * r / s)) μ := by fun_prop
+  have hb : ∀ᵐ s ∂μ, ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) :=
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s (hs : 1 ≤ s) ↦ by
+      simp only [Real.norm_eq_abs, abs_of_nonneg (exp_pos _).le]
+      refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
+      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (zero_le_one.trans hs)]
+      exact div_le_self (by positivity) hs
+  simpa [IntegrableOn, μ, mul_assoc] using h_g.mul_bdd hφ hb
 
 end
 
