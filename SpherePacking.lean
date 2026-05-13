@@ -141,7 +141,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancell
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Continuation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Parametric
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Representation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension

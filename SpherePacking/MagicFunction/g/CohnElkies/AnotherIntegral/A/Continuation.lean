@@ -1,10 +1,17 @@
 module
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Parametric
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
+public import
+  SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
+public import
+  SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
+public import SpherePacking.Basic.Domains.RightHalfPlane
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.AnalyticityWrapper
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.ContinuationWrapper
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 
 /-!
@@ -14,8 +21,8 @@ Assuming the "another integral" formula for `a'` holds for all real `u > 2`, thi
 equality to all real `0 < u` with `u ≠ 2` by comparing analytic functions on the punctured
 right half-plane `ACDomain = {u : ℂ | 0 < Re u} \\ {2}` and applying an identity theorem.
 
-## Main definition
-* `aAnotherRHS`
+## Main definitions
+* `aAnotherBase`, `aAnotherIntegrandC`, `aAnotherIntegralC`, `aAnotherRHS`
 
 ## Main statement
 * `aRadial_eq_another_integral_analytic_continuation_of_gt2`
@@ -23,13 +30,48 @@ right half-plane `ACDomain = {u : ℂ | 0 < Re u} \\ {2}` and applying an identi
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
-open scoped BigOperators Topology
+open scoped BigOperators Topology UpperHalfPlane
 
-open MeasureTheory Real Complex
+open MeasureTheory Real Complex UpperHalfPlane
 open SpherePacking
 open MagicFunction.FourierEigenfunctions
 
 noncomputable section
+
+/-- The `u`-independent bracket in the "another integral" integrand for `a'`. -/
+@[expose] public def aAnotherBase (t : ℝ) : ℂ :=
+  (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+    ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+    ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
+
+/-- Complex-parameter integrand for the "another integral" representation of `a'`. -/
+@[expose] public def aAnotherIntegrandC (u : ℂ) (t : ℝ) : ℂ :=
+  aAnotherBase t * Complex.exp (-(π : ℂ) * u * (t : ℂ))
+
+/-- Complex-parameter "another integral" for `a'`. -/
+@[expose] public def aAnotherIntegralC (u : ℂ) : ℂ :=
+  ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrandC u t
+
+/-- `aAnotherIntegralC` is analytic on the right half-plane. -/
+public lemma aAnotherIntegralC_analyticOnNhd :
+    AnalyticOnNhd ℂ aAnotherIntegralC rightHalfPlane := by
+  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ)) :=
+    continuous_const.continuousOn.div continuous_ofReal.continuousOn fun t ht => by
+      exact_mod_cast ne_of_gt ht
+  have hφcomp : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
+    (by simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn :
+      ContinuousOn (fun z : ℂ => φ₀'' z) upperHalfPlaneSet).comp hcontIdiv fun t ht => by
+        change 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
+        rw [imag_I_div t]; exact inv_pos.2 (by simpa using ht)
+  have hbase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) :=
+    ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
+      hφcomp).sub (continuousOn_const.mul (by fun_prop : Continuous fun t : ℝ =>
+      ((Real.exp (2 * π * t)) : ℂ)).continuousOn)).add
+      (continuousOn_const.mul continuous_ofReal.continuousOn)).sub continuousOn_const
+  convert analyticOnNhd_integral_base_exp (base := aAnotherBase)
+    hbase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
+      Filter.Eventually.of_forall fun t => by
+        simp [aAnotherIntegrand, aAnotherBase, mul_assoc]) using 1
 
 /-!
 ## Analytic RHS function on `ℂ`
