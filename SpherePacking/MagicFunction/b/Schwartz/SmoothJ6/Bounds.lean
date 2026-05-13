@@ -11,7 +11,6 @@ import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.ContDiffOnByDeriv
 import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.ForMathlib.IntegrablePowMulExp
-import SpherePacking.Integration.J6Integrable
 import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.Integration.Measure
 
@@ -21,6 +20,55 @@ import SpherePacking.Integration.Measure
 Regularity of the primed radial integral `RealIntegrals.J₆'` on `Ioi (-1)`, proved by
 differentiating under the integral sign with the exponential decay of `ψS` providing domination.
 -/
+
+namespace SpherePacking.Integration
+
+noncomputable section
+
+open Complex Real Set MeasureTheory Filter
+
+/-- The `n`-th `x`-derivative integrand appearing in `J₆'`-type formulas. -/
+@[expose] public def gN_J6_integrand (f : ℝ → ℂ) (n : ℕ) (x : ℝ) : ℝ → ℂ :=
+  fun t : ℝ ↦ ((-Real.pi * t : ℂ) ^ n) *
+    ((Complex.I : ℂ) * (f t * cexp ((x : ℂ) * (-Real.pi * t : ℂ))))
+
+/-- Integrability of `gN_J6_integrand` on `Ici 1` under an exponential bound on `f`. -/
+public lemma integrable_gN_J6 (f : ℝ → ℂ)
+    (hBound : ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖f t‖ ≤ C * Real.exp (-Real.pi * t))
+    (n : ℕ) (x : ℝ) (hx : -1 < x)
+    (hmeas : AEStronglyMeasurable (gN_J6_integrand f n x)
+        ((volume : Measure ℝ).restrict (Ici (1 : ℝ)))) :
+    Integrable (gN_J6_integrand f n x) ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) := by
+  rcases hBound with ⟨C, hC⟩
+  have hC_nonneg : 0 ≤ C :=
+    ForMathlib.nonneg_of_nonneg_le_mul (a := ‖f 1‖) (b := Real.exp (-Real.pi * (1 : ℝ)))
+      (C := C) (norm_nonneg _) (by positivity) (by simpa using hC 1 le_rfl)
+  have hb : 0 < Real.pi * (x + 1) := mul_pos Real.pi_pos (by linarith)
+  let bound : ℝ → ℝ :=
+    fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-(Real.pi * (x + 1)) * t)) * C
+  have hbound_int : Integrable bound ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) := by
+    simpa [bound, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
+      (ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi * (x + 1))
+        (by simpa [mul_assoc] using hb)).const_mul ((Real.pi ^ n) * C)
+  refine Integrable.mono' hbound_int hmeas ?_
+  refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
+  have ht0 : 0 ≤ t := le_trans zero_le_one ht
+  calc
+    ‖gN_J6_integrand f n x t‖
+        = (Real.pi * t) ^ n * (‖f t‖ * Real.exp (-Real.pi * x * t)) := by
+          simp [gN_J6_integrand, norm_pow, Complex.norm_exp, Real.norm_eq_abs,
+            abs_of_pos Real.pi_pos, abs_of_nonneg ht0, mul_left_comm, mul_comm]
+    _ ≤ (Real.pi * t) ^ n * ((C * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x * t)) := by
+          gcongr; exact hC t ht
+    _ = bound t := by
+          change (Real.pi * t) ^ n * ((C * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x * t)) =
+            (Real.pi ^ n) * (t ^ n * Real.exp (-(Real.pi * (x + 1)) * t)) * C
+          rw [show (-(Real.pi * (x + 1)) * t) = (-Real.pi * t) + (-Real.pi * x * t) by ring,
+            Real.exp_add]; ring
+
+end
+
+end SpherePacking.Integration
 
 namespace MagicFunction.b.Schwartz.J6Smooth
 

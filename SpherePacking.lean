@@ -61,7 +61,6 @@ public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.EndpointIntegrability
 public import SpherePacking.Integration.InvChangeOfVariables
-public import SpherePacking.Integration.J6Integrable
 public import SpherePacking.Integration.Measure
 public import SpherePacking.Integration.SmoothIntegralCommon
 public import SpherePacking.Integration.SmoothIntegralIciOne
