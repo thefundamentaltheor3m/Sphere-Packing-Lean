@@ -94,14 +94,6 @@ public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
     (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)).symm)
     measurableSet_Ioi
 
-/-- Integrability of `Φ₂'` on the bounded interval `(1,A]`. -/
-lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
-    IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioc (1 : ℝ) A) volume :=
-  (((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
-    (fun t ht => by simpa using lt_of_lt_of_le zero_lt_one ht.1 :
-      Set.MapsTo (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A)
-        {z : ℂ | 0 < z.im})).integrableOn_compact isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
-
 /-- Modular-growth bound for `‖φ₀(S•w)‖‖w‖^2` depending only on `t = Im w`. -/
 public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
@@ -211,7 +203,11 @@ public lemma integrableOn_Φ₂'_imag_axis {u : ℝ} (hu : 2 < u) :
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   let A : ℝ := max 1 Aφ
   simpa [(Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_left _ _)).symm] using
-    (integrableOn_Φ₂'_imag_axis_Ioc u A).union
+    ((((Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp (by fun_prop)
+        (fun t ht => by simpa using lt_of_lt_of_le zero_lt_one ht.1 :
+          Set.MapsTo (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Icc (1 : ℝ) A)
+            {z : ℂ | 0 < z.im})).integrableOn_compact isCompact_Icc).mono_set
+            Set.Ioc_subset_Icc_self).union
       (integrableOn_Φ₂'_imag_axis_Ioi (u := u) hu (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀) (A := A)
         hC₀_pos hC₀ hφbd (le_max_left _ _) (le_max_right _ _))
 
