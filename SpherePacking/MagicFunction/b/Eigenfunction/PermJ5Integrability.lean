@@ -1,5 +1,4 @@
 module
-public import SpherePacking.MagicFunction.b.Eigenfunction.GaussianFourier
 public import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds

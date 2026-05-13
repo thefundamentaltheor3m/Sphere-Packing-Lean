@@ -104,7 +104,6 @@ public import SpherePacking.MagicFunction.a.Schwartz.SmoothI6
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
-public import SpherePacking.MagicFunction.b.Eigenfunction.GaussianFourier
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12ContourDeformation
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
