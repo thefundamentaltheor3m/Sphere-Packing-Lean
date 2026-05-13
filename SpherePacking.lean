@@ -167,7 +167,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAx
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.InvH2Sq
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.QExpansion
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationCommon
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.ImagAxisReal
