@@ -15,7 +15,6 @@ on an open set `s`, then each `F n` is `C^m` on `s` for all finite `m`, hence `C
 This helper avoids duplicating the same `ContDiffOn` induction in multiple magic-function files.
 
 ## Main statements
-* `SpherePacking.ForMathlib.contDiffOn_family_nat_of_hasDerivAt`
 * `SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt`
 -/
 
@@ -25,33 +24,24 @@ open scoped ContDiff
 
 noncomputable section
 
-/--
-If `F n` satisfies `HasDerivAt (F n) (F (n + 1) x) x` on an open set `s`, then each `F n` is
-`ContDiffOn` of order `m` on `s`, for every finite `m`.
--/
-public lemma contDiffOn_family_nat_of_hasDerivAt
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {F : ℕ → ℝ → E} {s : Set ℝ} (hs : IsOpen s)
-    (hF : ∀ n : ℕ, ∀ x : ℝ, x ∈ s → HasDerivAt (F n) (F (n + 1) x) x) :
-    ∀ m : ℕ, ∀ n : ℕ, ContDiffOn ℝ m (F n) s := by
-  have hdiff n : DifferentiableOn ℝ (F n) s :=
-    fun _ hx => (hF n _ hx).differentiableAt.differentiableWithinAt
-  intro m
-  induction m with
-  | zero => intro n; exact contDiffOn_zero.2 (hdiff n).continuousOn
-  | succ m ih =>
-      intro n
-      refine (contDiffOn_succ_iff_deriv_of_isOpen (𝕜 := ℝ) (f := F n) (s := s) (n := m) hs).2
-        ⟨hdiff n, by simp, (ih (n + 1)).congr fun x hx => by simpa using (hF n x hx).deriv⟩
-
-/-- Upgrade `contDiffOn_family_nat_of_hasDerivAt` to the `C^∞` statement. -/
+/-- If `F n` satisfies `HasDerivAt (F n) (F (n + 1) x) x` on an open set `s`, then each `F n` is
+`ContDiffOn ℝ ∞` on `s`. -/
 public theorem contDiffOn_family_infty_of_hasDerivAt
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {F : ℕ → ℝ → E} {s : Set ℝ} (hs : IsOpen s)
     (hF : ∀ n : ℕ, ∀ x : ℝ, x ∈ s → HasDerivAt (F n) (F (n + 1) x) x) (n : ℕ) :
     ContDiffOn ℝ ∞ (F n) s := by
-  simpa [contDiffOn_infty] using fun m =>
-    contDiffOn_family_nat_of_hasDerivAt (F := F) (s := s) hs hF m n
+  have hdiff k : DifferentiableOn ℝ (F k) s :=
+    fun _ hx => (hF k _ hx).differentiableAt.differentiableWithinAt
+  have hnat : ∀ m : ℕ, ∀ k : ℕ, ContDiffOn ℝ m (F k) s := by
+    intro m
+    induction m with
+    | zero => intro k; exact contDiffOn_zero.2 (hdiff k).continuousOn
+    | succ m ih =>
+        intro k
+        refine (contDiffOn_succ_iff_deriv_of_isOpen (𝕜 := ℝ) (f := F k) (s := s) (n := m) hs).2
+          ⟨hdiff k, by simp, (ih (k + 1)).congr fun x hx => by simpa using (hF k x hx).deriv⟩
+  simpa [contDiffOn_infty] using fun m => hnat m n
 
 end
 
