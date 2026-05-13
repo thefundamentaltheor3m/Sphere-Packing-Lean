@@ -2,7 +2,6 @@ module
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12WedgeDomain
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.Contour.MobiusInv.WedgeSet
-public import SpherePacking.Contour.MobiusInv.LineMap
 
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.ForMathlib.ScalarOneForm

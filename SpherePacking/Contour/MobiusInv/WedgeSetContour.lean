@@ -4,9 +4,11 @@ public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.Basic.Domains.WedgeSet
 public import SpherePacking.Contour.MobiusInv.Segments
 import SpherePacking.Contour.MobiusInv.WedgeSet
-import SpherePacking.Contour.MobiusInv.LineMap
 import SpherePacking.Contour.Segments
 import SpherePacking.Contour.MobiusInv.ContourChange
+import Mathlib.Analysis.Calculus.ContDiff.Operations
+import Mathlib.Order.LatticeIntervals
+import Mathlib.Tactic.FunProp
 
 /-! # Contour identities for `mobiusInv` on `wedgeSet`. -/
 
@@ -18,6 +20,28 @@ namespace SpherePacking
 noncomputable section
 
 open SpherePacking.Contour
+
+/-- `C^2` smoothness of the homotopy map
+`(x,y) ↦ lineMap (mobiusInv (lineMap p0 p1 y)) (lineMap q0 q1 y) x`
+on the unit square, assuming `lineMap p0 p1 y ≠ 0` throughout. -/
+private lemma contDiffOn_lineMap_mobiusInv_lineMap (p0 p1 q0 q1 : ℂ)
+    (hne : ∀ xy ∈ Set.Icc (0 : ℝ × ℝ) 1, (AffineMap.lineMap p0 p1 xy.2) ≠ 0) :
+    ContDiffOn ℝ 2
+      (fun xy : ℝ × ℝ =>
+        (AffineMap.lineMap (k := ℝ)
+            (mobiusInv (AffineMap.lineMap p0 p1 xy.2))
+            (AffineMap.lineMap q0 q1 xy.2)) xy.1)
+      (Set.Icc (0 : ℝ × ℝ) 1) := by
+  have hline (a b : ℂ) :
+      ContDiffOn ℝ 2 (fun xy => AffineMap.lineMap a b xy.2) (Set.Icc (0 : ℝ × ℝ) 1) := by
+    simpa [AffineMap.lineMap_apply_module] using (by
+      fun_prop :
+        ContDiffOn ℝ 2 (fun xy => (1 - xy.2) • a + xy.2 • b) (Set.Icc (0 : ℝ × ℝ) 1))
+  have hA : ContDiffOn ℝ 2 (fun xy : ℝ × ℝ => mobiusInv (AffineMap.lineMap p0 p1 xy.2))
+      (Set.Icc (0 : ℝ × ℝ) 1) := by simpa [mobiusInv] using ((hline p0 p1).inv hne).neg
+  simpa [AffineMap.lineMap_apply_module] using
+    ((by fun_prop : ContDiffOn ℝ 2 (fun xy => (1 : ℝ) - xy.1) (Set.Icc (0 : ℝ × ℝ) 1)).smul hA).add
+      ((by fun_prop : ContDiffOn ℝ 2 (fun xy => xy.1) (Set.Icc (0 : ℝ × ℝ) 1)).smul (hline q0 q1))
 
 lemma perm_J12_contour_h1_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
     (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet) (r : ℝ) :
