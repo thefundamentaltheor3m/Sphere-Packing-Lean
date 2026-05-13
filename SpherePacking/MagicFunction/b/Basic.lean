@@ -83,9 +83,6 @@ namespace MagicFunction.b.RadialFunctions
 /-- The magic function `b` on `V`, obtained from the radial profile `b'` by `x = ‖v‖^2`. -/
 @[expose] public def b (x : V) : ℂ := b' (‖x‖ ^ 2)
 
-/-- Expand `b` as the sum of the six defining integrals. -/
-public lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
-
 end MagicFunction.b.RadialFunctions
 
 end
