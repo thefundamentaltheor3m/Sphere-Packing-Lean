@@ -17,7 +17,6 @@ public import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 public import SpherePacking.CohnElkies.LPBoundAux
 import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LPBoundReindex
-public import SpherePacking.CohnElkies.LPBoundSummability
 import SpherePacking.CohnElkies.LatticeSumBounds
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 

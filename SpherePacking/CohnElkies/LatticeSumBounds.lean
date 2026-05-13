@@ -1,7 +1,7 @@
 module
 
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.CohnElkies.LPBoundSummability
+public import SpherePacking.CohnElkies.LPBoundAux
 
 /-!
 # Lattice sum bounds for the Cohn-Elkies argument

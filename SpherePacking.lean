@@ -12,7 +12,6 @@ public import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.LPBoundAux
 public import SpherePacking.CohnElkies.LPBoundReindex
-public import SpherePacking.CohnElkies.LPBoundSummability
 public import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LatticeSumBounds
 public import SpherePacking.CohnElkies.PoissonSummationGeneral

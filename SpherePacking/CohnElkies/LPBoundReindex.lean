@@ -9,7 +9,6 @@ public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 public import SpherePacking.Basic.PeriodicPacking.PeriodicConstant
 public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 public import SpherePacking.CohnElkies.LPBoundAux
-import SpherePacking.CohnElkies.LPBoundSummability
 
 /-!
 # Reindexing periodic sums for the LP bound
