@@ -1,6 +1,6 @@
 module
 public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
-public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import SpherePacking.ForMathlib.BoundsOnIcc
 
 /-!
@@ -12,6 +12,15 @@ then the radial function `x ↦ f (‖x‖ ^ 2)` is Schwartz on any real inner p
 The construction multiplies `f` by a smooth cutoff on `ℝ` (to make it globally Schwartz), then
 lifts it to `F` by composing with `‖x‖ ^ 2`.
 -/
+
+open SchwartzMap Function RCLike
+
+/-- Lift a Schwartz function on `ℝ` to a Schwartz function on `F` by composing with `‖x‖ ^ 2`. -/
+@[expose, simps!]
+public noncomputable def schwartzMap_multidimensional_of_schwartzMap_real
+    (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F] (f : 𝓢(ℝ, ℂ)) : 𝓢(F, ℂ) :=
+  f.compCLM ℝ (Function.hasTemperateGrowth_norm_sq F) <| ⟨1, 1, fun _ => by
+    simp only [norm_pow, norm_norm]; nlinarith⟩
 
 namespace RadialSchwartz
 

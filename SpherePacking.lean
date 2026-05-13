@@ -50,7 +50,6 @@ public import SpherePacking.ForMathlib.IteratedDeriv
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
-public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.ForMathlib.SigmaBounds
