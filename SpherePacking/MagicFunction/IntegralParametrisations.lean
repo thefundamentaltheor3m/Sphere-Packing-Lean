@@ -171,8 +171,5 @@ public lemma z₅'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₅' t = I * t :=
 public lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
   rw [z₆', IciExtend_of_mem z₆ ht, z₆]
 
-/-- `z₃' t = z₅' t + 1` on `Icc 0 1`. -/
-public lemma z₃'_eq_z₅'_add_one {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = z₅' t + 1 := by
-  simp [z₃'_eq_of_mem ht, z₅'_eq_of_mem ht, add_comm]
 
 end MagicFunction.Parametrisations

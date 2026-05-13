@@ -56,7 +56,8 @@ lemma J₃'_eq (x : ℝ) :
               have hcexp : cexp (π * (Complex.I : ℂ) * x * (z₃' t)) =
                   cexp (π * (Complex.I : ℂ) * x * (z₅' t)) *
                     cexp (π * (Complex.I : ℂ) * x) := by
-                have hz : z₃' t = z₅' t + 1 := z₃'_eq_z₅'_add_one (t := t) htIcc
+                have hz : z₃' t = z₅' t + 1 := by
+                  simp [z₃'_eq_of_mem htIcc, z₅'_eq_of_mem htIcc, add_comm]
                 simp [hz, mul_add, mul_assoc, mul_left_comm, mul_comm, Complex.exp_add]
               grind only
       _ = (∫ t in (0 : ℝ)..1,
