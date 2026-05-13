@@ -261,16 +261,6 @@ private lemma k_bound_three_pi {s₁ s₂ : ℝ} (hs₁ : |s₁| = 1) (hs₂ : |
   linarith [(norm_add_le _ (-π : ℂ)).trans (add_le_add
     ((norm_add_le _ _).trans (add_le_add (norm_sign_pi_I_eq_pi hs₁).le h_t_le)) hpi.le)]
 
-lemma k₂_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₂ t‖ ≤ (3 * Real.pi) := fun t ht => by
-  simpa [k₂, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
-    show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
-    k_bound_three_pi (s₁ := -1) (s₂ := 1) (by norm_num) (by norm_num) t ht
-
-lemma k₄_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₄ t‖ ≤ (3 * Real.pi) := fun t ht => by
-  simpa [k₄, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
-    show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
-    k_bound_three_pi (s₁ := 1) (s₂ := -1) (by norm_num) (by norm_num) t ht
-
 /-- Shared differentiability wrapper for I₂/I₄. -/
 private lemma base_pow_diffAt_of
     {base k : ℝ → ℂ} (arg d : ℝ → ℂ) (u0 : ℂ)
@@ -310,7 +300,10 @@ lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane := fu
       (fun t => by simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ)))
       (fun t htIoo => by
         simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
-      (by unfold k₂; fun_prop) k₂_bound
+      (by unfold k₂; fun_prop) fun t ht => by
+        simpa [k₂, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
+          show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
+          k_bound_three_pi (s₁ := -1) (s₂ := 1) (by norm_num) (by norm_num) t ht
 
 lemma I₄'C_differentiableOn : DifferentiableOn ℂ I₄'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
@@ -324,7 +317,10 @@ lemma I₄'C_differentiableOn : DifferentiableOn ℂ I₄'C rightHalfPlane := fu
       (fun t => (norm_add_le _ _).trans (by simp))
       (fun t htIoo => by
         simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
-      (by unfold k₄; fun_prop) k₄_bound
+      (by unfold k₄; fun_prop) fun t ht => by
+        simpa [k₄, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
+          show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
+          k_bound_three_pi (s₁ := 1) (s₂ := -1) (by norm_num) (by norm_num) t ht
 
 def base₆ (t : ℝ) : ℂ := (Complex.I : ℂ) * φ₀'' ((t : ℂ) * (Complex.I : ℂ))
 
