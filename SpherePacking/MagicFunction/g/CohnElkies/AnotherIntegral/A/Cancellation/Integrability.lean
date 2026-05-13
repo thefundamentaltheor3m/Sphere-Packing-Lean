@@ -44,7 +44,10 @@ lemma exists_phi0_cancellation_bound :
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; simp [mul_pow]
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [modular_S_smul_zI]; simp [zI, div_eq_mul_inv]
+      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
+        ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
+          ModularGroup.coe_S_smul (z := zI t ht0)]
+      simp [zI, div_eq_mul_inv]
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -

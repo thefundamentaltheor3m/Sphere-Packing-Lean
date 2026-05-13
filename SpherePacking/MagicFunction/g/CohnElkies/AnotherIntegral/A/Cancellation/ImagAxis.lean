@@ -38,12 +38,6 @@ public lemma imag_I_div (t : ℝ) : ((Complex.I : ℂ) / (t : ℂ)).im = t⁻¹ 
 
 public lemma norm_ofReal_exp (x : ℝ) : ‖(Real.exp x : ℂ)‖ = Real.exp x := by simp
 
-/-- Action of the modular matrix `S` on `zI t ht`. -/
-public lemma modular_S_smul_zI (t : ℝ) (ht : 0 < t) :
-    ModularGroup.S • zI t ht = zI t⁻¹ (inv_pos.2 ht) := by
-  ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
-    ModularGroup.coe_S_smul (z := zI t ht)
-
 public lemma exp_neg_two_pi_lt_one : Real.exp (-2 * π) < 1 :=
   Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos])
 
