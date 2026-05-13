@@ -15,7 +15,6 @@ import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Lv1Lv2Identities
 import SpherePacking.ModularForms.PhiTransformLemmas
 import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ForMathlib.SigmaBounds
 import SpherePacking.ForMathlib.SpecificLimits
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
@@ -353,7 +352,7 @@ lemma tendsto_A_div_q :
       atImInfty (𝓝 (720 : ℂ)) := by
   let a : ℕ → ℂ := fun n => (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
   have hsigma : ∀ n : ℕ, (σ 3 (n + 1) : ℝ) ≤ (n + 1 : ℝ) ^ 4 := fun n => by
-    exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
+    exact_mod_cast sigma_bound 3 (n + 1)
   have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) := by
     refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => ?_)
       (by simpa using summable_pow_shift_mul_exp (4 + 1) 1)

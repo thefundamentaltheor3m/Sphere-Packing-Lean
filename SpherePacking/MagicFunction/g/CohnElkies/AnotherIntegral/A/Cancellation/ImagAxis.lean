@@ -6,7 +6,6 @@ public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
-public import SpherePacking.ForMathlib.SigmaBounds
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Complex.Periodic
 
@@ -69,7 +68,7 @@ private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
   exact_mod_cast (show m * (σ 3 m) ≤ m ^ 5 by
     simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
-      Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)).trans
+      Nat.mul_le_mul_left m (sigma_bound 3 m)).trans
     (Nat.pow_le_pow_left hM 5)
 
 lemma qExpansionFormalMultilinearSeries_partialSum_two
