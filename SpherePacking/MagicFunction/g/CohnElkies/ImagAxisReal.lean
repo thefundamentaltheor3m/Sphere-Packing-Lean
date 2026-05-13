@@ -39,22 +39,18 @@ public lemma φ₀''_imag_axis_div_im (t : ℝ) (ht : 0 < t) :
     (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).im = 0 := by
   simpa [div_eq_mul_inv] using (φ₀''_imag_axis_im (t := (1 / t)) (by positivity))
 
-lemma ψI_imag_axis_real : ResToImagAxis.Real ψI := by
-  intro t ht
+/-- The value `ψI' (it)` is real for `t > 0`. -/
+public lemma ψI'_imag_axis_im (t : ℝ) (ht : 0 < t) :
+    (ψI' ((Complex.I : ℂ) * (t : ℂ))).im = 0 := by
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hH2 : (H₂_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₂ t ht H₂_imag_axis_real
   have hH3 : (H₃_MF z).im = 0 := by
     simpa [z] using imagAxis_im_eq_zero H₃ t ht (by
       simpa [jacobi_identity] using H₂_imag_axis_real.add H₄_imag_axis_real)
   have hH4 : (H₄_MF z).im = 0 := by simpa [z] using imagAxis_im_eq_zero H₄ t ht H₄_imag_axis_real
-  simpa [Function.resToImagAxis, ResToImagAxis, ht, z] using show (ψI z).im = 0 by
+  simpa [ψI', Function.resToImagAxis, ResToImagAxis, ht, z] using show (ψI z).im = 0 by
     rw [ψI_eq]
     simp [z, Complex.add_im, Complex.sub_im, Complex.mul_im, Complex.div_im, hH2, hH3, hH4,
       Complex.im_pow_eq_zero_of_im_eq_zero hH2 2, Complex.im_pow_eq_zero_of_im_eq_zero hH3 2]
-
-/-- The value `ψI' (it)` is real for `t > 0`. -/
-public lemma ψI'_imag_axis_im (t : ℝ) (ht : 0 < t) :
-    (ψI' ((Complex.I : ℂ) * (t : ℂ))).im = 0 := by
-  simpa [ψI', Function.resToImagAxis, ResToImagAxis, ht] using ψI_imag_axis_real t ht
 
 end MagicFunction.g.CohnElkies
