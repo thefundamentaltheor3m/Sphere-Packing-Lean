@@ -89,13 +89,10 @@ public theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
 public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
   (Φ₃'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
 
-/-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
-public theorem Φ₆'_holo : Holo(Φ₆' r) := by
-  simpa [Φ₆'] using φ₀''_holo.mul
-    (by fun_prop : DifferentiableOn ℂ (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀)
-
 /-- The integrand `Φ₆' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
-  Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
+  ((by simpa [Φ₆'] using φ₀''_holo.mul (by fun_prop : DifferentiableOn ℂ
+      (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀)) : Holo(Φ₆' r)).contDiffOn
+    isOpen_upperHalfPlaneSet
 
 end MagicFunction.a.ComplexIntegrands
