@@ -118,69 +118,6 @@ public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
     gcongr; exact hb t ht
   simpa [MeasureTheory.IntegrableOn] using Integrable.mono' hg hf_meas hbound
 
-/-- Integrability of `t ↦ t * bAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
-public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => (t : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ))
-      (Set.Ioi (0 : ℝ)) := by
-  have hmul_exp :
-      IntegrableOn (fun t : ℝ => t * Real.exp (-(π * u) * t)) (Set.Ioi (0 : ℝ)) := by
-    let f : ℝ → ℝ := fun t => t * Real.exp (-(π * u) * t)
-    have hf_cont : Continuous f := by dsimp [f]; fun_prop
-    have hf_Ioc : IntegrableOn f (Set.Ioc (0 : ℝ) 1) :=
-      hf_cont.continuousOn.integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
-    let b' : ℝ := (π * u) / 2
-    have hb' : 0 < b' := by positivity
-    have hO : f =O[atTop] fun t : ℝ => Real.exp (-b' * t) := by
-      refine Asymptotics.isBigO_of_div_tendsto_nhds (l := atTop) ?_ (c := (0 : ℝ)) ?_
-      · exact .of_forall fun t ht => absurd ht (Real.exp_ne_zero _)
-      · have htend : Tendsto (fun t : ℝ => t * Real.exp (-b' * t)) atTop (𝓝 0) := by
-          simpa [Real.rpow_one] using
-            tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := b') hb'
-        have hEq :
-            (fun t : ℝ => f t / Real.exp (-b' * t)) = fun t : ℝ => t * Real.exp (-b' * t) := by
-          funext t
-          dsimp [f, b']
-          have hdiv :
-              Real.exp (-(π * u) * t) / Real.exp (-(π * u / 2) * t) =
-                Real.exp ((-(π * u) * t) - (-(π * u / 2) * t)) :=
-            (Real.exp_sub (-(π * u) * t) (-(π * u / 2) * t)).symm
-          grind only
-        exact (tendsto_congr' (.of_forall fun t => by
-          simpa using congrArg (fun g : ℝ → ℝ => g t) hEq)).2 htend
-    have hf_Ioi : IntegrableOn f (Set.Ioi (1 : ℝ)) :=
-      integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := b') hb' hf_cont.continuousOn hO
-    have hset : Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) :=
-      (Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one).symm
-    rw [hset]; exact hf_Ioc.union hf_Ioi
-  obtain ⟨C0, hb⟩ := exists_bound_norm_bAnotherBase_nonneg
-  have hg :
-      Integrable (fun t : ℝ => C0 * (t * Real.exp (-(π * u) * t)))
-        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-    simpa [MeasureTheory.IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
-      hmul_exp.const_mul C0
-  have hf_meas :
-      AEStronglyMeasurable
-          (fun t : ℝ => (t : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ))
-          ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
-    (((by fun_prop : ContinuousOn (fun t : ℝ => (t : ℂ)) (Set.Ioi (0 : ℝ))).mul
-      continuousOn_bAnotherBase).mul (by fun_prop : ContinuousOn
-      (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))).aestronglyMeasurable
-        measurableSet_Ioi
-  have hbound :
-      ∀ᵐ t : ℝ ∂((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))),
-        ‖((t : ℝ) : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ)‖ ≤
-          C0 * (t * Real.exp (-(π * u) * t)) := by
-    refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
-    have ht0 : 0 < t := ht
-    rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0.le,
-      show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-(π * u) * t) from by
-        rw [show (-π * u * t) = (-(π * u) * t) from by ring, Complex.ofReal_exp,
-          Complex.norm_exp_ofReal]]
-    calc t * ‖bAnotherBase t‖ * Real.exp (-(π * u) * t)
-        ≤ t * C0 * Real.exp (-(π * u) * t) := by gcongr; exact hb t ht0
-      _ = C0 * (t * Real.exp (-(π * u) * t)) := by ring
-  simpa [MeasureTheory.IntegrableOn] using Integrable.mono' hg hf_meas hbound
-
 end
 
 end MagicFunction.g.CohnElkies.IntegralReps
