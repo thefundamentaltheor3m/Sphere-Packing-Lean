@@ -64,7 +64,6 @@ public import SpherePacking.ForMathlib.SigmaBounds
 public import SpherePacking.ForMathlib.SigmaSummability
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.ZLattice
-public import SpherePacking.ForMathlib.Tprod
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.EndpointIntegrability
 public import SpherePacking.Integration.FubiniIoc01

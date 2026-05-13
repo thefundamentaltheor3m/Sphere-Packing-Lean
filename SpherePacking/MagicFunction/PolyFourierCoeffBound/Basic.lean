@@ -6,7 +6,6 @@ Authors: Sidharth Hariharan
 module
 
 public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.Tprod
 public import SpherePacking.ModularForms.Eisenstein
 
 /-!
@@ -24,6 +23,12 @@ noncomputable section
 open scoped UpperHalfPlane BigOperators
 
 open Filter Complex Real Asymptotics
+
+/-- Monotonicity of `∏'` under pointwise inequalities, for nonnegative and multipliable families. -/
+private lemma tprod_le_of_nonneg_of_multipliable {β : Type*} {f g : β → ℝ} (hfnn : 0 ≤ f)
+    (hfg : f ≤ g) (hf : Multipliable f) (hg : Multipliable g) : ∏' b, f b ≤ ∏' b, g b :=
+  le_of_tendsto_of_tendsto' hf.hasProd hg.hasProd fun _ ↦
+    Finset.prod_le_prod (fun i _ ↦ hfnn i) fun i _ ↦ hfg i
 
 /-- A single Fourier term in the `π i` convention. -/
 @[expose] public def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
