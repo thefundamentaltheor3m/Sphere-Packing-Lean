@@ -88,32 +88,29 @@ public lemma exp_r_mul_coeff (r t : ℝ) :
       cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
   simp [coeff_eq_sum, Complex.exp_add, add_assoc, mul_assoc, mul_add, mul_left_comm, mul_comm]
 
-lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
-    iteratedDeriv n I₂' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
-  have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
-    refine ((MagicFunction.a.RealIntegrands.Φ₂_contDiffOn (r := r)).continuousOn.mono
-      fun _ hx => mem_Icc_of_Ioo hx).congr fun t ht => ?_
-    have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem (mem_Icc_of_Ioo ht)
-    have hexp' : cexp (π * I * r * (z₂' t : ℂ)) =
-        cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-      rw [show π * I * r * (z₂' t : ℂ) = (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
-        rw [hz]; ring_nf; rw [I_sq]; ring, Complex.exp_add, Complex.exp_add]
-    simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
-      MagicFunction.a.ComplexIntegrands.Φ₁', g,
-      show z₂' t + 1 = t + I by simp [hz, add_left_comm, add_comm], hexp']
-    ac_rfl
-  simpa [gN] using iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
-    (I := I₂') (coeff := coeff) (g := g) (A := fun t => φ₀'' (-1 / (t + I)) * (t + I) ^ 2)
-    (hI := I₂'_eq_integral_g_Ioo) (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont)
-    (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
-    (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n
-
 /-- Schwartz-style decay estimate for the auxiliary integral `I₂'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.decay_of_iteratedDeriv_eq_integral_pow_mul
     g_norm_bound_uniform coeff_norm_le
-    (fun n => by simpa [gN] using iteratedDeriv_I₂'_eq_integral_gN (n := n))
+    (fun n => iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
+      (I := I₂') (coeff := coeff) (g := g) (A := fun t => φ₀'' (-1 / (t + I)) * (t + I) ^ 2)
+      (hI := I₂'_eq_integral_g_Ioo) (hcoeff_cont := continuous_coeff)
+      (hg_cont := fun r => by
+        refine ((MagicFunction.a.RealIntegrands.Φ₂_contDiffOn (r := r)).continuousOn.mono
+          fun _ hx => mem_Icc_of_Ioo hx).congr fun t ht => ?_
+        have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem (mem_Icc_of_Ioo ht)
+        have hexp' : cexp (π * I * r * (z₂' t : ℂ)) =
+            cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
+          rw [show π * I * r * (z₂' t : ℂ) =
+              (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
+            rw [hz]; ring_nf; rw [I_sq]; ring, Complex.exp_add, Complex.exp_add]
+        simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
+          MagicFunction.a.ComplexIntegrands.Φ₁', g,
+          show z₂' t + 1 = t + I by simp [hz, add_left_comm, add_comm], hexp']
+        ac_rfl)
+      (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le)
+      (hg_repr := fun r t => by rw [exp_r_mul_coeff]; simp [g]; ring) n)
 
 end Schwartz_Decay
 end I₂
