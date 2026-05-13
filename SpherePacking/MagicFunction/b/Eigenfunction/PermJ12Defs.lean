@@ -1,7 +1,6 @@
 module
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.Basic
-import SpherePacking.Contour.MobiusInv.PermJ12PsiFourier
 
 /-!
 # Permutation for `J₁+J₂`
@@ -51,10 +50,17 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
 factor `-deriv mobiusInv`. -/
 public lemma Ψ₁_fourier_eq_neg_deriv_mul (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
     Ψ₁_fourier r z = -(deriv mobiusInv z) * Ψ₁' r (mobiusInv z) := by
-  simpa [Ψ₁', Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm] using
-    SpherePacking.Contour.permJ12_Ψ₁_fourier_eq_neg_deriv_mul
-      (ψ := ψT') (A := (π : ℂ) * Complex.I) (q := 2) (r := r) (z := z) hz
-      (hψ := ψT'_mobiusInv_eq_div (z := z) hz) (hI := by simp)
+  have hz0 : z ≠ 0 := fun hz0 => (ne_of_gt hz) (by simp [hz0])
+  have hψz_eq : ψT' (mobiusInv z) = -(ψT' z) / z ^ (2 : ℕ) := ψT'_mobiusInv_eq_div (z := z) hz
+  have hmob : mobiusInv z = (-1 : ℂ) / z := by simp [mobiusInv, div_eq_mul_inv]
+  have hI4 : (Complex.I : ℂ) ^ (4 : ℕ) = 1 := by simp
+  by_cases hψz : ψT' z = 0
+  · simp [Ψ₁', Ψ₁_fourier, hψz,
+      show ψT' (mobiusInv z) = 0 by simpa [hψz] using hψz_eq, mul_assoc, mul_left_comm, mul_comm]
+  simp only [Ψ₁', Ψ₁_fourier, hmob, deriv_mobiusInv,
+    show ψT' ((-1 : ℂ) / z) = -(ψT' z) / z ^ (2 : ℕ) by simpa [hmob] using hψz_eq,
+    div_pow, hI4]
+  field_simp [hz0, hψz]
 
 end
 
