@@ -9,7 +9,6 @@ M4R File
 module
 
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
-public import SpherePacking.MagicFunction.Common.SchwartzAssembly
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 
@@ -183,7 +182,7 @@ end MagicFunction.a.SchwartzIntegrals
 
 namespace MagicFunction.FourierEigenfunctions
 
-open SchwartzMap MagicFunction.Common
+open SchwartzMap
 
 /-- The radial profile of the `+1` Fourier eigenfunction `a`. -/
 @[expose] public def a' : 𝓢(ℝ, ℂ) :=
