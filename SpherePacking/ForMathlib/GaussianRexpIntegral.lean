@@ -29,4 +29,13 @@ public lemma integral_gaussian_rexp (s : ℝ) (hs : 0 < s) :
     (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) = s ^ 4 := by
   simpa using integral_gaussian_rexp_even (k := 4) s hs
 
+/-- The real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` is integrable on `ℝ⁸` for `s > 0`. -/
+public lemma integrable_gaussian_rexp (s : ℝ) (hs : 0 < s) :
+    Integrable (fun x : ℝ⁸ ↦ rexp (-π * (‖x‖ ^ 2) / s)) (volume : Measure ℝ⁸) := by
+  simpa using
+    (MeasureTheory.Integrable.of_integral_ne_zero (μ := volume) <| by
+      rw [integral_gaussian_rexp_even (k := 4) (s := s) hs]; exact pow_ne_zero 4 hs.ne' :
+      Integrable (fun x : EuclideanSpace ℝ (Fin (2 * 4)) ↦ rexp (-π * (‖x‖ ^ 2) / s))
+        (volume : Measure (EuclideanSpace ℝ (Fin (2 * 4)))))
+
 end SpherePacking.ForMathlib

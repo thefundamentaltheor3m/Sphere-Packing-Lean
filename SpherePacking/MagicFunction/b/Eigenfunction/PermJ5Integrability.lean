@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
-public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 

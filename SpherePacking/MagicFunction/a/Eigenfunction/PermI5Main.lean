@@ -8,7 +8,6 @@ module
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
-public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.Integration.Measure
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 

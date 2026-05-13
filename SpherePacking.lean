@@ -41,7 +41,6 @@ public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.FourierLinearEquiv
 public import SpherePacking.ForMathlib.FourierPhase
 public import SpherePacking.ForMathlib.GaussianFourierCommon
-public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.IntegrablePowMulExp
 public import SpherePacking.ForMathlib.IteratedDeriv
