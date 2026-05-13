@@ -53,17 +53,12 @@ public lemma differentiableOn_ψT_ofComplex :
   exact hExpr.congr fun z _ =>
     congrArg (fun f : UpperHalfPlane → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
 
-/-- Holomorphicity of `ψT'` on the upper half-plane. -/
-public lemma differentiableOn_ψT'_upper :
-    DifferentiableOn ℂ ψT' UpperHalfPlane.upperHalfPlaneSet :=
-  differentiableOn_ψT_ofComplex.congr fun z hz => by
-    have hz' : 0 < z.im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hz
-    simp [ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
-
 /-- Holomorphicity of `Ψ₁' r` on the upper half-plane. -/
 public lemma differentiableOn_Ψ₁'_upper (r : ℝ) :
     DifferentiableOn ℂ (Ψ₁' r) UpperHalfPlane.upperHalfPlaneSet :=
-  differentiableOn_ψT'_upper.mul
+  (differentiableOn_ψT_ofComplex.congr fun z hz => by
+    have hz' : 0 < z.im := by simpa [UpperHalfPlane.upperHalfPlaneSet] using hz
+    simp [ψT', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']).mul
     ((differentiable_id.const_mul
       ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
 
