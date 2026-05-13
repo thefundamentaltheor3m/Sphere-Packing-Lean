@@ -2,7 +2,8 @@ module
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralA
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralB
-import SpherePacking.MagicFunction.g.CohnElkies.IneqA
+import SpherePacking.MagicFunction.g.CohnElkies.IneqCommon
+import SpherePacking.ModularForms.FG.Inequalities
 import SpherePacking.MagicFunction.g.CohnElkies.IneqB
 
 
@@ -40,10 +41,18 @@ public theorem g_nonpos_of_norm_sq_ge_two (x : ℝ⁸) (hx : 2 ≤ ‖x‖ ^ 2) 
   have hEqReal : gRadial u' = (((π / 2160 : ℝ) * (Real.sin (π * u' / 2)) ^ (2 : ℕ) *
       ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u' * t) : ℝ) : ℂ) := by
     rw [gRadial_eq_integral_A (u := u') hu', integral_Ioi_ofReal_mul_exp u' A]; push_cast; ring
+  have hA_neg : ∀ {t : ℝ}, 0 < t → A t < 0 := fun {t} ht => by
+    set s : ℝ := 1 / t
+    have hs : 0 < s := one_div_pos.2 ht
+    have hA : A t = (-(t ^ (2 : ℕ))) *
+        ((FReal s + c * GReal s) / (Δ.resToImagAxis s).re) := by
+      simpa [s] using A_eq_neg_mul_FG_div_Delta (t := t) ht
+    simpa [hA] using mul_neg_of_neg_of_pos (neg_lt_zero.2 (pow_pos ht 2))
+      (div_pos (by simpa [c] using FG_inequality_1 (t := s) hs) (Delta_imag_axis_pos.2 s hs))
   exact (congrArg Complex.re hEqReal).le.trans (mul_nonpos_of_nonneg_of_nonpos (by positivity)
     (MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
       measurableSet_Ioi fun t ht =>
-        mul_nonpos_of_nonpos_of_nonneg (A_neg (t := t) ht).le (Real.exp_pos _).le))
+        mul_nonpos_of_nonpos_of_nonneg (hA_neg ht).le (Real.exp_pos _).le))
 
 /-- The real part of the Fourier transform `𝓕 g` is nonnegative. -/
 public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by

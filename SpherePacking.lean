@@ -170,7 +170,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.ImagAxisReal
-public import SpherePacking.MagicFunction.g.CohnElkies.IneqA
 public import SpherePacking.MagicFunction.g.CohnElkies.IneqB
 public import SpherePacking.MagicFunction.g.CohnElkies.IneqCommon
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralA
