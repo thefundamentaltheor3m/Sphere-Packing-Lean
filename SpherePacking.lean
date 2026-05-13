@@ -140,7 +140,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.ImagAxisReal
 public import SpherePacking.MagicFunction.g.CohnElkies.IneqCommon
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralA
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralB
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
