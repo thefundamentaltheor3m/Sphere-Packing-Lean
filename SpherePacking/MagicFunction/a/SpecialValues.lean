@@ -175,14 +175,6 @@ public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀
   rw [φ₀''_def (z := z + 1) (by simpa using hz), φ₀''_def (z := z) hz,
     ← vadd_one_eq z hz (by simpa using hz), φ₀_periodic]
 
-lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
-    f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
-      (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
-  simp [f0, show φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) from by
-    simpa [add_assoc, add_comm, add_left_comm] using φ₀''_add_one ((y : ℂ) * Complex.I)
-      (by simpa [mul_assoc] using hy)]
-  ring
-
 private lemma strip_uIcc_subset {m : ℝ} (hm : 1 ≤ m) :
     (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} := fun _ hz =>
   lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
@@ -264,8 +256,15 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
       (integral_sub (intervalIntegrable_f0_vert hm 1) (intervalIntegrable_f0_vert hm 0)).symm]
     exact congrArg (Complex.I • ·) <|
       intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
-        simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
-          f0_vertical_diff y (lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1))
+        have hy_pos : (0 : ℝ) < y :=
+          lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1)
+        have : f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
+            (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
+          simp [f0, show φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) from by
+            simpa [add_assoc, add_comm, add_left_comm] using φ₀''_add_one ((y : ℂ) * Complex.I)
+              (by simpa [mul_assoc] using hy_pos)]
+          ring
+        simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using this
   linear_combination rect_f0 m hm - hVertTerm
 
 private lemma I6_zero_eq_I_smul_integral :
