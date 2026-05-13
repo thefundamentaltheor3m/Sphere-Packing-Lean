@@ -32,7 +32,6 @@ public import SpherePacking.Contour.MobiusInv.WedgeSet
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.Contour.PermJ12CurveIntegral
-public import SpherePacking.Contour.PermJ12DiffContOnCl
 public import SpherePacking.Contour.PermJ12Fourier
 public import SpherePacking.Contour.PermJ12FourierCurveIntegral
 public import SpherePacking.Contour.PermJ12Tendsto

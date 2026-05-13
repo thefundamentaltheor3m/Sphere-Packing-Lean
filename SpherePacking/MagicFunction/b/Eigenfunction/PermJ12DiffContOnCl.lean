@@ -1,7 +1,6 @@
 module
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Regularity
 import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.Contour.PermJ12DiffContOnCl
 
 /-!
 # Perm J12 Diff Cont On Cl (Dim 8)
