@@ -74,7 +74,8 @@ public lemma I₁'_eq_curveIntegral_segment (r : ℝ) :
       (∫ᶜ z in Path.segment (-1 : ℂ) (-1 + Complex.I), scalarOneForm (Φ₁' r) z) := by
   rw [curveIntegral_segment (ω := scalarOneForm (Φ₁' r)) (-1 : ℂ) (-1 + Complex.I)]
   exact intervalIntegral.integral_congr fun t ht => by
-    simp [Φ₁_def, scalarOneForm_apply, lineMap_z₁_eq_z₁' (t := t) (uIcc_aux ht)]
+    simp [Φ₁_def, scalarOneForm_apply,
+      (lineMap_z₁line t).trans (z₁'_eq_z₁line t (uIcc_aux ht)).symm]
 
 /-- Rewrite `I₂'` as a curve integral of `Φ₁'` along the segment `-1 + i → i`. -/
 public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
@@ -82,7 +83,8 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
       (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I, scalarOneForm (Φ₁' r) z) := by
   rw [curveIntegral_segment (ω := scalarOneForm (Φ₁' r)) ((-1 : ℂ) + Complex.I) Complex.I]
   exact intervalIntegral.integral_congr fun t ht => by
-    simp [Φ₂_def, scalarOneForm_apply, lineMap_z₂_eq_z₂' (t := t) (uIcc_aux ht), Φ₂']
+    simp [Φ₂_def, scalarOneForm_apply,
+      (lineMap_z₂line t).trans (z₂'_eq_z₂line t (uIcc_aux ht)).symm, Φ₂']
 
 /-- `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along `1 → 1 + i` and `1 + i → i`. -/
 public lemma I₃'_add_I₄'_eq_curveIntegral_segments (r : ℝ) :
