@@ -252,27 +252,24 @@ public theorem PeriodicSpherePacking.aux_ge
     S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
   simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using henc.ge
 
-private theorem aux' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
-    ball 0 R ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
-        x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) :=
-  letI : Fintype ι := Fintype.ofFinite ι
-  fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x,
-    ⟨(S.mem_basis_Z_span b _).mp (Submodule.coe_mem _),
-      mem_ball_zero_iff.2 <| ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ =
-            ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by simp [fract]).le.trans
-          (norm_sub_le _ _)).trans_lt (add_lt_add_of_lt_of_le (mem_ball_zero_iff.1 hx)
-            (hL _ (fract_mem_fundamentalDomain _ _)))⟩,
-    by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, neg_add_eq_sub] using
-      fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x⟩
-
 /-- Theorem 2.3, upper bound. -/
 public theorem PeriodicSpherePacking.aux_le
     (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
-  have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers (aux' S b hL R)
+  letI : Fintype ι := Fintype.ofFinite ι
+  have henc := Set.encard_mono <| Set.inter_subset_inter_right S.centers
+    (fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x,
+      ⟨(S.mem_basis_Z_span b _).mp (Submodule.coe_mem _),
+        mem_ball_zero_iff.2 <| ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ =
+              ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by simp [fract]).le.trans
+            (norm_sub_le _ _)).trans_lt (add_lt_add_of_lt_of_le (mem_ball_zero_iff.1 hx)
+              (hL _ (fract_mem_fundamentalDomain _ _)))⟩,
+      by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, neg_add_eq_sub] using
+        fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x⟩ :
+      ball 0 R ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
+        x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))))
   simp_rw [Set.biUnion_eq_iUnion, Set.inter_iUnion,
     Set.encard_iUnion_of_pairwiseDisjoint (pairwiseDisjoint_centers_inter_vadd S b),
     S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
