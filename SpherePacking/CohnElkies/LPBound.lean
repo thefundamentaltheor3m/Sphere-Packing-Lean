@@ -15,7 +15,6 @@ public import Mathlib.Analysis.Complex.Trigonometric
 public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 public import SpherePacking.CohnElkies.LPBoundAux
-public import SpherePacking.CohnElkies.LPBoundCalcLemmas
 import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LPBoundReindex
 public import SpherePacking.CohnElkies.LPBoundSummability
@@ -205,11 +204,18 @@ theorem calc_steps_part2 (hd : 0 < d) :
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
         rw [ge_iff_le, ← tsub_nonpos, mul_assoc, ← mul_sub (1 / _) _ _]
         simpa using mul_nonneg (one_div_nonneg.mpr (ZLattice.covolume_pos P.lattice volume).le)
-          (SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
-            (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
+          (tsum_nonneg fun m => by
+            by_cases hm : m = (0 : ↥(SchwartzMap.dualLattice (d := d) P.lattice))
+            · simp [hm]
+            · simpa [hm] using mul_nonneg
+                (by simpa using hCohnElkies₂ (m : EuclideanSpace ℝ (Fin d)))
+                (sq_nonneg (norm (∑' x : ↑(P.centers ∩ D),
+                  exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
+                    (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))))
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         ↑(P.numReps' hd hD_isBounded) ^ 2 := by
-        rw [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq (P := P) (D := D)]
+        letI := P.instFintypeNumReps' hd hD_isBounded
+        simp [PeriodicSpherePacking.numReps']
     _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
       simp [div_eq_mul_inv, mul_left_comm, mul_comm,
         show 𝓕 (⇑f) (0 : EuclideanSpace ℝ (Fin d)) = 𝓕 f 0 from rfl]
