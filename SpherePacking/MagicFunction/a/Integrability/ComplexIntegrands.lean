@@ -106,8 +106,4 @@ public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
 public theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ :=
   (Φ₆'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
 
-/-- `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0` (equivalent to `φ₀''_holo`). -/
-theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
-  simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
-
 end MagicFunction.a.ComplexIntegrands
