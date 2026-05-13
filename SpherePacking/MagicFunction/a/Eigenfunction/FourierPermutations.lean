@@ -2,9 +2,10 @@ module
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
-import SpherePacking.MagicFunction.a.Eigenfunction.PermI12ContourMain
+import SpherePacking.MagicFunction.a.Eigenfunction.PermI12ContourAux
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierMain
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
+import SpherePacking.Contour.MobiusInv.WedgeSetContour
 
 /-!
 # Fourier Permutations
@@ -28,6 +29,24 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 section Integral_Permutations
 
 open MeasureTheory Set Complex Real
+
+/-- The contour permutation identity underlying the Fourier invariance of the `I₁`/`I₂` part. -/
+private lemma perm_I12_contour (r : ℝ) :
+    (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
+          scalarOneForm (Φ₁_fourier r) z) +
+        ∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
+          scalarOneForm (Φ₁_fourier r) z =
+      (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
+            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z) +
+          ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
+            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z :=
+  SpherePacking.perm_I12_contour_mobiusInv_wedgeSet
+    (Ψ₁_fourier := Φ₁_fourier)
+    (Ψ₁' := MagicFunction.a.ComplexIntegrands.Φ₃')
+    (Ψ₁_fourier_eq_deriv_mul := Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃')
+    (closed_ω_wedgeSet := fun r =>
+      ⟨diffContOnCl_ω_wedgeSet (r := r), fderivWithin_ω_wedgeSet_symm (r := r)⟩)
+    (r := r)
 
 theorem perm_I₁_I₂ :
     FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) (I₁ + I₂ : SchwartzMap ℝ⁸ ℂ) =
