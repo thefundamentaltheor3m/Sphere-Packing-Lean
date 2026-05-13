@@ -66,7 +66,6 @@ open MagicFunction.a.ComplexIntegrands
 @[simp] public lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) := rfl
 @[simp] public lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) := rfl
 @[simp] public lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) := rfl
-@[simp] public lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) := rfl
 @[simp] public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) := rfl
 
 end MagicFunction.a.RealIntegrands
