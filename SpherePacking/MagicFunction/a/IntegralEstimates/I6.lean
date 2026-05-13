@@ -134,20 +134,22 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
         SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
           (a := I * φ₀'' (I * t)) (c := coeff t) (n := n) (x := r))).2
 
-lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
-    ∀ r : ℝ, -1 < r → iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t := by
-  induction n with
-  | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
-  | succ n hn =>
-    intro r hr
-    calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by simp [iteratedDeriv_succ]
-      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
-        Filter.EventuallyEq.deriv_eq (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
-      _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
-        simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
-
 lemma iteratedDeriv_bound (n : ℕ) :
     ∃ C₁ > 0, ∀ r : ℝ, 0 ≤ r → ‖iteratedDeriv n I₆' r‖ ≤ C₁ * rexp (-π * r) := by
+  have iteratedDeriv_eq : ∀ n : ℕ, ∀ r : ℝ, -1 < r →
+      iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t := by
+    intro n
+    induction n with
+    | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
+    | succ n hn =>
+      intro r hr
+      calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by
+            simp [iteratedDeriv_succ]
+        _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
+          Filter.EventuallyEq.deriv_eq
+            (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
+        _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
+          simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
   let B : ℝ → ℝ := fun t ↦ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t))
   have hB_int : IntegrableOn B (Ici (1 : ℝ)) volume := by
@@ -163,7 +165,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
   simpa [mul_assoc, mul_left_comm, mul_comm] using calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
-      rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']; simp
+      rw [iteratedDeriv_eq n r hr']; simp
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
       gcongr
       refine (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
