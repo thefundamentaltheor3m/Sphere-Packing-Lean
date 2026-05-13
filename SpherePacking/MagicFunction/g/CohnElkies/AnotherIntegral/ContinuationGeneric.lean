@@ -5,9 +5,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import SpherePacking.Basic.Domains.RightHalfPlane
+public import Mathlib.Analysis.Analytic.Composition
 public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.Normed.Module.Connected
+public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 public import Mathlib.Analysis.SpecialFunctions.Exp
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.Tactic
 
@@ -117,5 +120,19 @@ public theorem analytic_continuation_of_gt2
     ⟨by simpa [rightHalfPlane] using hu,
       by simpa [ACDomain, Set.mem_singleton_iff] using (show (u : ℂ) ≠ 2 by exact_mod_cast hu2)⟩
   exact (hf_ofReal u hu hu2).symm.trans ((hEqOn hu_mem).trans (h_rhs_ofReal u))
+
+/-- If `inner` is analytic on `ACDomain`, then so is
+`u ↦ sign * (sin (π u / 2))^2 * inner u` for any constant `sign : ℂ`. -/
+public lemma analyticOnNhd_sinSq_prefactor_mul
+    (sign : ℂ) {inner : ℂ → ℂ} (hinner : AnalyticOnNhd ℂ inner ACDomain) :
+    AnalyticOnNhd ℂ
+      (fun u : ℂ => sign * (Complex.sin ((π : ℂ) * u / 2)) ^ (2 : ℕ) * inner u) ACDomain :=
+  (analyticOnNhd_const.mul (by
+    have hsin : AnalyticOnNhd ℂ (fun u : ℂ => Complex.sin ((π : ℂ) * u / 2)) ACDomain := by
+      simpa [Function.comp] using ((by simpa using (analyticOnNhd_sin (s := (Set.univ : Set ℂ)))) :
+          AnalyticOnNhd ℂ (fun z : ℂ => Complex.sin z) (Set.univ : Set ℂ)).comp
+        (AnalyticOnNhd.div_const (analyticOnNhd_const.mul analyticOnNhd_id) :
+          AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u / 2) ACDomain) (by intro _ _; simp)
+    exact hsin.pow 2)).mul hinner
 
 end MagicFunction.g.CohnElkies.IntegralReps

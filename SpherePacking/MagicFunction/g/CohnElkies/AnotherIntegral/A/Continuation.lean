@@ -9,7 +9,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.An
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.ContinuationWrapper
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 

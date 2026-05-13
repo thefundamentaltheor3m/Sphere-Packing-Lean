@@ -5,7 +5,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.An
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.ContinuationWrapper
 
 
 /-!
