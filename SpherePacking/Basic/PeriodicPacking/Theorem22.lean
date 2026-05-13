@@ -39,43 +39,6 @@ private lemma measure_biUnion_lattice_inter_ball_vadd
           (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩)
   · exact fun i => hD_measurable.const_vadd i.1
 
-/-- Theorem 2.2, lower bound. -/
-theorem PeriodicSpherePacking.aux2_ge
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
-    (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
-    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
-      ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)) / volume D := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [ge_iff_le, ENNReal.div_le_iff
-    ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
-    (Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne,
-    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-  refine volume.mono fun x hx => ?_
-  obtain ⟨g, hg, -⟩ := hD_unique_covers x
-  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
-  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
-  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
-    (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
-      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
-    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
-
-/-- Theorem 2.2, upper bound. -/
-theorem PeriodicSpherePacking.aux2_le
-    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
-    (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
-    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
-      ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [ENNReal.le_div_iff_mul_le (.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero
-    (NeZero.ne volume)) (.inl <| (Bornology.IsBounded.measure_lt_top
-      (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne),
-    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
-  refine volume.mono fun x hx => ?_
-  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
-  obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
-  exact lt_of_le_of_lt ((show ‖x‖ = ‖i + (-i + x)‖ by congr; abel).le.trans (norm_add_le _ _))
-    (add_lt_add_of_lt_of_le hi_ball (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)))
-
 variable (b : Basis ι ℤ S.lattice)
 
 private lemma fundamentalDomain_unique_covers (x : EuclideanSpace ℝ (Fin d)) :
@@ -89,16 +52,43 @@ public theorem PeriodicSpherePacking.aux2_ge'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
-  S.aux2_ge _ R (fundamentalDomain_unique_covers S b) (fundamentalDomain_measurableSet _) hL hd
+        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
+  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
+  have hD_unique_covers := fundamentalDomain_unique_covers S b
+  have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _
+  rw [ge_iff_le, ENNReal.div_le_iff
+    ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
+    (Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne,
+    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+  refine volume.mono fun x hx => ?_
+  obtain ⟨g, hg, -⟩ := hD_unique_covers x
+  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
+  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hg)⟩⟩
+  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
+    (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
+      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
+    linarith [hL _ (by simpa using hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
 
 /-- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_le'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
-  S.aux2_le _ R (fundamentalDomain_unique_covers S b) (fundamentalDomain_measurableSet _) hL hd
+        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
+  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
+  have hD_unique_covers := fundamentalDomain_unique_covers S b
+  have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _
+  rw [ENNReal.le_div_iff_mul_le (.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero
+    (NeZero.ne volume)) (.inl <| (Bornology.IsBounded.measure_lt_top
+      (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne),
+    ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+  refine volume.mono fun x hx => ?_
+  simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff, mem_ball_zero_iff] at hx ⊢
+  obtain ⟨i, ⟨-, hi_ball⟩, hi_mem⟩ := hx
+  exact lt_of_le_of_lt ((show ‖x‖ = ‖i + (-i + x)‖ by congr; abel).le.trans (norm_add_le _ _))
+    (add_lt_add_of_lt_of_le hi_ball (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)))
 
 section finiteDensity_limit
 
