@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ1
 import SpherePacking.Contour.PermJ12FourierCurveIntegral
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
-import SpherePacking.Integration.FubiniIoc01
 import SpherePacking.Contour.GaussianIntegral
 import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 

@@ -4,7 +4,7 @@ import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI2
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierAux
-import SpherePacking.Integration.FubiniIoc01
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
 # Fourier transforms of `I₁` and `I₂` as curve integrals
@@ -29,6 +29,20 @@ section PermI12Fourier_Main
 open MeasureTheory Set Complex Real SpherePacking.Integration SpherePacking.Contour
 open MagicFunction.a.RealIntegrals MagicFunction.a.ComplexIntegrands
 open scoped Interval
+
+/-- Swap order of integration over `volume × μIoc01` and rewrite the inner integral using `g`. -/
+private lemma integral_integral_swap_muIoc01
+    {V : Type*} [MeasureSpace V] [MeasureTheory.SFinite (volume : Measure V)]
+    {f : V → ℝ → ℂ} {g : ℝ → ℂ}
+    (hint : Integrable (Function.uncurry f) ((volume : Measure V).prod μIoc01))
+    (hfg : ∀ t ∈ Set.Ioc (0 : ℝ) 1, (∫ x : V, f x t) = g t) :
+    (∫ x : V, ∫ t : ℝ, f x t ∂μIoc01) = ∫ t : ℝ, g t ∂μIoc01 := by
+  rw [show (∫ x : V, ∫ t : ℝ, f x t ∂μIoc01) =
+      ∫ t : ℝ, ∫ x : V, f x t ∂(volume : Measure V) ∂μIoc01 from by
+    simpa using (MeasureTheory.integral_integral_swap (μ := volume) (ν := μIoc01) hint)]
+  refine MeasureTheory.integral_congr_ae <|
+    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ioc).2 <|
+      Filter.Eventually.of_forall fun t ht => by simp [hfg t ht]
 
 /-- Fourier transform of `I₁`, rewritten as a curve integral of `Φ₁_fourier` along the first
 vertical segment. -/
