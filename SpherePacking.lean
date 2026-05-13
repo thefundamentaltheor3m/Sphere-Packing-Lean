@@ -170,7 +170,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.ContourIdentitie
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
-public import SpherePacking.MagicFunction.g.CohnElkies.RealValued
 public import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 public import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
 public import SpherePacking.MainTheorem
