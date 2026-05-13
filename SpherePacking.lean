@@ -36,7 +36,6 @@ public import SpherePacking.Contour.PermJ12DiffContOnCl
 public import SpherePacking.Contour.PermJ12Fourier
 public import SpherePacking.Contour.PermJ12FourierCurveIntegral
 public import SpherePacking.Contour.PermJ12Tendsto
-public import SpherePacking.Contour.PermJ5Kernel
 public import SpherePacking.Contour.Segments
 public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing

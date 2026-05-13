@@ -8,7 +8,6 @@ public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
-import SpherePacking.Contour.PermJ5Kernel
 
 /-! # Perm J5 Integrability: integrability and measurability for the `PermJ5` kernel. -/
 
@@ -19,7 +18,6 @@ noncomputable section
 open scoped FourierTransform RealInnerProductSpace Topology Real
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
-open SpherePacking.Contour
 open SpherePacking.Integration (μIciOne)
 
 namespace PermJ5
