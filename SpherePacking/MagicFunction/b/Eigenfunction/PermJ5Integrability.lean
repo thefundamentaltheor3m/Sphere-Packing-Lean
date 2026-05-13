@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.b.Eigenfunction.GaussianFourier
 public import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
-public import SpherePacking.ForMathlib.ExpNormSqDiv
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.Integration.Measure
@@ -40,7 +39,9 @@ lemma continuousOn_J₅_g :
     ((continuousOn_const.mul (hψ.comp continuousOn_snd
       fun _ hp => (Set.mem_prod.mp hp).2)).mul (hzpow.comp continuousOn_snd
       fun _ hp => (Set.mem_prod.mp hp).2)).mul
-      (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))).congr fun p _ => ?_
+      (fun p hp ↦ by
+        have hp2 : (p.2 : ℂ) ≠ 0 := mod_cast (zero_lt_one.trans_le (by simpa using hp)).ne'
+        fun_prop (disch := exact hp2))).congr fun p _ => ?_
   simp [J5Change.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
 /-- The `(x,s)`-kernel used in the `J₅`/`J₆` Fourier permutation argument. -/

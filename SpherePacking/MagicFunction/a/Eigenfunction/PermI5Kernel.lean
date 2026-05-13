@@ -13,7 +13,6 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Schwartz.DecayI1
-import SpherePacking.ForMathlib.ExpNormSqDiv
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import Mathlib.Analysis.InnerProductSpace.Continuous
 import Mathlib.Analysis.Complex.HasPrimitives
@@ -59,7 +58,11 @@ public lemma continuousOn_I₅_g :
     MagicFunction.a.Schwartz.I1Decay.zpow_neg_four_continuousOn.comp continuousOn_snd
       mapsTo_snd_prod
   refine ((((continuousOn_const (c := (-I : ℂ))).mul hφ').mul hzpow').mul
-      (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))).congr fun p _ ↦ ?_
+      (show ContinuousOn (fun p : ℝ⁸ × ℝ ↦
+          cexp ((-π : ℂ) * ((‖p.1‖ : ℂ) ^ 2) / (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) from
+        fun p hp ↦ by
+          have hp2 : (p.2 : ℂ) ≠ 0 := mod_cast (zero_lt_one.trans_le (by simpa using hp)).ne'
+          fun_prop (disch := exact hp2))).congr fun p _ ↦ ?_
   simp [MagicFunction.a.IntegralEstimates.I₅.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
 /-- The phase factor `v ↦ exp(-2π i ⟪v, w⟫)` used in the kernel for `perm_I₅`. -/

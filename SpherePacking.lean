@@ -46,7 +46,6 @@ public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ExpBounds
-public import SpherePacking.ForMathlib.ExpNormSqDiv
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.FourierLinearEquiv
 public import SpherePacking.ForMathlib.FourierPhase
