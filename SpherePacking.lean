@@ -151,7 +151,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Another
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Continuation
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Parametric
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.HExpansions
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.InvH2Sq

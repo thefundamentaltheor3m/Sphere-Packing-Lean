@@ -1,5 +1,7 @@
 module
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Parametric
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
+public import SpherePacking.Basic.Domains.RightHalfPlane
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.AnalyticityWrapper
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
@@ -14,8 +16,8 @@ Assuming the "another integral" formula for `b'` holds for all real `u > 2`, thi
 equality to all real `0 < u` with `u ≠ 2` by comparing analytic functions on the punctured
 right half-plane `ACDomain = {u : ℂ | 0 < Re u} \\ {2}` and applying an identity theorem.
 
-## Main definition
-* `bAnotherRHS`
+## Main definitions
+* `bAnotherIntegrandC`, `bAnotherIntegralC`, `bAnotherRHS`
 
 ## Main statement
 * `bRadial_eq_another_integral_analytic_continuation_of_gt2`
@@ -28,6 +30,21 @@ open scoped BigOperators Topology
 open MeasureTheory Real Complex SpherePacking MagicFunction.FourierEigenfunctions
 
 noncomputable section
+
+/-- Complex-parameter integrand for the "another integral" representation of `b'`. -/
+@[expose] public def bAnotherIntegrandC (u : ℂ) (t : ℝ) : ℂ :=
+  bAnotherBase t * Complex.exp (-(π : ℂ) * u * (t : ℂ))
+
+/-- Complex-parameter "another integral" associated to `b'`. -/
+@[expose] public def bAnotherIntegralC (u : ℂ) : ℂ :=
+  ∫ t in Set.Ioi (0 : ℝ), bAnotherIntegrandC u t
+
+/-- Restriction of `bAnotherIntegralC` to real parameters. -/
+public lemma bAnotherIntegralC_ofReal (u : ℝ) :
+    bAnotherIntegralC (u : ℂ) =
+      ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * u * t) : ℂ) :=
+  MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
+    (fun t _ ↦ by simp [bAnotherIntegrandC, mul_assoc])
 
 def bAnotherRHS (u : ℂ) : ℂ :=
   (-4 * (Complex.I : ℂ)) *
