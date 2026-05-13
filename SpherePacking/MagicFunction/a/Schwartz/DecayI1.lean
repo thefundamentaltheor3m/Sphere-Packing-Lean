@@ -198,21 +198,6 @@ lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
             (r := x) (C₀ := Cφ)).const_mul ((2 * π) ^ n)))
         measurableSet_Ici fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
 
-lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 ≤ s)
-    {Cpow : ℝ} (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
-    x ^ k * rexp (-π * x / s) ≤ (π ^ k)⁻¹ * Cpow * s ^ k := by
-  set u : ℝ := (π * x) / s
-  have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
-    simp [show x = u * s / π from CancelDenoms.cancel_factors_eq_div
-      (id (div_mul_cancel₀ (π * x) (lt_of_lt_of_le (by norm_num) hs).ne').symm) Real.pi_ne_zero,
-      mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
-  calc x ^ k * rexp (-π * x / s)
-      = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
-        rw [congrArg rexp (show -π * x / s = -u by ring), hxpow]; ring
-    _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by
-        gcongr; exact hCpow u (div_nonneg (by positivity) (zero_le_one.trans hs))
-    _ = (π ^ k)⁻¹ * Cpow * s ^ k := by ring
-
 lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
     (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
     ∀ x : ℝ, 0 ≤ x →
@@ -232,7 +217,20 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
           SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := k) (b := 2 * π)
             (by positivity))).const_mul ((π ^ k)⁻¹ * Cpow)
   have hmono : ∀ s ∈ Ici (1 : ℝ), f s ≤ g s := fun s hs => by
-    have hpt := xpow_mul_exp_neg_pi_div_le (k := k) (x := x) (s := s) hx hs (Cpow := Cpow) hCpow
+    have hs1 : (1 : ℝ) ≤ s := hs
+    have hpt : x ^ k * rexp (-π * x / s) ≤ (π ^ k)⁻¹ * Cpow * s ^ k := by
+      set u : ℝ := (π * x) / s
+      have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
+        simp [show x = u * s / π from CancelDenoms.cancel_factors_eq_div
+          (id (div_mul_cancel₀ (π * x)
+            (lt_of_lt_of_le (by norm_num) hs1).ne').symm) Real.pi_ne_zero,
+          mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
+      calc x ^ k * rexp (-π * x / s)
+          = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by
+            rw [congrArg rexp (show -π * x / s = -u by ring), hxpow]; ring
+        _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by
+            gcongr; exact hCpow u (div_nonneg (by positivity) (zero_le_one.trans hs1))
+        _ = (π ^ k)⁻¹ * Cpow * s ^ k := by ring
     calc f s = rexp (-2 * π * s) * (x ^ k * rexp (-π * x / s)) := by simp [f, mul_assoc, mul_comm]
       _ ≤ rexp (-2 * π * s) * (((π ^ k)⁻¹ * Cpow) * s ^ k) := by gcongr
       _ = g s := by simp [g, mul_assoc, mul_left_comm, mul_comm]
