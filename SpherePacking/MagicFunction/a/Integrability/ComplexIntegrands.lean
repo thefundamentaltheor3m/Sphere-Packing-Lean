@@ -85,6 +85,10 @@ public theorem Φ₃'_holo : Holo(Φ₃' r) := by
 public theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
   Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
+/-- The integrand `Φ₃' r` is smooth as a real function on `upperHalfPlaneSet`. -/
+public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
+  (Φ₃'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
+
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_holo : Holo(Φ₆' r) := by
   simpa [Φ₆'] using φ₀''_holo.mul
@@ -93,17 +97,5 @@ public theorem Φ₆'_holo : Holo(Φ₆' r) := by
 /-- The integrand `Φ₆' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
   Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
-
-/-- The integrand `Φ₁' r` is smooth as a real function on `upperHalfPlaneSet`. -/
-public theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ :=
-  (Φ₁'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
-
-/-- The integrand `Φ₃' r` is smooth as a real function on `upperHalfPlaneSet`. -/
-public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
-  (Φ₃'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
-
-/-- The integrand `Φ₆' r` is smooth as a real function on `upperHalfPlaneSet`. -/
-public theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ :=
-  (Φ₆'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
 
 end MagicFunction.a.ComplexIntegrands
