@@ -24,9 +24,6 @@ local notation "Λ" => SchwartzMap.standardLattice d
       let ⟨n, hn⟩ := exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E)) ℓ.property
       ⟨n, Subtype.ext hn.symm⟩⟩
 
-@[simp] public lemma coe_equivIntVec (n : Fin d → ℤ) :
-    ((equivIntVec (d := d) n : Λ) : E) = intVec (d := d) n := rfl
-
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
 public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where

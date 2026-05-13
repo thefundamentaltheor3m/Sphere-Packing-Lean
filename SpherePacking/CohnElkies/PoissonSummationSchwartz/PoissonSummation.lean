@@ -165,7 +165,7 @@ lemma summable_mFourierCoeff_descended :
         lt_trans (by positivity) (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)
       simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
         (le_div_iff₀' (pow_pos hnorm_pos _)).2 (hC' (ℓ : E))
-    simpa [coe_equivIntVec] using
+    simpa [equivIntVec] using
       hsum_lattice.comp_injective (equivIntVec (d := d)).injective
   exact Summable.of_norm (by simpa [mFourierCoeff_descended (d := d) (f := f)] using hsum_norm)
 
