@@ -18,14 +18,6 @@ private lemma complex_eq_ofReal_of_im_eq_zero (z : ℂ) (hz : z.im = 0) : z = (z
 /-- The constant `c = 18 / π^2` appearing in the definitions of `A` and `B`. -/
 public abbrev c : ℝ := 18 * (π ^ (-2 : ℤ))
 
-/-- Express `ψS` in terms of the quotient `G / Δ`. -/
-public lemma ψS_eq_neg_half_mul_G_div_Delta (z : ℍ) :
-    ψS z = (-(1 / 2 : ℂ)) * (G z) / (Δ z) := by
-  rw [MagicFunction.b.PsiBounds.ψS_apply_eq_factor z]
-  simp [G, show Δ z = (H₂ z * H₃ z * H₄ z) ^ 2 / (256 : ℂ) by
-    simpa [Delta_apply, mul_assoc] using Delta_eq_H₂_H₃_H₄ z]
-  field_simp [H₂_ne_zero z, H₃_ne_zero z, H₄_ne_zero z]; ring_nf
-
 /-- Real part of `φ₀'' (I / t)` in terms of `FReal` and the imaginary-axis restriction of `Δ`. -/
 public lemma phi0''_re_I_div (t : ℝ) (ht : 0 < t) :
     (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re =
@@ -54,8 +46,12 @@ public lemma ψS_resToImagAxis_re (s : ℝ) (hs : 0 < s) :
       = ((-(1 / 2 : ℂ)) * (G.resToImagAxis s) / (Δ.resToImagAxis s)).re := by
         simpa using congrArg Complex.re (show ψS.resToImagAxis s =
             (-(1 / 2 : ℂ)) * (G.resToImagAxis s) / (Δ.resToImagAxis s) by
-          simpa [Function.resToImagAxis, ResToImagAxis, hs, z] using
-            ψS_eq_neg_half_mul_G_div_Delta z)
+          simpa [Function.resToImagAxis, ResToImagAxis, hs, z] using show
+              ψS z = (-(1 / 2 : ℂ)) * (G z) / (Δ z) by
+            rw [MagicFunction.b.PsiBounds.ψS_apply_eq_factor z]
+            simp [G, show Δ z = (H₂ z * H₃ z * H₄ z) ^ 2 / (256 : ℂ) by
+              simpa [Delta_apply, mul_assoc] using Delta_eq_H₂_H₃_H₄ z]
+            field_simp [H₂_ne_zero z, H₃_ne_zero z, H₄_ne_zero z]; ring_nf)
     _ = ((-(1 / 2 : ℂ)) * (GReal s : ℂ) / (Δ.resToImagAxis s)).re := by
         simp [show ResToImagAxis G s = (GReal s : ℂ) by
           simpa [Function.resToImagAxis_apply, GReal] using G_eq_GReal (t := s) hs]
