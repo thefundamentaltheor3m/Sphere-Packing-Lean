@@ -1,7 +1,6 @@
 module
 public import SpherePacking.CohnElkies.Prereqs
 
-import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 import SpherePacking.CohnElkies.LPBoundAux
 
 /-!

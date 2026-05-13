@@ -8,7 +8,6 @@ public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 public import SpherePacking.Basic.PeriodicPacking.PeriodicConstant
 public import SpherePacking.Basic.PeriodicPacking.Theorem22
 public import SpherePacking.Basic.SpherePacking
-public import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.LPBoundAux
 public import SpherePacking.CohnElkies.LPBoundReindex

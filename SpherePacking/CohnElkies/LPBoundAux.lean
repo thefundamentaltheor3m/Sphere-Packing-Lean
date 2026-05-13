@@ -12,8 +12,8 @@ If `f` is Schwartz and `a + Λ` is a translate of a discrete `ℤ`-lattice, then
 Cohn-Elkies linear programming bound.
 -/
 
-open scoped SchwartzMap FourierTransform
-open BigOperators
+open scoped SchwartzMap FourierTransform RealInnerProductSpace
+open BigOperators Module
 
 namespace SpherePacking.CohnElkies
 variable {d : ℕ}
@@ -95,5 +95,27 @@ public theorem summable_lattice_translate_re :
 end ZLattice
 
 end LPBoundSummability
+
+/-- A discrete `ℤ`-lattice has a discrete dual submodule (for the Euclidean inner product). -/
+public instance (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
+    [IsZLattice ℝ Λ] :
+    DiscreteTopology
+      (LinearMap.BilinForm.dualSubmodule (B := innerₗ (EuclideanSpace ℝ (Fin d))) Λ) := by
+  let bZ : Basis (Module.Free.ChooseBasisIndex ℤ Λ) ℤ Λ := Module.Free.chooseBasis ℤ Λ
+  let bR := bZ.ofZLatticeBasis ℝ Λ
+  have hB : LinearMap.BilinForm.Nondegenerate (innerₗ (EuclideanSpace ℝ (Fin d)) :
+      LinearMap.BilinForm ℝ (EuclideanSpace ℝ (Fin d))) := by
+    constructor <;> intro x hx
+    all_goals
+      have : ⟪x, x⟫ = (0 : ℝ) := by simpa [innerₗ_apply_apply] using hx x
+      exact inner_self_eq_zero.1 this
+  have hdual :
+      LinearMap.BilinForm.dualSubmodule (B := innerₗ (EuclideanSpace ℝ (Fin d))) Λ =
+        Submodule.span ℤ (Set.range
+          (LinearMap.BilinForm.dualBasis (B := innerₗ (EuclideanSpace ℝ (Fin d))) hB bR)) := by
+    simpa [bR, bZ.ofZLatticeBasis_span (K := ℝ) (L := Λ)] using
+      LinearMap.BilinForm.dualSubmodule_span_of_basis (B := innerₗ (EuclideanSpace ℝ (Fin d)))
+        (R := ℤ) (S := ℝ) (M := EuclideanSpace ℝ (Fin d)) hB bR
+  exact hdual ▸ inferInstance
 
 end SpherePacking.CohnElkies

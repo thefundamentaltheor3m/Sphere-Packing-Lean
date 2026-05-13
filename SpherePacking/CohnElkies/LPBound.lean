@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Complex.Trigonometric
 
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.CohnElkies.DualSubmoduleDiscrete
 public import SpherePacking.CohnElkies.LPBoundAux
 import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LPBoundReindex
