@@ -32,7 +32,3 @@ public theorem ENat.tsum_const {α : Type*} (c : ENat) :
 /-- The infinite sum of a constant `c : ENat` over a set `s` is `s.encard * c`. -/
 public theorem ENat.tsum_set_const {α : Type*} (s : Set α) (c : ENat) :
     ∑' (_ : s), c = s.encard * c := by rw [ENat.tsum_const, Set.encard]
-
-/-- The infinite sum of `1 : ENat` over a set `s` is `s.encard`. -/
-public theorem ENat.tsum_set_one {α : Type*} (s : Set α) : ∑' (_ : s), 1 = s.encard := by
-  rw [ENat.tsum_const, mul_one, Set.encard]

@@ -46,6 +46,6 @@ end ENat
 /-- `encard` is additive on pairwise disjoint unions. -/
 public theorem Set.encard_iUnion_of_pairwiseDisjoint {ι α : Type*} {s : ι → Set α}
     (hs : Set.PairwiseDisjoint Set.univ s) : (⋃ i, s i).encard = ∑' i, (s i).encard := by
-  simpa [ENat.tsum_set_one] using
+  simpa [ENat.tsum_set_const, mul_one] using
     (ENat.tsum_subtype_iUnion_eq_tsum (f := fun _ : α => (1 : ℕ∞)) (t := s) (by
       simpa [Set.PairwiseDisjoint, Set.pairwise_univ] using hs))
