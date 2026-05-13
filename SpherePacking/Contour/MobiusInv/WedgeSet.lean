@@ -32,7 +32,7 @@ public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
   rw [Contour.lineMap_z₁line]
   obtain ⟨hre, him⟩ := mobiusInv_re_im (-1) t
   rw [show mobiusInv (Contour.z₁line t) = -(↑(-1 : ℝ) + Complex.I * ↑t)⁻¹ from by
-    simp [mobiusInv]] at *
+    simp [mobiusInv, Contour.z₁line]] at *
   refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
   rw [hre, him]; simp only [fieldLt]
   constructor <;> nlinarith only [ht0, ht1]
@@ -44,7 +44,7 @@ public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
   rw [Contour.lineMap_z₂line]
   obtain ⟨hre, him⟩ := mobiusInv_re_im (t - 1) 1
   rw [show mobiusInv (Contour.z₂line t) = -(↑(t - 1) + Complex.I * ↑(1 : ℝ))⁻¹ from by
-    simp [sub_eq_add_neg, add_comm, mobiusInv], one_pow] at *
+    simp [sub_eq_add_neg, add_comm, mobiusInv, Contour.z₂line], one_pow] at *
   refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
   rw [hre, him]; simp only [fieldLt]
   constructor <;> nlinarith only [ht0, ht1]

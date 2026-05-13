@@ -27,11 +27,6 @@ on `t ∈ [0,1]`. -/
 @[expose] public def z₃line (t : ℝ) : ℂ := (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)
 @[expose] public def z₄line (t : ℝ) : ℂ := (1 : ℂ) - (t : ℂ) + Complex.I
 
-@[simp] public lemma z₁line_def (t : ℝ) : z₁line t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
-@[simp] public lemma z₂line_def (t : ℝ) : z₂line t = (-1 : ℂ) + (t : ℂ) + Complex.I := rfl
-@[simp] public lemma z₃line_def (t : ℝ) : z₃line t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := rfl
-@[simp] public lemma z₄line_def (t : ℝ) : z₄line t = (1 : ℂ) - (t : ℂ) + Complex.I := rfl
-
 public lemma continuous_z₁line : Continuous z₁line := by unfold z₁line; fun_prop
 public lemma continuous_z₂line : Continuous z₂line := by unfold z₂line; fun_prop
 
