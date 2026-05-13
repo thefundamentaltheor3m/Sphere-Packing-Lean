@@ -37,14 +37,6 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 @[expose] public def schwartzRadialSum6 (f₁ f₂ f₃ f₄ f₅ f₆ : 𝓢(ℝ, ℂ)) : 𝓢(ℝ⁸, ℂ) :=
   liftRadial (schwartzSum6 f₁ f₂ f₃ f₄ f₅ f₆)
 
-/-- Evaluate the radial sum at a point using `‖x‖^2`. -/
-public theorem schwartzRadialSum6_apply (f₁ f₂ f₃ f₄ f₅ f₆ : 𝓢(ℝ, ℂ)) (x : ℝ⁸) :
-    schwartzRadialSum6 f₁ f₂ f₃ f₄ f₅ f₆ x =
-      f₁ (‖x‖ ^ 2) + f₂ (‖x‖ ^ 2) + f₃ (‖x‖ ^ 2) +
-      f₄ (‖x‖ ^ 2) + f₅ (‖x‖ ^ 2) + f₆ (‖x‖ ^ 2) := by
-  simp [schwartzRadialSum6, liftRadial, schwartzSum6,
-    schwartzMap_multidimensional_of_schwartzMap_real, add_assoc]
-
 end
 
 end MagicFunction.Common
