@@ -177,23 +177,6 @@ open scoped ENNReal
 
 variable {d : ℕ} (S : SpherePacking d)
 
-lemma biUnion_inter_balls_subset_biUnion_balls_inter
-    (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
-    ⋃ x ∈ X ∩ ball 0 R, ball x r ⊆ (⋃ x ∈ X, ball x r) ∩ ball 0 (R + r) := fun x hx => by
-  simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right] at hx ⊢
-  obtain ⟨y, hy₁, hy₂⟩ := hx
-  exact ⟨⟨y, hy₁.1, hy₂⟩, (norm_le_norm_add_norm_sub' x y).trans_lt (by gcongr <;> tauto)⟩
-
-lemma biUnion_balls_inter_subset_biUnion_inter_balls
-    (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
-    (⋃ x ∈ X, ball x r) ∩ ball 0 (R - r) ⊆ ⋃ x ∈ X ∩ ball 0 R, ball x r := fun x hx => by
-  simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right] at hx ⊢
-  obtain ⟨⟨y, hy₁, hy₂⟩, hx⟩ := hx
-  refine ⟨y, ⟨hy₁, ?_⟩, hy₂⟩
-  rw [← sub_add_cancel R r]
-  exact (norm_le_norm_add_norm_sub x y).trans_lt <| add_lt_add hx
-    (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
-
 theorem SpherePacking.volume_iUnion_balls_eq_tsum (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
     volume (⋃ x : ↑(S.centers ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
       = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') :=
@@ -206,7 +189,13 @@ theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤ volume (S.balls ∩ ball 0 (R + S.separation / 2))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   have h : volume _ ≤ volume _ := volume.mono <|
-    biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
+    show ⋃ x ∈ S.centers ∩ ball 0 R, ball x (S.separation / 2) ⊆
+        (⋃ x ∈ S.centers, ball x (S.separation / 2)) ∩ ball 0 (R + S.separation / 2) from
+      fun x hx => by
+        simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right]
+          at hx ⊢
+        obtain ⟨y, hy₁, hy₂⟩ := hx
+        exact ⟨⟨y, hy₁.1, hy₂⟩, (norm_le_norm_add_norm_sub' x y).trans_lt (by gcongr <;> tauto)⟩
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R le_rfl,
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   rwa [← ENNReal.le_div_iff_mul_le
@@ -217,7 +206,15 @@ theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥ volume (S.balls ∩ ball 0 (R - S.separation / 2))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   have h : volume _ ≤ volume _ := volume.mono <|
-    biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
+    show (⋃ x ∈ S.centers, ball x (S.separation / 2)) ∩ ball 0 (R - S.separation / 2) ⊆
+        ⋃ x ∈ S.centers ∩ ball 0 R, ball x (S.separation / 2) from fun x hx => by
+      simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right]
+        at hx ⊢
+      obtain ⟨⟨y, hy₁, hy₂⟩, hx⟩ := hx
+      refine ⟨y, ⟨hy₁, ?_⟩, hy₂⟩
+      rw [← sub_add_cancel R (S.separation / 2)]
+      exact (norm_le_norm_add_norm_sub x y).trans_lt <| add_lt_add hx
+        (by simpa [dist_eq_norm, norm_sub_rev] using hy₂)
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ le_rfl,
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   exact ENNReal.div_le_of_le_mul h
