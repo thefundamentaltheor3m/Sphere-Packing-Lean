@@ -152,7 +152,16 @@ theorem calc_steps_part1 (hd : 0 < d) :
       conj (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
         simp_rw [conj_tsum]
-        congr! 7 with m x; exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
+        congr! 7 with m x
+        calc Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I *
+              (⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ] : ℂ)))
+            = Circle.exp (-2 * Real.pi * ⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ]) := by
+              rw [Circle.coe_exp]; push_cast; ring_nf
+          _ = conj (Circle.exp (2 * Real.pi * ⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ])) := by
+              rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
+          _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
+                (⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ] : ℂ))) := by
+              rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
   _ = (1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
         (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),

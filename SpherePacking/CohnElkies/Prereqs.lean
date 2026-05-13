@@ -84,22 +84,4 @@ public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf�
 
 end Integration
 
-section Misc
-
-omit [Fact (0 < d)]
-local notation "conj" => starRingEnd ℂ
-/-- Complex exponential conjugation identity for real inner products.
-Used to relate `cexp (2 * pi * I * <x,m>)` and its conjugate. -/
-public theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
-    Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) =
-      conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := calc
-  Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
-      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by rw [Circle.coe_exp]; push_cast; ring_nf
-    _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ])) := by
-        rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-    _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
-        rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
-
-end Misc
-
 end
