@@ -106,7 +106,6 @@ open intervalIntegral
 
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
-@[simp] public lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
 @[simp] public lemma I₁_eq (x : V) : I₁ x = I₁' (‖x‖ ^ 2) := rfl
 @[simp] public lemma I₂_eq (x : V) : I₂ x = I₂' (‖x‖ ^ 2) := rfl
 @[simp] public lemma I₃_eq (x : V) : I₃ x = I₃' (‖x‖ ^ 2) := rfl
