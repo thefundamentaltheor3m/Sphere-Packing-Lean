@@ -36,19 +36,6 @@ variable (r : ℝ)
 public lemma I₂'_eq_integral_g_Ioo (r : ℝ) : I₂' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
   simp [I₂'_eq, intervalIntegral_eq_integral_uIoc, zero_le_one, g, integral_Ioc_eq_integral_Ioo]
 
-lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
-    ‖φ₀'' (-1 / (t + I))‖ * 2 * rexp (-π * r) := fun t ht => by
-  rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
-  gcongr
-  · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, ofReal_re, I_re, add_zero, add_im,
-      ofReal_im, I_im, zero_add, mul_one]
-    nlinarith [ht.1, ht.2]
-  · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
-    gcongr <;> apply le_of_eq
-    · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r)
-    · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r * t)
-    · rw [norm_exp]; norm_cast
-
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (↑t + I)).im :=
   fun t ht => by
@@ -59,7 +46,17 @@ public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 /
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) :=
-  I24Common.g_norm_bound_uniform_of I₂'_bounding_aux_1 im_parametrisation_lower
+  I24Common.g_norm_bound_uniform_of (fun r t ht => by
+    rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
+    gcongr
+    · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, ofReal_re, I_re, add_zero, add_im,
+        ofReal_im, I_im, zero_add, mul_one]
+      nlinarith [ht.1, ht.2]
+    · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
+      gcongr <;> apply le_of_eq
+      · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r)
+      · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r * t)
+      · rw [norm_exp]; norm_cast) im_parametrisation_lower
 
 noncomputable section Schwartz_Decay
 
