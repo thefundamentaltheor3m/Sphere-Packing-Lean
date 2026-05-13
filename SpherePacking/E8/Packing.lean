@@ -12,16 +12,13 @@ variable {R : Type*}
 
 open Module InnerProductSpace RCLike
 
-public lemma E8_norm_eq_sqrt_even (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
-    ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
-  rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
-  exact E8_integral_self _ hv
-
 lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     v = 0 ∨ √2 ≤ ‖WithLp.toLp 2 v‖ := by
   rw [or_iff_not_imp_left, ← ne_eq]
   intro hv'
-  obtain ⟨n, hn, hn'⟩ := E8_norm_eq_sqrt_even v hv
+  obtain ⟨n, hn, hn'⟩ : ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
+    rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
+    exact E8_integral_self _ hv
   have hn_ne : n ≠ 0 := by contrapose! hv'; simpa [hv'] using hn'.symm
   have hn2 : 2 ≤ n := by
     have : 0 ≤ n := by exact_mod_cast (by simp [hn'] : (0 : ℝ) ≤ (n : ℝ))
@@ -94,11 +91,6 @@ private lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 
   simpa [E8_ℤBasis, Basis.coe_mk, E8Basis_apply] using hbase
 
 open MeasureTheory ZSpan in
-public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
-  simp [volume_fundamentalDomain (b := E8Basis ℝ), of_basis_eq_matrix,
-    E8Matrix_unimodular (R := ℝ)]
-
-open MeasureTheory ZSpan in
 /-- The density of the `E8` packing. -/
 public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
@@ -118,7 +110,9 @@ public theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 3
           congr! 1; ext i : 1; simp [E8_ℤBasis, E8Basis_apply]
         rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp
           _).symm.measure_preimage_equiv]
-        erw [hpreim, E8Basis_volume]
+        erw [hpreim, show volume (fundamentalDomain (E8Basis ℝ)) = 1 by
+          simp [volume_fundamentalDomain (b := E8Basis ℝ), of_basis_eq_matrix,
+            E8Matrix_unimodular (R := ℝ)]]
       · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
     · positivity
     · positivity
