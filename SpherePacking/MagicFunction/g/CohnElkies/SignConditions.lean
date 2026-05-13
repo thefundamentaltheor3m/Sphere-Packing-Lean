@@ -4,7 +4,6 @@ import SpherePacking.MagicFunction.g.CohnElkies.IntegralA
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralB
 import SpherePacking.MagicFunction.g.CohnElkies.IneqCommon
 import SpherePacking.ModularForms.FG.Inequalities
-import SpherePacking.MagicFunction.g.CohnElkies.IneqB
 
 
 /-!
@@ -71,10 +70,19 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
       rw [show 𝓕 g x = _ from fourier_g_eq_integral_B (x := x) hx', ← hu,
         integral_Ioi_ofReal_mul_exp u B]
       push_cast [s]; ring
+    have hB_pos : ∀ {t : ℝ}, 0 < t → 0 < B t := fun {t} ht => by
+      set sB : ℝ := 1 / t
+      have hsB : 0 < sB := one_div_pos.2 ht
+      have hΔpos : 0 < (Δ.resToImagAxis sB).re := (Delta_imag_axis_pos).2 sB hsB
+      have hB :
+          B t = (-(t ^ (2 : ℕ))) * ((FReal sB - c * GReal sB) / (Δ.resToImagAxis sB).re) := by
+        simpa [sB] using (B_eq_neg_mul_FG_div_Delta (t := t) ht)
+      simpa [hB] using mul_pos_of_neg_of_neg (neg_lt_zero.2 (pow_pos ht _))
+        (div_neg_of_neg_of_pos (by simpa [c] using (FG_inequality_2 (t := sB) hsB)) hΔpos)
     have hIntegral : 0 ≤ IB :=
       MeasureTheory.setIntegral_nonneg (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi fun t ht =>
-          mul_nonneg (B_pos (t := t) ht).le (Real.exp_pos _).le
+          mul_nonneg (hB_pos ht).le (Real.exp_pos _).le
     rw [ge_iff_le, congrArg Complex.re hEqReal]
     exact mul_nonneg (by change 0 ≤ (π / 2160 : ℝ) * _; positivity) hIntegral
 
