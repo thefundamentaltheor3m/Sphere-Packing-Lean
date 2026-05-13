@@ -17,36 +17,29 @@ noncomputable section
 open scoped Topology UpperHalfPlane
 open Complex Real Filter Topology UpperHalfPlane Set HurwitzKernelBounds
 
-lemma norm_Θ₂_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
-    ‖Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩‖ =
-      rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
-  set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
-  have hτ : (τ : ℂ) = (Complex.I : ℂ) * t := rfl
-  have hnorm_pref : ‖cexp (π * (Complex.I : ℂ) * (τ : ℂ) / 4)‖ = rexp (-π * (t / 4)) := by
-    simp [Complex.norm_exp, hτ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-  have hnorm_core :
-      ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
-        rexp (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2)) := by
-    rw [show ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
-      rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) by
-        simpa [hτ] using norm_jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)]
-    ring_nf
-  simpa [τ] using (calc
-    ‖Θ₂_term n τ‖ =
-        ‖cexp (π * (Complex.I : ℂ) * (τ : ℂ) / 4)‖ *
-          ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ := by
-          simp [Θ₂_term_as_jacobiTheta₂_term, hτ, mul_assoc]
-    _ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
-          rw [hnorm_pref, hnorm_core, ← Real.exp_add]; congr 1; ring)
-
 lemma norm_Θ₂_resToImagAxis_le (t : ℝ) (ht : 0 < t) :
     ‖Θ₂.resToImagAxis t‖ ≤
       (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) := by
   set τ : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hτ : (τ : ℂ) = (Complex.I : ℂ) * t := rfl
   have hΘ (n : ℤ) : ‖Θ₂_term n τ‖ = f_int 0 (1 / 2 : ℝ) t n := by
+    have hnorm_pref : ‖cexp (π * (Complex.I : ℂ) * (τ : ℂ) / 4)‖ = rexp (-π * (t / 4)) := by
+      simp [Complex.norm_exp, hτ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+    have hnorm_core :
+        ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
+          rexp (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2)) := by
+      rw [show ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
+        rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) by
+          simpa [hτ] using norm_jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)]
+      ring_nf
     simp [HurwitzKernelBounds.f_int, pow_zero, one_mul,
-      show ‖Θ₂_term n τ‖ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) by
-        simpa [τ] using norm_Θ₂_term_resToImagAxis n t ht]
+      show ‖Θ₂_term n τ‖ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) from
+        calc ‖Θ₂_term n τ‖ =
+                ‖cexp (π * (Complex.I : ℂ) * (τ : ℂ) / 4)‖ *
+                  ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ := by
+                  simp [Θ₂_term_as_jacobiTheta₂_term, hτ, mul_assoc]
+          _ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
+                  rw [hnorm_pref, hnorm_core, ← Real.exp_add]; congr 1; ring]
   have hsumm : Summable (fun n : ℤ => ‖Θ₂_term n τ‖) :=
     (summable_f_int 0 (1 / 2 : ℝ) ht).congr (fun n => by simpa using (hΘ n).symm)
   have hbd_nat' :
