@@ -45,13 +45,6 @@ public lemma cutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoff := by
 public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
   simpa [cutoffC] using ofRealCLM.contDiff.comp cutoff_contDiff
 
-@[simp] public lemma cutoff_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]
-    [InnerProductSpace ℝ F] (x : F) : cutoff (‖x‖ ^ 2) = 1 :=
-  cutoff_eq_one_of_nonneg (sq_nonneg ‖x‖)
-
-@[simp] public lemma cutoffC_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]
-    [InnerProductSpace ℝ F] (x : F) : cutoffC (‖x‖ ^ 2) = 1 := by simp [cutoffC]
-
 /-- If `f` is smooth on `(-1, ∞)` then `r ↦ cutoffC r * f r` is smooth on all of `ℝ`. -/
 public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Set.Ioi (-1 : ℝ))) :
