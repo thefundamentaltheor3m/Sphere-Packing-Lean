@@ -92,10 +92,7 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 public import SpherePacking.MagicFunction.a.IntegralEstimates.PowExpBounds
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
-public import SpherePacking.MagicFunction.a.Schwartz.SmoothI1
-public import SpherePacking.MagicFunction.a.Schwartz.SmoothI2
 public import SpherePacking.MagicFunction.a.Schwartz.SmoothI24Common
-public import SpherePacking.MagicFunction.a.Schwartz.SmoothI4
 public import SpherePacking.MagicFunction.a.Schwartz.SmoothI6
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Basic
