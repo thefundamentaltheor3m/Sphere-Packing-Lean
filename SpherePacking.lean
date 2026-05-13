@@ -46,7 +46,6 @@ public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.ScalarOneForm
-public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.EndpointIntegrability

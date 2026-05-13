@@ -15,7 +15,6 @@ import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Lv1Lv2Identities
 import SpherePacking.ModularForms.PhiTransformLemmas
 import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ForMathlib.SpecificLimits
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 import Mathlib.MeasureTheory.Integral.ExpDecay
@@ -355,7 +354,7 @@ lemma tendsto_A_div_q :
     exact_mod_cast sigma_bound 3 (n + 1)
   have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) := by
     refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => ?_)
-      (by simpa using summable_pow_shift_mul_exp (4 + 1) 1)
+      (by simpa using MagicFunction.PolyFourierCoeffBound.summable_pow_shift_mul_exp (4 + 1) 1)
     have hnorm : ‖a n‖ ≤ (n + 1 : ℝ) ^ (4 + 1) := calc
       ‖a n‖ = (n + 1 : ℝ) * (σ 3 (n + 1) : ℝ) := by
               simp only [a, Complex.norm_mul, Complex.norm_natCast]; push_cast; ring
