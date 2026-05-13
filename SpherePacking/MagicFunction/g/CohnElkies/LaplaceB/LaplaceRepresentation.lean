@@ -75,7 +75,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
               -Complex.ofReal_exp, Complex.norm_real, abs_of_nonneg (Real.exp_pos _).le],
         ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc,
         show ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ by
-          rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]]
+          rw [show ψT' ((Complex.I : ℂ) * (t : ℂ)) =
+              ψI' (((Complex.I : ℂ) * (t : ℂ)) + (1 : ℂ)) by
+            simpa [add_assoc] using
+              (ψT'_eq_ψI'_add_one (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0))]
+          simp [ψI', ht0]]
       refine mul_le_mul_of_nonneg_right ?_ (Real.exp_pos _).le
       simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ (by
         simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using

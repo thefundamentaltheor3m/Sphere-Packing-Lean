@@ -66,12 +66,6 @@ public lemma ψT'_one_add_I_mul (t : ℝ) (ht : 0 < t) :
   simpa [ψT', ψI', ht, modular_slash_T_apply, htrans] using
     congrArg (fun F : ℍ → ℂ => F ⟨(Complex.I : ℂ) * (t : ℂ), hz0⟩) ψT_slash_T
 
-/-- Specialize `ψT'_eq_ψI'_add_one` at `z = I * t`. -/
-public lemma ψT'_I_mul (t : ℝ) (ht : 0 < t) :
-    ψT' ((Complex.I : ℂ) * (t : ℂ)) = ψI' (((Complex.I : ℂ) * (t : ℂ)) + (1 : ℂ)) := by
-  simpa [add_assoc] using
-    (ψT'_eq_ψI'_add_one (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht))
-
 /-- Holomorphy of `bContourIntegrandT` on the open upper half-plane. -/
 public lemma differentiableOn_bContourIntegrandT (u : ℝ) :
     DifferentiableOn ℂ (bContourIntegrandT u) {z : ℂ | 0 < z.im} := by
