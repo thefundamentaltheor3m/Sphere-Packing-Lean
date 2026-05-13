@@ -87,15 +87,13 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
       ‖bAnotherBase t‖ ≤ Csmall).trans (le_max_left _ _)
   · exact (htail t (le_of_not_ge ht1)).trans (le_max_right _ _)
 
-private lemma exists_bound_norm_bAnotherBase_nonneg :
-    ∃ C0 : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
-  let ⟨C, hC⟩ := exists_bound_norm_bAnotherBase_Ioi
-  ⟨max C 0, fun t ht => (hC t ht).trans (le_max_left _ _)⟩
-
 /-- Integrability of `t ↦ bAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
 public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
-  obtain ⟨C0, hb⟩ := exists_bound_norm_bAnotherBase_nonneg
+  obtain ⟨C, hC⟩ := exists_bound_norm_bAnotherBase_Ioi
+  set C0 : ℝ := max C 0
+  have hb : ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C0 :=
+    fun t ht => (hC t ht).trans (le_max_left _ _)
   have hg :
       Integrable (fun t : ℝ => C0 * Real.exp (-(π * u) * t))
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
