@@ -37,15 +37,6 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
       simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec L hL x),
     show ‖g‖ ≤ ‖g + x‖ + ‖x‖ by simpa [add_sub_cancel_right] using norm_sub_le (g + x) x]
 
-lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice d L hL)
-    (x : EuclideanSpace ℝ (Fin d)) :
-    x ∈ g +ᵥ coordCube d L ↔ g = -coordCubeCover L hL x :=
-  ⟨fun hx => by rw [← neg_neg g,
-      show (-g : cubeLattice d L hL) = coordCubeCover L hL x from
-        (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 (-g)
-          (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)],
-   fun h => h ▸ by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec L hL x⟩
-
 end CoordCubeCover
 
 section CoverVolumeBound
@@ -322,9 +313,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let sg : Finset (EuclideanSpace ℝ (Fin d)) := s.filter fun x => f x = g0
   have hsg_centers : ∀ x ∈ sg, x ∈ S.centers := fun x hx =>
     (hX.mem_toFinset.1 (Finset.mem_filter.1 hx).1).1
-  have hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L := fun x hx =>
-    (PeriodicConstantApprox.mem_vadd_coordCube_iff_eq_neg_coordCubeCover L hLpos g0 x).mpr
+  have hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L := fun x hx => by
+    have h : g0 = -PeriodicConstantApprox.coordCubeCover L hLpos x :=
       (Finset.mem_filter.1 hx).2.symm
+    exact h ▸ by simpa [Set.mem_vadd_set_iff_neg_vadd_mem]
+      using PeriodicConstantApprox.coordCubeCover_spec L hLpos x
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
     exact_mod_cast by simpa [Finset.card_eq_sum_card_fiberwise hf_maps, Finset.sum_const] using
       Finset.sum_le_sum hg0max
