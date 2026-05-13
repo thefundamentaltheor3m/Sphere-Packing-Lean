@@ -76,7 +76,6 @@ public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrab
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierMain
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12WedgeDomain
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Integrability
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Main
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
