@@ -104,16 +104,6 @@ private lemma norm_add_I_le_three (a : ℂ) {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 
     (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 := by
   have h := norm_add_le a (Complex.I : ℂ); simp at h; linarith [ht.2]
 
-lemma norm_z₂'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₂' t‖ ≤ 3 :=
-  (show z₂' t = ((-1 : ℂ) + (t : ℂ)) + (Complex.I : ℂ) by
-    simp [z₂'_eq_of_mem (t := t) ht, add_comm]) ▸ norm_add_I_le_three _ ht
-    (by simpa [Complex.norm_real, abs_of_nonneg ht.1] using norm_add_le (-1 : ℂ) (t : ℂ))
-
-lemma norm_z₄'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₄' t‖ ≤ 3 :=
-  (show z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) by
-    simp [z₄'_eq_of_mem (t := t) ht, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ ht
-    ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg ht.1]))
-
 /-- Shared differentiability wrapper for `J₁'C`–`J₅'C`. -/
 private lemma integral_ψ_exp_differentiable
     {ψ : ℂ → ℂ} {z : ℝ → ℂ} {Mψ Cz : ℝ}
@@ -153,7 +143,11 @@ lemma J₂'C_differentiable : Differentiable ℂ J₂'C :=
   integral_ψ_exp_differentiable (Cz := 3)
     (continuousOn_ψT'_comp z₂' continuous_z₂'
       fun _ ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
-    continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
+    continuous_z₂' hMψ (fun t ht => by
+      have htic := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
+      exact (show z₂' t = ((-1 : ℂ) + (t : ℂ)) + (Complex.I : ℂ) by
+          simp [z₂'_eq_of_mem (t := t) htic, add_comm]) ▸ norm_add_I_le_three _ htic
+            (by simpa [Complex.norm_real, abs_of_nonneg htic.1] using norm_add_le (-1 : ℂ) (t : ℂ)))
 
 lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
   let ⟨_, hMψ⟩ : ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₃' t)‖ ≤ M :=
@@ -175,7 +169,11 @@ lemma J₄'C_differentiable : Differentiable ℂ J₄'C :=
     (differentiable_const (-1 : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 3)
       (continuousOn_ψT'_comp z₄' continuous_z₄'
         fun t ht => im_z₄'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
-      continuous_z₄' hMψ (fun t ht => norm_z₄'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
+      continuous_z₄' hMψ (fun t ht => by
+        have htic := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
+        exact (show z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) by
+            simp [z₄'_eq_of_mem (t := t) htic, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ htic
+              ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg htic.1]))))
 
 private lemma continuousOn_ψI'_z₅' :
     ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ι (0 : ℝ) 1) := by
