@@ -119,7 +119,6 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.b.PsiParamRelations
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Schwartz.BoundsAux
-public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.Basic
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ3
