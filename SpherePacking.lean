@@ -17,7 +17,6 @@ public import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LatticeSumBounds
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.CohnElkies.PoissonSummationLattices.PoissonSummation
-public import SpherePacking.CohnElkies.PoissonSummationLattices.UnitAddTorus
 public import SpherePacking.CohnElkies.PoissonSummationSchwartz.Basic
 public import SpherePacking.CohnElkies.PoissonSummationSchwartz.PoissonSummation
 public import SpherePacking.CohnElkies.Prereqs
