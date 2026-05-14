@@ -23,7 +23,6 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.Calculus.ParametricIntegral

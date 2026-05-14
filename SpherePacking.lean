@@ -14,7 +14,6 @@ public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
-public import SpherePacking.Integration.SmoothIntegralIciOne
 public import SpherePacking.Integration.UpperHalfPlaneComp
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
