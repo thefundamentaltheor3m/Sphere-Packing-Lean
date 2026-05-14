@@ -8,7 +8,7 @@ M4R File
 
 module
 
-public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
+public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
@@ -21,7 +21,6 @@ import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Topology.Instances.Real.Lemmas
 
-import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
