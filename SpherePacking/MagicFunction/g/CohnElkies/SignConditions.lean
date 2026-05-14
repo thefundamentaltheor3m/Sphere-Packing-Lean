@@ -1,6 +1,5 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
-public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
