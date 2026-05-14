@@ -35,7 +35,6 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
