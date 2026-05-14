@@ -1901,10 +1901,6 @@ public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
 
 end
 
-end MagicFunction.g.CohnElkies.IntegralReps
-
-namespace MagicFunction.g.CohnElkies.IntegralReps
-
 section LaplaceRepresentation
 
 open scoped BigOperators UpperHalfPlane Topology intervalIntegral
