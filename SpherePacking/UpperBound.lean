@@ -1,5 +1,4 @@
 module
-public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.Basic.PeriodicPacking.Aux
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
