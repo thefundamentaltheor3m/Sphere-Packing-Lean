@@ -1117,17 +1117,8 @@ public lemma J₆'_eq (r : ℝ) :
     simpa [mul_assoc, mul_left_comm, mul_comm] using (z₆'_eq_of_mem (t := s) hs)
   -- β-reduce, rewrite `z₆' s`, and then simplify the exponential using `I*I = -1`.
   dsimp
-  rw [hz6]
-  have hexp :
-      cexp (↑π * ((Complex.I : ℂ) * ((r : ℂ) * ((Complex.I : ℂ) * (s : ℂ))))) =
-        cexp (-↑π * ((r : ℂ) * (s : ℂ))) := by
-    have :
-        (↑π : ℂ) * ((Complex.I : ℂ) * ((r : ℂ) * ((Complex.I : ℂ) * (s : ℂ)))) =
-          (-↑π : ℂ) * ((r : ℂ) * (s : ℂ)) := by
-      ring_nf
-      simp [Complex.I_sq]
-    simpa using congrArg cexp this
-  rw [hexp]
+  rw [hz6, show cexp (↑π * ((Complex.I : ℂ) * ((r : ℂ) * ((Complex.I : ℂ) * (s : ℂ))))) =
+      cexp (-↑π * ((r : ℂ) * (s : ℂ))) from congrArg cexp (by ring_nf; simp [Complex.I_sq])]
 
 namespace PermJ5
 
