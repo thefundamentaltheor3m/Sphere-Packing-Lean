@@ -6,7 +6,6 @@ public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.ModularForms.FG.Basic
 public import SpherePacking.ModularForms.EisensteinBase
-public import SpherePacking.MagicFunction.b.Psi
 public import Mathlib.Analysis.Analytic.Basic
 public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.Calculus.ParametricIntegral

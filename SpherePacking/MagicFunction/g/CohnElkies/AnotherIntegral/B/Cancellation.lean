@@ -1,5 +1,4 @@
 module
-public import SpherePacking.MagicFunction.b.Psi
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.MagicFunction.b.PsiBounds
