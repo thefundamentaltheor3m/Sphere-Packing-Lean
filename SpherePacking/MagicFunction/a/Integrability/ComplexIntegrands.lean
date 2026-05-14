@@ -96,3 +96,33 @@ public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
     isOpen_upperHalfPlaneSet
 
 end MagicFunction.a.ComplexIntegrands
+
+/-! ### Smoothness of the real integrands `Φ₂`, `Φ₄`, `Φ₆` -/
+
+namespace MagicFunction.a.RealIntegrands
+
+variable {r : ℝ}
+
+/-- Smoothness of the real integrand `Φ₂ r` on `Icc (0, 1)`. -/
+public theorem Φ₂_contDiffOn : ContDiffOn ℝ ∞ (Φ₂ r) (Icc (0 : ℝ) 1) := by
+  simpa [Φ₂_def, Φ₂'] using ((Φ₁'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ).comp
+    (((contDiffOn_const.add ofRealCLM.contDiff.contDiffOn).add contDiffOn_const).congr
+      fun y hy ↦ by simpa [add_assoc] using z₂'_eq_of_mem (t := y) hy) z₂'_mapsto
+
+/-- Smoothness of the real integrand `Φ₄ r` on `Icc (0, 1)`. -/
+public theorem Φ₄_contDiffOn : ContDiffOn ℝ ∞ (Φ₄ r) (Icc (0 : ℝ) 1) := by
+  simpa [Φ₄_def, Φ₄', smul_eq_mul] using ContDiffOn.const_smul (c := (-1 : ℂ))
+    ((Φ₃'_contDiffOn (r := r)).comp
+      (((contDiffOn_const.sub ofRealCLM.contDiff.contDiffOn).add contDiffOn_const).congr
+        fun y hy ↦ by simpa [sub_eq_add_neg, add_assoc] using z₄'_eq_of_mem (t := y) hy)
+      z₄'_mapsto)
+
+/-- Smoothness of the real integrand `Φ₆ r` on `Ici 1`. -/
+public theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) := by
+  simpa [Φ₆_def, smul_eq_mul] using ContDiffOn.const_smul (c := Complex.I)
+    (((Φ₆'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ).comp
+      ((contDiffOn_const.mul ofRealCLM.contDiff.contDiffOn).congr
+        fun y hy ↦ by simpa using z₆'_eq_of_mem (t := y) hy)
+      z₆'_mapsto)
+
+end MagicFunction.a.RealIntegrands

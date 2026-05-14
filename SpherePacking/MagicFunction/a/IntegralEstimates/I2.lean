@@ -9,7 +9,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import Mathlib.Analysis.Calculus.Deriv.Basic
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.Normed.Group.Basic

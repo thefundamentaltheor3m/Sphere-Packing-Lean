@@ -11,7 +11,7 @@ module
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
-public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
 public import SpherePacking.Integration.UpperHalfPlaneComp
