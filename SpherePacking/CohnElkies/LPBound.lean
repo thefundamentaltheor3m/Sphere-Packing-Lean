@@ -670,12 +670,9 @@ public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf�
     (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
   refine ⟨fun hintf => funext fun x => ?_, fun hf => by simp [hf]⟩
   by_contra hx
-  have hxpos : 0 < f x := lt_of_le_of_ne (hnn x) (Ne.symm hx)
-  let U : Set E := {y : E | 0 < f y}
-  have hU₁ : U ∈ nhds x := (isOpen_lt continuous_const hf₁).mem_nhds hxpos
-  have hU₃ : ∀ y ∈ U, 0 < f y := fun _ hy => hy
-  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁).ne'
-    (measure_mono_null (fun y hy => (hU₃ y hy).ne')
+  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume
+      ((isOpen_lt continuous_const hf₁).mem_nhds (lt_of_le_of_ne (hnn x) (Ne.symm hx)))).ne'
+    (measure_mono_null (fun (y : E) (hy : 0 < f y) => hy.ne')
       ((integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf))
 
 end Integration
