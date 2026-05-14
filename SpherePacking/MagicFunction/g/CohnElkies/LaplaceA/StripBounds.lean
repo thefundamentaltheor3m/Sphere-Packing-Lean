@@ -12,7 +12,6 @@ public import Mathlib.Analysis.Complex.Exponential
 import SpherePacking.ForMathlib.ModularFormsHelpers
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import SpherePacking.MagicFunction.a.SpecialValues
-import SpherePacking.ForMathlib.ExpPiIMulMulI
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.ModularForms.PhiTransformLemmas
 
