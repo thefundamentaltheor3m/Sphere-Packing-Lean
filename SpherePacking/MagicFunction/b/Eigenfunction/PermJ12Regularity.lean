@@ -15,7 +15,6 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.Contour.GaussianIntegral
-import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 
 /-!
 # Regularity and contour deformation for `perm_J₁_J₂`
