@@ -29,7 +29,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
