@@ -645,11 +645,7 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
 end Integral_Permutations.PermJ12
 end
 
-end MagicFunction.b.Fourier
-
 /-! ## Fourier transform of `J₂` -/
-
-namespace MagicFunction.b.Fourier
 
 noncomputable section
 
@@ -767,11 +763,7 @@ public lemma fourier_J₂_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
 
 end
 
-end MagicFunction.b.Fourier
-
 /-! ## Fourier transform of `J₁` -/
-
-namespace MagicFunction.b.Fourier
 
 noncomputable section
 
