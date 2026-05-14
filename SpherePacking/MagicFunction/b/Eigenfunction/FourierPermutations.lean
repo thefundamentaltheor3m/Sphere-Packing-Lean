@@ -11,7 +11,6 @@ import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.DerivHelpers
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
-import SpherePacking.ForMathlib.GaussianFourierCommon
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv

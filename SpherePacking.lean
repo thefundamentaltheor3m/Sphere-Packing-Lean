@@ -8,7 +8,6 @@ public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
-public import SpherePacking.ForMathlib.GaussianFourierCommon
 public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations

@@ -8,7 +8,6 @@ public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Tactic.Ring.RingNF
 import Mathlib.MeasureTheory.Integral.Prod
