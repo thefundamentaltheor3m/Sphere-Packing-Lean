@@ -4,7 +4,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
-import SpherePacking.MagicFunction.b.SpecialValues
 import SpherePacking.Tactic.NormNumI
 
 

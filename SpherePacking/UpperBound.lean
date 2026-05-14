@@ -5,7 +5,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 import SpherePacking.CohnElkies.LPBound
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 import SpherePacking.MagicFunction.a.SpecialValues
-import SpherePacking.MagicFunction.b.SpecialValues
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
