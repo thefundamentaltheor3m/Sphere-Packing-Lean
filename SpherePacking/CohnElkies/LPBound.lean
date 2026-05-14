@@ -139,6 +139,12 @@ along a lattice `Λ`. -/
     Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
 
+instance instDiscreteTopology_cubeLattice (L : ℝ) (hL : 0 < L) :
+    DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+
+instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
+    IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+
 public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
     fundamentalDomain (cubeBasis d L hL) = coordCube d L := by
   ext x
@@ -375,8 +381,6 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
       (volume (coordCube d L)).toNNReal := by
-  letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
-  letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   simp [show ZLattice.covolume (cubeLattice d L hL) volume = (volume (coordCube d L)).toReal by
     simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
       ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice d L hL) (μ := volume)
@@ -394,8 +398,6 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
           Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) := by
   let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ coordCube d L
   let Fset : Set (EuclideanSpace ℝ (Fin d)) := (F : Set (EuclideanSpace ℝ (Fin d)))
-  letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
-  letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g
   let P : PeriodicSpherePacking d :=
     periodize_to_periodicSpherePacking (d := d) S (Λ := cubeLattice d L hL) D Fset
