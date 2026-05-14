@@ -273,27 +273,17 @@ open Set Complex Real MagicFunction.Parametrisations
 
 namespace MagicFunction.b.RealIntegrals
 
-/-- The first auxiliary contour integral defining the radial profile of `b`. -/
+/-- The six auxiliary contour integrals `J₁'`-`J₆'` defining the radial profile of `b`. -/
 @[expose] public def J₁' (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, I * ψT' (z₁' t) * cexp (π * I * x * (z₁' t))
-
-/-- The second auxiliary contour integral defining the radial profile of `b`. -/
 @[expose] public def J₂' (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, ψT' (z₂' t) * cexp (π * I * x * (z₂' t))
-
-/-- The third auxiliary contour integral defining the radial profile of `b`. -/
 @[expose] public def J₃' (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, I * ψT' (z₃' t) * cexp (π * I * x * (z₃' t))
-
-/-- The fourth auxiliary contour integral defining the radial profile of `b`. -/
 @[expose] public def J₄' (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, -1 * ψT' (z₄' t) * cexp (π * I * x * (z₄' t))
-
-/-- The fifth auxiliary contour integral defining the radial profile of `b`. -/
 @[expose] public def J₅' (x : ℝ) : ℂ :=
   -2 * ∫ t in (0 : ℝ)..1, I * ψI' (z₅' t) * cexp (π * I * x * (z₅' t))
-
-/-- The sixth auxiliary contour integral defining the radial profile of `b`. -/
 @[expose] public def J₆' (x : ℝ) : ℂ :=
   -2 * ∫ t in Ici (1 : ℝ), I * ψS' (z₆' t) * cexp (π * I * x * (z₆' t))
 
