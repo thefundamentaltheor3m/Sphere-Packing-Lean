@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-public import SpherePacking.Basic.Domains.RightHalfPlane
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 public import Mathlib.Analysis.Calculus.ParametricIntegral
@@ -19,13 +18,27 @@ This file defines complexified integrals `I₁'C`, ..., `I₆'C` and their sum `
 the real function `a'`. We show that `aPrimeC` restricts to `a'` on real parameters and is analytic
 on the right half-plane.
 
-## Main definition
-* `aPrimeC`
+Also includes the definition of `rightHalfPlane : Set ℂ` (the open right half-plane `{u : ℂ | 0 < u.re}`),
+which is used by the analytic-continuation arguments.
+
+## Main definitions
+* `rightHalfPlane`, `aPrimeC`
 
 ## Main statements
 * `aPrimeC_ofReal`
 * `aPrimeC_analyticOnNhd`
 -/
+
+namespace SpherePacking
+
+/-- The open right half-plane `{u : ℂ | 0 < u.re}`. -/
+@[expose] public def rightHalfPlane : Set ℂ := {u : ℂ | 0 < u.re}
+
+/-- The right half-plane is an open subset of `ℂ`. -/
+public lemma rightHalfPlane_isOpen : IsOpen rightHalfPlane := by
+  simpa [rightHalfPlane] using (isOpen_Ioi.preimage Complex.continuous_re)
+
+end SpherePacking
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 

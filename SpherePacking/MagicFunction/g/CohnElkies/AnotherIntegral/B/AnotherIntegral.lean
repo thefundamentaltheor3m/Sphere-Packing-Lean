@@ -1,7 +1,6 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
-public import SpherePacking.Basic.Domains.RightHalfPlane
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation

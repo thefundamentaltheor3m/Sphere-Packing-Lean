@@ -16,7 +16,6 @@ public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import SpherePacking.Integration.Measure
 public import
   SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
-public import SpherePacking.Basic.Domains.RightHalfPlane
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
