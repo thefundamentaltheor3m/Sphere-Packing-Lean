@@ -1073,8 +1073,6 @@ open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegra
 
 variable (r : ℝ)
 
-section Setup
-
 /-- The integrand on `Ioo (0, 1)` whose set integral is `I₄'`. -/
 @[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦
   -1 * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r) * cexp (-π * I * r * t) *
@@ -1083,10 +1081,6 @@ section Setup
 /-- Rewrite `I₄' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
 public lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
   simp [I₄'_eq, intervalIntegral_eq_integral_uIoc, zero_le_one, g, integral_Ioc_eq_integral_Ioo]
-
-end Setup
-
-section Bounding
 
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im :=
@@ -1110,8 +1104,6 @@ public lemma g_norm_bound_uniform :
       · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r)
       · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r * t)
       · simp [norm_exp]) im_parametrisation_lower
-
-end Bounding
 
 noncomputable section Schwartz_Decay
 
@@ -1899,8 +1891,6 @@ open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction
   MagicFunction.Parametrisations MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 open Set Complex Real MeasureTheory
 
-section Smooth
-
 public theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' :=
   MagicFunction.a.Schwartz.I1Smooth.I₁'_contDiff
 
@@ -2025,10 +2015,6 @@ public theorem I₆'_smooth' : ContDiff ℝ ∞ (fun r : ℝ ↦
     RadialSchwartz.cutoffC r * RealIntegrals.I₆' r) :=
   MagicFunction.a.Schwartz.I6Smooth.cutoffC_mul_I₆'_contDiff
 
-end Smooth
-
-section Decay
-
 public theorem I₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₁' x‖ ≤ C :=
   MagicFunction.a.Schwartz.I1Decay.decay'
@@ -2073,8 +2059,6 @@ public theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
 public theorem I₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₆' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.I₆.decay'
-
-end Decay
 
 end MagicFunction.a.SchwartzProperties
 
