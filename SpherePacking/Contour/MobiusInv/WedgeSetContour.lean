@@ -167,10 +167,9 @@ public lemma wedgeSet_subset_upperHalfPlaneSet :
 
 /-- A point in `closure wedgeSet` satisfies `|z.re - 1| ≤ z.im`. -/
 public lemma closure_wedgeSet_subset_abs_re_sub_one_le_im :
-    closure wedgeSet ⊆ {z : ℂ | |z.re - 1| ≤ z.im} := by
-  refine closure_minimal (fun z hz => ?_)
+    closure wedgeSet ⊆ {z : ℂ | |z.re - 1| ≤ z.im} :=
+  closure_minimal (fun _ hz => abs_le.2 ⟨by linarith [hz.2.2], le_of_lt hz.2.1⟩)
     (isClosed_le (continuous_abs.comp (continuous_re.sub continuous_const)) continuous_im)
-  exact abs_le.2 ⟨by linarith [hz.2.2], le_of_lt hz.2.1⟩
 
 /-- If `z ∈ closure wedgeSet` and `z ≠ 1`, then `z` lies in the open upper half-plane. -/
 public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
