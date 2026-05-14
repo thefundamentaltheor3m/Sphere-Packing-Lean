@@ -152,17 +152,15 @@ public lemma convex_wedgeSet : Convex ℝ wedgeSet := by
     refine ⟨fun hz => ⟨hz.1, by simp; linarith [hz.2.1], by simp; linarith [hz.2.2]⟩, ?_⟩
     rintro ⟨hA, hB, hC⟩
     exact ⟨hA, by simp at hB hC; constructor <;> linarith⟩
-  have hA : Convex ℝ {z : ℂ | (0 : ℝ) < z.im} := by
-    simpa using (convex_halfSpace_gt (f := fun z : ℂ => z.im) (.mk add_im smul_im) (0 : ℝ))
-  have hB : Convex ℝ {z : ℂ | z.re - z.im < (1 : ℝ)} :=
-    convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im)
-      (.mk (fun z w => by simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm])
-        (fun c z => by simp [sub_eq_add_neg, mul_add, mul_comm])) (1 : ℝ)
-  have hC : Convex ℝ {z : ℂ | (1 : ℝ) < z.re + z.im} :=
-    convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im)
-      (.mk (fun z w => by simp [add_left_comm, add_comm])
-        (fun c z => by simp [mul_add, mul_comm])) (1 : ℝ)
-  simpa [hEq, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using hA.inter (hB.inter hC)
+  simpa [hEq, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using
+    (show Convex ℝ {z : ℂ | (0 : ℝ) < z.im} by
+      simpa using convex_halfSpace_gt (f := fun z : ℂ => z.im) (.mk add_im smul_im) (0 : ℝ)).inter
+    ((convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im)
+        (.mk (fun z w => by simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm])
+          (fun c z => by simp [sub_eq_add_neg, mul_add, mul_comm])) (1 : ℝ)).inter
+      (convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im)
+        (.mk (fun z w => by simp [add_left_comm, add_comm])
+          (fun c z => by simp [mul_add, mul_comm])) (1 : ℝ)))
 
 public lemma wedgeSet_subset_upperHalfPlaneSet :
     wedgeSet ⊆ UpperHalfPlane.upperHalfPlaneSet := fun _ hz => hz.1
