@@ -265,15 +265,13 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖ ≤ C := by
   intro k n
   obtain ⟨Cpos, hCpos⟩ := hf_decay k n
-  let g : ℝ → ℂ := fun r ↦ cutoffC r * f r
-  have hn : (n : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) := by exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤)
-  have hcont : Continuous fun x : ℝ ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖ := by
-    simpa using (continuous_norm.pow k).mul
-      (continuous_norm.comp (hg_smooth.continuous_iteratedFDeriv (m := n) hn))
   obtain ⟨Cmid, hCmid⟩ :=
     SpherePacking.ForMathlib.exists_upper_bound_on_Icc
-      (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖)
-      (a := (-1 : ℝ)) (b := 0) (by norm_num) hcont.continuousOn
+      (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖)
+      (a := (-1 : ℝ)) (b := 0) (by norm_num) <| by
+        simpa using ((continuous_norm.pow k).mul (continuous_norm.comp
+          (hg_smooth.continuous_iteratedFDeriv (m := n) (by
+            exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤))))).continuousOn
   refine ⟨max (max Cmid Cpos) 0, fun x => ?_⟩
   by_cases hx₁ : x < -1
   · simp [show iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x = 0 by
@@ -283,7 +281,7 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   · by_cases hx₂ : x ≤ 0
     · exact (hCmid x ⟨le_of_not_gt hx₁, hx₂⟩).trans ((le_max_left _ _).trans (le_max_left _ _))
     · have hxpos : 0 < x := lt_of_not_ge hx₂
-      simpa [g, show iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x = iteratedFDeriv ℝ n f x by
+      simpa [show iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x = iteratedFDeriv ℝ n f x by
         simpa using (show (fun r ↦ cutoffC r * f r) =ᶠ[𝓝 x] f by
           filter_upwards [Ioi_mem_nhds hxpos] with y hy
           simp [cutoffC_eq_one_of_nonneg hy.le]).iteratedFDeriv (𝕜 := ℝ) n |>.self_of_nhds] using
