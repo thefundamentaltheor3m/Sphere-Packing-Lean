@@ -2,7 +2,6 @@ module
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.Basic.Domains.RightHalfPlane
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.AnalyticityWrapper
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
