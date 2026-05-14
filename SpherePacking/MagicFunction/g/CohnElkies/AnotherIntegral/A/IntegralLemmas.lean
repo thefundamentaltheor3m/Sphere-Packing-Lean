@@ -225,13 +225,11 @@ public lemma exists_inv_Delta_bound_exp :
       (fun τ : ℍ => Real.exp (-2 * π * τ.im)) =O[atImInfty] Delta)
   obtain ⟨A, hA⟩ := (UpperHalfPlane.atImInfty_mem _).1 (by simpa using hEvent)
   refine ⟨c⁻¹, A, inv_pos.2 hcpos, fun z hz => ?_⟩
-  have hLower : c * Real.exp (-2 * π * z.im) ≤ ‖Δ z‖ := by
-    simpa [Delta_apply] using hA z hz
   calc
     ‖(Δ z)⁻¹‖ = ‖Δ z‖⁻¹ := by simp [norm_inv]
     _ ≤ (c * Real.exp (-2 * π * z.im))⁻¹ :=
           (inv_le_inv₀ (by simpa [norm_pos_iff] using Δ_ne_zero z)
-            (mul_pos hcpos (Real.exp_pos _))).2 hLower
+            (mul_pos hcpos (Real.exp_pos _))).2 (by simpa [Delta_apply] using hA z hz)
     _ = c⁻¹ * Real.exp (2 * π * z.im) := by
           simp [mul_inv_rev, Real.exp_neg, mul_assoc, mul_comm]
 
