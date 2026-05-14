@@ -738,13 +738,12 @@ public lemma norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im {C₀ : ℝ} (hC�
     (hC₀ : ∀ z : ℍ, 1 / 2 < z.im → ‖φ₀ z‖ ≤ C₀ * rexp (-2 * π * z.im)) (z : ℍ)
     (hz : 1 / 2 < z.im) : ‖φ₀'' (z : ℂ)‖ ≤ C₀ * rexp (-π) := by
   have hzpos : 0 < (z : ℂ).im := by simpa using lt_trans (by norm_num : (0 : ℝ) < 1 / 2) hz
-  have hexp : rexp (-2 * π * z.im) ≤ rexp (-π) :=
-    Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, hz])
   calc
     ‖φ₀'' (z : ℂ)‖ = ‖φ₀ z‖ := by
       simp [φ₀''_def (z := (z : ℂ)) hzpos, show (⟨(z : ℂ), hzpos⟩ : ℍ) = z from by ext; rfl]
     _ ≤ C₀ * rexp (-2 * π * z.im) := hC₀ z hz
-    _ ≤ C₀ * rexp (-π) := mul_le_mul_of_nonneg_left hexp hC₀_pos.le
+    _ ≤ C₀ * rexp (-π) := mul_le_mul_of_nonneg_left
+        (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, hz])) hC₀_pos.le
 
 end
 
