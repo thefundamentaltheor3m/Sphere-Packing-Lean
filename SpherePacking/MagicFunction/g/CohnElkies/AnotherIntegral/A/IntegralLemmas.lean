@@ -7,8 +7,6 @@ import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
 public import
-  SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
-public import
   SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
 public import SpherePacking.Basic.Domains.RightHalfPlane
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.AnalyticityWrapper

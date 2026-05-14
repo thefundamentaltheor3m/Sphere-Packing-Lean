@@ -78,7 +78,6 @@ public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.LargeImagApprox
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Representation
