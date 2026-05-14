@@ -29,7 +29,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
-public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.Integration.Measure
 public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
