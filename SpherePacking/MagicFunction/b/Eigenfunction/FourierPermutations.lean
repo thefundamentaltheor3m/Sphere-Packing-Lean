@@ -12,7 +12,6 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
-import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 import SpherePacking.ForMathlib.GaussianFourierCommon

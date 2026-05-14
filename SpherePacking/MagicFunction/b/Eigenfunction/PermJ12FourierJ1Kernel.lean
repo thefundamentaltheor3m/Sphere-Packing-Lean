@@ -1,18 +1,153 @@
 module
-public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
+public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
+public import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.Contour.Segments
+public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Integration.Measure
 import SpherePacking.Integration.InvChangeOfVariables
+import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
+import SpherePacking.Integration.UpperHalfPlaneComp
+import SpherePacking.MagicFunction.b.PsiBounds
+import SpherePacking.Contour.GaussianIntegral
+import SpherePacking.ForMathlib.GaussianRexpIntegral
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 
-/-! # Kernel used to rewrite the Fourier transform of `J₁` using Fubini.
 
-Also packages the endpoint-integrability argument on `μIoc01` for functions of the form
-`t ↦ ‖ψT' (z₁line t)‖ * (1 / t) ^ (k + 2)` (see
-`MagicFunction.integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two`). -/
+/-!
+# Perm J12 Curve Integrals and the J₁ Fourier kernel
+
+Curve-integral representations of the primed real integrals `J₁', J₂', J₃', J₄'` plus the kernel
+used to rewrite the Fourier transform of `J₁` using Fubini.
+
+## Main statements
+* `J₃'_add_J₄'_eq_curveIntegral_segments`
+* `J₁'_eq_Ioc`, `J₂'_eq_Ioc`
+* `integral_rexp_neg_pi_mul_sq_norm`
+* `integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two`
+-/
+
+namespace MagicFunction.b.Fourier
+
+noncomputable section
+
+open scoped FourierTransform RealInnerProductSpace Topology
+
+section Integral_Permutations
+
+open scoped Real
+
+open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
+open SpherePacking.ForMathlib
+open SpherePacking.Contour
+
+
+section PermJ12
+
+open MeasureTheory Set Complex Real
+open Filter
+open scoped Interval
+
+private lemma curveIntegral_segment_eq_intervalIntegral (a b : ℂ) (f : ℂ → ℂ) (g : ℝ → ℂ)
+    (hg : ∀ t : ℝ, t ∈ Set.Icc (0 : ℝ) 1 → AffineMap.lineMap a b t = g t) :
+    (∫ᶜ z in Path.segment a b, scalarOneForm f z) = ∫ t in (0 : ℝ)..1, (b - a) * f (g t) := by
+  rw [curveIntegral_segment (ω := scalarOneForm f) a b]
+  exact intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => by
+    simp [scalarOneForm_apply, hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht)]
+
+/-- Rewrite the segment integral on `1 → 1 + I` as an interval integral in the parameter `t`. -/
+public lemma curveIntegral_segment_z₃ (f : ℂ → ℂ) :
+    (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm f z) =
+      ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * f (z₃' t) := by
+  simpa using curveIntegral_segment_eq_intervalIntegral (1 : ℂ) ((1 : ℂ) + Complex.I) f z₃'
+    lineMap_z₃_eq_z₃'
+
+/-- Rewrite the segment integral on `1 + I → I` as an interval integral in the parameter `t`. -/
+public lemma curveIntegral_segment_z₄ (f : ℂ → ℂ) :
+    (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm f z) =
+      ∫ t in (0 : ℝ)..1, (-1 : ℂ) * f (z₄' t) := by
+  simpa using curveIntegral_segment_eq_intervalIntegral ((1 : ℂ) + Complex.I) Complex.I f z₄'
+    lineMap_z₄_eq_z₄'
+
+/-- Combine the segment formulas for `J₃'` and `J₄'` into a single identity. -/
+public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
+    MagicFunction.b.RealIntegrals.J₃' r + MagicFunction.b.RealIntegrals.J₄' r =
+      (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
+          scalarOneForm (Ψ₁' r) z) +
+        ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
+          scalarOneForm (Ψ₁' r) z := by
+  simpa [MagicFunction.b.RealIntegrals.J₃', MagicFunction.b.RealIntegrals.J₄', Ψ₁',
+    mul_assoc, mul_left_comm, mul_comm] using congrArg₂ (· + ·)
+      (curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
+      (curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
+
+/-! #### Fourier transform of the `J₁,J₂` kernels -/
+
+/-! ##### Auxiliary integrability lemmas (`t ↦ 1/t` substitution) -/
+
+/-- Gaussian integral in dimension `8`: `∫ exp (-π * t * ‖x‖^2) = (1 / t)^4`. -/
+public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
+    (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ (4 : ℕ) := by
+  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+    SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) (s := 1 / t) (one_div_pos.2 ht)
+
+/-- Rewrite `J₁'` as a set integral over `Ioc (0, 1)`. -/
+public lemma J₁'_eq_Ioc (r : ℝ) :
+    MagicFunction.b.RealIntegrals.J₁' r =
+      ∫ t in Ioc (0 : ℝ) 1,
+        (Complex.I : ℂ) * ψT' (z₁' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₁' t)) := by
+  simp [MagicFunction.b.RealIntegrals.J₁', intervalIntegral_eq_integral_uIoc, zero_le_one,
+    uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
+
+open scoped ModularForm
+
+/-- Modular rewrite for `ψT'` on the line `z₁line`, in terms of `ψS` on the imaginary axis. -/
+public lemma ψT'_z₁line_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
+    ψT' (z₁line t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
+  simpa [SpherePacking.Contour.z₁'_eq_z₁line (t := t) (mem_Icc_of_Ioc ht)] using
+    MagicFunction.b.Schwartz.J1Smooth.ψT'_z₁'_eq (t := t) ht
+
+/-- Continuity of `t ↦ ψT' (z₁line t)` on `Ioc (0, 1)`. -/
+public lemma continuousOn_ψT'_z₁line :
+    ContinuousOn (fun t : ℝ => ψT' (z₁line t)) (Ioc (0 : ℝ) 1) :=
+  MagicFunction.continuousOn_ψT'_Ioc_of
+      (k := 2) (ψS := ψS) (ψT' := ψT') (z := z₁line)
+      (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
+        MagicFunction.b.PsiBounds.continuous_ψS)
+      (fun t ht => by simpa using ψT'_z₁line_eq (t := t) ht)
+
+/-- Rewrite `J₂'` as a set integral over `Ioc (0, 1)`. -/
+public lemma J₂'_eq_Ioc (r : ℝ) :
+    MagicFunction.b.RealIntegrals.J₂' r =
+      ∫ t in Ioc (0 : ℝ) 1,
+        ψT' (z₂' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t)) := by
+  simp [MagicFunction.b.RealIntegrals.J₂', intervalIntegral_eq_integral_uIoc, zero_le_one,
+    uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
+
+/-- Continuity of `t ↦ ψT' (z₂line t)` on `ℝ`. -/
+public lemma continuous_ψT'_z₂line : Continuous fun t : ℝ => ψT' (z₂line t) := by
+  simpa using
+    SpherePacking.Integration.continuous_comp_upperHalfPlane_mk
+      (ψT := ψT) (ψT' := ψT') (MagicFunction.b.PsiBounds.continuous_ψT)
+      (z := z₂line) continuous_z₂line (fun t => by simp [z₂line]) (fun t => by simp [ψT', z₂line])
+
+/-- Uniform boundedness of `‖ψT' (z₂' t)‖` on `Ioc (0, 1)`. -/
+public lemma exists_bound_norm_ψT'_z₂' :
+    ∃ M, ∀ t ∈ Ioc (0 : ℝ) 1, ‖ψT' (z₂' t)‖ ≤ M := by
+  obtain ⟨M, hM⟩ := SpherePacking.Integration.exists_bound_norm_uIoc_zero_one_of_continuous
+      (f := fun t : ℝ => ψT' (z₂line t)) continuous_ψT'_z₂line
+  refine ⟨M, fun t ht => ?_⟩
+  simpa [SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)] using
+    hM t (by simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)
+
+
+end Integral_Permutations.PermJ12
+end
+
+end MagicFunction.b.Fourier
 
 namespace MagicFunction
 
