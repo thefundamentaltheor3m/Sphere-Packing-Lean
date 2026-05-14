@@ -684,21 +684,19 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
     (g := fun ℓ : Λ => (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k) ?_ ?_
   · simpa [mul_assoc] using
       (ZLattice.summable_norm_sub_inv_pow (L := Λ) (n := k) (by simp [k]) b).mul_left (C + 1)
-  · have hClosed : IsClosed (X := EuclideanSpace ℝ (Fin d))
-        (Λ : Set (EuclideanSpace ℝ (Fin d))) := by
-      letI : DiscreteTopology Λ.toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
-      simpa [Submodule.coe_toAddSubgroup] using
-        AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup)
+  · letI : DiscreteTopology Λ.toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
     refine (show ({ℓ : Λ | ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ≤ (1 : ℝ)} : Set Λ).Finite by
       simpa [Set.preimage, Metric.mem_closedBall, dist_eq_norm, and_true] using
         (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
-          Metric.isBounded_closedBall hClosed).preimage_embedding
+          Metric.isBounded_closedBall (by simpa [Submodule.coe_toAddSubgroup] using
+            AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup) :
+            IsClosed (X := EuclideanSpace ℝ (Fin d))
+              (Λ : Set (EuclideanSpace ℝ (Fin d))))).preimage_embedding
           (f := (⟨Subtype.val, Subtype.coe_injective⟩ : Λ ↪ EuclideanSpace ℝ (Fin d)))).subset ?_
     intro ℓ hfail
     by_contra hlarge
-    have hlarge' : (1 : ℝ) < ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ := lt_of_not_ge hlarge
     have hpos : 0 < ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k :=
-      pow_pos (lt_of_lt_of_le one_pos hlarge'.le) _
+      pow_pos (lt_of_lt_of_le one_pos (lt_of_not_ge hlarge).le) _
     have hdec :
         ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k *
           ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤ C := by
