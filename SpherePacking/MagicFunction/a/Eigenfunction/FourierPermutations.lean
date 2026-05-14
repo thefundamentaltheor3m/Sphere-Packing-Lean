@@ -16,7 +16,6 @@ public import SpherePacking.Contour.Segments
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.GaussianFourierCommon
-import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import Mathlib.Tactic.Ring.RingNF

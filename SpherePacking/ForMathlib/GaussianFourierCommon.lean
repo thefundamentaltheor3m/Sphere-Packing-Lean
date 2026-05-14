@@ -7,14 +7,41 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 # Gaussian Fourier transform lemmas
 
 Specialized to even-dimensional Euclidean spaces `Fin (2 * k)` so exponents become `k`.
+
+Also includes boilerplate measurability and norm facts about the bounded Fourier phase
+`x ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * I)`.
 -/
 
 namespace SpherePacking.ForMathlib
 
 open scoped FourierTransform RealInnerProductSpace Topology
-open Complex Real MeasureTheory
+open Complex Real MeasureTheory Filter
 
 noncomputable section
+
+/-! ## Fourier phase factor -/
+
+/-- The phase factor `exp (i * real)` has norm `1`. -/
+public lemma norm_phase_eq_one {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+    (w x : V) :
+    ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I)‖ = (1 : ℝ) := by
+  simpa using (Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)))
+
+/-- The phase factor is a.e. strongly measurable with respect to Lebesgue measure. -/
+public lemma aestronglyMeasurable_phase {V : Type*} [NormedAddCommGroup V]
+    [InnerProductSpace ℝ V] [MeasureSpace V] [BorelSpace V] (w : V) :
+    AEStronglyMeasurable (fun x : V ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I))
+      (volume : Measure V) :=
+  Continuous.aestronglyMeasurable (by continuity)
+
+/-- Almost everywhere, the phase factor has norm at most `1`. -/
+public lemma ae_norm_phase_le_one {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+    [MeasureSpace V] (w : V) :
+    (∀ᵐ x : V ∂(volume : Measure V),
+      ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I)‖ ≤ (1 : ℝ)) :=
+  Filter.Eventually.of_forall (fun x => (norm_phase_eq_one (w := w) (x := x)).le)
+
+/-! ## Gaussian factor identities -/
 
 /-- The norm of the Gaussian factor `cexp (π * I * ‖x‖^2 * z)` depends only on `Im z`. -/
 public lemma norm_cexp_pi_mul_I_mul_sq
