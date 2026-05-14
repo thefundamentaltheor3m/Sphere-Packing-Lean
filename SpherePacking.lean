@@ -30,7 +30,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
-public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.ModularForms.BigO
 public import SpherePacking.ModularForms.CSqrt
 public import SpherePacking.ModularForms.ClogArgLemmas

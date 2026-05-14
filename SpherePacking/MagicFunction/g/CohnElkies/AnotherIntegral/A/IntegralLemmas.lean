@@ -16,8 +16,11 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import Mathlib.MeasureTheory.Integral.ExpDecay
-public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
+public import SpherePacking.MagicFunction.b.Schwartz.Basic
+import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
+import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
+import SpherePacking.Tactic.NormNumI
 public import Mathlib.Analysis.Complex.Trigonometric
 public import Mathlib.Data.Matrix.Mul
 public import Mathlib.MeasureTheory.Integral.Gamma
@@ -73,6 +76,75 @@ half-plane.
 * `I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail`, `aRadial_eq_laplace_phi0_main`
 * `aPrimeC_ofReal`, `aPrimeC_analyticOnNhd`
 -/
+
+section MagicG
+
+local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
+
+open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.SpecialValues
+  MagicFunction.b.SpecialValues
+
+noncomputable section
+
+/-- The Magic Function, `g`. -/
+@[expose] public def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a - (I / (240 * π)) • b
+
+/-- Normalization of `g` at the origin. -/
+public theorem g_zero : g 0 = 1 := by
+  simp [g, a_zero, b_zero, sub_eq_add_neg, smul_eq_mul, div_eq_mul_inv]
+  field_simp [show (π : ℂ) ≠ 0 by exact_mod_cast pi_ne_zero]; ring_nf; norm_num1
+
+/-- Normalization of the Fourier transform of `g` at the origin. -/
+public theorem fourier_g_zero : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g 0 = 1 := by
+  simp only [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
+    sub_apply, smul_apply, smul_eq_mul]
+  simp [a_zero, b_zero, sub_eq_add_neg, div_eq_mul_inv]
+  field_simp [show (π : ℂ) ≠ 0 by exact_mod_cast pi_ne_zero]; ring_nf; norm_num1
+
+end
+
+namespace MagicFunction.g.CohnElkies
+
+open scoped FourierTransform SchwartzMap
+
+open Real Complex SchwartzMap
+open MagicFunction.FourierEigenfunctions
+
+noncomputable section
+
+/-- Radial profile of `g` in the variable `‖x‖^2`. -/
+@[expose] public def gRadial : 𝓢(ℝ, ℂ) :=
+  ((π * I) / 8640) • a' - (I / (240 * π)) • b'
+
+/-- The function `g` is radial, with profile `gRadial` in the variable `‖x‖ ^ 2`. -/
+public theorem g_apply_eq_gRadial_norm_sq (x : ℝ⁸) : g x = gRadial (‖x‖ ^ 2) := by
+  simp [g, gRadial, a, b, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+
+/--
+Auxiliary function `A(t)` from the blueprint, defined as the real part of
+`-t^2 * φ₀(i/t) - (36/π^2) * ψI(i t)`.
+
+We only use `A(t)` for `t > 0`, but define it on all `ℝ`.
+-/
+@[expose] public def A (t : ℝ) : ℝ :=
+  (-(t ^ 2)) * (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re -
+    (36 / (π ^ (2 : ℕ)) : ℝ) * (ψI' ((Complex.I : ℂ) * (t : ℂ))).re
+
+/--
+Auxiliary function `B(t)` from the blueprint, defined as the real part of
+`-t^2 * φ₀(i/t) + (36/π^2) * ψI(i t)`.
+
+We only use `B(t)` for `t > 0`, but define it on all `ℝ`.
+-/
+@[expose] public def B (t : ℝ) : ℝ :=
+  (-(t ^ 2)) * (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re +
+    (36 / (π ^ (2 : ℕ)) : ℝ) * (ψI' ((Complex.I : ℂ) * (t : ℂ))).re
+
+end
+
+end MagicFunction.g.CohnElkies
+
+end MagicG
 
 namespace MagicFunction.g.CohnElkies
 
