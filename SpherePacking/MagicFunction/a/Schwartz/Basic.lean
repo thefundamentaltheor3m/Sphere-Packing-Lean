@@ -2173,23 +2173,21 @@ def zI (x : ℝ) : ℂ := (x : ℂ) + Complex.I
 
 def F (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ (2 : ℕ)
 
-private lemma integral_neg_x_add_I_eq_integral_F_zI_sub_one :
-    (∫ x in (0 : ℝ)..1,
-        φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
-      ∫ x in (0 : ℝ)..1, F (zI x - 1) := by
+lemma I₄'_zero :
+    I₄' (0 : ℝ) = -∫ x in (0 : ℝ)..1, F (zI x - 1) := by
   have hrew : (fun x : ℝ =>
         φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
       fun x : ℝ => F (zI (1 - x) - 1) :=
     funext fun x => by simp [F, zI, sub_eq_add_neg, add_assoc, add_comm]
-  simpa [hrew] using intervalIntegral.integral_comp_sub_left
-    (f := fun x : ℝ => F (zI x - 1)) (a := (0 : ℝ)) (b := (1 : ℝ)) (d := (1 : ℝ))
-
-lemma I₄'_zero :
-    I₄' (0 : ℝ) = -∫ x in (0 : ℝ)..1, F (zI x - 1) := by
   rw [show I₄' (0 : ℝ) = ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
       (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) from by
     simp [MagicFunction.a.RadialFunctions.I₄'_eq, pow_two],
-    intervalIntegral.integral_const_mul, integral_neg_x_add_I_eq_integral_F_zI_sub_one]; ring
+    intervalIntegral.integral_const_mul,
+    show (∫ x in (0 : ℝ)..1,
+        φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
+      ∫ x in (0 : ℝ)..1, F (zI x - 1) from by
+      simpa [hrew] using intervalIntegral.integral_comp_sub_left
+        (f := fun x : ℝ => F (zI x - 1)) (a := (0 : ℝ)) (b := (1 : ℝ)) (d := (1 : ℝ))]; ring
 
 lemma φ₂''_def (z : ℂ) (hz : 0 < z.im) : φ₂'' z = φ₂' ⟨z, hz⟩ := by simp [φ₂'', hz]
 lemma φ₄''_def (z : ℂ) (hz : 0 < z.im) : φ₄'' z = φ₄' ⟨z, hz⟩ := by simp [φ₄'', hz]
