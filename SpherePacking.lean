@@ -9,7 +9,6 @@ public import SpherePacking.Basic.PeriodicPacking.PeriodicConstant
 public import SpherePacking.Basic.PeriodicPacking.Theorem22
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
-public import SpherePacking.CohnElkies.LPBoundReindex
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.Contour.MobiusInv.Basic
 public import SpherePacking.Contour.MobiusInv.ContourChange
