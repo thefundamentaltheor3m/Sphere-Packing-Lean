@@ -2210,14 +2210,12 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   rw [hφ₀S] at h'
   simpa [F, zH, φ₀''_def (z := z) hz, φ₂'', φ₄'', hz] using h'
 
-private lemma vadd_neg_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z - 1).im) :
-    ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [sub_eq_add_neg, add_comm]
-
 lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
       φ₀'' z * ((2 : ℂ) * z - 1) - (12 * Complex.I) / π * φ₂'' z := by
   have hzm : 0 < (z - 1).im := by simpa using hz
-  have hvadd := vadd_neg_one_eq z hz hzm
+  have hvadd : ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hzm⟩ := by
+    ext1; simp [sub_eq_add_neg, add_comm]
   have hφ₀ : φ₀'' (z - 1) = φ₀'' z := by
     rw [φ₀''_def (z := z - 1) hzm, φ₀''_def (z := z) hz, ← hvadd, φ₀_periodic_neg_one]
   have hφ₂ : φ₂'' (z - 1) = φ₂'' z := by
