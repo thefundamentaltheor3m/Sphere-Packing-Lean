@@ -296,10 +296,8 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   rw [hmain, show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
             (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
           2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) by
-    rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
-              (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
-        (-2 : ℂ) * -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) by
-      congr 1
+    rw [show (∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
+        -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) from by
       rw [← MeasureTheory.integral_neg]
       exact integral_congr_ae <| .of_forall fun _ ↦ by ring]
     ring]
