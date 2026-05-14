@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 public import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
-
 /-!
 # Modular-form helpers (candidates for mathlib upstreaming)
 
@@ -53,7 +52,6 @@ public theorem ModularGroup.coe_S_smul (z : UpperHalfPlane) :
 public theorem ModularGroup.coe_ST_smul (z : UpperHalfPlane) :
     (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := by
   simpa [ModularGroup.S_mul_T] using coe_specialLinearGroup_apply (g := S * T) (z := z)
-
 
 /-! ### Slash actions by negated matrices in even weight -/
 
