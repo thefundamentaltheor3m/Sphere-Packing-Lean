@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Analytic.Basic
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
-import SpherePacking.MagicFunction.b.PsiParamRelations
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common

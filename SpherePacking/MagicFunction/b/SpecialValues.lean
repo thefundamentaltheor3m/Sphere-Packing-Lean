@@ -6,7 +6,6 @@ Authors: Sidharth Hariharan
 module
 
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
-import SpherePacking.MagicFunction.b.PsiParamRelations
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay

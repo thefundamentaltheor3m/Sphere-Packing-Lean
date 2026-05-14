@@ -5,7 +5,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import Mathlib.Analysis.Calculus.ContDiff.Bounds
 import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.MagicFunction.b.PsiParamRelations
 
 /-!
 # Smooth J3
