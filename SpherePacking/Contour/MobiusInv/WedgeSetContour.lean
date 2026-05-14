@@ -5,7 +5,7 @@ public import Mathlib.Analysis.Calculus.DiffContOnCl
 public import Mathlib.Topology.Homotopy.Affine
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 public import Mathlib.Analysis.Convex.PathConnected
-public import SpherePacking.ForMathlib.ScalarOneForm
+public import SpherePacking.Integration.Measure
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
 public import SpherePacking.MagicFunction.IntegralParametrisations

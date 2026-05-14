@@ -6,7 +6,6 @@ public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.Integration.Measure
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
-public import SpherePacking.ForMathlib.ScalarOneForm
 import Mathlib.MeasureTheory.Integral.Prod
 import SpherePacking.MagicFunction.b.PsiBounds
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
