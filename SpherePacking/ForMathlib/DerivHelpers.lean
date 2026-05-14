@@ -7,19 +7,34 @@ public import Mathlib.Analysis.Complex.RealDeriv
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.Data.Complex.Basic
+public import Mathlib.Order.Interval.Set.UnorderedInterval
+public import Mathlib.Topology.Instances.Real.Lemmas
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
 /-!
 # Derivative helpers
 
-Small `HasDerivAt`, `iteratedDeriv`, `iteratedFDeriv`, and norm/inequality lemmas duplicated
-across the project.
+Small `HasDerivAt`, `iteratedDeriv`, `iteratedFDeriv`, norm/inequality, and compact-interval
+bound lemmas duplicated across the project.
 -/
 
 namespace SpherePacking.ForMathlib
 
 open scoped Complex Topology
 open Filter
+
+/-- A continuous function on `Icc a b` admits a (global) upper bound on that interval. -/
+public lemma exists_upper_bound_on_Icc {g : ℝ → ℝ} {a b : ℝ} (hab : a ≤ b)
+    (hg : ContinuousOn g (Set.Icc a b)) : ∃ C, ∀ x ∈ Set.Icc a b, g x ≤ C :=
+  let ⟨x0, _, hxmax⟩ := isCompact_Icc.exists_isMaxOn (Set.nonempty_Icc.2 hab) hg
+  ⟨g x0, fun _ hx => hxmax hx⟩
+
+/-- If `g` is positive and continuous on `Icc a b`, then it admits a positive uniform
+lower bound. -/
+public lemma exists_lower_bound_pos_on_Icc {g : ℝ → ℝ} {a b : ℝ}
+    (hg : ContinuousOn g (Set.Icc a b)) (hpos : ∀ x ∈ Set.Icc a b, 0 < g x) :
+    ∃ c, 0 < c ∧ ∀ x ∈ Set.Icc a b, c ≤ g x := by
+  simpa using isCompact_Icc.exists_forall_le' (f := g) hg (a := (0 : ℝ)) hpos
 
 /-- Derivative of `y ↦ a * exp((y : ℂ) * c)`. -/
 public lemma hasDerivAt_mul_cexp_ofReal_mul_const (a c : ℂ) (x : ℝ) :

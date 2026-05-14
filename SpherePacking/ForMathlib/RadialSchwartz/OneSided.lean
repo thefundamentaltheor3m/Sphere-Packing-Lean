@@ -2,7 +2,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import Mathlib.Analysis.InnerProductSpace.Basic
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
-import SpherePacking.ForMathlib.BoundsOnIcc
+import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
 # One-sided decay to a radial Schwartz function

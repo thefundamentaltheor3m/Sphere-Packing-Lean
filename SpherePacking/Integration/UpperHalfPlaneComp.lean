@@ -1,7 +1,7 @@
 module
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
 public import Mathlib.Topology.Order
-public import SpherePacking.ForMathlib.BoundsOnIcc
+public import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
 # Helpers for real parametrisations in `ℍ`

@@ -2,7 +2,7 @@ module
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.ModularForms.Delta
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import SpherePacking.ForMathlib.BoundsOnIcc
+import SpherePacking.ForMathlib.DerivHelpers
 
 import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 

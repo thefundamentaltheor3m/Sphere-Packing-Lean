@@ -6,7 +6,6 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
-public import SpherePacking.ForMathlib.BoundsOnIcc
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers

@@ -3,7 +3,7 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 import Mathlib.Topology.Order.Compact
-import SpherePacking.ForMathlib.BoundsOnIcc
+import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
 # Exponential decay of `ψS` on the imaginary axis
