@@ -112,7 +112,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.TailDeformation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
-public import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
 public import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 public import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
 public import SpherePacking.ModularForms.BigO
