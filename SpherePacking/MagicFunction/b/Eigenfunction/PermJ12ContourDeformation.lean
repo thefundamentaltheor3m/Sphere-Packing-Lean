@@ -1,8 +1,8 @@
 module
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
+public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Regularity
 public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12DiffContOnCl
 import SpherePacking.Contour.MobiusInv.ContourChange
 import SpherePacking.Contour.MobiusInv.Segments
 import SpherePacking.Contour.MobiusInv.WedgeSet
@@ -24,7 +24,7 @@ open scoped FourierTransform RealInnerProductSpace Topology ModularForm MatrixGr
 
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
 
-open SpherePacking
+open SpherePacking SpherePacking.ForMathlib
 
 section Integral_Permutations
 
@@ -38,6 +38,37 @@ section PermJ12
 open MeasureTheory Set Complex Real
 open Filter
 open scoped Interval ModularForm
+
+/-- `Ψ₁' r` is `DiffContOnCl` on `wedgeSet`. -/
+public lemma diffContOnCl_Ψ₁'_wedgeSet (r : ℝ) :
+    DiffContOnCl ℝ (Ψ₁' r) wedgeSet := by
+  refine ⟨((differentiableOn_Ψ₁'_upper (r := r)).restrictScalars ℝ).mono
+    wedgeSet_subset_upperHalfPlaneSet, fun z hzcl => ?_⟩
+  by_cases h1 : z = (1 : ℂ)
+  · subst h1
+    have hval : Ψ₁' r 1 = 0 := by simp [Ψ₁', ψT']
+    simpa [ContinuousWithinAt, hval] using (tendsto_Ψ₁'_one_within_closure_wedgeSet (r := r))
+  · exact ((differentiableOn_Ψ₁'_upper (r := r)).continuousOn.continuousAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
+        (mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl h1))).continuousWithinAt
+
+/-- The scalar one-form `scalarOneForm (Ψ₁' r)` is `DiffContOnCl` on `wedgeSet`. -/
+public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
+    DiffContOnCl ℝ (scalarOneForm (Ψ₁' r)) wedgeSet :=
+  diffContOnCl_scalarOneForm (s := wedgeSet) (diffContOnCl_Ψ₁'_wedgeSet (r := r))
+
+/-- Symmetry of the within-derivative of the scalar one-form on `wedgeSet`, i.e. `dω = 0`. -/
+public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
+    ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
+      fderivWithin ℝ (scalarOneForm (Ψ₁' r)) wedgeSet x u v =
+        fderivWithin ℝ (scalarOneForm (Ψ₁' r)) wedgeSet x v u := by
+  intro x hx u _ v _
+  simpa using
+    (SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen (f := Ψ₁' r)
+      (s := wedgeSet) isOpen_wedgeSet hx (u := u) (v := v)
+      ((differentiableOn_Ψ₁'_upper (r := r)).differentiableAt
+        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds
+          (wedgeSet_subset_upperHalfPlaneSet hx))))
 
 /-- Sum of the two `Ψ₁_fourier` curve integrals on the left boundary equals minus the corresponding
 sum of `Ψ₁'` curve integrals on the right boundary. -/
