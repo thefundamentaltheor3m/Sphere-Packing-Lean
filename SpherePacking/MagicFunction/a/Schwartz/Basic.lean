@@ -869,9 +869,9 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
   have hlim : Tendsto f atTop (𝓝 0) := by
     have h := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).comp
       (tendsto_id.const_mul_atTop Real.pi_pos)
-    have hpi0 : (π ^ k : ℝ) ≠ 0 := pow_ne_zero _ Real.pi_ne_zero
     have hf : f = fun x : ℝ => (π ^ k)⁻¹ * ((π * x) ^ k * rexp (-(π * x))) := by
-      funext x; simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow, hpi0]
+      funext x; simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow,
+        pow_ne_zero k Real.pi_ne_zero]
     simpa [hf] using tendsto_const_nhds.mul h
   obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 <|
     (hlim.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))).mono fun _ => le_of_lt
