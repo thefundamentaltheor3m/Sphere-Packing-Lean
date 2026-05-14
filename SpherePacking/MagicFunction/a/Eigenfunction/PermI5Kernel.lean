@@ -6,14 +6,15 @@ Authors: Sidharth Hariharan
 module
 
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+public import SpherePacking.Integration.InvChangeOfVariables
 public import SpherePacking.ModularForms.PhiTransform
 
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 import SpherePacking.ForMathlib.GaussianFourierCommon
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.InnerProductSpace.Continuous
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
@@ -26,15 +27,46 @@ import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 
 We define the phase factor `permI5Phase` and the product kernel `permI5Kernel` used to rewrite
 the Fourier transform of `I₅` as an iterated integral. We also record measurability and basic
-unfolding lemmas for the functions `I₁`, ..., `I₆`.
+unfolding lemmas for the functions `I₁`, ..., `I₆`. Includes the change-of-variables rewriting
+`I₅' r` as an integral of `I₅.g r` over `Ici 1`.
 
 ## Main definitions
-* `permI5Phase`
-* `permI5Kernel`
+* `I₅.g`, `permI5Phase`, `permI5Kernel`
 
 ## Main statements
-* `aestronglyMeasurable_perm_I₅_kernel`
+* `I₅.Complete_Change_of_Variables`, `aestronglyMeasurable_perm_I₅_kernel`
 -/
+
+namespace MagicFunction.a.IntegralEstimates.I₅
+
+open scoped Function UpperHalfPlane Real Complex
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
+  MagicFunction.PolyFourierCoeffBound
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
+open SpherePacking.Integration.InvChangeOfVariables
+
+noncomputable section Change_of_Variables
+
+/-- The integrand on `Ici 1` obtained from `I₅'` after an inversion change of variables. -/
+@[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦
+  -I * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
+
+/-- Rewrite `I₅' r` as an integral of `g r` over `Ici 1` (up to the factor `-2`). -/
+public theorem Complete_Change_of_Variables (r : ℝ) :
+    I₅' r = -2 * ∫ s in Ici (1 : ℝ), g r s := by
+  have hRecon : I₅' r = -2 * ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
+    simp only [I₅'_eq_Ioc, g]
+    congr 1
+    refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht ↦ ?_)
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r (1 : ℂ)
+  refine hRecon.trans ?_
+  simpa using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z)
+    (integral_Ici_one_eq_integral_abs_deriv_smul (g := g r)).symm
+
+end Change_of_Variables
+
+end MagicFunction.a.IntegralEstimates.I₅
 
 namespace MagicFunction.a.Fourier
 
