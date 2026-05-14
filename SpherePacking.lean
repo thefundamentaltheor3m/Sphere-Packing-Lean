@@ -30,7 +30,6 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
-public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
