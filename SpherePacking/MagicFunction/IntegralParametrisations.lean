@@ -108,43 +108,33 @@ private lemma im_pos_of_mapsto {s : Set ℝ} {f : ℝ → ℂ} (hf : MapsTo f s 
 /-- `z₁'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₁', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₁] using ht.1
-
 /-- For `t ∈ Ioc 0 1`, `(z₁' t).im` is positive. -/
 public lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im :=
   im_pos_of_mapsto z₁'_mapsto ht
-
 /-- `z₂'` sends `Icc 0 1` into ℍ. -/
 public lemma z₂'_mapsto : MapsTo z₂' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
-
 /-- For `t ∈ Icc 0 1`, `(z₂' t).im` is positive. -/
 public lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im :=
   im_pos_of_mapsto z₂'_mapsto ht
-
 /-- `z₃'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₃'_mapsto : MapsTo z₃' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₃', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₃] using ht.1
-
 /-- For `t ∈ Ioc 0 1`, `(z₃' t).im` is positive. -/
 public lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im :=
   im_pos_of_mapsto z₃'_mapsto ht
-
 /-- `z₄'` sends `Icc 0 1` into ℍ. -/
 public lemma z₄'_mapsto : MapsTo z₄' (Icc 0 1) ℍ₀ := fun _ ht => by
   simp [UpperHalfPlane.upperHalfPlaneSet, z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
-
 /-- For `t ∈ Icc 0 1`, `(z₄' t).im` is positive. -/
 public lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im :=
   im_pos_of_mapsto z₄'_mapsto ht
-
 /-- `z₅'` sends `Ioc 0 1` into ℍ. -/
 public lemma z₅'_mapsto : MapsTo z₅' (Ioc 0 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₅', IccExtend_of_mem, mem_Icc_of_Ioc ht, z₅] using ht.1
-
 /-- For `t ∈ Ioc 0 1`, `(z₅' t).im` is positive. -/
 public lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im :=
   im_pos_of_mapsto z₅'_mapsto ht
-
 /-- `z₆'` sends `Ici 1` into ℍ. -/
 public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht => by
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using one_pos.trans_le ht
