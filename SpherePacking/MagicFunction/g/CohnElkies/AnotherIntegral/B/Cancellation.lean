@@ -8,7 +8,6 @@ public import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 import Mathlib.Topology.Order.Compact
 import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 
 /-! Cancellation estimates for `ψI'(it)` and the `bAnotherBase` bracket.
 

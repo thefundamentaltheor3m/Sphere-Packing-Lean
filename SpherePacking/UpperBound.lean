@@ -3,7 +3,6 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.E8.Packing
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 import SpherePacking.CohnElkies.LPBound
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Representation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.SpecialValues
