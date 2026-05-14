@@ -1,6 +1,5 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.StripBounds
-import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 
 /-! # Tail deformation for `a'`: rewrite `I₂' + I₄' + I₆'` via `rect_deform_of_tendsto_top`. -/

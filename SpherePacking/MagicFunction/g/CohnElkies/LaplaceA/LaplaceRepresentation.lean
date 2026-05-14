@@ -2,7 +2,6 @@ module
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.TailDeformation
-import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.FiniteDifference
 
 /-!
 # Laplace representation for `a'`
