@@ -1094,8 +1094,7 @@ public lemma J₆'_eq (r : ℝ) :
   congr 1
   refine MeasureTheory.integral_congr_ae ?_
   refine
-    (ae_restrict_iff' (measurableSet_Ici : MeasurableSet (Ici (1 : ℝ)))).2 <| .of_forall ?_
-  intro s hs
+    (ae_restrict_iff' (measurableSet_Ici : MeasurableSet (Ici (1 : ℝ)))).2 <| .of_forall fun s hs => ?_
   have hz6 : z₆' s = (Complex.I : ℂ) * (s : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using (z₆'_eq_of_mem (t := s) hs)
   -- β-reduce, rewrite `z₆' s`, and then simplify the exponential using `I*I = -1`.
