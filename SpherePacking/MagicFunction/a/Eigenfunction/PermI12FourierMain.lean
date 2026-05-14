@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 import SpherePacking.Contour.Segments
-import SpherePacking.Contour.GaussianIntegral
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.Integration.UpperHalfPlaneComp
@@ -30,6 +29,7 @@ section Integral_Permutations
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 open MeasureTheory Set Complex Real SpherePacking.Integration SpherePacking.Contour
+  SpherePacking.ForMathlib
 open MagicFunction.a.RealIntegrals MagicFunction.a.ComplexIntegrands
 open scoped Interval RealInnerProductSpace
 

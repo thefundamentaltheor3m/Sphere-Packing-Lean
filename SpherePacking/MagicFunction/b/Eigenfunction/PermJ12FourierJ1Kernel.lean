@@ -10,7 +10,6 @@ import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.b.PsiBounds
-import SpherePacking.Contour.GaussianIntegral
 import SpherePacking.ForMathlib.GaussianRexpIntegral
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase

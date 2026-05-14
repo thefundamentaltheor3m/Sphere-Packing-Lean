@@ -14,7 +14,6 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
-import SpherePacking.Contour.GaussianIntegral
 
 /-!
 # Regularity and contour deformation for `perm_J₁_J₂`
@@ -331,7 +330,7 @@ lemma integral_permJ2Kernel_x (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     (∫ x : EuclideanSpace ℝ (Fin 8), permJ2Kernel w (x, t)) =
       Ψ₁_fourier (‖w‖ ^ 2) (z₂line t) := by
   simpa [permJ2Kernel, Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm] using
-    SpherePacking.Contour.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
+    SpherePacking.ForMathlib.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
       (k := 4) (w := w) (z := z₂line t) (by simp [z₂line]) (c := ψT' (z₂line t))
 
 lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
@@ -479,7 +478,7 @@ lemma integral_permJ1Kernel_x (w : EuclideanSpace ℝ (Fin 8))
         c * ((((I : ℂ) / (z₁line t)) ^ (4 : ℕ)) *
           cexp ((π : ℂ) * I * (‖w‖ ^ 2 : ℝ) * (-1 / (z₁line t)))) := by
           simpa [hfactor] using
-            SpherePacking.Contour.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
+            SpherePacking.ForMathlib.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
               (k := 4) (w := w) (z := z₁line t) hz (c := c)
     _ = (Complex.I : ℂ) * Ψ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
           simp [c, Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm]

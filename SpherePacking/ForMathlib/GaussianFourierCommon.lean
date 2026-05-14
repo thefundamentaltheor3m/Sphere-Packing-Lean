@@ -75,6 +75,17 @@ public lemma integral_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
   simpa [fourier_eq', smul_eq_mul, mul_assoc, mul_left_comm, mul_comm] using
     (fourier_gaussian_pi_mul_I_mul_even (k := k) (z := z) hz (w := w))
 
+/-- Evaluate a Fourier-type Gaussian integral in even real dimension, pulling out a constant `c`. -/
+public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
+    (w : EuclideanSpace ℝ (Fin (2 * k))) (z : ℂ) (hz : 0 < z.im) (c : ℂ) :
+    (∫ x : EuclideanSpace ℝ (Fin (2 * k)), c *
+        (Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
+          Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))) =
+      c * ((((Complex.I : ℂ) / z) ^ k) *
+        Complex.exp ((Real.pi : ℂ) * Complex.I * (‖w‖ ^ 2 : ℝ) * (-1 / z))) := by
+  simpa [MeasureTheory.integral_const_mul] using congrArg (fun I : ℂ => c * I)
+    (integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz)
+
 /-- Fourier transform of the real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` in even dimension `2k`. -/
 public lemma fourier_gaussian_norm_sq_div_even (k : ℕ) (s : ℝ) (hs : 0 < s)
     (w : EuclideanSpace ℝ (Fin (2 * k))) :
