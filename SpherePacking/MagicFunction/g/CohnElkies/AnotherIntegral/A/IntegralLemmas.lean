@@ -2586,41 +2586,36 @@ public lemma integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 
     integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
       (f := fun t : ℝ => Real.exp (2 * π * t) * Real.exp (-π * u * t))
 
+/-- Helper: derive `IntegrableOn` on `Ioi 0` from a nonzero integral identity. -/
+private lemma integrableOn_Ioi_of_integral_eq_ne_zero {f : ℝ → ℂ} {c : ℝ} (hc : c ≠ 0)
+    (heq : (∫ t : ℝ, f t ∂μIoi0) = ((c : ℝ) : ℂ)) :
+    IntegrableOn f (Set.Ioi (0 : ℝ)) := by
+  simpa [MeasureTheory.IntegrableOn, μIoi0] using
+    MeasureTheory.Integrable.of_integral_ne_zero (μ := μIoi0)
+      (by rw [heq]; exact_mod_cast hc)
+
 /-- Integrability of `t ↦ exp (-π u t)` on `t > 0` as a complex-valued function, for `u > 0`. -/
 public lemma integrableOn_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
-  have hne : (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μIoi0) ≠ 0 := by
-    rw [show (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) from by
-      simpa [μIoi0] using integral_exp_neg_pi_mul_Ioi_complex (u := u) hu]
-    exact_mod_cast one_div_ne_zero (mul_ne_zero Real.pi_ne_zero hu.ne')
-  simpa [MeasureTheory.IntegrableOn, μIoi0] using
-    MeasureTheory.Integrable.of_integral_ne_zero (μ := μIoi0) hne
+    IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
+  integrableOn_Ioi_of_integral_eq_ne_zero (one_div_ne_zero (mul_ne_zero Real.pi_ne_zero hu.ne'))
+    (by simpa [μIoi0] using integral_exp_neg_pi_mul_Ioi_complex (u := u) hu)
 
 /-- Integrability of `t ↦ t * exp (-π u t)` on `t > 0` as a complex-valued function, for
 `u > 0`. -/
 public lemma integrableOn_mul_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 0 < u) :
-    IntegrableOn (fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
-  have hne : (∫ t : ℝ, (t * Real.exp (-π * u * t) : ℂ) ∂μIoi0) ≠ 0 := by
-    rw [show (∫ t : ℝ, (t * Real.exp (-π * u * t) : ℂ) ∂μIoi0) =
-        ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) from by
-      simpa [μIoi0] using integral_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu]
-    exact_mod_cast one_div_ne_zero (pow_ne_zero 2 (mul_ne_zero Real.pi_ne_zero hu.ne'))
-  simpa [MeasureTheory.IntegrableOn, μIoi0] using
-    MeasureTheory.Integrable.of_integral_ne_zero (μ := μIoi0) hne
+    IntegrableOn (fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)) :=
+  integrableOn_Ioi_of_integral_eq_ne_zero
+    (one_div_ne_zero (pow_ne_zero 2 (mul_ne_zero Real.pi_ne_zero hu.ne')))
+    (by simpa [μIoi0] using integral_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu)
 
 /-- Integrability of `t ↦ exp (2π t) * exp (-π u t)` on `t > 0` as a complex-valued function, for
 `u > 2`. -/
 public lemma integrableOn_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ))
-      (Set.Ioi (0 : ℝ)) := by
-  have hne :
-      (∫ t : ℝ, (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) ∂μIoi0) ≠ 0 := by
-    rw [show (∫ t : ℝ, (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) ∂μIoi0) =
-        ((1 / (π * (u - 2)) : ℝ) : ℂ) from by
-      simpa [μIoi0] using integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu]
-    exact_mod_cast one_div_ne_zero (mul_ne_zero Real.pi_ne_zero (sub_pos.2 hu).ne')
-  simpa [MeasureTheory.IntegrableOn, μIoi0] using
-    MeasureTheory.Integrable.of_integral_ne_zero (μ := μIoi0) hne
+      (Set.Ioi (0 : ℝ)) :=
+  integrableOn_Ioi_of_integral_eq_ne_zero
+    (one_div_ne_zero (mul_ne_zero Real.pi_ne_zero (sub_pos.2 hu).ne'))
+    (by simpa [μIoi0] using integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu)
 
 end
 
