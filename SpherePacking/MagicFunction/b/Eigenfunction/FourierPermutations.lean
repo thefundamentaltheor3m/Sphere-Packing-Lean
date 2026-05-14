@@ -14,7 +14,6 @@ public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
 import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ1
-import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ2
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 import SpherePacking.ForMathlib.GaussianFourierCommon

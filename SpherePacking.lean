@@ -71,7 +71,6 @@ public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ1
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ1Kernel
-public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12FourierJ2
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Regularity
 public import SpherePacking.MagicFunction.b.Eigenfunction.Prelude
 public import SpherePacking.MagicFunction.b.PsiBounds
