@@ -997,11 +997,9 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
       have hxℓ : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) ∈ P.centers := by
         simpa [add_comm] using P.lattice_action ℓ.property x.property.1
       have hneq : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) ≠
-            (y : EuclideanSpace ℝ (Fin d)) := by
-        intro h
-        have : ℓ = 0 := hℓ_eq_zero_of_vadd_eq (x := x) (y := y) (ℓ := ℓ) h
-        subst this
-        exact hxy (Subtype.ext (by simpa using h))
+            (y : EuclideanSpace ℝ (Fin d)) := fun h => by
+        have hℓ0 : ℓ = 0 := hℓ_eq_zero_of_vadd_eq (x := x) (y := y) (ℓ := ℓ) h
+        exact hxy (Subtype.ext (by simpa [hℓ0] using h))
       have hdist := P.centers_dist' _ _ hxℓ y.property.1 hneq
       have hnorm : (1 : ℝ) ≤ ‖(x : EuclideanSpace ℝ (Fin d)) +
           (ℓ : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))‖ := by
