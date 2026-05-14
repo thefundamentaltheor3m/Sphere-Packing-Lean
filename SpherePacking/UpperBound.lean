@@ -409,8 +409,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
-    intro ε hε
+  have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := fun ε hε => by
     have htend : Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
       simpa [mul_assoc] using tendsto_const_nhds.mul
         (Real.tendsto_exp_neg_atTop_nhds_zero.comp
