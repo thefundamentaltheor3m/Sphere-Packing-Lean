@@ -302,8 +302,6 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) â
 
 end SchwartzMap.PoissonSummation.Standard
 
-open SchwartzMap.PoissonSummation.Standard
-
 open Module UnitAddTorus
 
 namespace SchwartzMap.PoissonSummation.Standard
