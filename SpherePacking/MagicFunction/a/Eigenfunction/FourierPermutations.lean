@@ -5,7 +5,6 @@ public import SpherePacking.ModularForms.PhiTransform
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Tactic.Ring.RingNF

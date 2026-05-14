@@ -11,7 +11,6 @@ public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
-public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
