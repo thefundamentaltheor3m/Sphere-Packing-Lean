@@ -12,7 +12,6 @@ public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.PsiBounds
-import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp

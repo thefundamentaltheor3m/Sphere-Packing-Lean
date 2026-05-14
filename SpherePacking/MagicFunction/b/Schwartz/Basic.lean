@@ -15,7 +15,6 @@ public import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
-import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 import SpherePacking.Integration.UpperHalfPlaneComp
 
 /-!

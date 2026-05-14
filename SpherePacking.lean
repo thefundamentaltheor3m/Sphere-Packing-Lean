@@ -51,7 +51,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
-public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.MagicFunction.b.SpecialValues
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
