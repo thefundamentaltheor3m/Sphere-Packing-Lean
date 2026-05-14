@@ -58,8 +58,7 @@ private meta def matchNhds? (e : Expr) : MetaM (Option Expr) :=
 private meta def parseGoal (goal : Expr) : MetaM (Expr × Expr × Expr) := do
   let some (domTy, _, goalFn, l, tgt) ← matchTendsto? goal
     | throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
-  let some _ ← matchNhds? tgt
-    | throwError "tendsto_cont: target filter is not `nhds _`"
+  let some _ ← matchNhds? tgt | throwError "tendsto_cont: target filter is not `nhds _`"
   return (goalFn, l, domTy)
 
 /-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
@@ -105,12 +104,9 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
   let mut candidates : Array Atom := #[]
   for decl in ← getLCtx do
     if decl.isImplementationDetail then continue
-    match ← matchTendstoNhds? (← instantiateMVars decl.type) with
-    | some (codTy, f, l, a) =>
+    if let some (codTy, f, l, a) ← matchTendstoNhds? (← instantiateMVars decl.type) then
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
-        candidates := candidates.push
-          { fn := f, limit := a, hyp := decl.toExpr, codTy := codTy }
-    | none => continue
+        candidates := candidates.push { fn := f, limit := a, hyp := decl.toExpr, codTy }
   let atomsRef ← IO.mkRef (α := Array Atom) #[]
   let fnsRef ← IO.mkRef (α := Array Expr) #[]
   findAtomsAux body bvar candidates atomsRef fnsRef
@@ -144,14 +140,11 @@ private meta def buildProdMkNhds (atoms : Array Atom) : MetaM Expr :=
   foldRightAssoc atoms (·.hyp) fun a b => mkAppM ``Filter.Tendsto.prodMk_nhds #[a, b]
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
-private meta def buildProjection (p : Expr) (n i : Nat) :
-    MetaM Expr := do
+private meta def buildProjection (p : Expr) (n i : Nat) : MetaM Expr := do
   if n = 1 then return p
   let mut e := p
-  for _ in [:i] do
-    e ← mkAppM ``Prod.snd #[e]
-  if i < n - 1 then e ← mkAppM ``Prod.fst #[e]
-  return e
+  for _ in [:i] do e ← mkAppM ``Prod.snd #[e]
+  if i < n - 1 then mkAppM ``Prod.fst #[e] else return e
 
 /-- Replace `fᵢ(bvar)` with `projᵢ(p)` in the body. -/
 private meta partial def abstractBody (body : Expr) (bvar : FVarId)
@@ -196,11 +189,10 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     let contGoalTy ← mkAppM ``ContinuousAt #[contFn, ← buildLimitPoint atoms]
     let contMVar ← mkFreshExprMVar contGoalTy
     try
-      let _ ← Elab.Tactic.run contMVar.mvarId!
-        (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
+      let _ ← Elab.Tactic.run contMVar.mvarId! (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
     catch e =>
-      throwError m!"tendsto_cont: `fun_prop` failed:\n{← e.toMessageData.format}\ngoal: \
-        {contGoalTy}"
+      throwError m!"tendsto_cont: `fun_prop` failed:\n{← e.toMessageData.format}\n\
+        goal: {contGoalTy}"
     mkAppM ``tendsto_continuousAt_comp #[contMVar, ← buildProdMkNhds atoms]
 
 /-- Core implementation of the `tendsto_cont` tactic. -/
