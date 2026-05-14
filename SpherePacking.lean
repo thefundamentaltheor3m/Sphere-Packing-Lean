@@ -34,7 +34,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancell
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
-public import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
 public import SpherePacking.ModularForms.BigO
 public import SpherePacking.ModularForms.CSqrt
 public import SpherePacking.ModularForms.ClogArgLemmas
