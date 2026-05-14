@@ -600,10 +600,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
 
 end
 
-end MagicFunction.g.CohnElkies.IntegralReps
-
-namespace MagicFunction.g.CohnElkies.IntegralReps
-
 open scoped BigOperators Interval Topology
 open MeasureTheory Real Complex Filter Set
 open SpherePacking.Integration (μIciOne)
