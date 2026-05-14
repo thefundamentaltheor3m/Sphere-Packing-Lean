@@ -58,7 +58,6 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12ContourAux
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Fourier
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierAux
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1

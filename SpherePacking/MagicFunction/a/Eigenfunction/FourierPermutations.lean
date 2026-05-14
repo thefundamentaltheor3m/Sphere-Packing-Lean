@@ -1,10 +1,13 @@
 module
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
+public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12WedgeDomain
+public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
+public import SpherePacking.Contour.MobiusInv.WedgeSet
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
-import SpherePacking.MagicFunction.a.Eigenfunction.PermI12ContourAux
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierMain
-import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+import SpherePacking.ForMathlib.ScalarOneForm
 import SpherePacking.Contour.MobiusInv.WedgeSetContour
 
 /-!
@@ -23,10 +26,43 @@ noncomputable section
 
 open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
+open Filter SpherePacking SpherePacking.ForMathlib
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 section Integral_Permutations
+
+/-- The `1`-form built from `Φ₃'` is differentiable on `wedgeSet` with continuous extension. -/
+public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
+    DiffContOnCl ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet :=
+  ForMathlib.diffContOnCl_scalarOneForm (s := wedgeSet) <| by
+    refine ⟨((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
+        (by simp)).mono wedgeSet_subset_upperHalfPlaneSet, fun z hz => ?_⟩
+    by_cases h1 : z = (1 : ℂ)
+    · subst h1
+      have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
+        simp [MagicFunction.a.ComplexIntegrands.Φ₃']
+      simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
+    · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
+        mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
+      exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
+        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
+
+/-- Symmetry of the derivative of `scalarOneForm (Φ₃' r)` on `wedgeSet`.
+
+This is the key hypothesis needed to apply the Poincare lemma. -/
+public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
+    ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
+      fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet x u v =
+        fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
+          wedgeSet x v u := by
+  intro x hx _ _ _ _
+  have hxU : x ∈ UpperHalfPlane.upperHalfPlaneSet := wedgeSet_subset_upperHalfPlaneSet hx
+  have hfdiff : DifferentiableAt ℂ (MagicFunction.a.ComplexIntegrands.Φ₃' r) x :=
+    (MagicFunction.a.ComplexIntegrands.Φ₃'_holo (r := r)).differentiableAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hxU)
+  exact SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
+    (s := wedgeSet) isOpen_wedgeSet hx (hfdiff := hfdiff)
 
 open MeasureTheory Set Complex Real
 
