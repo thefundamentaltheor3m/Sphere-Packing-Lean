@@ -991,8 +991,7 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
     simpa [hs.tsum_eq_add_tsum_ite (0 : P.lattice)] using add_le_add_left htail (f 0).re
   · have hnonpos : ∀ ℓ : P.lattice,
         (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
-          (ℓ : EuclideanSpace ℝ (Fin d)))).re ≤ 0 := by
-      intro ℓ
+          (ℓ : EuclideanSpace ℝ (Fin d)))).re ≤ 0 := fun ℓ => by
       have hxℓ : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) ∈ P.centers := by
         simpa [add_comm] using P.lattice_action ℓ.property x.property.1
       have hneq : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) ≠

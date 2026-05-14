@@ -495,9 +495,8 @@ public lemma hasDerivAt_integral_gN
           (b := Real.pi * ε) (by simpa [mul_assoc] using hb)
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
   have h_bound :
-      ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε, ‖gN (hf := hf) (n + 1) y t‖ ≤ bound t := by
-    refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
-    intro t ht y hy
+      ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε, ‖gN (hf := hf) (n + 1) y t‖ ≤ bound t :=
+    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht y hy => by
     have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
     have hy0 : ε ≤ y + shift := by
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
