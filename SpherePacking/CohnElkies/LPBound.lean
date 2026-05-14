@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Complex.Trigonometric
 
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.CohnElkies.LPBoundAux
 public import SpherePacking.CohnElkies.LPBoundReindex
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
