@@ -30,7 +30,6 @@ import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.MeasureTheory.Integral.ExpDecay
-import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.ModularForms.FG.Inequalities
 import Mathlib.Analysis.SpecificLimits.Basic
