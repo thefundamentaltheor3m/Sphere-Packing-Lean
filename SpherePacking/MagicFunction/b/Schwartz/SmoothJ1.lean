@@ -19,7 +19,6 @@ import SpherePacking.MagicFunction.PsiTPrimeZ1
 import Mathlib.Topology.Order.ProjIcc
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
-import SpherePacking.MagicFunction.b.Schwartz.BoundsAux
 
 /-! # Smoothness and decay for `J₁'`. Main: `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`. -/
 
@@ -140,7 +139,9 @@ public theorem decay_J₁' :
       filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
         simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
+        simpa using
+          SpherePacking.Integration.DifferentiationUnderIntegral.norm_cexp_ofReal_mul_coeff_of_coeff_re
+            (coeff := coeff) (x := x) (t := t)
           (show (coeff t).re = -Real.pi * t by
             simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
               simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
@@ -148,7 +149,8 @@ public theorem decay_J₁' :
                   z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
       exact le_mul_of_le_mul_of_nonneg_left
         (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-            MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
+            SpherePacking.Integration.DifferentiationUnderIntegral.norm_gN_le_bound_mul_exp
+              (coeff := coeff) (ψ := ψT')
               (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
               (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
               (by simpa using
@@ -163,7 +165,8 @@ public theorem decay_J₁' :
             Real.exp (-2 * Real.pi * Real.sqrt x))
         (by positivity [hCψ0])
     simpa [I, Kn] using
-      (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
+      (SpherePacking.Integration.DifferentiationUnderIntegral.norm_integral_le_integral_bound_mul_const
+        (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
       = x ^ k * ‖I n x‖ := by
