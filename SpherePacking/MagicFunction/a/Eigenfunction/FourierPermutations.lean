@@ -873,8 +873,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
     Metric.mem_nhds_iff.1 <| Metric.tendsto_nhds.1 hub ε hε
   let δ : ℝ := min δexp (min 1 δpow)
   have hδ_pos : 0 < δ := lt_min hδexp_pos (lt_min (by norm_num) hδpow_pos)
-  refine ⟨δ, hδ_pos, ?_⟩
-  intro z hzcl hdistz
+  refine ⟨δ, hδ_pos, fun z hzcl hdistz => ?_⟩
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1
     simpa [MagicFunction.a.ComplexIntegrands.Φ₃'] using hε

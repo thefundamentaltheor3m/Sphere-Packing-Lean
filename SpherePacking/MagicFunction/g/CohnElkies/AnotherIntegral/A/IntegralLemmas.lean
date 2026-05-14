@@ -1485,8 +1485,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
   let E4B : ℝ := 1 + CE4 * q1
   let C : ℝ := 1 + CΔinv * (E4B * CA + 720 * (CE4 + CΔq))
   have hA1 : 1 ≤ A := le_max_left _ _
-  refine ⟨C, A, by positivity, hA1, ?_⟩
-  intro t ht0 htA
+  refine ⟨C, A, by positivity, hA1, fun t ht0 htA => ?_⟩
   have ht1 : 1 ≤ t := le_trans hA1 htA
   let z : ℍ := zI t ht0
   let q : ℝ := Real.exp (-2 * π * t)
@@ -1595,8 +1594,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   let B240 : ℝ := 1 + 240 * q1
   let C : ℝ := 1 + CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
   have hA1 : 1 ≤ A := le_max_left _ _
-  refine ⟨C, A, by positivity, hA1, ?_⟩
-  intro t ht0 htA
+  refine ⟨C, A, by positivity, hA1, fun t ht0 htA => ?_⟩
   have ht1 : 1 ≤ t := le_trans hA1 htA
   let z : ℍ := zI t ht0
   let q : ℝ := Real.exp (-2 * π * t)
