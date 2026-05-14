@@ -2173,22 +2173,19 @@ public theorem b_pureImag (x : ℝ⁸) : (b x).re = 0 := by
         (SchwartzMap.continuous b') PureImaginary.b'_re_eq_zero_of_pos_ne_two
         (u := ‖x‖ ^ 2) (by simpa using pow_pos (norm_pos_iff.2 hx) 2)
 
-private theorem ofReal_re_eq (z : ℂ) (hz : z.im = 0) : (↑z.re : ℂ) = z :=
-  Complex.ext (by simp) (by simp [hz])
-
 /-- The magic function `g` is real-valued. -/
 public theorem g_real (x : ℝ⁸) : (↑(g x).re : ℂ) = g x :=
-  ofReal_re_eq (g x) <| by
+  Complex.ext (by simp) (by
     simp [g, SchwartzMap.sub_apply, SchwartzMap.smul_apply, smul_eq_mul, Complex.sub_im,
-      Complex.mul_im, a_pureImag (x := x), b_pureImag (x := x), div_eq_mul_inv, Complex.mul_re]
+      Complex.mul_im, a_pureImag (x := x), b_pureImag (x := x), div_eq_mul_inv, Complex.mul_re])
 
 /-- The Fourier transform `𝓕 g` is real-valued. -/
 public theorem g_real_fourier (x : ℝ⁸) : (↑((𝓕 g x).re : ℂ)) = (𝓕 g x) := by
-  refine ofReal_re_eq (𝓕 g x) ?_
+  refine Complex.ext (by simp) ?_
   have hFg : FT g = ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b := by
     simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
       -FourierTransform.fourierCLE_apply]
-  change ((𝓕 g) x).im = 0
+  change (0 : ℝ) = ((𝓕 g) x).im
   rw [show (𝓕 g) = FT g from by simp, hFg]
   simp [SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul, Complex.add_im, Complex.mul_im,
     a_pureImag (x := x), b_pureImag (x := x), div_eq_mul_inv, Complex.mul_re]
