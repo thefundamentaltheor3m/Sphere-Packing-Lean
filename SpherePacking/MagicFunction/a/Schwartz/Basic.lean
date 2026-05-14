@@ -2246,15 +2246,13 @@ lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
       φ₀'' z * ((2 : ℂ) * z - 1) - (12 * Complex.I) / π * φ₂'' z := by
   have hzm : 0 < (z - 1).im := by simpa using hz
+  have hvadd := vadd_neg_one_eq z hz hzm
   have hφ₀ : φ₀'' (z - 1) = φ₀'' z := by
-    rw [φ₀''_def (z := z - 1) hzm, φ₀''_def (z := z) hz,
-      ← vadd_neg_one_eq z hz hzm, φ₀_periodic_neg_one]
+    rw [φ₀''_def (z := z - 1) hzm, φ₀''_def (z := z) hz, ← hvadd, φ₀_periodic_neg_one]
   have hφ₂ : φ₂'' (z - 1) = φ₂'' z := by
-    rw [φ₂''_def (z := z - 1) hzm, φ₂''_def (z := z) hz,
-      ← vadd_neg_one_eq z hz hzm, φ₂'_periodic_neg_one]
+    rw [φ₂''_def (z := z - 1) hzm, φ₂''_def (z := z) hz, ← hvadd, φ₂'_periodic_neg_one]
   have hφ₄ : φ₄'' (z - 1) = φ₄'' z := by
-    rw [φ₄''_def (z := z - 1) hzm, φ₄''_def (z := z) hz,
-      ← vadd_neg_one_eq z hz hzm, φ₄'_periodic_neg_one]
+    rw [φ₄''_def (z := z - 1) hzm, φ₄''_def (z := z) hz, ← hvadd, φ₄'_periodic_neg_one]
   simp [F_eq_phi0_phi2_phi4 (z := z) hz, F_eq_phi0_phi2_phi4 (z := z - 1) hzm,
     hφ₀, hφ₂, hφ₄, pow_two]
   ring_nf
