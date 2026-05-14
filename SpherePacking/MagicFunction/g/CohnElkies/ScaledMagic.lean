@@ -1,6 +1,5 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
-import SpherePacking.MagicFunction.g.CohnElkies.ImagAxisReal
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Representation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 import SpherePacking.MagicFunction.a.SpecialValues
