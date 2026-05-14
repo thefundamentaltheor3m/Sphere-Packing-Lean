@@ -130,16 +130,6 @@ public lemma segment_z₂_ne_zero (t : Set.Icc (0 : ℝ) 1) :
     (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I (t : ℝ)) ≠ 0 := fun hz => by
   simpa [Contour.lineMap_z₂line, Contour.z₂line] using congrArg Complex.im hz
 
-end
-
-end SpherePacking
-
-namespace SpherePacking
-
-noncomputable section
-
-open Complex
-
 /-- The wedge region used for the contour deformation; closure meets the real axis only at `1`. -/
 public def wedgeSet : Set ℂ := {z : ℂ | 0 < z.im ∧ z.re - 1 < z.im ∧ 1 - z.re < z.im}
 
