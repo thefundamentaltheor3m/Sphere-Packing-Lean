@@ -998,10 +998,8 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
       exact_mod_cast one_div_pow_two_mul_one_div_zpow
         (k := 4) (t := t) (hk := by decide) (ht := ne_of_gt ht.1)
     simpa [Complex.ofReal_mul] using this
-  have hexp : cexp (π * (Complex.I : ℂ) * r * (z₅' t)) = cexp (-π * r * t) := by
-    simpa [mul_assoc] using congrArg cexp
-      (show (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * (z₅' t) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
-        rw [hz5]; ring_nf; rw [Complex.I_sq]; ring)
+  have hexp : cexp (π * (Complex.I : ℂ) * r * (z₅' t)) = cexp (-π * r * t) :=
+    congrArg cexp (by rw [hz5]; ring_nf; simp [Complex.I_sq])
   rw [show (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) =
         (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) by
       rw [MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht, hexp,
