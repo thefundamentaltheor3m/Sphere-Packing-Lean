@@ -443,10 +443,10 @@ open Filter Real
 public lemma exists_bound_pow_mul_exp_neg_mul (k : ℕ) {b : ℝ} (hb : 0 < b) :
     ∃ C, ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * x) ≤ C := by
   let f : ℝ → ℝ := fun x ↦ x ^ k * Real.exp (-b * x)
-  have ht : Tendsto f atTop (nhds (0 : ℝ)) := by
+  rcases (eventually_atTop.1 <| ((by
     simpa [f, Real.rpow_natCast] using
-      (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (k : ℝ)) (b := b) hb)
-  rcases (eventually_atTop.1 <| ht.eventually (Iio_mem_nhds zero_lt_one)) with ⟨A, hA⟩
+      (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (k : ℝ)) (b := b) hb)) :
+      Tendsto f atTop (nhds (0 : ℝ))).eventually (Iio_mem_nhds zero_lt_one)) with ⟨A, hA⟩
   rcases (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (max A 0))).exists_isMaxOn
       (Set.nonempty_Icc.2 (le_max_right A 0)) (by fun_prop : Continuous f).continuousOn
     with ⟨x0, hx0, hxmax⟩
@@ -475,12 +475,11 @@ public lemma exp_neg_pi_div_mul_exp_neg_pi_mul_le (x t : ℝ) (hx : 0 ≤ x) (ht
     have hsqrt : Real.sqrt (x * t) = Real.sqrt x * Real.sqrt t := by
       simpa [mul_comm] using Real.sqrt_mul hx t
     grind
-  have hIneq : 2 * Real.sqrt x ≤ x * t + 1 / t := by
-    simpa [hmul_sqrt, mul_assoc] using hAMGM
   refine (Real.exp_add _ _).symm.trans_le (Real.exp_le_exp.2 ?_)
   rw [show (-Real.pi / t) + (-Real.pi * x * t) = -(Real.pi * (x * t + 1 / t)) from by ring,
     show -2 * Real.pi * Real.sqrt x = -(Real.pi * (2 * Real.sqrt x)) from by ring]
-  exact neg_le_neg (mul_le_mul_of_nonneg_left hIneq Real.pi_pos.le)
+  exact neg_le_neg (mul_le_mul_of_nonneg_left
+    (by simpa [hmul_sqrt, mul_assoc] using hAMGM : 2 * Real.sqrt x ≤ x * t + 1 / t) Real.pi_pos.le)
 
 end SpherePacking.ForMathlib
 
