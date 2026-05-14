@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import SpherePacking.Integration.Measure
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
 public import
   SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability

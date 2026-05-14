@@ -1,9 +1,8 @@
 module
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 
 /-!
 # "Another integral" representation for `a'` (`AnotherIntegral.A`)

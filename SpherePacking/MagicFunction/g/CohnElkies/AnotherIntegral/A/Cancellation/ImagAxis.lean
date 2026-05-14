@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
+public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.ModularForms.PhiTransformLemmas
 public import SpherePacking.ModularForms.Delta
@@ -8,19 +8,31 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Complex.Periodic
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
-/-! # Helpers on the imaginary axis (AnotherIntegral.A): definitions (`zI`) and bounds for
-evaluating modular objects on the positive imaginary axis. -/
+/-! # Helpers on the imaginary axis (AnotherIntegral.A): definitions (`zI`,
+`aAnotherIntegrand`, `aAnotherIntegral`) and bounds for evaluating modular objects on the
+positive imaginary axis. -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
   ArithmeticFunction.sigma
 
-open Real Complex Function ArithmeticFunction MagicFunction.FourierEigenfunctions
+open MeasureTheory Real Complex Function ArithmeticFunction MagicFunction.FourierEigenfunctions
   UpperHalfPlane ModularForm SlashInvariantFormClass ModularFormClass
 
 noncomputable section
+
+/-- The integrand used in the "another integral" representation of `a'`. -/
+@[expose] public def aAnotherIntegrand (u t : ℝ) : ℂ :=
+  ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+        ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
+    Real.exp (-π * u * t))
+
+/-- The "another integral" associated to `a'`, defined as `∫_{t>0} aAnotherIntegrand u t`. -/
+@[expose] public def aAnotherIntegral (u : ℝ) : ℂ := ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t
 
 /-- The point `it` in the upper half-plane. -/
 @[expose] public def zI (t : ℝ) (ht : 0 < t) : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht⟩
