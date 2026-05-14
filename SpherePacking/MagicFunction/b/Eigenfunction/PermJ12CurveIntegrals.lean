@@ -4,7 +4,7 @@ public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.Contour.Segments
 public import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.Integration.EndpointIntegrability
+import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.Integration.Measure

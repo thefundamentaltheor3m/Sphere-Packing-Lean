@@ -47,7 +47,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Integration.DifferentiationUnderIntegral
-public import SpherePacking.Integration.EndpointIntegrability
 public import SpherePacking.Integration.InvChangeOfVariables
 public import SpherePacking.Integration.Measure
 public import SpherePacking.Integration.SmoothIntegralCommon

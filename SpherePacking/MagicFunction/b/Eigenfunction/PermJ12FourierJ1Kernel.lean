@@ -3,7 +3,7 @@ public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12CurveIntegrals
 public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.Contour.Segments
 public import SpherePacking.Integration.Measure
-import SpherePacking.Integration.EndpointIntegrability
+import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay

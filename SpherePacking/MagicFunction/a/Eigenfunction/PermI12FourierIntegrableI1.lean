@@ -8,7 +8,7 @@ import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.ForMathlib.GaussianRexpIntegral
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.Integration.EndpointIntegrability
+import SpherePacking.Integration.InvChangeOfVariables
 
 /-!
 # Integrability of the `I₁/I₂` Fourier kernels (I1 side)
