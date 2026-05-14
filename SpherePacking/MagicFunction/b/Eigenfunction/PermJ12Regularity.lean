@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Contour.Segments
-public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.Basic.Domains.WedgeSet
 import Mathlib.MeasureTheory.Integral.Prod
 import SpherePacking.MagicFunction.b.PsiBounds

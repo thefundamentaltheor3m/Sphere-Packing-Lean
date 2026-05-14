@@ -1,5 +1,4 @@
 module
-public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Defs
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Regularity
 public import SpherePacking.Contour.PermJ12Contour
 import SpherePacking.Contour.MobiusInv.ContourChange
