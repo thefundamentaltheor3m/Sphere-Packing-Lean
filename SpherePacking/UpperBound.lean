@@ -2224,14 +2224,11 @@ private lemma fourier_scaledMagic_eq (x : ℝ⁸) :
 
 /-- The Fourier transform `𝓕 scaledMagic` is real-valued (scaled variant of `g_real_fourier`). -/
 public theorem scaledMagic_real_fourier' :
-    ∀ x : ℝ⁸, (↑((𝓕 scaledMagic x).re : ℂ)) = (𝓕 scaledMagic x) := by
-  intro x
-  let y0 : ℝ⁸ := (LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x
-  have hImG : (𝓕 g y0).im = 0 := by
-    simpa using (congrArg Complex.im (g_real_fourier (x := y0))).symm
-  have hImScaled : (𝓕 scaledMagic x).im = 0 := by
-    simpa [y0, Complex.smul_im, hImG] using congrArg Complex.im (fourier_scaledMagic_eq (x := x))
-  exact Complex.ext (by simp) (by simp [hImScaled])
+    ∀ x : ℝ⁸, (↑((𝓕 scaledMagic x).re : ℂ)) = (𝓕 scaledMagic x) := fun x =>
+  Complex.ext (by simp) (by simp [show (𝓕 scaledMagic x).im = 0 by
+    simpa [Complex.smul_im, (congrArg Complex.im (g_real_fourier
+      (x := (LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x))).symm] using
+      congrArg Complex.im (fourier_scaledMagic_eq (x := x))])
 
 /-- Cohn-Elkies sign condition for `scaledMagic` outside the unit ball (scaled variant). -/
 public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (scaledMagic x).re ≤ 0 := by
@@ -2244,17 +2241,14 @@ public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (s
     g_nonpos_of_norm_sq_ge_two (x := (Real.sqrt 2) • x) h2
 
 /-- Cohn-Elkies nonnegativity for `𝓕 scaledMagic` (scaled variant). -/
-public theorem scaledMagic_cohnElkies₂' : ∀ x : ℝ⁸, (𝓕 scaledMagic x).re ≥ 0 := by
-  intro x
-  let y0 : ℝ⁸ := (LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x
+public theorem scaledMagic_cohnElkies₂' : ∀ x : ℝ⁸, (𝓕 scaledMagic x).re ≥ 0 := fun x => by
+  set y0 : ℝ⁸ := (LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x
   have hre : (𝓕 scaledMagic x).re =
-      |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • (𝓕 g y0).re := by
-    have hre' : (𝓕 scaledMagic x).re =
-        (|LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • 𝓕 g y0).re := by
-      simpa [y0] using congrArg Complex.re (fourier_scaledMagic_eq (x := x))
-    exact hre'.trans (by
-      simpa using
-        Complex.smul_re (r := |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹) (z := 𝓕 g y0))
+      |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • (𝓕 g y0).re :=
+    ((by simpa [y0] using congrArg Complex.re (fourier_scaledMagic_eq (x := x)) :
+      (𝓕 scaledMagic x).re = (|LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ • 𝓕 g y0).re).trans
+      (by simpa using
+        Complex.smul_re (r := |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹) (z := 𝓕 g y0)))
   simpa [hre] using
     smul_nonneg (inv_nonneg.2 (abs_nonneg (LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸))))
       (by simpa using fourier_g_nonneg (x := y0))
