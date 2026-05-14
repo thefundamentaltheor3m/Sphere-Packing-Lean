@@ -17,7 +17,6 @@ public import SpherePacking.Contour.MobiusInv.ContourChange
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.Contour.Segments
-public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
 public import SpherePacking.ForMathlib.BoundsOnIcc
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
