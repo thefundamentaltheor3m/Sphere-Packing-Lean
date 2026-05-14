@@ -2564,30 +2564,27 @@ public lemma integral_add_add {α : Type*} [MeasurableSpace α] {μ : Measure α
 public lemma integral_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) =
       ((1 / (π * u) : ℝ) : ℂ) := by
-  change (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ)
   rw [← MagicFunction.g.CohnElkies.integral_exp_neg_pi_mul_Ioi (u := u) hu]
-  exact integral_ofReal (μ := μIoi0) (𝕜 := ℂ)
+  exact integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
 
 /-- `∫_{t > 0} t * exp (-π u t) dt = 1 / (π u)^2` as a complex-valued integral, for `u > 0`. -/
 public lemma integral_mul_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (t * Real.exp (-π * u * t) : ℂ)) =
       ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-  change (∫ t : ℝ, (t * Real.exp (-π * u * t) : ℂ) ∂μIoi0) =
-      ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ)
   rw [← MagicFunction.g.CohnElkies.integral_mul_exp_neg_pi_mul_Ioi (u := u) hu]
   simpa [Complex.ofReal_mul] using
-    integral_ofReal (μ := μIoi0) (𝕜 := ℂ) (f := fun t : ℝ => t * Real.exp (-π * u * t))
+    integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
+      (f := fun t : ℝ => t * Real.exp (-π * u * t))
 
 /-- `∫_{t > 0} exp (2π t) * exp (-π u t) dt = 1 / (π (u - 2))` as a complex-valued integral,
 for `u > 2`. -/
 public lemma integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 2 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) =
       ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-  change (∫ t : ℝ, (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) ∂μIoi0) =
-      ((1 / (π * (u - 2)) : ℝ) : ℂ)
   rw [← MagicFunction.g.CohnElkies.integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi (u := u) hu]
-  simpa [Complex.ofReal_mul] using integral_ofReal (μ := μIoi0) (𝕜 := ℂ)
-    (f := fun t : ℝ => Real.exp (2 * π * t) * Real.exp (-π * u * t))
+  simpa [Complex.ofReal_mul] using
+    integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
+      (f := fun t : ℝ => Real.exp (2 * π * t) * Real.exp (-π * u * t))
 
 /-- Integrability of `t ↦ exp (-π u t)` on `t > 0` as a complex-valued function, for `u > 0`. -/
 public lemma integrableOn_exp_neg_pi_mul_Ioi_complex {u : ℝ} (hu : 0 < u) :
