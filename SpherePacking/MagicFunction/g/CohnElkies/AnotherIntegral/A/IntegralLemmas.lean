@@ -16,7 +16,6 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import Mathlib.MeasureTheory.Integral.ExpDecay
-public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
