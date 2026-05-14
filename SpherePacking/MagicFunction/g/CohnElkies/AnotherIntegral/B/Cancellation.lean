@@ -691,8 +691,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
         ≤ C * Real.exp (-(2 : ℝ) * Real.pi * t) := by
   rcases exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one with ⟨CH2, hH2⟩
   refine ⟨(256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-        (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) , ?_⟩
-  intro t ht
+        (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) , fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set e : ℝ := Real.exp (2 * Real.pi * t)
   set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
@@ -819,8 +818,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have hCH4 := nn (hH4 1 le_rfl)
   refine ⟨(128 : ℝ) *
       (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
-        ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192, ?_⟩
-  intro t ht
+        ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192, fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   have ht0' : 0 ≤ t := ht0.le
   set e : ℝ := Real.exp (2 * Real.pi * t)
@@ -1014,8 +1012,7 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos])
     exact h1.trans (by simpa [mul_one] using mul_le_mul_of_nonneg_left hexp_le hCtail0)
   let Csmall : ℝ := Cψ0 + 144 + Real.exp (2 * π)
-  refine ⟨max Csmall Ctail0, ?_⟩
-  intro t ht0
+  refine ⟨max Csmall Ctail0, fun t ht0 => ?_⟩
   by_cases ht1 : t ≤ 1
   · have hexp : ‖(Real.exp (2 * π * t) : ℂ)‖ ≤ Real.exp (2 * π) := by
       rw [Complex.ofReal_exp, Complex.norm_exp_ofReal]
