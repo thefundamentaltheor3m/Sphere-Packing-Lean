@@ -36,7 +36,6 @@ Three layers:
 -/
 
 open scoped BigOperators FourierTransform Real
-
 open MeasureTheory
 
 namespace SpherePacking.ForMathlib.Fourier
