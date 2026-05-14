@@ -5,7 +5,6 @@ public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.ForMathlib.ScalarOneForm
 import SpherePacking.Contour.MobiusInv.ContourChange
 import SpherePacking.Contour.MobiusInv.Segments
-import SpherePacking.Contour.MobiusInv.WedgeSet
 import SpherePacking.Contour.Segments
 import SpherePacking.Contour.MobiusInv.WedgeSetContour
 

@@ -2,13 +2,12 @@ module
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12WedgeDomain
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
-public import SpherePacking.Contour.MobiusInv.WedgeSet
+public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierMain
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.Contour.MobiusInv.WedgeSetContour
 
 /-!
 # Fourier Permutations
