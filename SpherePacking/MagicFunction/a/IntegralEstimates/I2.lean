@@ -14,7 +14,6 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.PowExpBounds
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 
 /-! # Bounds for `I₂'`: representation, uniform exponential bound, and Schwartz decay. -/
 

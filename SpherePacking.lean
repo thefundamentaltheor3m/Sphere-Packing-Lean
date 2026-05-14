@@ -48,7 +48,6 @@ public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
-public import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
