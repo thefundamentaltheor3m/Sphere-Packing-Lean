@@ -1684,8 +1684,7 @@ lemma exists_phi0_cancellation_bound :
           (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (zI t ht0) -
               ((12 / π : ℝ) : ℂ) * t * (φ₂' (zI t ht0) - (720 : ℂ)) +
               ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by
-    intro t ht0
+                (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := fun {t} ht0 => by
     let z : ℍ := zI t ht0
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; simp [mul_pow]

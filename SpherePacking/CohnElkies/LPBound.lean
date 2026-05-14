@@ -336,8 +336,7 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
         simpa [hSsep] using S.centers_dist' x y (hs_centers x hx) (hs_centers y hy) hxy])
   have hsub : (⋃ x ∈ s, ball x r) ⊆
       g +ᵥ (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-            coordCubeInner d L 1) := by
-    intro y hy
+            coordCubeInner d L 1) := fun y hy => by
     obtain ⟨x, hxS, hyBall⟩ : ∃ x ∈ s, y ∈ ball x r := by simpa using hy
     have hxB := hs_boundary x hxS
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x

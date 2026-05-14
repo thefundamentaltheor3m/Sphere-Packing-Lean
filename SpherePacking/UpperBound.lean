@@ -141,8 +141,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
   have hψS_bound (s : ℝ) (hs : 1 ≤ s) :
       ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s) :=
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
-  have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-    intro t ht0
+  have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := fun t ht0 => by
     have hψIcomp :
         ContinuousAt
           (fun s : ℝ => ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) t :=
@@ -774,8 +773,7 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
         simpa [z₅'_eq_of_mem (t := t) htic, Complex.norm_real, abs_of_nonneg htic.1] using htic.2))
 
 set_option maxHeartbeats 1000000 in
-lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
-  intro u0 hu0
+lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fun u0 hu0 => by
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
   let μ : Measure ℝ := μIciOne
   have hψS'_eq : ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ψS' (z₆' t) = ψS.resToImagAxis t := fun t ht => by
@@ -2223,8 +2221,8 @@ public theorem scaledMagic_real_fourier' :
       congrArg Complex.im (fourier_scaledMagic_eq (x := x))])
 
 /-- Cohn-Elkies sign condition for `scaledMagic` outside the unit ball (scaled variant). -/
-public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (scaledMagic x).re ≤ 0 := by
-  intro x hx
+public theorem scaledMagic_cohnElkies₁' :
+    ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (scaledMagic x).re ≤ 0 := fun x hx => by
   have h2 : (2 : ℝ) ≤ ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) := by
     rw [norm_smul, mul_pow, Real.norm_of_nonneg (Real.sqrt_nonneg _),
       Real.sq_sqrt (by positivity : (0 : ℝ) ≤ 2)]

@@ -106,8 +106,7 @@ public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x
       |a| ^ m := by
   have hiter : ∀ (c : ℂ) (m : ℕ),
       iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =
-        fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := by
-    intro c m
+        fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := fun c m => by
     induction m with
     | zero => funext x; simp [iteratedDeriv_zero]
     | succ m ih => funext x; simpa [iteratedDeriv_succ, ih, mul_assoc] using

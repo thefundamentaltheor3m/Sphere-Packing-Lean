@@ -544,8 +544,7 @@ public theorem contDiffOn_family_infty_of_hasDerivAt
     ContDiffOn ℝ ∞ (F n) s := by
   have hdiff k : DifferentiableOn ℝ (F k) s :=
     fun _ hx => (hF k _ hx).differentiableAt.differentiableWithinAt
-  have hnat : ∀ m : ℕ, ∀ k : ℕ, ContDiffOn ℝ m (F k) s := by
-    intro m
+  have hnat : ∀ m : ℕ, ∀ k : ℕ, ContDiffOn ℝ m (F k) s := fun m => by
     induction m with
     | zero => intro k; exact contDiffOn_zero.2 (hdiff k).continuousOn
     | succ m ih =>
