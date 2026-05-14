@@ -73,7 +73,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancell
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Representation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
