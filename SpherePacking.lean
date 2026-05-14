@@ -48,7 +48,6 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.InvChangeOfVariables
 public import SpherePacking.Integration.Measure
-public import SpherePacking.Integration.SmoothIntegralCommon
 public import SpherePacking.Integration.SmoothIntegralIciOne
 public import SpherePacking.Integration.UpperHalfPlaneComp
 public import SpherePacking.MagicFunction.IntegralParametrisations
