@@ -616,20 +616,18 @@ public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
   let Cθ : ℝ := (2 : ℝ) / (1 - rexp (-π))
   refine ⟨Cθ ^ 4, fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  have hΘ2 : ‖Θ₂.resToImagAxis t‖ ≤ Cθ * rexp (-π * (t / 4)) := by
-    have hden_pos : 0 < (1 - rexp (-π : ℝ)) :=
-      sub_pos.2 (Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos]))
-    calc
-      ‖Θ₂.resToImagAxis t‖ ≤
-          (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) :=
-            norm_Θ₂_resToImagAxis_le t ht0
-      _ = (2 * rexp (-π * (t / 4))) / (1 - rexp (-π * t)) := by
-            rw [show -π * ((1 / 2 : ℝ) ^ 2) * t = -π * (t / 4) by ring]
-      _ ≤ (2 * rexp (-π * (t / 4))) / (1 - rexp (-π : ℝ)) :=
-            div_le_div_of_nonneg_left (by positivity) hden_pos
-              (sub_le_sub_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht])) 1)
-      _ = Cθ * rexp (-π * (t / 4)) := by
-            simp [Cθ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+  have hΘ2 : ‖Θ₂.resToImagAxis t‖ ≤ Cθ * rexp (-π * (t / 4)) := calc
+    ‖Θ₂.resToImagAxis t‖ ≤
+        (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) :=
+          norm_Θ₂_resToImagAxis_le t ht0
+    _ = (2 * rexp (-π * (t / 4))) / (1 - rexp (-π * t)) := by
+          rw [show -π * ((1 / 2 : ℝ) ^ 2) * t = -π * (t / 4) by ring]
+    _ ≤ (2 * rexp (-π * (t / 4))) / (1 - rexp (-π : ℝ)) :=
+          div_le_div_of_nonneg_left (by positivity)
+            (sub_pos.2 (Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos])))
+            (sub_le_sub_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht])) 1)
+    _ = Cθ * rexp (-π * (t / 4)) := by
+          simp [Cθ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
   calc
     ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := by
       simp [H₂, Function.resToImagAxis, ResToImagAxis, ht0, norm_pow]
