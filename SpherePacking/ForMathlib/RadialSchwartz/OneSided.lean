@@ -1,17 +1,77 @@
 module
-public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
+public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+public import Mathlib.Analysis.InnerProductSpace.Basic
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import SpherePacking.ForMathlib.BoundsOnIcc
 
 /-!
 # One-sided decay to a radial Schwartz function
 
-If `f : ℝ → ℂ` is smooth and satisfies Schwartz-type bounds for all iterated derivatives on `0 ≤ r`,
-then the radial function `x ↦ f (‖x‖ ^ 2)` is Schwartz on any real inner product space `F`.
+This file defines the smooth cutoff `cutoff`/`cutoffC` for radial Schwartz constructions and
+proves the bridge to global Schwartz on `ℝ`: if `f : ℝ → ℂ` is smooth and satisfies Schwartz-type
+bounds for all iterated derivatives on `0 ≤ r`, then the radial function `x ↦ f (‖x‖ ^ 2)` is
+Schwartz on any real inner product space `F`.
 
 The construction multiplies `f` by a smooth cutoff on `ℝ` (to make it globally Schwartz), then
 lifts it to `F` by composing with `‖x‖ ^ 2`.
 -/
+
+namespace RadialSchwartz
+
+noncomputable section
+
+open Complex Real
+
+/-- Smooth cutoff: `cutoff r = 0` for `r ≤ -1/2`, `cutoff r = 1` for `0 ≤ r`. -/
+@[expose] public def cutoff (r : ℝ) : ℝ := Real.smoothTransition (2 * r + 1)
+
+@[simp] public lemma cutoff_eq_zero_of_le_neg_half {r : ℝ} (hr : r ≤ (-1 / 2 : ℝ)) :
+    cutoff r = 0 := by
+  simpa [cutoff] using Real.smoothTransition.zero_of_nonpos (x := 2 * r + 1) (by linarith)
+
+@[simp] public lemma cutoff_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoff r = 0 :=
+  cutoff_eq_zero_of_le_neg_half (r := r) (by linarith [hr])
+
+@[simp] public lemma cutoff_eq_one_of_nonneg {r : ℝ} (hr : 0 ≤ r) : cutoff r = 1 := by
+  simpa [cutoff] using Real.smoothTransition.one_of_one_le (x := 2 * r + 1) (by linarith)
+
+@[fun_prop]
+public lemma cutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoff := by
+  simpa [cutoff] using
+    Real.smoothTransition.contDiff.comp ((contDiff_const.mul contDiff_id).add contDiff_const)
+
+/-- Complex-valued version of `cutoff`. -/
+@[expose] public def cutoffC (r : ℝ) : ℂ := (cutoff r : ℂ)
+
+@[simp] public lemma cutoffC_eq_zero_of_le_neg_half {r : ℝ} (hr : r ≤ (-1 / 2 : ℝ)) :
+    cutoffC r = 0 := by simp [cutoffC, cutoff_eq_zero_of_le_neg_half hr]
+
+@[simp] public lemma cutoffC_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoffC r = 0 := by
+  simp [cutoffC, cutoff_eq_zero_of_le hr]
+
+@[simp] public lemma cutoffC_eq_one_of_nonneg {r : ℝ} (hr : 0 ≤ r) : cutoffC r = 1 := by
+  simp [cutoffC, cutoff_eq_one_of_nonneg hr]
+
+@[fun_prop]
+public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
+  simpa [cutoffC] using ofRealCLM.contDiff.comp cutoff_contDiff
+
+/-- If `f` is smooth on `(-1, ∞)` then `r ↦ cutoffC r * f r` is smooth on all of `ℝ`. -/
+public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
+    (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Set.Ioi (-1 : ℝ))) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun r ↦ cutoffC r * f r) := by
+  rw [contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)]
+  intro x
+  by_cases hx : x < (-1 / 2 : ℝ)
+  · refine (contDiffAt_const : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ ↦ (0 : ℂ)) x).congr_of_eventuallyEq ?_
+    filter_upwards [Iio_mem_nhds hx] with y hy
+    simp [cutoffC_eq_zero_of_le_neg_half (r := y) hy.le]
+  · have hx' : (-1 : ℝ) < x := by linarith [le_of_not_gt hx]
+    exact cutoffC_contDiff.contDiffAt.mul (hf.contDiffAt (isOpen_Ioi.mem_nhds hx'))
+
+end
+
+end RadialSchwartz
 
 open SchwartzMap Function RCLike
 

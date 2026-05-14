@@ -1,5 +1,5 @@
 module
-public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
+public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 
 import Mathlib.Analysis.Calculus.ContDiff.Basic
