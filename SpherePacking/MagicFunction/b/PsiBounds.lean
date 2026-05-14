@@ -234,10 +234,9 @@ public lemma ψT'_z₁'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     have hz1 : 0 < (z₁' t).im := im_z₁'_pos (t := t) htIoc
     have hz5 : 0 < (z₅' t).im := im_z₅'_pos (t := t) htIoc
     refine ψT'_eq_ψI'_of_ψT_eq_ψI hz1 hz5 ?_
-    have hvadd : ((1 : ℝ) +ᵥ (⟨z₁' t, hz1⟩ : ℍ) : ℍ) = ⟨z₅' t, hz5⟩ := by
+    simpa [show ((1 : ℝ) +ᵥ (⟨z₁' t, hz1⟩ : ℍ) : ℍ) = ⟨z₅' t, hz5⟩ from by
       ext1; simp [z₁'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht,
-        add_left_comm, add_comm]
-    simpa [hvadd] using (show ψT (⟨z₁' t, hz1⟩ : ℍ) = ψI ((1 : ℝ) +ᵥ ⟨z₁' t, hz1⟩) by
+        add_left_comm, add_comm]] using (show ψT (⟨z₁' t, hz1⟩ : ℍ) = ψI ((1 : ℝ) +ᵥ ⟨z₁' t, hz1⟩) by
       simp [ψT, modular_slash_T_apply])
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`.
@@ -374,7 +373,6 @@ public lemma continuous_ψI : Continuous ψI := by
 /-- `ψS` tends to `0` at `Im z → ∞`. -/
 public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) := by
   have hH2 := H₂_tendsto_atImInfty
-  have hH3 := H₃_tendsto_atImInfty
   have hH4 := H₄_tendsto_atImInfty
   have hpoly :
       Tendsto (fun z : ℍ => 2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)
@@ -391,7 +389,7 @@ public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) :=
             (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2))) /
           ((H₃ z) ^ 2 * (H₄ z) ^ 2) from funext fun z => by simp [ψS_apply_eq_factor]]
   simpa [Pi.div_apply] using ((tendsto_const_nhds.mul (hH2.mul hpoly)).neg.div
-    (by simpa using (hH3.pow 2).mul (hH4.pow 2)) (by norm_num : (1 : ℂ) ≠ 0))
+    (by simpa using (H₃_tendsto_atImInfty.pow 2).mul (hH4.pow 2)) (by norm_num : (1 : ℂ) ≠ 0))
 
 /-- Uniform bound for `‖ψS.resToImagAxis t‖` on `Ici (1 : ℝ)`. -/
 public lemma exists_bound_norm_ψS_resToImagAxis_Ici_one :
@@ -435,9 +433,9 @@ public lemma exists_bound_pow_mul_exp_neg_mul (k : ℕ) {b : ℝ} (hb : 0 < b) :
 
 /-- Uniform bound for `x ^ k * exp (-b * sqrt x)` on `0 ≤ x`. -/
 public lemma exists_bound_pow_mul_exp_neg_mul_sqrt (k : ℕ) {b : ℝ} (hb : 0 < b) :
-    ∃ C, ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * Real.sqrt x) ≤ C := by
-  rcases exists_bound_pow_mul_exp_neg_mul (k := 2 * k) (b := b) hb with ⟨C, hC⟩
-  exact ⟨C, fun x hx => by
+    ∃ C, ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * Real.sqrt x) ≤ C :=
+  let ⟨C, hC⟩ := exists_bound_pow_mul_exp_neg_mul (k := 2 * k) (b := b) hb
+  ⟨C, fun x hx => by
     simpa [pow_mul, Real.sq_sqrt hx] using hC (Real.sqrt x) (Real.sqrt_nonneg _)⟩
 
 /-- AM-GM style inequality for the exponential weight: for `0 ≤ x`, `0 < t`,
