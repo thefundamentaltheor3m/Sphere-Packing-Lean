@@ -12,7 +12,6 @@ public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.LPBoundReindex
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.CohnElkies.PoissonSummationLattices.PoissonSummation
-public import SpherePacking.CohnElkies.PoissonSummationSchwartz.Basic
 public import SpherePacking.Contour.GaussianIntegral
 public import SpherePacking.Contour.MobiusInv.Basic
 public import SpherePacking.Contour.MobiusInv.ContourChange
