@@ -10,7 +10,6 @@ module
 
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.MagicFunction.a.Basic
-public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
 
 import Mathlib.Analysis.Calculus.ContDiff.Bounds

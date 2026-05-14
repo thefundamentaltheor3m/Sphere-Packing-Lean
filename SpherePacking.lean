@@ -11,7 +11,6 @@ public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.GaussianFourierCommon
 public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
-public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
