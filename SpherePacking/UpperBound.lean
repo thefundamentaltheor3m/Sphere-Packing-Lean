@@ -9,11 +9,11 @@ import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 # Upper bound for sphere packing in dimension 8
 
 Proves an upper bound for `SpherePackingConstant 8` using the Cohn-Elkies linear programming
-bound and Viazovska's magic function (after a scaling). This is the upper-bound direction for
-`SpherePacking.MainTheorem`.
+bound and Viazovska's magic function (after a scaling), and packages the final main theorem.
 
 ## Main statements
 * `SpherePacking.SpherePackingConstant_le_E8Packing_density`
+* `SpherePacking.MainTheorem`
 -/
 
 namespace SpherePacking
@@ -55,5 +55,13 @@ public theorem SpherePackingConstant_le_E8Packing_density :
             simp [ENNReal.ofReal_div_of_pos (by norm_num : (0 : ℝ) < 384),
               ENNReal.ofReal_pow Real.pi_pos.le]
     _ = E8Packing.density := by simpa using E8Packing_density.symm
+
+open SpherePacking E8
+
+/-- Main theorem (dimension 8): the optimal packing density equals `E8Packing.density`. -/
+public theorem MainTheorem : SpherePackingConstant 8 = E8Packing.density :=
+  le_antisymm SpherePackingConstant_le_E8Packing_density <| by
+    simpa [SpherePackingConstant] using
+      le_iSup (fun S : SpherePacking 8 => S.density) E8Packing.toSpherePacking
 
 end SpherePacking

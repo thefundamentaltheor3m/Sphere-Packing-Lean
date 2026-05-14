@@ -144,7 +144,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
 public import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 public import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
-public import SpherePacking.MainTheorem
 public import SpherePacking.ModularForms.BigO
 public import SpherePacking.ModularForms.CSqrt
 public import SpherePacking.ModularForms.ClogArgLemmas

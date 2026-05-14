@@ -1,4 +1,4 @@
-import SpherePacking.MainTheorem
+import SpherePacking.UpperBound
 
 /-!
 # Axiom reports
