@@ -2,9 +2,8 @@ module
 
 public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.Basic.Domains.WedgeSet
-public import SpherePacking.Contour.MobiusInv.Segments
+public import SpherePacking.Contour.MobiusInv.ContourChange
 import SpherePacking.Contour.Segments
-import SpherePacking.Contour.MobiusInv.ContourChange
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Order.LatticeIntervals
 import Mathlib.Tactic.FunProp
