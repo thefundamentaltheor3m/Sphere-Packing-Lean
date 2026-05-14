@@ -305,22 +305,12 @@ open MagicFunction.b.RealIntegrals
 
 namespace MagicFunction.b.RadialFunctions
 
-/-- The function on `V` induced from the radial profile `J₁'` by `x = ‖v‖^2`. -/
+/-- The functions on `V` induced from the radial profiles `J₁'`-`J₆'` by `x = ‖v‖^2`. -/
 @[expose] public def J₁ (x : V) : ℂ := J₁' (‖x‖ ^ 2)
-
-/-- The function on `V` induced from the radial profile `J₂'` by `x = ‖v‖^2`. -/
 @[expose] public def J₂ (x : V) : ℂ := J₂' (‖x‖ ^ 2)
-
-/-- The function on `V` induced from the radial profile `J₃'` by `x = ‖v‖^2`. -/
 @[expose] public def J₃ (x : V) : ℂ := J₃' (‖x‖ ^ 2)
-
-/-- The function on `V` induced from the radial profile `J₄'` by `x = ‖v‖^2`. -/
 @[expose] public def J₄ (x : V) : ℂ := J₄' (‖x‖ ^ 2)
-
-/-- The function on `V` induced from the radial profile `J₅'` by `x = ‖v‖^2`. -/
 @[expose] public def J₅ (x : V) : ℂ := J₅' (‖x‖ ^ 2)
-
-/-- The function on `V` induced from the radial profile `J₆'` by `x = ‖v‖^2`. -/
 @[expose] public def J₆ (x : V) : ℂ := J₆' (‖x‖ ^ 2)
 
 /-- The magic function `b` on `V`, obtained from the radial profile `b'` by `x = ‖v‖^2`. -/
