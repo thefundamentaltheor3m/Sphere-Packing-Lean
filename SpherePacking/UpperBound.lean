@@ -497,8 +497,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     rw [intervalIntegral.integral_congr fun t ht => show _ = (-1 : ℂ) * g (1 - t) by
         simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
           show z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I by
-            have h := z₄'_eq_of_mem (t := t) (hmem_Icc ht)
-            push_cast at h ⊢; linear_combination h],
+            have h := z₄'_eq_of_mem (t := t) (hmem_Icc ht); push_cast at h ⊢; linear_combination h],
       show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
         simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num,
           (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
