@@ -2123,9 +2123,8 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
               φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
                 Real.exp (-π * u * t)) := by
   have hu0 : 0 ≤ u := (lt_trans (by norm_num : (0 : ℝ) < 2) hu).le
-  have ha : MagicFunction.FourierEigenfunctions.a' u = MagicFunction.a.RealIntegrals.a' u := by
-    simpa using (MagicFunction.g.CohnElkies.a'_eq_realIntegrals_a' (u := u) hu0)
-  rw [ha]
+  rw [show MagicFunction.FourierEigenfunctions.a' u = MagicFunction.a.RealIntegrals.a' u from by
+    simpa using (MagicFunction.g.CohnElkies.a'_eq_realIntegrals_a' (u := u) hu0)]
   dsimp [MagicFunction.a.RealIntegrals.a']
   have hsplit :
       MagicFunction.a.RealIntegrals.I₁' u + MagicFunction.a.RealIntegrals.I₂' u +
