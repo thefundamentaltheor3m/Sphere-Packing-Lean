@@ -2,7 +2,6 @@ module
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Core
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 import SpherePacking.Integration.Measure
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Continuation
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 
