@@ -762,7 +762,7 @@ public instance (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopol
         (R := ℤ) (S := ℝ) (M := EuclideanSpace ℝ (Fin d)) hB bR
   exact hdual ▸ inferInstance
 
-noncomputable section CentersInterReindex
+noncomputable section
 
 /-- Equivalence `((P.centers ∩ D) × P.lattice) ≃ P.centers` from a unique-covering assumption. -/
 @[expose] public def centersInterProdEquiv (P : PeriodicSpherePacking d) [Nonempty P.centers]
@@ -859,11 +859,9 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
   exact tsum_congr fun x =>
     tsum_congr₂ fun b c => congrArg Complex.re (congrArg (⇑f) (he_sub x b c))
 
-end CentersInterReindex
+end
 
 /-! ## Main LP bound -/
-
-section SwapSums
 
 /-- Commute the finite `x,y` sums with the dual-lattice `m` sum in the Poisson summation
 expression. We assume `𝓕 f` is real-valued so the result lives in real parts. -/
@@ -957,10 +955,6 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
       _ = c * (a m * (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m)) := by ring
   simpa (config := { zeta := false }) [c, e, hFourierReal] using hmain
 
-end SwapSums
-
-section LatticeSumBounds
-
 variable {d : ℕ} {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)}
 variable {P : PeriodicSpherePacking d} {D : Set (EuclideanSpace ℝ (Fin d))}
 
@@ -1033,8 +1027,6 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
       have hle := hCohnElkies₁ _ (by simpa [ge_iff_le] using hnorm)
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hle
     simpa [hxy] using tsum_nonpos hnonpos
-
-end LatticeSumBounds
 
 end SpherePacking.CohnElkies
 

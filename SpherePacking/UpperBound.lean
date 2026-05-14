@@ -1039,8 +1039,6 @@ end MagicFunction.g.CohnElkies.IntegralReps
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
-section AnotherIntegralA
-
 open MeasureTheory Real Complex
 open SpherePacking.Integration (μIoi0)
 open MagicFunction.FourierEigenfunctions
@@ -1163,8 +1161,6 @@ public theorem aRadial_eq_another_integral_main {u : ℝ} (hu : 0 < u) (hu2 : u 
   simpa [aAnotherIntegrand] using
     aRadial_eq_another_integral_analytic_continuation_of_gt2 (u := u) (hu := hu) (hu2 := hu2)
       fun r hr => by simpa [aAnotherIntegral] using aRadial_eq_another_integral_of_gt2 (u := r) hr
-
-end AnotherIntegralA
 
 end MagicFunction.g.CohnElkies.IntegralReps
 
