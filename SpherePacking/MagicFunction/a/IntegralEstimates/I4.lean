@@ -8,7 +8,6 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I24Common
 public import SpherePacking.MagicFunction.a.IntegralEstimates.PowExpBounds
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.RealDeriv
