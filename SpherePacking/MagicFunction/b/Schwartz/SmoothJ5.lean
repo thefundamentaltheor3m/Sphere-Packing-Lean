@@ -11,7 +11,6 @@ import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
 import SpherePacking.Integration.UpperHalfPlaneComp

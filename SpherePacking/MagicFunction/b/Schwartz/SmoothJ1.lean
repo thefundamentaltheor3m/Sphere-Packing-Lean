@@ -14,7 +14,6 @@ import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.SmoothIntegralIciOne
-import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import Mathlib.Topology.Order.ProjIcc

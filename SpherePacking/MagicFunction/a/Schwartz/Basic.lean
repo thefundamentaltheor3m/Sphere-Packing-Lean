@@ -24,7 +24,6 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IntegrablePowMulExp
-import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.MagicFunction.PolyFourierCoeffBound

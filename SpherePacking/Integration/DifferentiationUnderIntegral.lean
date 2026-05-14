@@ -9,7 +9,6 @@ public import Mathlib.Order.Interval.Set.UnorderedInterval
 public import SpherePacking.Integration.Measure
 import Mathlib.Topology.Basic
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.IteratedDeriv
 
 /-!
 # Differentiation under the integral sign on `(0, 1)`
