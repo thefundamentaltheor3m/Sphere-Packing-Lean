@@ -135,7 +135,6 @@ namespace MagicFunction.a.RadialFunctions
 @[expose] public def a : V → ℂ := fun x ↦ a' (‖x‖ ^ 2)
 
 open intervalIntegral
-
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
 @[simp] public lemma I₁_eq (x : V) : I₁ x = I₁' (‖x‖ ^ 2) := rfl
