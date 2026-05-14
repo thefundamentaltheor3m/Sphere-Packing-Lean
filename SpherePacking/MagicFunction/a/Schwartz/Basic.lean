@@ -1177,8 +1177,7 @@ public lemma inv_integrand_eq_integrand {t : ℝ} (ht₀ : 0 < t) (r : ℝ) (pha
 
 /-- Pointwise bound on `‖g r s‖` on `Ici 1` in terms of `‖φ₀'' (I * s)‖`. -/
 public lemma I₃'_bounding_aux_1 (r : ℝ) :
-    ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
-  intro s hs
+    ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := fun s hs => by
   simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
     norm_zpow, norm_real, norm_eq_abs, norm_exp, neg_re, mul_re, ofReal_re, I_re, mul_zero,
     ofReal_im, I_im, mul_one, zero_mul, mul_im, add_zero, Real.exp_zero, div_ofReal_re, sub_zero]
@@ -1425,8 +1424,7 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
     (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
     ∀ x : ℝ, 0 ≤ x →
       x ^ k * (∫ s in Ici (1 : ℝ), rexp (-2 * π * s) * rexp (-π * x / s)) ≤
-        ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)) := by
-  intro x hx
+        ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)) := fun x hx => by
   let f : ℝ → ℝ := fun s ↦ x ^ k * (rexp (-2 * π * s) * rexp (-π * x / s))
   let g : ℝ → ℝ := fun s ↦ ((π ^ k)⁻¹ * Cpow) * (s ^ k * rexp (-2 * π * s))
   have hf_int : IntegrableOn f (Ici (1 : ℝ)) volume := by
@@ -1468,8 +1466,7 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
 
 /-- Schwartz-style decay estimate for `RealIntegrals.I₁'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ ≤ C := by
-  intro k n
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ ≤ C := fun k n => by
   obtain ⟨Cpow, hCpow⟩ : ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
     obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
       (((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).eventually

@@ -262,8 +262,7 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
     (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ,
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖ ≤ C := by
-  intro k n
+      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖ ≤ C := fun k n => by
   obtain ⟨Cpos, hCpos⟩ := hf_decay k n
   obtain ⟨Cmid, hCmid⟩ :=
     SpherePacking.ForMathlib.exists_upper_bound_on_Icc

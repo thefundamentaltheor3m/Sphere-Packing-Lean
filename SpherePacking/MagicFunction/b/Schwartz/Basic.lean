@@ -139,8 +139,7 @@ lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
       (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
       (n := n) (x := x) hx (hF_int := by simpa [μ] using gN_integrable (n := n) (x := x) hx))
 
-lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := by
-  intro n
+lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := fun n => by
   induction n with
   | zero => intro m x _; simp [iteratedDeriv_zero]
   | succ n ih =>
@@ -177,9 +176,8 @@ public theorem contDiffOn_J₆'_Ioi_neg1 :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 
 /-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`. -/
-public theorem decay_J₆' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := by
-  intro k n
+public theorem decay_J₆' : ∀ (k n : ℕ),
+    ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := fun k n => by
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
   obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
@@ -336,8 +334,7 @@ public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
 
 /-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := by
-  intro k n
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := fun k n => by
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
   obtain ⟨Cψ, hCψ⟩ :=
@@ -519,8 +516,7 @@ public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
 
 /-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₅' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := by
-  intro k n
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := fun k n => by
   obtain ⟨B, hB⟩ :=
     exists_bound_pow_mul_exp_neg_mul_sqrt (k := k) (b := 2 * Real.pi) (by positivity)
   obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
@@ -729,8 +725,8 @@ public theorem decay_integral_of_coeff_re
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
     (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C := by
-  intro k n
+      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C :=
+    fun k n => by
   obtain ⟨B, hB⟩ :=
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
@@ -957,8 +953,7 @@ public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
 
 /-- Schwartz-type decay bounds for `J₃'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₃' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₃' x‖ ≤ C := by
-  intro k n
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₃' x‖ ≤ C := fun k n => by
   let c : ℂ := (Real.pi : ℂ) * Complex.I
   let e : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * c)
   let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • e x
