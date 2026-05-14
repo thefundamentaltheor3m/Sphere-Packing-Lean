@@ -884,7 +884,6 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
       mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
   have habs_re : |z.re - 1| ≤ z.im :=
     SpherePacking.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
-  have hnormSq_pos : 0 < Complex.normSq (z - 1) := Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
   have hz_im_lt1 : z.im < 1 :=
     (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1) :
         z.im ≤ ‖z - 1‖).trans_lt (by simpa [dist_eq_norm] using hdist_lt1)
@@ -897,7 +896,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   have hw_half : (1 / 2 : ℝ) < (-1 / (z - 1)).im := by
     have him : (-1 / (z - 1)).im = z.im / Complex.normSq (z - 1) := by
       simp [div_eq_mul_inv, Complex.inv_im, sub_eq_add_neg]
-    rw [him, lt_div_iff₀ hnormSq_pos]
+    rw [him, lt_div_iff₀ (Complex.normSq_pos.2 (sub_ne_zero.mpr hz1))]
     nlinarith [hnormSq_le, hz_im_pos, hz_im_lt1]
   have hw_pos : 0 < (-1 / (z - 1)).im := lt_trans (by norm_num) hw_half
   have hφ₀'' : ‖φ₀'' (-1 / (z - 1))‖ ≤ (C₀ : ℝ) := by
