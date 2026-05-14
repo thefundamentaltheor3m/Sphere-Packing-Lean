@@ -13,7 +13,6 @@ import SpherePacking.MagicFunction.b.PsiBounds
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import SpherePacking.ForMathlib.GaussianFourierCommon
-import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay

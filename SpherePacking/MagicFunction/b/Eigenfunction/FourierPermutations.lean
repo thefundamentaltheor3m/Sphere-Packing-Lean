@@ -9,7 +9,6 @@ public import Mathlib.MeasureTheory.Function.JacobianOneDim
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import Mathlib.MeasureTheory.Integral.ExpDecay
-import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.DerivHelpers

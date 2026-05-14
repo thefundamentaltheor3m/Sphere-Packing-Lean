@@ -15,7 +15,6 @@ import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.Integration.Measure
-import SpherePacking.Integration.InvChangeOfVariables
 
 /-! # Schwartz decay for `RealIntegrals.I₁'`: inverse-power decay (`decay'`) via the
 change-of-variables representation `IntegralEstimates.I₁.Complete_Change_of_Variables`.
