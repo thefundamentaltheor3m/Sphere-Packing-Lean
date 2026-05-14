@@ -262,8 +262,6 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
 
 end CoordCubeCover
 
-section CoverVolumeBound
-
 lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} (hL : 0 < L)
     {R C : ℝ} (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
@@ -288,8 +286,6 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
         simp only [vadd_eq_add, mem_ball_zero_iff]
         linarith [norm_add_le (g : EuclideanSpace ℝ (Fin d)) x,
           mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
-
-end CoverVolumeBound
 
 section BoundaryControl
 
@@ -376,8 +372,6 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
             (PiLp.volume_preserving_ofLp (ι := Fin d)).measurable).nullMeasurableSet
       (by simp [PeriodicConstant.volume_coordCubeInner])
 
-section CubeLatticeCovolume
-
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
       (volume (coordCube d L)).toNNReal := by
@@ -389,10 +383,6 @@ lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
         (by simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume :
           IsAddFundamentalDomain (cubeLattice d L hL)
             (fundamentalDomain (cubeBasis d L hL)) volume)]
-
-end CubeLatticeCovolume
-
-section PeriodizeCubeDensity
 
 lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.separation = 1)
     {L : ℝ} (hL : 0 < L) {g : cubeLattice d L hL}
@@ -429,8 +419,6 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
             (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d)) :
             IsBounded D) hD_unique hd).symm
   exact ⟨P, hPsep, by simpa [hnumReps, hPsep] using P.density_eq' (d := d) hd⟩
-
-end PeriodizeCubeDensity
 
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     Tendsto
@@ -635,8 +623,6 @@ noncomputable section
 
 namespace SchwartzMap
 
-section FourierSchwartz
-
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
   {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
     [MeasurableSpace V] [BorelSpace V]
@@ -645,8 +631,6 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E
 /-- Fourier inversion for Schwartz functions. -/
 @[simp]
 public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by rw [← fourier_coe, ← fourierInv_coe]; simp
-
-end FourierSchwartz
 
 end SchwartzMap
 section Integration
@@ -741,8 +725,6 @@ namespace LPBoundSummability
 
 open SpherePacking.CohnElkies.LPBoundAux
 
-section ZLattice
-
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (a : EuclideanSpace ℝ (Fin d))
 
@@ -755,8 +737,6 @@ public theorem summable_lattice_translate :
 public theorem summable_lattice_translate_re :
     Summable (fun ℓ : Λ => (f (a + (ℓ : EuclideanSpace ℝ (Fin d)))).re) :=
   Complex.reCLM.summable (summable_lattice_translate (Λ := Λ) f a)
-
-end ZLattice
 
 end LPBoundSummability
 
@@ -1067,8 +1047,6 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 
 local notation "conj" => starRingEnd ℂ
 
-section Nonnegativity
-
 theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
   (FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
@@ -1088,8 +1066,6 @@ theorem f_zero_pos : 0 < (f 0).re := by
     simpa [fourierInv_eq, show f 0 = 0 from by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion))
   ext x; simpa [show (𝓕 f x).re = 0 from by simpa using congrFun hfun x] using (hRealFourier x).symm
-
-end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
@@ -1304,8 +1280,6 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
 
 end Fundamental_Domain_Dependent
 
-section Main_Theorem
-
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 /-- The Cohn-Elkies linear programming upper bound on `SpherePackingConstant d`. -/
@@ -1321,5 +1295,3 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
       (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
         (PeriodicSpherePacking.basis_index_equiv P))) hd
-
-end Main_Theorem
