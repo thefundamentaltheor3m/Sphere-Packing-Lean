@@ -58,7 +58,6 @@ public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Fourier
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierAux
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI2
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierMain
