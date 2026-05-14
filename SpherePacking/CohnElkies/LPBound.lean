@@ -969,9 +969,8 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
   by_cases hxy : x = y
   · subst hxy
     have hs : Summable fun ℓ : P.lattice => (f (ℓ : EuclideanSpace ℝ (Fin d))).re := by
-      simpa [zero_add] using
-        (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
-          (Λ := P.lattice) (f := f) (a := (0 : EuclideanSpace ℝ (Fin d))))
+      simpa [zero_add] using SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
+        (Λ := P.lattice) (f := f) (a := (0 : EuclideanSpace ℝ (Fin d)))
     have htail : (∑' ℓ : P.lattice,
           ite (ℓ = (0 : P.lattice)) 0 (f (ℓ : EuclideanSpace ℝ (Fin d))).re) ≤ 0 := by
       refine tsum_nonpos fun ℓ => ?_
