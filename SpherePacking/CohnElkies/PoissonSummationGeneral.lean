@@ -371,8 +371,7 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
     have hRlt : max (2 * r0) 1 < ‖(ℓ : E)‖ := lt_of_not_ge (by simpa using hℓ)
     have hnorm_lt : 2 * r0 < ‖(ℓ : E)‖ := lt_of_le_of_lt (le_max_left _ _) hRlt
     have hnorm_pos : 0 < ‖(ℓ : E)‖ := lt_trans (by positivity) hRlt
-    refine (ContinuousMap.norm_le _ (by positivity)).2 ?_
-    rintro ⟨x, hxK⟩
+    refine (ContinuousMap.norm_le _ (by positivity)).2 fun ⟨x, hxK⟩ => ?_
     have hxnorm : ‖(x : E)‖ ≤ r0 := by
       simpa [Metric.mem_closedBall, dist_eq_norm] using hrK0 hxK
     have hnorm_ge : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(x + (ℓ : E))‖ := by

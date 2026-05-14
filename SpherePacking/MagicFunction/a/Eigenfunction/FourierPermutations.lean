@@ -628,7 +628,6 @@ open scoped Interval RealInnerProductSpace
 public lemma integral_permI1Kernel_x (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : ℝ⁸, permI1Kernel w (x, t)) =
       (I : ℂ) * Φ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
-  have hz : 0 < (z₁line t).im := z₁line_im_pos_Ioc ht
   let c : ℂ := (I : ℂ) * (φ₀'' (-1 / (z₁line t + 1)) * (z₁line t + 1) ^ 2)
   have hfactor : (fun x : ℝ⁸ => permI1Kernel w (x, t)) = fun x : ℝ⁸ =>
       c * (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -640,7 +639,7 @@ public lemma integral_permI1Kernel_x (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 :
           cexp ((π : ℂ) * I * (‖w‖ ^ 2 : ℝ) * (-1 / z₁line t))) := by
       simpa [hfactor] using
         integral_const_mul_phase_gaussian_pi_mul_I_mul_even
-          (k := 4) (w := w) (z := z₁line t) hz (c := c)
+          (k := 4) (w := w) (z := z₁line t) (z₁line_im_pos_Ioc ht) (c := c)
     _ = (I : ℂ) * Φ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
       simp only [c, Φ₁_fourier]; ring
 
@@ -668,9 +667,8 @@ open SpherePacking.ForMathlib
 
 lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) ≤ (2 : ℝ) * ‖φ₀'' (-1 / (z₂line t + 1))‖ := by
-  have ht0 : 0 < t := ht.1
   have hpow : ‖(z₂line t + 1) ^ 2‖ ≤ (2 : ℝ) := by
-    have ht_sq : t ^ 2 ≤ 1 := by nlinarith [ht0.le, ht.2]
+    have ht_sq : t ^ 2 ≤ 1 := by nlinarith [ht.1.le, ht.2]
     calc
       ‖(z₂line t + 1) ^ 2‖ = ‖(z₂line t + 1)‖ ^ 2 := by simp [norm_pow]
       _ = Complex.normSq (z₂line t + 1) := by simp [Complex.sq_norm]
@@ -863,8 +861,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
     have habs : |expNorm z - expNorm (1 : ℂ)| < 1 := by simpa [Real.dist_eq] using hδexp hz
     simp only [M]
     linarith [le_abs_self (expNorm z - expNorm (1 : ℂ))]
-  refine (Metric.tendsto_nhdsWithin_nhds).2 ?_
-  intro ε hε
+  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
   have hub : Tendsto (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (𝓝 (1 : ℂ))
       (𝓝 (0 : ℝ)) := by
     simpa using (by fun_prop : Continuous (fun z : ℂ => (C₀ : ℝ) *
@@ -877,12 +874,11 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1
     simpa [MagicFunction.a.ComplexIntegrands.Φ₃'] using hε
-  have hdist_exp : dist z (1 : ℂ) < δexp := hdistz.trans_le (min_le_left _ _)
   have hdist_lt1 : dist z (1 : ℂ) < 1 :=
     hdistz.trans_le ((min_le_right _ _).trans (min_le_left _ _))
   have hdist_pow : dist z (1 : ℂ) < δpow :=
     hdistz.trans_le ((min_le_right _ _).trans (min_le_right _ _))
-  have hexpZ : expNorm z ≤ M := hExpBound hdist_exp
+  have hexpZ : expNorm z ≤ M := hExpBound (hdistz.trans_le (min_le_left _ _))
   have hz_im_pos : 0 < z.im := by
     simpa [UpperHalfPlane.upperHalfPlaneSet] using
       mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
@@ -954,10 +950,9 @@ public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
         fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
           wedgeSet x v u := by
   intro x hx _ _ _ _
-  have hxU : x ∈ UpperHalfPlane.upperHalfPlaneSet := wedgeSet_subset_upperHalfPlaneSet hx
   have hfdiff : DifferentiableAt ℂ (MagicFunction.a.ComplexIntegrands.Φ₃' r) x :=
     (MagicFunction.a.ComplexIntegrands.Φ₃'_holo (r := r)).differentiableAt
-      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hxU)
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds (wedgeSet_subset_upperHalfPlaneSet hx))
   exact SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
     (s := wedgeSet) isOpen_wedgeSet hx (hfdiff := hfdiff)
 
