@@ -952,11 +952,9 @@ public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
 /-- Schwartz-type decay bounds for `J₃'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₃' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₃' x‖ ≤ C := fun k n => by
-  let c : ℂ := (Real.pi : ℂ) * Complex.I
-  let e : ℝ → ℂ := fun x ↦ cexp ((x : ℂ) * c)
-  let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • e x
+  let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • cexp ((x : ℂ) * ((Real.pi : ℂ) * Complex.I))
   have hf_cont : ContDiff ℝ (⊤ : ℕ∞) f := by
-    simpa [f, e] using ((ofRealCLM.contDiff.mul contDiff_const).cexp.const_smul (-1 / 2 : ℂ))
+    simpa [f] using ((ofRealCLM.contDiff.mul contDiff_const).cexp.const_smul (-1 / 2 : ℂ))
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left
     (f := f) (g := J₅') (k := k) (n := n) (B := fun m ↦ (1 / 2 : ℝ) * Real.pi ^ m)
     hf_cont MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
@@ -964,7 +962,7 @@ public theorem decay_J₃' :
     (fun m => by simpa using (MagicFunction.b.Schwartz.J5Smooth.decay_J₅' (k := k) (n := m)))
   refine ⟨C, fun x hx => ?_⟩
   have hJ3fun : J₃' = fun y : ℝ ↦ f y * J₅' y :=
-    funext fun y => by simp [f, e, c, mul_assoc, mul_left_comm, mul_comm, J₃'_eq (x := y)]
+    funext fun y => by simp [f, mul_assoc, mul_left_comm, mul_comm, J₃'_eq (x := y)]
   simpa [hJ3fun] using hC x hx
 
 end MagicFunction.b.Schwartz.J3Smooth
