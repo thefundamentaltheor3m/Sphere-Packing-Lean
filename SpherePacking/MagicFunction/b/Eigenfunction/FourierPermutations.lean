@@ -212,10 +212,10 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
       (c := Real.pi) (by simpa using Real.pi_pos)
   have hmajor :
       Integrable (fun t : ℝ ↦ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t))) μIoc01 := by
-    have h0' : Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
-        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) :=
-      by simpa [MeasureTheory.IntegrableOn] using hmajor0
-    simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using h0'.const_mul Cψ
+    simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using
+      (show Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
+        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))
+        from by simpa [MeasureTheory.IntegrableOn] using hmajor0).const_mul Cψ
   have hmeas_g : AEStronglyMeasurable g μIoc01 := by
     have hcont_inv : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) (Ioc (0 : ℝ) 1) :=
       (continuousOn_inv₀ : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) ({0}ᶜ)).mono
@@ -229,7 +229,6 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall ?_
     intro t ht
     have ht0 : 0 < t := ht.1
-    have ht_ne0 : t ≠ 0 := ht0.ne'
     have hpow_nonneg : 0 ≤ (1 / t : ℝ) ^ (k + 2) := pow_nonneg (one_div_nonneg.2 ht0.le) (k + 2)
     have hgt0 : 0 ≤ g t := mul_nonneg (norm_nonneg _) hpow_nonneg
     have hnorm_g : ‖g t‖ = g t := by simp [Real.norm_eq_abs, abs_of_nonneg hgt0]
@@ -237,7 +236,7 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
       calc (t ^ k) * (1 / t) ^ (k + 2)
           = (t ^ k * (1 / t) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [pow_add]; ac_rfl
         _ = ((t * (1 / t)) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [mul_pow, mul_assoc]
-        _ = 1 / t ^ (2 : ℕ) := by simp [one_div, ht_ne0]
+        _ = 1 / t ^ (2 : ℕ) := by simp [one_div, ht0.ne']
     have : g t ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) := by
       have hmul := mul_le_mul_of_nonneg_right (hbound t ht) hpow_nonneg
       have hR :
