@@ -1,6 +1,7 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.StripBounds
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import SpherePacking.MagicFunction.a.Schwartz.Basic
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 
 /-!
@@ -11,6 +12,26 @@ import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 * `aRadial_eq_laplace_phi0_main`: main Laplace representation for the radial profile `a'`,
   used in the blueprint proposition `prop:a-double-zeros`.
 -/
+
+namespace MagicFunction.g.CohnElkies
+
+/--
+For `u ≥ 0`, the radial profile `a'` from `MagicFunction.FourierEigenfunctions` agrees with the
+real-integral definition `MagicFunction.a.RealIntegrals.a'`.
+
+The prime `'` is part of the standard notation for this radial profile (it is not a derivative).
+-/
+public lemma a'_eq_realIntegrals_a' {u : ℝ} (hu : 0 ≤ u) :
+    (MagicFunction.FourierEigenfunctions.a' : ℝ → ℂ) u = MagicFunction.a.RealIntegrals.a' u := by
+  simp [MagicFunction.FourierEigenfunctions.a', MagicFunction.a.RealIntegrals.a',
+    MagicFunction.a.SchwartzIntegrals.I₁'_apply_of_nonneg,
+    MagicFunction.a.SchwartzIntegrals.I₂'_apply_of_nonneg,
+    MagicFunction.a.SchwartzIntegrals.I₃'_apply_of_nonneg,
+    MagicFunction.a.SchwartzIntegrals.I₄'_apply_of_nonneg,
+    MagicFunction.a.SchwartzIntegrals.I₅'_apply_of_nonneg,
+    MagicFunction.a.SchwartzIntegrals.I₆'_apply_of_nonneg, hu]
+
+end MagicFunction.g.CohnElkies
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 

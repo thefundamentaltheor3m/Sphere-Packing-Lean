@@ -1,6 +1,6 @@
 module
 import SpherePacking.MagicFunction.g.CohnElkies.Defs
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
+public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.b.Psi
@@ -19,6 +19,26 @@ Defines the Laplace integrand `bLaplaceIntegrand` and proves its convergence on 
 (`bContourWeight`, `bContourIntegrand{I,T,S}`) and the supporting `ψT' = ψI' (· + 1)` identities
 used in the rectangle deformation argument.
 -/
+
+namespace MagicFunction.g.CohnElkies
+
+/--
+For `u ≥ 0`, the radial profile `b'` from `MagicFunction.FourierEigenfunctions` agrees with the
+real-integral definition `MagicFunction.b.RealIntegrals.b'`.
+
+The prime `'` is part of the standard notation for this radial profile (it is not a derivative).
+-/
+public lemma b'_eq_realIntegrals_b' {u : ℝ} (hu : 0 ≤ u) :
+    (MagicFunction.FourierEigenfunctions.b' : ℝ → ℂ) u = MagicFunction.b.RealIntegrals.b' u := by
+  simp [MagicFunction.FourierEigenfunctions.b', MagicFunction.b.RealIntegrals.b',
+    MagicFunction.b.SchwartzIntegrals.J₁'_apply_of_nonneg,
+    MagicFunction.b.SchwartzIntegrals.J₂'_apply_of_nonneg,
+    MagicFunction.b.SchwartzIntegrals.J₃'_apply_of_nonneg,
+    MagicFunction.b.SchwartzIntegrals.J₄'_apply_of_nonneg,
+    MagicFunction.b.SchwartzIntegrals.J₅'_apply_of_nonneg,
+    MagicFunction.b.SchwartzIntegrals.J₆'_apply_of_nonneg, hu]
+
+end MagicFunction.g.CohnElkies
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
