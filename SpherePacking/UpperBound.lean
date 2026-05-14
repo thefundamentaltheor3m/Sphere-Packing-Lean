@@ -1600,8 +1600,7 @@ public theorem g_nonpos_of_norm_sq_ge_two (x : ℝ⁸) (hx : 2 ≤ ‖x‖ ^ 2) 
         mul_nonpos_of_nonpos_of_nonneg (hA_neg ht).le (Real.exp_pos _).le))
 
 /-- The real part of the Fourier transform `𝓕 g` is nonnegative. -/
-public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
-  intro x
+public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := fun x => by
   by_cases hx : x = 0
   · subst hx
     have h0 : (𝓕 g (0 : ℝ⁸)) = (1 : ℂ) := by
