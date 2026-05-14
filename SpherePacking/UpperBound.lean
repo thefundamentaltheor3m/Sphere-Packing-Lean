@@ -15,7 +15,6 @@ public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv

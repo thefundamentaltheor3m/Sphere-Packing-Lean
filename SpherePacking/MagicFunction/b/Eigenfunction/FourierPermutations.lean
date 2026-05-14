@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
-import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import Mathlib.MeasureTheory.Function.JacobianOneDim
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
