@@ -834,11 +834,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
     refine ⟨max 0 k, by simp, fun k' hk' => ?_⟩
     obtain ⟨_, hk₁⟩ := max_le_iff.mp hk'
     have := hk k' hk₁
-    have hgoal :
-        ENNReal.ofReal ((k' / (k' + 1)) ^ (d : ℝ)) ∈ Set.Icc (1 - ε) (1 + ε) := by
+    simpa using show
+        ENNReal.ofReal ((k' / (k' + 1)) ^ (d : ℝ)) ∈ Set.Icc (1 - ε) (1 + ε) by
       rwa [sub_zero, ofReal_one, one_rpow, ← one_div, one_sub_div, add_sub_cancel_right,
         ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
-    simpa using hgoal
   refine ⟨k * C, fun n hn => ?_⟩
   rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
   convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
