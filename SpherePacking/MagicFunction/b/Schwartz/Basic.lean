@@ -1087,10 +1087,6 @@ lemma J₁'_J₃_eq_neg_J₅'_zero : J₁' (0 : ℝ) + J₃' 0 = -J₅' 0 := by
   simp [hJ1, hJ3, show J₅' (0 : ℝ) = (-2 : ℂ) *
     ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * ψI' (z₅' t) by simp [J₅']]; ring
 
-private lemma continuous_addIφ :
-    Continuous fun t : ℝ => (⟨(t : ℂ) + Complex.I, by simp⟩ : ℍ) :=
-  Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
-
 lemma ψT'_z₂'_eq_ψI'_add_one (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     ψT' (z₂' t) = ψI' ((t : ℂ) + Complex.I) := by
   have hz2 : 0 < (z₂' t).im := im_z₂'_pos (t := t) (by simpa using ht)
@@ -1153,13 +1149,15 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
         have hz : 0 < (((t : ℂ) + Complex.I).im) := by simp
         simpa [ψI', ψT', ψS', hz] using
           congrArg (fun F : ℍ → ℂ => F ⟨(t : ℂ) + Complex.I, hz⟩) ψI_eq_add_ψT_ψS
+    have hAddI : Continuous fun t : ℝ => (⟨(t : ℂ) + Complex.I, by simp⟩ : ℍ) :=
+      Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
     simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
         ((by simpa [ψI'] using
-            MagicFunction.b.PsiBounds.continuous_ψI.comp continuous_addIφ :
+            MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
               Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)
         ((by simpa [ψT'] using
-            MagicFunction.b.PsiBounds.continuous_ψT.comp continuous_addIφ :
+            MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
               Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)).symm.trans
         (intervalIntegral.integral_congr fun t _ => hrel t)
   have hdiffψS :
