@@ -69,25 +69,15 @@ variable (r : ℝ)
 
 namespace MagicFunction.a.ComplexIntegrands
 
-/-- First complex integrand for `a`. -/
+/-- The complex integrands `Φ₁'`-`Φ₆'` for `a` (`Φ₂' := Φ₁'`, `Φ₄' := Φ₃'` for uniform indexing). -/
 @[expose] public def Φ₁' : ℂ → ℂ :=
   fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
-
-/-- A copy of `Φ₁'` used for uniform indexing. -/
 @[expose] public def Φ₂' : ℂ → ℂ := Φ₁' r
-
-/-- Third complex integrand for `a`. -/
 @[expose] public def Φ₃' : ℂ → ℂ :=
   fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
-
-/-- A copy of `Φ₃'` used for uniform indexing. -/
 @[expose] public def Φ₄' : ℂ → ℂ := Φ₃' r
-
-/-- Fifth complex integrand for `a`. -/
 @[expose] public def Φ₅' : ℂ → ℂ :=
   fun z ↦ φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
-
-/-- Sixth complex integrand for `a`. -/
 @[expose] public def Φ₆' : ℂ → ℂ := fun z ↦ φ₀'' z * cexp (π * I * r * (z : ℂ))
 
 end MagicFunction.a.ComplexIntegrands
