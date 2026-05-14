@@ -185,26 +185,20 @@ public lemma two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I (u : ℝ) :
     (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
         Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
       ((2 - 2 * Real.cos (π * u) : ℝ) : ℂ) := by
-  set z : ℂ := ((π * u : ℝ) : ℂ)
-  have hcos : Complex.exp (z * Complex.I) + Complex.exp (-(z * Complex.I)) =
-      (2 : ℂ) * Complex.cos z := by
-    simpa [neg_mul] using (Complex.two_cos (x := z)).symm
-  calc
-    (2 : ℂ) - Complex.exp (z * Complex.I) - Complex.exp (-(z * Complex.I)) =
-        (2 : ℂ) - (Complex.exp (z * Complex.I) + Complex.exp (-(z * Complex.I))) := by
-          simpa using sub_sub (2 : ℂ) (Complex.exp (z * Complex.I)) (Complex.exp (-(z * Complex.I)))
-    _ = (2 : ℂ) - (2 : ℂ) * Complex.cos z := by simp [hcos]
-    _ = ((2 - 2 * Real.cos (π * u) : ℝ) : ℂ) := by simp [z, sub_eq_add_neg]
+  rw [show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+      Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
+      (2 : ℂ) - (2 : ℂ) * Complex.cos ((π * u : ℝ) : ℂ) from by
+    simpa [sub_sub, neg_mul] using
+      congrArg (fun w : ℂ => (2 : ℂ) - w) (Complex.two_cos (x := ((π * u : ℝ) : ℂ))).symm]
+  simp [sub_eq_add_neg]
 
 /-- Rewrite `2 - 2 cos(π u)` as `4 sin(π u / 2)^2`. -/
 public lemma two_sub_two_cos_eq_four_sin_sq (u : ℝ) :
     (2 - 2 * Real.cos (π * u) : ℝ) = 4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) := by
-  have hsin : (Real.sin (π * u / 2)) ^ (2 : ℕ) = 1 / 2 - Real.cos (π * u) / 2 := by
-    have : (2 : ℝ) * (π * u / 2) = π * u := by ring
-    simpa [pow_two, this] using (Real.sin_sq_eq_half_sub (x := π * u / 2))
-  calc
-    (2 - 2 * Real.cos (π * u) : ℝ) = 4 * (1 / 2 - Real.cos (π * u) / 2) := by ring
-    _ = 4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) := by simp [hsin]
+  rw [show (Real.sin (π * u / 2)) ^ (2 : ℕ) = 1 / 2 - Real.cos (π * u) / 2 from by
+    simpa [pow_two, show (2 : ℝ) * (π * u / 2) = π * u from by ring] using
+      Real.sin_sq_eq_half_sub (x := π * u / 2)]
+  ring
 
 end Trig
 
@@ -483,23 +477,19 @@ public lemma Φ_finite_difference_imag_axis {u t : ℝ} (ht : 0 < t) :
     simpa [mul_assoc] using hfd
   have hzH : (zH : ℂ) = (t : ℂ) * Complex.I := by simp [zH, mul_comm]
   set e : ℂ := Complex.exp ((Real.pi : ℂ) * Complex.I * (u : ℂ) * (zH : ℂ))
-  set core : ℂ :=
-      φ₀'' ((-1 : ℂ) / (((1 : ℝ) +ᵥ zH : ℍ) : ℂ)) * (((1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)
-          - 2 * (φ₀'' ((-1 : ℂ) / (zH : ℂ)) * ((zH : ℂ) ^ (2 : ℕ)))
-          + φ₀'' ((-1 : ℂ) / (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ)) * (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)
-    with hcore_def
-  have hcore_eq : core = (2 : ℂ) * φ₀'' (zH : ℂ) := by simpa [core, hcore_def] using hcore
   have hL :
       Φ₂' u ((t : ℂ) * Complex.I) - 2 * Φ₅' u ((t : ℂ) * Complex.I) + Φ₄' u ((t : ℂ) * Complex.I) =
-        core * e := by
-    rw [hcore_def]
+        (φ₀'' ((-1 : ℂ) / (((1 : ℝ) +ᵥ zH : ℍ) : ℂ)) * (((1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)
+            - 2 * (φ₀'' ((-1 : ℂ) / (zH : ℂ)) * ((zH : ℂ) ^ (2 : ℕ)))
+            + φ₀'' ((-1 : ℂ) / (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ)) *
+              (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)) * e := by
     simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
       MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
       MagicFunction.a.ComplexIntegrands.Φ₅', hzH, e, sub_eq_add_neg]
     ring_nf
   have hR : 2 * Φ₆' u ((t : ℂ) * Complex.I) = ((2 : ℂ) * φ₀'' (zH : ℂ)) * e := by
     simp [MagicFunction.a.ComplexIntegrands.Φ₆', hzH, e, mul_assoc, mul_left_comm, mul_comm]
-  simpa [hL, hR] using congrArg (fun w : ℂ => w * e) hcore_eq
+  simpa [hL, hR] using congrArg (fun w : ℂ => w * e) hcore
 
 /-! ## Strip bounds -/
 
