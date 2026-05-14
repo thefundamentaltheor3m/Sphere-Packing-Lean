@@ -39,7 +39,6 @@ import SpherePacking.ModularForms.PhiTransformLemmas
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.Tactic
 
-
 /-!
 # Laplace-type integrals and analytic continuation for `AnotherIntegral.A`
 

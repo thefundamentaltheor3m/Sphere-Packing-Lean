@@ -1092,7 +1092,6 @@ open Set SchwartzMap Real Complex Filter UpperHalfPlane ModularForm
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
-
 lemma J₁'_J₃_eq_neg_J₅'_zero : J₁' (0 : ℝ) + J₃' 0 = -J₅' 0 := by
   have hI (z : ℝ → ℂ) (hz : ∀ t ∈ Icc (0 : ℝ) 1, ψT' (z t) = ψI' (z₅' t)) :
       (∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * ψT' (z t)) =

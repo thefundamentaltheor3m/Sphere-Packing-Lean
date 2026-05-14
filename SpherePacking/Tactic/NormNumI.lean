@@ -7,7 +7,6 @@ module
 public import Mathlib.Data.Complex.Basic
 public import Mathlib.Tactic.NormNum
 
-
 /-!
 # `norm_numI` for `ℂ`
 
@@ -22,7 +21,6 @@ separately on the real and imaginary parts.
 -/
 
 @[expose] public meta section
-
 
 open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic
 open ComplexConjugate

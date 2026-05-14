@@ -15,7 +15,6 @@ import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
-
 /-!
 # Fourier permutations for `b`
 
@@ -85,7 +84,6 @@ open scoped Real
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 open SpherePacking.ForMathlib
 open SpherePacking.Contour
-
 
 section PermJ12
 
@@ -184,7 +182,6 @@ public lemma exists_bound_norm_ψT'_z₂' :
   refine ⟨M, fun t ht => ?_⟩
   simpa [SpherePacking.Contour.z₂'_eq_z₂line (t := t) (mem_Icc_of_Ioc ht)] using
     hM t (by simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)
-
 
 end Integral_Permutations.PermJ12
 end

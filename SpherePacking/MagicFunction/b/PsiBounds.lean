@@ -11,7 +11,6 @@ import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 import Mathlib.Topology.Order.Compact
 
-
 /-!
 # Definitions and bounds for the `ψ`-functions
 
