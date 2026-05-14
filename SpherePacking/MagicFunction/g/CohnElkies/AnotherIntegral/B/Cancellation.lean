@@ -288,7 +288,6 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   obtain ⟨Cθ, hCθ⟩ := exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one
   have hCθ0 : 0 ≤ Cθ := nonneg_of_norm_le_mul_exp (hCθ 1 le_rfl)
   refine ⟨(4 * (M + 4) ^ 3) * Cθ + 176, fun t ht => ?_⟩
-  have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set a : ℂ := (Real.exp (-Real.pi * t / 4) : ℂ)
   set b : ℂ := (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
   set x : ℂ := Θ₂.resToImagAxis t
@@ -345,7 +344,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       (by simp : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖),
       (by simp : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖)]
   rw [show H₂.resToImagAxis t = x ^ (4 : ℕ) by
-    simp [x, H₂, Function.resToImagAxis, ResToImagAxis, ht0]]
+    simp [x, H₂, Function.resToImagAxis, ResToImagAxis, lt_of_lt_of_le zero_lt_one ht]]
   linarith [hpow', hy_tail, (show x ^ (4 : ℕ) - y ^ (4 : ℕ) +
     (y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
       (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)) = x ^ (4 : ℕ) -
@@ -692,7 +691,6 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   rcases exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one with ⟨CH2, hH2⟩
   refine ⟨(256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
         (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) , fun t ht => ?_⟩
-  have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
   set e : ℝ := Real.exp (2 * Real.pi * t)
   set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
   set A : ℂ := ((e / 256 : ℝ) : ℂ)
@@ -735,7 +733,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   have hw_norm_ge : (1 : ℝ) ≤ ‖w‖ := by
     rw [show ‖w‖ = (e / 256) * ‖x‖ ^ (2 : ℕ) from by simp [w, hA_norm, norm_pow]]
     linarith [mul_le_mul_of_nonneg_left (show (256 : ℝ) * u ≤ ‖x‖ ^ (2 : ℕ) by
-        simpa [x, u] using H2_norm_pow_two_ge t ht0) he256,
+        simpa [x, u] using H2_norm_pow_two_ge t (lt_of_lt_of_le zero_lt_one ht)) he256,
       show (e / 256) * ((256 : ℝ) * u) = 1 from by linear_combination heu]
   have hdiff : ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
       ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) :=
