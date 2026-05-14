@@ -797,11 +797,10 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fu
     simpa [base, norm_mul] using mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ))
   have hF_int : Integrable (F u0) μ := by
     let b : ℝ := Real.pi * u0.re
-    have hb : 0 < b := by positivity
     refine Integrable.mono' (by
       simpa [μ, MeasureTheory.IntegrableOn, pow_zero, one_mul] using
         ((SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := b)
-          hb) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul Mψ :
+          (by positivity)) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul Mψ :
       Integrable (fun t : ℝ => Mψ * Real.exp (-b * t)) μ) hF_meas.self_of_nhds
       ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
@@ -812,12 +811,12 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fu
   let ε : ℝ := u0.re / 2
   have ε_pos : 0 < ε := div_pos hu0re (by norm_num)
   let b : ℝ := Real.pi * ε
-  have hb : 0 < b := by positivity
   let bound : ℝ → ℝ := fun t => (Mψ * Real.pi) * t * Real.exp (-b * t)
   have bound_int : Integrable bound μ := by
     simpa [μ, MeasureTheory.IntegrableOn, bound, mul_assoc, mul_left_comm, mul_comm] using
       (by simpa [pow_one] using
-          (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 1) (b := b) hb) :
+          (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 1) (b := b)
+            (by positivity)) :
         IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ici (1 : ℝ))
           (volume : Measure ℝ)).const_mul (Mψ * Real.pi)
   have hre_lower : ∀ u : ℂ, u ∈ Metric.ball u0 ε → (u0.re / 2) ≤ u.re := fun u hu => by

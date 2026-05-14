@@ -1164,12 +1164,11 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
           gcongr; simp [Complex.norm_real, abs_of_nonneg ht0, abs_of_nonneg Real.pi_pos.le]
       _ = bound t := by simp [bound]; ring
   have hbound_int : MeasureTheory.Integrable bound μ := by
-    have hb : 0 < Real.pi * ε := by positivity
     have hIoi1 : MeasureTheory.IntegrableOn
         (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t)) (Set.Ioi (1 : ℝ)) MeasureTheory.volume :=
       ((by simpa [Real.rpow_one] using
         (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
-          (hs := by linarith) (hp := le_rfl) (b := Real.pi * ε) hb) :
+          (hs := by linarith) (hp := le_rfl) (b := Real.pi * ε) (by positivity)) :
         MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t))
           (Set.Ioi (0:ℝ)) MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
     simpa [bound, μ, MeasureTheory.IntegrableOn, mul_assoc] using

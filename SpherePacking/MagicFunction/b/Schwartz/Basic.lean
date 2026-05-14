@@ -61,13 +61,12 @@ public lemma integrable_gN_J6 (f : ℝ → ℂ)
   have hC_nonneg : 0 ≤ C :=
     ForMathlib.nonneg_of_nonneg_le_mul (a := ‖f 1‖) (b := Real.exp (-Real.pi * (1 : ℝ)))
       (C := C) (norm_nonneg _) (by positivity) (by simpa using hC 1 le_rfl)
-  have hb : 0 < Real.pi * (x + 1) := mul_pos Real.pi_pos (by linarith)
   let bound : ℝ → ℝ :=
     fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-(Real.pi * (x + 1)) * t)) * C
   have hbound_int : Integrable bound ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) := by
     simpa [bound, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
       (ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi * (x + 1))
-        (by simpa [mul_assoc] using hb)).const_mul ((Real.pi ^ n) * C)
+        (mul_pos Real.pi_pos (by linarith))).const_mul ((Real.pi ^ n) * C)
   refine Integrable.mono' hbound_int hmeas ?_
   refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
   have ht0 : 0 ≤ t := le_trans zero_le_one ht
