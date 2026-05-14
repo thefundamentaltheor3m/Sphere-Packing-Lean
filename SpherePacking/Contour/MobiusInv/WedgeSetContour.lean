@@ -7,7 +7,6 @@ public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 public import Mathlib.Analysis.Convex.PathConnected
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import SpherePacking.Basic.Domains.WedgeSet
-public import SpherePacking.Contour.MobiusInv.Basic
 import SpherePacking.Contour.Segments
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.LinearAlgebra.Complex.Module
@@ -16,6 +15,7 @@ import Mathlib.Topology.Algebra.GroupWithZero
 import Mathlib.Analysis.Calculus.Deriv.AffineMap
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Analysis.Calculus.Deriv.Basic
+import Mathlib.Analysis.Calculus.Deriv.Inv
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Order.LatticeIntervals
 import Mathlib.Tactic.FunProp
@@ -37,6 +37,13 @@ namespace SpherePacking
 noncomputable section
 
 open Complex
+
+/-- The Mobius inversion map `z ↦ -z⁻¹`. -/
+@[expose] public def mobiusInv (z : ℂ) : ℂ := -z⁻¹
+
+/-- Complex derivative of `mobiusInv`. -/
+public lemma deriv_mobiusInv (z : ℂ) : deriv mobiusInv z = (1 : ℂ) / z ^ (2 : ℕ) := by
+  simp [show mobiusInv = (fun z : ℂ => -z⁻¹) from rfl, deriv_inv, div_eq_mul_inv]
 
 private lemma continuousOn_mobiusInv_segment_of_ne_zero (a b : ℂ)
     (segment_ne_zero : ∀ t : Set.Icc (0 : ℝ) 1, Path.segment a b t ≠ 0) :

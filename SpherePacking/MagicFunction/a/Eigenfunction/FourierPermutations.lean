@@ -7,7 +7,6 @@ public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.ForMathlib.ScalarOneForm
-public import SpherePacking.Contour.MobiusInv.Basic
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import SpherePacking.Basic.Domains.WedgeSet
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
