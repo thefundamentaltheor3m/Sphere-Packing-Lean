@@ -2294,12 +2294,9 @@ lemma f0_norm_bound_on_strip :
     rw [show ((2:ℂ) * z - 1).re = 2 * z.re - 1 by simp,
       show ((2:ℂ) * z - 1).im = 2 * z.im by simp,
       abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * z.im)]
-    have : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
-    linarith
-  calc ‖f0 z‖
-      = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0]
-    _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by gcongr
-    _ = C₀ * (2 * z.im + 1) * Real.exp (-2 * π * z.im) := by ring_nf
+    linarith [abs_le.2 (⟨by linarith, by linarith⟩ : -1 ≤ 2 * z.re - 1 ∧ 2 * z.re - 1 ≤ 1)]
+  simpa [f0, mul_comm, mul_left_comm, mul_assoc] using
+    (norm_mul_le _ _).trans (mul_le_mul hφ hnorm (norm_nonneg _) (by positivity))
 
 private lemma vadd_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z + 1).im) :
     ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [add_comm]
@@ -2453,11 +2450,11 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
       have hyim : (0 : ℝ) < ((y : ℂ) * Complex.I).im := by
         simpa [mul_assoc] using
           lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ((Set.uIcc_of_le hm ▸ hy).1)
-      have hadd : φ₂'' ((y : ℂ) * Complex.I + 1) = φ₂'' ((y : ℂ) * Complex.I) := by
-        rw [φ₂''_def (z := (y : ℂ) * Complex.I + 1) (by simpa using hyim),
-          φ₂''_def (z := (y : ℂ) * Complex.I) hyim,
-          ← vadd_one_eq ((y : ℂ) * Complex.I) hyim (by simpa using hyim), φ₂'_periodic]
-      simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using hadd
+      simpa [add_assoc, add_comm, add_left_comm, mul_assoc,
+        φ₂''_def (z := (y : ℂ) * Complex.I + 1) (by simpa using hyim),
+        φ₂''_def (z := (y : ℂ) * Complex.I) hyim,
+        ← vadd_one_eq ((y : ℂ) * Complex.I) hyim (by simpa using hyim)] using
+          φ₂'_periodic ((⟨(y : ℂ) * Complex.I, hyim⟩ : ℍ))
   have hrect := rect_phi2 m hm; grind only
 
 private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
