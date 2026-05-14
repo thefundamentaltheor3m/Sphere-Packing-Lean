@@ -2,7 +2,6 @@ module
 import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
-import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.b.Psi
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay

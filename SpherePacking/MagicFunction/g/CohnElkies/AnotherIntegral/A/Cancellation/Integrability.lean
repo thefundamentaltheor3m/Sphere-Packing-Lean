@@ -6,7 +6,7 @@ public import SpherePacking.ModularForms.PhiTransformLemmas
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
-public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
+public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Complex.Periodic
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic

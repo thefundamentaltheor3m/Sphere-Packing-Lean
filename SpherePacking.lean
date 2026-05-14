@@ -49,7 +49,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Integra
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
-public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.StripBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
