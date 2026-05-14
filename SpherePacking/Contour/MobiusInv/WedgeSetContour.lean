@@ -589,10 +589,9 @@ lemma perm_J12_contour_h1_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
         homotopy_mem_wedgeSet := fun hx hy => convex_wedgeSet.lineMap_mem
           (mobiusInv_lineMap_z₁_mem_wedgeSet hy.1 hy.2)
           (lineMap_z₃line_mem_wedgeSet hy.1) ⟨hx.1.le, hx.2.le⟩
-        contDiffOn_homotopy := by
-          refine contDiffOn_lineMap_mobiusInv_lineMap (-1) (-1 + Complex.I) 1 (1 + Complex.I) ?_
-          rintro ⟨_x, y⟩ ⟨h0, h1⟩
-          exact segment_z₁_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ }⟩ r
+        contDiffOn_homotopy :=
+          contDiffOn_lineMap_mobiusInv_lineMap (-1) (-1 + Complex.I) 1 (1 + Complex.I)
+            fun ⟨_x, y⟩ ⟨h0, h1⟩ => segment_z₁_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ }⟩ r
 
 lemma perm_J12_contour_h2_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
     (closed_ω_wedgeSet : ∀ r : ℝ, ClosedOneFormOn (scalarOneForm (Ψ₁' r)) wedgeSet) (r : ℝ) :
@@ -607,11 +606,9 @@ lemma perm_J12_contour_h2_mobiusInv_wedgeSet {Ψ₁' : ℝ → ℂ → ℂ}
         homotopy_mem_wedgeSet := fun hx hy => convex_wedgeSet.lineMap_mem
           (mobiusInv_lineMap_z₂_mem_wedgeSet hy.1 hy.2)
           (lineMap_z₄line_mem_wedgeSet hy.1 hy.2) ⟨hx.1.le, hx.2.le⟩
-        contDiffOn_homotopy := by
-          refine contDiffOn_lineMap_mobiusInv_lineMap
-            (-1 + Complex.I) Complex.I (1 + Complex.I) Complex.I ?_
-          rintro ⟨_x, y⟩ ⟨h0, h1⟩
-          exact segment_z₂_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ }⟩ r
+        contDiffOn_homotopy :=
+          contDiffOn_lineMap_mobiusInv_lineMap (-1 + Complex.I) Complex.I (1 + Complex.I) Complex.I
+            fun ⟨_x, y⟩ ⟨h0, h1⟩ => segment_z₂_ne_zero ⟨y, ⟨h0.2, h1.2⟩⟩ }⟩ r
 
 private lemma perm_12_contour_mobiusInv_wedgeSet_aux
     {Ψ₁_fourier Ψ₁' : ℝ → ℂ → ℂ} (s : ℂ)
