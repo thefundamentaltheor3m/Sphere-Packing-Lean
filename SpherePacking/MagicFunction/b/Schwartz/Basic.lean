@@ -12,7 +12,7 @@ public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
-import SpherePacking.Integration.UpperHalfPlaneComp
+import SpherePacking.Integration.Measure
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular

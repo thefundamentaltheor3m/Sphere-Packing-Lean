@@ -14,7 +14,6 @@ public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
-public import SpherePacking.Integration.UpperHalfPlaneComp
 
 import Mathlib.Analysis.Calculus.ContDiff.Bounds
 import Mathlib.Analysis.Calculus.ParametricIntegral

@@ -13,7 +13,6 @@ import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
-import SpherePacking.Integration.UpperHalfPlaneComp
 import Mathlib.Topology.Order.ProjIcc
 import Mathlib.Analysis.Calculus.Deriv.Mul
 

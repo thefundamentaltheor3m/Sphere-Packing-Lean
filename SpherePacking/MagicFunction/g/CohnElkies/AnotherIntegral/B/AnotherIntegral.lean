@@ -15,7 +15,6 @@ public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
-import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
