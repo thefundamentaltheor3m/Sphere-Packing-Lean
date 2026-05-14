@@ -328,14 +328,13 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
       let a : ℝ := π * (u - 2)
-      have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
       let BA : ℝ := B2 * B4 + B6
       let C2 : ℝ := ‖(12 * Complex.I : ℂ) / (π : ℂ)‖
       let C4 : ℝ := ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
       let Cφ : ℝ := (BA ^ (2 : ℕ) + C2 * (B4 * BA) + C4 * (B4 ^ (2 : ℕ))) * CΔ
       have hdomReal : Integrable (fun t : ℝ => Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)))
             (MeasureTheory.volume.restrict (Set.Ioi A)) :=
-        (integrableOn_sq_mul_exp_neg A a ha).const_mul Cφ
+        (integrableOn_sq_mul_exp_neg A a (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cφ
       have hdom :
           ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
             ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) :=
@@ -1948,10 +1947,10 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   set a : ℝ := π * (u - 2)
-  have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
   refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) (by
     simpa [mul_zero] using tendsto_const_nhds.mul
-      (by simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a) ha :
+      (by simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (2 : ℝ)) (b := a)
+            (mul_pos Real.pi_pos (sub_pos.2 hu)) :
         Tendsto (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) atTop (𝓝 0)) :
       Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0))
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
