@@ -13,7 +13,6 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
 import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 public import Mathlib.Topology.EMetricSpace.Paracompact
