@@ -17,7 +17,6 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 import SpherePacking.Integration.UpperHalfPlaneComp
-import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 
 /-!
 # `b` is a Schwartz function

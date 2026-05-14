@@ -17,7 +17,6 @@ import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
 import SpherePacking.Integration.UpperHalfPlaneComp
-import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import Mathlib.Topology.Order.ProjIcc
 

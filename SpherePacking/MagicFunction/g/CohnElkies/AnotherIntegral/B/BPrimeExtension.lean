@@ -7,7 +7,6 @@ import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
-import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp

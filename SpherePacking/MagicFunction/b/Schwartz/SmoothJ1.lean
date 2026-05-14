@@ -18,7 +18,6 @@ import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import Mathlib.Topology.Order.ProjIcc
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
-import SpherePacking.MagicFunction.IntegralParametrisationsContinuity
 
 /-! # Smoothness and decay for `J₁'`. Main: `ψT'_z₁'_eq`, `contDiff_J₁'`, `decay_J₁'`. -/
 
