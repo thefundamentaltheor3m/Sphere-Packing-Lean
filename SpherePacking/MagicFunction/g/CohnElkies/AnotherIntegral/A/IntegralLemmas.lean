@@ -920,16 +920,15 @@ lemma base₁_bound :
   refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
   have ht0 : 0 < t := by simpa using ht.1
   have ht1 : t ≤ 1 := by simpa using ht.2
-  have hzhalf : (1 / 2 : ℝ) < (arg₁ t).im := by
-    simpa [arg₁] using lt_of_lt_of_le (by norm_num : (1/2:ℝ) < 1) (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)
-  have ht2 : ‖(t ^ (2 : ℕ) : ℝ)‖ ≤ 1 := by
-    have : |t| ^ (2 : ℕ) ≤ (1 : ℝ) :=
-      pow_le_one₀ (abs_nonneg t) (by simpa [abs_of_nonneg ht0.le] using ht1)
-    simpa [Real.norm_eq_abs, abs_pow] using this
   calc ‖base₁ t‖
       = ‖φ₀'' (arg₁ t)‖ * ‖(t ^ (2 : ℕ) : ℝ)‖ := by simp [base₁]
     _ ≤ C₀ * 1 := mul_le_mul (norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀
-          (by simpa [arg₁] using inv_pos.2 ht0) hzhalf) ht2 (norm_nonneg _) hC₀_pos.le
+          (by simpa [arg₁] using inv_pos.2 ht0) (by
+            simpa [arg₁] using lt_of_lt_of_le (by norm_num : (1/2:ℝ) < 1)
+              (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)))
+          (by simpa [Real.norm_eq_abs, abs_pow] using
+            (pow_le_one₀ (abs_nonneg t) (by simpa [abs_of_nonneg ht0.le] using ht1) :
+              |t| ^ (2 : ℕ) ≤ (1 : ℝ))) (norm_nonneg _) hC₀_pos.le
     _ = C₀ := mul_one _
 
 private lemma norm_of_mem_uIoc_le_one {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) : ‖(t : ℂ)‖ ≤ 1 := by
