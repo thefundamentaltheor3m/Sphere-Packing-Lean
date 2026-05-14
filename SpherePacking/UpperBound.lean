@@ -1,7 +1,6 @@
 module
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.Basic.PeriodicPacking.Aux
-public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 import SpherePacking.CohnElkies.LPBound
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral

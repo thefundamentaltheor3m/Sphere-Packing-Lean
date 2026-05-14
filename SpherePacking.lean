@@ -1,7 +1,6 @@
 module  -- shake: keep-all
 
 public import SpherePacking.Basic.PeriodicPacking.Aux
-public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
