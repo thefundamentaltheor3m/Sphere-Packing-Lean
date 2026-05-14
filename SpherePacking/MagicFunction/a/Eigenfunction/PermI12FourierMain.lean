@@ -1,8 +1,7 @@
 module
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Fourier
+public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
-import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 import SpherePacking.Contour.Segments
 import SpherePacking.Contour.GaussianIntegral
 import SpherePacking.ForMathlib.GaussianFourierCommon
