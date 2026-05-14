@@ -477,10 +477,9 @@ public lemma hasDerivAt_integral_gN
     (hF_int : Integrable (gN (hf := hf) n x) μIciOne) :
     HasDerivAt (fun y : ℝ ↦ ∫ t in Set.Ici (1 : ℝ), gN (hf := hf) n y t)
       (∫ t in Set.Ici (1 : ℝ), gN (hf := hf) (n + 1) x t) x := by
-  have hxshift : 0 < x + shift := by linarith
   -- Shrink the neighborhood so that `x + shift` stays uniformly positive.
   let ε : ℝ := (x + shift) / 2
-  have ε_pos : 0 < ε := by simpa [ε] using half_pos hxshift
+  have ε_pos : 0 < ε := by simpa [ε] using half_pos (by linarith : 0 < x + shift)
   obtain ⟨C, hC⟩ := exists_bound_norm_hf
   have hC0 : 0 ≤ C :=
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖hf 1‖)
