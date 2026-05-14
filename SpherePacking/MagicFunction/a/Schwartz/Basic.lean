@@ -2365,12 +2365,11 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
 lemma integral_f0_height_one_eq_neg_I6 :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) = -I₆' (0 : ℝ) := by
   set J : ℂ := ∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) ∂MeasureTheory.volume
-  set bottom : ℂ := ∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)
   have hVert := MeasureTheory.intervalIntegral_tendsto_integral_Ioi (μ := MeasureTheory.volume)
     (f := fun y : ℝ => (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) (a := (1 : ℝ))
     (hfi := by simpa [MeasureTheory.IntegrableOn] using
       integrableOn_phi0_imag.const_mul (2 : ℂ)) (hb := tendsto_id)
-  have hA0 : bottom + Complex.I • J = 0 := by
+  have hA0 : (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) + Complex.I • J = 0 := by
     obtain ⟨C₀, _, hC₀⟩ := f0_norm_bound_on_strip
     exact tendsto_nhds_unique
       ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
@@ -2540,7 +2539,6 @@ private lemma hI246_eq :
       intervalIntegrable_F_comp (fun x : ℝ => zI x - 1)
         ((continuous_ofReal.add continuous_const).sub continuous_const).continuousOn
         fun x => by simp [zI]
-  have hI24 := I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 hzI hzIs
   have hIntf0 : IntervalIntegrable (fun x : ℝ => f0 (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
     simpa [f0] using intervalIntegrable_comp_zI f0_continuousOn
   have hIntphi2 : IntervalIntegrable (fun x : ℝ => φ₂'' (zI x)) MeasureTheory.volume (0 : ℝ) 1 :=
@@ -2548,7 +2546,8 @@ private lemma hI246_eq :
   rw [show I₂' (0 : ℝ) + I₄' 0 =
       (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) from by
     simpa [f0, zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
-      mul_assoc, mul_left_comm, mul_comm] using hI24,
+      mul_assoc, mul_left_comm, mul_comm] using
+        I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 hzI hzIs,
     show (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) =
         (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
           ∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x) from by
