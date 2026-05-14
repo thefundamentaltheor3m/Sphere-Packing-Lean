@@ -525,15 +525,14 @@ public lemma exists_bound_norm_ψT'_z₁'_of (k : ℕ) (ψS : ℍ → ℂ) (ψT'
   obtain ⟨M, hM⟩ := hBound
   refine ⟨M, fun t ht => ?_⟩
   have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ M := hM (1 / t) (one_le_one_div ht.1 ht.2.le)
-  have htK : t ^ k ≤ (1 : ℝ) := by simpa using pow_le_one₀ (n := k) ht.1.le ht.2.le
-  have hnorm : ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ = t ^ k := by
-    simp [norm_pow, Complex.norm_real, abs_of_nonneg ht.1.le]
   calc
     ‖ψT' (z₁' t)‖ = ‖ψS.resToImagAxis (1 / t)‖ * ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ := by
       simp [hEq t ⟨ht.1, ht.2.le⟩]
-    _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by simp [hnorm]
+    _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by
+      simp [norm_pow, Complex.norm_real, abs_of_nonneg ht.1.le]
     _ ≤ M * t ^ k := mul_le_mul_of_nonneg_right hψS (pow_nonneg ht.1.le k)
-    _ ≤ M * 1 := mul_le_mul_of_nonneg_left htK ((norm_nonneg _).trans hψS)
+    _ ≤ M * 1 := mul_le_mul_of_nonneg_left
+        (by simpa using pow_le_one₀ (n := k) ht.1.le ht.2.le) ((norm_nonneg _).trans hψS)
     _ = M := mul_one M
 
 /-- Pointwise bound for a modular rewrite on `Ioc 0 1`. -/
@@ -542,12 +541,11 @@ public lemma norm_modular_rewrite_Ioc_bound (k : ℕ) (ψS : ℍ → ℂ) (ψZ :
       ψZ (z t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ k)
     {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) {B : ℝ} (hB : ‖ψS.resToImagAxis (1 / t)‖ ≤ B) :
     ‖ψZ (z t)‖ ≤ B * t ^ k := by
-  have hnorm : ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ = t ^ k := by
-    simp [norm_pow, Complex.norm_real, abs_of_nonneg ht.1.le]
   calc
     ‖ψZ (z t)‖ = ‖ψS.resToImagAxis (1 / t)‖ * ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ := by
       simp [hEq t ht]
-    _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by simp [hnorm]
+    _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by
+      simp [norm_pow, Complex.norm_real, abs_of_nonneg ht.1.le]
     _ ≤ B * t ^ k := mul_le_mul_of_nonneg_right hB (pow_nonneg ht.1.le k)
 
 /-- Pointwise bound for a modular rewrite on `Ioc 0 1` with exponential decay. -/
