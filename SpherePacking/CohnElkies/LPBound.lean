@@ -1034,10 +1034,7 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
           simpa [hP] using P.centers_dist' _ _ hxℓ x.property.1 hneq
         simpa [dist_eq_norm, add_sub_cancel_left] using this
       simp [hℓ, hCohnElkies₁ (ℓ : EuclideanSpace ℝ (Fin d)) (by simpa [ge_iff_le] using hnorm)]
-    have hsum_le : (∑' ℓ : P.lattice, (f (ℓ : EuclideanSpace ℝ (Fin d))).re) ≤ (f 0).re := by
-      rw [hs.tsum_eq_add_tsum_ite (0 : P.lattice)]
-      simpa using add_le_add_left htail (f 0).re
-    simpa using hsum_le
+    simpa [hs.tsum_eq_add_tsum_ite (0 : P.lattice)] using add_le_add_left htail (f 0).re
   · have hnonpos : ∀ ℓ : P.lattice,
         (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
           (ℓ : EuclideanSpace ℝ (Fin d)))).re ≤ 0 := by
