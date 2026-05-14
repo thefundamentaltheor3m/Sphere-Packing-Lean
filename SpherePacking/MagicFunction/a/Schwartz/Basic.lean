@@ -2367,16 +2367,6 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
         simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using this
   linear_combination rect_f0 m hm - hVertTerm
 
-private lemma I6_zero_eq_I_smul_integral :
-    I₆' (0 : ℝ) =
-      Complex.I • (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-        ∂MeasureTheory.volume) := by
-  rw [show I₆' (0 : ℝ) = 2 * ∫ t in Set.Ici (1 : ℝ),
-      (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I) ∂MeasureTheory.volume from by
-    simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm],
-    MeasureTheory.integral_Ici_eq_integral_Ioi]
-  simp only [smul_eq_mul, MeasureTheory.integral_const_mul]; ring
-
 lemma integral_f0_height_one_eq_neg_I6 :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) = -I₆' (0 : ℝ) := by
   set J : ℂ := ∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) ∂MeasureTheory.volume
@@ -2392,7 +2382,13 @@ lemma integral_f0_height_one_eq_neg_I6 :
         filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
       (squeeze_zero_norm' (norm_integral_f0_strip_le hC₀)
         (tendsto_two_m_plus_one_mul_exp_decay C₀))
-  rw [I6_zero_eq_I_smul_integral]; linear_combination hA0
+  rw [show I₆' (0 : ℝ) = Complex.I • J by
+    rw [show I₆' (0 : ℝ) = 2 * ∫ t in Set.Ici (1 : ℝ),
+        (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I) ∂MeasureTheory.volume from by
+      simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm],
+      MeasureTheory.integral_Ici_eq_integral_Ioi]
+    simp only [smul_eq_mul, MeasureTheory.integral_const_mul, J]; ring]
+  linear_combination hA0
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
