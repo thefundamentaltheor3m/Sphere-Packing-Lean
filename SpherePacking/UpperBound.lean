@@ -10,7 +10,6 @@ import SpherePacking.MagicFunction.b.SpecialValues
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
-import SpherePacking.ForMathlib.FourierLinearEquiv
 
 /-!
 # Upper bound for sphere packing in dimension 8

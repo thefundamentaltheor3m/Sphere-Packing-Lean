@@ -22,7 +22,6 @@ public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.ExpBounds
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
-public import SpherePacking.ForMathlib.FourierLinearEquiv
 public import SpherePacking.ForMathlib.FourierPhase
 public import SpherePacking.ForMathlib.GaussianFourierCommon
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
