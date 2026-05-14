@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 public import SpherePacking.Integration.InvChangeOfVariables
 public import SpherePacking.ModularForms.PhiTransform
-public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.ForMathlib.ScalarOneForm

@@ -18,7 +18,6 @@ import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.Integration.UpperHalfPlaneComp
-import SpherePacking.ForMathlib.GaussianRexpIntegral
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 
 /-!
