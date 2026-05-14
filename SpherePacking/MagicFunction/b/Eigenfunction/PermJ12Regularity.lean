@@ -1,6 +1,5 @@
 module
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
-public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.Integration.Measure

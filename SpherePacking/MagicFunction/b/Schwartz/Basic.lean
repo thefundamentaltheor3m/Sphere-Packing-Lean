@@ -8,7 +8,7 @@ module
 
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.DerivHelpers
-public import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1

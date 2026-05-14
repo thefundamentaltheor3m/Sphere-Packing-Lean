@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 

@@ -4,7 +4,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancell
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.LaplaceRepresentation
-public import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.MagicFunction.b.Psi
 public import Mathlib.Analysis.Analytic.Basic
 public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.Calculus.ParametricIntegral
