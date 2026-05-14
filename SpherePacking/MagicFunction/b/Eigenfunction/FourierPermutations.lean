@@ -80,7 +80,6 @@ public lemma Ψ₁_fourier_eq_neg_deriv_mul (r : ℝ) (z : ℂ) (hz : 0 < z.im) 
 section Integral_Permutations
 
 open scoped Real
-
 open Set Complex Real MeasureTheory MagicFunction.Parametrisations intervalIntegral
 open SpherePacking.ForMathlib
 open SpherePacking.Contour
