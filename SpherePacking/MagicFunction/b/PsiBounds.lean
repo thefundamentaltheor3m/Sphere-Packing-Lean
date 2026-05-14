@@ -313,7 +313,6 @@ end bDefs
 namespace MagicFunction.b.PsiBounds
 
 open scoped Topology UpperHalfPlane Manifold
-
 open Complex Real Filter Topology UpperHalfPlane Set
 
 noncomputable section

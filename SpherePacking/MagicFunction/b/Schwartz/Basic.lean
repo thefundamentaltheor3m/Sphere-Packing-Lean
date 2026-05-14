@@ -415,9 +415,7 @@ namespace MagicFunction.b.Schwartz.J5Smooth
 noncomputable section
 
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
-
 open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane SpherePacking.ForMathlib
-
 open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
   MagicFunction.b.PsiBounds.PsiExpBounds SpherePacking.Integration Matrix ModularGroup ModularForm
   MagicFunction MagicFunction.b.Schwartz
