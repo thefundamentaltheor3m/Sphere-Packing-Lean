@@ -678,8 +678,6 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
     Summable (fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖) := by
   let k : ℕ := Module.finrank ℤ Λ + 2
   obtain ⟨C, _hCpos, hC⟩ := f.decay k 0
-  have hC' : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ^ k * ‖f x‖ ≤ C := fun x => by
-    simpa [norm_iteratedFDeriv_zero] using hC x
   set b : EuclideanSpace ℝ (Fin d) := -a
   refine Summable.of_norm_bounded_eventually
     (f := fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖)
@@ -691,16 +689,11 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
       letI : DiscreteTopology Λ.toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
       simpa [Submodule.coe_toAddSubgroup] using
         AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup)
-    have hFiniteBad :
-        ({ℓ : Λ | ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ≤ (1 : ℝ)} : Set Λ).Finite := by
-      have hpre :
-          ((fun ℓ : Λ => (ℓ : EuclideanSpace ℝ (Fin d))) ⁻¹'
-              (Metric.closedBall b (1 : ℝ) ∩ (Λ : Set (EuclideanSpace ℝ (Fin d))))).Finite := by
-        simpa using (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
+    refine (show ({ℓ : Λ | ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ≤ (1 : ℝ)} : Set Λ).Finite by
+      simpa [Set.preimage, Metric.mem_closedBall, dist_eq_norm, and_true] using
+        (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
           Metric.isBounded_closedBall hClosed).preimage_embedding
-          (f := (⟨Subtype.val, Subtype.coe_injective⟩ : Λ ↪ EuclideanSpace ℝ (Fin d)))
-      simpa [Set.preimage, Metric.mem_closedBall, dist_eq_norm, and_true] using hpre
-    refine hFiniteBad.subset ?_
+          (f := (⟨Subtype.val, Subtype.coe_injective⟩ : Λ ↪ EuclideanSpace ℝ (Fin d)))).subset ?_
     intro ℓ hfail
     by_contra hlarge
     have hlarge' : (1 : ℝ) < ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ := lt_of_not_ge hlarge
@@ -709,17 +702,14 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
     have hdec :
         ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k *
           ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤ C := by
-      have hnorm : ‖a + (ℓ : EuclideanSpace ℝ (Fin d))‖ = ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ := by
-        simp [b, sub_eq_add_neg, add_comm]
-      simpa [hnorm] using hC' (a + (ℓ : EuclideanSpace ℝ (Fin d)))
-    have hmono :
-        C / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k ≤
-          (C + 1) / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k := by
-      simpa [div_eq_mul_inv, mul_assoc] using
-        mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1)
-          (by positivity : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹)
+      simpa [show ‖a + (ℓ : EuclideanSpace ℝ (Fin d))‖ =
+          ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ from by simp [b, sub_eq_add_neg, add_comm],
+        norm_iteratedFDeriv_zero] using hC (a + (ℓ : EuclideanSpace ℝ (Fin d)))
     refine hfail (by simpa [div_eq_mul_inv, inv_pow] using
-      ((le_div_iff₀' hpos).2 hdec).trans (by simpa using hmono))
+      ((le_div_iff₀' hpos).2 hdec).trans (by
+        simpa [div_eq_mul_inv, mul_assoc] using
+          mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1)
+            (by positivity : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹)))
 
 end LPBoundAux
 
