@@ -418,12 +418,11 @@ public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) :=
 /-- Uniform bound for `‖ψS.resToImagAxis t‖` on `Ici (1 : ℝ)`. -/
 public lemma exists_bound_norm_ψS_resToImagAxis_Ici_one :
     ∃ M, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ M := by
-  have htop : Tendsto (fun t : ℝ => ψS.resToImagAxis t) atTop (𝓝 (0 : ℂ)) := by
-    simpa using Function.tendsto_resToImagAxis_atImInfty (F := ψS) (l := (0 : ℂ))
-      tendsto_ψS_atImInfty
   rcases eventually_atTop.1 <|
-    ((tendsto_zero_iff_norm_tendsto_zero).1 htop).eventually
-      (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num)) with ⟨A, hA⟩
+    ((tendsto_zero_iff_norm_tendsto_zero).1 (by
+      simpa using Function.tendsto_resToImagAxis_atImInfty (F := ψS) (l := (0 : ℂ))
+        tendsto_ψS_atImInfty : Tendsto (fun t : ℝ => ψS.resToImagAxis t) atTop (𝓝 (0 : ℂ)))
+      ).eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num)) with ⟨A, hA⟩
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc (a := 1) (b := max A 1)
     (hab := le_max_right _ _)
     (hg := continuous_norm.comp_continuousOn <|
