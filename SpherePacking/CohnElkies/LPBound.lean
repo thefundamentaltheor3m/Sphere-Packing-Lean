@@ -892,9 +892,8 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d))))
   have hSummable_c_mul_a_mul_e : ∀ x y : ↑(P.centers ∩ D),
-      Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice => c * a m * e x y m := by
-    intro x y
-    refine Summable.of_norm_bounded
+      Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice => c * a m * e x y m := fun x y =>
+    Summable.of_norm_bounded
       (g := fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
         ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖)
       (by simpa [mul_assoc] using hSummableFourierNorm.mul_left ‖c‖) fun m => by
