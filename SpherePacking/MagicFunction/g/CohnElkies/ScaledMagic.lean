@@ -1,7 +1,6 @@
 module
-public import SpherePacking.ScaledMagic
-import SpherePacking.MagicFunction.g.Basic
-import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
+public import SpherePacking.MagicFunction.g.Basic
+public import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
@@ -10,10 +9,62 @@ import SpherePacking.ForMathlib.FourierLinearEquiv
 /-!
 # Scaling the Cohn-Elkies hypotheses
 
-Transfers the Cohn-Elkies sign conditions from `g` to the scaled function `scaledMagic` used in
-`SpherePacking.UpperBound`. Also includes `g_real` / `g_real_fourier` (blueprint `thm:g1`/`thm:g`)
-showing that `g` and its Fourier transform are real-valued.
+Defines `scaledMagic`, obtained from Viazovska's magic function `g` by precomposing with scaling
+by `Real.sqrt 2`, and transfers the Cohn-Elkies sign conditions from `g` to the scaled function
+`scaledMagic` used in `SpherePacking.UpperBound`. Also includes `g_real` / `g_real_fourier`
+(blueprint `thm:g1`/`thm:g`) showing that `g` and its Fourier transform are real-valued.
 -/
+
+namespace SpherePacking
+
+open scoped FourierTransform
+open SchwartzMap SpherePacking.ForMathlib.Fourier
+
+local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
+local notation "FT" => FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ)
+
+/-- Non-vanishing of `Real.sqrt 2`. -/
+public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
+  Real.sqrt_ne_zero'.2 (by positivity)
+
+/-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
+@[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
+  SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
+    (LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv
+    g
+
+/-- The value of `scaledMagic` at `0` is `1`. -/
+public theorem scaledMagic_zero : scaledMagic 0 = 1 := by
+  simp [scaledMagic, g_zero]
+
+/-- The value of the Fourier transform of `scaledMagic` at `0` is `1 / 16`. -/
+public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := by
+  let c : ℝ := Real.sqrt 2
+  let A : ℝ⁸ ≃ₗ[ℝ] ℝ⁸ := LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) c sqrt2_ne_zero
+  have hdet : abs (LinearMap.det (A : ℝ⁸ →ₗ[ℝ] ℝ⁸)) = (16 : ℝ) := by
+    have hA : (A : ℝ⁸ →ₗ[ℝ] ℝ⁸) = c • (LinearMap.id : ℝ⁸ →ₗ[ℝ] ℝ⁸) := by ext x; simp [A]
+    have hc_pow : c ^ 8 = (16 : ℝ) := by
+      rw [show (8 : ℕ) = 2 * 4 from rfl, pow_mul,
+        show c ^ 2 = 2 from Real.sq_sqrt (by positivity : (0 : ℝ) ≤ 2)]
+      norm_num
+    rw [hA]; simp [LinearMap.det_smul, LinearMap.det_id, hc_pow]
+  have hg0 : (𝓕 (g : ℝ⁸ → ℂ)) 0 = (1 : ℂ) := by
+    simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe] using
+      (fourier_g_zero : FT g 0 = 1)
+  have hscaled :
+      FT scaledMagic 0 =
+        (abs (LinearMap.det (A : ℝ⁸ →ₗ[ℝ] ℝ⁸)))⁻¹ • (𝓕 (g : ℝ⁸ → ℂ)) 0 := by
+    simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe, scaledMagic, c, A,
+      SchwartzMap.compCLMOfContinuousLinearEquiv_apply] using
+      (SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
+        (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
+  simp_all
+
+/-- Convenience form of `fourier_scaledMagic_zero` for the coerced function `⇑scaledMagic`. -/
+public theorem fourier_scaledMagic_zero_fun : 𝓕 (⇑scaledMagic) 0 = (1 / 16 : ℂ) := by
+  simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe] using fourier_scaledMagic_zero
+
+end SpherePacking
 
 namespace MagicFunction.g.CohnElkies
 

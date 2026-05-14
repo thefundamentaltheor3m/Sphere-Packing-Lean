@@ -2,7 +2,6 @@ module
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.E8.Packing
 import SpherePacking.CohnElkies.LPBound
-import SpherePacking.ScaledMagic
 import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 
 /-!
