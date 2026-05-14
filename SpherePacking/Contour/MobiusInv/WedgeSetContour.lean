@@ -536,10 +536,9 @@ private lemma mobiusInv_re_im (x y : ℝ) :
 public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
     {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     mobiusInv (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t) ∈ wedgeSet := by
-  rw [Contour.lineMap_z₁line]
+  rw [Contour.lineMap_z₁line, show mobiusInv (Contour.z₁line t) =
+    -(↑(-1 : ℝ) + Complex.I * ↑t)⁻¹ from by simp [mobiusInv, Contour.z₁line]]
   obtain ⟨hre, him⟩ := mobiusInv_re_im (-1) t
-  rw [show mobiusInv (Contour.z₁line t) = -(↑(-1 : ℝ) + Complex.I * ↑t)⁻¹ from by
-    simp [mobiusInv, Contour.z₁line]] at *
   refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
   rw [hre, him]; simp only [fieldLt]
   constructor <;> nlinarith only [ht0, ht1]
@@ -548,12 +547,12 @@ public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
 public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
     {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     mobiusInv (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t) ∈ wedgeSet := by
-  rw [Contour.lineMap_z₂line]
+  rw [Contour.lineMap_z₂line, show mobiusInv (Contour.z₂line t) =
+      -(↑(t - 1) + Complex.I * ↑(1 : ℝ))⁻¹ from by
+    simp [sub_eq_add_neg, add_comm, mobiusInv, Contour.z₂line]]
   obtain ⟨hre, him⟩ := mobiusInv_re_im (t - 1) 1
-  rw [show mobiusInv (Contour.z₂line t) = -(↑(t - 1) + Complex.I * ↑(1 : ℝ))⁻¹ from by
-    simp [sub_eq_add_neg, add_comm, mobiusInv, Contour.z₂line], one_pow] at *
   refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
-  rw [hre, him]; simp only [fieldLt]
+  rw [hre, him]; simp only [fieldLt, one_pow]
   constructor <;> nlinarith only [ht0, ht1]
 
 /-- `C^2` smoothness of the homotopy map
