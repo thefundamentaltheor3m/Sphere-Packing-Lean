@@ -147,8 +147,7 @@ public lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im :=
 
 /-- `z₆'` sends `Ici 1` into ℍ. -/
 public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht => by
-  simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using
-    lt_of_lt_of_le one_pos ht
+  simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using one_pos.trans_le ht
 
 end UpperHalfPlane
 
