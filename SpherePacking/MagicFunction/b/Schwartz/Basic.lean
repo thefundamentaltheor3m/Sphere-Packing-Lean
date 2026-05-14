@@ -12,7 +12,6 @@ public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.ForMathlib.IteratedDeriv
-import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ1
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import SpherePacking.Integration.UpperHalfPlaneComp

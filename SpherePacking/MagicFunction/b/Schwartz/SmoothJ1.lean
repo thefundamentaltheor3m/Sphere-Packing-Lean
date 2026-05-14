@@ -8,11 +8,9 @@ import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.SmoothIntegralIciOne

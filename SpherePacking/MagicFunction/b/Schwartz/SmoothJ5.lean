@@ -7,13 +7,11 @@ import Mathlib.Analysis.Calculus.ContDiff.Bounds
 import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.IteratedDeriv
-import SpherePacking.ForMathlib.ExpBounds
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
 import SpherePacking.Integration.UpperHalfPlaneComp
