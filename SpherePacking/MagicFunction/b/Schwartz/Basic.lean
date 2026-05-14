@@ -266,9 +266,7 @@ instance : IsFiniteMeasure μ :=
   ⟨by simp [μ, SpherePacking.Integration.μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
 
 def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₁' t
-
 def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψT' (z₁' t)
-
 def gN (n : ℕ) (x t : ℝ) : ℂ :=
   SpherePacking.Integration.DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
 
@@ -433,7 +431,6 @@ instance : IsFiniteMeasure μ :=
 
 def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₅' t
 def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψI' (z₅' t)
-
 def gN (n : ℕ) (x t : ℝ) : ℂ :=
   DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
 
