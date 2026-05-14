@@ -178,10 +178,9 @@ public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
     z ∈ UpperHalfPlane.upperHalfPlaneSet := by
   refine (lt_of_le_of_ne (closure_minimal (fun _ hz => le_of_lt hz.1)
     (isClosed_le continuous_const continuous_im) hz) fun hzIm => hne ?_ : 0 < z.im)
-  have habs0 : |z.re - 1| = 0 :=
-    le_antisymm (by simpa [hzIm] using closure_wedgeSet_subset_abs_re_sub_one_le_im hz)
-      (abs_nonneg _)
-  exact Complex.ext (by simp [sub_eq_zero.mp (abs_eq_zero.mp habs0)]) (by simp [hzIm])
+  exact Complex.ext (by simp [sub_eq_zero.mp (abs_eq_zero.mp (le_antisymm
+    (by simpa [hzIm] using closure_wedgeSet_subset_abs_re_sub_one_le_im hz)
+    (abs_nonneg _) : |z.re - 1| = 0))]) (by simp [hzIm])
 
 /-- Membership in `wedgeSet` for the vertical line segment from `1` to `1 + I`. -/
 public lemma lineMap_z₃line_mem_wedgeSet {t : ℝ} (ht0 : 0 < t) :
