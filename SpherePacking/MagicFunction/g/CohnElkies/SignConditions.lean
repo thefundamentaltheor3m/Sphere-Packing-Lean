@@ -11,7 +11,6 @@ import SpherePacking.ModularForms.Delta
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.AnotherIntegral
-import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
