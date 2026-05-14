@@ -14,7 +14,6 @@ import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.Measure
 import SpherePacking.Integration.UpperHalfPlaneComp
-import SpherePacking.MagicFunction.PsiTPrimeZ1
 import Mathlib.Topology.Order.ProjIcc
 
 /-! # Smooth J5: smoothness and decay bounds for `RealIntegrals.J₅'` via differentiation under

@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
-public import SpherePacking.MagicFunction.PsiTPrimeZ1
 public import SpherePacking.Integration.Measure
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
