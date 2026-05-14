@@ -91,7 +91,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
 public import SpherePacking.MagicFunction.g.CohnElkies.ImagAxisReal
-public import SpherePacking.MagicFunction.g.CohnElkies.IntegralB
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceA.LaplaceRepresentation
