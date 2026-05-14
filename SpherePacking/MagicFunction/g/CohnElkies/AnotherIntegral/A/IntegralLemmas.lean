@@ -1189,16 +1189,17 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
       simpa [I₆IntegrandC_deriv, I₆IntegrandC, mul_assoc, mul_left_comm, mul_comm] using
         (by simpa using hlin.cexp : HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
           (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z).const_mul (base₆ t)
-  have hμ : (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ) =
-      fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t := funext fun _ => by simp [μ]
   exact (show HasDerivAt I₆'C (2 * ∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 by
     simpa [funext fun u => show I₆'C u = 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC u t by
         simp [I₆'C, I₆IntegrandC, base₆, mul_assoc, mul_left_comm, mul_comm], mul_assoc] using
-      (hμ ▸ (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
-        (F := I₆IntegrandC) (F' := I₆IntegrandC_deriv) (bound := bound)
-        (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
-        (hF_int := hF_int) (hF'_meas := hF'_meas)
-        (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2).const_mul
+      ((show (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ) =
+          fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t from
+        funext fun _ => by simp [μ]) ▸
+        (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
+          (F := I₆IntegrandC) (F' := I₆IntegrandC_deriv) (bound := bound)
+          (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
+          (hF_int := hF_int) (hF'_meas := hF'_meas)
+          (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2).const_mul
       (2 : ℂ)).differentiableAt
 
 /-- `aPrimeC` is analytic on the right half-plane. -/
