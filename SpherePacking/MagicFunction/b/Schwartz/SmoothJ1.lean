@@ -11,7 +11,6 @@ import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.Complex.RealDeriv
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.DifferentiationUnderIntegral
 import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.Integration.Measure

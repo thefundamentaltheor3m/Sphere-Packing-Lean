@@ -18,7 +18,7 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.PsiTPrimeZ1
 import SpherePacking.Integration.Measure
-import SpherePacking.ForMathlib.IntegrablePowMulExp
+import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral

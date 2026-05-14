@@ -12,7 +12,7 @@ public import Mathlib.MeasureTheory.Integral.ExpDecay
 import SpherePacking.Integration.InvChangeOfVariables
 import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.Integration.Measure
-import SpherePacking.ForMathlib.IntegrablePowMulExp
+import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.ScalarOneForm
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
 import SpherePacking.ForMathlib.GaussianFourierCommon

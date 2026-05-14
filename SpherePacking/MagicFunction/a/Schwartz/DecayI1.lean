@@ -14,7 +14,6 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Integration.Measure
 import SpherePacking.Integration.InvChangeOfVariables
 

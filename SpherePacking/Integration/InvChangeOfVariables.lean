@@ -6,7 +6,7 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.Analysis.Calculus.Deriv.Inv
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.Tactic.NormNum
-import SpherePacking.ForMathlib.IntegrablePowMulExp
+import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
 # Inversion change of variables and endpoint integrability on `Ioc (0, 1]`

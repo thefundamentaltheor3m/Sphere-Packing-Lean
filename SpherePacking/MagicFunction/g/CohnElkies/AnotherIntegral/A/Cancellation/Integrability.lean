@@ -10,7 +10,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Complex.Periodic
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import SpherePacking.ForMathlib.IntegrablePowMulExp
+import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
 # Imaginary-axis helpers, large-imaginary asymptotics and integrability for `AnotherIntegral.A`

@@ -10,7 +10,6 @@ import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.DerivHelpers
-import SpherePacking.ForMathlib.IntegrablePowMulExp
 
 /-!
 # Differentiation under the integral sign on `Ici 1`

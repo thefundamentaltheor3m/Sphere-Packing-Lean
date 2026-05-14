@@ -13,7 +13,7 @@ import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.Integration.UpperHalfPlaneComp
-import SpherePacking.ForMathlib.IntegrablePowMulExp
+import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Tactic.Ring.RingNF
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.InnerProductSpace.Continuous

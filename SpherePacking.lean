@@ -11,7 +11,6 @@ public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.GaussianFourierCommon
-public import SpherePacking.ForMathlib.IntegrablePowMulExp
 public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.ForMathlib.ScalarOneForm
