@@ -799,10 +799,9 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     refine Filter.Eventually.of_forall (fun t ht u hu => ?_)
     have hk' : ‖k t‖ ≤ K := hk_bound t ht
     have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
-      have hle : ‖u - u0‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hu
-      have h2 : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
+      have : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
         simpa [sub_eq_add_neg, add_assoc] using norm_add_le u0 (u - u0)
-      linarith
+      linarith [show ‖u - u0‖ < 1 from by simpa [Metric.mem_ball, dist_eq_norm] using hu]
     have hstep1 : ‖F' u t‖ ≤ ‖base t‖ * (‖k t‖ * E) := by
       calc
         ‖F' u t‖ = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
