@@ -28,7 +28,6 @@ import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.Integration.Measure
 import SpherePacking.ModularForms.Delta
 import SpherePacking.MagicFunction.b.PsiBounds
-public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.MeasureTheory.Integral.ExpDecay
