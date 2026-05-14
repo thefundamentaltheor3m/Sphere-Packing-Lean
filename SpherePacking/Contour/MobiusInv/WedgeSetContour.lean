@@ -355,11 +355,10 @@ public lemma curveIntegral_segment_pos_inv
   have hω : (fun z : ℂ => scalarOneForm (fun z : ℂ => -Ψ₁' r z) z) =
       fun z : ℂ => -scalarOneForm (Ψ₁' r) z := by
     funext z; ext; simp [scalarOneForm_apply, mul_neg]
-  have hneg := curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier)
+  simpa [hω] using curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier)
     (Ψ₁' := fun r z => -Ψ₁' r z) a b
     (Ψ₁_fourier_eq_neg_deriv_mul := fun r z hz => by
       simpa [neg_mul, mul_neg, neg_neg] using (Ψ₁_fourier_eq_deriv_mul (r := r) (z := z) hz)) r
-  simp_all
 
 end SpherePacking.MobiusInv
 
