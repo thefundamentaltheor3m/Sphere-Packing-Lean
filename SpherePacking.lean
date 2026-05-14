@@ -46,7 +46,6 @@ public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.MagicFunction.a.IntegralEstimates.PowExpBounds
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1

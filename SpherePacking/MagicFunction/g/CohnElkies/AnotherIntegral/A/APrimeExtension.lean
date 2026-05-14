@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.Basic.Domains.RightHalfPlane
 import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import Mathlib.Analysis.Calculus.ParametricIntervalIntegral

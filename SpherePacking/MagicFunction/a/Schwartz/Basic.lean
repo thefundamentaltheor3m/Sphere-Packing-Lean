@@ -27,7 +27,6 @@ import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.Integration.SmoothIntegralIciOne
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Complex.RealDeriv
