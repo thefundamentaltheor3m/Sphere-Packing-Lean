@@ -856,20 +856,18 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
     ∃ C, ∀ x : ℝ, 0 ≤ x → x ^ k * rexp (-π * x) ≤ C := by
   let f : ℝ → ℝ := fun x => x ^ k * rexp (-π * x)
   have hlim : Tendsto f atTop (𝓝 0) := by
-    have h := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).comp
-      (tendsto_id.const_mul_atTop Real.pi_pos)
-    have hf : f = fun x : ℝ => (π ^ k)⁻¹ * ((π * x) ^ k * rexp (-(π * x))) := by
-      funext x; simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow,
-        pow_ne_zero k Real.pi_ne_zero]
-    simpa [hf] using tendsto_const_nhds.mul h
+    simpa [show f = fun x : ℝ => (π ^ k)⁻¹ * ((π * x) ^ k * rexp (-(π * x))) from
+        funext fun x => by simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow,
+          pow_ne_zero k Real.pi_ne_zero]] using
+      tendsto_const_nhds.mul ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).comp
+        (tendsto_id.const_mul_atTop Real.pi_pos))
   obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 <|
     (hlim.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))).mono fun _ => le_of_lt
-  set N0 : ℝ := max N 0
   obtain ⟨x0, _, hxmax⟩ :=
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) N0)).exists_isMaxOn
+    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (max N 0))).exists_isMaxOn
       (nonempty_Icc.2 (le_max_right N 0)) (by fun_prop : Continuous f).continuousOn
   refine ⟨max 1 (f x0), fun x hx => ?_⟩
-  by_cases hxN : x ≤ N0
+  by_cases hxN : x ≤ max N 0
   · exact (hxmax ⟨hx, hxN⟩).trans (le_max_right _ _)
   · exact (hN x ((le_max_left N 0).trans (le_of_not_ge hxN))).trans (le_max_left _ _)
 
