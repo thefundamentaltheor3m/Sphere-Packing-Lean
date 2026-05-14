@@ -1,23 +1,57 @@
 module
-public import SpherePacking.MagicFunction.g.Basic
+public import SpherePacking.MagicFunction.a.Schwartz.Basic
+public import SpherePacking.MagicFunction.b.Schwartz.Basic
+import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
+import SpherePacking.MagicFunction.a.SpecialValues
+import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
+import SpherePacking.MagicFunction.b.SpecialValues
+import SpherePacking.Tactic.NormNumI
 
 
 /-!
-# Cohn-Elkies auxiliary definitions for `g`
+# Viazovska's magic function `g` and Cohn-Elkies auxiliary definitions
 
 Blueprint reference: `blueprint/src/subsections/modform-ineq.tex`.
 
-This file introduces the auxiliary real-valued functions `A` and `B` and a radial profile
-`gRadial` satisfying `g x = gRadial (‖x‖ ^ 2)`.
+This file defines Viazovska's magic function `g`, its normalization at `0`, the auxiliary
+real-valued functions `A` and `B`, and a radial profile `gRadial` satisfying
+`g x = gRadial (‖x‖ ^ 2)`.
 
 ## Main definitions
+* `g`
 * `gRadial`
 * `A`
 * `B`
 
-## Main statement
+## Main statements
+* `g_zero`
+* `fourier_g_zero`
 * `g_apply_eq_gRadial_norm_sq`
 -/
+
+local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
+
+open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.SpecialValues
+  MagicFunction.b.SpecialValues
+
+noncomputable section
+
+/-- The Magic Function, `g`. -/
+@[expose] public def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a - (I / (240 * π)) • b
+
+/-- Normalization of `g` at the origin. -/
+public theorem g_zero : g 0 = 1 := by
+  simp [g, a_zero, b_zero, sub_eq_add_neg, smul_eq_mul, div_eq_mul_inv]
+  field_simp [show (π : ℂ) ≠ 0 by exact_mod_cast pi_ne_zero]; ring_nf; norm_num1
+
+/-- Normalization of the Fourier transform of `g` at the origin. -/
+public theorem fourier_g_zero : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g 0 = 1 := by
+  simp only [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
+    sub_apply, smul_apply, smul_eq_mul]
+  simp [a_zero, b_zero, sub_eq_add_neg, div_eq_mul_inv]
+  field_simp [show (π : ℂ) ≠ 0 by exact_mod_cast pi_ne_zero]; ring_nf; norm_num1
+
+end
 
 namespace MagicFunction.g.CohnElkies
 
@@ -27,8 +61,6 @@ open Real Complex SchwartzMap
 open MagicFunction.FourierEigenfunctions
 
 noncomputable section
-
-local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 /-- Radial profile of `g` in the variable `‖x‖^2`. -/
 @[expose] public def gRadial : 𝓢(ℝ, ℂ) :=
