@@ -827,19 +827,16 @@ def I₁'C (u : ℂ) : ℂ :=
   ∫ t in (0 : ℝ)..1,
     (-Complex.I) * φ₀'' (-1 / ((Complex.I : ℂ) * (t : ℂ))) * (t ^ (2 : ℕ) : ℝ) *
       Complex.exp (-π * (Complex.I : ℂ) * u) * Complex.exp (-π * u * (t : ℂ))
-
 def I₂'C (u : ℂ) : ℂ :=
   ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / ((t : ℂ) + (Complex.I : ℂ))) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)) *
       Complex.exp (-π * (Complex.I : ℂ) * u) *
       Complex.exp (π * (Complex.I : ℂ) * u * (t : ℂ)) *
       Complex.exp (-π * u)
-
 def I₃'C (u : ℂ) : ℂ :=
   ∫ t in (0 : ℝ)..1,
     (-Complex.I) * φ₀'' (-1 / ((Complex.I : ℂ) * (t : ℂ))) * (t ^ (2 : ℕ) : ℝ) *
       Complex.exp (π * (Complex.I : ℂ) * u) * Complex.exp (-π * u * (t : ℂ))
-
 def I₄'C (u : ℂ) : ℂ :=
   ∫ t in (0 : ℝ)..1,
     (-1 : ℂ) * φ₀'' (-1 / (-(t : ℂ) + (Complex.I : ℂ))) *
@@ -847,12 +844,10 @@ def I₄'C (u : ℂ) : ℂ :=
       Complex.exp (π * (Complex.I : ℂ) * u) *
       Complex.exp (-π * (Complex.I : ℂ) * u * (t : ℂ)) *
       Complex.exp (-π * u)
-
 def I₅'C (u : ℂ) : ℂ :=
   -2 * ∫ t in (0 : ℝ)..1,
     (-Complex.I) * φ₀'' (-1 / ((Complex.I : ℂ) * (t : ℂ))) * (t ^ (2 : ℕ) : ℝ) *
       Complex.exp (-π * u * (t : ℂ))
-
 def I₆'C (u : ℂ) : ℂ :=
   2 * ∫ t in Set.Ici (1 : ℝ),
     (Complex.I : ℂ) * φ₀'' ((Complex.I : ℂ) * (t : ℂ)) * Complex.exp (-π * u * (t : ℂ))
