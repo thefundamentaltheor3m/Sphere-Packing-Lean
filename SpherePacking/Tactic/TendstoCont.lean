@@ -116,7 +116,6 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
 /-- Fold atoms right-associatively using `combine` on the given per-atom field. -/
 private meta def foldRightAssoc (atoms : Array Atom) (field : Atom → Expr)
     (combine : Expr → Expr → MetaM Expr) : MetaM Expr := do
-  if atoms.size = 1 then return field atoms[0]!
   let mut acc := field atoms.back!
   for i in List.range (atoms.size - 1) |>.reverse do acc ← combine (field atoms[i]!) acc
   return acc
@@ -135,7 +134,6 @@ private meta def buildProdMkNhds (atoms : Array Atom) : MetaM Expr :=
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
 private meta def buildProjection (p : Expr) (n i : Nat) : MetaM Expr := do
-  if n = 1 then return p
   let mut e := p
   for _ in [:i] do e ← mkAppM ``Prod.snd #[e]
   if i < n - 1 then mkAppM ``Prod.fst #[e] else return e
