@@ -2,7 +2,6 @@ module  -- shake: keep-all
 
 public import SpherePacking.Basic.Domains.WedgeSet
 public import SpherePacking.Basic.PeriodicPacking.Aux
-public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
