@@ -224,9 +224,8 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
     simpa [μIoc01] using hcont_g.aestronglyMeasurable
       (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc
   have hg_bound :
-      ∀ᵐ t : ℝ ∂μIoc01, ‖g t‖ ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) := by
-    refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall ?_
-    intro t ht
+      ∀ᵐ t : ℝ ∂μIoc01, ‖g t‖ ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) :=
+    (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => by
     have ht0 : 0 < t := ht.1
     have hpow_nonneg : 0 ≤ (1 / t : ℝ) ^ (k + 2) := pow_nonneg (one_div_nonneg.2 ht0.le) (k + 2)
     have hgt0 : 0 ≤ g t := mul_nonneg (norm_nonneg _) hpow_nonneg

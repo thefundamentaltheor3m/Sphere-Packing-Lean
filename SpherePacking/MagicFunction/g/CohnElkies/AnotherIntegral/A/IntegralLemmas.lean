@@ -338,9 +338,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         (integrableOn_sq_mul_exp_neg A a ha).const_mul Cφ
       have hdom :
           ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
-            ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-        refine ae_restrict_of_forall_mem measurableSet_Ioi ?_
-        intro t ht
+            ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) :=
+        ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
         have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le
         have ht0 : 0 < t := zero_lt_one.trans_le ht1
         let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
