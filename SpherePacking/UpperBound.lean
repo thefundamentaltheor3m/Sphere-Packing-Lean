@@ -1437,11 +1437,10 @@ public lemma ψI'_re_mul_I (t : ℝ) (ht : 0 < t) :
     (ψI' ((Complex.I : ℂ) * (t : ℂ))).re =
       -(t ^ (2 : ℕ)) * (ψS.resToImagAxis (1 / t)).re := by
   set s : ℝ := 1 / t
-  have hs : 0 < s := one_div_pos.2 ht
   have hψS' : ψS.resToImagAxis s = ((-(s ^ (2 : ℕ)) : ℝ) : ℂ) * ψI.resToImagAxis t := by
     simpa [show (1 / s) = t by simp [s], zpow_ofNat, pow_two,
       mul_assoc, mul_left_comm, mul_comm] using
-      ResToImagAxis.SlashActionS (F := ψI) (k := (-2 : ℤ)) (t := s) hs
+      ResToImagAxis.SlashActionS (F := ψI) (k := (-2 : ℤ)) (t := s) (one_div_pos.2 ht)
   have hts : (t ^ (2 : ℕ)) * (s ^ (2 : ℕ)) = (1 : ℝ) := by
     simp [s, ht.ne', pow_two, div_eq_mul_inv, mul_assoc, mul_comm]
   have hψIaxis : ψI.resToImagAxis t = ((-(t ^ (2 : ℕ)) : ℝ) : ℂ) * ψS.resToImagAxis s :=
@@ -1463,7 +1462,6 @@ public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
       ((FReal (1 / t) + c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by
   set s : ℝ := 1 / t
   have hs : 0 < s := one_div_pos.2 ht
-  have hΔr : (Δ.resToImagAxis s).re ≠ 0 := ne_of_gt (Delta_imag_axis_pos.2 s hs)
   rw [show A t = (-(t ^ (2 : ℕ))) * (FReal s / (Δ.resToImagAxis s).re) -
         (36 / (π ^ (2 : ℕ)) : ℝ) * (-(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re) by
       simp [A, show (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = FReal s / (Δ.resToImagAxis s).re by
@@ -1471,7 +1469,7 @@ public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
         show (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re by
           simpa [s, Function.resToImagAxis_apply] using ψI'_re_mul_I (t := t) ht],
     ψS_resToImagAxis_re (s := s) hs]
-  field_simp [hΔr]; ring
+  field_simp [ne_of_gt (Delta_imag_axis_pos.2 s hs)]; ring
 
 /-- Rewrite `B t` as a quotient involving `FReal`, `GReal`, and `Δ` on the imaginary axis. -/
 public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
@@ -1479,7 +1477,6 @@ public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
       ((FReal (1 / t) - c * GReal (1 / t)) / (Δ.resToImagAxis (1 / t)).re) := by
   set s : ℝ := 1 / t
   have hs : 0 < s := one_div_pos.2 ht
-  have hΔr : (Δ.resToImagAxis s).re ≠ 0 := ne_of_gt (Delta_imag_axis_pos.2 s hs)
   rw [show B t = (-(t ^ (2 : ℕ))) * (FReal s / (Δ.resToImagAxis s).re) +
         (36 / (π ^ (2 : ℕ)) : ℝ) * (-(t ^ (2 : ℕ)) * (ψS.resToImagAxis s).re) by
       simp [B, show (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re = FReal s / (Δ.resToImagAxis s).re by
@@ -1487,7 +1484,7 @@ public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
         show (ψI' ((Complex.I : ℂ) * (t : ℂ))).re = -(t ^ (2 : ℕ)) * (ResToImagAxis ψS s).re by
           simpa [s, Function.resToImagAxis_apply] using ψI'_re_mul_I (t := t) ht],
     ψS_resToImagAxis_re (s := s) hs]
-  field_simp [hΔr]; ring
+  field_simp [ne_of_gt (Delta_imag_axis_pos.2 s hs)]; ring
 
 end
 
