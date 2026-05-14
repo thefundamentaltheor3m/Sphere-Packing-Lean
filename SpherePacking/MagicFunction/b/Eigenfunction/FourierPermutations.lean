@@ -235,18 +235,14 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
           = (t ^ k * (1 / t) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [pow_add]; ac_rfl
         _ = ((t * (1 / t)) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [mul_pow, mul_assoc]
         _ = 1 / t ^ (2 : ℕ) := by simp [one_div, ht0.ne']
-    have : g t ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) := by
-      have hmul := mul_le_mul_of_nonneg_right (hbound t ht) hpow_nonneg
-      have hR :
-          ((Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) * (1 / t) ^ (k + 2) =
-            (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) := by
+    have : g t ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) :=
+      (mul_le_mul_of_nonneg_right (hbound t ht) hpow_nonneg).trans_eq <| by
         calc ((Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) * (1 / t) ^ (k + 2)
             = (Cψ : ℝ) * (rexp (-Real.pi / t) * (t ^ k * (1 / t) ^ (k + 2))) := by ac_rfl
           _ = (Cψ : ℝ) * (rexp (-Real.pi / t) * (1 / t ^ (2 : ℕ))) := by
                 simpa [mul_assoc] using
                   congrArg (fun u : ℝ => (Cψ : ℝ) * (rexp (-Real.pi / t) * u)) hpow_simp
           _ = (Cψ : ℝ) * ((1 / t ^ (2 : ℕ)) * rexp (-Real.pi / t)) := by ac_rfl
-      exact hmul.trans_eq hR
     simpa [hnorm_g] using this
   exact Integrable.mono' hmajor hmeas_g hg_bound
 
