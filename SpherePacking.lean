@@ -14,7 +14,6 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
-public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.b.Schwartz.Basic

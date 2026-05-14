@@ -36,7 +36,6 @@ public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Complex.Periodic
 import SpherePacking.ForMathlib.ModularFormsHelpers
-import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.ModularForms.PhiTransformLemmas
 
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral

@@ -18,7 +18,6 @@ import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import SpherePacking.CohnElkies.LPBound
-import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
 import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
 import SpherePacking.Integration.Measure

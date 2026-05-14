@@ -2,7 +2,6 @@ module
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.Integration.Measure
 public import SpherePacking.ModularForms.PhiTransform
-public import SpherePacking.MagicFunction.a.SpecialValues
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
