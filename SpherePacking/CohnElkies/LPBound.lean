@@ -236,10 +236,6 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
         (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset fun g hg => ?_
   exact ⟨hg, g.property⟩
 
-end PeriodicConstantApprox
-
-namespace PeriodicConstantApprox
-
 section CoordCubeCover
 
 variable (L : ℝ) (hL : 0 < L)
