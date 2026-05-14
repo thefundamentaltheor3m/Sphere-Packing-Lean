@@ -1,6 +1,5 @@
 module
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
-public import SpherePacking.MagicFunction.a.Eigenfunction.PermI5Kernel
 public import SpherePacking.Contour.Segments
 public import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
