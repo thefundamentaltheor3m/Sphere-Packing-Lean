@@ -4,7 +4,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 
 /-!
 # Laplace representation for `b'` (blueprint `prop:b-double-zeros`)

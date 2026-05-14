@@ -1,6 +1,5 @@
 module
 import SpherePacking.MagicFunction.g.CohnElkies.Defs
-import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
