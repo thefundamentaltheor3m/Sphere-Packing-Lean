@@ -9,7 +9,6 @@ public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.Contour.MobiusInv.Basic
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
-public import SpherePacking.Contour.PermJ12Contour
 public import SpherePacking.Contour.Segments
 public import SpherePacking.E8.Packing
 public import SpherePacking.ForMathlib.BoundsOnIcc
