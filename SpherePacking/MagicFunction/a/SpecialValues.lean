@@ -7,7 +7,6 @@ module
 
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Eisenstein

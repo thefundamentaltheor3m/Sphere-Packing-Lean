@@ -1,7 +1,7 @@
 module
 public import Mathlib.Init
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.ModularForms.PhiTransformLemmas
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.DimensionFormulas

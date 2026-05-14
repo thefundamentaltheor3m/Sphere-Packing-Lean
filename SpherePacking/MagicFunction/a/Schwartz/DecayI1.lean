@@ -9,7 +9,6 @@ M4R File
 module
 
 public import SpherePacking.MagicFunction.a.Basic
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals

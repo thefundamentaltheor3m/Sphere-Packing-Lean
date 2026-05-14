@@ -21,7 +21,6 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.Integration.Measure
 public import

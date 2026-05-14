@@ -7,7 +7,7 @@ public import SpherePacking.MagicFunction.a.SpecialValues
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.DerivHelpers

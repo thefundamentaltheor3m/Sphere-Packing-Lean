@@ -9,7 +9,6 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import Mathlib.Analysis.Calculus.Deriv.Basic
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.Normed.Group.Basic
@@ -25,7 +24,6 @@ public import Mathlib.Topology.Basic
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.RealDeriv
 public import SpherePacking.Integration.Measure
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Topology.Instances.Real.Lemmas

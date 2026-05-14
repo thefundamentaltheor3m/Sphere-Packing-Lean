@@ -3,7 +3,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.Defs
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.ModularForms.PhiTransform
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
