@@ -61,12 +61,6 @@ private meta def parseGoal (goal : Expr) : MetaM (Expr × Expr × Expr) := do
   let some _ ← matchNhds? tgt | throwError "tendsto_cont: target filter is not `nhds _`"
   return (goalFn, l, domTy)
 
-/-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
-private meta def matchTendstoNhds? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr)) := do
-  let some (_α, codTy, f, l, tgt) ← matchTendsto? e | return none
-  let some a ← matchNhds? tgt | return none
-  return some (codTy, f, l, a)
-
 /-- Check if `e` equals `cand.fn bvar` for some candidate (`isDefEq` handles coercions). -/
 private meta def matchAtom? (e : Expr) (bvar : FVarId)
     (candidates : Array Atom) : MetaM (Option Atom) := do
@@ -89,12 +83,11 @@ private meta def exprChildren : Expr → Array Expr
 private meta partial def findAtomsAux (e : Expr) (bvar : FVarId) (candidates : Array Atom)
     (atomsRef : IO.Ref (Array Atom)) (fnsRef : IO.Ref (Array Expr)) : MetaM Unit := do
   if !e.containsFVar bvar then return
-  match ← matchAtom? e bvar candidates with
-  | some cand =>
+  if let some cand ← matchAtom? e bvar candidates then
     unless ← (← fnsRef.get).anyM (withNewMCtxDepth <| isDefEq · cand.fn) do
       atomsRef.modify (·.push cand)
       fnsRef.modify (·.push cand.fn)
-  | none =>
+  else
     for child in exprChildren e do findAtomsAux child bvar candidates atomsRef fnsRef
 
 /-- Collect atoms matching the goal filter and appearing in body. Returns
@@ -104,9 +97,10 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
   let mut candidates : Array Atom := #[]
   for decl in ← getLCtx do
     if decl.isImplementationDetail then continue
-    if let some (codTy, f, l, a) ← matchTendstoNhds? (← instantiateMVars decl.type) then
-      if ← withNewMCtxDepth (isDefEq l goalFilter) then
-        candidates := candidates.push { fn := f, limit := a, hyp := decl.toExpr, codTy }
+    if let some (_α, codTy, f, l, tgt) ← matchTendsto? (← instantiateMVars decl.type) then
+      if let some a ← matchNhds? tgt then
+        if ← withNewMCtxDepth (isDefEq l goalFilter) then
+          candidates := candidates.push { fn := f, limit := a, hyp := decl.toExpr, codTy }
   let atomsRef ← IO.mkRef (α := Array Atom) #[]
   let fnsRef ← IO.mkRef (α := Array Expr) #[]
   findAtomsAux body bvar candidates atomsRef fnsRef
