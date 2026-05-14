@@ -1,7 +1,6 @@
 module
 public import SpherePacking.MagicFunction.b.Eigenfunction.PermJ12Regularity
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
-import SpherePacking.Contour.Segments
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5

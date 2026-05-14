@@ -9,7 +9,6 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-public import SpherePacking.Contour.Segments
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.GaussianFourierCommon
