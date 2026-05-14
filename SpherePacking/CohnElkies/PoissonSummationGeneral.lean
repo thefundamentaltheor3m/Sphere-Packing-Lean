@@ -647,10 +647,9 @@ lemma summable_mFourierCoeff_descended :
         ((by simpa [k] using ZLattice.summable_norm_pow_inv (L := Λ) (n := k) hk :
           Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ k : ℝ))).mul_left C) ?_
       filter_upwards [(finite_norm_le_lattice (d := d) 1).compl_mem_cofinite] with ℓ hℓ
-      have hnorm_pos : 0 < ‖(ℓ : E)‖ :=
-        lt_trans (by positivity) (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)
       simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
-        (le_div_iff₀' (pow_pos hnorm_pos _)).2 (hC' (ℓ : E))
+        (le_div_iff₀' (pow_pos (lt_trans (by positivity)
+          (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)) _)).2 (hC' (ℓ : E))
     simpa [equivIntVec] using
       hsum_lattice.comp_injective (equivIntVec (d := d)).injective
   exact Summable.of_norm (by simpa [mFourierCoeff_descended (d := d) (f := f)] using hsum_norm)
