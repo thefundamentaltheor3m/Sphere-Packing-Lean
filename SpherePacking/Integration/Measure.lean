@@ -524,12 +524,9 @@ public lemma hasDerivAt_integral_gN
       (hF'_meas := gN_measurable (n + 1) x)
       (h_bound := h_bound) (bound_integrable := hbound_int)
       (h_diff := ae_of_all _ fun t y _ => by
-        have hg : HasDerivAt (fun y : ℝ ↦ g (hf := hf) y t) (coeff t * g (hf := hf) y t) y := by
-          simpa [g, mul_assoc, mul_left_comm, mul_comm] using
-            SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-              (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y
-        simpa [gN, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-          hg.const_mul ((coeff t) ^ n))).2
+        simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+          (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+            (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y).const_mul ((coeff t) ^ n))).2
 
 end
 
