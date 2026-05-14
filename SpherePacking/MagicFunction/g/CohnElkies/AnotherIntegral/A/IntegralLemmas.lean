@@ -2337,8 +2337,7 @@ public theorem analyticOnNhd_integral_base_exp
   have hDiff :
       DifferentiableOn ℂ
         (fun u : ℂ => ∫ t in Set.Ioi (0 : ℝ), base t * Complex.exp (-(π : ℂ) * u * (t : ℂ)))
-        rightHalfPlane := by
-    intro u hu
+        rightHalfPlane := fun u hu => by
     have hu0 : 0 < u.re := by simpa [rightHalfPlane] using hu
     set ε : ℝ := u.re / 2
     have hε : 0 < ε := by positivity
