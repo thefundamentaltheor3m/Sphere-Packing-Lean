@@ -14,7 +14,6 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import SpherePacking.Integration.Measure
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis
 public import
   SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.Integrability
 public import SpherePacking.Basic.Domains.RightHalfPlane
