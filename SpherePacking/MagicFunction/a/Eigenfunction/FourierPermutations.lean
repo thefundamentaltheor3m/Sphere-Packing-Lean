@@ -679,9 +679,9 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
   have hexp (x : ℝ⁸) :
       ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₂line t : ℂ))‖ = rexp (-(Real.pi * (‖x‖ ^ 2))) := by
     set r : ℝ := ‖x‖ ^ 2
-    have hmain : ‖cexp ((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)‖ = rexp (-Real.pi * r) := by
-      simp [Complex.norm_exp]
-    simpa [r, mul_assoc, mul_left_comm, mul_comm, neg_mul] using hmain
+    simpa [r, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
+      (show ‖cexp ((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)‖ = rexp (-Real.pi * r) by
+        simp [Complex.norm_exp])
   have hnorm (x : ℝ⁸) :
       ‖permI2Kernel w (x, t)‖ =
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * (‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))) := by

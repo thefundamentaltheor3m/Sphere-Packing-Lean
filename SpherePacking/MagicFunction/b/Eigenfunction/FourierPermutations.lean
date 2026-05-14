@@ -810,7 +810,6 @@ lemma integral_permJ1Kernel_x (w : EuclideanSpace ℝ (Fin 8))
     (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     (∫ x : EuclideanSpace ℝ (Fin 8), permJ1Kernel w (x, t)) =
       (Complex.I : ℂ) * Ψ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
-  have hz : 0 < (z₁line t).im := by simpa [z₁line] using ht.1
   let c : ℂ := (Complex.I : ℂ) * ψT' (z₁line t)
   have hfactor :
       (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ1Kernel w (x, t)) =
@@ -824,7 +823,7 @@ lemma integral_permJ1Kernel_x (w : EuclideanSpace ℝ (Fin 8))
           cexp ((π : ℂ) * I * (‖w‖ ^ 2 : ℝ) * (-1 / (z₁line t)))) := by
           simpa [hfactor] using
             SpherePacking.ForMathlib.integral_const_mul_phase_gaussian_pi_mul_I_mul_even
-              (k := 4) (w := w) (z := z₁line t) hz (c := c)
+              (k := 4) (w := w) (z := z₁line t) (by simpa [z₁line] using ht.1) (c := c)
     _ = (Complex.I : ℂ) * Ψ₁_fourier (‖w‖ ^ 2) (z₁line t) := by
           simp [c, Ψ₁_fourier, mul_assoc, mul_left_comm, mul_comm]
 
