@@ -82,7 +82,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Another
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.HExpansions
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.InvH2Sq
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.QExpansion
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common
 public import SpherePacking.MagicFunction.g.CohnElkies.Defs
