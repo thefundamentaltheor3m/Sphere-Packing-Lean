@@ -99,7 +99,6 @@ end
 namespace MagicFunction.g.CohnElkies
 
 open scoped FourierTransform SchwartzMap
-
 open Real Complex SchwartzMap
 open MagicFunction.FourierEigenfunctions
 
@@ -755,7 +754,6 @@ end MagicFunction.g.CohnElkies.IntegralReps
 namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators Topology Interval UpperHalfPlane
-
 open MeasureTheory Real Complex Filter
 open SpherePacking intervalIntegral
 open MagicFunction.a.RealIntegrals
@@ -1248,10 +1246,8 @@ namespace MagicFunction.g.CohnElkies.IntegralReps
 
 open scoped BigOperators Topology MatrixGroups CongruenceSubgroup ModularForm NNReal ENNReal
 open scoped ArithmeticFunction.sigma
-
 open Real Complex MeasureTheory Filter Function
 open ArithmeticFunction
-
 open MagicFunction.FourierEigenfunctions
 open UpperHalfPlane ModularForm EisensteinSeries
 open SlashInvariantFormClass ModularFormClass
