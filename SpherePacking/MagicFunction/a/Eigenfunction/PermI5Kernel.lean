@@ -6,12 +6,11 @@ Authors: Sidharth Hariharan
 module
 
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+public import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 public import SpherePacking.Integration.InvChangeOfVariables
 public import SpherePacking.ModularForms.PhiTransform
 
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
-import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.InnerProductSpace.Continuous

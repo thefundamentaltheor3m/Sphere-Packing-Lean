@@ -16,7 +16,7 @@ public import SpherePacking.Contour.MobiusInv.Basic
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 
 import SpherePacking.ForMathlib.GaussianFourierCommon
-import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+import SpherePacking.MagicFunction.a.Schwartz.DecayI1
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Contour.Segments
 
