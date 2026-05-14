@@ -721,13 +721,13 @@ public theorem contDiff_integral
         simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
           continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le n x)
 
-/-- One-sided decay for `I 0 x` from a uniform bound on `‖cexp ((x : ℂ) * coeff t)‖`. -/
-private theorem decay_integral
+/-- One-sided decay for `I 0 x`, specialized when `Re (coeff t) = -π` for all `t`. -/
+public theorem decay_integral_of_coeff_re
     (continuous_hf : Continuous hf)
     (continuous_coeff : Continuous coeff)
     (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (norm_cexp : ∀ x t : ℝ, ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x)) :
+    (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C := by
   intro k n
@@ -735,6 +735,8 @@ private theorem decay_integral
     SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
   have hMh0 : 0 ≤ Mh := (norm_nonneg (hf 1)).trans (hMh 1 (by simp))
+  have norm_cexp : ∀ x t : ℝ, ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x) := fun x t => by
+    simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm]
   refine ⟨(2 * Real.pi) ^ n * Mh * B, fun x hx => ?_⟩
   have hrepr := congrArg (fun f : ℝ → ℂ => f x) <|
     show iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
@@ -769,21 +771,6 @@ private theorem decay_integral
     _ ≤ (2 * Real.pi) ^ n * Mh * B :=
         mul_le_mul_of_nonneg_left (hB x hx)
           (mul_nonneg (pow_nonneg (by positivity) n) hMh0)
-
-/-- Specialize `decay_integral` when `Re (coeff t) = -π` for all `t`. -/
-public theorem decay_integral_of_coeff_re
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C := by
-  simpa using
-    decay_integral (coeff := coeff) (hf := hf)
-      continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le
-      (norm_cexp := fun x t => by
-        simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm])
 
 end SpherePacking.Integration.SmoothIntegralCommon
 
