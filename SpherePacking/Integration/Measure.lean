@@ -485,14 +485,13 @@ public lemma hasDerivAt_integral_gN
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖hf 1‖)
       (b := Real.exp (-(Real.pi * shift) * (1 : ℝ))) (C := C) (norm_nonneg _) (by positivity)
       (by simpa using hC 1 le_rfl)
-  have hb : 0 < Real.pi * ε := mul_pos Real.pi_pos ε_pos
   let bound : ℝ → ℝ :=
     fun t ↦ (Real.pi ^ (n + 1)) * (t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) * C
   have hbound_int : Integrable bound μIciOne := by
     have hInt : Integrable (fun t : ℝ ↦ t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) μIciOne := by
       simpa [IntegrableOn, μIciOne, mul_assoc] using
         SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n + 1)
-          (b := Real.pi * ε) (by simpa [mul_assoc] using hb)
+          (b := Real.pi * ε) (mul_pos Real.pi_pos ε_pos)
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
   have h_bound :
       ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε, ‖gN (hf := hf) (n + 1) y t‖ ≤ bound t :=
