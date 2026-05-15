@@ -25,7 +25,8 @@ open scoped Topology Real BigOperators Nat
 open scoped ArithmeticFunction.sigma
 open scoped MatrixGroups CongruenceSubgroup ModularForm
 
-open ModularForm EisensteinSeries UpperHalfPlane Complex ModularFormClass
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane Complex ModularFormClass
 
 local notation "𝕢" => Function.Periodic.qParam
 
@@ -59,11 +60,15 @@ private lemma one_mem_strictPeriods :
 private lemma E4qSeries_hasSum
     (w : ℍ) :
     HasSum (fun n : ℕ => E4Coeff n * cexp (2 * Real.pi * Complex.I * n * w)) (E₄ w) := by
+  have : Fact (IsCusp OnePoint.infty (Γ(1) : Subgroup (GL (Fin 2) ℝ))) :=
+    ⟨_root_.Subgroup.isCusp_of_mem_strictPeriods (h := 1) one_pos one_mem_strictPeriods⟩
+  have hper : Function.Periodic ((E₄ : ℍ → ℂ) ∘ ofComplex) (1 : ℝ) :=
+    SlashInvariantFormClass.periodic_comp_ofComplex (f := E₄) one_mem_strictPeriods
   have hsum :=
-    ModularFormClass.hasSum_qExpansion (f := E₄) (h := (1 : ℝ)) (by positivity)
-      one_mem_strictPeriods w
+    hasSum_qExpansion (f := (E₄ : ℍ → ℂ)) (h := (1 : ℝ)) (by positivity) hper
+      (ModularFormClass.holo E₄) (ModularFormClass.bdd_at_infty (f := E₄)) w
   refine HasSum.congr_fun hsum (fun n => ?_)
-  have hcoeff : (ModularFormClass.qExpansion (1 : ℝ) E₄).coeff n = E4Coeff n := by
+  have hcoeff : (qExpansion (1 : ℝ) E₄).coeff n = E4Coeff n := by
     simpa [E4Coeff] using congr_fun E4_q_exp n
   have hqpow : (𝕢 (1 : ℝ) w) ^ n = cexp (2 * Real.pi * Complex.I * n * w) := by
     simpa [Function.Periodic.qParam, mul_assoc, mul_left_comm, mul_comm] using
