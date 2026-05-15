@@ -15,7 +15,8 @@ development. The proof is split into several private steps to help compilation.
 -/
 
 open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
-open Filter Complex UpperHalfPlane ModularForm
+open Filter Complex UpperHalfPlane
+open ModularForm hiding E₄ E₆
 
 -- Ensure the `SL(2,ℤ)` Möbius action on `ℍ` is available below.
 noncomputable local instance : MulAction SL(2, ℤ) ℍ := UpperHalfPlane.SLAction (R := ℤ)
