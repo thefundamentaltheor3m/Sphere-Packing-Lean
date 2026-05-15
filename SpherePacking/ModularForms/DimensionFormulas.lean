@@ -19,16 +19,40 @@ for level-one modular forms.
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
   Real MatrixGroups CongruenceSubgroup ArithmeticFunction.sigma
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
 noncomputable section
+
+/-- Bridge mathlib's `ModularForm.levelOne_weight_zero_rank_one` (over `𝒮ℒ`) to `Γ(1)`. -/
+private lemma levelOne_weight_zero_rank_one_Gamma :
+    Module.rank ℂ (ModularForm Γ(1) (0 : ℤ)) = 1 := by
+  refine rank_eq_one (ModularForm.const 1) (by simp [DFunLike.ne_iff]) fun g ↦ ?_
+  have : ModularFormClass (ModularForm Γ(1) 0) 𝒮ℒ 0 :=
+    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
+  obtain ⟨c', hc'⟩ := ModularFormClass.levelOne_weight_zero_const (F := ModularForm Γ(1) 0) g
+  refine ⟨c', ?_⟩
+  ext z
+  change c' • (ModularForm.const (1 : ℂ) : ModularForm _ 0) z = g z
+  have := congr_fun hc' z
+  simp only [Function.const_apply] at this
+  simp [ModularForm.const_apply, this]
+
+/-- Bridge mathlib's `ModularForm.levelOne_neg_weight_rank_zero` (over `𝒮ℒ`) to `Γ(1)`. -/
+private lemma levelOne_neg_weight_rank_zero_Gamma {k : ℤ} (hk : k < 0) :
+    Module.rank ℂ (ModularForm Γ(1) k) = 0 := by
+  refine rank_eq_zero_iff.mpr fun f ↦ ⟨_, one_ne_zero, ?_⟩
+  have : ModularFormClass (ModularForm Γ(1) k) 𝒮ℒ k :=
+    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
+  simpa [← ModularForm.coe_eq_zero_iff] using
+    ModularFormClass.levelOne_neg_weight_eq_zero (F := ModularForm Γ(1) k) hk f
 
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
   have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 :=
     Module.finrank_eq_of_rank_eq <| by
       simpa [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)] using
-        ModularForm.levelOne_weight_zero_rank_one
+        levelOne_weight_zero_rank_one_Gamma
   exact (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr Delta_E4_E6_aux
 
 /-- The discriminant cusp form as a scaled version of `E₄^3 - E₆^2`. -/
@@ -400,7 +424,7 @@ public lemma ModularForm.dimension_level_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (h
     have neg : ∀ {n : ℕ}, ((n : ℤ) - 12 < 0) →
         1 + Module.rank ℂ (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1))
           (↑n - 12)) = 1 + 0 := fun h => by
-      rw [ModularForm.levelOne_neg_weight_rank_zero h]
+      rw [levelOne_neg_weight_rank_zero_Gamma h]
     fin_cases hkop
     · exact (neg (by decide : ((4 : ℕ) : ℤ) - 12 < 0)).trans (by norm_cast)
     · exact (neg (by decide : ((6 : ℕ) : ℤ) - 12 < 0)).trans (by norm_cast)
@@ -408,7 +432,7 @@ public lemma ModularForm.dimension_level_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (h
     · exact (neg (by decide : ((10 : ℕ) : ℤ) - 12 < 0)).trans (by norm_cast)
     · have h : 1 + Module.rank ℂ (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
           Γ(1)) (↑(12 : ℕ) - 12)) = 1 + 1 := by
-        rw [show ((12 : ℕ) : ℤ) - 12 = 0 by decide, ModularForm.levelOne_weight_zero_rank_one]
+        rw [show ((12 : ℕ) : ℤ) - 12 = 0 by decide, levelOne_weight_zero_rank_one_Gamma]
       exact h.trans (by norm_cast)
     · have h : 1 + Module.rank ℂ (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
           Γ(1)) (↑(14 : ℕ) - 12)) = 1 + 0 := by
@@ -442,13 +466,13 @@ lemma finiteDimensional_modularForm_level_one (k : ℤ) :
     FiniteDimensional ℂ (ModularForm Γ(1) k) := by
   by_cases hkneg : k < 0
   · have hr : Module.rank ℂ (ModularForm Γ(1) k) = 0 :=
-      ModularForm.levelOne_neg_weight_rank_zero (k := k) hkneg
+      levelOne_neg_weight_rank_zero_Gamma (k := k) hkneg
     exact Module.finite_of_rank_eq_zero hr
   · have hk0le : 0 ≤ k := le_of_not_gt hkneg
     by_cases hk0 : k = 0
     · subst hk0
       refine finiteDimensional_of_rank_lt_aleph0 (V := ModularForm Γ(1) (0 : ℤ)) ?_
-      simp [ModularForm.levelOne_weight_zero_rank_one, Cardinal.one_lt_aleph0]
+      simp [levelOne_weight_zero_rank_one_Gamma, Cardinal.one_lt_aleph0]
     · have hkpos : 0 < k := lt_of_le_of_ne hk0le (Ne.symm hk0)
       rcases Int.even_or_odd k with hk2 | hk2
       · set kN : ℕ := Int.toNat k
@@ -542,11 +566,11 @@ public lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Sub
         map_add' := by
           intro f g
           ext n
-          simp [qExpansion_add hh hperΓ f g]
+          simp [ModularForm.qExpansion_add hh hperΓ f g]
         map_smul' := by
           intro a f
           ext n
-          simp [qExpansion_smul hh hperΓ a f] }
+          simp [ModularForm.qExpansion_smul hh hperΓ a f] }
       have htrunc_inj : Function.Injective trunc := by
         intro f g hfg
         have hcoeff : ∀ m < N, (qExpansion h (f - g)).coeff m = 0 := by
