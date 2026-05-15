@@ -134,7 +134,8 @@ public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
     show iteratedDeriv m (fun t : ℝ ↦ (-1 / 2 : ℂ) •
         Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x =
       (-1 / 2 : ℂ) • iteratedDeriv m
-        (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x by simp]
+        (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x from
+      iteratedDeriv_fun_const_smul_field _ _]
   simpa [show ‖(-1 / 2 : ℂ)‖ = (1 / 2 : ℝ) by simp] using
     mul_le_mul_of_nonneg_left
       (by simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv] using
@@ -421,8 +422,11 @@ public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
           Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))) =
       c * ((((Complex.I : ℂ) / z) ^ k) *
         Complex.exp ((Real.pi : ℂ) * Complex.I * (‖w‖ ^ 2 : ℝ) * (-1 / z))) := by
-  simpa [MeasureTheory.integral_const_mul] using congrArg (fun I : ℂ => c * I)
-    (integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz)
+  trans (c * ∫ x : EuclideanSpace ℝ (Fin (2 * k)),
+      Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
+        Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))
+  · exact MeasureTheory.integral_const_mul c _
+  · rw [integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz]
 
 /-- Fourier transform of the real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` in even dimension `2k`. -/
 public lemma fourier_gaussian_norm_sq_div_even (k : ℕ) (s : ℝ) (hs : 0 < s)
