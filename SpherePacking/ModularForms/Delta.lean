@@ -32,8 +32,7 @@ abbrev Δ : ℍ → ℂ := ModularForm.discriminant
 /-- Unfold `Δ` to mathlib's q-product form. -/
 lemma Δ_eq_qProd (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 := by
-  rw [show (Δ : ℍ → ℂ) = discriminant from rfl, discriminant_eq_q_prod]
-  simp [Periodic.qParam, eta_q_eq_cexp]
+  simpa [Periodic.qParam, eta_q_eq_cexp] using discriminant_eq_q_prod z
 
 /-- Reindex `Δ` from a product over `ℕ` to a product over `ℕ+`. -/
 lemma DiscriminantProductFormula (z : ℍ) :
