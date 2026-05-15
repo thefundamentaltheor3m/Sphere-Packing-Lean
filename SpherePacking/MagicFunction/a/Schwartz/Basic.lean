@@ -2485,7 +2485,7 @@ private lemma tendsto_A_over_Delta :
       field_simp [(by simp : (cexp (2 * π * Complex.I * z) : ℂ) ≠ 0), Δ_ne_zero z]
   have hΔrew : (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
       fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 :=
-    funext fun z => by simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
+    funext fun z => by simp [Δ_eq_qProd, div_eq_mul_inv, mul_left_comm, mul_comm]
   have hΔ : Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
     simpa [hΔrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
   rw [hrew]

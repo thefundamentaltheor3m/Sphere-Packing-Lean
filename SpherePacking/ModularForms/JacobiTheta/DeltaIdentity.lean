@@ -529,7 +529,7 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
           fun z : ℍ => ∏' (n : ℕ), (1 - cexp (2 * π * I * (↑n + 1) * (z : ℂ))) ^ 24 := by
       funext z
       -- Expand `Delta` via the product formula `Δ`.
-      simp [Delta_apply, Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
+      simp [Delta_apply, Δ_eq_qProd, div_eq_mul_inv, mul_left_comm, mul_comm]
     simpa [hrew] using hb
   -- Use the 1-dimensionality to identify `c`.
   have hlim_thetaDeltaCF :

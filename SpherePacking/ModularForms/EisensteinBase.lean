@@ -485,7 +485,7 @@ lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
       have hy' : ‖y‖ < 1 := lt_trans (by simpa [mem_ball, dist_zero_right] using hy) (by norm_num)
       have hz := Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := 1)
         Real.zero_lt_one hy' hyn0
-      rw [ofComplex_apply_of_im_pos hz, Delta_apply, Δ]
+      rw [ofComplex_apply_of_im_pos hz, Delta_apply, Δ_eq_qProd]
       have hyq : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
         simpa [Periodic.qParam] using
           Function.Periodic.qParam_right_inv (h := (1 : ℝ)) (by simp) hyn0
