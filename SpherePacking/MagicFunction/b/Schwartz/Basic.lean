@@ -319,6 +319,7 @@ private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
     SpherePacking.Integration.DifferentiationUnderIntegral.g,
     SpherePacking.Integration.DifferentiationUnderIntegral.gN, mul_assoc, mul_left_comm, mul_comm,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
+  exact (one_smul ℂ _).symm
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
@@ -385,8 +386,8 @@ public theorem decay_J₁' :
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
       = x ^ k * ‖I n x‖ := by
-        simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-          congrArg (fun F : ℝ → ℂ => F x) (show iteratedDeriv n J₁' = fun x : ℝ ↦ I n x by
+        rw [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+          congrArg (fun F : ℝ → ℂ => ‖F x‖) (show iteratedDeriv n J₁' = fun x : ℝ ↦ I n x by
             simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
               (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
@@ -496,6 +497,7 @@ lemma J₅'_eq_integral_g_Ioo (x : ℝ) :
     DifferentiationUnderIntegral.gN, DifferentiationUnderIntegral.g,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
     mul_assoc, mul_left_comm, mul_comm]
+  exact one_smul ℂ _
 
 /-- Smoothness of `J₅'`. -/
 public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
@@ -639,7 +641,7 @@ public theorem
     · show Tendsto (fun (m : ℝ) ↦ ∫ (x : ℝ) in x₁..x₂, f (x + m * I)) atTop (𝓝 0)
       by_cases h : x₁ = x₂
       · subst h; simp
-      simp only [NormedAddCommGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
+      simp only [NormedAddGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
       intro ε hε
       have hx : 0 < |x₂ - x₁| := abs_sub_pos.mpr (ne_comm.mp h)
       obtain ⟨M, hM⟩ :=
@@ -1123,11 +1125,13 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
             simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
           simp [show z₄' t = (1 - (t : ℂ)) + Complex.I by simpa using z₄'_eq_of_mem htIcc]
       let f : ℝ → ℂ := fun u => ψT' ((u : ℂ) + Complex.I)
-      rw [hEq, intervalIntegral.integral_const_mul,
-        (intervalIntegral.integral_congr fun t _ => by
-          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) by push_cast; ring] :
-            (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
-        (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
+      rw [hEq]
+      trans ((-1 : ℂ) * ∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I))
+      · exact intervalIntegral.integral_const_mul (-1 : ℂ) _
+      rw [(intervalIntegral.integral_congr fun t _ => by
+            simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) by push_cast; ring] :
+              (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
+          (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
     have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
           ψS' ((t : ℂ) + Complex.I) := fun t =>
       sub_eq_of_eq_add' <| by
@@ -1213,7 +1217,8 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
         (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
           simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t)
             (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])]
-    simp [MeasureTheory.integral_const_mul, smul_eq_mul]
+    simp [smul_eq_mul]
+    exact MeasureTheory.integral_const_mul Complex.I _
   exact hJ24.trans (eq_neg_of_add_eq_zero_left (by
     simp [show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) =
         (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) by

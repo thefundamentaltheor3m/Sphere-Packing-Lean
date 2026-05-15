@@ -29,6 +29,9 @@ open MeasureTheory
 open scoped Complex Topology
 open Filter
 
+/-- v4.29.1 workaround: ContinuousSMul ℝ ℂ no longer auto-synthesizes. -/
+public instance : ContinuousSMul ℝ ℂ := NormedSpace.toIsBoundedSMul.continuousSMul
+
 /-- `t ↦ t ^ n * exp (-b * t)` is integrable on `[1, ∞)` when `0 < b`. -/
 public lemma integrableOn_pow_mul_exp_neg_mul_Ici (n : ℕ) {b : ℝ} (hb : 0 < b) :
     IntegrableOn (fun t : ℝ ↦ t ^ n * Real.exp (-b * t)) (Set.Ici (1 : ℝ)) volume :=
