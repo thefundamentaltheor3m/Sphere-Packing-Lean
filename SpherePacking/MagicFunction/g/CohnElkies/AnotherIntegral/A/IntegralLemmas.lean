@@ -1706,10 +1706,9 @@ lemma exists_phi0_cancellation_bound :
     obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn (s := Set.Icc (1 : ℝ) A)
       ⟨1, le_rfl, hA₂.trans (le_max_left _ _)⟩
       (show ContinuousOn (fun t => ‖cancelExpr t‖) (Set.Icc (1 : ℝ) A) by
-        simpa [cancelExpr] using (((((by fun_prop :
-          ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A)).mul
-          (continuousOn_phi0''_Idiv fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).sub
-          (by fun_prop)).add (by fun_prop)).sub (by fun_prop)).norm)
+        have := continuousOn_phi0''_Idiv (s := Set.Icc (1 : ℝ) A)
+          fun t ht => lt_of_lt_of_le (by norm_num) ht.1
+        unfold cancelExpr; fun_prop)
     exact ⟨_, fun t ht1 htA => (isMaxOn_iff.mp ht₀max) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, fun t ht1 => ?_⟩
@@ -1777,10 +1776,8 @@ lemma exists_phi0_cancellation_bound :
 
 private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) (u : ℝ) :
-    ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s :=
-  ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
-    (continuousOn_phi0''_Idiv hs)).sub (by fun_prop) |>.add (by fun_prop)).sub (by fun_prop)).mul
-      (by fun_prop : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ)).continuousOn
+    ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
+  have := continuousOn_phi0''_Idiv hs; unfold aAnotherIntegrand; fun_prop
 
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
@@ -2413,11 +2410,8 @@ public lemma aAnotherIntegralC_analyticOnNhd :
       ContinuousOn (fun z : ℂ => φ₀'' z) upperHalfPlaneSet).comp hcontIdiv fun t ht => by
         change 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
         rw [imag_I_div t]; exact inv_pos.2 (by simpa using ht)
-  have hbase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) :=
-    ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
-      hφcomp).sub (continuousOn_const.mul (by fun_prop : Continuous fun t : ℝ =>
-      ((Real.exp (2 * π * t)) : ℂ)).continuousOn)).add
-      (continuousOn_const.mul continuous_ofReal.continuousOn)).sub continuousOn_const
+  have hbase : ContinuousOn aAnotherBase (Set.Ioi (0 : ℝ)) := by
+    unfold aAnotherBase; fun_prop
   convert analyticOnNhd_integral_base_exp (base := aAnotherBase)
     hbase (fun u hu => (aAnotherIntegrand_integrable_of_pos hu).congr <|
       Filter.Eventually.of_forall fun t => by
