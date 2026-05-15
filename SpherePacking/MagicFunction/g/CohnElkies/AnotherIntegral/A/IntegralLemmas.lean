@@ -315,10 +315,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
     have hmid : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
       (((show ContinuousOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) by
-          simpa [aLaplaceIntegrand, mul_assoc] using
-            (((by fun_prop : Continuous fun t : ℝ ↦ ((t ^ (2 : ℕ) : ℝ) : ℂ)
-              ).continuousOn.mul continuousOn_phi0''_div_Ioi).mul
-              (by fun_prop : Continuous fun t : ℝ ↦ (Real.exp (-π * u * t) : ℂ)).continuousOn)
+          have := continuousOn_phi0''_div_Ioi; unfold aLaplaceIntegrand; fun_prop
         ).mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
         (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
