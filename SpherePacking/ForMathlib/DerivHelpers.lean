@@ -32,6 +32,13 @@ open Filter
 /-- v4.29.1 workaround: ContinuousSMul ℝ ℂ no longer auto-synthesizes. -/
 public instance : ContinuousSMul ℝ ℂ := NormedSpace.toIsBoundedSMul.continuousSMul
 
+/-- v4.29.1 workaround: `ContDiffOn.restrict_scalars` from `ℂ` to `ℝ` for `ℂ → ℂ` maps,
+where typeclass synthesis can't find `IsScalarTower ℝ ℂ ℂ` automatically. -/
+public lemma ContDiffOn.restrict_scalars_C_to_R {f : ℂ → ℂ} {s : Set ℂ} {n : WithTop ℕ∞}
+    (h : ContDiffOn ℂ n f s) : ContDiffOn ℝ n f s :=
+  @ContDiffOn.restrict_scalars ℝ _ ℂ _ _ ℂ _ _ s f n ℂ _ _ _ IsScalarTower.right _
+    IsScalarTower.right h
+
 /-- `t ↦ t ^ n * exp (-b * t)` is integrable on `[1, ∞)` when `0 < b`. -/
 public lemma integrableOn_pow_mul_exp_neg_mul_Ici (n : ℕ) {b : ℝ} (hb : 0 < b) :
     IntegrableOn (fun t : ℝ ↦ t ^ n * Real.exp (-b * t)) (Set.Ici (1 : ℝ)) volume :=

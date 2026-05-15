@@ -156,7 +156,7 @@ public lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
 /-- `I₁'` as an integral over `Ioc 0 1`. -/
 public lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
     * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * I * r) * cexp (-π * r * t) := by
-  simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
+  simp [I₁'_eq, intervalIntegral.integral_of_le zero_le_one]
 
 /-- Explicit integral expression for `I₂'`. -/
 public lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1, φ₀'' (-1 / (t + I))
@@ -197,7 +197,7 @@ public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
 /-- `I₅'` as an integral over `Ioc 0 1`. -/
 public lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
     * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * r * t) := by
-  simp [I₅'_eq, intervalIntegral_eq_integral_uIoc]
+  simp [I₅'_eq, intervalIntegral.integral_of_le zero_le_one]
 
 /-- Explicit integral expression for `I₆'`. -/
 public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
@@ -283,7 +283,7 @@ public theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
 
 /-- The integrand `Φ₃' r` is smooth as a real function on `upperHalfPlaneSet`. -/
 public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
-  (Φ₃'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
+  SpherePacking.ForMathlib.ContDiffOn.restrict_scalars_C_to_R (Φ₃'_contDiffOn_ℂ (r := r))
 
 /-- The integrand `Φ₆' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
@@ -301,7 +301,9 @@ variable {r : ℝ}
 
 /-- Smoothness of the real integrand `Φ₂ r` on `Icc (0, 1)`. -/
 public theorem Φ₂_contDiffOn : ContDiffOn ℝ ∞ (Φ₂ r) (Icc (0 : ℝ) 1) := by
-  simpa [Φ₂_def, Φ₂'] using ((Φ₁'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ).comp
+  simpa [Φ₂_def, Φ₂'] using
+    (SpherePacking.ForMathlib.ContDiffOn.restrict_scalars_C_to_R
+      (Φ₁'_contDiffOn_ℂ (r := r))).comp
     (((contDiffOn_const.add ofRealCLM.contDiff.contDiffOn).add contDiffOn_const).congr
       fun y hy ↦ by simpa [add_assoc] using z₂'_eq_of_mem (t := y) hy) z₂'_mapsto
 
@@ -316,7 +318,8 @@ public theorem Φ₄_contDiffOn : ContDiffOn ℝ ∞ (Φ₄ r) (Icc (0 : ℝ) 1)
 /-- Smoothness of the real integrand `Φ₆ r` on `Ici 1`. -/
 public theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) := by
   simpa [Φ₆_def, smul_eq_mul] using ContDiffOn.const_smul (c := Complex.I)
-    (((Φ₆'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ).comp
+    ((SpherePacking.ForMathlib.ContDiffOn.restrict_scalars_C_to_R
+      (Φ₆'_contDiffOn_ℂ (r := r))).comp
       ((contDiffOn_const.mul ofRealCLM.contDiff.contDiffOn).congr
         fun y hy ↦ by simpa using z₆'_eq_of_mem (t := y) hy)
       z₆'_mapsto)
@@ -592,7 +595,7 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
         rw [← Complex.exp_add]; congr 1
         push_cast [← (show (p.1 + 1 : ℕ) + (p.2 + 1 : ℕ) = m + 2 by omega)]; ring
-      dsimp [A_E_term]; exact CancelDenoms.mul_subst rfl hexp rfl]
+      dsimp [A_E_term]; exact Mathlib.Tactic.CancelDenoms.mul_subst rfl hexp rfl]
     simp [Finset.sum_mul, A_E_sq_coeff, mul_assoc]
   rw [show (A_E z) ^ 2 = (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) by
     rw [← A_E_eq_tsum z]; ring,
@@ -964,7 +967,7 @@ variable (r : ℝ)
 
 /-- Rewrite `I₂' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
 public lemma I₂'_eq_integral_g_Ioo (r : ℝ) : I₂' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
-  simp [I₂'_eq, intervalIntegral_eq_integral_uIoc, zero_le_one, g, integral_Ioc_eq_integral_Ioo]
+  simp [I₂'_eq, intervalIntegral.integral_of_le zero_le_one, g, integral_Ioc_eq_integral_Ioo]
 
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (↑t + I)).im :=
@@ -1063,7 +1066,7 @@ variable (r : ℝ)
 
 /-- Rewrite `I₄' r` as a set integral of `g r` over `Ioo (0, 1)`. -/
 public lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
-  simp [I₄'_eq, intervalIntegral_eq_integral_uIoc, zero_le_one, g, integral_Ioc_eq_integral_Ioo]
+  simp [I₄'_eq, intervalIntegral.integral_of_le zero_le_one, g, integral_Ioc_eq_integral_Ioo]
 
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im :=
@@ -1438,7 +1441,7 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
     have hpt : x ^ k * rexp (-π * x / s) ≤ (π ^ k)⁻¹ * Cpow * s ^ k := by
       set u : ℝ := (π * x) / s
       have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
-        simp [show x = u * s / π from CancelDenoms.cancel_factors_eq_div
+        simp [show x = u * s / π from Mathlib.Tactic.CancelDenoms.cancel_factors_eq_div
           (id (div_mul_cancel₀ (π * x)
             (lt_of_lt_of_le (by norm_num) hs1).ne').symm) Real.pi_ne_zero,
           mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
@@ -1620,13 +1623,13 @@ lemma iteratedDeriv_bound (n : ℕ) :
     | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
     | succ n hn =>
       intro r hr
-      calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by
-            simp [iteratedDeriv_succ]
+      calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r :=
+            congrFun iteratedDeriv_succ r
         _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
           Filter.EventuallyEq.deriv_eq
             (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
-        _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
-          simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
+        _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t :=
+          ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
   let B : ℝ → ℝ := fun t ↦ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t))
   have hB_int : IntegrableOn B (Ici (1 : ℝ)) volume := by
@@ -1779,7 +1782,7 @@ public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
     (f := I₁') (fun x => by
       simp [RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def,
         DifferentiationUnderIntegral.g, Φ₁', coeff, hf, SmoothI24Common.arg,
-        intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
+        intervalIntegral.integral_of_le zero_le_one, integral_Ioc_eq_integral_Ioo,
         mul_assoc, mul_left_comm, mul_comm])
     continuous_z₁' norm_z₁'_le_two (by norm_num)
     (fun t ht h0 => by
@@ -1814,7 +1817,7 @@ public theorem I₂'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₂' :=
     (f := I₂') (fun x => by
       simp [RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def,
         DifferentiationUnderIntegral.g, Φ₂', Φ₁', coeff, hf, SmoothI24Common.arg,
-        intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
+        intervalIntegral.integral_of_le zero_le_one, integral_Ioc_eq_integral_Ioo,
         mul_assoc, mul_left_comm, mul_comm])
     continuous_z₂' norm_z₂'_le_two (by norm_num)
     (fun t ht h0 => by
@@ -1851,7 +1854,7 @@ public theorem I₄'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₄' :=
     (f := I₄') (fun x => by
       simp [RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def,
         DifferentiationUnderIntegral.g, Φ₄', Φ₃', coeff, hf, SmoothI24Common.arg, sub_eq_add_neg,
-        intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
+        intervalIntegral.integral_of_le zero_le_one, integral_Ioc_eq_integral_Ioo,
         mul_assoc, mul_left_comm, mul_comm])
     continuous_z₄' norm_z₄'_le_two (by norm_num)
     (fun t ht h0 => by
@@ -1877,7 +1880,14 @@ public theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' :=
 
 private lemma I₃'_eq_exp_mul_I₁' :
     RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
-  ext x; rw [I₃'_eq, I₁'_eq, ← intervalIntegral.integral_const_mul]
+  ext x
+  rw [I₃'_eq, I₁'_eq,
+    show (cexp (2 * ↑π * I * ↑x) *
+        ∫ (t : ℝ) in (0 : ℝ)..1, -I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 *
+          cexp (-↑π * I * ↑x) * cexp (-↑π * ↑x * ↑t)) =
+      ∫ (t : ℝ) in (0 : ℝ)..1, cexp (2 * ↑π * I * ↑x) *
+        (-I * φ₀'' (-1 / (I * ↑t)) * ↑t ^ 2 * cexp (-↑π * I * ↑x) * cexp (-↑π * ↑x * ↑t)) from
+      (intervalIntegral.integral_const_mul _ _).symm]
   exact intervalIntegral.integral_congr fun t _ => by
     rw [show cexp (↑π * I * ↑x) = cexp (2 * ↑π * I * ↑x) * cexp (-↑π * I * ↑x) by
       rw [← Complex.exp_add]; ring_nf]; ring
@@ -1894,7 +1904,7 @@ private lemma I₅'_eq_mul_exp_mul_I₁' :
   rw [show RealIntegrals.I₁' x = (∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x) by
     rw [show RealIntegrals.I₁' x = ∫ t in (0 : ℝ)..1, f t * cexp (-π * I * x) by
       simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₁'_eq (r := x))]
-    simp [intervalIntegral.integral_mul_const],
+    exact intervalIntegral.integral_mul_const _ _,
     show RealIntegrals.I₅' x = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t by
       simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₅'_eq (r := x))]
   linear_combination (2 * ∫ t in (0 : ℝ)..1, f t) *
@@ -2176,7 +2186,11 @@ lemma I₄'_zero :
   rw [show I₄' (0 : ℝ) = ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
       (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) from by
     simp [MagicFunction.a.RadialFunctions.I₄'_eq, pow_two],
-    intervalIntegral.integral_const_mul,
+    show (∫ x in (0 : ℝ)..1, (-1 : ℂ) *
+        (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ))) =
+      (-1 : ℂ) * ∫ x in (0 : ℝ)..1,
+        φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ) from
+      intervalIntegral.integral_const_mul _ _,
     show (∫ x in (0 : ℝ)..1,
         φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
       ∫ x in (0 : ℝ)..1, F (zI x - 1) from by
@@ -2371,11 +2385,15 @@ lemma integral_f0_height_one_eq_neg_I6 :
       (squeeze_zero_norm' (norm_integral_f0_strip_le hC₀)
         (tendsto_two_m_plus_one_mul_exp_decay C₀))
   rw [show I₆' (0 : ℝ) = Complex.I • J by
-    rw [show I₆' (0 : ℝ) = 2 * ∫ t in Set.Ici (1 : ℝ),
-        (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I) ∂MeasureTheory.volume from by
-      simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm],
-      MeasureTheory.integral_Ici_eq_integral_Ioi]
-    simp only [smul_eq_mul, MeasureTheory.integral_const_mul, J]; ring]
+    have h1 : I₆' (0 : ℝ) = 2 * ∫ t in Set.Ici (1 : ℝ),
+        (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I) ∂MeasureTheory.volume := by
+      simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm]
+    have h2 : J = 2 * ∫ y in Set.Ioi (1 : ℝ), φ₀'' ((y : ℂ) * Complex.I) :=
+      MeasureTheory.integral_const_mul _ _
+    rw [h1, MeasureTheory.integral_Ici_eq_integral_Ioi, h2, smul_eq_mul,
+      show (∫ (t : ℝ) in Set.Ioi (1 : ℝ), Complex.I * φ₀'' (↑t * Complex.I)) =
+        Complex.I * ∫ (t : ℝ) in Set.Ioi (1 : ℝ), φ₀'' (↑t * Complex.I) from
+        MeasureTheory.integral_const_mul _ _]; ring]
   linear_combination hA0
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
@@ -2490,15 +2508,19 @@ lemma tendsto_top_phi2 :
       (fun x _ => by simpa [Complex.add_im] using hm0)).intervalIntegrable
   have hsub : (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
       ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by
-    simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hII
+    have h := (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hII
       (intervalIntegrable_const (c := (720 : ℂ)))).symm
+    rw [show ∫ _ in (0 : ℝ)..1, (720 : ℂ) = 720 from by
+      rw [intervalIntegral.integral_const, sub_zero]; exact _root_.one_smul ℝ _] at h
+    exact h
   have hbound : ∀ x ∈ Ι (0 : ℝ) 1,
       ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := fun x _ => by
     let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
-    simpa [zH, mul_assoc, show φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH from by
+    simpa [zH, mul_assoc, dist_eq_norm,
+      show φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH from by
       simpa [zH] using (φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0))]
-      using le_of_lt (hA zH (by simpa [zH, UpperHalfPlane.im, Complex.add_im] using
-        ((le_max_left _ _).trans hm)))
+      using le_of_lt (Metric.mem_ball.1 (hA zH (by simpa [zH, UpperHalfPlane.im, Complex.add_im]
+        using ((le_max_left _ _).trans hm))))
   simpa [Metric.ball, dist_eq_norm] using lt_of_le_of_lt
     (show ‖(∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ)‖ ≤ ε / 2 by
       simpa [hsub] using
@@ -2547,8 +2569,8 @@ private lemma hI246_eq :
       simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
         hIntf0 (hIntphi2.const_mul _)),
     show (∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x)) =
-        ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) from by
-      simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm],
+        ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) from
+      intervalIntegral.integral_const_mul _ _,
     show (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) = -I₆' (0 : ℝ) by
       simpa [zI] using integral_f0_height_one_eq_neg_I6,
     show (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) by
