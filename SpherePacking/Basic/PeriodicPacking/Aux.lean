@@ -122,11 +122,16 @@ open Real
     have hd := S.lattice_discrete
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at hd ⊢
     obtain ⟨ε, hε, hε'⟩ := hd; refine ⟨c * ε, mul_pos hc hε, ?_⟩
-    simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢; rintro x ⟨x, hx, rfl⟩ hx'
-    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero,
-      AddSubgroupClass.coe_norm, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le,
-      mul_lt_mul_iff_right₀ hc] at hx' ⊢
-    exact .inr (by simpa using hε' x hx hx')
+    rintro ⟨y, hy⟩ hy'
+    obtain ⟨z, hz, rfl⟩ := hy
+    have hz' : dist (⟨z, hz⟩ : S.lattice) 0 < ε := by
+      rw [Subtype.dist_eq] at hy' ⊢
+      simp only [Submodule.coe_zero, dist_zero_right] at hy' ⊢
+      simp only [DistribSMul.toLinearMap_apply] at hy'
+      rwa [norm_smul, Real.norm_eq_abs, abs_of_pos hc, mul_lt_mul_iff_right₀ hc] at hy'
+    have := hε' ⟨z, hz⟩ hz'
+    rw [Submodule.mk_eq_zero] at this
+    simp [this]
   lattice_isZLattice := by
     use ?_; rw [← S.lattice_isZLattice.span_top]
     ext v; simp_rw [Submodule.mem_span]; refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
@@ -145,7 +150,7 @@ lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
     _root_.smul_ball hc.ne', Real.norm_eq_abs, abs_of_pos hc, mul_div_assoc]
 
 lemma PeriodicSpherePacking.scale_balls {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
-    (S.scale hc).balls = c • S.balls := SpherePacking.scale_balls hc
+    (S.scale hc).balls = c • S.balls := SpherePacking.scale_balls (S := S.toSpherePacking) hc
 
 end Scaling
 
@@ -429,10 +434,15 @@ variable {d : ℕ}
 /-- If `D` meets each lattice orbit at exactly one point, distinct translates of `D` are disjoint. -/
 public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D)
-    {g h : Λ} (hgh : g ≠ h) : Disjoint (g +ᵥ D) (h +ᵥ D) :=
-  Set.disjoint_left.2 fun x hxg hxh ↦ hgh <| neg_injective <| (hD_unique_covers x).unique
-    (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)
-    (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh)
+    {g h : Λ} (hgh : g ≠ h) : Disjoint (g +ᵥ D) (h +ᵥ D) := by
+  refine Set.disjoint_left.2 fun x hxg hxh ↦ hgh <| neg_injective <|
+    (hD_unique_covers x).unique ?_ ?_
+  · obtain ⟨y, hy, rfl⟩ := hxg
+    change (-g : ↥Λ).val + (↑g + y) ∈ D
+    simpa using hy
+  · obtain ⟨y, hy, rfl⟩ := hxh
+    change (-h : ↥Λ).val + (↑h + y) ∈ D
+    simpa using hy
 
 variable (S : PeriodicSpherePacking d)
 
@@ -456,8 +466,11 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
   right_inv := fun ⟨x, hx⟩ ↦ by
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
     obtain ⟨g, _, hg'⟩ := hD_unique_covers x
+    have hzero : (0 : ↥S.lattice) +ᵥ x ∈ D := by
+      change (0 : EuclideanSpace ℝ (Fin d)) + x ∈ D
+      simpa using hx.2
     exact_mod_cast (hg' _ (Classical.choose_spec (hD_unique_covers x)).1).trans
-      (hg' 0 (by simpa using hx.2)).symm
+      (hg' 0 hzero).symm
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -660,10 +673,11 @@ theorem hD_isAddFundamentalDomain (hD_unique_covers : ∀ x, ∃! g : S.lattice,
   .mk' (μ := volume) hD_measurable.nullMeasurableSet hD_unique_covers
 
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
-public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
-    [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
+public instance submoduleVAddInvariantMeasure (E : Type*) [AddCommGroup E] [MeasurableSpace E]
+    [MeasurableAdd E] [Module ℤ E] [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant]
+    [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
     VAddInvariantMeasure s E μ :=
-  ⟨fun _ _ _ => by simp [Submodule.vadd_def, measure_preimage_add]⟩
+  inferInstanceAs (VAddInvariantMeasure s.toAddSubgroup E μ)
 
 private lemma measure_biUnion_lattice_inter_ball_vadd
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
@@ -698,8 +712,12 @@ public theorem PeriodicSpherePacking.aux2_ge'
   set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
   have hD_unique_covers := fundamentalDomain_unique_covers S b
   have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _
-  rw [ge_iff_le, ENNReal.div_le_iff
-    ((hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume))
+  have hμ_ne : volume D ≠ 0 := by
+    have h : IsAddFundamentalDomain S.lattice.toAddSubgroup D volume :=
+      hD_isAddFundamentalDomain S D hD_unique_covers hD_measurable
+    haveI : Countable S.lattice.toAddSubgroup := inferInstanceAs (Countable S.lattice)
+    exact h.measure_ne_zero (NeZero.ne volume)
+  rw [ge_iff_le, ENNReal.div_le_iff hμ_ne
     (Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne,
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   refine volume.mono fun x hx => ?_
@@ -721,8 +739,12 @@ public theorem PeriodicSpherePacking.aux2_le'
   set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
   have hD_unique_covers := fundamentalDomain_unique_covers S b
   have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _
-  rw [ENNReal.le_div_iff_mul_le (.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero
-    (NeZero.ne volume)) (.inl <| (Bornology.IsBounded.measure_lt_top
+  have hμ_ne : volume D ≠ 0 := by
+    have h : IsAddFundamentalDomain S.lattice.toAddSubgroup D volume :=
+      hD_isAddFundamentalDomain S D hD_unique_covers hD_measurable
+    haveI : Countable S.lattice.toAddSubgroup := inferInstanceAs (Countable S.lattice)
+    exact h.measure_ne_zero (NeZero.ne volume)
+  rw [ENNReal.le_div_iff_mul_le (.inl hμ_ne) (.inl <| (Bornology.IsBounded.measure_lt_top
       (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)).ne),
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   refine volume.mono fun x hx => ?_
