@@ -356,8 +356,7 @@ public lemma hasDerivAt_integral_gN_of_continuous
     ae_restrict_mem (μ := (volume : Measure ℝ)) (by measurability)
   have continuous_gN (n : ℕ) (x : ℝ) :
       Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := by
-    simpa [gN, g] using (continuous_coeff.pow n).mul
-      (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
+    unfold gN g; fun_prop
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
