@@ -374,19 +374,17 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     have hvadd_eq : ∀ (v w : EuclideanSpace ℝ (Fin d)) (S : Set (EuclideanSpace ℝ (Fin d))),
         v ∈ ((g : EuclideanSpace ℝ (Fin d)) +ᵥ S) ↔ -(g : EuclideanSpace ℝ (Fin d)) +ᵥ v ∈ S :=
       fun v w S => Set.mem_vadd_set_iff_neg_vadd_mem
-    have hxB1' : x0 ∈ coordCube d L := by
-      have : x ∈ (g : EuclideanSpace ℝ (Fin d)) +ᵥ coordCube d L := hxB.1
-      rwa [Set.mem_vadd_set_iff_neg_vadd_mem] at this
-    have hxB2' : x0 ∉ coordCubeInner d L (1/2) := fun h => hxB.2 (by
-      rwa [Set.mem_vadd_set_iff_neg_vadd_mem])
-    simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using
-      coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
-        (by simpa [r] using (show y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
-            ball (0 : EuclideanSpace ℝ (Fin d)) r from
-          ⟨x0, ⟨hxB1', hxB2'⟩,
-            y0 - x0,
-            by simpa [Metric.mem_ball, dist_eq_norm, Metric.vadd_ball, x0, y0] using hyBall,
-            by simp [sub_eq_add_neg, add_left_comm]⟩))
+    have hxB1' : x0 ∈ coordCube d L := Set.mem_vadd_set_iff_neg_vadd_mem.mp hxB.1
+    have hxB2' : x0 ∉ coordCubeInner d L (1/2) := fun h => hxB.2
+      (Set.mem_vadd_set_iff_neg_vadd_mem.mpr h)
+    have hy0 : y0 ∈ ((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
+        coordCubeInner d L 1 := by
+      apply coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
+      refine ⟨x0, ⟨hxB1', hxB2'⟩, y0 - x0, ?_, by simp [sub_eq_add_neg, add_left_comm]⟩
+      have : ‖y - x‖ < r := by simpa [Metric.mem_ball, dist_eq_norm] using hyBall
+      simpa [Metric.mem_ball, dist_eq_norm, x0, y0, r] using this
+    -- Now convert hy0 : y0 ∈ (... \ ...) where y0 = -↑g +ᵥ y to y ∈ g +ᵥ (... \ ...)
+    exact Set.mem_vadd_set_iff_neg_vadd_mem.mpr hy0
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
       = volume (⋃ x ∈ s, ball x r) := by
         rw [show (2⁻¹ : ℝ) = r by norm_num]
@@ -394,7 +392,11 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
           (measure_biUnion_finset (μ := volume) hdisj (fun _ _ => measurableSet_ball)).symm
     _ ≤ volume (g +ᵥ (((constVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
           coordCubeInner d L 1)) := volume.mono hsub
-    _ = _ := by simp [measure_vadd]
+    _ = _ := by
+      haveI inst_vim : VAddInvariantMeasure (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d))
+          (MeasureTheory.volume) :=
+        inferInstanceAs (VAddInvariantMeasure (cubeLattice d L hL).toAddSubgroup _ _)
+      exact @measure_vadd _ _ _ _ _ MeasureTheory.volume inst_vim g _
 
 end BoundaryControl
 
@@ -564,8 +566,14 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L := fun x hx => by
     have h : g0 = -PeriodicConstantApprox.coordCubeCover L hLpos x :=
       (Finset.mem_filter.1 hx).2.symm
-    exact h ▸ by simpa [Set.mem_vadd_set_iff_neg_vadd_mem]
-      using PeriodicConstantApprox.coordCubeCover_spec L hLpos x
+    rw [h]
+    have hspec := PeriodicConstantApprox.coordCubeCover_spec L hLpos x
+    -- hspec : PeriodicConstantApprox.coordCubeCover L hLpos x +ᵥ x ∈ coordCube d L
+    -- Goal: x ∈ -PeriodicConstantApprox.coordCubeCover L hLpos x +ᵥ coordCube d L
+    -- By Set.mem_vadd_set_iff_neg_vadd_mem, this is -(-cover) +ᵥ x = cover +ᵥ x ∈ coordCube
+    have : -(-PeriodicConstantApprox.coordCubeCover L hLpos x) +ᵥ x ∈ coordCube d L := by
+      rw [neg_neg]; exact hspec
+    exact Set.mem_vadd_set_iff_neg_vadd_mem.mpr this
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
     exact_mod_cast by simpa [Finset.card_eq_sum_card_fiberwise hf_maps, Finset.sum_const] using
       Finset.sum_le_sum hg0max
@@ -806,9 +814,18 @@ noncomputable section
   · intro p
     have hcov : cover (toCenter p) = -p.2 :=
       ((Classical.choose_spec (hcover (toCenter p))).2 (-p.2)
-        (by simp [toCenter, p.1.property])).symm
-    exact Prod.ext (Subtype.ext (by simp [toPair, repr, toCenter, hcov])) (by simp [toPair, hcov])
-  · exact fun x => Subtype.ext (by simp [toPair, repr, toCenter, neg_vadd_vadd])
+        (by
+          simp only [toCenter]
+          rw [show -p.2 +ᵥ (p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d))) =
+            (p.1 : EuclideanSpace ℝ (Fin d)) from neg_vadd_vadd p.2 _]
+          exact p.1.property)).symm
+    refine Prod.ext (Subtype.ext ?_) ?_
+    · simp only [toPair, repr, toCenter, hcov]
+      exact neg_vadd_vadd _ _
+    · simp [toPair, hcov]
+  · exact fun x => Subtype.ext (by
+      simp only [toPair, repr, toCenter]
+      exact neg_vadd_vadd _ _)
 
 /-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates,
 the periodic decomposition used in `LPBound.lean`. -/
@@ -1063,8 +1080,10 @@ include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
   refine lt_of_le_of_ne (show 0 ≤ (f 0).re by
     rw [← f.fourierInversion, fourierInv_eq]
-    simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re,
-      ← integral_re hIntegrable]
+    simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re]
+    rw [show RCLike.re (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v) =
+        ∫ v : EuclideanSpace ℝ (Fin d), RCLike.re ((𝓕 f) v) from
+      (integral_re hIntegrable).symm]
     exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v) fun hf0re => hne_zero <|
     (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℂ _)).1 ?_
   have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
