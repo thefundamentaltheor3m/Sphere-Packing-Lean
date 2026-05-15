@@ -136,12 +136,15 @@ public theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentia
     (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
   rw [Function.resToImagAxis_eq_resToImagAxis]
-  have := hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩
-  rw [mdifferentiableAt_iff] at this
+  have hd := hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩
+  rw [mdifferentiableAt_iff] at hd
   have h_diff :
       DifferentiableAt ℝ (fun t : ℝ => F (ofComplex (Complex.I * t))) t := by
-    convert this.restrictScalars ℝ |> DifferentiableAt.comp t <|
-      DifferentiableAt.const_mul ofRealCLM.differentiableAt _ using 1
+    have hres : DifferentiableAt ℝ (F ∘ ofComplex) (Complex.I * t) := by
+      obtain ⟨f', hf'⟩ := hd
+      exact ⟨f'.restrictScalars ℝ, .of_isLittleO hf'.isLittleO⟩
+    have hcomp := hres.comp t (ofRealCLM.differentiableAt.const_mul Complex.I)
+    exact hcomp
   refine h_diff.congr_of_eventuallyEq ?_
   filter_upwards [lt_mem_nhds ht] with u hu
   simp [ResToImagAxis, hu, ofComplex_apply_of_im_pos]
@@ -181,7 +184,11 @@ public theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToIm
 /-- The property `ResToImagAxis.Real` is closed under negation. -/
 public theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real (-F) := by
-  simpa using (ResToImagAxis.Real.smul (F := F) (c := (-1 : ℝ)) hF)
+  intro t ht
+  have := hF t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, dif_pos,
+    Pi.neg_apply, neg_im, neg_eq_zero] at this ⊢
+  exact this
 
 /-- The property `ResToImagAxis.Real` is closed under subtraction. -/
 public theorem ResToImagAxis.Real.sub {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
