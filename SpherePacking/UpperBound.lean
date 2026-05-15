@@ -1998,7 +1998,7 @@ open scoped Real
     have hdist : dist aL bL = ‖((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm a'
         : EuclideanSpace ℝ (Fin 8)) - (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm b'‖ := by
       rw [Subtype.dist_eq, dist_eq_norm]
-    show √2 ≤ dist aL bL
+    change √2 ≤ dist aL bL
     rw [hdist]
     convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left
       (sub_ne_zero.mpr (by contrapose! hab; simp [hab])) using 2
