@@ -33,7 +33,7 @@ in `Integration.DifferentiationUnderIntegral`), and the helper
 namespace MagicFunction
 
 /-- Interpret a scalar function `F : ℂ → ℂ` as the `ℂ`-linear one-form `v ↦ v * F z`. -/
-@[expose] public def scalarOneForm (F : ℂ → ℂ) : ℂ → ℂ →L[ℂ] ℂ :=
+@[expose] public noncomputable def scalarOneForm (F : ℂ → ℂ) : ℂ → ℂ →L[ℂ] ℂ :=
   fun z ↦ (ContinuousLinearMap.id ℂ ℂ).smulRight (F z)
 
 /-- Evaluate `scalarOneForm` as multiplication by `F z`. -/
@@ -63,8 +63,10 @@ public lemma fderivWithin_scalarOneForm_symm_of_isOpen
   let L : ℂ →L[ℂ] (ℂ →L[ℂ] ℂ) := (ContinuousLinearMap.mul ℂ ℂ).flip
   rw [(show HasFDerivAt (𝕜 := ℝ) (scalarOneForm f)
     ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (L (deriv f x))).restrictScalars ℝ) x from by
-    simpa [show scalarOneForm f = fun z => L (f z) from rfl] using
-      ((hasDerivAt_const x L).clm_apply hfdiff.hasDerivAt).hasFDerivAt.restrictScalars ℝ).fderiv]
+    have h := (hasDerivAt_const x L).clm_apply hfdiff.hasDerivAt
+    have h' := h.hasFDerivAt
+    refine HasFDerivAt.of_isLittleO ?_
+    simpa [show scalarOneForm f = fun z => L (f z) from rfl] using h'.isLittleO).fderiv]
   simp [L, mul_left_comm, mul_comm]
 
 end SpherePacking.ForMathlib
