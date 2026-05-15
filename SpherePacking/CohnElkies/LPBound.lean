@@ -294,14 +294,26 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
     (t.card : ℝ≥0∞) * volume (coordCube d L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := by
   intro htSet t
+  haveI hvi : VAddInvariantMeasure (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d))
+      (MeasureTheory.volume) :=
+    inferInstanceAs (VAddInvariantMeasure (cubeLattice d L hL).toAddSubgroup _ _)
+  haveI hmcv : MeasurableConstVAdd (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d)) :=
+    ⟨fun _ => measurable_const_vadd _⟩
+  have hvadd : ∀ g : ↥(cubeLattice d L hL),
+      volume (g +ᵥ coordCube d L) = volume (coordCube d L) :=
+    fun g => @measure_vadd _ _ _ _ _ MeasureTheory.volume hvi g (coordCube d L)
+  have hms : MeasurableSet (coordCube d L) := by
+    rw [show coordCube d L = fundamentalDomain (cubeBasis d L hL) from
+      (fundamentalDomain_cubeBasis_eq_coordCube L hL).symm]
+    exact fundamentalDomain_measurableSet _
   calc (↑t.card : ℝ≥0∞) * volume (coordCube d L)
-      = ∑ g ∈ t, volume (g +ᵥ coordCube d L) := by simp [measure_vadd, Finset.sum_const]
+      = ∑ g ∈ t, volume (g +ᵥ coordCube d L) := by
+        simp_rw [hvadd, Finset.sum_const]
+        rw [nsmul_eq_mul]
     _ = volume (⋃ g ∈ t, g +ᵥ coordCube d L) := (measure_biUnion_finset
         (fun _ _ _ _ hgh => disjoint_vadd_of_unique_covers (d := d)
           (PeriodicConstant.coordCube_unique_covers L hL) hgh)
-        (fun g _ => by simpa using
-          MeasurableSet.const_vadd (by simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-            fundamentalDomain_measurableSet (cubeBasis d L hL)) g)).symm
+        (fun g _ => @MeasurableSet.const_vadd _ _ _ _ _ hmcv _ hms g)).symm
     _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := volume.mono <| by
         rintro y hy
         obtain ⟨g, hgT, x, hx, rfl⟩ := Set.mem_iUnion₂.1 hy
@@ -359,12 +371,19 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     have hxB := hs_boundary x hxS
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
     set y0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ y
+    have hvadd_eq : ∀ (v w : EuclideanSpace ℝ (Fin d)) (S : Set (EuclideanSpace ℝ (Fin d))),
+        v ∈ ((g : EuclideanSpace ℝ (Fin d)) +ᵥ S) ↔ -(g : EuclideanSpace ℝ (Fin d)) +ᵥ v ∈ S :=
+      fun v w S => Set.mem_vadd_set_iff_neg_vadd_mem
+    have hxB1' : x0 ∈ coordCube d L := by
+      have : x ∈ (g : EuclideanSpace ℝ (Fin d)) +ᵥ coordCube d L := hxB.1
+      rwa [Set.mem_vadd_set_iff_neg_vadd_mem] at this
+    have hxB2' : x0 ∉ coordCubeInner d L (1/2) := fun h => hxB.2 (by
+      rwa [Set.mem_vadd_set_iff_neg_vadd_mem])
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using
       coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
         (by simpa [r] using (show y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
             ball (0 : EuclideanSpace ℝ (Fin d)) r from
-          ⟨x0, ⟨by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1,
-            fun h => hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)⟩,
+          ⟨x0, ⟨hxB1', hxB2'⟩,
             y0 - x0,
             by simpa [Metric.mem_ball, dist_eq_norm, Metric.vadd_ball, x0, y0] using hyBall,
             by simp [sub_eq_add_neg, add_left_comm]⟩))
