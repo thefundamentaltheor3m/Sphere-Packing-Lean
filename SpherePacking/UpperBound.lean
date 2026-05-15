@@ -513,8 +513,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
     rw [intervalIntegral.integral_congr fun t ht =>
         show _ = (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) by
-          simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc],
-      intervalIntegral.integral_const_mul, intervalIntegral.integral_of_le zero_le_one]
+          simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc]]
+    rw [show (∫ x in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (x : ℂ))) =
+        (I : ℂ) * ∫ x in (0 : ℝ)..1, bContourIntegrandT u (a + I * (x : ℂ)) from
+      intervalIntegral.integral_const_mul _ _,
+      intervalIntegral.integral_of_le zero_le_one]
   have hJ1_set : J₁' u =
       (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
     hJ_vert_aux (-1 : ℂ) z₁' fun ht => by simpa using z₁'_eq_of_mem ht
@@ -529,8 +532,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         show _ = -(I : ℂ) * bContourIntegrandI u (I * (t : ℂ)) by
           simp [bContourIntegrandI, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
             show z₅' t = I * (t : ℂ) by simpa using z₅'_eq_of_mem (t := t) (hmem_Icc ht)]]
-    simp only [neg_mul, intervalIntegral.integral_neg, intervalIntegral.integral_const_mul,
-      mul_neg, neg_neg]; rw [intervalIntegral.integral_of_le zero_le_one]; ring
+    rw [show (∫ x in (0 : ℝ)..1, -(I : ℂ) * bContourIntegrandI u (I * (x : ℂ))) =
+        -(I : ℂ) * ∫ x in (0 : ℝ)..1, bContourIntegrandI u (I * (x : ℂ)) from
+      intervalIntegral.integral_const_mul _ _,
+      intervalIntegral.integral_of_le zero_le_one]; ring
   have hJ6_set : J₆' u =
       (-2 : ℂ) * (I : ℂ) *
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
@@ -539,7 +544,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         fun t ht => show _ = (I : ℂ) * bContourIntegrandS u (I * (t : ℂ)) by
           simp [bContourIntegrandS, bContourWeight, mul_assoc, mul_left_comm, mul_comm,
             show z₆' t = I * (t : ℂ) by simpa using z₆'_eq_of_mem (t := t) ht],
-      MeasureTheory.integral_Ici_eq_integral_Ioi, MeasureTheory.integral_const_mul, mul_assoc]
+      MeasureTheory.integral_Ici_eq_integral_Ioi,
+      show (∫ t in Set.Ioi (1 : ℝ), (I : ℂ) * bContourIntegrandS u (I * (t : ℂ))) =
+        (I : ℂ) * ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ)) from
+        MeasureTheory.integral_const_mul (μ := MeasureTheory.volume.restrict (Set.Ioi 1))
+          (I : ℂ) _, mul_assoc]
   have hShift_point (a : ℂ) (hψa : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
       (t : ℝ) (ht : 0 < t) : bContourIntegrandT u (a + I * (t : ℂ)) =
         bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := by
@@ -701,7 +710,9 @@ lemma J₁'C_differentiable : Differentiable ℂ J₁'C :=
         (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
   (show J₁'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψT' (z₁' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₁' t) from
-    funext fun u => by simp [J₁'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
+    funext fun u => by
+      simp only [J₁'C, mul_assoc]
+      exact intervalIntegral.integral_const_mul (Complex.I : ℂ) _) ▸
     (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 2)
       (continuousOn_ψT'_comp z₁' continuous_z₁' fun t ht => im_z₁'_pos (mem_Ioc_of_mem_uIoc ht))
       continuous_z₁' hMψ (fun t _ => norm_z₁'_le_two t))
@@ -724,7 +735,9 @@ lemma J₃'C_differentiable : Differentiable ℂ J₃'C :=
         (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))] using hM t ht
   (show J₃'C = fun u : ℂ => (Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψT' (z₃' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₃' t) from
-    funext fun u => by simp [J₃'C, ← intervalIntegral.integral_const_mul, mul_assoc]) ▸
+    funext fun u => by
+      simp only [J₃'C, mul_assoc]
+      exact intervalIntegral.integral_const_mul (Complex.I : ℂ) _) ▸
     (differentiable_const (Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 2)
       (continuousOn_ψT'_comp z₃' continuous_z₃' fun t ht => im_z₃'_pos (mem_Ioc_of_mem_uIoc ht))
       continuous_z₃' hMψ (fun t ht => norm_z₃'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
@@ -760,8 +773,13 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
   let ⟨_, hMψ⟩ := exists_bound_norm_ψI'_z₅'
   (show J₅'C = fun u : ℂ => (-2 * Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψI' (z₅' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₅' t) from
-    funext fun u => by simp [J₅'C, ← intervalIntegral.integral_const_mul, mul_assoc,
-      mul_left_comm, mul_comm]) ▸
+    funext fun u => by
+      simp only [J₅'C, mul_assoc, mul_left_comm, mul_comm]
+      rw [show (∫ t in (0 : ℝ)..1, Complex.I *
+            (ψI' (z₅' t) * Complex.exp (u * (Complex.I * ((π : ℂ) * z₅' t))))) =
+          Complex.I * ∫ t in (0 : ℝ)..1,
+            ψI' (z₅' t) * Complex.exp (u * (Complex.I * ((π : ℂ) * z₅' t))) from
+        intervalIntegral.integral_const_mul _ _]; ring) ▸
     (differentiable_const (-2 * Complex.I : ℂ)).mul (integral_ψ_exp_differentiable (Cz := 1)
       continuousOn_ψI'_z₅' continuous_z₅' hMψ
       (fun t ht => by
@@ -999,8 +1017,10 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) : b' u =
             (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) from
         funext fun t => by simp [-Complex.ofReal_exp, add_mul, mul_assoc],
       MeasureTheory.integral_add (hExpInt.const_mul (144 : ℂ)) h2ExpInt,
-      MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ)))
-        (144 : ℂ) (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)),
+      show (∫ t in Set.Ioi (0 : ℝ), (144 : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
+        (144 : ℂ) * ∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ) from
+        MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ)))
+          (144 : ℂ) (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)),
       integral_exp_neg_pi_mul_Ioi_complex (u := u) hu0,
       integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu]
     push_cast; ring
@@ -1068,8 +1088,11 @@ lemma corrIntegral_eval {u : ℝ}
     simpa [MeasureTheory.IntegrableOn, μIoi0] using hf
   rw [integral_add_add (μ := μIoi0) ((hI f2 h2ExpInt).const_mul c36)
       ((hI f1 hTExpInt).const_mul (-c8640)) ((hI f0 hExpInt).const_mul c18144),
-    integral_const_mul (μ := μIoi0) c36 f2, integral_const_mul (μ := μIoi0) (-c8640) f1,
-    integral_const_mul (μ := μIoi0) c18144 f0,
+    show (∫ x, c36 * f2 x ∂μIoi0) = c36 * ∫ x, f2 x ∂μIoi0 from integral_const_mul c36 f2,
+    show (∫ x, -c8640 * f1 x ∂μIoi0) = -c8640 * ∫ x, f1 x ∂μIoi0 from
+      integral_const_mul (-c8640) f1,
+    show (∫ x, c18144 * f0 x ∂μIoi0) = c18144 * ∫ x, f0 x ∂μIoi0 from
+      integral_const_mul c18144 f0,
     show (∫ t, f2 t ∂μIoi0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) by simpa [f2, μIoi0] using hI2exp,
     show (∫ t, f1 t ∂μIoi0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) by simpa [f1, μIoi0] using hItexp,
     show (∫ t, f0 t ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) by simpa [f0, μIoi0] using hIexp,
@@ -1157,9 +1180,6 @@ open MeasureTheory Real Complex
 open MagicFunction.FourierEigenfunctions MagicFunction.g.CohnElkies.IntegralReps
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-noncomputable local instance : FourierTransform (𝓢(ℝ⁸, ℂ)) (𝓢(ℝ⁸, ℂ)) :=
-  ⟨FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ)⟩
 
 /-! ## Real-valuedness on the positive imaginary axis (merged from `ImagAxisReal`) -/
 
@@ -1254,8 +1274,22 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
             mul_assoc] using IntegralB.B_mul_exp_eq_decomp (t := t) ht,
     MeasureTheory.integral_add hf1 hf234, MeasureTheory.integral_add hf23 hf4,
     MeasureTheory.integral_add hf2 hf3]
-  simp [f1, f2, f3, f4, MeasureTheory.integral_neg, MeasureTheory.integral_const_mul, μ,
-    sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc]
+  simp only [f1, f2, f3, f4, MeasureTheory.integral_neg, μ, sub_eq_add_neg, add_assoc, add_left_comm,
+    add_comm, mul_assoc, MeasureTheory.integral_add, Measure.restrict_apply]
+  rw [show (∫ a in Set.Ioi (0 : ℝ), ((36 / π ^ 2 : ℝ) : ℂ) * bAnotherIntegrand u a) =
+      ((36 / π ^ 2 : ℝ) : ℂ) * ∫ a in Set.Ioi (0 : ℝ), bAnotherIntegrand u a from
+    MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi (0 : ℝ))) _ _,
+    show (∫ a in Set.Ioi (0 : ℝ),
+        -((12960 / π ^ 2 : ℝ) : ℂ) * (Real.exp (-π * (u * a)) : ℂ)) =
+      -((12960 / π ^ 2 : ℝ) : ℂ) *
+        ∫ a in Set.Ioi (0 : ℝ), (Real.exp (-π * (u * a)) : ℂ) from
+    MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi (0 : ℝ))) _ _,
+    show (∫ t in Set.Ioi (0 : ℝ),
+        ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * (u * t)) : ℂ))) =
+      ((8640 / π : ℝ) : ℂ) *
+        ∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * (u * t)) : ℂ) from
+    MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi (0 : ℝ))) _ _]
+  ring
 
 end IntegralB
 
@@ -1544,7 +1578,12 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) : gRadial u =
         Real.exp (-π * u * t)) + c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) ∂
         ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ)))) = -IA + c * IB
     rw [MeasureTheory.integral_add hIntA'' hIntB'']
-    simp [IA, IB, c, mul_assoc, MeasureTheory.integral_neg, MeasureTheory.integral_const_mul]
+    simp only [IA, IB, c, mul_assoc, MeasureTheory.integral_neg]
+    rw [show (∫ a in Set.Ioi (0 : ℝ),
+          -((36 / π ^ 2 : ℝ) : ℂ) * (ψI' (Complex.I * ↑a) * (Real.exp (-π * (u * a)) : ℂ))) =
+        -((36 / π ^ 2 : ℝ) : ℂ) * ∫ a in Set.Ioi (0 : ℝ),
+          ψI' (Complex.I * ↑a) * (Real.exp (-π * (u * a)) : ℂ) from
+      MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi 0)) _ _]
   have hmain : ((↑π * Complex.I) / 8640 : ℂ) *
         ((4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA) +
         (-(Complex.I / (240 * (↑π)) : ℂ)) *
@@ -1888,7 +1927,9 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   rw [or_iff_not_imp_left, ← ne_eq]
   intro hv'
   obtain ⟨n, hn, hn'⟩ : ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
-    rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
+    rw [← real_inner_self_eq_norm_sq,
+      show (inner ℝ (WithLp.toLp 2 v) (WithLp.toLp 2 v) : ℝ) = v ⬝ᵥ star v from
+        EuclideanSpace.inner_toLp_toLp v v, star_trivial]
     exact E8_integral_self _ hv
   have hn_ne : n ≠ 0 := by contrapose! hv'; simpa [hv'] using hn'.symm
   have hn2 : 2 ≤ n := by
@@ -1907,8 +1948,10 @@ public instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   refine ⟨1, by norm_num, ?_⟩
   rintro ⟨_, ⟨v, hv, rfl⟩⟩ hx'
   suffices v = 0 by simpa using congrArg (WithLp.toLp 2) this
-  exact (E8_norm_lower_bound v hv).resolve_right (not_le_of_gt (lt_trans
-    (by simpa [dist_zero_right, AddSubgroupClass.coe_norm] using hx') Real.one_lt_sqrt_two))
+  refine (E8_norm_lower_bound v hv).resolve_right (not_le_of_gt (lt_trans ?_ Real.one_lt_sqrt_two))
+  have hd : dist (WithLp.toLp 2 v) (0 : EuclideanSpace ℝ (Fin 8)) < 1 := by
+    simpa [Subtype.dist_eq] using hx'
+  simpa [dist_zero_right] using hd
 
 /-- `E8Lattice` spans the ambient space over `ℝ`. -/
 public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
@@ -1950,7 +1993,13 @@ open scoped Real
   centers_dist := by
     simp only [Pairwise, E8Lattice, ne_eq, Subtype.forall, Subtype.mk.injEq]
     rintro _ ⟨a', ha', rfl⟩ _ ⟨b', hb', rfl⟩ hab
-    simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
+    let aL : E8Lattice := ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm a', ⟨a', ha', rfl⟩⟩
+    let bL : E8Lattice := ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm b', ⟨b', hb', rfl⟩⟩
+    have hdist : dist aL bL = ‖((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm a'
+        : EuclideanSpace ℝ (Fin 8)) - (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm b'‖ := by
+      rw [Subtype.dist_eq, dist_eq_norm]
+    show √2 ≤ dist aL bL
+    rw [hdist]
     convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left
       (sub_ne_zero.mpr (by contrapose! hab; simp [hab])) using 2
   lattice_action x y := add_mem
