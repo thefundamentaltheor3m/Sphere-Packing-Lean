@@ -779,24 +779,16 @@ lemma integrable_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
         (SpherePacking.Integration.prod_muIoc01_eq_restrict
           (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))))
     have hcont : ContinuousOn (permJ1Kernel w) sProd := by
-      have hinner : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (⟪p.1, w⟫ : ℝ) := by
-        simpa using (continuous_fst.inner continuous_const)
+      have hinner : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (⟪p.1, w⟫ : ℝ) :=
+        continuous_fst.inner continuous_const
       have hphase : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-            cexp ((-2 * (π * ⟪p.1, w⟫)) * I) := by
-        have harg : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-              ((((-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ))) : ℝ) : ℂ) * (Complex.I : ℂ) :=
-          (Complex.continuous_ofReal.comp
-            (continuous_const.mul (continuous_const.mul hinner))).mul continuous_const
-        simpa [mul_assoc] using (Complex.continuous_exp.comp harg)
+          cexp ((-2 * (π * ⟪p.1, w⟫)) * I) := by fun_prop
       have hψ : ContinuousOn (fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₁line p.2)) sProd :=
         continuousOn_ψT'_z₁line.comp continuousOn_snd fun _ hp => (Set.mem_prod.mp hp).2
+      have hz₁ : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => z₁line p.2 :=
+        continuous_z₁line.comp continuous_snd
       have hgauss : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-            cexp ((π : ℂ) * I * ((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2)) := by
-        have harg' : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-              (π : ℂ) * I * (((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2)) :=
-          continuous_const.mul ((continuous_ofReal.comp (continuous_fst.norm.pow 2)).mul
-            (continuous_z₁line.comp continuous_snd))
-        simpa [mul_assoc] using (Complex.continuous_exp.comp harg')
+          cexp ((π : ℂ) * I * ((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2)) := by fun_prop
       have hconst : ContinuousOn (fun _p : EuclideanSpace ℝ (Fin 8) × ℝ => (Complex.I : ℂ)) sProd :=
         continuousOn_const
       refine (hphase.continuousOn.mul ((hconst.mul hψ).mul hgauss.continuousOn)).congr fun p _ => ?_
