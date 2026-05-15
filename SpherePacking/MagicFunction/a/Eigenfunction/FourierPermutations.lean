@@ -855,7 +855,6 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   let expNorm : ℂ → ℝ := fun z ↦ ‖cexp (Real.pi * Complex.I * r * z)‖
   have hExp : ContinuousAt expNorm (1 : ℂ) := by fun_prop
   let M : ℝ := expNorm (1 : ℂ) + 1
-  have hMpos : 0 < M := by positivity
   obtain ⟨δexp, hδexp_pos, hδexp⟩ := (Metric.continuousAt_iff.1 hExp) 1 (by norm_num)
   have hExpBound : ∀ {z : ℂ}, dist z (1 : ℂ) < δexp → expNorm z ≤ M := fun {z} hz ↦ by
     have habs : |expNorm z - expNorm (1 : ℂ)| < 1 := by simpa [Real.dist_eq] using hδexp hz
