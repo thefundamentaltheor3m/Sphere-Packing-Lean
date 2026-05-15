@@ -1077,8 +1077,6 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
     show (∫ t, f1 t ∂μIoi0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) by simpa [f1, μIoi0] using hItexp,
     show (∫ t, f0 t ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) by simpa [f0, μIoi0] using hIexp,
     hc36, hc8640, hc18144]
-  have hu2ne : (u - 2 : ℝ) ≠ 0 := (sub_pos.mpr hu).ne'
-  have hune : (u : ℝ) ≠ 0 := hu0.ne'
   push_cast [Complex.ofReal_div, Complex.ofReal_mul]
   field_simp
   ring

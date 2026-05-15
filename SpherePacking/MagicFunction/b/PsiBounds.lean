@@ -144,9 +144,8 @@ public lemma ψS_eq' :
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
     H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_S_action, H₃_S_action, H₄_S_action]
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
   simp only [Pi.neg_apply]
-  field_simp; ring
+  field_simp [show (z : ℂ) ≠ 0 from ne_zero z]; ring
 
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/
 public lemma ψS_eq :
@@ -200,8 +199,7 @@ public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
     H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  field_simp; ring
+  field_simp [show (z : ℂ) ≠ 0 from ne_zero z]; ring
 
 /-- Modular relation: `ψS ∣[-2] (S * T * S) = -ψT`. -/
 public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
