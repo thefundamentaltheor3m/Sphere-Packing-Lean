@@ -684,8 +684,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hc4 : 0 < c4 := lt_min hm4 (by norm_num)
   refine ⟨(128 : ℝ) * P * ((c3 ^ 2 * c4 ^ 2)⁻¹) * CH2', fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  have hH2t : ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := hH2' t ht
-  have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := hH2t.trans <| by
+  have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := (hH2' t ht).trans <| by
     simpa using mul_le_mul_of_nonneg_left
       (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hCH2'
   have hH4le : ‖H₄.resToImagAxis t‖ ≤ M4 := hH4_upper t ht
@@ -728,7 +727,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
         (pow_le_pow_left₀ hc4.le hden_lower4 2) (by positivity) (by positivity)
     simpa [norm_inv] using (inv_le_inv₀ hpos (by positivity)).2 hden
   have hH2z : ‖H₂ z‖ ≤ CH2' * rexp (-π * t) := by
-    simpa [hHz2, Function.resToImagAxis] using hH2t
+    simpa [hHz2, Function.resToImagAxis] using hH2' t ht
   have hpoly' :
       ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P := by
     simpa [hHz2, hHz4, Function.resToImagAxis] using hpoly
