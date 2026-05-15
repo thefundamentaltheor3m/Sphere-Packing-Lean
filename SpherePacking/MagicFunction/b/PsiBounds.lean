@@ -466,11 +466,10 @@ public lemma continuousOn_ψT'_Ioc_of (k : ℕ) (ψS : ℍ → ℂ) (ψT' : ℂ 
     (hEq : ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
       ψT' (z t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ k) :
     ContinuousOn (fun t : ℝ => ψT' (z t)) (Ioc (0 : ℝ) 1) := by
-  have hpow : Continuous fun t : ℝ => ((Complex.I : ℂ) * (t : ℂ)) ^ k := by fun_prop
   have hcont_one_div : ContinuousOn (fun t : ℝ => (1 / t : ℝ)) (Ioc (0 : ℝ) 1) := fun t ht =>
     (continuousAt_const.div continuousAt_id (ne_of_gt ht.1)).continuousWithinAt
   exact ((hψS.comp hcont_one_div (fun t ht => one_le_one_div ht.1 ht.2)).mul
-    hpow.continuousOn).congr hEq
+    (by fun_prop : Continuous fun t : ℝ => ((Complex.I : ℂ) * (t : ℂ)) ^ k).continuousOn).congr hEq
 
 /-- Continuity of the modular rewrite along `t ↦ z₁' t` on `(0, 1)`. -/
 public lemma continuousOn_ψT'_z₁'_of (k : ℕ) (ψS : ℍ → ℂ) (ψT' : ℂ → ℂ)
