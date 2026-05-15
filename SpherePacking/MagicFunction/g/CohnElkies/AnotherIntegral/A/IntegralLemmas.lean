@@ -271,12 +271,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
   have hMeasIoi : AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
       (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by
-    have ht2 : AEStronglyMeasurable (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ))
-        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by fun_prop
-    simpa [aLaplaceIntegrand, mul_assoc] using
-      (ht2.mul (continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi)).mul
-        (by fun_prop : AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
-          (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))))
+    have hphi : AEStronglyMeasurable (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ)))
+        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
+      continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi
+    unfold aLaplaceIntegrand; fun_prop
   have hsmall : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
     let C₀ : ℝ := MagicFunction.a.Schwartz.I1Decay.Cφ
     refine MeasureTheory.IntegrableOn.of_bound (by simp : (MeasureTheory.volume : Measure ℝ)
