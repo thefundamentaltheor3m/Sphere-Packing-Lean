@@ -185,15 +185,23 @@ public lemma qExpansion_coeff_eq_zero_norm_of_qExpansion_coeff_eq_zero
     (hO_prod_punct.congr' hEq.symm Filter.EventuallyEq.rfl)
   -- Step 4: show the value at `q = 0` is `0`, so we can upgrade to a bound on `𝓝 0`.
   have hval0 : valueAtInfty f = 0 := by
+    have hperΓ' : Function.Periodic ((f : ℍ → ℂ) ∘ ofComplex) (cuspWidth (Γ := Γ)) :=
+      SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hperΓ
     have h0 :
         (qExpansion (cuspWidth (Γ := Γ)) f).coeff 0 = valueAtInfty f :=
-      ModularFormClass.qExpansion_coeff_zero (f := f) (h := cuspWidth (Γ := Γ)) hh hperΓ
+      qExpansion_coeff_zero (f := (f : ℍ → ℂ)) hh
+        (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hh hperΓ) hperΓ'
     simpa [h0] using hcoeff 0 hNpos
   have hnorm0 : valueAtInfty (ModularForm.norm 𝒮ℒ f) = 0 :=
     valueAtInfty_norm_eq_zero_of_valueAtInfty_eq_zero (k := k) Γ f hΓ hval0
   have hcf0 : ‖cuspFunction (cuspWidth (Γ := Γ)) (ModularForm.norm 𝒮ℒ f) 0‖ = 0 := by
+    have hperSL' :
+        Function.Periodic ((ModularForm.norm 𝒮ℒ f : ℍ → ℂ) ∘ ofComplex) (cuspWidth (Γ := Γ)) :=
+      SlashInvariantFormClass.periodic_comp_ofComplex (f := ModularForm.norm 𝒮ℒ f) hperSL
     have h0 :=
-      ModularFormClass.cuspFunction_apply_zero (f := ModularForm.norm 𝒮ℒ f) hh hperSL
+      cuspFunction_apply_zero (f := (ModularForm.norm 𝒮ℒ f : ℍ → ℂ)) hh
+        (ModularFormClass.analyticAt_cuspFunction_zero (f := ModularForm.norm 𝒮ℒ f) hh hperSL)
+        hperSL'
     simp_all
   have hO_norm :
       cuspFunction (cuspWidth (Γ := Γ)) (ModularForm.norm 𝒮ℒ f) =O[𝓝 (0 : ℂ)] fun q : ℂ =>
