@@ -466,12 +466,9 @@ public lemma continuousOn_ψT'_Ioc_of (k : ℕ) (ψS : ℍ → ℂ) (ψT' : ℂ 
     (hEq : ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
       ψT' (z t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ k) :
     ContinuousOn (fun t : ℝ => ψT' (z t)) (Ioc (0 : ℝ) 1) := by
-  have hpow : Continuous fun t : ℝ => ((Complex.I : ℂ) * (t : ℂ)) ^ k := by
-    simpa using (continuous_const.mul Complex.continuous_ofReal).pow k
-  have hcont_one_div : ContinuousOn (fun t : ℝ => (1 / t : ℝ)) (Ioc (0 : ℝ) 1) := by
-    simpa [one_div] using
-      (continuousOn_inv₀ : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) ({0}ᶜ)).mono
-        (fun t ht => by simp [ne_of_gt ht.1])
+  have hpow : Continuous fun t : ℝ => ((Complex.I : ℂ) * (t : ℂ)) ^ k := by fun_prop
+  have hcont_one_div : ContinuousOn (fun t : ℝ => (1 / t : ℝ)) (Ioc (0 : ℝ) 1) := fun t ht =>
+    (continuousAt_const.div continuousAt_id (ne_of_gt ht.1)).continuousWithinAt
   exact ((hψS.comp hcont_one_div (fun t ht => one_le_one_div ht.1 ht.2)).mul
     hpow.continuousOn).congr hEq
 
