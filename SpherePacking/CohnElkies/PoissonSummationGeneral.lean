@@ -62,7 +62,6 @@ public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w
               (LinearEquiv.isUnit_det' A).ne_zero, MeasureTheory.integral_smul_measure]
           rw [show ((ENNReal.ofReal |(LinearMap.det (A : V →ₗ[ℝ] V))⁻¹|).toReal : ℝ) =
             |LinearMap.det (A : V →ₗ[ℝ] V)|⁻¹ by simp [abs_inv]]
-          rfl
     _ = _ := by simp [g, show (fun y : V ↦ Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y) =
                     fun y : V ↦
                       Real.fourierChar (-(inner ℝ y
