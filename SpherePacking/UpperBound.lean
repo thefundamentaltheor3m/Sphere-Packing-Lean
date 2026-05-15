@@ -1034,7 +1034,7 @@ open MeasureTheory Real Complex
 open SpherePacking.Integration (μIoi0)
 open MagicFunction.FourierEigenfunctions
 
-lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
+lemma corrIntegral_eval {u : ℝ}
     {c36 c8640 c18144 : ℂ}
     (hc36 : c36 = ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
     (hc8640 : c8640 = ((8640 / π : ℝ) : ℂ))
@@ -1130,7 +1130,7 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
   simpa [aAnotherIntegral, hLapInt_decomp, show (∫ t in Set.Ioi (0 : ℝ), corr t) =
       (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
         (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) from
-    corrIntegral_eval hu0 hu hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt h2ExpInt,
+    corrIntegral_eval hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt h2ExpInt,
     add_assoc, add_left_comm, add_comm] using hLap'
 
 /-- Main lemma for blueprint proposition `prop:a-another-integral`. -/
