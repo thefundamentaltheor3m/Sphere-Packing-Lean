@@ -443,14 +443,12 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
         (continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden))
     simpa [Function.comp] using hcont.comp continuousAt_snd
   have hz_pt : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => z q.2) p :=
-    (hz.continuousAt).comp continuousAt_snd
+    hz.continuousAt.comp continuousAt_snd
   have hpow : ContinuousAt
-      (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => (z q.2 + 1) ^ (2 : ℕ)) p :=
-    (hz_pt.add continuousAt_const).pow 2
+      (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => (z q.2 + 1) ^ (2 : ℕ)) p := by fun_prop
   have hexp : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
-        cexp ((π : ℂ) * I * ((‖q.1‖ ^ 2 : ℝ) : ℂ) * z q.2)) p :=
-    (((continuousAt_const.mul continuousAt_const).mul (by fun_prop)).mul hz_pt).cexp
+        cexp ((π : ℂ) * I * ((‖q.1‖ ^ 2 : ℝ) : ℂ) * z q.2)) p := by fun_prop
   dsimp [MagicFunction.a.ComplexIntegrands.Φ₁']
   exact (hφterm.mul hpow).mul hexp
 
