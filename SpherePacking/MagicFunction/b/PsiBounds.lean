@@ -337,8 +337,7 @@ end
 
 /-- Continuity of the modular function `ψS`. -/
 public lemma continuous_ψS : Continuous ψS := by
-  have hH2 := mdifferentiable_H₂.continuous
-  have hH3 := mdifferentiable_H₃.continuous
+  have hH2 := mdifferentiable_H₂.continuous; have hH3 := mdifferentiable_H₃.continuous
   have hH4 := mdifferentiable_H₄.continuous
   simpa [ψS_eq', mul_assoc] using continuous_const.mul
     (((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))).sub
@@ -346,8 +345,7 @@ public lemma continuous_ψS : Continuous ψS := by
 
 /-- Continuity of the modular function `ψT`. -/
 public lemma continuous_ψT : Continuous ψT := by
-  have hH2 := mdifferentiable_H₂.continuous
-  have hH3 := mdifferentiable_H₃.continuous
+  have hH2 := mdifferentiable_H₂.continuous; have hH3 := mdifferentiable_H₃.continuous
   have hH4 := mdifferentiable_H₄.continuous
   simpa [ψT_eq, mul_assoc] using continuous_const.mul
     (((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z))).add
@@ -355,8 +353,7 @@ public lemma continuous_ψT : Continuous ψT := by
 
 /-- Continuity of the modular function `ψI`. -/
 public lemma continuous_ψI : Continuous ψI := by
-  have hH2 := mdifferentiable_H₂.continuous
-  have hH3 := mdifferentiable_H₃.continuous
+  have hH2 := mdifferentiable_H₂.continuous; have hH3 := mdifferentiable_H₃.continuous
   have hH4 := mdifferentiable_H₄.continuous
   rw [show ψI = fun z : ℍ =>
         (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ 2) +
