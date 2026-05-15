@@ -116,7 +116,7 @@ public lemma ae_mem_Ioo01_muIoo01 : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 :
 public lemma integrable_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A) :
     Integrable (fun t : ℝ ↦ A * t ^ p) μIoo01 :=
   MeasureTheory.Integrable.of_mem_Icc (μ := μIoo01) (a := (0 : ℝ)) (b := A)
-    (hX := (measurable_const.mul (measurable_id.pow_const p)).aemeasurable) <| by
+    (hX := by fun_prop) <| by
     filter_upwards [ae_mem_Ioo01_muIoo01] with t ht
     refine ⟨mul_nonneg hA (pow_nonneg ht.1.le _), ?_⟩
     simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht.1.le ht.2.le) hA

@@ -919,8 +919,7 @@ open MagicFunction.PolyFourierCoeffBound MagicFunction.a.ComplexIntegrands
   fun t : ℝ ↦ (-π : ℂ) + (π * I) * shift t
 
 public lemma continuous_coeff {shift : ℝ → ℂ} (hshift : Continuous shift) :
-    Continuous (coeff shift) :=
-  continuous_const.add (continuous_const.mul hshift)
+    Continuous (coeff shift) := by unfold coeff; fun_prop
 
 /-- Uniform bound `‖coeff t‖ ≤ 2π` on `Ioo (0, 1)` given `‖shift t‖ ≤ 1` there. -/
 public lemma coeff_norm_le {shift : ℝ → ℂ} (hshift : ∀ t ∈ Ioo (0 : ℝ) 1, ‖shift t‖ ≤ 1) (t : ℝ)

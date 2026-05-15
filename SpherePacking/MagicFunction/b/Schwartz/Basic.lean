@@ -107,13 +107,11 @@ abbrev gN (n : ℕ) (x t : ℝ) : ℂ := SmoothIntegralIciOne.gN (hf := ψS.resT
 
 lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := by
   have hcoeff : Continuous coeff := by unfold coeff SmoothIntegralIciOne.coeff; fun_prop
+  have hψ := Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS
   refine (ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ))
     (s := Ici (1 : ℝ)) ?_ measurableSet_Ici).mono_measure (by simp [μ, μIciOne])
-  simpa [gN] using (hcoeff.pow n).continuousOn.mul
-    (by simpa [g, mul_assoc] using (continuousOn_const.mul
-      ((Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS).mul
-        ((continuous_const.mul hcoeff).cexp).continuousOn)) :
-      ContinuousOn (g x) (Ici (1 : ℝ)))
+  simpa [gN, g, mul_assoc] using (hcoeff.pow n).continuousOn.mul
+    (continuousOn_const.mul (hψ.mul ((continuous_const.mul hcoeff).cexp).continuousOn))
 
 lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ := by
   simpa [μ, μIciOne] using
@@ -290,7 +288,7 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
   simpa [heq] using hψT
 
 lemma continuous_coeff : Continuous coeff := by
-  simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₁'
+  have := continuous_z₁'; unfold coeff; fun_prop
 
 lemma continuousOn_hf :
     ContinuousOn hf (Ioo (0 : ℝ) 1) := by
@@ -437,7 +435,7 @@ lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Io
     (continuous_z₅'.comp continuous_subtype_val) him (fun t => by simp [ψI', him t])
 
 lemma continuous_coeff : Continuous coeff := by
-  simpa [coeff, mul_assoc] using continuous_const.mul continuous_z₅'
+  have := continuous_z₅'; unfold coeff; fun_prop
 
 lemma continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1) := by
   simpa [hf] using continuousOn_const.mul continuousOn_ψI'_z₅'
