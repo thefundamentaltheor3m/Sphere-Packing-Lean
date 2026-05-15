@@ -36,11 +36,12 @@ theorem split_one : (1 : ℂ) = ⟨1, 0⟩ := rfl
 
 /-- Componentwise addition in `Complex.mk` form. -/
 theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := Ring.add_congr h₁ h₂ rfl
+    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := by subst h₁ h₂; rfl
 
 /-- Componentwise multiplication in `Complex.mk` form. -/
 theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ := Ring.mul_congr h₁ h₂ rfl
+    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ := by
+  subst h₁ h₂; exact mk_mul_mk ..
 
 /-- Componentwise inverse in `Complex.mk` form. -/
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
