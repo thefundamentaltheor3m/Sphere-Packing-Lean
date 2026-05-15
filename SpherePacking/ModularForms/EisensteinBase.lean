@@ -434,11 +434,27 @@ public theorem E4E6_coeff_zero_eq_zero :
     ext z; rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]; rfl
   have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
     ext z; rw [pow_two, @DirectSum.of_mul_of]; rfl
-  rw [hds, hd6, ← Nat.cast_one (R := ℝ), qExpansion_mul_coeff, qExpansion_mul_coeff,
-    qExpansion_mul_coeff, PowerSeries.coeff_mul, PowerSeries.coeff_mul]
-  simp [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
-    Prod.snd_zero, Nat.cast_one, E4_q_exp_zero, E6_q_exp_zero, PowerSeries.coeff_mul,
-    mul_one]
+  rw [hds, hd6]
+  have he4 : qExpansion (1 : ℝ) (E₄.mul (E₄.mul E₄)) =
+      qExpansion (1 : ℝ) E₄ * (qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) E₄) := by
+    rw [(by simpa using qExpansion_mul_coeff (n := 1) 4 8 E₄ (E₄.mul E₄) :
+      qExpansion (1 : ℝ) (E₄.mul (E₄.mul E₄)) =
+        qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) (E₄.mul E₄))]
+    congr 1
+    simpa using qExpansion_mul_coeff (n := 1) 4 4 E₄ E₄
+  have he6 : qExpansion (1 : ℝ) (E₆.mul E₆) =
+      qExpansion (1 : ℝ) E₆ * qExpansion (1 : ℝ) E₆ := by
+    simpa using qExpansion_mul_coeff (n := 1) 6 6 E₆ E₆
+  calc (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) -
+        (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆))
+      = (PowerSeries.coeff 0) (qExpansion (1 : ℝ) E₄ *
+          (qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) E₄)) -
+        (PowerSeries.coeff 0) (qExpansion (1 : ℝ) E₆ * qExpansion (1 : ℝ) E₆) := by
+          rw [he4, he6]
+    _ = 0 := by
+        simp [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero,
+          Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero, E4_q_exp_zero, E6_q_exp_zero,
+          mul_one]
 
 /-- The cusp form `(1/1728) * (E₄^3 - E₆^2)` of weight `12`. -/
 @[expose] public def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
@@ -737,7 +753,9 @@ public lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
     rw [norm_div, norm_mul, Complex.norm_natCast]
     have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := by
       have h1 : r ^ (n : ℕ) ≤ r := by
-        simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
+        have := pow_le_pow_of_le_one (norm_nonneg q) hq.le
+          (m := 1) (n := (n : ℕ)) (Nat.one_le_iff_ne_zero.mpr n.pos.ne')
+        simpa using this
       have h2 := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ))
       simp only [norm_one, norm_pow] at h2; linarith
     calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖

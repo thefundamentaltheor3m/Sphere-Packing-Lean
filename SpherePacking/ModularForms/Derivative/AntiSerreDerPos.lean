@@ -47,10 +47,18 @@ public theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ}
     have him : 0 < (g s).im := by simp [g, hs]
     simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
       ofComplex_apply_of_im_pos him]
-  rw [h_eq.deriv_eq]
+  haveI : ContinuousSMul ℝ ℂ := NormedSpace.toIsBoundedSMul.continuousSMul
+  haveI hst : IsScalarTower ℝ ℂ ℂ := ⟨fun a b c => by
+    show ((a : ℂ) * b) • c = (a : ℂ) * (b • c)
+    rw [smul_eq_mul, smul_eq_mul, mul_assoc]⟩
+  have heq : deriv (Function.resToImagAxis F) t = deriv ((F ∘ ofComplex) ∘ g) t :=
+    h_eq.deriv_eq
+  rw [heq]
   have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
   have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
-  rw [(hF'.scomp t hg).deriv]
+  have hderiv : deriv ((F ∘ ofComplex) ∘ g) t = I • deriv (F ∘ ofComplex) z :=
+    (@HasDerivAt.scomp ℝ _ ℂ _ _ t ℂ _ _ _ hst _ _ _ _ hF' hg).deriv
+  rw [hderiv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf
@@ -70,6 +78,7 @@ public theorem hasDerivAt_re_resToImagAxis (F : ℍ → ℂ) (hF : MDiff F) :
       0 < t →
         HasDerivAt (fun t => (F.resToImagAxis t).re) (-2 * π * (ResToImagAxis (D F) t).re) t :=
   fun t ht => by
+    haveI : ContinuousSMul ℝ ℂ := NormedSpace.toIsBoundedSMul.continuousSMul
     have hdiff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hF t ht
     have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
       hdiff.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hF ht)
