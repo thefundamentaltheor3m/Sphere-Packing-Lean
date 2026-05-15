@@ -425,7 +425,10 @@ lemma theta_h_eq_zero : theta_h = 0 :=
   congr_arg (·.toFun)
     (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 8 (by norm_num)) theta_h_CF)
 
-lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 := by
+-- Disambiguate from mathlib's `ModularForm.E₄` which leaks in via `public import`.
+noncomputable abbrev myE4 : ModularForm (CongruenceSubgroup.Gamma 1) 4 := _root_.E₄
+
+lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (myE4 z) * (f₂ z) ^ 2) = 0 := by
   funext z
   have hg : theta_g z = 0 := by simpa using congrFun theta_g_eq_zero z
   have hh : theta_h z = 0 := by simpa using congrFun theta_h_eq_zero z
@@ -439,8 +442,8 @@ lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 :=
     simpa [theta_h, x, y, Pi.add_apply, Pi.mul_apply, Pi.pow_apply] using hh
   have hlin : (B ^ 2 - A * B + A ^ 2) * (x ^ 2) = 0 := by
     grind only
-  have hpoly : (B ^ 2 - A * B + A ^ 2) = 3 * E₄ z := by
-    have hE4 : E₄ z = (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
+  have hpoly : (B ^ 2 - A * B + A ^ 2) = 3 * myE4 z := by
+    have hE4 : myE4 z = (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
       have h := congrFun SpherePacking.ModularForms.E₄_eq_thetaE4 z
       simpa [SpherePacking.ModularForms.thetaE4, pow_two, mul_assoc, mul_left_comm, mul_comm]
         using h
@@ -456,28 +459,29 @@ lemma f₂_eq_zero : f₂ = 0 := by
   have hU_open : IsOpen U := isOpen_upperHalfPlaneSet
   have hU_pre : IsPreconnected U := by
     simpa [U] using (convex_halfSpace_im_gt (r := (0 : ℝ))).isPreconnected
-  have hDiffE4 : DifferentiableOn ℂ (fun z : ℂ => E₄ (ofComplex z)) U :=
-    fun z hz => (MDifferentiableAt_DifferentiableAt (E₄.holo' ⟨z, hz⟩)).differentiableWithinAt
+  have hDiffE4 : DifferentiableOn ℂ (fun z : ℂ => myE4 (ofComplex z)) U :=
+    fun z hz => (MDifferentiableAt_DifferentiableAt
+      (myE4.holo' ⟨z, hz⟩)).differentiableWithinAt
   have hDiffF2 : DifferentiableOn ℂ (fun z : ℂ => f₂ (ofComplex z)) U :=
     fun z hz =>
       (MDifferentiableAt_DifferentiableAt (f₂_MDifferentiable ⟨z, hz⟩)).differentiableWithinAt
-  have hfE4 : AnalyticOnNhd ℂ (fun z : ℂ => E₄ (ofComplex z)) U :=
+  have hfE4 : AnalyticOnNhd ℂ (fun z : ℂ => myE4 (ofComplex z)) U :=
     hDiffE4.analyticOnNhd hU_open
   have hgF2 : AnalyticOnNhd ℂ (fun z : ℂ => (f₂ (ofComplex z)) ^ 2) U :=
     (hDiffF2.pow 2).analyticOnNhd hU_open
-  have hfg : ∀ z ∈ U, (E₄ (ofComplex z)) * (f₂ (ofComplex z)) ^ 2 = 0 := by
+  have hfg : ∀ z ∈ U, (myE4 (ofComplex z)) * (f₂ (ofComplex z)) ^ 2 = 0 := by
     intro z hz
     simpa using congrArg (fun f : ℍ → ℂ => f (ofComplex z)) hmul0
   rcases
       AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero (U := U) hfE4 hgF2 hfg hU_pre with
     hE4zero | hF2sq
-  · have hE4 : (E₄ : ℍ → ℂ) = 0 := by
+  · have hE4 : (myE4 : ℍ → ℂ) = 0 := by
       funext τ
-      have : E₄ (ofComplex (τ : ℂ)) = 0 := hE4zero _ τ.im_pos
+      have : myE4 (ofComplex (τ : ℂ)) = 0 := hE4zero _ τ.im_pos
       simpa [ofComplex_apply_of_im_pos τ.im_pos] using this
     have hlim1 : Tendsto (fun _ : ℍ => (0 : ℂ)) atImInfty (𝓝 (1 : ℂ)) := by
       have h :=
-        (SpherePacking.ModularForms.tendsto_E₄_atImInfty : Tendsto E₄ atImInfty (𝓝 (1 : ℂ)))
+        (SpherePacking.ModularForms.tendsto_E₄_atImInfty : Tendsto myE4 atImInfty (𝓝 (1 : ℂ)))
       rw [hE4] at h
       exact h
     have : (1 : ℂ) = 0 :=
