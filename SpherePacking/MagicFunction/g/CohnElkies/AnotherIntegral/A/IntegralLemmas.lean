@@ -1109,9 +1109,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
       _ ≤ C₀ * Real.exp (-Real.pi * z.re * t) :=
         mul_le_mul (hbase_bound t ht) hExp (norm_nonneg _) (by positivity)
   have hIntegrandC_continuousOn : ∀ z : ℂ,
-      ContinuousOn (fun t : ℝ => I₆IntegrandC z t) (Set.Ici (1 : ℝ)) := fun z => by
-    simpa [I₆IntegrandC] using base₆_continuousOn.mul
-      (by fun_prop : Continuous fun t : ℝ => Complex.exp (-(π : ℂ) * z * (t : ℂ))).continuousOn
+      ContinuousOn (fun t : ℝ => I₆IntegrandC z t) (Set.Ici (1 : ℝ)) := fun _ => by
+    have := base₆_continuousOn; unfold I₆IntegrandC; fun_prop
   have hF_meas : ∀ z : ℂ, MeasureTheory.AEStronglyMeasurable
       (fun t : ℝ => I₆IntegrandC z t) μ := fun z =>
     (hIntegrandC_continuousOn z).aestronglyMeasurable measurableSet_Ici
