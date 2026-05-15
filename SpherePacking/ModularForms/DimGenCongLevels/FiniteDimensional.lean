@@ -34,10 +34,10 @@ def qKerBelow
     simp [qExpansion_zero (h := h)]
   add_mem' := by
     intro f g hf hg n hn
-    simp [qExpansion_add (Γ := Γ) (h := h) hh hΓ f g, hf n hn, hg n hn]
+    simp [ModularForm.qExpansion_add (h := h) hh hΓ f g, hf n hn, hg n hn]
   smul_mem' := by
     intro a f hf n hn
-    simp [qExpansion_smul (Γ := Γ) (k := k) (h := h) hh hΓ a f, hf n hn]
+    simp [ModularForm.qExpansion_smul (h := h) hh hΓ a f, hf n hn]
 
 lemma qKerBelow_antitone
     [DiscreteTopology Γ] [Γ.HasDetOne] (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :
@@ -55,7 +55,7 @@ lemma qKerBelow_iInf_eq_bot
     have hf' : ∀ N : ℕ, f ∈ qKerBelow (Γ := Γ) (k := k) (h := h) hh hΓ N :=
       (Submodule.mem_iInf (p := fun N => qKerBelow (Γ := Γ) (k := k) (h := h) hh hΓ N)).1 hf
     refine (Submodule.mem_bot (R := ℂ) (x := f)).2 ?_
-    apply (qExpansion_eq_zero_iff (Γ := Γ) (h := h) hh hΓ f).1
+    apply (ModularForm.qExpansion_eq_zero_iff (h := h) hh hΓ f).1
     ext n
     exact hf' (n + 1) n (Nat.lt_succ_self _)
   · intro hf
@@ -103,7 +103,7 @@ public lemma exists_qCoeff_injective
     have hcoeff : (qExpansion h f).coeff n = (qExpansion h g).coeff n := by
       simpa using congrArg (fun t => t ⟨n, hn⟩) hfg
     simpa [hcoeff] using
-      congrArg (fun ps : PowerSeries ℂ => ps.coeff n) (qExpansion_sub (Γ := Γ) (h := h) hh hΓ f g)
+      congrArg (fun ps : PowerSeries ℂ => ps.coeff n) (ModularForm.qExpansion_sub (h := h) hh hΓ f g)
   have : f - g = 0 := by simpa [hN] using hsub
   exact sub_eq_zero.mp this
 
