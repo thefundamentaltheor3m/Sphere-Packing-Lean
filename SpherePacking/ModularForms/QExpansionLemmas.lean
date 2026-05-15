@@ -30,10 +30,10 @@ public theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F 
   have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
   have hcont : ContinuousAt (Function.Periodic.cuspFunction (n : ℝ) (⇑f ∘ (↑ofComplex : ℂ → ℍ)))
       0 := by
-    simpa [SlashInvariantFormClass.cuspFunction] using
+    simpa [cuspFunction] using
       (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos
         (by simp [CongruenceSubgroup.strictPeriods_Gamma])).continuousAt
-  simpa [SlashInvariantFormClass.cuspFunction, Function.comp] using
+  simpa [cuspFunction, Function.comp] using
     (Function.Periodic.tendsto_nhds_zero (h := (n : ℝ)) (f := ⇑f ∘ (↑ofComplex : ℂ → ℍ)) hcont)
 
 
@@ -51,15 +51,16 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
     simpa [cuspFunction] using
       (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem).continuousAt.tendsto.comp
         (UpperHalfPlane.qParam_tendsto_atImInfty hn_pos)
-  have hzero : cuspFunction (n : ℝ) f 0 = UpperHalfPlane.valueAtInfty (f : ℍ → ℂ) := by
-    simpa [SlashInvariantFormClass.cuspFunction, hn_ne] using
-      (cuspFunction_apply_zero (f := f) (h := (n : ℝ)) hn_pos hmem)
+  have hper := SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hmem
+  have hzero : cuspFunction (n : ℝ) f 0 = UpperHalfPlane.valueAtInfty (f : ℍ → ℂ) :=
+    cuspFunction_apply_zero (f := (f : ℍ → ℂ)) hn_pos
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem) hper
   have ht' :
       Tendsto (fun τ : ℍ => cuspFunction (n : ℝ) f (Periodic.qParam (n : ℝ) τ)) atImInfty
         (𝓝 (UpperHalfPlane.valueAtInfty (f : ℍ → ℂ))) := by
     simpa [hzero] using ht
   refine ht'.congr fun τ ↦ ?_
-  exact eq_cuspFunction f τ hmem hn_ne
+  exact SlashInvariantFormClass.eq_cuspFunction (f := f) τ hmem hn_ne
 
 /-- The `qExpansion` of a product is the product of the `qExpansion`s (coeffwise). -/
 public lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
@@ -136,10 +137,9 @@ public lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β �
 
 /-- On `Γ(1)`, `qExpansion` commutes with subtraction. -/
 public lemma qExpansion_sub1 {a b : ℤ} (f : ModularForm Γ(1) a) (g : ModularForm Γ(1) b) :
-    qExpansion 1 (f - g) = qExpansion 1 f - qExpansion 1 g := by
-  simpa using
-    (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℝ)) (by norm_num)
-      (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f g)
+    qExpansion 1 (f - g) = qExpansion 1 f - qExpansion 1 g :=
+  ModularForm.qExpansion_sub (h := (1 : ℝ)) (by norm_num)
+    (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f g
 
 @[simp] --generalize this away from ℂ
 lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
