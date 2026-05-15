@@ -167,9 +167,10 @@ namespace SpherePacking
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  rw [finiteDensity, scale_balls, show ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R by
-      simpa [Real.norm_eq_abs, abs_of_pos hc, mul_assoc] using
-        (smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm, ← Set.smul_set_inter₀ hc.ne.symm,
+  have hball : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
+    rw [smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R, smul_zero,
+      Real.norm_eq_abs, abs_of_pos hc]
+  rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm,
     Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
     ENNReal.mul_div_mul_left _ _ (by simp; positivity) ENNReal.ofReal_ne_top, finiteDensity]
 
@@ -311,7 +312,7 @@ private theorem summable : Summable f :=
 
 private theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective φ) (g : β → ℕ∞) :
     ∑' x, g (φ x) ≤ ∑' y, g y :=
-  (summable (f := fun x => g (φ x))).tsum_le_tsum_of_inj φ hφ (fun _ _ ↦ zero_le _)
+  (summable (f := fun x => g (φ x))).tsum_le_tsum_of_inj φ hφ (fun _ _ ↦ zero_le)
     (fun _ ↦ le_rfl) (summable (f := g))
 
 private theorem tsum_subtype_iUnion_eq_tsum {ι : Type*} (f : α → ℕ∞) (t : ι → Set α)
