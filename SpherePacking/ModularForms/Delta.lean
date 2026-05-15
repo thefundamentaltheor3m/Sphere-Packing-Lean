@@ -49,30 +49,17 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := rfl
 /-- The discriminant is nonzero on the upper half-plane. -/
 lemma Δ_ne_zero (z : ℍ) : Δ z ≠ 0 := discriminant_ne_zero z
 
-/-- Invariance of `Δ` under the translation `T : z ↦ z + 1`. -/
-public lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ :=
-  discriminant_T_invariant
-
-/-- Invariance of `Δ` under the inversion `S : z ↦ -1/z`. -/
-public lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ :=
-  discriminant_S_invariant
-
-/-- Δ as a SlashInvariantForm of weight 12. -/
-@[expose] public def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
-  toFun := Δ
-  slash_action_eq' :=
-    slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant
-
 /-- Δ is 1-periodic: Δ(z + 1) = Δ(z). -/
-public lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z :=
-  by simpa using SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
+public lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
+  simpa [modular_slash_T_apply] using congrFun discriminant_T_invariant z
 
 /-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z). -/
 public lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
-  have h := congrFun Discriminant_S_invariant z
+  have h := congrFun discriminant_S_invariant z
   rw [SL_slash_apply] at h
   simp only [ModularGroup.denom_S, zpow_neg] at h
   field_simp [ne_zero z] at h
+  show discriminant _ = _
   rw [h, mul_comm]
 
 lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
