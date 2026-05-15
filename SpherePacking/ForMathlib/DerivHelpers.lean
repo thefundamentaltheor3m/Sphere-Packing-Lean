@@ -343,8 +343,7 @@ public lemma norm_phase_eq_one {V : Type*} [NormedAddCommGroup V] [InnerProductS
 public lemma aestronglyMeasurable_phase {V : Type*} [NormedAddCommGroup V]
     [InnerProductSpace ℝ V] [MeasureSpace V] [BorelSpace V] (w : V) :
     AEStronglyMeasurable (fun x : V ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I))
-      (volume : Measure V) :=
-  Continuous.aestronglyMeasurable (by continuity)
+      (volume : Measure V) := by fun_prop
 
 /-- Almost everywhere, the phase factor has norm at most `1`. -/
 public lemma ae_norm_phase_le_one {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
