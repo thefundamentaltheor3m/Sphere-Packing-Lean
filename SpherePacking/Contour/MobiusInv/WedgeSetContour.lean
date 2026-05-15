@@ -173,19 +173,13 @@ public lemma convex_wedgeSet : Convex ℝ wedgeSet := by
     ((convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im)
         (.mk (fun z w => by simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm])
           (fun c z => by
-            have h1 : (c • z).re = c * z.re := by
-              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
-            have h2 : (c • z).im = c * z.im := by
-              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
-            rw [h1, h2, smul_eq_mul, mul_sub])) (1 : ℝ)).inter
+            change ((c : ℂ) * z).re - ((c : ℂ) * z).im = c • (z.re - z.im)
+            simp [Complex.mul_re, Complex.mul_im, smul_eq_mul, mul_sub])) (1 : ℝ)).inter
       (convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im)
         (.mk (fun z w => by simp [add_left_comm, add_comm])
           (fun c z => by
-            have h1 : (c • z).re = c * z.re := by
-              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
-            have h2 : (c • z).im = c * z.im := by
-              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
-            rw [h1, h2, smul_eq_mul, mul_add])) (1 : ℝ)))
+            change ((c : ℂ) * z).re + ((c : ℂ) * z).im = c • (z.re + z.im)
+            simp [Complex.mul_re, Complex.mul_im, smul_eq_mul, mul_add])) (1 : ℝ)))
 
 public lemma wedgeSet_subset_upperHalfPlaneSet :
     wedgeSet ⊆ UpperHalfPlane.upperHalfPlaneSet := fun _ hz => hz.1
@@ -206,16 +200,40 @@ public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
     (by simpa [hzIm] using closure_wedgeSet_subset_abs_re_sub_one_le_im hz)
     (abs_nonneg _) : |z.re - 1| = 0))]) (by simp [hzIm])
 
+private lemma re_lineMap_smul (a b : ℂ) (t : ℝ) :
+    (AffineMap.lineMap a b t).re = (1 - t) * a.re + t * b.re := by
+  rw [AffineMap.lineMap_apply_module, Complex.add_re]
+  have h1 : ((1 - t) • a).re = (1 - t) * a.re := by
+    rw [show ((1 - t) • a : ℂ) = ((1 - t : ℝ) : ℂ) * a from Complex.real_smul,
+      Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]; ring
+  have h2 : (t • b).re = t * b.re := by
+    rw [show (t • b : ℂ) = ((t : ℝ) : ℂ) * b from Complex.real_smul,
+      Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]; ring
+  exact congr_arg₂ (· + ·) h1 h2
+
+private lemma im_lineMap_smul (a b : ℂ) (t : ℝ) :
+    (AffineMap.lineMap a b t).im = (1 - t) * a.im + t * b.im := by
+  rw [AffineMap.lineMap_apply_module, Complex.add_im]
+  have h1 : ((1 - t) • a).im = (1 - t) * a.im := by
+    rw [show ((1 - t) • a : ℂ) = ((1 - t : ℝ) : ℂ) * a from Complex.real_smul,
+      Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]; ring
+  have h2 : (t • b).im = t * b.im := by
+    rw [show (t • b : ℂ) = ((t : ℝ) : ℂ) * b from Complex.real_smul,
+      Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]; ring
+  exact congr_arg₂ (· + ·) h1 h2
+
 /-- Membership in `wedgeSet` for the vertical line segment from `1` to `1 + I`. -/
 public lemma lineMap_z₃line_mem_wedgeSet {t : ℝ} (ht0 : 0 < t) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t ∈ wedgeSet := by
-  simp [wedgeSet, AffineMap.lineMap_apply_module', Algebra.smul_def, ht0, add_comm, mul_comm]
+  simp [wedgeSet, re_lineMap_smul, im_lineMap_smul, Complex.I_re, Complex.I_im, Complex.one_re,
+    Complex.one_im, Complex.add_re, Complex.add_im, ht0]
 
 /-- Membership in `wedgeSet` for the line segment from `1 + I` to `I`, for `t ∈ (0, 1)`. -/
 public lemma lineMap_z₄line_mem_wedgeSet {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t ∈ wedgeSet := by
-  simp [wedgeSet, AffineMap.lineMap_apply_module', Algebra.smul_def,
-    (by linarith [ht0] : (-t : ℝ) < 1), ht1, sub_eq_add_neg, add_left_comm, add_comm]
+  simp [wedgeSet, re_lineMap_smul, im_lineMap_smul, Complex.I_re, Complex.I_im, Complex.one_re,
+    Complex.one_im, Complex.add_re, Complex.add_im]
+  refine ⟨?_, ?_⟩ <;> linarith
 
 /-- The Mobius inversion map `z ↦ -z⁻¹`. -/
 @[expose] public def mobiusInv (z : ℂ) : ℂ := -z⁻¹
@@ -339,14 +357,20 @@ public lemma curveIntegral_segment_neg_inv
       (hΨ := fun r t ht => ?_) (r := r)
   have hz_im : 0 < (AffineMap.lineMap a b t).im := hs.lineMap_im_pos t ht
   have hz0 : AffineMap.lineMap a b t ≠ 0 := fun hz0 => (ne_of_gt hz_im) (by simp [hz0])
+  have hfderiv : HasFDerivAt (𝕜 := ℝ) mobiusInv
+      (ContinuousLinearMap.mulLeftRight ℝ ℂ (AffineMap.lineMap a b t)⁻¹
+        (AffineMap.lineMap a b t)⁻¹) (AffineMap.lineMap a b t) := by
+    have h := (hasFDerivAt_inv' (𝕜 := ℝ) (R := ℂ) hz0).neg
+    convert h using 2
+    ext x
+    change (AffineMap.lineMap a b t)⁻¹ * x * (AffineMap.lineMap a b t)⁻¹ =
+      -(- ((AffineMap.lineMap a b t)⁻¹ * x * (AffineMap.lineMap a b t)⁻¹))
+    ring
   have hderiv :=
     (show HasDerivAt (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s))
         ((b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ)) t by
       simpa [mobiusInv, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
-        ((by simpa [mobiusInv] using (hasFDerivAt_inv' (𝕜 := ℝ) (R := ℂ) hz0).neg :
-          HasFDerivAt (𝕜 := ℝ) mobiusInv
-            (ContinuousLinearMap.mulLeftRight ℝ ℂ (AffineMap.lineMap a b t)⁻¹
-              (AffineMap.lineMap a b t)⁻¹) (AffineMap.lineMap a b t)).comp_hasDerivAt t
+        (hfderiv.comp_hasDerivAt t
           (AffineMap.hasDerivAt_lineMap (a := a) (b := b) (x := t)))).deriv
   simpa [hderiv, _root_.SpherePacking.deriv_mobiusInv, div_eq_mul_inv, mul_assoc, mul_left_comm,
     mul_comm] using
@@ -476,7 +500,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
           simpa [xI, yI] using
             (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := ⟨h0.1, h1.1⟩) (x := yI))
       _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := rfl
-      _ = _ := by simp [γ, δ, yI, Path.map', Path.segment_apply, xI]
+      _ = _ := by simp [γ, δ, yI, Path.map', xI]; exact Path.segment_apply _ _ _
   have h :
       (∫ᶜ z in γ, ω z) + ∫ᶜ z in Path.segment (γ (1 : I01)) (δ (1 : I01)), ω z =
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
@@ -589,9 +613,9 @@ private lemma contDiffOn_lineMap_mobiusInv_lineMap (p0 p1 q0 q1 : ℂ)
       (Set.Icc (0 : ℝ × ℝ) 1) := by
   have hline (a b : ℂ) :
       ContDiffOn ℝ 2 (fun xy => AffineMap.lineMap a b xy.2) (Set.Icc (0 : ℝ × ℝ) 1) := by
-    simpa [AffineMap.lineMap_apply_module] using (by
-      fun_prop :
-        ContDiffOn ℝ 2 (fun xy => (1 - xy.2) • a + xy.2 • b) (Set.Icc (0 : ℝ × ℝ) 1))
+    simp only [AffineMap.lineMap_apply_module]
+    exact (((contDiff_const.sub contDiff_snd).smul_const a).contDiffOn).add
+      ((contDiff_snd.smul_const b).contDiffOn)
   have hA : ContDiffOn ℝ 2 (fun xy : ℝ × ℝ => mobiusInv (AffineMap.lineMap p0 p1 xy.2))
       (Set.Icc (0 : ℝ × ℝ) 1) := by simpa [mobiusInv] using ((hline p0 p1).inv hne).neg
   simpa [AffineMap.lineMap_apply_module] using
