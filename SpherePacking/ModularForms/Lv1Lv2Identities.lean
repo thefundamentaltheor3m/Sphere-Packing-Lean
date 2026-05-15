@@ -24,7 +24,8 @@ open scoped MatrixGroups CongruenceSubgroup ModularForm Manifold Topology
 
 open UpperHalfPlane hiding I
 open Complex Filter TopologicalSpace
-open ModularForm ModularGroup SlashAction MatrixGroups
+open ModularForm hiding E₄ E₆
+open ModularGroup SlashAction MatrixGroups
 open SlashInvariantFormClass ModularFormClass
 
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
@@ -105,9 +106,13 @@ noncomputable def thetaE4_MF : ModularForm (Γ 1) 4 := {
 
 /-- The Eisenstein series `E₄` tends to `1` at the cusp `∞`. -/
 public lemma tendsto_E₄_atImInfty : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) := by
+  have hper : Function.Periodic ((E₄ : ℍ → ℂ) ∘ ofComplex) (1 : ℝ) :=
+    SlashInvariantFormClass.periodic_comp_ofComplex (f := E₄) one_mem_strictPeriods_Gamma1
   have hcoeff :
       (qExpansion (1 : ℝ) E₄).coeff 0 = UpperHalfPlane.valueAtInfty (E₄ : ℍ → ℂ) :=
-    qExpansion_coeff_zero (f := E₄) (h := (1 : ℝ)) (by positivity) one_mem_strictPeriods_Gamma1
+    qExpansion_coeff_zero (f := (E₄ : ℍ → ℂ)) (h := (1 : ℝ)) (by positivity)
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := E₄)
+        (by positivity) one_mem_strictPeriods_Gamma1) hper
   have hval : UpperHalfPlane.valueAtInfty (E₄ : ℍ → ℂ) = 1 := by
     simpa [hcoeff] using (E4_q_exp_zero : (qExpansion (1 : ℝ) E₄).coeff 0 = 1)
   simpa [hval] using modularForm_tendsto_atImInfty 1 E₄
@@ -119,7 +124,7 @@ public theorem E₄_eq_thetaE4 : (E₄ : ℍ → ℂ) = thetaE4 := by
     simpa [diff, thetaE4_MF, ModularForm.sub_apply, sub_eq_add_neg] using
       tendsto_E₄_atImInfty.sub thetaE4_tendsto_atImInfty
   have hdiff_cusp : IsCuspForm (Γ 1) 4 diff := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff];
+    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff];
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     exact UpperHalfPlane.IsZeroAtImInfty.cuspFunction_apply_zero hdiff0 (by norm_num : (0 : ℝ) < 1)
   have hdiff_eq : diff = 0 := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) diff hdiff_cusp
@@ -213,9 +218,13 @@ noncomputable def thetaE6_MF : ModularForm (Γ 1) 6 := {
 
 /-- The Eisenstein series `E₆` tends to `1` at the cusp `∞`. -/
 public lemma tendsto_E₆_atImInfty : Tendsto (fun z : ℍ => E₆ z) atImInfty (𝓝 (1 : ℂ)) := by
+  have hper : Function.Periodic ((E₆ : ℍ → ℂ) ∘ ofComplex) (1 : ℝ) :=
+    SlashInvariantFormClass.periodic_comp_ofComplex (f := E₆) one_mem_strictPeriods_Gamma1
   have hcoeff :
       (qExpansion (1 : ℝ) E₆).coeff 0 = UpperHalfPlane.valueAtInfty (E₆ : ℍ → ℂ) :=
-    qExpansion_coeff_zero (f := E₆) (h := (1 : ℝ)) (by positivity) one_mem_strictPeriods_Gamma1
+    qExpansion_coeff_zero (f := (E₆ : ℍ → ℂ)) (h := (1 : ℝ)) (by positivity)
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := E₆)
+        (by positivity) one_mem_strictPeriods_Gamma1) hper
   have hval : UpperHalfPlane.valueAtInfty (E₆ : ℍ → ℂ) = 1 := by
     simpa [hcoeff] using (E6_q_exp_zero : (qExpansion (1 : ℝ) E₆).coeff 0 = 1)
   simpa [hval] using modularForm_tendsto_atImInfty 1 E₆
@@ -227,7 +236,7 @@ public theorem E₆_eq_thetaE6 : (E₆ : ℍ → ℂ) = thetaE6 := by
     simpa [diff, thetaE6_MF, ModularForm.sub_apply, sub_eq_add_neg] using
       tendsto_E₆_atImInfty.sub thetaE6_tendsto_atImInfty
   have hdiff_cusp : IsCuspForm (Γ 1) 6 diff := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff];
+    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff];
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     exact UpperHalfPlane.IsZeroAtImInfty.cuspFunction_apply_zero hdiff0 (by norm_num : (0 : ℝ) < 1)
   have hdiff_eq : diff = 0 := IsCuspForm_weight_lt_eq_zero 6 (by norm_num) diff hdiff_cusp
