@@ -708,10 +708,12 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
         Complex.exp (sign * (((π * u : ℝ) : ℂ) * I)) * Φ₅' u ((t : ℂ) * I)),
       (∫ t in (0 : ℝ)..1, (I : ℂ) * Φⱼ u (zp t)) =
         (I : ℂ) * Complex.exp (sign * (((π * u : ℝ) : ℂ) * I)) * V0 := fun sign zp Φⱼ hzp hΦ ↦ by
-    rw [intervalIntegral.integral_congr (g := fun t ↦ (I : ℂ) *
-      (Complex.exp (sign * (((π * u : ℝ) : ℂ) * I)) * Φ₅' u ((t : ℂ) * I)))
+    rw [intervalIntegral.integral_congr (g := fun t ↦
+      ((I : ℂ) * Complex.exp (sign * (((π * u : ℝ) : ℂ) * I))) * Φ₅' u ((t : ℂ) * I))
       fun t ht ↦ by simp [hzp (hmem ht), hΦ, mul_assoc]]
-    simp [V0, mul_assoc]
+    exact intervalIntegral.integral_const_mul ((I : ℂ) *
+      Complex.exp (sign * (((π * u : ℝ) : ℂ) * I)))
+      (fun t : ℝ => Φ₅' u ((t : ℂ) * I))
   rw [show I₁' u = (I : ℂ) * Complex.exp (-(((π * u : ℝ) : ℂ) * I)) * V0 from by
         simpa [I₁', Φ₁, mul_assoc, neg_mul, one_mul] using hIshift (-1 : ℂ) z₁' Φ₁'
           (fun ht ↦ by simpa [mul_comm] using z₁'_eq_of_mem ht)
@@ -723,7 +725,8 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
       show I₅' u = (-2 : ℂ) * (I : ℂ) * V0 from by
         simpa [I₅', Φ₅, mul_assoc] using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z) (by
           rw [intervalIntegral.integral_congr (g := fun t ↦ (I : ℂ) * Φ₅' u ((t : ℂ) * I))
-            fun t ht ↦ by simp [z₅'_eq_of_mem (hmem ht), mul_comm]]; simp [V0] :
+            fun t ht ↦ by simp [z₅'_eq_of_mem (hmem ht), mul_comm]]
+          exact intervalIntegral.integral_const_mul (I : ℂ) (fun t : ℝ => Φ₅' u ((t : ℂ) * I)) :
           (∫ t in (0 : ℝ)..1, (I : ℂ) * Φ₅' u (z₅' t)) = (I : ℂ) * V0)]
   ring
 
@@ -2016,7 +2019,9 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
       intervalIntegral.integral_congr fun t ht => by
         simp [g, sub_eq_add_neg, show z₄' t = (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) by
           simpa using z₄'_eq_of_mem (t := t) (by simpa [Set.uIcc_of_le zero_le_one] using ht)],
-      intervalIntegral.integral_const_mul,
+      show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) =
+          (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g (1 - t) from
+        intervalIntegral.integral_const_mul _ _,
       show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num]
     simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]
   simpa [zero_add] using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₄' u)
@@ -2046,28 +2051,36 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         simp [show z₆' t = (Complex.I : ℂ) * (t : ℂ) by
           simpa [mul_assoc, mul_comm, mul_left_comm] using z₆'_eq_of_mem ht, mul_comm],
     integral_Ici_eq_integral_Ioi,
-    (integral_const_mul (μ := μ) (r := (2 : ℂ))
-      (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
+    show (2 * ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
+        ∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) from
+      (integral_const_mul (μ := μ) (r := (2 : ℂ))
+        (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
     setIntegral_congr_fun measurableSet_Ioi (fun t ht => by
       simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg]
         using (congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
         (Φ_finite_difference_imag_axis (lt_trans zero_lt_one ht))).symm :
       ∀ t ∈ Set.Ioi (1 : ℝ), (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
         (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t)),
-    integral_const_mul (μ := μ) (r := (Complex.I : ℂ)) (f := fun t => f2 t - 2 * f5 t + f4 t)]
+    show (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t)) =
+        (Complex.I : ℂ) * ∫ t in Set.Ioi (1 : ℝ), (f2 t - 2 * f5 t + f4 t) from
+      integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
+        (f := fun t => f2 t - 2 * f5 t + f4 t)]
   calc (Complex.I : ℂ) * (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
       = (Complex.I : ℂ) * ((∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
         simpa using congrArg ((Complex.I : ℂ) * ·)
           (integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4)
     _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
         rw [integral_sub (μ := μ) hf2 (hf5.const_mul 2),
-          integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
+          show (∫ a, (2 : ℂ) * f5 a ∂μ) = (2 : ℂ) * ∫ a, f5 a ∂μ from
+            integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
 
 /-- If `G t = E * Φ₅' u (tI)` for `t > 1`, then `∫ G = E * ∫ central` over `Ioi 1`. -/
 private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E : ℂ}
     (hG : ∀ t, 1 < t → G t = E * Φ₅' u ((t : ℂ) * Complex.I)) :
     (∫ t in Set.Ioi (1 : ℝ), G t) = E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
-  rw [setIntegral_congr_fun measurableSet_Ioi hG, integral_const_mul]
+  rw [setIntegral_congr_fun measurableSet_Ioi hG]
+  exact integral_const_mul (μ := volume.restrict (Set.Ioi (1 : ℝ))) E
+    (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I))
 
 /-- Rewrite `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`. -/
 public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) :
@@ -2111,8 +2124,8 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
   rw [hsplit, I₁'_add_I₃'_add_I₅'_eq_imag_axis (u := u),
     I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail (u := u) hu]
   have hseg : (∫ t in (0 : ℝ)..1, Φ₅' u ((t : ℂ) * Complex.I)) =
-      ∫ t in Set.Ioc (0 : ℝ) 1, Φ₅' u ((t : ℂ) * Complex.I) := by
-    simp [intervalIntegral.intervalIntegral_eq_integral_uIoc]
+      ∫ t in Set.Ioc (0 : ℝ) 1, Φ₅' u ((t : ℂ) * Complex.I) :=
+    intervalIntegral.integral_of_le zero_le_one
   rw [hseg]
   have hIoi :
       (∫ t in Set.Ioc (0 : ℝ) 1, Φ₅' u ((t : ℂ) * Complex.I)) +
@@ -2341,7 +2354,7 @@ public theorem analyticOnNhd_integral_base_exp
         have hlt : |z.re - u.re| < ε := by
           simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
             lt_of_le_of_lt (abs_re_le_norm (z - u))
-              (by simpa [Metric.mem_ball] using hz : ‖z - u‖ < ε)
+              (by simpa [Metric.mem_ball, dist_eq_norm] using hz : ‖z - u‖ < ε)
         dsimp [ε] at hlt ⊢; nlinarith [(abs_lt.mp hlt).1]
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
