@@ -287,8 +287,8 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   exact (EisensteinSeries.summable_norm_eisSummand hk z).of_norm
 
 lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' x : Fin 2 → ℤ,
-    1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = riemannZeta k * ∑' c : gammaSet 1 1 0,
-    1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
+    1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = riemannZeta k * ∑' x : gammaSet 1 1 0,
+    1 / ((x.1 0) * (z : ℂ) + (x.1 1)) ^ k := by
   simpa [eisSummand, zpow_neg, zpow_natCast, one_div] using (EQ22 k hk z)
 
 
@@ -298,33 +298,18 @@ public lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z 
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [E]
-  rw [ModularForm.IsGLPos.smul_apply]
-  have : (ModularForm.eisensteinSeriesMF hk standardcongruencecondition) z =
-    (eisensteinSeriesSIF standardcongruencecondition k) z := rfl
-  rw [this]
-  rw [eisensteinSeriesSIF_apply]
-  rw [eisensteinSeries, standardcongruencecondition]
+  change (1/2 : ℂ) • (eisensteinSeriesSIF standardcongruencecondition k) z = _
+  rw [eisensteinSeriesSIF_apply, eisensteinSeries, standardcongruencecondition]
   simp only [one_div, PNat.val_ofNat, smul_eq_mul, neg_mul]
   simp_rw [eisSummand]
-  have inv_pow_eq_zpow_neg (a : ℂ) : (a ^ k)⁻¹ = a ^ (- (k : ℤ)) := by
-    norm_num
+  have inv_pow_eq_zpow_neg (a : ℂ) : (a ^ k)⁻¹ = a ^ (- (k : ℤ)) := by norm_num
   have HE1' := EQ1 k hk hk2 z
   simp only [one_div, inv_pow_eq_zpow_neg] at HE1'
   have HE2' := EQ2 k hk z
-  have z2 : (riemannZeta (k)) ≠ 0 := by
-    have hk1 : (1 : ℝ) < (k : ℂ).re := by
-      simpa using (one_lt_of_three_le k (by exact_mod_cast hk))
-    exact riemannZeta_ne_zero_of_one_lt_re hk1
-  rw [← inv_mul_eq_iff_eq_mul₀ z2 ] at HE2'
+  have z2 : (riemannZeta (k)) ≠ 0 := riemannZeta_ne_zero_of_one_lt_re <| by
+    simpa using one_lt_of_three_le k (by exact_mod_cast hk)
+  rw [← inv_mul_eq_iff_eq_mul₀ z2] at HE2'
   simp only [one_div, inv_pow_eq_zpow_neg] at HE2'
-  conv =>
-    enter [1,2]
-    rw [← HE2']
-  simp_rw [← mul_assoc]
-  rw [HE1', mul_add]
-  have : 2⁻¹ * (riemannZeta (k))⁻¹ * (2 * riemannZeta (k)) = 1 := by
-    field_simp
-  rw [this]
-  ring
+  exact Eq.trans (congrArg (2⁻¹ * ·) (HE1' ▸ HE2').symm) (by field_simp)
 
 end Definitions
