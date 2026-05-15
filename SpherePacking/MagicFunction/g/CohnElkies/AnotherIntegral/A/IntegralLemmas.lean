@@ -272,9 +272,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
   have hMeasIoi : AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
       (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by
     have ht2 : AEStronglyMeasurable (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ))
-        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
-      ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
-          (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
+        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by fun_prop
     simpa [aLaplaceIntegrand, mul_assoc] using
       (ht2.mul (continuousOn_phi0''_div_Ioi.aestronglyMeasurable measurableSet_Ioi)).mul
         (by fun_prop : AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
