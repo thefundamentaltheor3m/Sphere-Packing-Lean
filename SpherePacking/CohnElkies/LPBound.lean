@@ -52,8 +52,12 @@ variable {d : ℕ}
 
 /-- Any coordinate of a vector is bounded in absolute value by the Euclidean norm. -/
 public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ := by
-  simpa [EuclideanSpace.inner_single_left, EuclideanSpace.norm_single] using
-    abs_real_inner_le_norm (EuclideanSpace.single i (1 : ℝ)) x
+  rw [EuclideanSpace.norm_eq, ← Real.sqrt_sq_eq_abs]
+  exact Real.sqrt_le_sqrt (by
+    have hsq : (x.ofLp i) ^ 2 = ‖x.ofLp i‖ ^ 2 := by rw [Real.norm_eq_abs, sq_abs]
+    rw [hsq]
+    exact Finset.single_le_sum (f := fun j : Fin d => ‖x.ofLp j‖ ^ 2)
+      (fun _ _ => sq_nonneg _) (Finset.mem_univ i))
 
 /-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
 public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
@@ -140,7 +144,9 @@ along a lattice `Λ`. -/
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
 
 instance instDiscreteTopology_cubeLattice (L : ℝ) (hL : 0 < L) :
-    DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+    DiscreteTopology (cubeLattice d L hL) := by
+  change DiscreteTopology (Submodule.span ℤ (Set.range (cubeBasis d L hL)))
+  infer_instance
 
 instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
     IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
@@ -171,10 +177,20 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
     (hF_sub : F ⊆ D) (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) :
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
-  refine ⟨?_, fun hxF => ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, by simp⟩, hF_sub hxF⟩⟩
+  have zvadd : ∀ y : EuclideanSpace ℝ (Fin d), (0 : ↥Λ) +ᵥ y = y := fun y => zero_vadd _ _
+  refine ⟨?_, fun hxF => ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, (zvadd x).symm⟩, hF_sub hxF⟩⟩
   rintro ⟨⟨_, ⟨g, rfl⟩, ⟨f, hfF, rfl⟩⟩, hxD⟩
   obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
-  simpa [hg0uniq g (by simpa using hxD), (hg0uniq 0 (by simpa using hF_sub hfF)).symm] using hfF
+  have hg0g : g = 0 := by
+    have h1 : (fun g ↦ g +ᵥ f ∈ D) g := hxD
+    have h2 : (fun g ↦ g +ᵥ f ∈ D) (0 : ↥Λ) := by
+      change (0 : ↥Λ) +ᵥ f ∈ D
+      rw [zvadd]; exact hF_sub hfF
+    exact (hg0uniq g h1).trans (hg0uniq 0 h2).symm
+  rw [hg0g]
+  change (0 : ↥Λ) +ᵥ f ∈ F
+  rw [zvadd]
+  exact hfF
 
 namespace PeriodicConstant
 
@@ -228,11 +244,13 @@ public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < 
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ v +ᵥ coordCubeInner d L r) :
     ball x r ⊆ v +ᵥ coordCube d L := by
-  simpa [add_vadd, Submodule.vadd_def, vadd_eq_add, add_assoc, add_comm] using
-    ball_vadd_subset_vadd (d := d) (Λ := cubeLattice d L hL) (D := coordCube d L)
-      (g := v) (x := (- (v : EuclideanSpace ℝ (Fin d))) +ᵥ x) (r := r)
-      (ball_subset_coordCube_of_mem_inner
-        (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx))
+  obtain ⟨y, hy, rfl⟩ := hx
+  have hball : ball y r ⊆ coordCube d L := ball_subset_coordCube_of_mem_inner hy
+  intro z hz
+  refine ⟨z - v, hball ?_, by simp [vadd_eq_add]⟩
+  change dist z ((v : EuclideanSpace ℝ (Fin d)) + y) < r at hz
+  rw [mem_ball, dist_eq_norm, show z - ↑v - y = z - (↑v + y) from by abel, ← dist_eq_norm]
+  exact hz
 
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
@@ -1020,7 +1038,7 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 local notation "conj" => starRingEnd ℂ
 
 theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
-  (FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
+  (FourierTransform.fourierCLE ℂ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
@@ -1029,7 +1047,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
     simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re,
       ← integral_re hIntegrable]
     exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v) fun hf0re => hne_zero <|
-    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)).1 ?_
+    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℂ _)).1 ?_
   have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
     (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1 (by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
