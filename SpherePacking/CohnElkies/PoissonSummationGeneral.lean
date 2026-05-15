@@ -60,7 +60,9 @@ public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w
               ENNReal.ofReal |(LinearMap.det (A : V →ₗ[ℝ] V))⁻¹| • (volume : Measure V) by
             simpa using Measure.map_linearMap_addHaar_eq_smul_addHaar (μ := (volume : Measure V))
               (LinearEquiv.isUnit_det' A).ne_zero, MeasureTheory.integral_smul_measure]
-          simp [abs_inv]
+          rw [show ((ENNReal.ofReal |(LinearMap.det (A : V →ₗ[ℝ] V))⁻¹|).toReal : ℝ) =
+            |LinearMap.det (A : V →ₗ[ℝ] V)|⁻¹ by simp [abs_inv]]
+          rfl
     _ = _ := by simp [g, show (fun y : V ↦ Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y) =
                     fun y : V ↦
                       Real.fourierChar (-(inner ℝ y
@@ -229,7 +231,11 @@ public lemma dualSubmodule_standardLattice_eq :
   · rcases exists_intVec_eq_of_mem_standardLattice (d := d) x hx with ⟨n, rfl⟩
     rcases exists_intVec_eq_of_mem_standardLattice (d := d) y hy with ⟨m, rfl⟩
     exact Submodule.mem_one.mpr ⟨∑ i : Fin d, n i * m i, by
-      simp [innerₗ_apply_apply, intVec, PiLp.inner_apply, map_sum, Int.cast_mul, mul_comm]⟩
+      simp only [innerₗ_apply_apply, intVec, PiLp.inner_apply, map_sum, Int.cast_mul,
+        algebraMap_int_eq, eq_intCast]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [show inner ℝ ((n i : ℝ)) ((m i : ℝ)) = (n i : ℝ) * (m i : ℝ) from
+        (RCLike.inner_apply' (n i : ℝ) (m i : ℝ)).trans (by simp)]⟩
 
 /-- The quotient map `E = ℝ^d → (ℝ/ℤ)^d`. -/
 @[expose] public def coeFunE : E → UnitAddTorus (Fin d) :=
@@ -270,12 +276,18 @@ public theorem isAddFundamentalDomain_iocCube :
       simpa [intVec_apply, zsmul_one] using
         (show ∀ j : Fin d, (x + intVec (d := d) n') j ∈
           Set.Ioc (0:ℝ) 1 by simpa [iocCube] using hn') i)
-  refine ⟨⟨intVec (d := d) n, intVec_mem_standardLattice (d := d) n⟩,
-    by simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn,
-    fun ℓ hℓ ↦ ?_⟩
-  rcases exists_intVec_eq_of_mem_standardLattice (d := d) (ℓ : E) ℓ.property with ⟨n', hn'⟩
-  exact Subtype.ext (by simp [hn', hn_unique n' (by
-    simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc, hn'] using hℓ)])
+  refine ⟨⟨intVec (d := d) n, intVec_mem_standardLattice (d := d) n⟩, ?_, fun ℓ hℓ ↦ ?_⟩
+  · change (⟨intVec n, _⟩ : ↥(standardLattice d)) +ᵥ x ∈ iocCube
+    rw [Submodule.vadd_def, vadd_eq_add, add_comm]
+    exact hn
+  · rcases exists_intVec_eq_of_mem_standardLattice (d := d) (ℓ : E) ℓ.property with ⟨n', hn'⟩
+    apply Subtype.ext
+    simp only [hn']
+    apply congrArg
+    apply hn_unique n'
+    have hℓ' : (ℓ : E) +ᵥ x ∈ iocCube := hℓ
+    rw [vadd_eq_add, hn', add_comm] at hℓ'
+    exact hℓ'
 
 /-- Pull back Haar integration on `(ℝ/ℤ)^d` to `iocCube` in `E = ℝ^d`. -/
 public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) → ℂ)
@@ -440,9 +452,15 @@ public lemma descended_comp (x : E) :
 public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) =
       (𝐞 (-(inner ℝ x (intVec (d := d) n))) : ℂ) := by
+  have hinner : inner ℝ x (intVec (d := d) n) = ∑ i, (x.ofLp i : ℝ) * (n i : ℝ) := by
+    simp only [intVec, PiLp.inner_apply]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [show inner ℝ (x.ofLp i : ℝ) ((n i : ℝ)) = (x.ofLp i : ℝ) * (n i : ℝ) from
+      (RCLike.inner_apply' (x.ofLp i : ℝ) (n i : ℝ)).trans (by simp)]
+  rw [hinner]
   simp [coeFunE, UnitAddTorus.mFourier_apply_coeFun_ofLp,
-    Real.fourierChar_apply, intVec, PiLp.inner_apply,
-    Finset.sum_neg_distrib, mul_assoc, mul_comm]
+    Real.fourierChar_apply, intVec, Finset.sum_neg_distrib,
+    mul_assoc, mul_comm]
 
 @[simp] lemma intVec_neg (n : Fin d → ℤ) :
     intVec (d := d) (-n) = -intVec (d := d) n := by ext i; simp [intVec_apply]
@@ -450,9 +468,11 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (coeFunE (d := d) x) =
       Complex.exp (2 * Real.pi * Complex.I * ⟪x, intVec (d := d) n⟫_[ℝ]) := by
-  simpa [Real.fourierChar_apply, mul_assoc, mul_comm, inner_neg_right,
-    RCLike.inner_eq_wInner_one x (intVec n)] using
-    mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
+  have h := mFourier_neg_apply_coeFunE (d := d) (n := -n) (x := x)
+  simp only [neg_neg, intVec_neg, inner_neg_right] at h
+  rw [h]
+  rw [show ⟪x, intVec n⟫_[ℝ] = inner ℝ x (intVec n) from RCLike.inner_eq_wInner_one x _ |>.symm]
+  simp [Real.fourierChar_apply, mul_assoc, mul_comm]
 
 public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ) (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE (d := d) (x + (ℓ : E))) =
@@ -584,9 +604,17 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
       integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d)) fun x _ => by
         simp [g, Submodule.vadd_def, vadd_eq_add, add_comm,
           mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)]
-    simpa [g, hterm] using
-      (MeasureTheory.IsAddFundamentalDomain.integral_eq_tsum'' (μ := (volume : Measure E))
-        (isAddFundamentalDomain_iocCube (d := d)) (f := g) hint).symm
+    have hres :
+        ∫ x : E, g x ∂(volume : Measure E) =
+          ∑' ℓ : ↥(SchwartzMap.standardLattice d),
+            ∫ x in iocCube (d := d), g (ℓ +ᵥ x) ∂(volume : Measure E) := by
+      have hs' : IsAddFundamentalDomain (SchwartzMap.standardLattice d).toAddSubgroup
+          (iocCube (d := d)) (volume : Measure E) :=
+        isAddFundamentalDomain_iocCube (d := d)
+      haveI : Countable (SchwartzMap.standardLattice d).toAddSubgroup :=
+        inferInstanceAs (Countable (SchwartzMap.standardLattice d))
+      exact (hs'.integral_eq_tsum'' g hint).trans (tsum_congr fun _ => rfl)
+    simpa [g, hterm] using hres.symm
   calc
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n
         = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
@@ -844,9 +872,14 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
     have hexp (w : E) :
         Complex.exp (2 * π * Complex.I * ⟪A.symm v, w⟫_[ℝ]) =
           Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ L) w⟫_[ℝ]) := by
-      simp [show ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ L) w⟫_[ℝ] by
-        simpa [RCLike.inner_eq_wInner_one, A, Bₗ] using
-          (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm]
+      have key : ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ L) w⟫_[ℝ] := by
+        rw [show ⟪A.symm v, w⟫_[ℝ] = inner ℝ (A.symm v) w from
+          (RCLike.inner_eq_wInner_one _ _).symm,
+          show ⟪v, (Bₗ L) w⟫_[ℝ] = inner ℝ v ((Bₗ L) w) from
+          (RCLike.inner_eq_wInner_one _ _).symm]
+        simpa [A, Bₗ] using
+          (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm
+      rw [key]
     rw [show (∑' n : Fin d → ℤ, (𝓕 (fun x : E => g x) (iv n)) *
             Complex.exp (2 * π * Complex.I * ⟪A.symm v, iv n⟫_[ℝ])) =
           cC * ∑' m : dualLattice (d := d) L, F m from by
