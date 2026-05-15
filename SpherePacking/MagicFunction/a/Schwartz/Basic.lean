@@ -2510,9 +2510,8 @@ private lemma intervalIntegrable_F_comp
     IntervalIntegrable (fun x : ℝ => F (w x)) MeasureTheory.volume (0 : ℝ) 1 := by
   have hwne : Set.MapsTo w (Set.uIcc (0 : ℝ) 1) ({0}ᶜ) := fun x _ h0 =>
     (ne_of_gt (hwim x)) (by simpa using congrArg Complex.im h0)
-  have hinv : ContinuousOn (fun z : ℂ => (-1 : ℂ) / z) ({0}ᶜ) := by
-    convert (continuousOn_const.mul (continuousOn_inv₀ (G₀ := ℂ)) :
-      ContinuousOn ((fun _ : ℂ => (-1 : ℂ)) * (Inv.inv : ℂ → ℂ)) ({0}ᶜ)) using 1
+  have hinv : ContinuousOn (fun z : ℂ => (-1 : ℂ) / z) ({0}ᶜ) :=
+    fun _ hx => (continuousAt_const.div continuousAt_id hx).continuousWithinAt
   simpa [F] using ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
     (hinv.comp hw hwne) fun x _ => by
       simpa [div_eq_mul_inv] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w x, hwim x⟩).mul
