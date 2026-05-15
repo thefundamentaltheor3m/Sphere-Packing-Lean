@@ -18,7 +18,6 @@ public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
 public import SpherePacking.ModularForms.BigO
-public import SpherePacking.ModularForms.CSqrt
 public import SpherePacking.ModularForms.ClogArgLemmas
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Delta
@@ -34,7 +33,6 @@ public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.EisensteinBase
 public import SpherePacking.ModularForms.EisensteinQExpansions
-public import SpherePacking.ModularForms.Eta
 public import SpherePacking.ModularForms.ExpLemmas
 public import SpherePacking.ModularForms.FG.AsymptoticsTools
 public import SpherePacking.ModularForms.FG.Basic
@@ -44,7 +42,6 @@ public import SpherePacking.ModularForms.FG.Positivity
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.IteratedDerivs
 public import SpherePacking.ModularForms.JacobiTheta
-public import SpherePacking.ModularForms.LogDerivLemmas
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.MultipliableLemmas
 public import SpherePacking.ModularForms.PhiTransform
@@ -59,7 +56,6 @@ public import SpherePacking.ModularForms.SummableLemmas.Cotangent
 public import SpherePacking.ModularForms.SummableLemmas.G2
 public import SpherePacking.ModularForms.SummableLemmas.IntPNat
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
-public import SpherePacking.ModularForms.TendstoLemmas
 public import SpherePacking.ModularForms.ThetaDerivIdentities
 public import SpherePacking.ModularForms.TsumDerivWithin
 public import SpherePacking.Tactic.FunPropExt

@@ -1,4 +1,5 @@
 module
+public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.EisensteinQExpansions
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.QExpansionLemmas
@@ -721,8 +722,9 @@ public theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     set r : ℂ := cexp (2 * ↑Real.pi * Complex.I * z) with hr
     have hr_norm : ‖r‖ < 1 := by
       simpa [hr] using exp_upperHalfPlane_lt_one z
-    have hs : Summable fun n : ℕ ↦ (n : ℂ) * r ^ n / (1 - r ^ n) :=
-      logDeriv_q_expo_summable r hr_norm
+    have hs : Summable fun n : ℕ ↦ (n : ℂ) * r ^ n / (1 - r ^ n) := by
+      simpa [pow_one] using
+        (summable_norm_pow_mul_geometric_div_one_sub (𝕜 := ℂ) 1 (r := r) hr_norm)
     refine (hs.comp_injective PNat.coe_injective).congr ?_
     intro n
     have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by

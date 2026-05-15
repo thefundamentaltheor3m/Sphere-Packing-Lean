@@ -1,7 +1,6 @@
 module
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.Eta
 public import SpherePacking.ModularForms.MultipliableLemmas
 public import SpherePacking.ModularForms.ResToImagAxis
 public import Mathlib.NumberTheory.ModularForms.Discriminant
