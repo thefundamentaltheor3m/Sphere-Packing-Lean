@@ -93,9 +93,10 @@ open scoped Interval
 private lemma curveIntegral_segment_eq_intervalIntegral (a b : ℂ) (f : ℂ → ℂ) (g : ℝ → ℂ)
     (hg : ∀ t : ℝ, t ∈ Set.Icc (0 : ℝ) 1 → AffineMap.lineMap a b t = g t) :
     (∫ᶜ z in Path.segment a b, scalarOneForm f z) = ∫ t in (0 : ℝ)..1, (b - a) * f (g t) := by
-  rw [curveIntegral_segment (ω := scalarOneForm f) a b]
-  exact intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => by
-    simp [scalarOneForm_apply, hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht)]
+  refine (curveIntegral_segment (ω := scalarOneForm f) a b).trans ?_
+  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) fun t ht => ?_
+  rw [scalarOneForm_apply]
+  exact congrArg ((b - a) * f ·) (hg t (by simpa [Set.uIcc_of_le zero_le_one] using ht))
 
 /-- Rewrite the segment integral on `1 → 1 + I` as an interval integral in the parameter `t`. -/
 public lemma curveIntegral_segment_z₃ (f : ℂ → ℂ) :
@@ -140,6 +141,7 @@ public lemma J₁'_eq_Ioc (r : ℝ) :
         (Complex.I : ℂ) * ψT' (z₁' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₁' t)) := by
   simp [MagicFunction.b.RealIntegrals.J₁', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
+  exact one_smul _ _
 
 open scoped ModularForm
 
@@ -165,6 +167,7 @@ public lemma J₂'_eq_Ioc (r : ℝ) :
         ψT' (z₂' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t)) := by
   simp [MagicFunction.b.RealIntegrals.J₂', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
+  exact one_smul _ _
 
 /-- Continuity of `t ↦ ψT' (z₂line t)` on `ℝ`. -/
 public lemma continuous_ψT'_z₂line : Continuous fun t : ℝ => ψT' (z₂line t) := by
@@ -288,11 +291,11 @@ public lemma phase_mul_J₁'_eq_integral_permJ1Kernel (w x : EuclideanSpace ℝ 
         ∫ t : ℝ,
           (Complex.I : ℂ) * ψT' (z₁line t) *
             cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)) ∂μIoc01 from by
-      simpa [μIoc01] using (J₁'_eq_integral_z₁line (r := (‖x‖ ^ (2 : ℕ)))),
-    (MeasureTheory.integral_const_mul (μ := μIoc01)
-      (r := cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I))
-      (f := fun t : ℝ => (Complex.I : ℂ) * ψT' (z₁line t) *
-        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)))).symm]
+      simpa [μIoc01] using (J₁'_eq_integral_z₁line (r := (‖x‖ ^ (2 : ℕ))))]
+  trans (∫ t : ℝ, cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) *
+      ((Complex.I : ℂ) * ψT' (z₁line t) *
+        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t))) ∂μIoc01)
+  · exact (MeasureTheory.integral_const_mul _ _).symm
   exact MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun t => by
     simp [permJ1Kernel, mul_assoc, mul_left_comm, mul_comm]
 
@@ -955,7 +958,8 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
       (-2 : ℂ) * ∫ (t : ℝ) in Ioc 0 1,
         (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) by
     simp [MagicFunction.b.RealIntegrals.J₅', intervalIntegral_eq_integral_uIoc, zero_le_one,
-      uIoc_of_le, mul_assoc]]
+      uIoc_of_le, mul_assoc]
+    exact one_smul ℝ _]
   congr 1
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t ht => ?_
@@ -1007,8 +1011,12 @@ open scoped Interval ModularForm
 /-- `Ψ₁' r` is `DiffContOnCl` on `wedgeSet`. -/
 public lemma diffContOnCl_Ψ₁'_wedgeSet (r : ℝ) :
     DiffContOnCl ℝ (Ψ₁' r) wedgeSet := by
-  refine ⟨((differentiableOn_Ψ₁'_upper (r := r)).restrictScalars ℝ).mono
-    wedgeSet_subset_upperHalfPlaneSet, fun z hzcl => ?_⟩
+  have hℝ : DifferentiableOn ℝ (Ψ₁' r) wedgeSet := fun z hz => by
+    obtain ⟨f', hf'⟩ := (differentiableOn_Ψ₁'_upper (r := r)) z
+      (wedgeSet_subset_upperHalfPlaneSet hz)
+    exact ⟨f'.restrictScalars ℝ,
+      .of_isLittleO (hf'.mono wedgeSet_subset_upperHalfPlaneSet).isLittleO⟩
+  refine ⟨hℝ, fun z hzcl => ?_⟩
   by_cases h1 : z = (1 : ℂ)
   · subst h1
     have hval : Ψ₁' r 1 = 0 := by simp [Ψ₁', ψT']
@@ -1252,8 +1260,11 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
             ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
               (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) from
       congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor]
-    rw [MeasureTheory.integral_const_mul,
-      SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0]
+    trans ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
+        ∫ x : EuclideanSpace ℝ (Fin 8),
+          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)
+    · exact MeasureTheory.integral_const_mul _ _
+    rw [SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0]
     linear_combination
       ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) * hcancel
   have hmain :
@@ -1272,16 +1283,20 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       funext x
       rw [show (∫ s in Ici (1 : ℝ), f x s) =
           ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s
-        from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel],
-        MeasureTheory.integral_const_mul (μ := μs)]
+        from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel]]
+      rw [show (∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s) =
+          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s
+        from MeasureTheory.integral_const_mul _ _]
       ring
     rw [show (∫ x : EuclideanSpace ℝ (Fin 8),
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
               ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
         ∫ x : EuclideanSpace ℝ (Fin 8), (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s from
-      congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew,
-      MeasureTheory.integral_const_mul,
-      MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
+      congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew]
+    trans ((-2 : ℂ) *
+        ∫ x : EuclideanSpace ℝ (Fin 8), ∫ s in Ici (1 : ℝ), f x s)
+    · exact MeasureTheory.integral_const_mul _ _
+    rw [MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
         (ν := μs) (f := f) hint]
     congr 1
     refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
