@@ -1224,7 +1224,8 @@ open scoped ArithmeticFunction.sigma
 open Real Complex MeasureTheory Filter Function
 open ArithmeticFunction
 open MagicFunction.FourierEigenfunctions
-open UpperHalfPlane ModularForm EisensteinSeries
+open UpperHalfPlane EisensteinSeries
+open ModularForm hiding E₄ E₆
 open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
@@ -1301,6 +1302,7 @@ lemma qExpansionFormalMultilinearSeries_partialSum_two
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
 
+set_option maxHeartbeats 400000 in
 private lemma exists_sub_partialSum_bound
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
     [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]
@@ -1310,9 +1312,15 @@ private lemma exists_sub_partialSum_bound
           (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n
             (Periodic.qParam (1 : ℝ) (zI t ht))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ n := by
-  obtain ⟨a, ha, C, hCpos, hbound⟩ := (ModularFormClass.hasFPowerSeries_cuspFunction
-    (f := f) (h := (1 : ℝ)) zero_lt_one hΓ).uniform_geometric_approx' (r' := r0) (by
-      simpa using ENNReal.coe_lt_one_iff.2 (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)))
+  have hper := SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hΓ
+  have : Fact (IsCusp OnePoint.infty Γ) := ⟨_root_.Subgroup.isCusp_of_mem_strictPeriods one_pos hΓ⟩
+  have hfanalytic := ModularFormClass.analyticAt_cuspFunction_zero (f := f) zero_lt_one hΓ
+  have hsum := hasSum_qExpansion (f := (f : ℍ → ℂ)) zero_lt_one hper (holo f)
+    (ModularFormClass.bdd_at_infty (f := f))
+  have hfps := UpperHalfPlane.hasFPowerSeries_cuspFunction (f := f) (h := (1 : ℝ))
+    zero_lt_one hfanalytic hsum
+  obtain ⟨a, ha, C, hCpos, hbound⟩ := hfps.uniform_geometric_approx' (r' := r0) (by
+    simpa using ENNReal.coe_lt_one_iff.2 (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)))
   refine ⟨C * (a / (r0 : ℝ)) ^ n,
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht; let q : ℂ := Periodic.qParam (1 : ℝ) z
@@ -1326,8 +1334,14 @@ private lemma exists_sub_partialSum_bound
           simpa [q] using SlashInvariantFormClass.eq_cuspFunction (f := f) (τ := z) hΓ one_ne_zero,
         show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
           simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
-        hbound q (by simpa [Metric.mem_ball, dist_zero_right, r0, q, z, hqn] using
-          Real.exp_lt_exp.2 (by nlinarith [Real.pi_pos, ht1])) n)
+        hbound q (by
+          have h_neg : Real.exp (-2 * π * t) < (r0 : ℝ) := by
+            have hπ : (0 : ℝ) < π := Real.pi_pos
+            refine Real.exp_lt_exp.2 ?_
+            simp [r0]
+            nlinarith
+          rw [Metric.mem_ball, dist_zero_right, hqn]
+          exact h_neg) n)
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
 public lemma exists_E4_sub_one_bound :
@@ -1349,11 +1363,15 @@ public lemma exists_E4_sub_one_sub_240q_bound :
         E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
 private lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
-  simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1,
-    show valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) by
-      simpa using (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ))
-        zero_lt_one hΓ1).symm.trans
-        (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1)]
+  have hper := SlashInvariantFormClass.periodic_comp_ofComplex (f := Delta) hΓ1
+  have h1 : cuspFunction (1 : ℝ) Delta 0 = valueAtInfty (Delta : ℍ → ℂ) :=
+    cuspFunction_apply_zero (f := (Delta : ℍ → ℂ)) zero_lt_one
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := Delta) zero_lt_one hΓ1) hper
+  have h2 : cuspFunction (1 : ℝ) Delta 0 = 0 :=
+    CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) zero_lt_one hΓ1
+  have hzero : valueAtInfty (Delta : ℍ → ℂ) = 0 := h1.symm.trans h2
+  simp [qExpansion_coeff_zero (f := (Delta : ℍ → ℂ)) zero_lt_one
+    (ModularFormClass.analyticAt_cuspFunction_zero (f := Delta) zero_lt_one hΓ1) hper, hzero]
 
 /-- Second-order remainder bound for `Δ (it) - q` with `q = exp (-2π t)`, `t ≥ 1`. -/
 public lemma exists_Delta_sub_q_bound :
