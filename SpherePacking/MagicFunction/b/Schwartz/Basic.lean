@@ -319,7 +319,6 @@ private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
     SpherePacking.Integration.DifferentiationUnderIntegral.g,
     SpherePacking.Integration.DifferentiationUnderIntegral.gN, mul_assoc, mul_left_comm, mul_comm,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
-  exact (one_smul ℂ _).symm
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
@@ -497,7 +496,6 @@ lemma J₅'_eq_integral_g_Ioo (x : ℝ) :
     DifferentiationUnderIntegral.gN, DifferentiationUnderIntegral.g,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
     mul_assoc, mul_left_comm, mul_comm]
-  exact one_smul ℂ _
 
 /-- Smoothness of `J₅'`. -/
 public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
