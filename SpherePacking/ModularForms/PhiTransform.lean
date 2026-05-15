@@ -24,7 +24,8 @@ Blueprint Lemma 7.2.
 
 open scoped Real
 
-open ModularForm EisensteinSeries UpperHalfPlane
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane
 
 noncomputable section
 
