@@ -22,11 +22,6 @@ public import SpherePacking.ModularForms.ClogArgLemmas
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimGenCongLevels.Aux
-public import SpherePacking.ModularForms.DimGenCongLevels.Basic
-public import SpherePacking.ModularForms.DimGenCongLevels.FiniteDimensional
-public import SpherePacking.ModularForms.DimGenCongLevels.NormReduction
-public import SpherePacking.ModularForms.DimGenCongLevels.NormTransfer
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein

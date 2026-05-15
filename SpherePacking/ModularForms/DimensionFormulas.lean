@@ -6,7 +6,6 @@ public import Mathlib.NumberTheory.ModularForms.LevelOne.Basic
 public import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
 public import Mathlib.Algebra.Group.Int.Even
 public import SpherePacking.ModularForms.EisensteinBase
-public import SpherePacking.ModularForms.DimGenCongLevels.NormTransfer
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Eisenstein
 
@@ -176,75 +175,3 @@ public lemma Delta_q_exp_two : (qExpansion 1 Delta).coeff 2 = (-24 : ℂ) := by
   simp [hs]
   norm_num
 
-open SpherePacking.ModularForms.NormReduction
-
-public lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
-    FiniteDimensional ℂ (ModularForm Γ k) := by
-  by_cases hkneg : k < 0
-  · exact SpherePacking.ModularForms.finiteDimensional_modularForm_neg_weight Γ hΓ k hkneg
-  · have hk0le : 0 ≤ k := le_of_not_gt hkneg
-    by_cases hk0 : k = 0
-    · subst hk0
-      exact SpherePacking.ModularForms.finiteDimensional_modularForm_weight_zero Γ hΓ
-    · haveI : Γ.FiniteIndex := ⟨hΓ⟩
-      let GΓ : Subgroup (GL (Fin 2) ℝ) := SpherePacking.ModularForms.NormReduction.G Γ
-      let h : ℝ := SpherePacking.ModularForms.NormReduction.cuspWidth (Γ := Γ)
-      have hh : 0 < h := SpherePacking.ModularForms.NormReduction.cuspWidth_pos (Γ := Γ) hΓ
-      have hperΓ : h ∈ GΓ.strictPeriods := by
-        simpa [h] using
-          SpherePacking.ModularForms.NormReduction.cuspWidth_mem_strictPeriods (Γ := Γ)
-      have hperSL : h ∈ (𝒮ℒ : Subgroup (GL (Fin 2) ℝ)).strictPeriods := by
-        simpa [h] using
-          SpherePacking.ModularForms.NormReduction.cuspWidth_mem_strictPeriods_levelOne (Γ := Γ)
-      haveI : GΓ.IsArithmetic :=
-        SpherePacking.ModularForms.NormReduction.instIsArithmetic (Γ := Γ) hΓ
-      haveI : GΓ.IsFiniteRelIndex 𝒮ℒ :=
-        Subgroup.IsArithmetic.isFiniteRelIndexSL
-          (𝒢 := GΓ)
-      let w : ℤ := k * Nat.card (SpherePacking.ModularForms.NormReduction.Q Γ)
-      haveI : FiniteDimensional ℂ (ModularForm 𝒮ℒ w) := inferInstance
-      obtain ⟨N, hNinj⟩ :=
-        SpherePacking.ModularForms.exists_qCoeff_injective
-          (Γ := (𝒮ℒ : Subgroup (GL (Fin 2) ℝ))) (k := w) (h := h) hh hperSL
-      let trunc : ModularForm GΓ k →ₗ[ℂ] (Fin N → ℂ) :=
-      { toFun := fun f => fun n => (qExpansion h f).coeff n
-        map_add' := by
-          intro f g
-          ext n
-          simp [ModularForm.qExpansion_add hh hperΓ f g]
-        map_smul' := by
-          intro a f
-          ext n
-          simp [ModularForm.qExpansion_smul hh hperΓ a f] }
-      have htrunc_inj : Function.Injective trunc := by
-        intro f g hfg
-        have hcoeff : ∀ m < N, (qExpansion h (f - g)).coeff m = 0 := by
-          intro m hm
-          have hsub : trunc (f - g) = 0 := by
-            have hmap : trunc (f - g) = trunc f - trunc g := trunc.map_sub f g
-            have hdiff : trunc f - trunc g = 0 := by simp [hfg]
-            simp [hmap, hdiff]
-          have := congrArg (fun t : Fin N → ℂ => t ⟨m, hm⟩) hsub
-          simpa [trunc] using this
-        have hcoeff_norm : ∀ m < N,
-            (qExpansion h (ModularForm.norm 𝒮ℒ (f - g))).coeff m = 0 := by
-          have qCoeffNorm :=
-            qExpansion_coeff_eq_zero_norm_of_qExpansion_coeff_eq_zero (Γ := Γ) (k := k)
-          intro m hm
-          exact qCoeffNorm (f := (f - g)) (N := N) (n := m) hm hcoeff
-        have hfun :
-            (fun n : Fin N => (qExpansion h (ModularForm.norm 𝒮ℒ (f - g))).coeff n) =
-          fun n : Fin N => (qExpansion h (0 : ModularForm 𝒮ℒ w)).coeff n := by
-          ext n
-          simpa [qExpansion_zero h] using hcoeff_norm (n : ℕ) n.isLt
-        have hnorm : ModularForm.norm 𝒮ℒ (f - g) = (0 : ModularForm 𝒮ℒ w) :=
-          hNinj hfun
-        have : (f - g : ModularForm GΓ k) = 0 := by
-          have := (ModularForm.norm_eq_zero_iff (ℋ := 𝒮ℒ) (f := (f - g)) (k := k))
-          have hf0 :
-              ((f - g : ModularForm GΓ k) : ℍ → ℂ) = 0 :=
-            this.1 (by simpa using hnorm)
-          exact (coe_eq_zero_iff (f - g)).mp hf0
-        simpa [sub_eq_zero] using this
-      haveI : FiniteDimensional ℂ (Fin N → ℂ) := by infer_instance
-      simpa using (FiniteDimensional.of_injective trunc htrunc_inj)
