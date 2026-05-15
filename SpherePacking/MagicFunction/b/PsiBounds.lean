@@ -742,7 +742,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           simp [div_eq_mul_inv, mul_assoc]
     _ ≤ (128 : ℝ) * (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
           ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by
-          simp [div_eq_mul_inv, mul_assoc]
+          simp [mul_assoc]
     _ ≤ (128 : ℝ) * (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
           have h2 : (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
                 ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=

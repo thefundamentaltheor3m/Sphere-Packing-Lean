@@ -797,7 +797,7 @@ public lemma fourier_I₁_eq_curveIntegral (w : ℝ⁸) :
           scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
       rw [curveIntegral_segment (ω := scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)))
         (-1 : ℂ) ((-1 : ℂ) + I)]
-      simp [g, intervalIntegral.integral_of_le, lineMap_z₁line]
+      simp [intervalIntegral.integral_of_le, lineMap_z₁line]
 
 /-- Fourier transform of `I₂`, rewritten as a curve integral of `Φ₁_fourier` along the second
 segment. -/
@@ -831,7 +831,7 @@ public lemma fourier_I₂_eq_curveIntegral (w : ℝ⁸) :
           scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
       rw [curveIntegral_segment (ω := scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)))
         ((-1 : ℂ) + I) I]
-      simp [g, intervalIntegral.integral_of_le, lineMap_z₂line]
+      simp [intervalIntegral.integral_of_le, lineMap_z₂line]
 
 end PermI12Fourier_Main
 end Integral_Permutations

@@ -196,7 +196,7 @@ public lemma integrableOn_one_div_sq_mul_exp_neg_div (c : ℝ) (hc : 0 < c) :
       (MeasureTheory.integrableOn_image_iff_integrableOn_abs_deriv_smul (hs := hs) (hf' := hf')
         (hf := hfinj) (g := fun y : ℝ ↦ Real.exp (-(c * y)))).1 this
   refine hmain.congr_fun (hs := hs) fun t _ => ?_
-  simp [f', f, abs_div, abs_of_nonneg (pow_two_nonneg t), div_eq_mul_inv]
+  simp [f', f, abs_of_nonneg (pow_two_nonneg t), div_eq_mul_inv]
 
 end
 
