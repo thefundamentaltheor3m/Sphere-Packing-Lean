@@ -19,7 +19,8 @@ that there are no nonzero level-one cusp forms of weight less than 12.
 open scoped ModularForm MatrixGroups Manifold Topology BigOperators
 
 open UpperHalfPlane hiding I
-open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap ModularForm
+open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
+open ModularForm hiding E₄ E₆
 open ModularFormClass
 open Metric Filter Function
 
@@ -121,9 +122,12 @@ lemma eq_zero_of_tendsto_zero_atImInfty {k : ℤ} (hk : k < 12) (G : ModularForm
     (IsCuspForm_iff_coeffZero_eq_zero k G).2 ?_
   have hGval : UpperHalfPlane.valueAtInfty (G : ℍ → ℂ) = 0 :=
     UpperHalfPlane.IsZeroAtImInfty.valueAtInfty_eq_zero (f := (G : ℍ → ℂ)) hGlim
+  have hper : Function.Periodic ((G : ℍ → ℂ) ∘ ofComplex) (1 : ℝ) :=
+    SlashInvariantFormClass.periodic_comp_ofComplex (f := G) (by simp)
   have hq :
       (qExpansion (1 : ℝ) G).coeff 0 = UpperHalfPlane.valueAtInfty (G : ℍ → ℂ) :=
-    qExpansion_coeff_zero (f := G) (h := (1 : ℝ)) (by positivity) (by simp)
+    qExpansion_coeff_zero (f := (G : ℍ → ℂ)) (h := (1 : ℝ)) (by positivity)
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := G) (by positivity) (by simp)) hper
   simp [hq, hGval]
 
 /--
