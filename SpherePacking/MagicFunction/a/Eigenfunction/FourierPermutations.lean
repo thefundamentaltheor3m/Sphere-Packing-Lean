@@ -235,8 +235,8 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   simp only [FourierTransform.fourierCLE_apply, I₆_apply]
   change 𝓕 (I₅ : ℝ⁸ → ℂ) w = _
   rw [fourier_eq' (I₅ : ℝ⁸ → ℂ) w]
-  simp only [smul_eq_mul, I₅_apply]
-  simp only [show ∀ x : ℝ⁸, MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
+  simp only [smul_eq_mul, I₅_apply,
+    show ∀ x : ℝ⁸, MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
         -2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s from
       fun x ↦ by simpa only [neg_mul] using
         MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2),

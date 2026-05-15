@@ -930,8 +930,7 @@ public lemma coeff_norm_le {shift : ℝ → ℂ} (hshift : ∀ t ∈ Ioo (0 : �
     ‖coeff shift t‖
         ≤ ‖(-π : ℂ)‖ + ‖(π * I : ℂ) * shift t‖ := norm_add_le _ _
     _ = π + π * ‖shift t‖ := by rw [norm_mul, hnorm]; simp [abs_of_nonneg Real.pi_pos.le]
-    _ ≤ π + π * 1 := by gcongr; exact hshift t ht
-    _ = 2 * π := by ring
+    _ ≤ 2 * π := by nlinarith [hshift t ht, Real.pi_pos]
 
 /-- Uniform `‖g r t‖ ≤ C₀ * exp(-π) * 2 * exp(-π * r)` bound on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform_of {g : ℝ → ℝ → ℂ} {mob : ℝ → ℂ}
@@ -1738,8 +1737,7 @@ public lemma exists_bound_norm_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
       ((norm_add_le _ _).trans <| by linarith [hnorm t, hshift]) 2
   calc ‖hf z shift prefactor t‖
       = ‖prefactor‖ * (‖φ₀'' (arg z shift t)‖ * ‖(z t + shift) ^ (2 : ℕ)‖) := by simp [hf]
-    _ ≤ ‖prefactor‖ * ((C₀ * rexp (-π)) * ((3 : ℝ) ^ (2 : ℕ))) := by gcongr
-    _ = ‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))) := by ring
+    _ ≤ ‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))) := by gcongr
 
 /-- Smoothness of the integral `f` expressed via `DifferentiationUnderIntegral.g`
 with kernel `coeff z` and integrand `hf z shift prefactor`. -/

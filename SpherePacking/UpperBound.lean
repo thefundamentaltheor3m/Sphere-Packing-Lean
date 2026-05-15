@@ -126,10 +126,9 @@ public lemma exists_ψI_bound_exp :
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
   refine ⟨2 * CΔ, max A0 AΔ, by positivity, fun z hz => ?_⟩
   calc ‖ψI z‖ = ‖num z‖ * ‖(Δ z)⁻¹‖ := by simp [num, ψI_apply_eq_factor, div_eq_mul_inv]
-    _ ≤ (2 : ℝ) * (CΔ * Real.exp (2 * π * z.im)) :=
-          mul_le_mul (hA0 z (le_trans (le_max_left _ _) hz))
-            (hΔ z (le_trans (le_max_right _ _) hz)) (by positivity) (by positivity)
-    _ = (2 * CΔ) * Real.exp (2 * π * z.im) := by ring
+    _ ≤ (2 * CΔ) * Real.exp (2 * π * z.im) := by
+        have := mul_le_mul (hA0 z (le_trans (le_max_left _ _) hz))
+          (hΔ z (le_trans (le_max_right _ _) hz)) (by positivity) (by positivity); linarith
 
 /-- Convergence of the Laplace integral defining `b'` (integrability on `(0, ∞)` for `u > 2`). -/
 public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :

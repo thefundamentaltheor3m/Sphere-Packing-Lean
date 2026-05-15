@@ -1052,9 +1052,7 @@ private lemma base_pow_diffAt_of
     calc ‖(d t) ^ (2 : ℕ)‖ = ‖d t‖ ^ (2 : ℕ) := by simp
       _ ≤ (2 : ℝ) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
       _ = 4 := by norm_num
-  calc ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖
-      ≤ Cφ * 4 := mul_le_mul hphi hpow (norm_nonneg _) (by positivity)
-    _ = 4 * Cφ := by ring
+  exact (mul_le_mul hphi hpow (norm_nonneg _) (by positivity)).trans_eq (mul_comm _ _)
 
 lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane := fun u _ => by
   refine DifferentiableAt.differentiableWithinAt ?_
