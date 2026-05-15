@@ -106,9 +106,7 @@ abbrev g (x t : ℝ) : ℂ := SmoothIntegralIciOne.g (hf := ψS.resToImagAxis) x
 abbrev gN (n : ℕ) (x t : ℝ) : ℂ := SmoothIntegralIciOne.gN (hf := ψS.resToImagAxis) n x t
 
 lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := by
-  have hcoeff : Continuous coeff := by
-    simpa [coeff] using (continuous_const.mul Complex.continuous_ofReal : Continuous fun t : ℝ =>
-      (-Real.pi : ℂ) * (t : ℂ))
+  have hcoeff : Continuous coeff := by unfold coeff SmoothIntegralIciOne.coeff; fun_prop
   refine (ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ))
     (s := Ici (1 : ℝ)) ?_ measurableSet_Ici).mono_measure (by simp [μ, μIciOne])
   simpa [gN] using (hcoeff.pow n).continuousOn.mul
