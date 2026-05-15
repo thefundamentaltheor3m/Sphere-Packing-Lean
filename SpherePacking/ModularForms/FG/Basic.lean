@@ -29,7 +29,8 @@ differential equations they satisfy.
 
 
 open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
-open Filter Complex UpperHalfPlane ModularForm
+open Filter Complex UpperHalfPlane
+open ModularForm hiding E₄ E₆
 
 -- Ensure the `SL(2,ℤ)` Möbius action on `ℍ` is available for the local computations below.
 noncomputable local instance : MulAction SL(2, ℤ) ℍ := UpperHalfPlane.SLAction (R := ℤ)
