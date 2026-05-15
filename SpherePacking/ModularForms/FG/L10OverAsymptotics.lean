@@ -353,7 +353,8 @@ private lemma L₁₀_over_tendsto_atImInfty :
           _ = (cexp (π * Complex.I * (z : ℂ) / 4) * g z) ^ 4 := by simp [hΘ₂]
           _ = cexp (π * Complex.I * (z : ℂ) / 4) ^ 4 * (g z) ^ 4 := by simp [mul_pow]
           _ = cexp (π * Complex.I * (z : ℂ)) * (g z) ^ 4 := by simp [hE]
-      exact Eq.symm (CancelDenoms.cancel_factors_eq_div (id (Eq.symm hH2)) (hqπ_ne z))
+      exact Eq.symm (Mathlib.Tactic.CancelDenoms.cancel_factors_eq_div (id (Eq.symm hH2))
+        (hqπ_ne z))
     -- Finish.
     have h2pow : (2 : ℂ) ^ 4 = (16 : ℂ) := by norm_num
     simpa [hrewrite, h2pow] using (hg.pow 4)
