@@ -286,8 +286,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       (hMeasIoi.mono_measure <| Measure.restrict_mono_set (MeasureTheory.volume : Measure ℝ)
         fun t ht => ht.1) C₀ ?_
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
-    have ht0 : 0 < t := ht.1
-    have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
+    have ht0 : 0 < t := ht.1; have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
     have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ :=
       (show ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) by
         simpa [div_eq_mul_inv, Complex.ofReal_inv, C₀] using
@@ -327,8 +326,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         ).mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
         (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
-      let a : ℝ := π * (u - 2)
-      let BA : ℝ := B2 * B4 + B6
+      let a : ℝ := π * (u - 2); let BA : ℝ := B2 * B4 + B6
       let C2 : ℝ := ‖(12 * Complex.I : ℂ) / (π : ℂ)‖
       let C4 : ℝ := ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
       let Cφ : ℝ := (BA ^ (2 : ℕ) + C2 * (B4 * BA) + C4 * (B4 ^ (2 : ℕ))) * CΔ
@@ -339,8 +337,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
             ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) :=
         ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-        have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le
-        have ht0 : 0 < t := zero_lt_one.trans_le ht1
+        have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le; have ht0 : 0 < t := zero_lt_one.trans_le ht1
         let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
         have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
         have htAim : A ≤ zH.im := hz_im ▸ ht.le
@@ -400,8 +397,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
             rw [show φ₀ (ModularGroup.S • zH) = φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
                 - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH by simpa using φ₀_S_transform zH]
             exact (norm_sub_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
-          have h2 := norm_mul_le_of_le hcoeff2 hφ2
-          have h4 := norm_mul_le_of_le hcoeff4 hφ4
+          have h2 := norm_mul_le_of_le hcoeff2 hφ2; have h4 := norm_mul_le_of_le hcoeff4 hφ4
           grind only
         have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
           simpa [a, mul_assoc, mul_left_comm, mul_comm] using
@@ -775,8 +771,7 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     refine norm_mul_le_of_le (hbase_bound t ht) ?_
     exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2
       ((norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)))
-  let E : ℝ := Real.exp ((‖u0‖ + 1) * K)
-  let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
+  let E : ℝ := Real.exp ((‖u0‖ + 1) * K); let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
   have h_bound : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
       ∀ u ∈ Metric.ball u0 (1 : ℝ), ‖F' u t‖ ≤ bound t := by
     refine Filter.Eventually.of_forall (fun t ht u hu => ?_)
@@ -1325,8 +1320,7 @@ private lemma exists_sub_partialSum_bound
       simpa using ENNReal.coe_lt_one_iff.2 (Real.exp_lt_one_iff.2 (neg_lt_zero.mpr Real.pi_pos)))
   refine ⟨C * (a / (r0 : ℝ)) ^ n,
     mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _), fun t ht ht1 => ?_⟩
-  let z : ℍ := zI t ht
-  let q : ℂ := Periodic.qParam (1 : ℝ) z
+  let z : ℍ := zI t ht; let q : ℂ := Periodic.qParam (1 : ℝ) z
   have hqn : ‖q‖ = Real.exp (-2 * π * t) := by
     simpa [q, z, zI, mul_comm, div_one] using
       Periodic.norm_qParam (h := (1 : ℝ)) (z := (zI t ht : ℂ))
@@ -1395,8 +1389,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
         C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
   let q1 : ℝ := Real.exp (-2 * π)
-  have hq1_nonneg : 0 ≤ q1 := (Real.exp_pos _).le
-  have hq1_lt_one : q1 < 1 := exp_neg_two_pi_lt_one
+  have hq1_nonneg : 0 ≤ q1 := (Real.exp_pos _).le; have hq1_lt_one : q1 < 1 := exp_neg_two_pi_lt_one
   let b : ℕ → ℝ := fun n => ((n + 2 : ℝ) ^ 5) * q1 ^ n
   have hb_summ : Summable b := by
     refine Summable.of_nonneg_of_le
@@ -1412,10 +1405,8 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     simp only [show (5 - 1 : ℕ) = 4 from rfl] at hbase
     nlinarith [hbase, pow_nonneg (by positivity : (0 : ℝ) ≤ n) 5, pow_nonneg hq1_nonneg n]
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, fun t ht0 ht1 => ?_⟩
-  let z : ℍ := zI t ht0
-  let q : ℝ := Real.exp (-2 * π * t)
-  have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
-  have hq_le : q ≤ q1 := q_le_q1 (t := t) ht1
+  let z : ℍ := zI t ht0; let q : ℝ := Real.exp (-2 * π * t)
+  have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le; have hq_le : q ≤ q1 := q_le_q1 (t := t) ht1
   have hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ) := by simpa [q, z] using qParam_zI t ht0
   let f : ℕ → ℂ := fun n =>
     ((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)
@@ -1476,15 +1467,13 @@ public lemma exists_phi2'_sub_720_bound_ge :
   rcases exists_E4_sub_one_bound with ⟨CE4, hCE4_pos, hE4⟩
   rcases exists_Delta_sub_q_bound with ⟨CΔq, hCΔq_pos, hΔq⟩
   rcases exists_E2E4_sub_E6_sub_720q_bound with ⟨CA, hCA_pos, hAq⟩
-  let A : ℝ := max (1 : ℝ) AΔ
-  let q1 : ℝ := Real.exp (-2 * π)
+  let A : ℝ := max (1 : ℝ) AΔ; let q1 : ℝ := Real.exp (-2 * π)
   let E4B : ℝ := 1 + CE4 * q1
   let C : ℝ := 1 + CΔinv * (E4B * CA + 720 * (CE4 + CΔq))
   have hA1 : 1 ≤ A := le_max_left _ _
   refine ⟨C, A, by positivity, hA1, fun t ht0 htA => ?_⟩
   have ht1 : 1 ≤ t := le_trans hA1 htA
-  let z : ℍ := zI t ht0
-  let q : ℝ := Real.exp (-2 * π * t)
+  let z : ℍ := zI t ht0; let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
   have hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q := by simpa [z, q] using hE4 t ht0 ht1
@@ -1585,15 +1574,13 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   rcases exists_E4_sub_one_sub_240q_bound with ⟨CE4, hCE4_pos, hE4⟩
   rcases exists_Delta_sub_q_bound with ⟨CΔq, hCΔq_pos, hΔq⟩
   rcases exists_Delta_sub_q_sub_neg24_qsq_bound with ⟨CΔ3, hCΔ3_pos, hΔ3⟩
-  let A : ℝ := max (1 : ℝ) AΔ
-  let q1 : ℝ := Real.exp (-2 * π)
+  let A : ℝ := max (1 : ℝ) AΔ; let q1 : ℝ := Real.exp (-2 * π)
   let B240 : ℝ := 1 + 240 * q1
   let C : ℝ := 1 + CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
   have hA1 : 1 ≤ A := le_max_left _ _
   refine ⟨C, A, by positivity, hA1, fun t ht0 htA => ?_⟩
   have ht1 : 1 ≤ t := le_trans hA1 htA
-  let z : ℍ := zI t ht0
-  let q : ℝ := Real.exp (-2 * π * t)
+  let z : ℍ := zI t ht0; let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
   have hq_le_one : q ≤ 1 :=

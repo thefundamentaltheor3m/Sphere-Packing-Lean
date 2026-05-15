@@ -367,8 +367,7 @@ public lemma continuous_ψI : Continuous ψI := by
 
 /-- `ψS` tends to `0` at `Im z → ∞`. -/
 public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) := by
-  have hH2 := H₂_tendsto_atImInfty
-  have hH4 := H₄_tendsto_atImInfty
+  have hH2 := H₂_tendsto_atImInfty; have hH4 := H₄_tendsto_atImInfty
   have hpoly :
       Tendsto (fun z : ℍ => 2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)
         atImInfty (𝓝 (5 : ℂ)) := by
@@ -675,10 +674,8 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       exact h32.trans ((by norm_num : (3 / 2 : ℝ) ≤ 2).trans (le_max_right _ _))
   -- Bound the polynomial factor in `ψS_apply_eq_factor`.
   let P : ℝ := 2 * (CH2' ^ 2) + 5 * CH2' * M4 + 5 * (M4 ^ 2)
-  let c3 : ℝ := min m3 (1 / 2 : ℝ)
-  let c4 : ℝ := min m4 (1 / 2 : ℝ)
-  have hc3 : 0 < c3 := lt_min hm3 (by norm_num)
-  have hc4 : 0 < c4 := lt_min hm4 (by norm_num)
+  let c3 : ℝ := min m3 (1 / 2 : ℝ); let c4 : ℝ := min m4 (1 / 2 : ℝ)
+  have hc3 : 0 < c3 := lt_min hm3 (by norm_num); have hc4 : 0 < c4 := lt_min hm4 (by norm_num)
   refine ⟨(128 : ℝ) * P * ((c3 ^ 2 * c4 ^ 2)⁻¹) * CH2', fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := (hH2' t ht).trans <| by

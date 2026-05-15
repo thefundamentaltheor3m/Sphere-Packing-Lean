@@ -973,8 +973,7 @@ noncomputable def PeriodicSpherePacking.defaultBasis (S : PeriodicSpherePacking 
 /-- If a periodic packing has no centers, then its density is zero. -/
 public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePacking d)
     (hd : 0 < d) [instEmpty : IsEmpty S.centers] : S.density = 0 := by
-  let b := S.defaultBasis
-  let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
+  let b := S.defaultBasis; let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
   haveI : IsEmpty (↥(S.centers ∩ D)) := ⟨fun x => instEmpty.false ⟨x.1, x.2.1⟩⟩
   rw [S.density_eq' hd, ← S.card_centers_inter_isFundamentalDomain D
     (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))

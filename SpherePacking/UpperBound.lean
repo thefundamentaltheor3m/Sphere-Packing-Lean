@@ -360,8 +360,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
   have hintT_center : IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
       (Set.Ioi (1 : ℝ)) := by
-    let A : ℝ := max 1 Aψ
-    let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
+    let A : ℝ := max 1 Aψ; let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
     have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
         Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
       fun t ht => by simpa using hS t ht
@@ -809,8 +808,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fu
     exact mul_le_mul_of_nonneg_right (hbase_bound t ht) (Real.exp_pos _).le
   let ε : ℝ := u0.re / 2
   have ε_pos : 0 < ε := div_pos hu0re (by norm_num)
-  let b : ℝ := Real.pi * ε
-  let bound : ℝ → ℝ := fun t => (Mψ * Real.pi) * t * Real.exp (-b * t)
+  let b : ℝ := Real.pi * ε; let bound : ℝ → ℝ := fun t => (Mψ * Real.pi) * t * Real.exp (-b * t)
   have bound_int : Integrable bound μ := by
     simpa [μ, MeasureTheory.IntegrableOn, bound, mul_assoc, mul_left_comm, mul_comm] using
       (by simpa [pow_one] using

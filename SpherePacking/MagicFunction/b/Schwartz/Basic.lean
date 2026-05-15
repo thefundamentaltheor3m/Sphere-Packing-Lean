@@ -273,8 +273,7 @@ lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
 /-- Modular rewrite for `ψT' (z₁' t)`, used to control the integrand near `t = 0`. -/
 public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     ψT' (z₁' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  have ht0 : 0 < t := ht.1
-  have hz_im : 0 < (z₁' t).im := im_z₁'_pos (t := t) ht
+  have ht0 : 0 < t := ht.1; have hz_im : 0 < (z₁' t).im := im_z₁'_pos (t := t) ht
   let z : ℍ := ⟨z₁' t, hz_im⟩
   have hψT : ψT z = ψS ((S * T) • z) * (z + 1 : ℂ) ^ (2 : ℕ) := by
     simpa using ((by simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_slash_ST :
@@ -475,8 +474,7 @@ lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
   obtain ⟨M, hM⟩ := exists_bound_norm_ψS_resToImagAxis_Ici_one
   refine ⟨M, fun t ht => ?_⟩
-  have ht0 : 0 < t := ht.1
-  have htle : t ≤ 1 := ht.2.le
+  have ht0 : 0 < t := ht.1; have htle : t ≤ 1 := ht.2.le
   have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ M :=
     hM (1 / t) (by simpa using one_div_le_one_div_of_le ht0 htle)
   calc ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by

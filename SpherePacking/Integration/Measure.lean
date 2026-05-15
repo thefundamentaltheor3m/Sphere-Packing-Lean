@@ -177,8 +177,7 @@ end InvChangeOfVariables
 -/
 public lemma integrableOn_one_div_sq_mul_exp_neg_div (c : ℝ) (hc : 0 < c) :
     IntegrableOn (fun t : ℝ ↦ (1 / t ^ 2) * Real.exp (-c / t)) (Set.Ioc (0 : ℝ) 1) volume := by
-  let s : Set ℝ := Set.Ioc (0 : ℝ) 1
-  let f : ℝ → ℝ := fun t ↦ (1 : ℝ) / t
+  let s : Set ℝ := Set.Ioc (0 : ℝ) 1; let f : ℝ → ℝ := fun t ↦ (1 : ℝ) / t
   let f' : ℝ → ℝ := fun t ↦ -(1 : ℝ) / t ^ 2
   have hs : MeasurableSet s := measurableSet_Ioc
   have hf' : ∀ t ∈ s, HasDerivWithinAt f (f' t) s t := fun t ht => by

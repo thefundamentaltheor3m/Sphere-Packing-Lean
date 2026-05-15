@@ -509,8 +509,7 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
           ∫ x in iocCube (d := d),
             ‖UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
                 f (x + (ℓ : E))‖ ∂(volume : Measure E)) := by
-  let s : Set E := iocCube (d := d)
-  let μ : Measure E := (volume : Measure E).restrict s
+  let s : Set E := iocCube (d := d); let μ : Measure E := (volume : Measure E).restrict s
   haveI : IsFiniteMeasure μ := ⟨by simpa [μ, s] using volume_iocCube_lt_top (d := d)⟩
   have hsum_norm : Summable (fun ℓ : Λ =>
       μ.real Set.univ * ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖) := by

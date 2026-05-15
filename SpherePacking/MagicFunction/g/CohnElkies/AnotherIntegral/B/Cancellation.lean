@@ -812,8 +812,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have nn : ∀ {C : ℝ} {x : ℂ} {a : ℝ}, ‖x‖ ≤ C * Real.exp a → 0 ≤ C := fun h =>
     nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
   have hCsum := nn (hsum 1 le_rfl); have hCinv2 := nn (hinv2 1 le_rfl)
-  have hCinv3 := nn (hinv3 1 le_rfl); have hCH2 := nn (hH2 1 le_rfl)
-  have hCH4 := nn (hH4 1 le_rfl)
+  have hCinv3 := nn (hinv3 1 le_rfl)
+  have hCH2 := nn (hH2 1 le_rfl); have hCH4 := nn (hH4 1 le_rfl)
   refine ⟨(128 : ℝ) *
       (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
         ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192, fun t ht => ?_⟩

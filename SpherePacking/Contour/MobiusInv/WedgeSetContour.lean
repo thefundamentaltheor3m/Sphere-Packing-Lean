@@ -433,8 +433,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
   let ω : ℂ → ℂ →L[ℂ] ℂ := scalarOneForm (Ψ₁' r)
   let γ : Path (mobiusInv p0) (mobiusInv p1) :=
     (Path.segment p0 p1).map' continuousOn_mobiusInv_segment
-  let δ : Path q0 q1 := Path.segment q0 q1
-  let I01 : Set ℝ := unitInterval
+  let δ : Path q0 q1 := Path.segment q0 q1; let I01 : Set ℝ := unitInterval
   let φ : (γ : C(I01, ℂ)).Homotopy δ := .affine ..
   have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := fun a ha b hb => by
     simpa [φ, γ, δ, Path.map', Path.segment_apply] using
@@ -444,8 +443,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
       (Set.Icc (0 : ℝ × ℝ) 1) := by
     refine (contDiffOn_congr ?_).2 contDiffOn_homotopy
     rintro ⟨x, y⟩ ⟨h0, h1⟩
-    let xI : I01 := ⟨x, h0.1, h1.1⟩
-    let yI : I01 := ⟨y, h0.2, h1.2⟩
+    let xI : I01 := ⟨x, h0.1, h1.1⟩; let yI : I01 := ⟨y, h0.2, h1.2⟩
     calc Set.IccExtend (h := (zero_le_one : (0 : ℝ) ≤ 1)) (φ.extend x) y = (φ.extend x) yI := by
           simpa [yI] using
             (Set.IccExtend_of_mem (h := (zero_le_one : (0 : ℝ) ≤ 1)) (f := φ.extend x) ⟨h0.2, h1.2⟩)
