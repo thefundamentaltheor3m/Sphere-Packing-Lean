@@ -141,7 +141,6 @@ public lemma J₁'_eq_Ioc (r : ℝ) :
         (Complex.I : ℂ) * ψT' (z₁' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₁' t)) := by
   simp [MagicFunction.b.RealIntegrals.J₁', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
-  exact one_smul _ _
 
 open scoped ModularForm
 
@@ -167,7 +166,6 @@ public lemma J₂'_eq_Ioc (r : ℝ) :
         ψT' (z₂' t) * cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t)) := by
   simp [MagicFunction.b.RealIntegrals.J₂', intervalIntegral_eq_integral_uIoc, zero_le_one,
     uIoc_of_le, mul_assoc, mul_left_comm, mul_comm]
-  exact one_smul _ _
 
 /-- Continuity of `t ↦ ψT' (z₂line t)` on `ℝ`. -/
 public lemma continuous_ψT'_z₂line : Continuous fun t : ℝ => ψT' (z₂line t) := by
@@ -958,8 +956,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
       (-2 : ℂ) * ∫ (t : ℝ) in Ioc 0 1,
         (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) by
     simp [MagicFunction.b.RealIntegrals.J₅', intervalIntegral_eq_integral_uIoc, zero_le_one,
-      uIoc_of_le, mul_assoc]
-    exact one_smul ℝ _]
+      uIoc_of_le, mul_assoc]]
   congr 1
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t ht => ?_
