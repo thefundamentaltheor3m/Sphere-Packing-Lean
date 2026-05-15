@@ -68,17 +68,32 @@ public lemma z₁line_im_pos_Ioc {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : 0 < (z
 
 public lemma lineMap_z₁line (t : ℝ) :
     AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁line t := by
-  simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₁line, add_comm, mul_comm]
+  rw [AffineMap.lineMap_apply_module']
+  change (t : ℝ) • ((-1 + Complex.I) - (-1 : ℂ)) + (-1 : ℂ) = -1 + Complex.I * (t : ℂ)
+  have h : (t : ℝ) • Complex.I = (t : ℂ) * Complex.I := Complex.real_smul
+  rw [show ((-1 + Complex.I) - (-1 : ℂ)) = Complex.I from by ring, h]
+  ring
 public lemma lineMap_z₂line (t : ℝ) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂line t := by
-  simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₂line, add_left_comm, add_comm]
+  rw [AffineMap.lineMap_apply_module']
+  change (t : ℝ) • (Complex.I - ((-1) + Complex.I)) + (-1 + Complex.I) = -1 + (t : ℂ) + Complex.I
+  have h : (t : ℝ) • (1 : ℂ) = (t : ℂ) := by rw [Complex.real_smul]; ring
+  rw [show (Complex.I - ((-1 : ℂ) + Complex.I)) = (1 : ℂ) from by ring, h]
+  ring
 public lemma lineMap_z₃line (t : ℝ) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃line t := by
-  simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₃line, add_comm, mul_comm]
+  rw [AffineMap.lineMap_apply_module']
+  change (t : ℝ) • ((1 + Complex.I) - (1 : ℂ)) + (1 : ℂ) = 1 + Complex.I * (t : ℂ)
+  have h : (t : ℝ) • Complex.I = (t : ℂ) * Complex.I := Complex.real_smul
+  rw [show ((1 + Complex.I) - (1 : ℂ)) = Complex.I from by ring, h]
+  ring
 public lemma lineMap_z₄line (t : ℝ) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄line t := by
-  simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₄line, sub_eq_add_neg, add_left_comm,
-    add_comm]
+  rw [AffineMap.lineMap_apply_module']
+  change (t : ℝ) • (Complex.I - (1 + Complex.I)) + (1 + Complex.I) = 1 - (t : ℂ) + Complex.I
+  have h : (t : ℝ) • (-1 : ℂ) = -(t : ℂ) := by rw [Complex.real_smul]; ring
+  rw [show (Complex.I - ((1 : ℂ) + Complex.I)) = (-1 : ℂ) from by ring, h]
+  ring
 
 public lemma dir_z₁line : ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
 public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
@@ -157,10 +172,20 @@ public lemma convex_wedgeSet : Convex ℝ wedgeSet := by
       simpa using convex_halfSpace_gt (f := fun z : ℂ => z.im) (.mk add_im smul_im) (0 : ℝ)).inter
     ((convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im)
         (.mk (fun z w => by simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm])
-          (fun c z => by simp [sub_eq_add_neg, mul_add, mul_comm])) (1 : ℝ)).inter
+          (fun c z => by
+            have h1 : (c • z).re = c * z.re := by
+              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
+            have h2 : (c • z).im = c * z.im := by
+              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
+            rw [h1, h2, smul_eq_mul, mul_sub])) (1 : ℝ)).inter
       (convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im)
         (.mk (fun z w => by simp [add_left_comm, add_comm])
-          (fun c z => by simp [mul_add, mul_comm])) (1 : ℝ)))
+          (fun c z => by
+            have h1 : (c • z).re = c * z.re := by
+              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
+            have h2 : (c • z).im = c * z.im := by
+              rw [show c • z = (c : ℂ) * z from Complex.real_smul]; simp
+            rw [h1, h2, smul_eq_mul, mul_add])) (1 : ℝ)))
 
 public lemma wedgeSet_subset_upperHalfPlaneSet :
     wedgeSet ⊆ UpperHalfPlane.upperHalfPlaneSet := fun _ hz => hz.1
