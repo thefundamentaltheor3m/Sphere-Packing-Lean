@@ -402,7 +402,7 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
       obtain ⟨u, hu1, hu2⟩ := aut_bound_on_comp (Set.image (Set.inclusion hK) univ) hKK2 k
       refine ⟨u, hu1, ?_⟩
       intro n s
-      apply hu2 n ⟨⟨s, by aesop⟩, by aesop⟩
+      apply hu2 n ⟨⟨s, hK s.2⟩, ⟨s, Set.mem_univ _, rfl⟩⟩
     intro n r
     apply diff_at_aux
 
@@ -448,7 +448,7 @@ theorem tsum_aexp_contDiffOn (k : ℕ) :
     obtain ⟨u, hu1, hu2⟩ := aut_bound_on_comp (Set.image (Set.inclusion hK1) univ) hKK2 m
     refine ⟨u, hu1, ?_⟩
     intro n s
-    have := hu2 n ⟨⟨s, by aesop⟩, by aesop⟩
+    have := hu2 n ⟨⟨s, hK1 s.2⟩, ⟨s, Set.mem_univ _, rfl⟩⟩
     apply le_trans _ this
     apply le_of_eq
     congr 1
