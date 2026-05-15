@@ -482,7 +482,7 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_thetaDeltaFun_slash
   }
   have thetaDelta_MF_IsCuspForm : IsCuspForm (Γ 1) 12 thetaDelta_MF := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]
+    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff]
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     -- Use the vanishing at `i∞`.
     exact IsZeroAtImInfty.cuspFunction_apply_zero thetaDeltaFun_tendsto_atImInfty
@@ -501,7 +501,17 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     apply Module.finrank_eq_of_rank_eq
     rw [LinearEquiv.rank_eq e]
     simp only [Int.reduceSub, Nat.cast_one]
-    exact ModularForm.levelOne_weight_zero_rank_one
+    -- Bridge `ModularForm Γ(1) 0` to `ModularForm 𝒮ℒ 0` via instance transport.
+    refine rank_eq_one (ModularForm.const 1) (by simp [DFunLike.ne_iff]) fun g ↦ ?_
+    have : ModularFormClass (ModularForm (Γ 1) 0) 𝒮ℒ 0 :=
+      CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
+    obtain ⟨c', hc'⟩ := ModularFormClass.levelOne_weight_zero_const (F := ModularForm (Γ 1) 0) g
+    refine ⟨c', ?_⟩
+    ext z
+    change c' • (ModularForm.const (1 : ℂ) : ModularForm _ 0) z = g z
+    have := congr_fun hc' z
+    simp only [Function.const_apply] at this
+    simp [ModularForm.const_apply, this]
   obtain ⟨c, hc⟩ :=
     (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr thetaDelta_CF
   -- Identify the scalar `c` by comparing the leading exponential decay at `i∞`.
