@@ -25,25 +25,20 @@ open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory interval
 
 noncomputable section
 
-/-- Bridge mathlib's `ModularForm.levelOne_weight_zero_rank_one` (over `𝒮ℒ`) to `Γ(1)`. -/
-private lemma levelOne_weight_zero_rank_one_Gamma :
-    Module.rank ℂ (ModularForm Γ(1) (0 : ℤ)) = 1 := by
-  refine rank_eq_one (ModularForm.const 1) (by simp [DFunLike.ne_iff]) fun g ↦ ?_
-  have : ModularFormClass (ModularForm Γ(1) 0) 𝒮ℒ 0 :=
-    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
-  obtain ⟨c', hc'⟩ := ModularFormClass.levelOne_weight_zero_const (F := ModularForm Γ(1) 0) g
-  refine ⟨c', ?_⟩
-  ext z
-  change c' • (ModularForm.const (1 : ℂ) : ModularForm _ 0) z = g z
-  have := congr_fun hc' z
-  simp only [Function.const_apply] at this
-  simp [ModularForm.const_apply, this]
-
-lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
+private lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
+  have hrank : Module.rank ℂ (ModularForm Γ(1) (0 : ℤ)) = 1 := by
+    refine rank_eq_one (ModularForm.const 1) (by simp [DFunLike.ne_iff]) fun g ↦ ?_
+    have : ModularFormClass (ModularForm Γ(1) 0) 𝒮ℒ 0 :=
+      CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
+    obtain ⟨c', hc'⟩ := ModularFormClass.levelOne_weight_zero_const (F := ModularForm Γ(1) 0) g
+    refine ⟨c', ?_⟩
+    ext z
+    have := congr_fun hc' z
+    simp only [Function.const_apply] at this
+    simp [ModularForm.const_apply, this]
   have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 :=
     Module.finrank_eq_of_rank_eq <| by
-      simpa [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)] using
-        levelOne_weight_zero_rank_one_Gamma
+      simpa [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)] using hrank
   exact (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr Delta_E4_E6_aux
 
 /-- The discriminant cusp form as a scaled version of `E₄^3 - E₆^2`. -/

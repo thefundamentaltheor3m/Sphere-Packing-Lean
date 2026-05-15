@@ -1,6 +1,5 @@
 module
 public import SpherePacking.ModularForms.SerreDerivativeSlash
-public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section

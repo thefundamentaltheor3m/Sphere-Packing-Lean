@@ -1,7 +1,6 @@
 module
 public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.Tactic.FunPropExt
