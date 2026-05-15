@@ -672,8 +672,7 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
     calc
       ‖(z₂line t + 1) ^ 2‖ = ‖(z₂line t + 1)‖ ^ 2 := by simp [norm_pow]
       _ = Complex.normSq (z₂line t + 1) := by simp [Complex.sq_norm]
-      _ = Complex.normSq ((t : ℂ) + I) := by
-        simpa using congrArg Complex.normSq (z₂line_add_one (t := t))
+      _ = Complex.normSq ((t : ℂ) + I) := congrArg Complex.normSq (z₂line_add_one (t := t))
       _ = t ^ 2 + 1 := by simpa [mul_comm] using (Complex.normSq_add_mul_I t (1 : ℝ))
       _ ≤ 2 := by linarith
   have hexp (x : ℝ⁸) :
