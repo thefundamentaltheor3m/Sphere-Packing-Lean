@@ -2316,10 +2316,9 @@ public theorem analyticOnNhd_integral_base_exp
     let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
     let F : ℂ → ℝ → ℂ := fun z t => base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))
     let F' : ℂ → ℝ → ℂ := fun z t => (-(π : ℂ) * (t : ℂ)) * F z t
-    have hF_meas : ∀ z : ℂ, AEStronglyMeasurable (F z) μ := fun z =>
-      (hbase_cont.aestronglyMeasurable measurableSet_Ioi).mul
-        ((by fun_prop : Continuous fun t : ℝ =>
-          Complex.exp (-(π : ℂ) * z * (t : ℂ))).aestronglyMeasurable)
+    have hbase_meas : AEStronglyMeasurable base μ :=
+      hbase_cont.aestronglyMeasurable measurableSet_Ioi
+    have hF_meas : ∀ z : ℂ, AEStronglyMeasurable (F z) μ := fun _ => by fun_prop
     have hBase_ε2 :
         Integrable (fun t : ℝ => base t * (Real.exp (-π * (ε / 2) * t) : ℂ)) μ := by
       simpa [μ, IntegrableOn] using (hbase_int (ε / 2) (by positivity))
@@ -2391,8 +2390,7 @@ public theorem analyticOnNhd_integral_base_exp
         (s := Metric.ball u ε) (Metric.ball_mem_nhds u hε) (x₀ := u)
         (F := F) (F' := F') (bound := bound)
         (hF_meas := Filter.Eventually.of_forall hF_meas) (hF_int := hF_int)
-        (hF'_meas := ((by fun_prop : Continuous fun t : ℝ =>
-            (-(π : ℂ) * (t : ℂ))).aestronglyMeasurable).mul (hF_meas u))
+        (hF'_meas := (by have := hF_meas u; fun_prop))
         (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2
     exact hDeriv.differentiableAt.differentiableWithinAt
   exact hDiff.analyticOnNhd rightHalfPlane_isOpen
