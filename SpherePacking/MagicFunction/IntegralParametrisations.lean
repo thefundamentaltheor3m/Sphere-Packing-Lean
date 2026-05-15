@@ -162,34 +162,24 @@ public lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := b
 
 /-! ### Continuity of `z₁'`--`z₅'` -/
 
-private lemma continuous_coe_Icc_toComplex :
-    Continuous (fun t : Icc (0 : ℝ) 1 => (t : ℂ)) :=
-  Complex.continuous_ofReal.comp continuous_subtype_val
-
 /-- The extension `z₁' : ℝ → ℂ` is continuous. -/
 public lemma continuous_z₁' : Continuous z₁' :=
-  Continuous.Icc_extend' (f := z₁) <| by
-    simpa [z₁] using continuous_const.add (continuous_const.mul continuous_coe_Icc_toComplex)
+  Continuous.Icc_extend' (f := z₁) <| by unfold z₁; fun_prop
 
 /-- The extension `z₂' : ℝ → ℂ` is continuous. -/
 public lemma continuous_z₂' : Continuous z₂' :=
-  Continuous.Icc_extend' (f := z₂) <| by
-    simpa [z₂] using (continuous_const.add continuous_coe_Icc_toComplex).add continuous_const
+  Continuous.Icc_extend' (f := z₂) <| by unfold z₂; fun_prop
 
 /-- The extension `z₃' : ℝ → ℂ` is continuous. -/
 public lemma continuous_z₃' : Continuous z₃' :=
-  Continuous.Icc_extend' (f := z₃) <| by
-    simpa [z₃] using continuous_const.add (continuous_const.mul continuous_coe_Icc_toComplex)
+  Continuous.Icc_extend' (f := z₃) <| by unfold z₃; fun_prop
 
 /-- The extension `z₄' : ℝ → ℂ` is continuous. -/
 public lemma continuous_z₄' : Continuous z₄' :=
-  Continuous.Icc_extend' (f := z₄) <| by
-    simpa [z₄, sub_eq_add_neg, add_assoc] using
-      (continuous_const.sub continuous_coe_Icc_toComplex).add continuous_const
+  Continuous.Icc_extend' (f := z₄) <| by unfold z₄; fun_prop
 
 /-- The extension `z₅' : ℝ → ℂ` is continuous. -/
 public lemma continuous_z₅' : Continuous z₅' :=
-  Continuous.Icc_extend' (f := z₅) <| by
-    simpa [z₅] using continuous_const.mul continuous_coe_Icc_toComplex
+  Continuous.Icc_extend' (f := z₅) <| by unfold z₅; fun_prop
 
 end MagicFunction.Parametrisations
