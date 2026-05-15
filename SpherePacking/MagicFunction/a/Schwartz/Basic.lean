@@ -254,8 +254,7 @@ public theorem φ₂''_holo : Holo(φ₂'') := by
 
 /-- The integrand `Φ₁' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₁'_holo : Holo(Φ₁' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
+  refine DifferentiableOn.mul ?_ (by fun_prop)
   refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.add_const 1).pow 2
   refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.add_const 1)
     fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)) ?_
@@ -269,8 +268,7 @@ public theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
 
 /-- The integrand `Φ₃' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₃'_holo : Holo(Φ₃' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
+  refine DifferentiableOn.mul ?_ (by fun_prop)
   refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.sub_const 1).pow 2
   refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.sub_const 1)
     fun z hz h0 => (ne_of_gt hz) (by simpa using congrArg Complex.im h0)) ?_
