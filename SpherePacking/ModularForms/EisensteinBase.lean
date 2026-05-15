@@ -20,7 +20,8 @@ imaginary-axis lemmas needed later in the sphere packing argument.
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 open scoped ArithmeticFunction.sigma
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex Real MatrixGroups
 
 noncomputable section
@@ -132,7 +133,8 @@ theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n
   have hqτ : 𝕢 (n : ℝ) (τ : ℂ) = q := by
     simpa [τ] using Function.Periodic.qParam_right_inv hn0 hq1
   have hcusp : cuspFunction n f q = f τ := by
-    simpa [hqτ] using eq_cuspFunction f τ (by simp) hn0
+    simpa [hqτ] using SlashInvariantFormClass.eq_cuspFunction (f := f) (h := (n : ℝ))
+      τ (by simp [CongruenceSubgroup.strictPeriods_Gamma]) hn0
   simpa [hqτ, hcusp] using hf τ
 
 theorem summable_zero_pow {G} [NormedField G] (f : ℕ → G) : Summable (fun m ↦ f m * 0 ^ m) :=
@@ -242,9 +244,17 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
         ContinuousMultilinearMap.mkPiAlgebraFin_apply]
     exact hs'
   have h3 : HasFPowerSeriesAt (cuspFunction n f) qq 0 := H2.hasFPowerSeriesAt
+  have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
+  have hΓ : (n : ℝ) ∈ (Γ(n) : Subgroup (GL (Fin 2) ℝ)).strictPeriods := by
+    simp [CongruenceSubgroup.strictPeriods_Gamma]
+  have hper := SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hΓ
+  have : Fact (IsCusp OnePoint.infty Γ(n)) :=
+    ⟨_root_.Subgroup.isCusp_of_mem_strictPeriods hn_pos hΓ⟩
   have h4 : HasFPowerSeriesAt (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 :=
-    (ModularFormClass.hasFPowerSeries_cuspFunction (h := n) (f := f)
-        (by have := hn.1; positivity) (by simp)).hasFPowerSeriesAt
+    (UpperHalfPlane.hasFPowerSeries_cuspFunction (f := f) hn_pos
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hΓ)
+      (hasSum_qExpansion hn_pos hper (holo f)
+        (ModularFormClass.bdd_at_infty (f := f)))).hasFPowerSeriesAt
   have := HasFPowerSeriesAt.eq_formalMultilinearSeries h3 h4
   rw [@FormalMultilinearSeries.ext_iff] at this
   have h5 := this m
