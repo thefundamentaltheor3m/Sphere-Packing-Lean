@@ -1,15 +1,20 @@
+/-
+Copyright (c) 2025 Sphere Packing in Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing in Lean contributors
+-/
 module
-public import SpherePacking.ModularForms.JacobiTheta
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.ModularForms.ResToImagAxis
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
+import Mathlib.Topology.Algebra.InfiniteSum.NatInt
+import Mathlib.Topology.Order.Compact
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.ModularFormsHelpers
-
-import Mathlib.Topology.Algebra.InfiniteSum.NatInt
-import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
-import Mathlib.Topology.Order.Compact
 
 /-!
 # Definitions and bounds for the `ψ`-functions
@@ -71,15 +76,15 @@ lemma slashS'' (z : ℍ) (F : ℍ → ℂ) :
     F (S • z) = (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, S, denom, zpow_two, pow_two, UpperHalfPlane.ne_zero z, mul_assoc]
 
-lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
+lemma slashT (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] T) z = F (T • z) := by
   simp [SL_slash_apply, T, denom]
 
-lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) = (F) (T • z) := by
+lemma slashT' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] T) z = F (T • z) := by
   simp [SL_slash_apply, T, denom]
 
 /-- Slash-action formula for `S * T` in weight `-2`. -/
 public lemma slashST' (z : ℍ) (F : ℍ → ℂ) :
-    ((F) ∣[(-2 : ℤ)] (S * T)) (z) = F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
+    (F ∣[(-2 : ℤ)] (S * T)) z = F ((S * T) • z) * (z + 1 : ℂ) ^ (2 : ℕ) := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom, sl_moeb, zpow_two, pow_two]
 
 lemma slashST'' (z : ℍ) (F : ℍ → ℂ) :
@@ -132,8 +137,6 @@ public lemma ψT_eq :
     H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 
--- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
--- here is the description that can be found in Maryna's paper.
 /-- A first explicit formula for `ψS` in terms of `H₂`, `H₃`, and `H₄`. -/
 public lemma ψS_eq' :
     ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
@@ -150,8 +153,7 @@ public lemma ψS_eq' :
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/
 public lemma ψS_eq :
     ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H₄_MF) / (H₃_MF ^ 2)) := by
-  rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _, ← sub_neg_eq_add,
-    ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
+  rw [ψS_eq']; ext z; simp [sub_eq_add_neg]; ring
 
 /-- Decomposition of `ψI` as the sum `ψT + ψS`. -/
 public lemma ψI_eq_add_ψT_ψS : ψI = ψT + ψS := by
@@ -169,7 +171,7 @@ public lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
   rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
     H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action, H₄_T_action]
-  simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
+  simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (-H₂ z) (H₄ z), sub_eq_add_neg]
 
 /-- Modular relation: `ψS ∣[-2] S = ψI`. -/
 public lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
@@ -209,8 +211,6 @@ public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
 
 end rels
 
-/-! ## Relations between `ψT'` and `ψI'` along parametrisations -/
-
 namespace MagicFunction.b.PsiParamRelations
 
 open Set MagicFunction.Parametrisations
@@ -232,9 +232,9 @@ public lemma ψT'_z₁'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     have hz1 : 0 < (z₁' t).im := im_z₁'_pos (t := t) htIoc
     have hz5 : 0 < (z₅' t).im := im_z₅'_pos (t := t) htIoc
     refine ψT'_eq_ψI'_of_ψT_eq_ψI hz1 hz5 ?_
-    simpa [show ((1 : ℝ) +ᵥ (⟨z₁' t, hz1⟩ : ℍ) : ℍ) = ⟨z₅' t, hz5⟩ from by
-      ext1; simp [z₁'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht,
-        add_left_comm, add_comm]] using (show ψT (⟨z₁' t, hz1⟩ : ℍ) = ψI ((1 : ℝ) +ᵥ ⟨z₁' t, hz1⟩) by
+    have heq : ((1 : ℝ) +ᵥ (⟨z₁' t, hz1⟩ : ℍ) : ℍ) = ⟨z₅' t, hz5⟩ := by
+      ext1; simp [z₁'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht, add_left_comm, add_comm]
+    simpa [heq] using (show ψT (⟨z₁' t, hz1⟩ : ℍ) = ψI ((1 : ℝ) +ᵥ ⟨z₁' t, hz1⟩) by
       simp [ψT, modular_slash_T_apply])
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`.
@@ -255,12 +255,6 @@ public lemma ψT'_z₃'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
         simpa [modular_slash_T_apply] using congrFun ψT_slash_T (⟨z₅' t, hz5⟩ : ℍ))
 
 end MagicFunction.b.PsiParamRelations
-
-/-! ## Defining integrals for `b`
-
-The six contour integrals `J₁'`-`J₆'` used to build the magic function `b`. The prime indicates
-the radial profile as a function of the real parameter `x = ‖v‖^2`; the unprimed versions
-`J₁`-`J₆` are the induced functions on `EuclideanSpace ℝ (Fin 8)`. -/
 
 noncomputable section bDefs
 
@@ -312,10 +306,6 @@ namespace MagicFunction.b.PsiBounds
 open scoped Topology UpperHalfPlane Manifold
 open Complex Real Filter Topology UpperHalfPlane Set
 
-noncomputable section
-
-/-! ## Algebraic factorization of `ψS` -/
-
 /-- Factorization of `ψS` in terms of the Jacobi theta functions `H₂`, `H₃`, and `H₄`. -/
 public lemma ψS_apply_eq_factor (z : ℍ) :
     ψS z =
@@ -330,10 +320,6 @@ public lemma ψS_apply_eq_factor (z : ℍ) :
     simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_eq']
   field_simp [H₃_ne_zero z, H₄_ne_zero z]
   simp [hJ]; ring_nf
-
-end
-
-/-! ## Continuity and bounds for `ψS` on the imaginary axis -/
 
 /-- Continuity of the modular function `ψS`. -/
 public lemma continuous_ψS : Continuous ψS := by
@@ -526,8 +512,6 @@ end MagicFunction
 
 namespace MagicFunction.b.PsiBounds.PsiExpBounds
 
-noncomputable section
-
 open scoped Topology UpperHalfPlane
 open Complex Real Filter Topology UpperHalfPlane Set HurwitzKernelBounds
 
@@ -599,16 +583,14 @@ public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
     _ = (Cθ ^ 4) * rexp (-π * t) := by
       rw [mul_pow, ← Real.exp_nat_mul, show (4 : ℕ) * (-π * (t / 4)) = -π * t by push_cast; ring]
 
-/-- Exponential decay bound for `ψS.resToImagAxis` on `Ici (1 : ℝ)`. -/
-public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
-    ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ C * rexp (-π * t) := by
-  obtain ⟨CH2, hH2⟩ := exists_bound_norm_H₂_resToImagAxis_exp_Ici_one
-  let CH2' : ℝ := max CH2 0
-  have hCH2' : 0 ≤ CH2' := le_max_right _ _
-  have hH2' : ∀ t : ℝ, 1 ≤ t → ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := fun t ht =>
-    le_mul_of_le_mul_of_nonneg_right (hH2 t ht) (le_max_left _ _) (by positivity)
-  -- `H₃` and `H₄` converge to `1` along the imaginary axis, so their norms are bounded above
-  -- and below away from `0` on `t ≥ 1` by compactness on an initial segment.
+/-- On `[1, ∞)` there exist positive lower bounds for `‖H₃.resToImagAxis‖` and
+`‖H₄.resToImagAxis‖`, and an upper bound for `‖H₄.resToImagAxis‖`. The lower
+bounds come from compactness on `[1, T]` and proximity to `1` for large `t`. -/
+private lemma exists_H3_H4_bounds_Ici_one :
+    ∃ c3 c4 M4 : ℝ, 0 < c3 ∧ 0 < c4 ∧ 2 ≤ M4 ∧
+      (∀ t : ℝ, 1 ≤ t → c3 ≤ ‖H₃.resToImagAxis t‖) ∧
+      (∀ t : ℝ, 1 ≤ t → c4 ≤ ‖H₄.resToImagAxis t‖) ∧
+      (∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4) := by
   have hEv (H : ℍ → ℂ) (hH : Tendsto (fun z : ℍ => H z) atImInfty (𝓝 (1 : ℂ))) :
       ∀ᶠ t in atTop, ‖H.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) :=
     (tendsto_sub_nhds_zero_iff.mpr (by simpa using
@@ -645,21 +627,22 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   obtain ⟨M4Icc, hM4Icc⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc
     (g := fun t : ℝ => ‖H₄.resToImagAxis t‖) (hab := le_max_right _ _)
     (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
-  let M4 : ℝ := max M4Icc 2
   have half_le_norm {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) : (1 / 2 : ℝ) ≤ ‖x‖ := by
     have := (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' (1 : ℂ) x)
     simp [norm_sub_rev] at this; linarith
-  have hH3_lower : ∀ t : ℝ, 1 ≤ t → min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht ↦ by
+  refine ⟨min m3 (1 / 2 : ℝ), min m4 (1 / 2 : ℝ), max M4Icc 2,
+    lt_min hm3 (by norm_num), lt_min hm4 (by norm_num), le_max_right _ _, ?_, ?_, ?_⟩
+  · intro t ht
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm3le t ⟨ht, htT⟩)
     · exact inf_le_of_right_le
         (half_le_norm (hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).1)
-  have hH4_lower : ∀ t : ℝ, 1 ≤ t → min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ := fun t ht ↦ by
+  · intro t ht
     by_cases htT : t ≤ T
     · exact inf_le_of_left_le (hm4le t ⟨ht, htT⟩)
     · exact inf_le_of_right_le
         (half_le_norm (hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).2)
-  have hH4_upper : ∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4 := fun t ht ↦ by
+  · intro t ht
     by_cases htT : t ≤ T
     · exact (hM4Icc t ⟨ht, htT⟩).trans (le_max_left _ _)
     · have hx : ‖H₄.resToImagAxis t‖ ≤ ‖H₄.resToImagAxis t - (1 : ℂ)‖ + 1 := by
@@ -668,10 +651,18 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       have h32 : ‖H₄.resToImagAxis t‖ ≤ (3 / 2 : ℝ) := by
         linarith [(hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).2]
       exact h32.trans ((by norm_num : (3 / 2 : ℝ) ≤ 2).trans (le_max_right _ _))
-  -- Bound the polynomial factor in `ψS_apply_eq_factor`.
+
+/-- Exponential decay bound for `ψS.resToImagAxis` on `Ici (1 : ℝ)`. -/
+public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
+    ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ C * rexp (-π * t) := by
+  obtain ⟨CH2, hH2⟩ := exists_bound_norm_H₂_resToImagAxis_exp_Ici_one
+  let CH2' : ℝ := max CH2 0
+  have hCH2' : 0 ≤ CH2' := le_max_right _ _
+  have hH2' : ∀ t : ℝ, 1 ≤ t → ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := fun t ht =>
+    le_mul_of_le_mul_of_nonneg_right (hH2 t ht) (le_max_left _ _) (by positivity)
+  obtain ⟨c3, c4, M4, hc3, hc4, _hM4ge, hH3_lower, hH4_lower, hH4_upper⟩ :=
+    exists_H3_H4_bounds_Ici_one
   let P : ℝ := 2 * (CH2' ^ 2) + 5 * CH2' * M4 + 5 * (M4 ^ 2)
-  let c3 : ℝ := min m3 (1 / 2 : ℝ); let c4 : ℝ := min m4 (1 / 2 : ℝ)
-  have hc3 : 0 < c3 := lt_min hm3 (by norm_num); have hc4 : 0 < c4 := lt_min hm4 (by norm_num)
   refine ⟨(128 : ℝ) * P * ((c3 ^ 2 * c4 ^ 2)⁻¹) * CH2', fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := (hH2' t ht).trans <| by
@@ -692,7 +683,6 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
         (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2) (norm_nonneg (5 : ℂ))
     exact norm_add_le_of_le ((norm_add_le _ _).trans (by linarith [h1, h2])) h3
-  -- Now bound `ψS.resToImagAxis t` using `ψS_apply_eq_factor`.
   let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
   have hψS : ‖ψS.resToImagAxis t‖ = ‖(-128 : ℂ) *
       (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
@@ -706,9 +696,9 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hHz3 : ResToImagAxis H₃ t = H₃ z := by simp [ResToImagAxis, ht0, z]
   have hHz4 : ResToImagAxis H₄ t = H₄ z := by simp [ResToImagAxis, ht0, z]
   have hden_lower : c3 ≤ ‖H₃ z‖ := by
-    simpa [hHz3] using (show c3 ≤ ‖ResToImagAxis H₃ t‖ from hH3_lower t ht)
+    simpa [hHz3, Function.resToImagAxis] using hH3_lower t ht
   have hden_lower4 : c4 ≤ ‖H₄ z‖ := by
-    simpa [hHz4] using (show c4 ≤ ‖ResToImagAxis H₄ t‖ from hH4_lower t ht)
+    simpa [hHz4, Function.resToImagAxis] using hH4_lower t ht
   have hinv : ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹ := by
     have hpos : 0 < ‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖ :=
       norm_pos_iff.2 (mul_ne_zero (pow_ne_zero 2 (H₃_ne_zero z)) (pow_ne_zero 2 (H₄_ne_zero z)))
@@ -745,7 +735,5 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
             mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hH2z hP0) (by positivity)
           simpa [mul_assoc] using mul_le_mul_of_nonneg_left h2 (by positivity : (0:ℝ) ≤ 128)
     _ = ((128 : ℝ) * P * (c3 ^ 2 * c4 ^ 2)⁻¹ * CH2') * rexp (-π * t) := by ring
-
-end
 
 end MagicFunction.b.PsiBounds.PsiExpBounds
