@@ -463,34 +463,6 @@ public theorem E4E6_coeff_zero_eq_zero :
   let G := DirectSum.of _ 6 E₆
   cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
 
-lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
-     (fun y ↦ (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24) (Metric.ball 0 (2⁻¹ : ℝ)) := by
-  rw [cuspFunction]
-  intro y hy
-  by_cases hyn0 : y = 0
-  · rw [hyn0]
-    simpa [cuspFunction] using
-      (CuspFormClass.cuspFunction_apply_zero (h := 1) Delta zero_lt_one (by simp))
-  · rw [Function.Periodic.cuspFunction_eq_of_nonzero]
-    · simp only [comp_apply]
-      have hy' : ‖y‖ < 1 := lt_trans (by simpa [mem_ball, dist_zero_right] using hy) (by norm_num)
-      have hz := Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := 1)
-        Real.zero_lt_one hy' hyn0
-      rw [ofComplex_apply_of_im_pos hz, Delta_apply, Δ_eq_qProd]
-      have hyq : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
-        simpa [Periodic.qParam] using
-          Function.Periodic.qParam_right_inv (h := (1 : ℝ)) (by simp) hyn0
-      rw [hyq]
-      congr
-      ext n
-      congr
-      have hpow : cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
-          (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n + 1) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm, Nat.cast_add_one] using
-          Complex.exp_nat_mul (2 * ↑π * Complex.I * Periodic.invQParam 1 y) (n + 1)
-      rw [hpow, hyq]
-    exact hyn0
-
 /-- Uniform convergence of finite products to the infinite product `∏' (1 - y^(i+1))`. -/
 public lemma tendstoLocallyUniformlyOn_prod_range_one_sub_pow :
     TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
@@ -543,20 +515,8 @@ theorem diffwithinat_prod_1 :
 
 
 /-- The first nontrivial `q`-coefficient of `Delta` is `1`. -/
-public lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 := by
-  rw [qExpansion_coeff]
-  simp only [Nat.factorial_one, Nat.cast_one, inv_one, iteratedDeriv_one, one_mul]
-  rw [← derivWithin_of_isOpen (s := Metric.ball 0 (2⁻¹ : ℝ)) (isOpen_ball) (by simp) ]
-  rw [derivWithin_congr Delta_cuspFuntion_eq]
-  · rw [derivWithin_fun_mul]
-    · have huniq : UniqueDiffWithinAt ℂ (Metric.ball 0 (2⁻¹ : ℝ)) (0 : ℂ) :=
-        isOpen_ball.uniqueDiffWithinAt (mem_ball_self (by norm_num))
-      simp [huniq, derivWithin_id']
-    · exact differentiableWithinAt_id'
-    apply diffwithinat_prod_1
-  simp only [ne_eq, Nat.add_eq_zero_iff, one_ne_zero, and_false, not_false_eq_true, zero_pow,
-    sub_zero, one_pow, tprod_one, mul_one]
-  exact CuspFormClass.cuspFunction_apply_zero (h := 1) Delta zero_lt_one (by simp)
+public lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 :=
+  ModularForm.discriminant_qExpansion_coeff_one
 
 variable {α β γ : Type*}
 
