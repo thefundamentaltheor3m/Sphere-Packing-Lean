@@ -18,6 +18,7 @@ open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap ModularForm
 open ModularFormClass
 open Metric Filter Function
+open scoped Derivative
 
 /-! ### Helper lemmas for D_slash
 
@@ -96,7 +97,7 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
         fun z : ℍ =>
           (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
   ext z
-  unfold D
+  unfold Derivative.normalizedDerivOfComplex
   simp only [Pi.sub_apply]
   -- Key facts about denom and determinant (used multiple times below)
   have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z

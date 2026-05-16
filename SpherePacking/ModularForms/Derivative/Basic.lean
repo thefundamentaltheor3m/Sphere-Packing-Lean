@@ -8,6 +8,7 @@ import Mathlib.Analysis.Complex.Liouville
 import SpherePacking.ModularForms.Lv1Lv2Identities
 import SpherePacking.Tactic.NormNumI
 public import Mathlib.NumberTheory.ModularForms.SlashActions
+public import Mathlib.NumberTheory.ModularForms.Derivative
 public import SpherePacking.ForMathlib.Cusps
 
 @[expose] public section
@@ -15,10 +16,10 @@ public import SpherePacking.ForMathlib.Cusps
 /-!
 # The derivative operator `D` on modular forms (fundamentals)
 
-This file defines the derivative operator `D F z = (2πi)⁻¹ · deriv(F ∘ ofComplex) z` on functions
-`ℍ → ℂ`, and establishes its basic algebraic properties (linearity, Leibniz rule), the termwise
-differentiation of q-series (Lemma 6.45), and Cauchy-style estimates giving bounded-at-infinity
-consequences for the D-derivative of a bounded holomorphic function.
+This file re-exports the derivative operator `D F z = (2πi)⁻¹ · deriv(F ∘ ofComplex) z` and its
+basic algebraic properties from mathlib's `Mathlib.NumberTheory.ModularForms.Derivative`, then
+adds the termwise differentiation of q-series (Lemma 6.45) and Cauchy-style estimates giving
+bounded-at-infinity consequences for the D-derivative of a bounded holomorphic function.
 -/
 
 open scoped ModularForm MatrixGroups Manifold Topology BigOperators
@@ -27,13 +28,7 @@ open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap ModularForm
 open ModularFormClass
 open Metric Filter Function
-
-/-!
-Definition of (Serre) derivative of modular forms.
-Prove Ramanujan's formulas on derivatives of Eisenstein series.
--/
-@[expose] public noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ :=
-  fun (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
+open scoped Derivative
 
 /-- Bridge lemma: MDifferentiability on `ℍ` gives differentiability of `F ∘ ofComplex`. -/
 public lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
@@ -41,91 +36,43 @@ public lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
   DifferentiableAt ℂ (F ∘ ofComplex) ↑z :=
   mdifferentiableAt_iff.mp h
 
-/--
-The converse direction: `DifferentiableAt` on ℂ implies `MDifferentiableAt` on ℍ.
--/
-public lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
-  (h : DifferentiableAt ℂ G ↑z) :
-  MDiffAt (G ∘ (↑) : ℍ → ℂ) z := by
-  rw [mdifferentiableAt_iff]
-  refine h.congr_of_eventuallyEq <| Filter.eventuallyEq_of_mem (isOpen_upperHalfPlaneSet.mem_nhds
-    z.im_pos) (by intro w hw; simp [Function.comp, ofComplex_apply_of_im_pos hw])
-
-/--
-The derivative operator `D` preserves MDifferentiability.
-If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
--/
-public theorem D_differentiable {F : ℍ → ℂ} (hF : MDiff F) : MDiff (D F) := fun z =>
-  MDifferentiableAt.mul mdifferentiableAt_const <| DifferentiableAt_MDifferentiableAt <|
-    ((UpperHalfPlane.mdifferentiable_iff.mp hF).deriv isOpen_upperHalfPlaneSet).differentiableAt
-      (isOpen_upperHalfPlaneSet.mem_nhds z.im_pos)
+/-- The derivative operator `D` preserves MDifferentiability.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_mdifferentiable`. -/
+public theorem D_differentiable {F : ℍ → ℂ} (hF : MDiff F) : MDiff (D F) :=
+  Derivative.normalizedDerivOfComplex_mdifferentiable hF
 
 /-- MDifferentiability of `E₂`.
-TODO: Move this to E2.lean. -/
-public theorem E₂_holo' : MDiff E₂ := by
-  rw [UpperHalfPlane.mdifferentiable_iff]
-  have hη : DifferentiableOn ℂ η {z : ℂ | 0 < z.im} := by
-    intro z hz
-    have hz' : DifferentiableAt ℂ η z :=
-      ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz
-    exact hz'.differentiableWithinAt
-  have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
-    (hη.deriv isOpen_upperHalfPlaneSet).div hη fun z hz =>
-      ModularForm.eta_ne_zero (z := z) hz
-  exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
-      show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ from
-        ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩]
-    field_simp [Real.pi_ne_zero]
+Re-exports mathlib's `E2_mdifferentiable`. -/
+public theorem E₂_holo' : MDiff E₂ := E2_mdifferentiable
 
-/--
-Basic properties of derivatives: linearity, Leibniz rule, etc.
--/
-@[simp]
+/-- Compatibility of `D` with addition.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_add`. -/
 public theorem D_add (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
-    D (F + G) = D F + D G := by
-  ext z
-  simpa [D, mul_add] using congrArg ((2 * π * I)⁻¹ * ·)
-    (deriv_add (MDifferentiableAt_DifferentiableAt (hF z))
-      (MDifferentiableAt_DifferentiableAt (hG z)))
+    D (F + G) = D F + D G :=
+  Derivative.normalizedDerivOfComplex_add F G hF hG
 
+/-- Compatibility of `D` with negation.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_neg`. -/
+public theorem D_neg (F : ℍ → ℂ) (hF : MDiff F) : D (-F) = -D F :=
+  Derivative.normalizedDerivOfComplex_neg F hF
 
-/-- Compatibility of `D` with negation. -/
-@[simp]
-public theorem D_neg (F : ℍ → ℂ) (hF : MDiff F) : D (-F) = -D F := by
-  ext z
-  have hderiv : deriv ((-F) ∘ ofComplex) (z : ℂ) = -deriv (F ∘ ofComplex) (z : ℂ) :=
-    (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt.neg.deriv
-  simp [D, hderiv, mul_assoc]
+/-- Compatibility of `D` with subtraction.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_sub`. -/
+public theorem D_sub (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
+    D (F - G) = D F - D G :=
+  Derivative.normalizedDerivOfComplex_sub F G hF hG
 
+/-- Compatibility of `D` with scalar multiplication.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_smul`. -/
+public theorem D_smul (c : ℂ) (F : ℍ → ℂ) (hF : MDiff F) :
+    D (c • F) = c • D F :=
+  Derivative.normalizedDerivOfComplex_smul c F hF
 
-/-- Compatibility of `D` with subtraction. -/
-@[simp]
-public theorem D_sub (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
-    : D (F - G) = D F - D G := by
-  simpa [sub_eq_add_neg, D_neg (F := G) hG] using D_add F (-G) hF hG.neg
-
-
-/-- Compatibility of `D` with scalar multiplication. -/
-@[simp]
-public theorem D_smul (c : ℂ) (F : ℍ → ℂ) : D (c • F) = c • D F := by
-  ext z
-  have hderiv : deriv ((c • F) ∘ ofComplex) (z : ℂ) = c • deriv (F ∘ ofComplex) z := by
-    simpa [Pi.smul_apply] using (deriv_const_smul_field (x := (z : ℂ)) c (F ∘ ofComplex))
-  simp [D, hderiv, Pi.smul_apply, smul_eq_mul, mul_assoc, mul_left_comm, mul_comm]
-
-
-/-- Leibniz rule for `D`. -/
-@[simp]
-public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
-    : D (F * G) = D F * G + F * D G := by
-  ext z
-  have hderiv : deriv ((F * G) ∘ ofComplex) z =
-      deriv (F ∘ ofComplex) z * G z + F z * deriv (G ∘ ofComplex) z := by
-    simpa [Function.comp_apply, ofComplex_apply] using
-      deriv_mul (MDifferentiableAt_DifferentiableAt (hF z))
-        (MDifferentiableAt_DifferentiableAt (hG z))
-  simp [D, hderiv, mul_add, mul_assoc, mul_left_comm, mul_comm]
+/-- Leibniz rule for `D`.
+Re-exports mathlib's `Derivative.normalizedDerivOfComplex_mul`. -/
+public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
+    D (F * G) = D F * G + F * D G :=
+  Derivative.normalizedDerivOfComplex_mul F G hF hG
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
@@ -157,7 +104,7 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
           cexp (2 * π * I * n * k.1)‖ ≤ u n) :
     D (fun w => ∑' n, a n * cexp (2 * π * I * n * w)) z =
       ∑' n : ℕ, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-  simp only [D]
+  simp only [Derivative.normalizedDerivOfComplex]
   -- Each term is differentiable
   have hf_diff : ∀ n (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ
       (fun w => a n * cexp (2 * π * I * n * w)) r := fun n r =>
@@ -251,7 +198,8 @@ public lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
     (hr : 0 < r) (hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) r))
     (hbdd : ∀ w ∈ Metric.sphere (z : ℂ) r, ‖(f ∘ ofComplex) w‖ ≤ M) :
     ‖D f z‖ ≤ M / (2 * π * r) := calc ‖D f z‖
-  _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by simp [D, abs_of_pos Real.pi_pos]
+  _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by
+        simp [Derivative.normalizedDerivOfComplex, abs_of_pos Real.pi_pos]
   _ ≤ (2 * π)⁻¹ * (M / r) := by
         gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
   _ = M / (2 * π * r) := by ring

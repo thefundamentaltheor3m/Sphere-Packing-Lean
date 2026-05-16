@@ -23,6 +23,7 @@ open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMa
 open ModularForm hiding E₄ E₆
 open ModularFormClass
 open Metric Filter Function
+open scoped Derivative
 
 /-!
 ## Ramanujan formulas (level 1)
@@ -51,7 +52,7 @@ private lemma tendsto_serre_D_of_bounded_tendsto_one {f : ℍ → ℂ} (k : ℂ)
   have hterm :
       Tendsto (fun z : ℍ => k * 12⁻¹ * E₂ z * f z) atImInfty (𝓝 (k * 12⁻¹)) := by
     simpa [mul_assoc, mul_one, one_mul] using (hconst.mul hE₂).mul h1
-  simpa [serre_D, mul_assoc] using (hD.sub hterm)
+  simpa [serre_D_apply, mul_assoc] using (hD.sub hterm)
 
 private lemma tendsto_E₄_atImInfty : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) := by
   simpa using (SpherePacking.ModularForms.tendsto_E₄_atImInfty :
@@ -171,7 +172,8 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
         (differentiableAt_denom (γ := γ) (z : ℂ)) hz0]
       simp [deriv_denom (γ := γ) (z := (z : ℂ))]
     -- Now rewrite `D` using `h_eq` and compute directly.
-    simp only [D, neg_mul, Pi.mul_apply, Pi.neg_apply, Pi.inv_apply, Pi.ofNat_apply]
+    simp only [Derivative.normalizedDerivOfComplex, neg_mul, Pi.mul_apply, Pi.neg_apply,
+      Pi.inv_apply, Pi.ofNat_apply]
     rw [h_eq.deriv_eq]
     have htwoPiI : (2 * π * I : ℂ) ≠ 0 := two_pi_I_ne_zero
     -- `D` applies an extra factor `(2πi)⁻¹`; `corr` itself already contains `(2πi)⁻¹`.
@@ -254,7 +256,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       exact hpow'
     -- Now compute `serre_D 1 E₂` under slash.
     -- `(serre_D 1 E₂ ∣[4] γ) z = (denom γ z)^(-4) * serre_D 1 E₂(γ•z)`.
-    simp only [serre_D, SL_slash_apply, Pi.add_apply] at *
+    simp only [serre_D_apply, SL_slash_apply, Pi.add_apply] at *
     -- Use the explicit slash formulas for `D E₂` and `E₂`.
     -- For `D E₂`: use `hD` (already evaluated at `z`).
     -- For `E₂(γ•z)`: use the rewritten square identity `hE_sq`.
@@ -312,7 +314,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       simpa [mul_assoc, mul_one] using (hE₂'.mul hE₂lim)
     have hmain :
         Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
-      simpa [serre_D, mul_assoc, mul_one] using (hDlim.sub hterm)
+      simpa [serre_D_apply, mul_assoc, mul_one] using (hDlim.sub hterm)
     assumption
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hE₄lim :
@@ -384,12 +386,13 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
 @[simp]
 public theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
-  have h := ramanujan_E₂'
-  unfold serre_D at h
-  have h1 := congrFun h z
+  have h1 := congrFun ramanujan_E₂' z
+  rw [serre_D_apply] at h1
+  have h2 : D E₂ z = (-(12⁻¹ : ℂ) * E₄ z) + (1 : ℂ) * 12⁻¹ * E₂ z * E₂ z :=
+    (sub_eq_iff_eq_add).1 (by simpa [mul_assoc, mul_left_comm, mul_comm] using h1)
+  rw [h2]
   simp [field]
-  field_simp at h1
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
+  ring
 
 /-- Ramanujan's differential equation for `E₄`. -/
 @[simp]
@@ -397,7 +400,8 @@ public theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E�
   ext z
   have h := congrFun ramanujan_E₄' z
   have h' : D E₄.toFun z = (-(3⁻¹ : ℂ) * E₆ z) + (4 : ℂ) * 12⁻¹ * E₂ z * E₄ z :=
-    (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
+    (sub_eq_iff_eq_add).1
+      (by simpa [serre_D_apply, mul_assoc, mul_left_comm, mul_comm] using h)
   have hconst : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num1
   rw [h']
   simp [hconst, sub_eq_add_neg]
@@ -412,7 +416,8 @@ public theorem ramanujan_E₆ :
   have h' :
       D E₆.toFun z =
         (-(2⁻¹ : ℂ) * (E₄ z * E₄ z)) + (6 : ℂ) * 12⁻¹ * E₂ z * E₆ z :=
-    (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
+    (sub_eq_iff_eq_add).1
+      (by simpa [serre_D_apply, mul_assoc, mul_left_comm, mul_comm] using h)
   have hconst : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num1
   rw [h']
   simp [hconst, sub_eq_add_neg]

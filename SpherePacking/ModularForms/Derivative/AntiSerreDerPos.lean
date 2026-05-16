@@ -22,6 +22,7 @@ open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap ModularForm
 open ModularFormClass
 open Metric Filter Function
+open scoped Derivative
 
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
@@ -59,7 +60,8 @@ public theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ}
   have hderiv : deriv ((F ∘ ofComplex) ∘ g) t = I • deriv (F ∘ ofComplex) z :=
     (@HasDerivAt.scomp ℝ _ ℂ _ _ t ℂ _ _ _ hst _ _ _ _ hF' hg).deriv
   rw [hderiv]
-  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
+  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by
+    simp only [Derivative.normalizedDerivOfComplex]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf
   simp only [I_sq]
@@ -202,7 +204,9 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
           (serre_D k F).resToImagAxis t =
             (D F).resToImagAxis t -
               (((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t) := by
-        simp [serre_D, Function.resToImagAxis, ResToImagAxis, ht, mul_assoc]
+        simp only [serre_D, Derivative.serreDerivative, Function.resToImagAxis, ResToImagAxis,
+          dif_pos ht, show EisensteinSeries.E2 = E₂ from rfl]
+        ring
       have h' := congrArg Complex.re hRes
       have houter :
           (((((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t))).re =

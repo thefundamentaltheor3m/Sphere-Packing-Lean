@@ -65,6 +65,7 @@ from which we deduce f₂ = f₃ = f₄ = 0 (Phase 9), yielding the main theorem
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
   ModularForm SlashAction MatrixGroups
+open scoped Derivative
 
 private lemma four_eq_two_add_two : (4 : ℤ) = 2 + 2 := rfl
 
@@ -105,13 +106,16 @@ lemma f₄_decompose :
 -/
 
 /-- f₂ is MDifferentiable -/
-lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by simpa [f₂] using (by fun_prop)
+lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by
+  unfold f₂; fun_prop
 
 /-- f₃ is MDifferentiable -/
-lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by simpa [f₃] using (by fun_prop)
+lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by
+  unfold f₃; fun_prop
 
 /-- f₄ is MDifferentiable -/
-lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by simpa [f₄] using (by fun_prop)
+lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
+  unfold f₄; fun_prop
 
 attribute [local fun_prop] f₂_MDifferentiable f₃_MDifferentiable f₄_MDifferentiable
 

@@ -11,7 +11,7 @@ import SpherePacking.Tactic.NormNumI
 This file proves derivative identities and inequalities for `FmodG` on the imaginary axis.
 -/
 
-open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
+open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups Derivative
 open Filter Complex UpperHalfPlane
 open ModularForm hiding E₄ E₆
 open SpherePacking.ModularForms

@@ -28,7 +28,7 @@ differential equations they satisfy.
 -/
 
 
-open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
+open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups Derivative
 open Filter Complex UpperHalfPlane
 open ModularForm hiding E₄ E₆
 
@@ -145,14 +145,20 @@ public theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt �
 lemma serre_D_smulC (k c : ℂ) (F : UpperHalfPlane → ℂ) :
     serre_D k (c • F) = c • (serre_D k F) := by
   ext z
-  simp [serre_D, D_smul c F, smul_eq_mul, mul_assoc]
+  simp only [serre_D_apply, Pi.smul_apply, smul_eq_mul]
+  have hderiv : deriv ((c • F) ∘ ofComplex) (z : ℂ) = c • deriv (F ∘ ofComplex) z := by
+    simpa [Pi.smul_apply] using (deriv_const_smul_field (x := (z : ℂ)) c (F ∘ ofComplex))
+  show (2 * (π : ℂ) * Complex.I)⁻¹ * deriv ((c • F) ∘ ofComplex) z -
+      k * 12⁻¹ * E₂ z * (c * F z) =
+    c * ((2 * (π : ℂ) * Complex.I)⁻¹ * deriv (F ∘ ofComplex) z - k * 12⁻¹ * E₂ z * F z)
+  rw [hderiv, smul_eq_mul]
   ring
 
 lemma serre_D_addC (k : ℂ) (F G : UpperHalfPlane → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
     serre_D k (F + G) = serre_D k F + serre_D k G := by
   ext z
-  simp [serre_D, D_add F G hF hG, Pi.add_apply]
+  simp [serre_D_apply, D_add F G hF hG, Pi.add_apply]
   ring
 
 lemma serre_D_E₂_mul_E₄_sub_E₆ :
@@ -172,8 +178,9 @@ lemma serre_D_E₂_mul_E₄_sub_E₆ :
       D (E₂ * (E₄ : ℍ → ℂ)) z =
         (D E₂ * (E₄ : ℍ → ℂ) + E₂ * D (E₄ : ℍ → ℂ)) z := by
     simpa using congrArg (fun f : ℍ → ℂ => f z) (D_mul E₂ (E₄ : ℍ → ℂ) E₂_holo' E₄.holo')
-  simp [serre_D, hDsub, hDmul, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc, mul_left_comm,
-    mul_comm]
+  simp [serre_D_apply, hDsub, hDmul, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc,
+    mul_left_comm, mul_comm,
+    show EisensteinSeries.E2 = E₂ from rfl]
   ring_nf
 
 lemma serre_D_E₂_mul_E₆_sub_E₄_sq :
@@ -199,8 +206,9 @@ lemma serre_D_E₂_mul_E₆_sub_E₄_sq :
         (D (E₄ : ℍ → ℂ) * (E₄ : ℍ → ℂ) + (E₄ : ℍ → ℂ) * D (E₄ : ℍ → ℂ)) z := by
     simpa using congrArg (fun f : ℍ → ℂ => f z)
       (D_mul (E₄ : ℍ → ℂ) (E₄ : ℍ → ℂ) E₄.holo' E₄.holo')
-  simp [serre_D, hDsub, hDmul₁, hDmul₂, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc,
-    mul_left_comm, mul_comm]
+  simp [serre_D_apply, hDsub, hDmul₁, hDmul₂, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc,
+    mul_left_comm, mul_comm,
+    show EisensteinSeries.E2 = E₂ from rfl]
   ring_nf
 
 /-!

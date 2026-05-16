@@ -23,7 +23,7 @@ section Ramanujan_Formula
 
 open scoped Topology Real BigOperators Nat
 open scoped ArithmeticFunction.sigma
-open scoped MatrixGroups CongruenceSubgroup ModularForm
+open scoped MatrixGroups CongruenceSubgroup ModularForm Derivative
 
 open ModularForm hiding E₄ E₆
 open EisensteinSeries UpperHalfPlane Complex ModularFormClass

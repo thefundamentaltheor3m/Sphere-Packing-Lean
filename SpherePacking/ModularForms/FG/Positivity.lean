@@ -16,7 +16,7 @@ and for the Serre derivative `SerreDer_22_L₁₀`.
 -/
 
 
-open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
+open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups Derivative
 open Filter Complex UpperHalfPlane
 open ModularForm hiding E₄ E₆
 
@@ -647,7 +647,7 @@ lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
   simpa [hΔfun, Delta_apply] using (Delta_imag_axis_pos : ResToImagAxis.Pos Δ)
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
-  ext z; simp [L₁₀, serre_D]; ring_nf
+  ext z; simp [L₁₀, serre_D_apply, show EisensteinSeries.E2 = E₂ from rfl]; ring_nf
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
@@ -672,7 +672,10 @@ lemma SerreDer_22_L₁₀_SerreDer :
 private lemma SerreDer_22_L₁₀_form :
     SerreDer_22_L₁₀ =
       (7200 : ℝ) • (Δ_fun * negDE₂ * G) + (640 : ℝ) • (Δ_fun * H₂ * F) := by
-  ext z; simp [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, mul_assoc, mul_comm]; ring_nf
+  ext z
+  simp [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, mul_assoc, mul_comm,
+    show EisensteinSeries.E2 = E₂ from rfl]
+  ring_nf
 
 /-!
 ## Positivity of the Serre derivative of `L₁₀`

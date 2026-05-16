@@ -14,7 +14,7 @@ development. The proof is split into several private steps to help compilation.
 * `L₁₀_eventuallyPos`
 -/
 
-open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups
+open scoped Real Manifold Topology ArithmeticFunction.sigma ModularForm MatrixGroups Derivative
 open Filter Complex UpperHalfPlane
 open ModularForm hiding E₄ E₆
 
