@@ -29,10 +29,9 @@ noncomputable section
 /-- The pointwise formula `Delta(z) = (1/1728) * (E₄(z)^3 - E₆(z)^2)`. -/
 public lemma Delta_apply_eq_one_div_1728_mul_E4_pow_three_sub_E6_sq (z : ℍ) :
     (Delta z : ℂ) = (1 / 1728 : ℂ) * ((E₄ z) ^ (3 : ℕ) - (E₆ z) ^ (2 : ℕ)) := by
-  have h : (E₄ z : ℂ) = ModularForm.E₄ z := rfl
-  have h' : (E₆ z : ℂ) = ModularForm.E₆ z := rfl
   rw [show (Delta z : ℂ) = ModularForm.discriminant z from rfl,
-    ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq, h, h']
+    ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq]
+  change _ = _ * (((ModularForm.E₄ : ℍ → ℂ) z) ^ 3 - ((ModularForm.E₆ : ℍ → ℂ) z) ^ 2)
   ring
 
 private lemma qExpansion_Delta_eq_smul :
