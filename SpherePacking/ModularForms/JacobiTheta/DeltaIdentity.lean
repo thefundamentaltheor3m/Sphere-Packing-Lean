@@ -406,153 +406,82 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
   have hslash3 (A : SL(2, ℤ)) :
       (thetaDelta_f ∣[(6 : ℤ)] A) =
         (H₂ ∣[(2 : ℤ)] A) * ((H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A)) := by
-    have h34 :
-        ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
+    have h34 : ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
       simpa [show (4 : ℤ) = 2 + 2 by norm_num] using (mul_slash_SL2 2 2 A H₃ H₄)
-    have h234 :
-        ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
-          (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
+    have h234 : ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
+        (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
       simpa [show (6 : ℤ) = 2 + 4 by norm_num, mul_assoc] using
         (mul_slash_SL2 2 4 A H₂ (H₃ * H₄))
     simp [thetaDelta_f, h234, h34]
   have hprod_S : (thetaDelta_f ∣[(6 : ℤ)] S) = -thetaDelta_f := by
     rw [hslash3 S, H₂_S_action, H₃_S_action, H₄_S_action]
-    ext z
-    simp [thetaDelta_f, mul_left_comm, mul_comm]
+    ext z; simp [thetaDelta_f, mul_left_comm, mul_comm]
   have hprod_T : (thetaDelta_f ∣[(6 : ℤ)] T) = -thetaDelta_f := by
     rw [hslash3 T, H₂_T_action, H₃_T_action, H₄_T_action]
-    ext z
-    simp [thetaDelta_f, mul_comm]
+    ext z; simp [thetaDelta_f, mul_comm]
   -- Squaring removes the sign, so `thetaDeltaFun` is invariant under `S` and `T` at weight 12.
   have thetaDeltaFun_S_action : (thetaDeltaFun ∣[(12 : ℤ)] S) = thetaDeltaFun := by
     have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] S) = thetaDelta_f ^ 2 := by
       simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_S] using
         (mul_slash_SL2 6 6 S thetaDelta_f thetaDelta_f)
-    dsimp [thetaDeltaFun]
-    rw [SL_smul_slash]
-    simp [hsq]
+    dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
   have thetaDeltaFun_T_action : (thetaDeltaFun ∣[(12 : ℤ)] T) = thetaDeltaFun := by
     have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] T) = thetaDelta_f ^ 2 := by
       simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_T] using
         (mul_slash_SL2 6 6 T thetaDelta_f thetaDelta_f)
-    dsimp [thetaDeltaFun]
-    rw [SL_smul_slash]
-    simp [hsq]
-  -- Build a level-1 modular form out of `thetaDeltaFun`.
+    dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
   have thetaDeltaFun_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDeltaFun := by
     have hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDelta_f := by
       simpa [thetaDelta_f] using
         H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
-    have hsq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (thetaDelta_f ^ 2) := by
-      simpa [pow_two] using hf.mul hf
-    simpa [thetaDeltaFun] using hsq.const_smul ((256 : ℂ)⁻¹)
-  have thetaDeltaFun_SL2Z_invariant :
-      ∀ γ : SL(2, ℤ), thetaDeltaFun ∣[(12 : ℤ)] γ = thetaDeltaFun :=
-    slashaction_generators_SL2Z thetaDeltaFun 12 thetaDeltaFun_S_action thetaDeltaFun_T_action
-  -- `thetaDeltaFun` is zero at `i∞`, hence bounded there.
+    simpa [thetaDeltaFun, pow_two] using (hf.mul hf).const_smul ((256 : ℂ)⁻¹)
   have thetaDeltaFun_tendsto_atImInfty : Tendsto thetaDeltaFun atImInfty (𝓝 0) := by
     have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
       simpa [thetaDelta_f, mul_assoc] using
         H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
     have hf2 : Tendsto (fun z : ℍ => (thetaDelta_f z) ^ 2) atImInfty (𝓝 (0 : ℂ)) := by
       simpa using hf0.pow 2
-    have : Tendsto (fun z : ℍ => ((256 : ℂ)⁻¹) * (thetaDelta_f z) ^ 2) atImInfty (𝓝 0) := by
-      simpa [mul_zero] using (tendsto_const_nhds.mul hf2)
-    simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul] using this
-  have isBoundedAtImInfty_thetaDeltaFun : IsBoundedAtImInfty thetaDeltaFun :=
-    IsZeroAtImInfty.isBoundedAtImInfty thetaDeltaFun_tendsto_atImInfty
-  -- Any slash by an element of `SL(2,ℤ)` is just itself
-  -- (for use with `bounded_at_cusps_of_bounded_at_infty`).
-  have thetaDeltaFun_slash_eq (A' : SL(2, ℤ)) :
-      thetaDeltaFun ∣[(12 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = thetaDeltaFun := by
-    simpa [ModularForm.SL_slash] using thetaDeltaFun_SL2Z_invariant A'
-  have isBoundedAtImInfty_thetaDeltaFun_slash :
-      ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (thetaDeltaFun ∣[(12 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-    simpa using
-      (isBoundedAtImInfty_slash_of_slash_eq thetaDeltaFun_slash_eq isBoundedAtImInfty_thetaDeltaFun)
-  -- Package as a `ModularForm`.
+    simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
+      tendsto_const_nhds.mul hf2
+  -- Build `thetaDeltaFun` directly as a `CuspForm Γ(1) 12` via tends-to-0 at `i∞`.
   let thetaDelta_SIF : SlashInvariantForm (Γ 1) 12 :=
     { toFun := thetaDeltaFun
-      slash_action_eq' :=
-        slashaction_generators_GL2R thetaDeltaFun 12 thetaDeltaFun_S_action thetaDeltaFun_T_action }
-  let thetaDelta_MF : ModularForm (Γ 1) 12 := {
-    thetaDelta_SIF with
-    holo' := thetaDeltaFun_holo
-    bdd_at_cusps' := fun hc =>
-      bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_thetaDeltaFun_slash
-  }
-  have thetaDelta_MF_IsCuspForm : IsCuspForm (Γ 1) 12 thetaDelta_MF := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff]
-    simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
-    -- Use the vanishing at `i∞`.
-    exact IsZeroAtImInfty.cuspFunction_apply_zero thetaDeltaFun_tendsto_atImInfty
-      (by norm_num : (0 : ℝ) < 1)
-  -- Turn it into an element of the 1-dimensional cusp space and compare with `Delta`.
+      slash_action_eq' := slashaction_generators_GL2R thetaDeltaFun 12
+        thetaDeltaFun_S_action thetaDeltaFun_T_action }
   let thetaDelta_CF : CuspForm (Γ 1) 12 :=
-    IsCuspForm_to_CuspForm (Γ 1) 12 thetaDelta_MF thetaDelta_MF_IsCuspForm
-  have hthetaDeltaFun_coe : (thetaDelta_CF : ℍ → ℂ) = thetaDeltaFun := by
-    funext z
-    have hcoe :=
-      CuspForm_to_ModularForm_Fun_coe (Γ 1) 12 thetaDelta_MF thetaDelta_MF_IsCuspForm
-    -- `thetaDelta_MF` is definitionally `thetaDeltaFun` as a function.
-    simpa [thetaDelta_MF, thetaDeltaFun] using congrArg (fun f : ℍ → ℂ => f z) hcoe
-  have hr : Module.finrank ℂ (CuspForm (Γ 1) 12) = 1 := cuspform_weight_12_finrank_one
+    cuspFormOfSIFTendstoZero thetaDelta_SIF thetaDeltaFun_holo thetaDeltaFun_tendsto_atImInfty
+  -- Use the 1-dimensionality of the weight-12 cusp space to identify `thetaDelta_CF` with `c • Δ`.
   obtain ⟨c, hc⟩ :=
-    (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr thetaDelta_CF
+    (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1
+      cuspform_weight_12_finrank_one thetaDelta_CF
   -- Identify the scalar `c` by comparing the leading exponential decay at `i∞`.
-  have hlim_thetaDeltaFun :
-      Tendsto (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) :=
-    thetaDeltaFun_div_exp_tendsto_atImInfty
   have hlim_Delta :
       Tendsto (fun z : ℍ => Delta z / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) := by
-    -- `Delta z = exp(2π i z) * (boundedfactor z)` and the bounded factor tends to `1`.
     have hb : Tendsto
         (fun z : ℍ => ∏' (n : ℕ), (1 - cexp (2 * π * I * (↑n + 1) * (z : ℂ))) ^ 24)
         atImInfty (𝓝 1) := Delta_boundedfactor
-    have hrew :
-        (fun z : ℍ => Delta z / cexp (2 * π * I * (z : ℂ))) =
-          fun z : ℍ => ∏' (n : ℕ), (1 - cexp (2 * π * I * (↑n + 1) * (z : ℂ))) ^ 24 := by
-      funext z
-      -- Expand `Delta` via the product formula `Δ`.
-      simp [Delta_apply, Δ_eq_qProd, div_eq_mul_inv, mul_left_comm, mul_comm]
-    simpa [hrew] using hb
-  -- Use the 1-dimensionality to identify `c`.
-  have hlim_thetaDeltaCF :
-      Tendsto (fun z : ℍ => (thetaDelta_CF z) / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) := by
-    simpa [hthetaDeltaFun_coe] using hlim_thetaDeltaFun
-  have hlim_thetaDeltaCF' :
+    refine hb.congr fun z => ?_
+    simp [Delta_apply, Δ_eq_qProd, div_eq_mul_inv, mul_left_comm, mul_comm]
+  have hlim_thetaDelta_CF :
+      Tendsto (fun z : ℍ => (thetaDelta_CF z) / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) :=
+    thetaDeltaFun_div_exp_tendsto_atImInfty
+  have hlim_c :
       Tendsto (fun z : ℍ => (thetaDelta_CF z) / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 c) := by
-    -- Rewrite `thetaDelta_CF` using `hc`.
-    have hEqFun : (thetaDelta_CF : ℍ → ℂ) = fun z => (c : ℂ) * Delta z := by
+    have hCFeq : (thetaDelta_CF : ℍ → ℂ) = fun z => (c : ℂ) * Delta z := by
       funext z
-      have := congrArg (fun f : CuspForm (Γ 1) 12 => (f : ℍ → ℂ) z) hc.symm
-      simpa [Pi.smul_apply, smul_eq_mul] using this
-    -- Now take limits.
-    have : Tendsto (fun z : ℍ => (c : ℂ) *
-      (Delta z / cexp (2 * π * I * (z : ℂ)))) atImInfty (𝓝 c) :=
-      by
-        simpa using (tendsto_const_nhds.mul hlim_Delta)
-    -- Massage the expression to match `thetaDelta_CF z / exp`.
-    have hrew :
-        (fun z : ℍ => (thetaDelta_CF z) / cexp (2 * π * I * (z : ℂ))) =
-          fun z : ℍ => (c : ℂ) * (Delta z / cexp (2 * π * I * (z : ℂ))) := by
-      funext z
-      simp [hEqFun, div_eq_mul_inv, mul_left_comm, mul_comm]
-    simpa [hrew] using this
-  have hc_one : c = (1 : ℂ) :=
-    (tendsto_nhds_unique hlim_thetaDeltaCF' hlim_thetaDeltaCF)
-  -- Conclude equality of cusp forms and then evaluate at `τ`.
-  have hEqCF : thetaDelta_CF = Delta := by
-    -- From `hc : c • Delta = thetaDelta_CF` and `c = 1`.
-    have : (1 : ℂ) • Delta = thetaDelta_CF := by simpa [hc_one] using hc
-    simpa using this.symm
-  -- Evaluate at `τ`.
-  have hEqFun' : thetaDeltaFun τ = Delta τ := by
-    -- Use coercions to functions.
-    have : thetaDelta_CF τ = Delta τ := congrArg (fun f : CuspForm (Γ 1) 12 => f τ) hEqCF
-    simpa [hthetaDeltaFun_coe] using this
+      simpa [Pi.smul_apply, smul_eq_mul] using
+        congrArg (fun f : CuspForm (Γ 1) 12 => (f : ℍ → ℂ) z) hc.symm
+    have hmul : Tendsto (fun z : ℍ => (c : ℂ) * (Delta z / cexp (2 * π * I * (z : ℂ))))
+        atImInfty (𝓝 c) := by simpa using tendsto_const_nhds.mul hlim_Delta
+    simpa [hCFeq, div_eq_mul_inv, mul_left_comm, mul_comm] using hmul
+  have hc_one : c = (1 : ℂ) := tendsto_nhds_unique hlim_c hlim_thetaDelta_CF
+  have hEqFun : thetaDeltaFun τ = Delta τ := by
+    have hEqCF : thetaDelta_CF = Delta := by
+      have : (1 : ℂ) • Delta = thetaDelta_CF := by simpa [hc_one] using hc
+      simpa using this.symm
+    exact congrArg (fun f : CuspForm (Γ 1) 12 => f τ) hEqCF
   simpa [thetaDeltaFun, thetaDelta_f, Pi.smul_apply, smul_eq_mul, div_eq_mul_inv,
-    mul_assoc, mul_left_comm, mul_comm] using hEqFun'.symm
+    mul_assoc, mul_left_comm, mul_comm] using hEqFun.symm
 
 /-- The product `H₂ z * H₃ z * H₄ z` is nonzero for `z ∈ ℍ`. -/
 public lemma H₂_mul_H₃_mul_H₄_ne_zero (z : ℍ) : H₂ z * H₃ z * H₄ z ≠ 0 := by
