@@ -34,14 +34,6 @@ public theorem term_ne_zero (z : ℍ) (n : ℕ) :
   intro h
   simpa [h.symm] using exp_upperHalfPlane_lt_one_nat z n
 
-/-- If `x` lies in the open unit ball, then `∏ (1 - x^(i+1))` is a convergent infinite product. -/
-public theorem multipliable_lt_one (x : ℂ) (hx : x ∈ Metric.ball 0 1) :
-  Multipliable fun i ↦ 1 - x ^ (i+ 1) := by
-  have := Complex.summable_nat_multipliable_one_add (fun n : ℕ => -x ^ (n + 1)) ?_
-  · simpa [sub_eq_add_neg] using this
-  simpa [summable_neg_iff, summable_nat_add_iff, summable_geometric_iff_norm_lt_one,
-    Metric.mem_ball, dist_zero_right] using hx
-
 /-- The eta product factors `∏ (1 - exp(2π i (n+1) z))` form a convergent infinite product. -/
 public lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
