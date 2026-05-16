@@ -1,7 +1,6 @@
 module
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.Cotangent
-public import SpherePacking.ModularForms.SummableLemmas.G2
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 
 
