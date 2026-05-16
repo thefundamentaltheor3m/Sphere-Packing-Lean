@@ -141,10 +141,6 @@ public lemma qExpansion_sub1 {a b : ℤ} (f : ModularForm Γ(1) a) (g : ModularF
   ModularForm.qExpansion_sub (h := (1 : ℝ)) (by norm_num)
     (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f g
 
-@[simp] --generalize this away from ℂ
-lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
-  norm_num
-
 /-- The `qExpansion` of a power agrees with the power of the `qExpansion`. -/
 public lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
     qExpansion 1 ((((DirectSum.of (ModularForm Γ(1)) k) f) ^ n) (n * k)) =

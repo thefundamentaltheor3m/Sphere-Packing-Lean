@@ -56,16 +56,6 @@ This is the range of `CuspForm_to_ModularForm`.
     Submodule ℂ (ModularForm Γ k) :=
   LinearMap.range (CuspForm_to_ModularForm Γ k)
 
-/-- The canonical linear equivalence between cusp forms and the range submodule. -/
-public def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
-    CuspForm Γ k ≃ₗ[ℂ] CuspFormSubmodule Γ k := by
-  refine LinearEquiv.ofInjective (CuspForm_to_ModularForm Γ k) ?_
-  rw [injective_iff_map_eq_zero]
-  intro f hf
-  -- `ModForm_mk` is definitional, so it suffices to check pointwise.
-  ext z
-  simpa [CuspForm_to_ModularForm, ModForm_mk] using congrArg (fun g : ModularForm Γ k => g z) hf
-
 /-- `CuspFormSubmodule` is a function space `ℍ → ℂ` by coercion. -/
 public instance (priority := 100) CuspFormSubmodule.funLike :
     FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
@@ -95,20 +85,14 @@ public instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSu
   rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
   exact hf.choose
 
-@[simp] lemma CuspForm_to_ModularForm_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
-    (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toSlashInvariantForm =
-    f.toSlashInvariantForm := by
-  rw [IsCuspForm_to_CuspForm]
-  rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
-  simpa [CuspForm_to_ModularForm, ModForm_mk] using
-    congrArg (fun x ↦ x.toSlashInvariantForm) hf.choose_spec
-
 /-- The extracted cusp form has the same underlying function as the original modular form. -/
 @[simp] public lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ)
     (f : ModularForm Γ k)
     (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toFun =
     f.toFun := by
-  norm_num
+  rw [IsCuspForm_to_CuspForm]
+  rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
+  exact congrArg DFunLike.coe hf.choose_spec
 
 /-- Build a `CuspForm` from a `SlashInvariantForm` that is holomorphic and tends to 0. -/
 @[expose] public noncomputable def cuspFormOfSIFTendstoZero {k : ℤ}
@@ -172,10 +156,5 @@ public lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k
   · intro h
     rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range]
     exact ⟨cuspFormOfCoeffZero f h, by ext; rfl⟩
-
-/-- Membership in `CuspFormSubmodule` is equivalent to vanishing of the constant `q`-coefficient. -/
-@[simp] public lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
-    f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
-  simpa [IsCuspForm] using (IsCuspForm_iff_coeffZero_eq_zero k f)
 
 end Definitions
