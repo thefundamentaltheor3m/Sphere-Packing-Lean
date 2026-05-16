@@ -1358,62 +1358,92 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
 
 end IntegralB
 
+/-- The Fourier transform of `g` decomposes as a linear combination of `a'(‖x‖²)` and
+`b'(‖x‖²)` with constants `(πI)/8640` and `I/(240π)`. -/
+private lemma fourier_g_eq_combination (x : ℝ⁸) :
+    ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
+      ((↑π * I) / 8640 : ℂ) * a' (‖x‖ ^ 2) + (I / (240 * (↑π)) : ℂ) * b' (‖x‖ ^ 2) := by
+  change (FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g) x = _
+  simp [show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
+      ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b from by
+    simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
+      -FourierTransform.fourierCLE_apply], SchwartzMap.add_apply, SchwartzMap.smul_apply,
+    smul_eq_mul, MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
+    schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
+
+/-- The Fourier-side `a`-integrand at `u`. -/
+private noncomputable def fourier_IA (u : ℝ) : ℂ :=
+  ∫ t in Set.Ioi (0 : ℝ),
+    ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+        ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) * Real.exp (-π * u * t))
+
+/-- The Fourier-side `b`-integrand at `u`. -/
+private noncomputable def fourier_IB (u : ℝ) : ℂ :=
+  ∫ t in Set.Ioi (0 : ℝ),
+    (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
+      Real.exp (-π * u * t)
+
+/-- The `a`-side rewrite: `(πI/8640) · a'(u)` factored as `sin² · (-π/2160) · (...)` plus
+the residual integral `fourier_IA u`, using `aRadial_eq_another_integral_main`. -/
+private lemma fourier_aTerm {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
+    ((↑π * I) / 8640 : ℂ) * a' u =
+      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (-(π / 2160 : ℂ)) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + fourier_IA u) := by
+  rw [show a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+      ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+        (18144 : ℂ) / (π ^ (3 : ℕ) * u) + fourier_IA u) from by
+    simpa [fourier_IA] using aRadial_eq_another_integral_main hu hu2]
+  linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
+    ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+      (18144 : ℂ) / (π ^ (3 : ℕ) * u) + fourier_IA u)) *
+        (by field_simp; rw [Complex.I_sq]; ring :
+          (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ))
+
+/-- The `b`-side rewrite: `(I/(240π)) · b'(u)` factored as `sin² · (1/(60π)) · (...)` plus
+the residual integral `fourier_IB u`, using `bRadial_eq_another_integral_main`. -/
+private lemma fourier_bTerm {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
+    (I / (240 * (↑π)) : ℂ) * b' u =
+      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (1 / (60 * π) : ℂ) *
+        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + fourier_IB u) := by
+  rw [show b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+      ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + fourier_IB u) from by
+    simpa [fourier_IB] using bRadial_eq_another_integral_main hu hu2]
+  linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
+    ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + fourier_IB u)) *
+    (by field_simp; rw [Complex.I_sq]; ring :
+      (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ))
+
+/-- The bracket identity: combining the `fourier_IA` and `fourier_IB` factors yields a single
+`B`-integral prefactored by `π/2160`. -/
+private lemma fourier_bracket {u : ℝ} (hu : 0 < u) :
+    (-(π / 2160 : ℂ)) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + fourier_IA u) +
+      (1 / (60 * π) : ℂ) *
+        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + fourier_IB u) =
+      (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
+  rw [show (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
+      -fourier_IA u + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * fourier_IB u +
+        ((8640 / π : ℝ) : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
+        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+          (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) from by
+      simpa [fourier_IA, fourier_IB, aAnotherIntegrand, bAnotherIntegrand]
+        using IntegralB.integral_B_mul_exp_decomp hu,
+    integral_mul_exp_neg_pi_mul_Ioi_complex hu, integral_exp_neg_pi_mul_Ioi_complex hu]
+  push_cast; field_simp; ring
+
 theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) (hx2 : ‖x‖ ^ 2 ≠ 2) :
     ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) = (π / 2160 : ℂ) * (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
       (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   set u : ℝ := ‖x‖ ^ 2
   have hFourier : ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
-      ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
-    change (FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g) x = _
-    simp [u, show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
-        ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b from by
-      simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
-        -FourierTransform.fourierCLE_apply], SchwartzMap.add_apply, SchwartzMap.smul_apply,
-      smul_eq_mul, MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
-      schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
-  set IA : ℂ := ∫ t in Set.Ioi (0 : ℝ),
-    ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-        ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) * Real.exp (-π * u * t))
-  set IB : ℂ := ∫ t in Set.Ioi (0 : ℝ),
-    (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
-      Real.exp (-π * u * t)
-  have hAterm : ((↑π * I) / 8640 : ℂ) * a' u =
-      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (-(π / 2160 : ℂ)) *
-        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
-    rw [show a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) from by
-      simpa [IA] using aRadial_eq_another_integral_main hx hx2]
-    linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-        (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA)) * (by field_simp; rw [Complex.I_sq]; ring :
-        (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ))
-  have hBterm : (I / (240 * (↑π)) : ℂ) * b' u =
-      (Real.sin (π * u / 2)) ^ (2 : ℕ) * (1 / (60 * π) : ℂ) *
-        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
-    rw [show b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-        ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) from by
-      simpa [IB] using bRadial_eq_another_integral_main hx hx2]
-    linear_combination ((Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB)) *
-      (by field_simp; rw [Complex.I_sq]; ring :
-        (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ))
-  have hBracket : (-(π / 2160 : ℂ)) *
-        ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) - (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-          (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-      (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-      (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
-    rw [show (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
-        -IA + ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB +
-          ((8640 / π : ℝ) : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-          ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-            (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) from by
-        simpa [IA, IB, aAnotherIntegrand, bAnotherIntegrand]
-          using IntegralB.integral_B_mul_exp_decomp hx,
-      integral_mul_exp_neg_pi_mul_Ioi_complex hx, integral_exp_neg_pi_mul_Ioi_complex hx]
-    push_cast; field_simp; ring
+      ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u :=
+    fourier_g_eq_combination x
+  have hAterm := fourier_aTerm (u := u) hx hx2
+  have hBterm := fourier_bTerm (u := u) hx hx2
+  have hBracket := fourier_bracket (u := u) hx
   simpa [u, mul_assoc] using show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
       (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
         (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) by
