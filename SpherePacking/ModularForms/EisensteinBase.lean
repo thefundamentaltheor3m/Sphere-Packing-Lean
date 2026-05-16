@@ -36,12 +36,6 @@ section Definitions
 @[expose] public def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
   (1/2 : ℂ) • eisensteinSeriesMF (by decide) standardcongruencecondition
 
-/-- `E₄` is definitionally the Eisenstein series `E 4`. -/
-public lemma E4_eq : E₄ = E 4 (by decide) := rfl
-
-/-- `E₆` is definitionally the Eisenstein series `E 6`. -/
-public lemma E6_eq : E₆ = E 6 (by decide) := rfl
-
 /-- Evaluation of `E₄` agrees with `E 4` pointwise. -/
 @[simp] public lemma E4_apply (z : ℍ) : E₄ z = E 4 (by decide) z := rfl
 
@@ -177,20 +171,7 @@ public lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 :=
 public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 :=
   ModularForm.E₆_qExpansion_coeff_one
 
-/-- Normalize a non-cusp modular form so that its constant `q`-coefficient becomes `1`. -/
-public lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
-    (qExpansion 1 (((qExpansion 1 f).coeff 0)⁻¹ • f)).coeff 0 = 1 := by
-  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one]
-  exact inv_mul_cancel₀ (by intro h; exact hf ((IsCuspForm_iff_coeffZero_eq_zero k f).2 h))
-
 open ArithmeticFunction
-
-section Ramanujan_Formula
-
--- In this section, we state some simplifications that are used in Cor 7.5-7.7 of the blueprint
-
-end Ramanujan_Formula
-
 
 section ImagAxisProperties
 
