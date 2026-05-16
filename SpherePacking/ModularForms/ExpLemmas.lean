@@ -3,13 +3,6 @@ module
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
-/-!
-# Exponential-norm bounds on the upper half-plane
-
-Elementary `‖exp (2π i z)‖ < 1` inequalities for `z : ℍ`, used throughout the modular-forms
-development to control q-expansions.
--/
-
 @[expose] public section
 
 open UpperHalfPlane TopologicalSpace Set
@@ -30,13 +23,3 @@ theorem exp_upperHalfPlane_lt_one_nat (z : ℍ) (n : ℕ) :
     Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im,
     zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
   positivity
-
-lemma exp_periodo (z : ℍ) (n : ℕ) :
-  cexp (2 * ↑π * Complex.I * ↑↑n * (1 + ↑z)) = cexp (2 * ↑π * Complex.I * ↑↑n * ↑z) := by
-  rw [mul_add]
-  have := exp_periodic.nat_mul n
-  rw [Periodic] at this
-  have ht := this (2 * π * Complex.I * n * z)
-  rw [← ht]
-  congr 1
-  ring
