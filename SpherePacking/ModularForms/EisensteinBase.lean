@@ -463,57 +463,6 @@ public theorem E4E6_coeff_zero_eq_zero :
   let G := DirectSum.of _ 6 E₆
   cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
 
-/-- Uniform convergence of finite products to the infinite product `∏' (1 - y^(i+1))`. -/
-public lemma tendstoLocallyUniformlyOn_prod_range_one_sub_pow :
-    TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
-    fun y : ℂ ↦ (1 - y ^ (x + 1))) (fun x ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.ball 0 (2⁻¹ : ℝ))
-      := by
-  have h₁ : (fun n : ℕ ↦ ∏ x ∈ Finset.range n, fun y : ℂ ↦ (1 - y ^ (x + 1))) =
-             fun n : ℕ ↦ fun y : ℂ ↦ ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)) := by
-    ext n y; simp only [Finset.prod_apply]
-  rw [h₁]
-  have hclosed :
-      TendstoUniformlyOn (fun n : ℕ ↦ fun y : ℂ ↦ ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)))
-        (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.closedBall (0 : ℂ) (2⁻¹ : ℝ)) := by
-    have hsum : Summable (fun n : ℕ ↦ (2⁻¹ : ℝ) ^ (n + 1)) := by
-      rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
-      simp
-      exact two_inv_lt_one
-    simpa [sub_eq_add_neg] using
-      (hsum.hasProdUniformlyOn_nat_one_add (f := fun n : ℕ ↦ fun y : ℂ ↦ -y ^ (n + 1))
-        (hK := isCompact_closedBall (0 : ℂ) (1 / 2))
-        (h := Filter.Eventually.of_forall (fun n (x : ℂ) hx ↦ by
-          have hx' : ‖x‖ ≤ (2⁻¹ : ℝ) := by
-            simpa [Metric.mem_closedBall, dist_eq_norm] using hx
-          calc
-            ‖-x ^ (n + 1)‖ = ‖x‖ ^ (n + 1) := by simp
-            _ ≤ (2⁻¹ : ℝ) ^ (n + 1) := by
-              exact pow_le_pow_left₀ (norm_nonneg x) hx' _))
-        (hcts := fun n ↦ by fun_prop)).tendstoUniformlyOn_finsetRange
-  exact TendstoLocallyUniformlyOn.mono (s := Metric.closedBall (0 : ℂ) (2⁻¹ : ℝ))
-    hclosed.tendstoLocallyUniformlyOn ball_subset_closedBall
-
-theorem diffwithinat_prod_1 :
-    DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24)
-      (ball (0 : ℂ) (2⁻¹ : ℝ)) 0
-    := by
-  have hu :
-      DifferentiableOn ℂ (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) (Metric.ball (0 : ℂ) (2⁻¹ : ℝ)) := by
-    refine tendstoLocallyUniformlyOn_prod_range_one_sub_pow.differentiableOn ?_ isOpen_ball
-    refine eventually_atTop.2 ⟨0, fun n _ ↦ DifferentiableOn.finset_prod (u := Finset.range n)
-      (f := fun x : ℕ ↦ fun y : ℂ ↦ 1 - y ^ (x + 1))
-      (s := Metric.ball (0 : ℂ) (2⁻¹ : ℝ)) fun _ _ ↦ by fun_prop⟩
-  have hpow :
-      DifferentiableWithinAt ℂ (fun n : ℂ ↦ (∏' i, (1 - n ^ (i + 1))) ^ 24)
-        (ball (0 : ℂ) (2⁻¹ : ℝ)) 0 :=
-    (hu 0 (mem_ball_self (by norm_num : (0 : ℝ) < (2⁻¹ : ℝ)))).pow 24
-  refine hpow.congr ?_ (by simp)
-  intro x hx
-  simpa using
-    (tprod_pow (f := fun i : ℕ ↦ (1 - x ^ (i + 1) : ℂ))
-      (multipliable_lt_one x ((Metric.ball_subset_ball (by norm_num : (2⁻¹ : ℝ) ≤ 1)) hx)) 24).symm
-
-
 /-- The first nontrivial `q`-coefficient of `Delta` is `1`. -/
 public lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 :=
   ModularForm.discriminant_qExpansion_coeff_one
