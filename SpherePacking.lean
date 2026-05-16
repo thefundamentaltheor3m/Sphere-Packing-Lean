@@ -32,7 +32,6 @@ public import SpherePacking.ModularForms.FG.Inequalities
 public import SpherePacking.ModularForms.FG.L10OverAsymptotics
 public import SpherePacking.ModularForms.FG.Positivity
 public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.IteratedDerivs
 public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.MultipliableLemmas

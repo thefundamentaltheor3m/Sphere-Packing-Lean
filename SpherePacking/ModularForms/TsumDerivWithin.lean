@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
 public import Mathlib.Topology.Algebra.Module.ModuleTopology
 public import Mathlib.Topology.ContinuousMap.Compact
 public import SpherePacking.ModularForms.ExpLemmas
-public import SpherePacking.ModularForms.IteratedDerivs
 
 
 /-!
