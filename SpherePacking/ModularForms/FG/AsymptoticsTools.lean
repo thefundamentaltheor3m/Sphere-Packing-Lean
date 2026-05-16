@@ -14,7 +14,7 @@ imaginary axis.
 * `ResToImagAxis.Real.D_of_real`
 -/
 
-open scoped Real Manifold Topology ModularForm
+open scoped Real Manifold Topology ModularForm Derivative
 open Filter Complex UpperHalfPlane ModularForm
 
 /-!
@@ -45,7 +45,7 @@ public lemma mdifferentiable_cexp_mul (c : ℂ) :
 public lemma D_cexp_mul (c : ℂ) (z : UpperHalfPlane) :
     D (fun w : UpperHalfPlane => cexp (c * (w : ℂ))) z =
       (c / (2 * π * Complex.I)) * cexp (c * (z : ℂ)) := by
-  simp only [D]
+  simp only [Derivative.normalizedDerivOfComplex]
   have h_agree :
       ((fun w : UpperHalfPlane => cexp (c * (w : ℂ))) ∘ UpperHalfPlane.ofComplex) =ᶠ[nhds (z : ℂ)]
         fun w : ℂ => cexp (c * w) := by
@@ -65,6 +65,7 @@ public lemma ResToImagAxis.Real.D_of_real {F : UpperHalfPlane → ℂ}
   intro t ht
   have hdiff : DifferentiableAt ℝ F.resToImagAxis t :=
     ResToImagAxis.Differentiable F hFholo t ht
+  haveI : ContinuousSMul ℝ ℂ := NormedSpace.toIsBoundedSMul.continuousSMul
   have hderivC : HasDerivAt F.resToImagAxis (deriv F.resToImagAxis t) t :=
     hdiff.hasDerivAt
   have h_im0 : (fun u : ℝ => (F.resToImagAxis u).im) =ᶠ[nhds t] fun _ => 0 := by

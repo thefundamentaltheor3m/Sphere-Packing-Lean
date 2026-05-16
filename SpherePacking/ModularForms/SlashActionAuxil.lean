@@ -121,9 +121,6 @@ private lemma α_zpow_mem_closure (k : ℤ) : α ^ k ∈ Subgroup.closure {α, �
 private lemma β_zpow_mem_closure (k : ℤ) : β ^ k ∈ Subgroup.closure {α, β, negI} :=
   Subgroup.zpow_mem _ mem_closure_β k
 
-private lemma inv_α_zpow_mem_closure (k : ℤ) : (α ^ k)⁻¹ ∈ Subgroup.closure {α, β, negI} :=
-  Subgroup.inv_mem _ (α_zpow_mem_closure k)
-
 private lemma β_zpow_mul_α_zpow_mem_closure (m n : ℤ) :
     β ^ m * α ^ n ∈ Subgroup.closure {α, β, negI} :=
   Subgroup.mul_mem _ (β_zpow_mem_closure m) (α_zpow_mem_closure n)
