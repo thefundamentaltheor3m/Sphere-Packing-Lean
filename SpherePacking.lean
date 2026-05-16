@@ -42,7 +42,6 @@ public import SpherePacking.ModularForms.PhiTransformLemmas
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.QExpansionLemmas
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.Cotangent
