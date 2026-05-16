@@ -4,7 +4,6 @@ public import SpherePacking.ModularForms.EisensteinQExpansions
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.QExpansionLemmas
 public import SpherePacking.ModularForms.SummableLemmas.Basic
-public import SpherePacking.ModularForms.SummableLemmas.Cotangent
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 import SpherePacking.Tactic.NormNumI
 
