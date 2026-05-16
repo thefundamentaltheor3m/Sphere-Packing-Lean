@@ -335,84 +335,37 @@ lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
       simp only [Nat.cast_one, smul_eq_mul] at *; rwa [hr]
   · simpa using hSummable
 
-private lemma E4_q_exp_const :
-    (1 / (riemannZeta (4 : ℕ))) * ((-2 * (π : ℂ) * Complex.I) ^ 4 / (4 - 1)!) = (240 : ℂ) := by
-  have hz : riemannZeta (4 : ℕ) = (π : ℂ) ^ 4 / 90 := by
-    simpa using (riemannZeta_four : riemannZeta (4 : ℂ) = π ^ 4 / 90)
-  have hpi4 : (π : ℂ) ^ 4 ≠ 0 := pow_ne_zero 4 (by simp : (π : ℂ) ≠ 0)
-  have hfac : (4 - 1)! = 6 := by decide
-  rw [hz, hfac]
-  simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-  field_simp [hpi4]
-  norm_num
-
 /-- Explicit `q`-coefficients for `E₄`. -/
 public lemma E4_q_exp : (fun m ↦ (qExpansion 1 E₄).coeff m) =
     fun m ↦ if m = 0 then 1 else (240 : ℂ) * (σ 3 m) := by
-  have hE :
-      (fun m ↦ (qExpansion 1 (E 4 (by decide : 3 ≤ (4 : ℤ)))).coeff m) =
-        fun m ↦ if m = 0 then 1 else
-          (1 / (riemannZeta (4 : ℕ))) * ((-2 * (π : ℂ) * Complex.I) ^ 4 / (4 - 1)!) * (σ 3 m) := by
-    simpa using (Ek_q_exp 4 (by decide : 3 ≤ (4 : ℤ)) (by decide : Even 4))
-  -- Reduce to the general `E k` coefficient formula, then evaluate the constant factor.
-  rw [E4_eq, hE]
   funext m
+  have h := EisensteinSeries.E_qExpansion_coeff (k := 4) (by norm_num) (by decide) m
+  rw [show (qExpansion 1 ((ModularForm.E (show 3 ≤ 4 by norm_num)) : ℍ → ℂ)).coeff m =
+      (qExpansion 1 (E₄ : ℍ → ℂ)).coeff m from rfl] at h
+  rw [h]
   by_cases hm : m = 0
-  · subst hm; simp
-  · simpa [hm, mul_assoc] using congrArg (fun c : ℂ ↦ c * (σ 3 m)) E4_q_exp_const
+  · simp [hm]
+  · simp only [hm, ↓reduceIte, Nat.cast_ofNat]
+    have hb : bernoulli 4 = (-1/30 : ℚ) := by decide +kernel
+    push_cast [hb]; ring
 
 /-- The constant `q`-coefficient of `E₄` is `1`. -/
 public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 :=
   EisensteinSeries.E_qExpansion_coeff_zero (k := 4) (by norm_num) (by decide)
 
-
-@[simp]
-theorem bernoulli'_five : bernoulli' 5 = 0 := by
-  rw [bernoulli'_def]
-  norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero,
-    (by decide : Nat.choose 5 2 = 10)]
-
-@[simp]
-theorem bernoulli'_six : bernoulli' 6 = 1 / 42 := by
-  rw [bernoulli'_def]
-  norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero,
-    (by decide : Nat.choose 6 4 = 15), (by decide : Nat.choose 6 2 = 15)]
-
-private lemma riemannZeta_six :
-    riemannZeta 6 = (π : ℂ) ^ 6 / 945 := by
-  have Z :
-      riemannZeta 6 =
-        (-1) ^ (3 + 1) * (2 : ℂ) ^ (2 * 3 - 1) * (π : ℂ) ^ (2 * 3) * bernoulli (2 * 3) /
-          (2 * 3)! := by
-    simpa [show (2 : ℂ) * 3 = 6 by norm_num] using
-      (riemannZeta_two_mul_nat (k := 3) (by decide : (3 : ℕ) ≠ 0))
-  rw [Z]
-  have hfac : (6 : ℕ)! = 720 := by decide
-  simp [bernoulli, bernoulli'_six, hfac]
-  ring_nf
-
-private lemma E6_q_exp_const :
-    (1 / riemannZeta 6) * ((-2 * (π : ℂ) * Complex.I) ^ 6 / (6 - 1)!) = (-(504 : ℂ)) := by
-  have hpi6 : (π : ℂ) ^ 6 ≠ 0 := pow_ne_zero 6 (by simp : (π : ℂ) ≠ 0)
-  have hfac : (6 - 1)! = 120 := by decide
-  rw [riemannZeta_six, hfac]
-  simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-  field_simp [hpi6]
-  norm_num
-
 /-- Explicit `q`-coefficients for `E₆`. -/
 public lemma E6_q_exp : (fun m ↦ (qExpansion 1 E₆).coeff m) =
     fun m ↦ if m = 0 then 1 else -(504 : ℂ) * (σ 5 m) := by
-  have hE :
-      (fun m ↦ (qExpansion 1 (E 6 (by decide : 3 ≤ (6 : ℤ)))).coeff m) =
-        fun m ↦ if m = 0 then 1 else
-          (1 / riemannZeta 6) * ((-2 * (π : ℂ) * Complex.I) ^ 6 / (6 - 1)!) * (σ 5 m) := by
-    simpa using (Ek_q_exp 6 (by decide : 3 ≤ (6 : ℤ)) (by decide : Even 6))
-  rw [E6_eq, hE]
   funext m
+  have h := EisensteinSeries.E_qExpansion_coeff (k := 6) (by norm_num) (by decide) m
+  rw [show (qExpansion 1 ((ModularForm.E (show 3 ≤ 6 by norm_num)) : ℍ → ℂ)).coeff m =
+      (qExpansion 1 (E₆ : ℍ → ℂ)).coeff m from rfl] at h
+  rw [h]
   by_cases hm : m = 0
-  · subst hm; simp
-  · simpa [hm, mul_assoc] using congrArg (fun c : ℂ ↦ c * (σ 5 m)) E6_q_exp_const
+  · simp [hm]
+  · simp only [hm, ↓reduceIte, Nat.cast_ofNat]
+    have hb : bernoulli 6 = (1/42 : ℚ) := by decide +kernel
+    push_cast [hb]; ring
 
 /-- The constant `q`-coefficient of `E₆` is `1`. -/
 public lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
