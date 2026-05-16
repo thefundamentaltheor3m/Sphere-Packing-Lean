@@ -340,11 +340,6 @@ lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
       simp only [Nat.cast_one, smul_eq_mul] at *; rwa [hr]
   · simpa using hSummable
 
-/-- The constant `q`-coefficient of `E k` is `1`. -/
-public lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
-    (qExpansion 1 (E k hk)).coeff 0 = 1 := by
-  simpa using congr_fun (Ek_q_exp k hk hk2) 0
-
 private lemma E4_q_exp_const :
     (1 / (riemannZeta (4 : ℕ))) * ((-2 * (π : ℂ) * Complex.I) ^ 4 / (4 - 1)!) = (240 : ℂ) := by
   have hz : riemannZeta (4 : ℕ) = (π : ℂ) ^ 4 / 90 := by
@@ -372,8 +367,8 @@ public lemma E4_q_exp : (fun m ↦ (qExpansion 1 E₄).coeff m) =
   · simpa [hm, mul_assoc] using congrArg (fun c : ℂ ↦ c * (σ 3 m)) E4_q_exp_const
 
 /-- The constant `q`-coefficient of `E₄` is `1`. -/
-public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
-  simpa using congr_fun E4_q_exp 0
+public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 :=
+  EisensteinSeries.E_qExpansion_coeff_zero (k := 4) (by norm_num) (by decide)
 
 
 @[simp]
@@ -425,8 +420,8 @@ public lemma E6_q_exp : (fun m ↦ (qExpansion 1 E₆).coeff m) =
   · simpa [hm, mul_assoc] using congrArg (fun c : ℂ ↦ c * (σ 5 m)) E6_q_exp_const
 
 /-- The constant `q`-coefficient of `E₆` is `1`. -/
-public lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
-  simpa using congr_fun E6_q_exp 0
+public lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
+  EisensteinSeries.E_qExpansion_coeff_zero (k := 6) (by norm_num) (by decide)
 
 /-- The constant coefficient of `(1/1728) * (E₄^3 - E₆^2)` vanishes, hence it is a cusp form. -/
 public theorem E4E6_coeff_zero_eq_zero :
