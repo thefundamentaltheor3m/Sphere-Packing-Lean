@@ -1,4 +1,11 @@
+/-
+Copyright (c) 2025 Sphere Packing in Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing in Lean contributors
+-/
+
 module
+
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.Integration.Measure
 public import SpherePacking.ModularForms.PhiTransform
@@ -30,7 +37,7 @@ namespace MagicFunction.a.IntegralEstimates.I₅
 
 open scoped Function UpperHalfPlane Real Complex
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
-  MagicFunction.PolyFourierCoeffBound
+  MagicFunction.PolyFourierCoeffBound MagicFunction.a.IntegralEstimates
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open SpherePacking.Integration.InvChangeOfVariables
 
@@ -48,7 +55,7 @@ public theorem Complete_Change_of_Variables (r : ℝ) :
     congr 1
     refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht ↦ ?_)
     simpa [mul_assoc, mul_left_comm, mul_comm] using
-      MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r (1 : ℂ)
+      I₃.inv_integrand_eq_integrand (t := t) ht.1 r (1 : ℂ)
   refine hRecon.trans ?_
   simpa using congrArg (fun z : ℂ ↦ (-2 : ℂ) * z)
     (integral_Ici_one_eq_integral_abs_deriv_smul (g := g r)).symm
@@ -63,6 +70,7 @@ noncomputable section
 
 open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
+open MagicFunction.a.IntegralEstimates
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
@@ -70,9 +78,7 @@ open MeasureTheory Set Complex Real
 
 /-- Continuity of the integrand `I₅.g` on the domain `univ ×ˢ Ici 1`. -/
 public lemma continuousOn_I₅_g :
-    ContinuousOn
-      (fun p : ℝ⁸ × ℝ ↦ MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2)
-      (univ ×ˢ Ici (1 : ℝ)) := by
+    ContinuousOn (fun p : ℝ⁸ × ℝ ↦ I₅.g (‖p.1‖ ^ 2) p.2) (univ ×ˢ Ici (1 : ℝ)) := by
   have hφ' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ φ₀'' (I * (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) :=
     MagicFunction.a.Schwartz.I1Decay.φ₀''_I_mul_continuousOn.comp continuousOn_snd mapsTo_snd_prod
   have hzpow' : ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) :=
@@ -84,7 +90,7 @@ public lemma continuousOn_I₅_g :
         fun p hp ↦ by
           have hp2 : (p.2 : ℂ) ≠ 0 := mod_cast (zero_lt_one.trans_le (by simpa using hp)).ne'
           fun_prop (disch := exact hp2))).congr fun p _ ↦ ?_
-  simp [MagicFunction.a.IntegralEstimates.I₅.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+  simp [I₅.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
 /-- The phase factor `v ↦ exp(-2π i ⟪v, w⟫)` used in the kernel for `perm_I₅`. -/
 @[expose] public def permI5Phase (w : ℝ⁸) : ℝ⁸ → ℂ :=
@@ -92,7 +98,7 @@ public lemma continuousOn_I₅_g :
 
 /-- The product kernel used to rewrite the Fourier transform of `I₅` as an iterated integral. -/
 @[expose] public def permI5Kernel (w : ℝ⁸) : ℝ⁸ × ℝ → ℂ :=
-  fun p ↦ permI5Phase w p.1 * MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2
+  fun p ↦ permI5Phase w p.1 * I₅.g (‖p.1‖ ^ 2) p.2
 
 /-- Measurability of `permI5Kernel` w.r.t. `volume × (volume.restrict (Ici 1))`. -/
 public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
@@ -133,7 +139,7 @@ noncomputable section
 open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
 open SpherePacking.ForMathlib SpherePacking.Integration
-open MeasureTheory Set Complex Real
+open MeasureTheory Set Complex Real MagicFunction.a.IntegralEstimates
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
@@ -150,16 +156,12 @@ private lemma norm_permI5Kernel_le (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) (x : �
     norm_exp_ofReal_mul_I (π * (‖x‖ ^ 2))
   have hπ : ‖cexp (π * I * (‖x‖ ^ 2))‖ = (1 : ℝ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using hπ'
-  have hnormg :
-      ‖MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s‖ =
-        ‖MagicFunction.a.IntegralEstimates.I₃.g (‖x‖ ^ 2) s‖ := by
-    rw [show MagicFunction.a.IntegralEstimates.I₃.g (‖x‖ ^ 2) s =
-        MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s * cexp (π * I * (‖x‖ ^ 2)) from by
-      simp [MagicFunction.a.IntegralEstimates.I₃.g, MagicFunction.a.IntegralEstimates.I₅.g,
-        mul_assoc, mul_left_comm, mul_comm], norm_mul, hπ, mul_one]
-  refine (show ‖permI5Kernel w (x, s)‖ = ‖MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s‖
+  have hnormg : ‖I₅.g (‖x‖ ^ 2) s‖ = ‖I₃.g (‖x‖ ^ 2) s‖ := by
+    rw [show I₃.g (‖x‖ ^ 2) s = I₅.g (‖x‖ ^ 2) s * cexp (π * I * (‖x‖ ^ 2)) from by
+      simp [I₃.g, I₅.g, mul_assoc, mul_left_comm, mul_comm], norm_mul, hπ, mul_one]
+  refine (show ‖permI5Kernel w (x, s)‖ = ‖I₅.g (‖x‖ ^ 2) s‖
     by simp [permI5Kernel, permI5Phase, norm_exp]).le.trans <| hnormg.le.trans <|
-    MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := ‖x‖ ^ 2) s hs
+    I₃.I₃'_bounding_aux_1 (r := ‖x‖ ^ 2) s hs
 
 lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
     (∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖) ≤ ‖φ₀'' (I * (s : ℂ))‖ * s ^ 4 := by
@@ -204,7 +206,7 @@ public lemma integrable_perm_I₅_kernel (w : ℝ⁸) :
     ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => by
       have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
       have hphase : Continuous fun x : ℝ⁸ => permI5Phase w x := by unfold permI5Phase; fun_prop
-      have hg : Continuous fun x : ℝ⁸ => MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
+      have hg : Continuous fun x : ℝ⁸ => I₅.g (‖x‖ ^ 2) s := by
         simpa [continuousOn_univ] using continuousOn_I₅_g.comp
           (continuous_id.prodMk continuous_const).continuousOn
           (fun _ _ => ⟨Set.mem_univ _, hs⟩ :
@@ -237,9 +239,9 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   rw [fourier_eq' (I₅ : ℝ⁸ → ℂ) w]
   simp only [smul_eq_mul, I₅_apply,
     show ∀ x : ℝ⁸, MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) =
-        -2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s from
+        -2 * ∫ s in Ici (1 : ℝ), I₅.g (‖x‖ ^ 2) s from
       fun x ↦ by simpa only [neg_mul] using
-        MagicFunction.a.IntegralEstimates.I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2),
+        I₅.Complete_Change_of_Variables (r := ‖x‖ ^ 2),
     mul_assoc]
   let μs : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
   let f : ℝ⁸ → ℝ → ℂ := fun x s => permI5Kernel w (x, s)
@@ -255,7 +257,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
             ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
               (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
       funext x
-      simp [f, permI5Kernel, permI5Phase, MagicFunction.a.IntegralEstimates.I₅.g]
+      simp [f, permI5Kernel, permI5Phase, I₅.g]
       ac_rfl
     rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor]
     have hkey : (∫ x : ℝ⁸, -I * φ₀'' (I * ↑s) * (↑s : ℂ) ^ (-4 : ℤ) *
@@ -269,24 +271,22 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   have hmain :
       (∫ x : ℝ⁸,
           cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
+            (-2 * ∫ s in Ici (1 : ℝ), I₅.g (‖x‖ ^ 2) s)) =
         (-2 : ℂ) * ∫ s in Ici (1 : ℝ),
           (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
     have hrew : (fun x : ℝ⁸ ↦
         cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-          (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
+          (-2 * ∫ s in Ici (1 : ℝ), I₅.g (‖x‖ ^ 2) s)) =
         fun x : ℝ⁸ ↦ (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s := by
       funext x
       rw [show (∫ s in Ici (1 : ℝ), f x s) =
-            ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s
+            ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * I₅.g (‖x‖ ^ 2) s
           from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase]]
       rw [mul_left_comm (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) (-2 : ℂ) _]
       congr 1
       exact (MeasureTheory.integral_const_mul (α := ℝ)
         (μ := MeasureTheory.volume.restrict (Ici (1 : ℝ)))
-        (cexp (↑(-2 * (π * ⟪x, w⟫)) * I))
-        (MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2))).symm
+        (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) (I₅.g (‖x‖ ^ 2))).symm
     rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew]
     simp only []
     rw [show (∫ x : ℝ⁸, -2 * ∫ s in Ici (1 : ℝ), f x s) =
@@ -440,6 +440,7 @@ open scoped FourierTransform RealInnerProductSpace Topology
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
 
 open MeasureTheory Set Complex Real SpherePacking.Integration SpherePacking.Contour
+  MagicFunction.a.ComplexIntegrands
 open scoped Interval
 
 /-! ## Kernels and measurability (merged from `PermI12FourierIntegrableI1`) -/
@@ -447,20 +448,18 @@ open scoped Interval
 /-- The kernel used to rewrite `𝓕 I₁` as an integral over `x` and the segment parameter `t`. -/
 @[expose] public def permI1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     (EuclideanSpace ℝ (Fin 8)) × ℝ → ℂ := fun p =>
-  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) *
-    ((I : ℂ) * MagicFunction.a.ComplexIntegrands.Φ₁' (‖p.1‖ ^ 2) (z₁line p.2))
+  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) * ((I : ℂ) * Φ₁' (‖p.1‖ ^ 2) (z₁line p.2))
 
 /-- The kernel used to rewrite `𝓕 I₂` as an integral over `x` and the segment parameter `t`. -/
 @[expose] public def permI2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
     (EuclideanSpace ℝ (Fin 8)) × ℝ → ℂ := fun p =>
-  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) *
-    MagicFunction.a.ComplexIntegrands.Φ₁' (‖p.1‖ ^ 2) (z₂line p.2)
+  cexp (↑(-2 * (π * ⟪p.1, w⟫)) * I) * Φ₁' (‖p.1‖ ^ 2) (z₂line p.2)
 
 /-- Continuity of `(x, t) ↦ Φ₁'(‖x‖², z t)` at points where `(z p.2 + 1).im > 0`. -/
 private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
     {p : (EuclideanSpace ℝ (Fin 8)) × ℝ} (hpos : 0 < (z p.2 + 1).im) :
     ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
-      MagicFunction.a.ComplexIntegrands.Φ₁' (‖q.1‖ ^ 2) (z q.2)) p := by
+      Φ₁' (‖q.1‖ ^ 2) (z q.2)) p := by
   have hφterm : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => φ₀'' ((-1 : ℂ) / (z q.2 + 1))) p := by
     have hcont : ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) p.2 := by
@@ -468,7 +467,7 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
       have hmem : (-1 : ℂ) / (z p.2 + 1) ∈ UpperHalfPlane.upperHalfPlaneSet := by
         simpa [UpperHalfPlane.upperHalfPlaneSet] using neg_one_div_im_pos (z p.2 + 1) hpos
       have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z p.2 + 1)) :=
-        (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
+        (φ₀''_holo.differentiableAt
           (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hmem)).continuousAt
       exact ContinuousAt.comp (f := fun s : ℝ => (-1 : ℂ) / (z s + 1)) hφ
         (continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden))
@@ -480,7 +479,7 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
   have hexp : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
         cexp ((π : ℂ) * I * ((‖q.1‖ ^ 2 : ℝ) : ℂ) * z q.2)) p := by fun_prop
-  dsimp [MagicFunction.a.ComplexIntegrands.Φ₁']
+  dsimp [Φ₁']
   exact (hφterm.mul hpow).mul hexp
 
 /-- Measurability for the restricted product measure via continuity on `univ ×ˢ Ioc 0 1`. -/
@@ -909,12 +908,13 @@ noncomputable section
 open scoped FourierTransform RealInnerProductSpace Topology Interval
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap Filter
 open Filter SpherePacking SpherePacking.ForMathlib MeasureTheory Set Complex Real
+open MagicFunction.a.ComplexIntegrands
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 /-- `Φ₃' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
 public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
-    Tendsto (MagicFunction.a.ComplexIntegrands.Φ₃' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
+    Tendsto (Φ₃' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   let expNorm : ℂ → ℝ := fun z ↦ ‖cexp (Real.pi * Complex.I * r * z)‖
   have hExp : ContinuousAt expNorm (1 : ℂ) := by fun_prop
@@ -936,7 +936,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   refine ⟨δ, hδ_pos, fun z hzcl hdistz => ?_⟩
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1
-    simpa [MagicFunction.a.ComplexIntegrands.Φ₃'] using hε
+    simpa [Φ₃'] using hε
   have hdist_lt1 : dist z (1 : ℂ) < 1 :=
     hdistz.trans_le ((min_le_right _ _).trans (min_le_left _ _))
   have hdist_pow : dist z (1 : ℂ) < δpow :=
@@ -946,7 +946,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
     simpa [UpperHalfPlane.upperHalfPlaneSet] using
       mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
   have habs_re : |z.re - 1| ≤ z.im :=
-    SpherePacking.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
+    closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
   have hz_im_lt1 : z.im < 1 :=
     (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1) :
         z.im ≤ ‖z - 1‖).trans_lt (by simpa [dist_eq_norm] using hdist_lt1)
@@ -974,10 +974,10 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
       _ ≤ (C₀ : ℝ) * 1 := by gcongr
       _ = (C₀ : ℝ) := mul_one _
   have hmain :
-      ‖MagicFunction.a.ComplexIntegrands.Φ₃' r z‖ ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by
-    have heq : ‖MagicFunction.a.ComplexIntegrands.Φ₃' r z‖
+      ‖Φ₃' r z‖ ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by
+    have heq : ‖Φ₃' r z‖
         = ‖φ₀'' (-1 / (z - 1))‖ * (dist z (1 : ℂ)) ^ (2 : ℕ) * expNorm z := by
-      simp [MagicFunction.a.ComplexIntegrands.Φ₃', expNorm, dist_eq_norm, mul_left_comm, mul_comm]
+      simp [Φ₃', expNorm, dist_eq_norm, mul_left_comm, mul_comm]
     rw [heq]; gcongr
   have hpow_small : (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M < ε := by
     have h : dist ((C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (0 : ℝ) < ε :=
@@ -989,18 +989,17 @@ section Integral_Permutations
 
 /-- The `1`-form built from `Φ₃'` is differentiable on `wedgeSet` with continuous extension. -/
 public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
-    DiffContOnCl ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet :=
+    DiffContOnCl ℝ (scalarOneForm (Φ₃' r)) wedgeSet :=
   ForMathlib.diffContOnCl_scalarOneForm (s := wedgeSet) <| by
-    refine ⟨((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
+    refine ⟨((Φ₃'_contDiffOn (r := r)).differentiableOn
         (by simp)).mono wedgeSet_subset_upperHalfPlaneSet, fun z hz => ?_⟩
     by_cases h1 : z = (1 : ℂ)
     · subst h1
-      have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
-        simp [MagicFunction.a.ComplexIntegrands.Φ₃']
+      have hval : Φ₃' r (1 : ℂ) = 0 := by simp [Φ₃']
       simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
     · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
         mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
-      exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
+      exact ((Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
         (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
 
 /-- Symmetry of the derivative of `scalarOneForm (Φ₃' r)` on `wedgeSet`.
@@ -1008,14 +1007,13 @@ public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
 This is the key hypothesis needed to apply the Poincare lemma. -/
 public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
     ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
-      fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet x u v =
-        fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
-          wedgeSet x v u := by
+      fderivWithin ℝ (scalarOneForm (Φ₃' r)) wedgeSet x u v =
+        fderivWithin ℝ (scalarOneForm (Φ₃' r)) wedgeSet x v u := by
   intro x hx _ _ _ _
-  have hfdiff : DifferentiableAt ℂ (MagicFunction.a.ComplexIntegrands.Φ₃' r) x :=
-    (MagicFunction.a.ComplexIntegrands.Φ₃'_holo (r := r)).differentiableAt
+  have hfdiff : DifferentiableAt ℂ (Φ₃' r) x :=
+    (Φ₃'_holo (r := r)).differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds (wedgeSet_subset_upperHalfPlaneSet hx))
-  exact SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
+  exact ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
     (s := wedgeSet) isOpen_wedgeSet hx (hfdiff := hfdiff)
 
 open MeasureTheory Set Complex Real
@@ -1027,12 +1025,12 @@ private lemma perm_I12_contour (r : ℝ) :
         ∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
           scalarOneForm (Φ₁_fourier r) z =
       (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
-            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z) +
+            scalarOneForm (Φ₃' r) z) +
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
-            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z :=
-  SpherePacking.perm_I12_contour_mobiusInv_wedgeSet
+            scalarOneForm (Φ₃' r) z :=
+  perm_I12_contour_mobiusInv_wedgeSet
     (Ψ₁_fourier := Φ₁_fourier)
-    (Ψ₁' := MagicFunction.a.ComplexIntegrands.Φ₃')
+    (Ψ₁' := Φ₃')
     (Ψ₁_fourier_eq_deriv_mul := Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃')
     (closed_ω_wedgeSet := fun r =>
       ⟨diffContOnCl_ω_wedgeSet (r := r), fderivWithin_ω_wedgeSet_symm (r := r)⟩)

@@ -192,7 +192,8 @@ public theorem decay_J₆' : ∀ (k n : ℕ),
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-Real.pi * x) :=
-      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht => by
+      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <|
+        .of_forall fun t ht => by
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
       have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -248,23 +249,24 @@ noncomputable section
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
 open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane
 open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
-open Matrix ModularGroup ModularForm
+open Matrix ModularGroup ModularForm SpherePacking.Integration
+  SpherePacking.Integration.DifferentiationUnderIntegral SpherePacking.ForMathlib
 
-def μ : Measure ℝ := SpherePacking.Integration.μIoo01
+def μ : Measure ℝ := μIoo01
 
 attribute [irreducible] μ
 
 instance : IsFiniteMeasure μ :=
-  ⟨by simp [μ, SpherePacking.Integration.μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
+  ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
 
 def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₁' t
 def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψT' (z₁' t)
 def gN (n : ℕ) (x t : ℝ) : ℂ :=
-  SpherePacking.Integration.DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
+  DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
 
 lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
   simpa [coeff, mul_assoc] using
-    SpherePacking.ForMathlib.norm_mul_pi_I_le_two_pi (z := z₁' t) (hz := norm_z₁'_le_two t)
+    norm_mul_pi_I_le_two_pi (z := z₁' t) (hz := norm_z₁'_le_two t)
 
 /-- Modular rewrite for `ψT' (z₁' t)`, used to control the integrand near `t = 0`. -/
 public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
@@ -308,55 +310,50 @@ def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
 
 lemma hasDerivAt_integral_gN (n : ℕ) (x₀ : ℝ) :
     HasDerivAt (fun x : ℝ ↦ I n x) (I (n + 1) x₀) x₀ := by
-  simpa [I, μ, SpherePacking.Integration.μIoo01, gN] using
-    SpherePacking.Integration.DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo
-      (coeff := coeff) (hf := hf)
+  simpa [I, μ, μIoo01, gN] using
+    DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf)
       continuousOn_hf continuous_coeff exists_bound_norm_hf coeff_norm_le n x₀
 
 private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
   funext x
-  simp [RealIntegrals.J₁', I, μ, SpherePacking.Integration.μIoo01, gN, hf, coeff,
-    SpherePacking.Integration.DifferentiationUnderIntegral.g,
-    SpherePacking.Integration.DifferentiationUnderIntegral.gN, mul_assoc, mul_left_comm, mul_comm,
+  simp [RealIntegrals.J₁', I, μ, μIoo01, gN, hf, coeff,
+    DifferentiationUnderIntegral.g, DifferentiationUnderIntegral.gN,
+    mul_assoc, mul_left_comm, mul_comm,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
 public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
-  simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I)
+  simpa [I_zero_eq_J₁'] using contDiff_of_hasDerivAt_succ (I := I)
     (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x))
 
 /-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := fun k n => by
-  obtain ⟨B, hB⟩ :=
-    SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
+  obtain ⟨B, hB⟩ := exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
   obtain ⟨Cψ, hCψ⟩ :=
     MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   have hCψ0 : 0 ≤ Cψ :=
-    SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
+    nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
       (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
       (by simpa using hCψ 1 le_rfl)
   let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
   have hbound_int : Integrable bound μ := by
-    simpa [bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
-      (SpherePacking.Integration.integrable_const_mul_pow_muIoo01
-        (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
+    simpa [bound, μ, μIoo01, mul_assoc, mul_left_comm, mul_comm] using
+      (integrable_const_mul_pow_muIoo01 (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
   let Kn : ℝ := ∫ t, bound t ∂μ
   have hKn_nonneg : 0 ≤ Kn := by
     refine integral_nonneg_of_ae <| ?_
     filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-      simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
+      simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
     exact mul_nonneg (by positivity [hCψ0]) (pow_nonneg ht.1.le _)
   refine ⟨Kn * B, fun x hx => ?_⟩
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
     have hbound_ae :
         ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
       filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-        simpa [μ] using SpherePacking.Integration.ae_mem_Ioo01_muIoo01] with t ht
+        simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using
-          SpherePacking.Integration.DifferentiationUnderIntegral.norm_cexp_ofReal_mul_coeff_of_coeff_re
-            (coeff := coeff) (x := x) (t := t)
+        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
           (show (coeff t).re = -Real.pi * t by
             simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
               simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
@@ -364,8 +361,7 @@ public theorem decay_J₁' :
                   z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
       exact le_mul_of_le_mul_of_nonneg_left
         (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-            SpherePacking.Integration.DifferentiationUnderIntegral.norm_gN_le_bound_mul_exp
-              (coeff := coeff) (ψ := ψT')
+            norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
               (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
               (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
               (by simpa using
@@ -375,19 +371,18 @@ public theorem decay_J₁' :
               hcexp :
           ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
         (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-          SpherePacking.ForMathlib.exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
+          exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
           Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
             Real.exp (-2 * Real.pi * Real.sqrt x))
         (by positivity [hCψ0])
     simpa [I, Kn] using
-      (SpherePacking.Integration.DifferentiationUnderIntegral.norm_integral_le_integral_bound_mul_const
-        (μ := μ) (f := gN n x) (bound := bound)
+      (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
       = x ^ k * ‖I n x‖ := by
         rw [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
           congrArg (fun F : ℝ → ℂ => ‖F x‖) (show iteratedDeriv n J₁' = fun x : ℝ ↦ I n x by
-            simpa [I_zero_eq_J₁'] using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+            simpa [I_zero_eq_J₁'] using iteratedDeriv_eq_of_hasDerivAt_succ
               (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
     _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring
@@ -407,7 +402,8 @@ noncomputable section
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
 open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane SpherePacking.ForMathlib
 open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
-  MagicFunction.b.PsiBounds.PsiExpBounds SpherePacking.Integration Matrix ModularGroup ModularForm
+  MagicFunction.b.PsiBounds.PsiExpBounds SpherePacking.Integration
+  SpherePacking.Integration.DifferentiationUnderIntegral Matrix ModularGroup ModularForm
   MagicFunction MagicFunction.b.Schwartz
 
 def μ : Measure ℝ := μIoo01
@@ -537,18 +533,15 @@ public theorem decay_J₅' :
             (z := z₅') (hCψ := hCψ) (hEq := fun s hs => ψI'_z₅'_eq (t := s) hs)
             (t := t) ⟨ht.1, le_of_lt ht.2⟩)
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using
-          SpherePacking.Integration.DifferentiationUnderIntegral.norm_cexp_ofReal_mul_coeff_of_coeff_re
-            (coeff := coeff) (x := x) (t := t)
-            (show (coeff t).re = -Real.pi * t by
-              simp [coeff, Complex.mul_re, show (z₅' t).im = t by
-                simp [show z₅' t = (Complex.I : ℂ) * (t : ℂ) by
-                  simpa [mul_assoc, mul_left_comm, mul_comm] using
-                    z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
+        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
+          (show (coeff t).re = -Real.pi * t by
+            simp [coeff, Complex.mul_re, show (z₅' t).im = t by
+              simp [show z₅' t = (Complex.I : ℂ) * (t : ℂ) by
+                simpa [mul_assoc, mul_left_comm, mul_comm] using
+                  z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
       exact le_mul_of_le_mul_of_nonneg_left
         (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-            SpherePacking.Integration.DifferentiationUnderIntegral.norm_gN_le_bound_mul_exp
-              (coeff := coeff) (ψ := ψI') (z := z₅') (n := n) (Cψ := Cψ)
+            norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψI') (z := z₅') (n := n) (Cψ := Cψ)
               (x := x) (t := t) hCψ0 (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
               hψI hcexp :
           ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
@@ -557,17 +550,15 @@ public theorem decay_J₅' :
           Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
             Real.exp (-2 * Real.pi * Real.sqrt x))
         (by positivity [hCψ0])
-    simpa [I, Kn] using
-      (SpherePacking.Integration.DifferentiationUnderIntegral.norm_integral_le_integral_bound_mul_const
-        (μ := μ) (f := gN n x) (bound := bound)
-        (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
+    simpa [I, Kn] using (norm_integral_le_integral_bound_mul_const
+      (μ := μ) (f := gN n x) (bound := bound)
+      (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖
         = x ^ k * ‖iteratedDeriv n J₅' x‖ := by
           simp [Real.norm_of_nonneg hx,
             norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x)]
-    _ ≤ x ^ k * (2 * ‖I n x‖) :=
-      mul_le_mul_of_nonneg_left (le_of_eq (by simp [hiterJ])) (pow_nonneg hx k)
+    _ = x ^ k * (2 * ‖I n x‖) := by simp [hiterJ]
     _ ≤ x ^ k * (2 * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
     _ ≤ (2 * Kn) * B := by
       nlinarith [mul_le_mul_of_nonneg_left
@@ -882,7 +873,7 @@ namespace MagicFunction.b.Schwartz.J3Smooth
 
 open scoped Interval Manifold Topology UpperHalfPlane MatrixGroups ModularForm
 open Complex Real Set intervalIntegral
-open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals
+open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals SpherePacking.ForMathlib
 open Matrix ModularGroup ModularForm
 
 /-- Compatibility of `ψT'` and `ψI'` along the parametrisations `z₃'`/`z₅'`. -/
@@ -949,10 +940,10 @@ public theorem decay_J₃' :
   let f : ℝ → ℂ := fun x ↦ (-1 / 2 : ℂ) • cexp ((x : ℂ) * ((Real.pi : ℂ) * Complex.I))
   have hf_cont : ContDiff ℝ (⊤ : ℕ∞) f := by
     simpa [f] using ((ofRealCLM.contDiff.mul contDiff_const).cexp.const_smul (-1 / 2 : ℂ))
-  obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.decay_iteratedFDeriv_mul_of_bound_left
+  obtain ⟨C, hC⟩ := decay_iteratedFDeriv_mul_of_bound_left
     (f := f) (g := J₅') (k := k) (n := n) (B := fun m ↦ (1 / 2 : ℝ) * Real.pi ^ m)
     hf_cont MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅'
-    (fun m x => SpherePacking.ForMathlib.norm_iteratedFDeriv_smul_cexp_mul_pi_I_le m x)
+    norm_iteratedFDeriv_smul_cexp_mul_pi_I_le
     (fun m => by simpa using (MagicFunction.b.Schwartz.J5Smooth.decay_J₅' (k := k) (n := m)))
   refine ⟨C, fun x hx => ?_⟩
   have hJ3fun : J₃' = fun y : ℝ ↦ f y * J₅' y :=
