@@ -2,6 +2,7 @@ module
 public import SpherePacking.ModularForms.EisensteinBase
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.TsumDerivWithin
 public import Mathlib.Analysis.Calculus.DiffContOnCl
 import Mathlib.Analysis.Complex.Liouville
 import SpherePacking.ModularForms.Lv1Lv2Identities

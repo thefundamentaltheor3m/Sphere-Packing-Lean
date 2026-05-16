@@ -1,4 +1,5 @@
 module
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 
