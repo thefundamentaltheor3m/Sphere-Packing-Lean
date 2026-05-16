@@ -704,6 +704,25 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     _ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by grind only
   simpa [w, A, x, e, u, C0] using hw_tail
 
+/-- Algebraic identity used in `exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one`:
+`(x²)⁻¹ - A + 1/32 = A·(w⁻¹ - (1 - 8u))`, where `A := e/256`, `w := A·x²`,
+`e := exp(2πt)`, `u := exp(-2πt)`. -/
+private lemma inv_H2_sq_decomposition (t : ℝ) (x : ℂ) :
+    let e : ℝ := Real.exp (2 * Real.pi * t)
+    let u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
+    let A : ℂ := ((e / 256 : ℝ) : ℂ)
+    let w : ℂ := A * (x ^ (2 : ℕ))
+    ((x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)) = A * (w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))) := by
+  intro e u A w
+  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
+  have hA0 : A ≠ 0 := ofReal_ne_zero.mpr (div_ne_zero (ne_of_gt (Real.exp_pos _)) (by norm_num))
+  have hA8u : A * ((8 * u : ℝ) : ℂ) = ((1 / 32 : ℝ) : ℂ) := by
+    simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
+      congrArg (fun r : ℝ ↦ (r : ℂ))
+        (show (e / 256) * (8 * u) = (1 / 32 : ℝ) by linear_combination (8 / 256 : ℝ) * heu)
+  linear_combination -(by simp [w, mul_inv_rev, hA0, mul_comm, mul_left_comm] :
+    A * w⁻¹ = (x ^ (2 : ℕ))⁻¹) - hA8u
+
 public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
@@ -725,14 +744,8 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
   have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
   have hmain_id :
-      ((x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)) = A * (w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))) := by
-    have hA0 : A ≠ 0 := ofReal_ne_zero.mpr (div_ne_zero (ne_of_gt (Real.exp_pos _)) (by norm_num))
-    have hA8u : A * ((8 * u : ℝ) : ℂ) = ((1 / 32 : ℝ) : ℂ) := by
-      simpa [A, Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using
-        congrArg (fun r : ℝ ↦ (r : ℂ))
-          (show (e / 256) * (8 * u) = (1 / 32 : ℝ) by linear_combination (8 / 256 : ℝ) * heu)
-    linear_combination -(by simp [w, mul_inv_rev, hA0, mul_comm, mul_left_comm] :
-      A * w⁻¹ = (x ^ (2 : ℕ))⁻¹) - hA8u
+      ((x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)) = A * (w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))) :=
+    inv_H2_sq_decomposition t x
   have hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [w, A, x, e, u, C0] using hw_tail_bound t ht CH2 (by simpa [x] using hH2 t ht)
   have hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
