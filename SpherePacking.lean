@@ -17,7 +17,6 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
-public import SpherePacking.ModularForms.BigO
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.Derivative
