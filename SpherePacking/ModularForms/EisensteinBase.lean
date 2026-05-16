@@ -161,51 +161,6 @@ public lemma E6_q_exp : (fun m ↦ (qExpansion 1 E₆).coeff m) =
 public lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
   EisensteinSeries.E_qExpansion_coeff_zero (k := 6) (by norm_num) (by decide)
 
-/-- The constant coefficient of `(1/1728) * (E₄^3 - E₆^2)` vanishes, hence it is a cusp form. -/
-public theorem E4E6_coeff_zero_eq_zero :
-  (PowerSeries.coeff 0)
-      (qExpansion 1
-        ((1 / 1728 : ℂ) • ((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3 - (DirectSum.of (ModularForm
-          Γ(1)) 6) E₆ ^ 2) 12)) =
-    0 := by
-  simp only [one_div, DirectSum.sub_apply]
-  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one (R := ℝ)]
-  rw [coe_sub]
-  rw [qExpansion_sub1]
-  simp only [map_smul, map_sub, smul_eq_mul,
-    mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
-  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
-    ext z; rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]; rfl
-  have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
-    ext z; rw [pow_two, @DirectSum.of_mul_of]; rfl
-  rw [hds, hd6]
-  have he4 : qExpansion (1 : ℝ) (E₄.mul (E₄.mul E₄)) =
-      qExpansion (1 : ℝ) E₄ * (qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) E₄) := by
-    rw [(by simpa using qExpansion_mul_coeff (n := 1) 4 8 E₄ (E₄.mul E₄) :
-      qExpansion (1 : ℝ) (E₄.mul (E₄.mul E₄)) =
-        qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) (E₄.mul E₄))]
-    congr 1
-    simpa using qExpansion_mul_coeff (n := 1) 4 4 E₄ E₄
-  have he6 : qExpansion (1 : ℝ) (E₆.mul E₆) =
-      qExpansion (1 : ℝ) E₆ * qExpansion (1 : ℝ) E₆ := by
-    simpa using qExpansion_mul_coeff (n := 1) 6 6 E₆ E₆
-  calc (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) -
-        (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆))
-      = (PowerSeries.coeff 0) (qExpansion (1 : ℝ) E₄ *
-          (qExpansion (1 : ℝ) E₄ * qExpansion (1 : ℝ) E₄)) -
-        (PowerSeries.coeff 0) (qExpansion (1 : ℝ) E₆ * qExpansion (1 : ℝ) E₆) := by
-          rw [he4, he6]
-    _ = 0 := by
-        simp [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero,
-          Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero, E4_q_exp_zero, E6_q_exp_zero,
-          mul_one]
-
-/-- The cusp form `(1/1728) * (E₄^3 - E₆^2)` of weight `12`. -/
-@[expose] public def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
-  let F := DirectSum.of _ 4 E₄
-  let G := DirectSum.of _ 6 E₆
-  cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
-
 /-- The first nontrivial `q`-coefficient of `Delta` is `1`. -/
 public lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 :=
   ModularForm.discriminant_qExpansion_coeff_one
