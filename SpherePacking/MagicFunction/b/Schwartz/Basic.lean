@@ -1098,58 +1098,69 @@ lemma integrableOn_ψS'_vertical_left :
     MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
       simpa [hEq t (lt_trans (by norm_num) ht)] using hC t ht.le
 
+/-- `J₂'(0) + J₄'(0)` equals `∫₀¹ ψS'(t + i) dt` via the parametrisations `z₂'`, `z₄'`,
+the reflection identity `J₄' = -∫₀¹ ψT'(t + i)`, and the additive relation
+`ψI = ψT + ψS`. -/
+private lemma J2'_add_J4'_zero_eq :
+    J₂' (0 : ℝ) + J₄' 0 = ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
+  have hJ2 : J₂' (0 : ℝ) = ∫ t in (0 : ℝ)..1, ψI' ((t : ℂ) + Complex.I) := by
+    simp only [J₂']; exact intervalIntegral.integral_congr fun t ht => by
+      simp [ψT'_z₂'_eq_ψI'_add_one (t := t)
+        (by simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)]
+  have hJ4 : J₄' (0 : ℝ) = -∫ t in (0 : ℝ)..1, ψT' ((t : ℂ) + Complex.I) := by
+    rw [show J₄' (0 : ℝ) = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) by simp [J₄']]
+    have hEq :
+        (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t)) =
+          ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' ((1 - t : ℂ) + Complex.I) :=
+      intervalIntegral.integral_congr fun t ht => by
+        have htIcc : t ∈ Icc (0 : ℝ) 1 := by
+          simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
+        simp [show z₄' t = (1 - (t : ℂ)) + Complex.I by simpa using z₄'_eq_of_mem htIcc]
+    let f : ℝ → ℂ := fun u => ψT' ((u : ℂ) + Complex.I)
+    rw [hEq]
+    trans ((-1 : ℂ) * ∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I))
+    · exact intervalIntegral.integral_const_mul (-1 : ℂ) _
+    rw [(intervalIntegral.integral_congr fun t _ => by
+          simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) by push_cast; ring] :
+            (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
+        (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
+  have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
+        ψS' ((t : ℂ) + Complex.I) := fun t =>
+    sub_eq_of_eq_add' <| by
+      have hz : 0 < (((t : ℂ) + Complex.I).im) := by simp
+      simpa [ψI', ψT', ψS', hz] using
+        congrArg (fun F : ℍ → ℂ => F ⟨(t : ℂ) + Complex.I, hz⟩) ψI_eq_add_ψT_ψS
+  have hAddI : Continuous fun t : ℝ => (⟨(t : ℂ) + Complex.I, by simp⟩ : ℍ) :=
+    Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
+  simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+    (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
+      ((by simpa [ψI'] using
+          MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
+            Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)
+      ((by simpa [ψT'] using
+          MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
+            Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)).symm.trans
+      (intervalIntegral.integral_congr fun t _ => hrel t)
+
+/-- `ψS ∘ ofComplex` is holomorphic on the open upper half plane (where `ofComplex` is the
+canonical lift). The factor decomposition `ψS = 128·((H₄-H₂)/H₃² - (H₂+H₃)/H₄²)` makes this
+an immediate consequence of modularity of `H₂, H₃, H₄`. -/
+private lemma differentiableOn_ψS_ofComplex :
+    DifferentiableOn ℂ (fun z : ℂ => ψS (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
+  have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
+  have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
+  have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
+  refine (DifferentiableOn.const_mul
+      (((hH4.sub hH2).div (hH3.pow 2) (fun _ _ => pow_ne_zero 2 (H₃_ne_zero _))).sub
+        ((hH2.add hH3).div (hH4.pow 2) (fun _ _ => pow_ne_zero 2 (H₄_ne_zero _))))
+      (128 : ℂ)).congr fun z _ => ?_
+  simpa [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+    show (H₄_MF : ℍ → ℂ) = H₄ from rfl] using
+    congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψS_eq'
+
 lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
-  have hJ24 : J₂' (0 : ℝ) + J₄' 0 = ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
-    have hJ2 : J₂' (0 : ℝ) = ∫ t in (0 : ℝ)..1, ψI' ((t : ℂ) + Complex.I) := by
-      simp only [J₂']; exact intervalIntegral.integral_congr fun t ht => by
-        simp [ψT'_z₂'_eq_ψI'_add_one (t := t)
-          (by simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht)]
-    have hJ4 : J₄' (0 : ℝ) = -∫ t in (0 : ℝ)..1, ψT' ((t : ℂ) + Complex.I) := by
-      rw [show J₄' (0 : ℝ) = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t) by simp [J₄']]
-      have hEq :
-          (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t)) =
-            ∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' ((1 - t : ℂ) + Complex.I) :=
-        intervalIntegral.integral_congr fun t ht => by
-          have htIcc : t ∈ Icc (0 : ℝ) 1 := by
-            simpa [uIcc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
-          simp [show z₄' t = (1 - (t : ℂ)) + Complex.I by simpa using z₄'_eq_of_mem htIcc]
-      let f : ℝ → ℂ := fun u => ψT' ((u : ℂ) + Complex.I)
-      rw [hEq]
-      trans ((-1 : ℂ) * ∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I))
-      · exact intervalIntegral.integral_const_mul (-1 : ℂ) _
-      rw [(intervalIntegral.integral_congr fun t _ => by
-            simp [f, show ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) by push_cast; ring] :
-              (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) = ∫ t in (0 : ℝ)..1, f (1 - t)),
-          (by simp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t), neg_one_mul]
-    have hrel : ∀ t : ℝ, ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) =
-          ψS' ((t : ℂ) + Complex.I) := fun t =>
-      sub_eq_of_eq_add' <| by
-        have hz : 0 < (((t : ℂ) + Complex.I).im) := by simp
-        simpa [ψI', ψT', ψS', hz] using
-          congrArg (fun F : ℍ → ℂ => F ⟨(t : ℂ) + Complex.I, hz⟩) ψI_eq_add_ψT_ψS
-    have hAddI : Continuous fun t : ℝ => (⟨(t : ℂ) + Complex.I, by simp⟩ : ℍ) :=
-      Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
-    simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
-        ((by simpa [ψI'] using
-            MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
-              Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)
-        ((by simpa [ψT'] using
-            MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
-              Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)).symm.trans
-        (intervalIntegral.integral_congr fun t _ => hrel t)
-  have hdiffψS :
-      DifferentiableOn ℂ (fun z : ℂ => ψS (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
-    have hH2 := (UpperHalfPlane.mdifferentiable_iff (f := H₂)).1 mdifferentiable_H₂
-    have hH3 := (UpperHalfPlane.mdifferentiable_iff (f := H₃)).1 mdifferentiable_H₃
-    have hH4 := (UpperHalfPlane.mdifferentiable_iff (f := H₄)).1 mdifferentiable_H₄
-    refine (DifferentiableOn.const_mul
-        (((hH4.sub hH2).div (hH3.pow 2) (fun _ _ => pow_ne_zero 2 (H₃_ne_zero _))).sub
-          ((hH2.add hH3).div (hH4.pow 2) (fun _ _ => pow_ne_zero 2 (H₄_ne_zero _))))
-        (128 : ℂ)).congr fun z _ => ?_
-    simpa [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
-      show (H₄_MF : ℍ → ℂ) = H₄ from rfl] using
-      congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψS_eq'
+  have hJ24 := J2'_add_J4'_zero_eq
+  have hdiffψS := differentiableOn_ψS_ofComplex
   have hcont : ContinuousOn ψS' (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) := by
     have hsubset : (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
       lt_of_lt_of_le (by norm_num) (by simpa [mem_Ici] using hz.2 : (1 : ℝ) ≤ z.im)
