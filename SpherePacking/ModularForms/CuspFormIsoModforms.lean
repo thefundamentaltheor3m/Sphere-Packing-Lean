@@ -1,6 +1,6 @@
 module
 import Mathlib.LinearAlgebra.Dimension.Localization
-import Mathlib.NumberTheory.ModularForms.LevelOne
+import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.QExpansionLemmas
@@ -9,7 +9,10 @@ public import SpherePacking.ModularForms.QExpansionLemmas
 /-!
 # Cusp forms vs. modular forms
 
-This file defines `mul_Delta_map`, `Modform_mul_Delta`, `CuspForms_iso_Modforms`, and lemmas.
+This file builds the linear equivalence `CuspForms_iso_Modforms : CuspForm Γ(1) k ≃ₗ ModularForm
+Γ(1) (k - 12)` (via multiplication/division by `Δ`) and uses mathlib's
+`CuspForm.rank_eq_zero_of_weight_lt_twelve` (transported through `Gamma_one_coe_eq_SL`) to derive
+the level-one weight `< 12` vanishing statements.
 -/
 
 open scoped MatrixGroups CongruenceSubgroup
@@ -68,28 +71,24 @@ public def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma
     ext z
     simp [Modform_mul_Delta_apply, CuspForm_div_Discriminant_apply, Delta_apply, Δ_ne_zero]
 
-/-- Mathlib's `levelOne_neg_weight_rank_zero` is stated for `𝒮ℒ`; transport it to `Γ(1)`. -/
-private lemma levelOne_neg_weight_rank_zero_Gamma {k : ℤ} (hk : k < 0) :
-    Module.rank ℂ (ModularForm Γ(1) k) = 0 := by
-  refine rank_eq_zero_iff.mpr fun f ↦ ⟨_, one_ne_zero, ?_⟩
-  have : ModularFormClass (ModularForm Γ(1) k) 𝒮ℒ k :=
-    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
-  simpa [← ModularForm.coe_eq_zero_iff] using
-    ModularFormClass.levelOne_neg_weight_eq_zero (F := ModularForm Γ(1) k) hk f
-
+/-- Transport mathlib's `CuspForm.rank_eq_zero_of_weight_lt_twelve` from `𝒮ℒ` to `Γ(1)`. -/
 public lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) :
     Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
-  rw [LinearEquiv.rank_eq (CuspForms_iso_Modforms k)]
-  exact levelOne_neg_weight_rank_zero_Gamma (by linarith)
+  let e : CuspForm Γ(1) k ≃ₗ[ℂ] CuspForm 𝒮ℒ k :=
+    { toFun := fun f => f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
+      map_add' := fun _ _ => by ext; rfl
+      map_smul' := fun _ _ => by ext; rfl
+      invFun := fun f => f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL
+      left_inv := fun _ => by ext; rfl
+      right_inv := fun _ => by ext; rfl }
+  rw [e.rank_eq]; exact CuspForm.rank_eq_zero_of_weight_lt_twelve hk
 
 /-- A modular form of level `Γ(1)` and weight `< 12` which is a cusp form is identically zero. -/
 public lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by
-  have hrank : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
-    rw [LinearEquiv.rank_eq (CuspForms_iso_Modforms k)]
-    exact levelOne_neg_weight_rank_zero_Gamma (by linarith)
-  have hzero : IsCuspForm_to_CuspForm Γ(1) k f hf = 0 :=
-    rank_zero_iff_forall_zero.mp hrank (IsCuspForm_to_CuspForm Γ(1) k f hf)
+  obtain ⟨g, hg⟩ := hf
+  let g' : CuspForm 𝒮ℒ k := g.copy (⇑g) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
+  have hg'_zero : g' = 0 :=
+    rank_zero_iff_forall_zero.mp (CuspForm.rank_eq_zero_of_weight_lt_twelve hk) g'
   ext z
-  simpa [hzero] using
-    (congr_fun (CuspForm_to_ModularForm_Fun_coe (Γ := Γ(1)) (k := k) f hf) z).symm
+  rw [← hg]; simpa [g'] using DFunLike.congr_fun hg'_zero z
