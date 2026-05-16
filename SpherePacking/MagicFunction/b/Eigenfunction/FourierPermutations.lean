@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2025 Sphere Packing in Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing in Lean contributors
+-/
 module
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
@@ -124,10 +129,6 @@ public lemma J₃'_add_J₄'_eq_curveIntegral_segments (r : ℝ) :
       (curveIntegral_segment_z₃ (f := Ψ₁' r)).symm
       (curveIntegral_segment_z₄ (f := Ψ₁' r)).symm
 
-/-! #### Fourier transform of the `J₁,J₂` kernels -/
-
-/-! ##### Auxiliary integrability lemmas (`t ↦ 1/t` substitution) -/
-
 /-- Gaussian integral in dimension `8`: `∫ exp (-π * t * ‖x‖^2) = (1 / t)^4`. -/
 public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
     (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ (4 : ℕ) := by
@@ -215,8 +216,8 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
       Integrable (fun t : ℝ ↦ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t))) μIoc01 := by
     simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using
       (show Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
-        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))
-        from by simpa [MeasureTheory.IntegrableOn] using hmajor0).const_mul Cψ
+        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) by
+        simpa [MeasureTheory.IntegrableOn] using hmajor0).const_mul Cψ
   have hmeas_g : AEStronglyMeasurable g μIoc01 := by
     have hcont_g : ContinuousOn g (Ioc (0 : ℝ) 1) := by
       simpa [g, one_div] using hcont.norm.mul
@@ -288,7 +289,7 @@ public lemma phase_mul_J₁'_eq_integral_permJ1Kernel (w x : EuclideanSpace ℝ 
   rw [show MagicFunction.b.RealIntegrals.J₁' (‖x‖ ^ (2 : ℕ)) =
         ∫ t : ℝ,
           (Complex.I : ℂ) * ψT' (z₁line t) *
-            cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)) ∂μIoc01 from by
+            cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₁line t)) ∂μIoc01 by
       simpa [μIoc01] using (J₁'_eq_integral_z₁line (r := (‖x‖ ^ (2 : ℕ))))]
   trans (∫ t : ℝ, cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) *
       ((Complex.I : ℂ) * ψT' (z₁line t) *
@@ -309,7 +310,7 @@ lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
             rw [show ‖permJ1Kernel w (x, t)‖ =
                 ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ *
                   (‖ψT' (z₁line t)‖ *
-                    ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖) from by
+                    ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₁line t))‖) by
               simp [permJ1Kernel, mul_assoc],
               show ‖cexp ((-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) by
                 simpa using Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)),
@@ -319,8 +320,8 @@ lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
                   norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
             simp [mul_assoc],
     MeasureTheory.integral_const_mul ‖ψT' (z₁line t)‖ fun a ↦ rexp (-(π * (t * ‖a‖ ^ 2)))]
-  simp [show (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ)
-    from by simpa [mul_assoc, mul_left_comm, mul_comm] using
+  simp [show (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) = (1 / t) ^ (4 : ℕ) by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
       (integral_rexp_neg_pi_mul_sq_norm (t := t) ht.1)]
 
 lemma integrable_permJ1Kernel_slice (w : EuclideanSpace ℝ (Fin 8))
@@ -403,6 +404,37 @@ public structure TendstoPsiOneHypotheses (wedgeSet : Set ℂ) (ψS : UpperHalfPl
 
 private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
+/--
+Geometric wedge lemma: if `|z.re - 1| ≤ z.im` and `z ≠ 1`, then the imaginary part of `g · z`
+under the Möbius action `z ↦ z.im / normSq (z - 1)` is at least `1 / (2 * z.im)`.
+-/
+private lemma one_div_two_im_le_im_div_normSq_sub_one
+    {z : ℂ} (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ))
+    (habs_re : |z.re - 1| ≤ z.im) :
+    (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) := by
+  have hnormSq_pos : 0 < Complex.normSq (z - 1) :=
+    Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
+  have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
+    have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
+      simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
+    nlinarith [show Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 by
+      simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm], hre_sq]
+  calc (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp
+    _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := mul_le_mul_of_nonneg_left
+          (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
+    _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
+
+/-- From a function tending to `0` at `atImInfty`, get a height threshold `A > 0` past which the
+norm is at most `1`. -/
+private lemma exists_height_norm_le_one_of_tendsto_zero
+    {ψS : UpperHalfPlane → ℂ} (hψS : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))) :
+    ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
+  rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
+    (((tendsto_zero_iff_norm_tendsto_zero).1 hψS).eventually
+      (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
+  exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
+    fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
+
 /-- Under `TendstoPsiOneHypotheses`, `Ψ₁' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
 public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
     {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ}
@@ -412,18 +444,13 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
   let M : ℝ := expNorm r (1 : ℂ) + 1
   have hMpos : 0 < M := by linarith [show 0 ≤ expNorm r 1 from norm_nonneg _]
   obtain ⟨δexp, hδexp_pos, hExpBound⟩ : ∃ δ : ℝ, 0 < δ ∧
-      ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
+      ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ M := by
     rcases (Metric.continuousAt_iff.1 (by
       simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
       ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
     exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
       (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
-  obtain ⟨A, hApos, hA⟩ : ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
-    rcases (UpperHalfPlane.atImInfty_mem (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
-      (((tendsto_zero_iff_norm_tendsto_zero).1 h.tendsto_ψS_atImInfty).eventually
-        (Iio_mem_nhds (by norm_num : (0:ℝ) < 1))) with ⟨A0, hA0⟩
-    exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
-      fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
+  obtain ⟨A, hApos, hA⟩ := exists_height_norm_le_one_of_tendsto_zero h.tendsto_ψS_atImInfty
   refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
   refine ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
     lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
@@ -447,20 +474,9 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
     have hz_im_lt : z.im < 1 / (2 * A) := lt_of_le_of_lt
       (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1))
       (by simpa [dist_eq_norm] using hdist_im)
-    have habs_re : |z.re - 1| ≤ z.im :=
-      h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
-    have hbound : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) := by
-      have hnormSq_pos : 0 < Complex.normSq (z - 1) :=
-        Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
-      have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
-        have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
-          simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
-        nlinarith [show Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 by
-          simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm], hre_sq]
-      calc (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp
-        _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := mul_le_mul_of_nonneg_left
-              (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
-        _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
+    have hbound : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
+      one_div_two_im_le_im_div_normSq_sub_one hz_im_pos hz1
+        (h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl)
     simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using ((lt_div_iff₀
       (by positivity : (0:ℝ) < 2 * z.im)).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using
         (lt_div_iff₀ (by positivity : (0:ℝ) < 2 * A)).1 hz_im_lt)).trans_le hbound |>.le
@@ -635,8 +651,6 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
 end Integral_Permutations.PermJ12
 end
 
-/-! ## Fourier transform of `J₂` -/
-
 noncomputable section
 
 open scoped FourierTransform RealInnerProductSpace Topology Real Interval
@@ -656,7 +670,7 @@ lemma phase_mul_J₂'_eq_integral_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)
       ∫ t : ℝ, permJ2Kernel w (x, t) ∂μIoc01 := by
   rw [show MagicFunction.b.RealIntegrals.J₂' (‖x‖ ^ (2 : ℕ)) =
       ∫ t : ℝ, ψT' (z₂line t) *
-        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t)) ∂μIoc01 from by
+        cexp ((π : ℂ) * Complex.I * ((‖x‖ ^ (2 : ℕ) : ℝ) : ℂ) * (z₂line t)) ∂μIoc01 by
     simpa [μIoc01] using (J₂'_eq_Ioc (r := ‖x‖ ^ (2 : ℕ))).trans
       (MeasureTheory.integral_congr_ae <| (ae_restrict_iff' measurableSet_Ioc).2 <|
         .of_forall fun t ht => by
@@ -698,12 +712,12 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
         (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) ≤ (Mψ : ℝ) * Cgauss := by
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
     rw [show (∫ x : EuclideanSpace ℝ (Fin 8), ‖permJ2Kernel w (x, t)‖) =
-        ‖ψT' (z₂line t)‖ * Cgauss from by
+        ‖ψT' (z₂line t)‖ * Cgauss by
       simpa [funext fun x : EuclideanSpace ℝ (Fin 8) =>
         show ‖permJ2Kernel w (x, t)‖ = ‖ψT' (z₂line t)‖ * rexp (-(π * ‖x‖ ^ 2)) by
           have hgauss :
               ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * (z₂line t))‖ = rexp (-(π * ‖x‖ ^ 2)) := by
-            simpa [z₂line, show (-π * (‖x‖ ^ 2) : ℝ) = -(π * ‖x‖ ^ 2) from by ring] using
+            simpa [z₂line, show (-π * (‖x‖ ^ 2) : ℝ) = -(π * ‖x‖ ^ 2) by ring] using
               norm_cexp_pi_mul_I_mul_sq (z := z₂line t) (x := x)
           dsimp [permJ2Kernel]
           rw [norm_mul, norm_phase_eq_one (w := w) (x := x)]
@@ -711,7 +725,7 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
         using MeasureTheory.integral_const_mul (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
           (r := ‖ψT' (z₂line t)‖) (f := fun x => rexp (-(π * ‖x‖ ^ 2)))]
     refine mul_le_mul_of_nonneg_right ?_ hCgauss
-    simpa [show z₂' t = z₂line t from by
+    simpa [show z₂' t = z₂line t by
       simpa [z₂line, add_assoc, add_left_comm, add_comm] using
         z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)] using hMψ' t ht
   have hcont : Continuous (permJ2Kernel w) := by unfold permJ2Kernel; fun_prop
@@ -752,8 +766,6 @@ public lemma fourier_J₂_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       w
 
 end
-
-/-! ## Fourier transform of `J₁` -/
 
 noncomputable section
 
@@ -1085,14 +1097,14 @@ public lemma J₆'_eq (r : ℝ) :
   simp only [MagicFunction.b.RealIntegrals.J₆', mul_assoc]
   congr 1
   refine MeasureTheory.integral_congr_ae ?_
-  refine
-    (ae_restrict_iff' (measurableSet_Ici : MeasurableSet (Ici (1 : ℝ)))).2 <| .of_forall fun s hs => ?_
+  refine (ae_restrict_iff' (measurableSet_Ici : MeasurableSet (Ici (1 : ℝ)))).2 <|
+    .of_forall fun s hs => ?_
   have hz6 : z₆' s = (Complex.I : ℂ) * (s : ℂ) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using (z₆'_eq_of_mem (t := s) hs)
-  -- β-reduce, rewrite `z₆' s`, and then simplify the exponential using `I*I = -1`.
   dsimp
   rw [hz6, show cexp (↑π * ((Complex.I : ℂ) * ((r : ℂ) * ((Complex.I : ℂ) * (s : ℂ))))) =
-      cexp (-↑π * ((r : ℂ) * (s : ℂ))) from congrArg cexp (by ring_nf; simp [Complex.I_sq])]
+      cexp (-↑π * ((r : ℂ) * (s : ℂ))) from
+    congrArg cexp (by ring_nf; simp [Complex.I_sq])]
 
 namespace PermJ5
 
@@ -1153,7 +1165,7 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
           ((-Complex.I : ℂ) *
                 ψS' ((Complex.I : ℂ) * (s : ℂ)) *
                 (s ^ (-(4 : ℤ)) : ℂ) *
-                Complex.exp ((-Real.pi * (‖x‖ ^ 2) / s : ℝ) : ℂ))‖ from by
+                Complex.exp ((-Real.pi * (‖x‖ ^ 2) / s : ℝ) : ℂ))‖ by
     simp [kernel, J5Change.g]]
   simp only [norm_mul, hphase, Complex.norm_exp_ofReal, norm_neg, Complex.norm_I, one_mul]
 
@@ -1345,7 +1357,7 @@ section Eigenfunction
 /-- The Schwartz function `b` is a `(-1)`-eigenfunction of the Fourier transform on `ℝ⁸`. -/
 public theorem eig_b : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) b = -b := by
   rw [show b = J₁ + J₂ + J₃ + J₄ + J₅ + J₆ from rfl,
-    show J₁ + J₂ + J₃ + J₄ + J₅ + J₆ = (J₁ + J₂) + (J₃ + J₄) + J₅ + J₆ from by ac_rfl,
+    show J₁ + J₂ + J₃ + J₄ + J₅ + J₆ = (J₁ + J₂) + (J₃ + J₄) + J₅ + J₆ by ac_rfl,
     map_add, map_add, map_add, perm_J₁_J₂, perm_J₅, perm_₃_J₄, perm_J₆]
   abel
 
