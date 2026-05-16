@@ -390,15 +390,9 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     tendsto_cont
   simpa [f₄] using h_serre_H₄.add h_scaled
 
-lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g := by
-  simpa [theta_g, add_assoc, mul_assoc] using
-    (by fun_prop :
-      MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (((2 : ℂ) • H₂ + H₄) * f₂ + (H₂ + (2 : ℂ) • H₄) * f₄))
+lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g := by unfold theta_g; fun_prop
 
-lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by
-  simpa [theta_h, add_assoc] using
-    (by fun_prop :
-      MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f₂ ^ 2 + f₂ * f₄ + f₄ ^ 2))
+lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by unfold theta_h; fun_prop
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
