@@ -387,16 +387,14 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     rw [hslash3 T, H₂_T_action, H₃_T_action, H₄_T_action]
     ext z; simp [thetaDelta_f, mul_comm]
   -- Squaring removes the sign, so `thetaDeltaFun` is invariant under `S` and `T` at weight 12.
-  have thetaDeltaFun_S_action : (thetaDeltaFun ∣[(12 : ℤ)] S) = thetaDeltaFun := by
-    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] S) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_S] using
-        (mul_slash_SL2 6 6 S thetaDelta_f thetaDelta_f)
+  have action (A : SL(2, ℤ)) (hA : (thetaDelta_f ∣[(6 : ℤ)] A) = -thetaDelta_f) :
+      (thetaDeltaFun ∣[(12 : ℤ)] A) = thetaDeltaFun := by
+    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] A) = thetaDelta_f ^ 2 := by
+      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hA] using
+        (mul_slash_SL2 6 6 A thetaDelta_f thetaDelta_f)
     dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
-  have thetaDeltaFun_T_action : (thetaDeltaFun ∣[(12 : ℤ)] T) = thetaDeltaFun := by
-    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] T) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_T] using
-        (mul_slash_SL2 6 6 T thetaDelta_f thetaDelta_f)
-    dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
+  have thetaDeltaFun_S_action := action S hprod_S
+  have thetaDeltaFun_T_action := action T hprod_T
   have thetaDeltaFun_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDeltaFun := by
     have hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDelta_f := by
       simpa [thetaDelta_f] using
@@ -442,11 +440,11 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
         atImInfty (𝓝 c) := by simpa using tendsto_const_nhds.mul hlim_Delta
     simpa [hCFeq, div_eq_mul_inv, mul_left_comm, mul_comm] using hmul
   have hc_one : c = (1 : ℂ) := tendsto_nhds_unique hlim_c hlim_thetaDelta_CF
-  have hEqFun : thetaDeltaFun τ = Delta τ := by
-    have hEqCF : thetaDelta_CF = Delta := by
-      have : (1 : ℂ) • Delta = thetaDelta_CF := by simpa [hc_one] using hc
-      simpa using this.symm
-    exact congrArg (fun f : CuspForm (Γ 1) 12 => f τ) hEqCF
+  have hEqCF : thetaDelta_CF = Delta := by
+    have h : (1 : ℂ) • Delta = thetaDelta_CF := by simpa [hc_one] using hc
+    simpa using h.symm
+  have hEqFun : thetaDeltaFun τ = Delta τ :=
+    congrArg (fun f : CuspForm (Γ 1) 12 => f τ) hEqCF
   simpa [thetaDeltaFun, thetaDelta_f, Pi.smul_apply, smul_eq_mul, div_eq_mul_inv,
     mul_assoc, mul_left_comm, mul_comm] using hEqFun.symm
 
