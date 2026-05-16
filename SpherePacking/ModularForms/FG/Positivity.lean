@@ -244,252 +244,206 @@ private lemma cexp_two_pi_I_nat_mul_I_mul (t : ℝ) (n : ℕ) :
     cexp (2 * π * Complex.I * n * (Complex.I * t)) = (rexp (-(2 * π * n * t)) : ℂ) := by
   ring_nf; simp
 
-private lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
-  -- We use the q-expansion of `E₂` together with termwise differentiation of q-series.
+/-- The q-coefficient for `-D(E₂)`: `0` at `n = 0` and `24·n·σ₁(n)` for `n ≥ 1`. -/
+private noncomputable def negDE₂Coeff (n : ℕ) : ℂ := (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ)
+
+/-- Derivative bound on compact subsets of `ℍ` for the `E₂` q-series — used to feed
+`D_qexp_tsum`. -/
+private lemma E₂_qseries_deriv_bound :
+    let a : ℕ → ℂ := fun n => if n = 0 then (1 : ℂ) else (-24 : ℂ) * (σ 1 n : ℂ)
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
+        ‖a n * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * k.1)‖ ≤ u n := by
+  intro a K hK hKc
+  have him_pos : ∀ z ∈ K, (0 : ℝ) < z.im := fun z hz => hK hz
+  obtain ⟨δ, hδ_pos, hδ_le⟩ :=
+    IsCompact.exists_forall_le' (s := K) hKc Complex.continuous_im.continuousOn
+      (a := (0 : ℝ)) him_pos
+  let r : ℝ := Real.exp (-2 * Real.pi * δ)
+  have hr_norm : ‖r‖ < 1 := by
+    have hr_nonneg : 0 ≤ r := by positivity
+    have hr_lt_one : r < 1 := Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, hδ_pos])
+    simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
+  refine ⟨fun n => (48 * Real.pi) * (((n : ℝ) ^ 3 : ℝ) * r ^ n),
+    (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm).mul_left (48 * Real.pi), ?_⟩
+  intro n k
+  by_cases hn0 : n = 0
+  · subst hn0; simp [a]
+  have hnorm_exp : ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n :=
+    SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n (hδ_le k.1 k.2)
+  have hσ : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by exact_mod_cast (sigma_bound 1 n)
+  have ha_norm : ‖a n‖ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
+    have : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn0]
+    simp_all
+  have hnorm_2pin : ‖(2 * π * Complex.I * (n : ℂ) : ℂ)‖ = 2 * Real.pi * (n : ℝ) := by
+    simp [Real.norm_of_nonneg Real.pi_pos.le, mul_left_comm, mul_comm]
+  calc
+    ‖a n * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * k.1)‖
+        = ‖a n‖ * ‖(2 * π * Complex.I * (n : ℂ) : ℂ)‖ *
+            ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ := by simp [mul_assoc]
+    _ ≤ ((24 : ℝ) * (n : ℝ) ^ 2) * (2 * Real.pi * (n : ℝ)) * (r ^ n) := by
+          gcongr
+          · simpa [hnorm_2pin] using (le_of_eq hnorm_2pin)
+    _ ≤ (48 * Real.pi) * (((n : ℝ) ^ 3 : ℝ) * r ^ n) := by grind only
+
+/-- The q-series formula for `-D(E₂)`: `negDE₂ τ = ∑ 24·n·σ₁(n)·exp(2πinτ)`. -/
+private lemma negDE₂_eq_qseries (τ : UpperHalfPlane) :
+    negDE₂ τ = ∑' n : ℕ, negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ) := by
   let a : ℕ → ℂ := fun n => if n = 0 then (1 : ℂ) else (-24 : ℂ) * (σ 1 n : ℂ)
-  have hE2fun :
-      (E₂ : UpperHalfPlane → ℂ) =
-        fun z : UpperHalfPlane =>
-          ∑' n : ℕ, a n * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
-    funext z
-    simpa [a, mul_assoc] using (E₂_eq_qexp z)
-  -- Derivative bounds on compact subsets of the upper half-plane for this q-series.
-  have hsum_deriv :
-      ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-        ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
-          ‖a n * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * k.1)‖ ≤ u n := by
-    intro K hK hKc
-    have him_cont : ContinuousOn (fun w : ℂ => w.im) K := Complex.continuous_im.continuousOn
-    have him_pos : ∀ z ∈ K, (0 : ℝ) < z.im := fun z hz => hK hz
-    obtain ⟨δ, hδ_pos, hδ_le⟩ :=
-      IsCompact.exists_forall_le' (s := K) hKc him_cont (a := (0 : ℝ)) him_pos
-    let r : ℝ := Real.exp (-2 * Real.pi * δ)
-    have hr_norm : ‖r‖ < 1 := by
-      have hr_nonneg : 0 ≤ r := by positivity
-      have hr_lt_one : r < 1 := Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, hδ_pos])
-      simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
-    let u : ℕ → ℝ := fun n => (48 * Real.pi) * (((n : ℝ) ^ 3 : ℝ) * r ^ n)
-    have hu : Summable u := by
-      have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 3 : ℝ) * r ^ n) :=
-        summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm
-      exact hs.mul_left (48 * Real.pi)
-    refine ⟨u, hu, ?_⟩
-    intro n k
-    by_cases hn0 : n = 0
-    · subst hn0
-      simp [a, u]
-    have hk_im : δ ≤ k.1.im := hδ_le k.1 k.2
-    have hnorm_exp :
-        ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n :=
-      SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
-    have hσ : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by
-      exact_mod_cast (sigma_bound 1 n)
-    have ha_norm : ‖a n‖ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
-      have : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn0]
-      simp_all
-    have hnorm_2pin : ‖(2 * π * Complex.I * (n : ℂ) : ℂ)‖ = 2 * Real.pi * (n : ℝ) := by
-      simp [Real.norm_of_nonneg Real.pi_pos.le, mul_left_comm, mul_comm]
-    calc
-      ‖a n * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * k.1)‖
-          = ‖a n‖ * ‖(2 * π * Complex.I * (n : ℂ) : ℂ)‖ *
-              ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ := by
-                simp [mul_assoc]
-      _ ≤ ((24 : ℝ) * (n : ℝ) ^ 2) * (2 * Real.pi * (n : ℝ)) * (r ^ n) := by
-            gcongr
-            · simpa [hnorm_2pin] using (le_of_eq hnorm_2pin)
-      _ ≤ u n := by
-            grind only
-  have hneg (τ : UpperHalfPlane) :
-      negDE₂ τ =
-        ∑' n : ℕ, (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) := by
-    have hD :
-        D E₂ τ =
-          ∑' n : ℕ, (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ) := by
-      have hD' := D_qexp_tsum a τ hsum_deriv
-      simpa [hE2fun] using hD'
-    have hterm (n : ℕ) :
-        -((n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) =
-          (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) := by
-      by_cases hn : n = 0
-      · subst hn; simp [a]
-      · have ha : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn]
-        rw [ha]
-        ring
-    have hnegDE₂ : negDE₂ τ = -(D E₂ τ) := by simp [negDE₂, Pi.neg_apply]
-    calc
-      negDE₂ τ = -(D E₂ τ) := hnegDE₂
-      _ = -(∑' n : ℕ, (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) := by rw [hD]
-      _ = ∑' n : ℕ, -((n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) := by
-            simpa using
-              (tsum_neg (f := fun n : ℕ => (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ))).symm
-      _ = ∑' n : ℕ, (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) :=
-        tsum_congr hterm
-  have hsum_term (τ : UpperHalfPlane) :
-      Summable (fun n : ℕ =>
-        (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)) := by
-    set r : ℝ := ‖cexp (2 * π * Complex.I * τ)‖ with hr
-    have hr_nonneg : 0 ≤ r := norm_nonneg _
-    have hr_lt_one : r < 1 := by
-      simpa [r, hr] using (exp_upperHalfPlane_lt_one τ)
-    have hr_norm : ‖(r : ℝ)‖ < 1 := by
-      simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
-    have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 3 : ℝ) * r ^ n) :=
-      summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm
-    have hσ (n : ℕ) : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by
-      exact_mod_cast (sigma_bound 1 n)
-    have hbound :
-        ∀ n : ℕ, ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)‖ ≤
-          (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
-      intro n
-      by_cases hn : n = 0
-      · subst hn; simp [r]
-      · have hqpow :
-            ‖cexp (2 * π * Complex.I * n * τ)‖ = r ^ n := by
-          have hexp :
-              cexp (2 * π * Complex.I * n * τ) = cexp (2 * π * Complex.I * τ) ^ n := by
-            simpa using (exp_aux τ n)
-          simp [r, hr, hexp, norm_pow]
-        have hσ' : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := hσ n
-        calc
-          ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)‖
-              = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * ‖cexp (2 * π * Complex.I * n * τ)‖ := by
-                  have h1 :
-                      ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)‖ =
-                        ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ)‖ *
-                          ‖cexp (2 * π * Complex.I * n * τ)‖ := by
-                    simp [mul_assoc]
-                  calc
-                    ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)‖ =
-                        ‖(24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ)‖ *
-                          ‖cexp (2 * π * Complex.I * n * τ)‖ := h1
-                    _ = ((24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ)) *
-                          ‖cexp (2 * π * Complex.I * n * τ)‖ := by
-                          simp [mul_assoc, mul_comm]
-                    _ = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) *
-                          ‖cexp (2 * π * Complex.I * n * τ)‖ := by
-                          simp [mul_assoc]
-          _ = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * (r ^ n) := by simp [hqpow]
-          _ ≤ (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
-                have hn0 : 0 ≤ (n : ℝ) := by positivity
-                have hrn : 0 ≤ r ^ n := pow_nonneg hr_nonneg _
-                have hσmul :
-                    (n : ℝ) * (σ 1 n : ℝ) ≤ (n : ℝ) * (n : ℝ) ^ 2 :=
-                  mul_le_mul_of_nonneg_left hσ' hn0
-                have hσmul' :
-                    (n : ℝ) * (σ 1 n : ℝ) * (r ^ n) ≤ (n : ℝ) * (n : ℝ) ^ 2 * (r ^ n) :=
-                  mul_le_mul_of_nonneg_right hσmul hrn
-                grind only
-    refine Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
-      (hs.mul_left 24) (fun n => hbound n)
+  have hE2fun : (E₂ : UpperHalfPlane → ℂ) =
+      fun z : UpperHalfPlane => ∑' n : ℕ, a n * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
+    funext z; simpa [a, mul_assoc] using (E₂_eq_qexp z)
+  have hD : D E₂ τ = ∑' n : ℕ, (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ) := by
+    have hD' := D_qexp_tsum a τ (E₂_qseries_deriv_bound)
+    simpa [hE2fun] using hD'
+  have hterm (n : ℕ) :
+      -((n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) =
+        negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ) := by
+    by_cases hn : n = 0
+    · subst hn; simp [a, negDE₂Coeff]
+    · have ha : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn]
+      rw [ha, negDE₂Coeff]; ring
+  calc
+    negDE₂ τ = -(D E₂ τ) := by simp [negDE₂, Pi.neg_apply]
+    _ = ∑' n : ℕ, -((n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) := by
+          rw [hD]
+          simpa using
+            (tsum_neg (f := fun n : ℕ => (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ))).symm
+    _ = ∑' n : ℕ, negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ) := tsum_congr hterm
+
+/-- The q-series for `-D(E₂) τ` is absolutely summable. -/
+private lemma negDE₂_qseries_summable (τ : UpperHalfPlane) :
+    Summable (fun n : ℕ => negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)) := by
+  set r : ℝ := ‖cexp (2 * π * Complex.I * τ)‖ with hr
+  have hr_nonneg : 0 ≤ r := norm_nonneg _
+  have hr_lt_one : r < 1 := by simpa [r, hr] using (exp_upperHalfPlane_lt_one τ)
+  have hr_norm : ‖(r : ℝ)‖ < 1 := by
+    simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
+  have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 3 : ℝ) * r ^ n) :=
+    summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm
+  have hσ (n : ℕ) : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by exact_mod_cast (sigma_bound 1 n)
+  have hbound : ∀ n : ℕ, ‖negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)‖ ≤
+      (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
+    intro n
+    by_cases hn : n = 0
+    · subst hn; simp [r, negDE₂Coeff]
+    · have hqpow : ‖cexp (2 * π * Complex.I * n * τ)‖ = r ^ n := by
+        have hexp : cexp (2 * π * Complex.I * n * τ) = cexp (2 * π * Complex.I * τ) ^ n := by
+          simpa using (exp_aux τ n)
+        simp [r, hr, hexp, norm_pow]
+      have hσ' := hσ n
+      have hn0 : 0 ≤ (n : ℝ) := by positivity
+      have hrn : 0 ≤ r ^ n := pow_nonneg hr_nonneg _
+      calc
+        ‖negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)‖
+            = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * ‖cexp (2 * π * Complex.I * n * τ)‖ := by
+              simp [negDE₂Coeff, mul_assoc, mul_comm]
+        _ = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * (r ^ n) := by simp [hqpow]
+        _ ≤ (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
+              have hσmul : (n : ℝ) * (σ 1 n : ℝ) ≤ (n : ℝ) * (n : ℝ) ^ 2 :=
+                mul_le_mul_of_nonneg_left hσ' hn0
+              have hσmul' := mul_le_mul_of_nonneg_right hσmul hrn
+              grind only
+  exact Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
+    (hs.mul_left 24) (fun n => hbound n)
+
+/-- On the imaginary axis `τ = i·t`, the imaginary part of every term in the q-series vanishes. -/
+private lemma negDE₂_term_im_zero_on_imag_axis (t : ℝ) (n : ℕ) (τ : UpperHalfPlane)
+    (hτ : (τ : ℂ) = Complex.I * t) :
+    (negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)).im = 0 := by
+  have hq : cexp (2 * π * Complex.I * n * τ) = (rexp (-(2 * π * n * t)) : ℂ) := by
+    rw [hτ]; exact cexp_two_pi_I_nat_mul_I_mul t n
+  rw [hq]
+  set x : ℂ := negDE₂Coeff n
+  set y : ℂ := (rexp (-(2 * π * n * t)) : ℂ)
+  have hx : x.im = 0 := by simp [x, negDE₂Coeff]
+  have hy : y.im = 0 := by simpa [y] using (Complex.ofReal_im (rexp (-(2 * π * n * t))))
+  have : (x * y).im = 0 := by simp [Complex.mul_im, hx, hy]
+  simpa [x, y] using this
+
+/-- On the imaginary axis `τ = i·t`, the real part of each q-series term equals
+`24·n·σ₁(n)·exp(-2πnt) ≥ 0`. -/
+private lemma negDE₂_term_re_on_imag_axis (t : ℝ) (n : ℕ) (τ : UpperHalfPlane)
+    (hτ : (τ : ℂ) = Complex.I * t) :
+    (negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)).re =
+      (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
+  have hq : cexp (2 * π * Complex.I * n * τ) = (rexp (-(2 * π * n * t)) : ℂ) := by
+    rw [hτ]; exact cexp_two_pi_I_nat_mul_I_mul t n
+  have harg : (-(2 * π * (n : ℝ) * t)) = (-2 * Real.pi * (n : ℝ) * t) := by ring
+  rw [hq]
+  set x : ℂ := negDE₂Coeff n
+  set y : ℂ := (rexp (-(2 * π * n * t)) : ℂ)
+  have hx_im : x.im = 0 := by simp [x, negDE₂Coeff]
+  have hy_im : y.im = 0 := by simpa [y] using (Complex.ofReal_im (rexp (-(2 * π * n * t))))
+  have hx_re : x.re = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) := by
+    simp [x, negDE₂Coeff, Complex.mul_re, mul_assoc, mul_comm]
+  have hy_re : y.re = rexp (-(2 * π * n * t)) := by
+    simpa [y] using (Complex.ofReal_re (rexp (-(2 * π * n * t))))
+  have hxy : (x * y).re = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * rexp (-(2 * π * n * t)) := by
+    simp [Complex.mul_re, hx_im, hy_im, hx_re, hy_re, mul_assoc, mul_comm, mul_left_comm]
+  change (x * y).re = _
+  rw [hxy, ← harg]
+
+/-- Summability of the real-valued majorant `∑ 24·n·σ₁(n)·exp(-2πnt)` on the imaginary axis. -/
+private lemma negDE₂_re_series_summable (t : ℝ) (ht : 0 < t) :
+    Summable (fun n : ℕ =>
+      (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t)) := by
+  let r : ℝ := Real.exp (-2 * Real.pi * t)
+  have hr_nonneg : 0 ≤ r := (Real.exp_pos _).le
+  have hr_lt_one : r < 1 := Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, ht])
+  have hr_norm : ‖(r : ℝ)‖ < 1 := by
+    simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
+  have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 3 : ℝ) * r ^ n) :=
+    summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm
+  have hσ (n : ℕ) : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by exact_mod_cast (sigma_bound 1 n)
+  have hbound : ∀ n : ℕ,
+      ‖(24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t)‖ ≤
+        (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
+    intro n
+    by_cases hn : n = 0
+    · subst hn; simp [r]
+    · have hexp : Real.exp (-2 * Real.pi * (n : ℝ) * t) = r ^ n := by
+        rw [show (-2 * Real.pi * (n : ℝ) * t) = (n : ℕ) * (-2 * Real.pi * t) from by ring,
+          Real.exp_nat_mul]
+      have hn0 : 0 ≤ (n : ℝ) := by positivity
+      have hrn : 0 ≤ r ^ n := pow_nonneg hr_nonneg _
+      have hσ' := hσ n
+      have hx_nonneg : 0 ≤ (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) *
+          Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
+        have hσ0 : 0 ≤ (σ 1 n : ℝ) := by exact_mod_cast (Nat.zero_le _)
+        positivity
+      rw [Real.norm_of_nonneg hx_nonneg, hexp]
+      have : (n : ℝ) * (σ 1 n : ℝ) ≤ (n : ℝ) ^ 3 := by
+        nlinarith [mul_le_mul_of_nonneg_left hσ' hn0]
+      nlinarith [mul_le_mul_of_nonneg_right this hrn, hrn]
+  exact Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
+    (hs.mul_left 24) (fun n => hbound n)
+
+private lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
   refine ⟨?_, ?_⟩
-  · intro t ht
+  · -- Reality on the imaginary axis: every term's imaginary part is zero.
+    intro t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
     set τ : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-    rw [hneg τ, im_tsum (hsum_term τ)]
-    have hterm_im (n : ℕ) :
-        ((24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)).im = 0 := by
-      have hq : cexp (2 * π * Complex.I * n * τ) = (rexp (-(2 * π * n * t)) : ℂ) := by
-        simpa [τ] using (cexp_two_pi_I_nat_mul_I_mul (t := t) (n := n))
-      rw [hq]
-      set x : ℂ := (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ)
-      set y : ℂ := (rexp (-(2 * π * n * t)) : ℂ)
-      have hx : x.im = 0 := by simp [x]
-      have hy : y.im = 0 := by
-        simpa [y] using (Complex.ofReal_im (rexp (-(2 * π * n * t))))
-      have : (x * y).im = 0 := by simp [Complex.mul_im, hx, hy]
-      simpa [x, y, mul_assoc] using this
-    simpa using (tsum_congr hterm_im).trans tsum_zero
-  · intro t ht
+    have hτ : (τ : ℂ) = Complex.I * t := rfl
+    rw [negDE₂_eq_qseries τ, im_tsum (negDE₂_qseries_summable τ)]
+    simpa using (tsum_congr (negDE₂_term_im_zero_on_imag_axis t · τ hτ)).trans tsum_zero
+  · -- Positivity of the real part: bound by a positive real q-series.
+    intro t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
     set τ : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-    -- Compute termwise real parts: on the imaginary axis the exponential is real and positive.
-    have hterm_re (n : ℕ) :
-        ((24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)).re =
-          (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
-      have hq :
-          cexp (2 * π * Complex.I * n * τ) = (rexp (-(2 * π * n * t)) : ℂ) := by
-        simpa [τ] using (cexp_two_pi_I_nat_mul_I_mul (t := t) (n := n))
-      have harg : (-(2 * π * n * t)) = (-2 * Real.pi * (n : ℝ) * t) := by ring
-      rw [hq]
-      set x : ℂ := (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ)
-      set y : ℂ := (rexp (-(2 * π * n * t)) : ℂ)
-      have hx : x.im = 0 := by simp [x]
-      have hy : y.im = 0 := by
-        simpa [y] using (Complex.ofReal_im (rexp (-(2 * π * n * t))))
-      have hxre : x.re = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) := by
-        simp [x, mul_assoc, mul_comm, mul_left_comm]
-      have hyre : y.re = rexp (-(2 * π * n * t)) := by
-        simpa [y] using (Complex.ofReal_re (rexp (-(2 * π * n * t))))
-      have : (x * y).re = (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * rexp (-(2 * π * n * t)) := by
-        simp [Complex.mul_re, hx, hy, hxre, hyre, mul_assoc, mul_comm, mul_left_comm]
-      simpa [x, y, mul_assoc, harg] using this
-    have hsumRe :
-        Summable (fun n : ℕ =>
-          (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t)) := by
-      -- Bound by `n^3 * r^n` with `r = exp(-2πt)`.
-      set r : ℝ := Real.exp (-2 * Real.pi * t)
-      have hr_nonneg : 0 ≤ r := (Real.exp_pos _).le
-      have hr_lt_one : r < 1 := Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, ht])
-      have hr_norm : ‖(r : ℝ)‖ < 1 := by
-        simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
-      have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 3 : ℝ) * r ^ n) :=
-        summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 3 hr_norm
-      have hσ (n : ℕ) : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by
-        exact_mod_cast (sigma_bound 1 n)
-      have hbound :
-          ∀ n : ℕ,
-            ‖(24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t)‖ ≤
-              (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n) := by
-        intro n
-        by_cases hn : n = 0
-        · subst hn
-          simp [r]
-        · have hexp :
-              Real.exp (-2 * Real.pi * (n : ℝ) * t) = r ^ n := by
-            -- `exp(-2πnt) = (exp(-2πt))^n`.
-            have hmul : (-2 * Real.pi * (n : ℝ) * t) = n * (-2 * Real.pi * t) := by
-              ring
-            calc
-              Real.exp (-2 * Real.pi * (n : ℝ) * t) = Real.exp (n * (-2 * Real.pi * t)) := by
-                rw [hmul]
-              _ = Real.exp (-2 * Real.pi * t) ^ n := by
-                simpa using (Real.exp_nat_mul (-2 * Real.pi * t) n)
-              _ = r ^ n := by simp [r]
-          have hn0 : 0 ≤ (n : ℝ) := by positivity
-          have hrn : 0 ≤ r ^ n := pow_nonneg hr_nonneg _
-          have hσ' : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := hσ n
-          -- For real terms, `‖x‖ = |x|`, and everything is nonnegative.
-          have hx_nonneg :
-              0 ≤ (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
-            have h24 : 0 ≤ (24 : ℝ) := by norm_num
-            have hn0 : 0 ≤ (n : ℝ) := by positivity
-            have hσ0 : 0 ≤ (σ 1 n : ℝ) := by exact_mod_cast (Nat.zero_le _)
-            have hexp0 : 0 ≤ Real.exp (-2 * Real.pi * (n : ℝ) * t) := (Real.exp_pos _).le
-            -- Product of nonnegative terms.
-            have : 0 ≤ (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) :=
-              mul_nonneg (mul_nonneg h24 hn0) hσ0
-            exact mul_nonneg this hexp0
-          rw [Real.norm_of_nonneg hx_nonneg, hexp]
-          have : (n : ℝ) * (σ 1 n : ℝ) ≤ (n : ℝ) ^ 3 := by
-            have := mul_le_mul_of_nonneg_left hσ' hn0
-            nlinarith [this]
-          nlinarith [mul_le_mul_of_nonneg_right this hrn, hrn]
-      refine Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
-        (hs.mul_left 24) (fun n => hbound n)
-    have hpos :
-        0 < ∑' n : ℕ,
-          (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) :=
-      Summable.tsum_pos hsumRe (fun i ↦ by positivity) 1 (by positivity)
-    have hre_tsum :
-        (negDE₂ τ).re =
-          ∑' n : ℕ,
-            (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
-      have hre' :
-          (negDE₂ τ).re =
-            ∑' n : ℕ,
-              ((24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)).re := by
-        simpa [hneg τ] using (Complex.reCLM.map_tsum (hsum_term τ))
-      simp [hre', hterm_re]
+    have hτ : (τ : ℂ) = Complex.I * t := rfl
+    have hpos : 0 < ∑' n : ℕ,
+        (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) :=
+      Summable.tsum_pos (negDE₂_re_series_summable t ht)
+        (fun i ↦ by positivity) 1 (by positivity)
+    have hre_tsum : (negDE₂ τ).re =
+        ∑' n : ℕ, (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
+      have hre' : (negDE₂ τ).re =
+          ∑' n : ℕ, (negDE₂Coeff n * cexp (2 * π * Complex.I * n * τ)).re := by
+        simpa [negDE₂_eq_qseries τ] using
+          (Complex.reCLM.map_tsum (negDE₂_qseries_summable τ))
+      simp [hre', negDE₂_term_re_on_imag_axis t _ τ hτ]
     simpa [hre_tsum] using hpos
 
 private lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
