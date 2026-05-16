@@ -268,13 +268,8 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
   exact smul_left_injective _ hne h5
 
 /-- A crude upper bound on the divisor sum `σ k n`. -/
-public lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
-  rw [ArithmeticFunction.sigma_apply]
-  refine (Finset.sum_le_sum fun d hd =>
-    pow_le_pow_left₀ (Nat.zero_le _) (Nat.divisor_le hd) _).trans ?_
-  simp only [Finset.sum_const, smul_eq_mul]
-  simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using
-    Nat.mul_le_mul_right (n ^ k) (Nat.card_divisors_le_self n)
+public lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) :=
+  ArithmeticFunction.sigma_le_pow_succ k n
 
 def Ek_q (k : ℕ) : ℕ → ℂ := fun m ↦ if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (σ (k-1) m)
