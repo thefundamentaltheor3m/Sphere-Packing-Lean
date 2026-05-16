@@ -792,57 +792,76 @@ private lemma integral_integral_swap_muIoc01
     (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ioc).2 <|
       Filter.Eventually.of_forall fun t ht => by simp [hfg t ht]
 
+/-- Convert a curve integral of `scalarOneForm Φ` over `segment a b` into an integral over
+`Ioc 0 1` using the line parametrisation `lineMap a b = zline` and direction `b - a`. -/
+private lemma curveIntegral_segment_scalarOneForm_eq_intervalIntegral
+    (Φ : ℂ → ℂ) (zline : ℝ → ℂ) (a b : ℂ)
+    (hzline : ∀ t : ℝ, AffineMap.lineMap a b t = zline t) :
+    (∫ᶜ z in Path.segment a b, scalarOneForm Φ z) =
+      ∫ t in Ioc (0 : ℝ) 1, Φ (zline t) * (b - a) := by
+  rw [show (∫ᶜ z in Path.segment a b, scalarOneForm Φ z) =
+        ∫ t in (0 : ℝ)..1, (scalarOneForm Φ (AffineMap.lineMap a b t)) (b - a) from
+      curveIntegral_segment _ _ _,
+    intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+  refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
+  simp only [hzline t, scalarOneForm_apply, mul_comm]
+
+/--
+Shared decomposition driving the Fourier-to-curveIntegral rewrites for `I₁` and `I₂`.
+Given a radial function `I_fn` with `I_apply : I_fn x = I' (‖x‖²)`, a change-of-variables
+formula `hI'` rewriting `I' (‖x‖²)` as an interval integral on `Ioc 0 1`, a product kernel
+`permIKernel` with integrability and slice integrals, and a parametrisation `lineMap a b = zline`,
+this concludes that `𝓕 I_fn w = ∫ᶜ z in Path.segment a b, scalarOneForm (Φ_fourier (‖w‖²)) z`.
+-/
+private lemma fourier_eq_curveIntegral_segment_of
+    {I_fn : ℝ⁸ → ℂ} {I' : ℝ → ℂ} {Φ_fourier : ℝ → ℂ → ℂ}
+    {permIKernel : ℝ⁸ → ℝ⁸ × ℝ → ℂ} {zline : ℝ → ℂ} (a b : ℂ) (w : ℝ⁸)
+    (I_apply : ∀ x : ℝ⁸, I_fn x = I' (‖x‖ ^ 2))
+    (hI' : ∀ x : ℝ⁸,
+      cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * I' (‖x‖ ^ 2) =
+        ∫ t in Ioc (0 : ℝ) 1, permIKernel w (x, t))
+    (hint : Integrable (Function.uncurry fun x t ↦ permIKernel w (x, t))
+      ((volume : Measure ℝ⁸).prod μIoc01))
+    (hslice : ∀ t ∈ Ioc (0 : ℝ) 1,
+      (∫ x : ℝ⁸, permIKernel w (x, t)) = Φ_fourier (‖w‖ ^ 2) (zline t) * (b - a))
+    (hzline : ∀ t : ℝ, AffineMap.lineMap a b t = zline t) :
+    𝓕 I_fn w =
+      (∫ᶜ z in Path.segment a b, scalarOneForm (Φ_fourier (‖w‖ ^ 2)) z) := by
+  rw [fourier_eq' I_fn w]
+  simp only [smul_eq_mul, I_apply, mul_assoc]
+  calc
+    (∫ x : ℝ⁸, cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * I' (‖x‖ ^ 2)) =
+        ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, permIKernel w (x, t) :=
+      MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall hI')
+    _ = ∫ t in Ioc (0 : ℝ) 1, Φ_fourier (‖w‖ ^ 2) (zline t) * (b - a) := by
+        simpa [μIoc01] using
+          integral_integral_swap_muIoc01 (V := ℝ⁸) hint hslice
+    _ = (∫ᶜ z in Path.segment a b, scalarOneForm (Φ_fourier (‖w‖ ^ 2)) z) :=
+        (curveIntegral_segment_scalarOneForm_eq_intervalIntegral (Φ_fourier (‖w‖ ^ 2))
+          zline a b hzline).symm
+
 /-- Fourier transform of `I₁`, rewritten as a curve integral of `Φ₁_fourier` along the first
 vertical segment. -/
 public lemma fourier_I₁_eq_curveIntegral (w : ℝ⁸) :
     (𝓕 (I₁ : ℝ⁸ → ℂ)) w =
       (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + I),
         scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
-  rw [fourier_eq' (I₁ : ℝ⁸ → ℂ) w]
-  simp only [smul_eq_mul, I₁_apply, mul_assoc]
-  have hI₁' (x : ℝ⁸) : RealIntegrals.I₁' (‖x‖ ^ 2) =
-      ∫ t in Ioc (0 : ℝ) 1, (I : ℂ) * Φ₁' (‖x‖ ^ 2) (z₁line t) := by
-    rw [I₁'_eq_curveIntegral_segment,
-      show (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + I), scalarOneForm (Φ₁' (‖x‖ ^ 2)) z) =
-        ∫ t in (0 : ℝ)..1,
-          (scalarOneForm (Φ₁' (‖x‖ ^ 2)) (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + I) t))
-            (((-1 : ℂ) + I) - (-1 : ℂ)) from curveIntegral_segment _ _ _,
-      intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-    refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
-    simp only []
-    rw [show ((AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + I)) t) = z₁line t from lineMap_z₁line t]
-    simp [scalarOneForm_apply]
-  let f : ℝ⁸ → ℝ → ℂ := fun x t => permI1Kernel w (x, t)
-  let g : ℝ → ℂ := fun t => (I : ℂ) * Φ₁_fourier (‖w‖ ^ 2) (z₁line t)
-  have hswapEq : (∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t) = ∫ t in Ioc (0 : ℝ) 1, g t := by
-    simpa [μIoc01] using
-      integral_integral_swap_muIoc01 (V := ℝ⁸) (f := f) (g := g)
-        (integrable_perm_I₁_kernel (w := w)) fun t ht => by
-          simpa [f] using integral_permI1Kernel_x (w := w) (t := t) ht
-  calc
-    (∫ x : ℝ⁸, cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * RealIntegrals.I₁' (‖x‖ ^ 2)) =
-        ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1,
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * ((I : ℂ) * Φ₁' (‖x‖ ^ 2) (z₁line t)) := by
-        simp_rw [hI₁']
-        refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-        exact (MeasureTheory.integral_const_mul (α := ℝ)
-          (μ := MeasureTheory.volume.restrict (Ioc 0 1))
-          (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) _).symm
-    _ = ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t := by simp [f, permI1Kernel]
-    _ = ∫ t in Ioc (0 : ℝ) 1, (I : ℂ) * Φ₁_fourier (‖w‖ ^ 2) (z₁line t) := hswapEq
-    _ = (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + I),
-          scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
-      rw [show (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + I),
-            scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) =
-          ∫ t in (0 : ℝ)..1,
-            (scalarOneForm (Φ₁_fourier (‖w‖ ^ 2))
-              (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + I) t))
-              (((-1 : ℂ) + I) - (-1 : ℂ)) from curveIntegral_segment _ _ _,
-        intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-      refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
-      simp only []
-      rw [show ((AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + I)) t) = z₁line t from lineMap_z₁line t]
-      simp [scalarOneForm_apply]
+  refine fourier_eq_curveIntegral_segment_of (a := (-1 : ℂ)) (b := (-1 : ℂ) + I)
+    (w := w) (zline := z₁line) (I' := RealIntegrals.I₁') (Φ_fourier := Φ₁_fourier)
+    (permIKernel := permI1Kernel) I₁_apply ?_
+    (integrable_perm_I₁_kernel (w := w)) ?_ lineMap_z₁line
+  · intro x
+    have h1 : RealIntegrals.I₁' (‖x‖ ^ 2) =
+        ∫ t in Ioc (0 : ℝ) 1, (I : ℂ) * Φ₁' (‖x‖ ^ 2) (z₁line t) := by
+      rw [I₁'_eq_curveIntegral_segment, curveIntegral_segment_scalarOneForm_eq_intervalIntegral
+        (Φ₁' (‖x‖ ^ 2)) z₁line (-1 : ℂ) ((-1 : ℂ) + I) lineMap_z₁line]
+      exact MeasureTheory.integral_congr_ae (.of_forall fun t => by ring)
+    rw [h1, ← MeasureTheory.integral_const_mul]
+    refine MeasureTheory.integral_congr_ae (.of_forall fun t => ?_)
+    simp [permI1Kernel]
+  · intro t ht
+    rw [show ((-1 : ℂ) + I) - (-1 : ℂ) = I from by ring, mul_comm]
+    simpa using integral_permI1Kernel_x (w := w) (t := t) ht
 
 /-- Fourier transform of `I₂`, rewritten as a curve integral of `Φ₁_fourier` along the second
 segment. -/
@@ -850,51 +869,24 @@ public lemma fourier_I₂_eq_curveIntegral (w : ℝ⁸) :
     (𝓕 (I₂ : ℝ⁸ → ℂ)) w =
       (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I,
         scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
-  rw [fourier_eq' (I₂ : ℝ⁸ → ℂ) w]
-  simp only [smul_eq_mul, I₂_apply, mul_assoc]
-  have hI₂' (x : ℝ⁸) : RealIntegrals.I₂' (‖x‖ ^ 2) =
-      ∫ t in Ioc (0 : ℝ) 1, Φ₁' (‖x‖ ^ 2) (z₂line t) := by
-    rw [I₂'_eq_curveIntegral_segment,
-      show (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I, scalarOneForm (Φ₁' (‖x‖ ^ 2)) z) =
-        ∫ t in (0 : ℝ)..1,
-          (scalarOneForm (Φ₁' (‖x‖ ^ 2)) (AffineMap.lineMap ((-1 : ℂ) + I) I t))
-            (I - ((-1 : ℂ) + I)) from curveIntegral_segment _ _ _,
-      intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-    refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
-    simp only []
-    rw [show ((AffineMap.lineMap ((-1 : ℂ) + I) I) t) = z₂line t from lineMap_z₂line t]
-    simp [scalarOneForm_apply]
-  let f : ℝ⁸ → ℝ → ℂ := fun x t => permI2Kernel w (x, t)
-  let g : ℝ → ℂ := fun t => Φ₁_fourier (‖w‖ ^ 2) (z₂line t)
-  have hswapEq : (∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t) = ∫ t in Ioc (0 : ℝ) 1, g t := by
-    simpa [μIoc01] using
-      integral_integral_swap_muIoc01 (V := ℝ⁸) (f := f) (g := g)
-        (integrable_perm_I₂_kernel (w := w)) fun t _ => by
-          simpa [f] using integral_permI2Kernel_x (w := w) (t := t)
-  calc
-    (∫ x : ℝ⁸, cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * RealIntegrals.I₂' (‖x‖ ^ 2)) =
-        ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1,
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * Φ₁' (‖x‖ ^ 2) (z₂line t) := by
-        simp_rw [hI₂']
-        refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-        exact (MeasureTheory.integral_const_mul (α := ℝ)
-          (μ := MeasureTheory.volume.restrict (Ioc 0 1))
-          (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) _).symm
-    _ = ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t := by simp [f, permI2Kernel]
-    _ = ∫ t in Ioc (0 : ℝ) 1, Φ₁_fourier (‖w‖ ^ 2) (z₂line t) := hswapEq
-    _ = (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I,
-          scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) := by
-      rw [show (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I,
-            scalarOneForm (Φ₁_fourier (‖w‖ ^ 2)) z) =
-          ∫ t in (0 : ℝ)..1,
-            (scalarOneForm (Φ₁_fourier (‖w‖ ^ 2))
-              (AffineMap.lineMap ((-1 : ℂ) + I) I t))
-              (I - ((-1 : ℂ) + I)) from curveIntegral_segment _ _ _,
-        intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-      refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
-      simp only []
-      rw [show ((AffineMap.lineMap ((-1 : ℂ) + I) I) t) = z₂line t from lineMap_z₂line t]
-      simp [scalarOneForm_apply]
+  refine fourier_eq_curveIntegral_segment_of (a := (-1 : ℂ) + I) (b := (I : ℂ))
+    (w := w) (zline := z₂line) (I' := RealIntegrals.I₂') (Φ_fourier := Φ₁_fourier)
+    (permIKernel := permI2Kernel) I₂_apply ?_
+    (integrable_perm_I₂_kernel (w := w)) ?_ lineMap_z₂line
+  · intro x
+    have h2 : RealIntegrals.I₂' (‖x‖ ^ 2) =
+        ∫ t in Ioc (0 : ℝ) 1, Φ₁' (‖x‖ ^ 2) (z₂line t) := by
+      rw [I₂'_eq_curveIntegral_segment, curveIntegral_segment_scalarOneForm_eq_intervalIntegral
+        (Φ₁' (‖x‖ ^ 2)) z₂line ((-1 : ℂ) + I) (I : ℂ) lineMap_z₂line,
+        show (I : ℂ) - ((-1 : ℂ) + I) = 1 from by ring]
+      refine MeasureTheory.integral_congr_ae (.of_forall fun t => ?_)
+      ring
+    rw [h2, ← MeasureTheory.integral_const_mul]
+    refine MeasureTheory.integral_congr_ae (.of_forall fun t => ?_)
+    simp only [permI2Kernel]
+  · intro t _
+    rw [show (I : ℂ) - ((-1 : ℂ) + I) = 1 from by ring, mul_one]
+    simpa using integral_permI2Kernel_x (w := w) (t := t)
 
 end PermI12Fourier_Main
 end Integral_Permutations
