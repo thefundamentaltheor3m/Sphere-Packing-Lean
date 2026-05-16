@@ -1116,6 +1116,26 @@ open MeasureTheory Real Complex
 open SpherePacking.Integration (μIoi0)
 open MagicFunction.FourierEigenfunctions
 
+/-- Pointwise factorisation of the correction integrand into three basis terms. -/
+private lemma corrIntegrand_split (u : ℝ) (c36 c8640 c18144 : ℂ) (t : ℝ) :
+    (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t) =
+      c36 * (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ) +
+        (-c8640) * (t * Real.exp (-π * u * t) : ℂ) +
+        c18144 * (Real.exp (-π * u * t) : ℂ) := by
+  ring
+
+/-- Final arithmetic simplification combining the three basis integrals with the coefficients
+`(36/π²) / (πu), (8640/π) / (πu)², (18144/π²) / (πu - 2π)`. -/
+private lemma corrIntegral_arithmetic (u : ℝ) :
+    ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ((1 / (π * (u - 2)) : ℝ) : ℂ) +
+        -((8640 / π : ℝ) : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) +
+        ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ((1 / (π * u) : ℝ) : ℂ) =
+      (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+        (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u) := by
+  push_cast [Complex.ofReal_div, Complex.ofReal_mul]
+  field_simp
+  ring
+
 lemma corrIntegral_eval {u : ℝ}
     {c36 c8640 c18144 : ℂ}
     (hc36 : c36 = ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
@@ -1145,7 +1165,8 @@ lemma corrIntegral_eval {u : ℝ}
   rw [show (∫ t in Set.Ioi (0 : ℝ),
       (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
       ∫ t in Set.Ioi (0 : ℝ), ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) from
-    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by funext t; dsimp [f0, f1, f2]; ring]
+    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by
+      funext t; exact corrIntegrand_split u c36 c8640 c18144 t]
   change (∫ t, ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) ∂ μIoi0) =
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
       (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u)
@@ -1162,9 +1183,7 @@ lemma corrIntegral_eval {u : ℝ}
     show (∫ t, f1 t ∂μIoi0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) by simpa [f1, μIoi0] using hItexp,
     show (∫ t, f0 t ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) by simpa [f0, μIoi0] using hIexp,
     hc36, hc8640, hc18144]
-  push_cast [Complex.ofReal_div, Complex.ofReal_mul]
-  field_simp
-  ring
+  exact corrIntegral_arithmetic u
 
 lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
     a' u =
