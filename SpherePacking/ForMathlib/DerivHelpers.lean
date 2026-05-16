@@ -296,16 +296,6 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
           simp [cutoffC_eq_one_of_nonneg hy.le]).iteratedFDeriv (𝕜 := ℝ) n |>.self_of_nhds] using
         (hCpos x hxpos.le).trans ((le_max_right Cmid Cpos).trans (le_max_left _ _))
 
-/-- If `f` is smooth and satisfies one-sided Schwartz decay on `0 ≤ x`, then `cutoffC * f`
-satisfies global Schwartz decay on `ℝ`. -/
-public theorem cutoffC_mul_decay_of_nonneg
-    {f : ℝ → ℂ} (hf_smooth : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) f)
-    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ,
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖ ≤ C :=
-  cutoffC_mul_decay_of_nonneg_of_contDiff (f := f) (cutoffC_contDiff.mul hf_smooth) hf_decay
-
 namespace Bridge
 
 variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
@@ -321,7 +311,9 @@ variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) : 𝓢(ℝ, ℂ) where
   toFun := fCut f
   smooth' := by simpa [fCut] using cutoffC_contDiff.mul hf
-  decay' := by simpa [fCut] using cutoffC_mul_decay_of_nonneg (f := f) hf hf_decay
+  decay' := by
+    simpa [fCut] using cutoffC_mul_decay_of_nonneg_of_contDiff (f := f)
+      (cutoffC_contDiff.mul hf) hf_decay
 
 /-- On `0 ≤ r`, `fCut f` agrees with `f`. -/
 public lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) : fCut f r = f r := by
@@ -432,11 +424,8 @@ public lemma integral_const_mul_phase_gaussian_pi_mul_I_mul_even (k : ℕ)
           Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))) =
       c * ((((Complex.I : ℂ) / z) ^ k) *
         Complex.exp ((Real.pi : ℂ) * Complex.I * (‖w‖ ^ 2 : ℝ) * (-1 / z))) := by
-  trans (c * ∫ x : EuclideanSpace ℝ (Fin (2 * k)),
-      Complex.exp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) *
-        Complex.exp ((Real.pi : ℂ) * Complex.I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z))
-  · exact MeasureTheory.integral_const_mul c _
-  · rw [integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz]
+  rw [MeasureTheory.integral_const_mul,
+    integral_phase_gaussian_pi_mul_I_mul_even (k := k) (w := w) (z := z) hz]
 
 /-- Fourier transform of the real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` in even dimension `2k`. -/
 public lemma fourier_gaussian_norm_sq_div_even (k : ℕ) (s : ℝ) (hs : 0 < s)
@@ -481,12 +470,9 @@ public lemma integral_gaussian_rexp (s : ℝ) (hs : 0 < s) :
 /-- The real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` is integrable on `ℝ⁸` for `s > 0`. -/
 public lemma integrable_gaussian_rexp (s : ℝ) (hs : 0 < s) :
     Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ rexp (-π * (‖x‖ ^ 2) / s))
-      (volume : Measure (EuclideanSpace ℝ (Fin 8))) := by
-  simpa using
-    (MeasureTheory.Integrable.of_integral_ne_zero (μ := volume) <| by
-      rw [integral_gaussian_rexp_even (k := 4) (s := s) hs]; exact pow_ne_zero 4 hs.ne' :
-      Integrable (fun x : EuclideanSpace ℝ (Fin (2 * 4)) ↦ rexp (-π * (‖x‖ ^ 2) / s))
-        (volume : Measure (EuclideanSpace ℝ (Fin (2 * 4)))))
+      (volume : Measure (EuclideanSpace ℝ (Fin 8))) :=
+  MeasureTheory.Integrable.of_integral_ne_zero (μ := volume) <| by
+    rw [integral_gaussian_rexp s hs]; exact pow_ne_zero 4 hs.ne'
 
 end
 

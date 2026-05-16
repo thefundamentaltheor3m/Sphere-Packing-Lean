@@ -102,7 +102,7 @@ public instance : MeasureTheory.IsFiniteMeasure μIoo01 := ⟨by simp [μIoo01]�
 /-- The restriction of Lebesgue measure to `Ici 1`. -/
 @[expose] public def μIciOne : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
 
-/-! `μIciOne` is `SFinite`. -/
+/-- `μIciOne` is `SFinite`. -/
 public instance : MeasureTheory.SFinite μIciOne := by unfold μIciOne; infer_instance
 
 /-- The restriction of Lebesgue measure to `Ioi 0`. -/
@@ -143,8 +143,6 @@ public lemma integral_dir_mul_muIoc01_eq_curveIntegral_segment (F : ℂ → ℂ)
   exact intervalIntegral.integral_congr fun t _ => by simp [scalarOneForm_apply, hzline t]
 
 namespace InvChangeOfVariables
-
-open Complex Real
 
 /-- Simplify the Jacobian factor and an inverse power after substituting `t ↦ 1 / t`:
 `(1 / t ^ 2) * (1 / t) ^ (-k) = t ^ (k - 2)` for `2 ≤ k` and `t ≠ 0`. -/
@@ -495,7 +493,8 @@ public lemma hasDerivAt_integral_gN
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
   have h_bound :
       ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε, ‖gN (hf := hf) (n + 1) y t‖ ≤ bound t :=
-    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht y hy => by
+    (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <|
+      .of_forall fun t ht y hy => by
     have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
     have hy0 : ε ≤ y + shift := by
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
