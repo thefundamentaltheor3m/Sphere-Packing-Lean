@@ -64,27 +64,16 @@ variable {k : ℤ} {Γ : Subgroup SL(2, ℤ)}
     rw [f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
     exact h_zero
 
-/-- Build a `CuspForm Γ(1) k` from a modular form whose q-expansion has vanishing constant term.
-Defined by transporting `ModularForm.toCuspForm` along `Gamma_one_coe_eq_SL`. -/
-@[expose] public noncomputable def cuspFormOfCoeffZero {k : ℤ} (f : ModularForm Γ(1) k)
-    (h : (qExpansion 1 f).coeff 0 = 0) : CuspForm Γ(1) k :=
-  (ModularForm.toCuspForm (f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm)
-      (by simpa using h)).copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL
-
 /-- For level one, `IsCuspForm` is equivalent to vanishing of the constant `q`-coefficient.
 Transported from mathlib's `ModularForm.isCuspForm_iff_coeffZero_eq_zero`. -/
 public lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
   let f' : ModularForm 𝒮ℒ k := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
-  have hQ : qExpansion 1 (⇑f' : ℍ → ℂ) = qExpansion 1 (⇑f : ℍ → ℂ) := rfl
-  rw [show IsCuspForm Γ(1) k f ↔ f'.IsCuspForm from ?_,
-    ModularForm.isCuspForm_iff_coeffZero_eq_zero, hQ]
-  refine ⟨fun ⟨g, hg⟩ ↦ ?_, fun ⟨g, hg⟩ ↦ ?_⟩
-  · refine ⟨g.copy (⇑f) (by ext z; simpa [f'] using (DFunLike.congr_fun hg z).symm)
-      CongruenceSubgroup.Gamma_one_coe_eq_SL.symm, ?_⟩
-    ext z; rfl
-  · refine ⟨g.copy (⇑f) (by ext z; simpa [f'] using (DFunLike.congr_fun hg z).symm)
-      CongruenceSubgroup.Gamma_one_coe_eq_SL, ?_⟩
-    ext z; rfl
+  rw [show qExpansion (1 : ℝ) (⇑f) = qExpansion (1 : ℝ) (⇑f') from rfl,
+    ← ModularForm.isCuspForm_iff_coeffZero_eq_zero (f := f')]
+  refine ⟨fun ⟨g, hg⟩ ↦ ⟨g.copy (⇑f) (by ext z; simpa [f'] using DFunLike.congr_fun hg.symm z)
+      CongruenceSubgroup.Gamma_one_coe_eq_SL.symm, by ext z; rfl⟩,
+    fun ⟨g, hg⟩ ↦ ⟨g.copy (⇑f) (by ext z; simpa [f'] using DFunLike.congr_fun hg.symm z)
+      CongruenceSubgroup.Gamma_one_coe_eq_SL, by ext z; rfl⟩⟩
 
 end Definitions
