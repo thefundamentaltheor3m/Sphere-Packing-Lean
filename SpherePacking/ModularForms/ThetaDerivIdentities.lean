@@ -64,7 +64,8 @@ from which we deduce f₂ = f₃ = f₄ = 0 (Phase 9), yielding the main theorem
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
-  ModularForm SlashAction MatrixGroups
+  SlashAction MatrixGroups
+open ModularForm hiding E₄ E₆
 open scoped Derivative
 
 private lemma four_eq_two_add_two : (4 : ℤ) = 2 + 2 := rfl
@@ -425,26 +426,17 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := slashaction_generators_GL2R theta_h 8 theta_h_S_action theta_h_T_action
 
-private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
-  cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
-
-private noncomputable def theta_h_CF : CuspForm (Γ 1) 8 :=
-  cuspFormOfSIFTendstoZero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty
-
 /-- g = 0 by dimension argument: weight-6 cusp forms vanish. -/
 lemma theta_g_eq_zero : theta_g = 0 :=
-  congr_arg (·.toFun)
-    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num)) theta_g_CF)
+  congr_arg (·.toFun) <| rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num))
+    (cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty)
 
 /-- h = 0 by dimension argument: weight-8 cusp forms vanish. -/
 lemma theta_h_eq_zero : theta_h = 0 :=
-  congr_arg (·.toFun)
-    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 8 (by norm_num)) theta_h_CF)
+  congr_arg (·.toFun) <| rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 8 (by norm_num))
+    (cuspFormOfSIFTendstoZero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty)
 
--- Disambiguate from mathlib's `ModularForm.E₄` which leaks in via `public import`.
-noncomputable abbrev myE4 : ModularForm (CongruenceSubgroup.Gamma 1) 4 := _root_.E₄
-
-lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (myE4 z) * (f₂ z) ^ 2) = 0 := by
+lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 := by
   funext z
   have hg : theta_g z = 0 := by simpa using congrFun theta_g_eq_zero z
   have hh : theta_h z = 0 := by simpa using congrFun theta_h_eq_zero z
@@ -456,112 +448,65 @@ lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (myE4 z) * (f₂ z) ^ 2) = 0 :=
     simpa [theta_g, A, B, x, y, smul_eq_mul, Pi.add_apply, Pi.mul_apply] using hg
   have h2 : x ^ 2 + x * y + y ^ 2 = 0 := by
     simpa [theta_h, x, y, Pi.add_apply, Pi.mul_apply, Pi.pow_apply] using hh
-  have hlin : (B ^ 2 - A * B + A ^ 2) * (x ^ 2) = 0 := by
-    grind only
-  have hpoly : (B ^ 2 - A * B + A ^ 2) = 3 * myE4 z := by
-    have hE4 : myE4 z = (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
-      have h := congrFun SpherePacking.ModularForms.E₄_eq_thetaE4 z
+  have hlin : (B ^ 2 - A * B + A ^ 2) * (x ^ 2) = 0 := by grind only
+  have hpoly : (B ^ 2 - A * B + A ^ 2) = 3 * E₄ z := by
+    have hE4 : E₄ z = (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
       simpa [SpherePacking.ModularForms.thetaE4, pow_two, mul_assoc, mul_left_comm, mul_comm]
-        using h
+        using congrFun SpherePacking.ModularForms.E₄_eq_thetaE4 z
     have : (B ^ 2 - A * B + A ^ 2) = 3 * (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
-      simp [A, B, pow_two, mul_comm]
-      ring
+      simp [A, B, pow_two, mul_comm]; ring
     simpa [hE4] using this
   simp_all
 
-lemma f₂_eq_zero : f₂ = 0 := by
-  have hmul0 := E₄_mul_f₂_sq_eq_zero
+/-- Factoring a product of analytic functions on `ℍ`: if `f * g = 0` and `g` tends to a nonzero
+limit `c` at `i∞`, then `f = 0`. Proved via `AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero`
+on the connected upper half-plane. -/
+private lemma eq_zero_of_mul_eq_zero_of_tendsto_ne_zero {f g : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hg : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) g)
+    (hmul : (fun z : ℍ => f z * g z) = 0) {c : ℂ} (hc : c ≠ 0)
+    (hglim : Tendsto g atImInfty (𝓝 c)) : f = 0 := by
   let U : Set ℂ := {z : ℂ | 0 < z.im}
   have hU_open : IsOpen U := isOpen_upperHalfPlaneSet
-  have hU_pre : IsPreconnected U := by
-    simpa [U] using (convex_halfSpace_im_gt (r := (0 : ℝ))).isPreconnected
-  have hDiffE4 : DifferentiableOn ℂ (fun z : ℂ => myE4 (ofComplex z)) U :=
-    fun z hz => (MDifferentiableAt_DifferentiableAt
-      (myE4.holo' ⟨z, hz⟩)).differentiableWithinAt
-  have hDiffF2 : DifferentiableOn ℂ (fun z : ℂ => f₂ (ofComplex z)) U :=
-    fun z hz =>
-      (MDifferentiableAt_DifferentiableAt (f₂_MDifferentiable ⟨z, hz⟩)).differentiableWithinAt
-  have hfE4 : AnalyticOnNhd ℂ (fun z : ℂ => myE4 (ofComplex z)) U :=
-    hDiffE4.analyticOnNhd hU_open
-  have hgF2 : AnalyticOnNhd ℂ (fun z : ℂ => (f₂ (ofComplex z)) ^ 2) U :=
-    (hDiffF2.pow 2).analyticOnNhd hU_open
-  have hfg : ∀ z ∈ U, (myE4 (ofComplex z)) * (f₂ (ofComplex z)) ^ 2 = 0 := by
-    intro z hz
-    simpa using congrArg (fun f : ℍ → ℂ => f (ofComplex z)) hmul0
-  rcases
-      AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero (U := U) hfE4 hgF2 hfg hU_pre with
-    hE4zero | hF2sq
-  · have hE4 : (myE4 : ℍ → ℂ) = 0 := by
-      funext τ
-      have : myE4 (ofComplex (τ : ℂ)) = 0 := hE4zero _ τ.im_pos
-      simpa [ofComplex_apply_of_im_pos τ.im_pos] using this
-    have hlim1 : Tendsto (fun _ : ℍ => (0 : ℂ)) atImInfty (𝓝 (1 : ℂ)) := by
-      have h :=
-        (SpherePacking.ModularForms.tendsto_E₄_atImInfty : Tendsto myE4 atImInfty (𝓝 (1 : ℂ)))
-      rw [hE4] at h
-      exact h
-    have : (1 : ℂ) = 0 :=
-      tendsto_nhds_unique hlim1
-        (tendsto_const_nhds : Tendsto (fun _ : ℍ => (0 : ℂ)) atImInfty (𝓝 (0 : ℂ)))
-    exact False.elim ((one_ne_zero : (1 : ℂ) ≠ 0) this)
+  have hU_pre : IsPreconnected U :=
+    (convex_halfSpace_im_gt (r := (0 : ℝ))).isPreconnected
+  have hDf : DifferentiableOn ℂ (fun z : ℂ => f (ofComplex z)) U := fun z hz =>
+    (MDifferentiableAt_DifferentiableAt (hf ⟨z, hz⟩)).differentiableWithinAt
+  have hDg : DifferentiableOn ℂ (fun z : ℂ => g (ofComplex z)) U := fun z hz =>
+    (MDifferentiableAt_DifferentiableAt (hg ⟨z, hz⟩)).differentiableWithinAt
+  have hzero : ∀ z ∈ U, f (ofComplex z) * g (ofComplex z) = 0 := fun z _ =>
+    congrFun hmul (ofComplex z)
+  rcases AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero (U := U)
+      (hDf.analyticOnNhd hU_open) (hDg.analyticOnNhd hU_open) hzero hU_pre with hfz | hgz
   · funext τ
-    have : (f₂ (ofComplex (τ : ℂ))) ^ 2 = 0 := hF2sq _ τ.im_pos
-    simpa
+    simpa [ofComplex_apply_of_im_pos τ.im_pos] using hfz (τ : ℂ) τ.im_pos
+  · exfalso
+    have hg0 : (g : ℍ → ℂ) = 0 := by
+      funext τ
+      simpa [ofComplex_apply_of_im_pos τ.im_pos] using hgz (τ : ℂ) τ.im_pos
+    have := hglim
+    rw [hg0] at this
+    exact hc (tendsto_nhds_unique tendsto_const_nhds this).symm
 
-lemma analyticOnNhd_H₂_add_two_mul_H₄ :
-    AnalyticOnNhd ℂ
-      (fun z : ℂ => H₂ (ofComplex z) + (2 : ℂ) * H₄ (ofComplex z)) {z : ℂ | 0 < z.im} := by
-  refine
-    (?_ :
-        DifferentiableOn ℂ
-          (fun z : ℂ => H₂ (ofComplex z) + (2 : ℂ) * H₄ (ofComplex z)) {z : ℂ | 0 < z.im})
-      |>.analyticOnNhd isOpen_upperHalfPlaneSet
-  intro z hz
-  simpa [mul_assoc] using
-    (MDifferentiableAt_DifferentiableAt (H₂_SIF_MDifferentiable ⟨z, hz⟩)).differentiableWithinAt.add
-      ((MDifferentiableAt_DifferentiableAt (H₄_SIF_MDifferentiable ⟨z, hz⟩)).differentiableWithinAt
-        |>.const_mul (2 : ℂ))
-
-lemma analyticOnNhd_f₄ :
-    AnalyticOnNhd ℂ (fun z : ℂ => f₄ (ofComplex z)) {z : ℂ | 0 < z.im} := by
-  refine
-    ((?_ : DifferentiableOn ℂ (fun z : ℂ => f₄ (ofComplex z)) {z : ℂ | 0 < z.im})).analyticOnNhd
-      isOpen_upperHalfPlaneSet
-  intro z hz
-  exact (MDifferentiableAt_DifferentiableAt (f₄_MDifferentiable ⟨z, hz⟩)).differentiableWithinAt
+lemma f₂_eq_zero : f₂ = 0 := by
+  -- From `E₄ * f₂² = 0` and `E₄ → 1 ≠ 0`, deduce `f₂² = 0`.
+  have h := eq_zero_of_mul_eq_zero_of_tendsto_ne_zero (f := fun z => (f₂ z) ^ 2) (g := E₄)
+    (f₂_MDifferentiable.pow 2) E₄.holo' (by simpa [mul_comm] using E₄_mul_f₂_sq_eq_zero)
+    one_ne_zero SpherePacking.ModularForms.tendsto_E₄_atImInfty
+  funext τ
+  have : (f₂ τ) ^ 2 = 0 := congrFun h τ
+  simpa using this
 
 lemma f₄_eq_zero : f₄ = 0 := by
-  have hBf4 : (H₂ + (2 : ℂ) • H₄) * f₄ = 0 := by
-    simpa [theta_g, f₂_eq_zero] using (theta_g_eq_zero : theta_g = 0)
-  let U : Set ℂ := {z : ℂ | 0 < z.im}
-  have hU_pre : IsPreconnected U := by
-    simpa [U] using (convex_halfSpace_im_gt (r := (0 : ℝ))).isPreconnected
-  have hfB : AnalyticOnNhd ℂ (fun z : ℂ => H₂ (ofComplex z) + (2 : ℂ) * H₄ (ofComplex z)) U := by
-    simpa [U] using analyticOnNhd_H₂_add_two_mul_H₄
-  have hgF4 : AnalyticOnNhd ℂ (fun z : ℂ => f₄ (ofComplex z)) U := by
-    simpa [U] using analyticOnNhd_f₄
-  have hfg :
-      ∀ z ∈ U,
-        (H₂ (ofComplex z) + (2 : ℂ) * H₄ (ofComplex z)) * f₄ (ofComplex z) = 0 := by
-    intro z hz
-    simpa [smul_eq_mul, Pi.add_apply, Pi.mul_apply, mul_assoc] using
-      congrArg (fun f : ℍ → ℂ => f (ofComplex z)) hBf4
-  rcases AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero (U := U) hfB hgF4 hfg hU_pre with
-    hBzero | hF4zero
-  · exfalso
-    have hB : (fun τ : ℍ => H₂ τ + (2 : ℂ) * H₄ τ) = 0 := by
-      funext τ
-      simpa [ofComplex_apply_of_im_pos τ.im_pos] using hBzero (τ : ℂ) τ.im_pos
-    have hlim : Tendsto (fun τ : ℍ => H₂ τ + (2 : ℂ) * H₄ τ) atImInfty (𝓝 (2 : ℂ)) := by
-      simpa [mul_assoc] using
-        H₂_tendsto_atImInfty.add (tendsto_const_nhds.mul H₄_tendsto_atImInfty)
-    rw [hB] at hlim
-    exact
-      (two_ne_zero : (2 : ℂ) ≠ 0) <|
-        tendsto_nhds_unique hlim
-          (tendsto_const_nhds : Tendsto (fun _ : ℍ => (0 : ℂ)) atImInfty (𝓝 (0 : ℂ)))
-  · funext τ
-    simpa [ofComplex_apply_of_im_pos τ.im_pos] using hF4zero _ τ.im_pos
+  -- From `(H₂ + 2•H₄) * f₄ = 0` and `H₂ + 2•H₄ → 2 ≠ 0`, deduce `f₄ = 0`.
+  have hBf4 : (fun z : ℍ => f₄ z * (H₂ z + (2 : ℂ) * H₄ z)) = 0 := by
+    funext z
+    have h := congrFun (theta_g_eq_zero : theta_g = 0) z
+    simpa [theta_g, f₂_eq_zero, smul_eq_mul, mul_comm, mul_assoc] using h
+  refine eq_zero_of_mul_eq_zero_of_tendsto_ne_zero (f := f₄)
+    (g := fun z => H₂ z + (2 : ℂ) * H₄ z) f₄_MDifferentiable ?_ hBf4 two_ne_zero ?_
+  · have : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) ((2 : ℂ) • H₄) := H₄_SIF_MDifferentiable.const_smul (2 : ℂ)
+    simpa [Pi.smul_apply, smul_eq_mul] using H₂_SIF_MDifferentiable.add this
+  · simpa [mul_assoc] using H₂_tendsto_atImInfty.add (tendsto_const_nhds.mul H₄_tendsto_atImInfty)
 
 /-- Serre derivative identity for `H₂` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₂ :
