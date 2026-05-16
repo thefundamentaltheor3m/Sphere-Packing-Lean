@@ -1049,6 +1049,26 @@ public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 :
   simpa using
     MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis t ht
 
+/-- For `0 < t ≤ 1`, the modular relation `ψI = ψS|S` and the exponential decay of
+`ψS.resToImagAxis` give `‖ψI'(it)‖ ≤ Cψ0`, where `Cψ0` bounds `‖ψS.resToImagAxis‖`
+on `[1, ∞)`. -/
+private lemma norm_psiI'_mul_I_le_of_le_one {Cψ0 : ℝ} (hCψ0 : 0 ≤ Cψ0)
+    (hψS_bound : ∀ s : ℝ, 1 ≤ s → ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s))
+    {t : ℝ} (ht0 : 0 < t) (ht1 : t ≤ 1) :
+    ‖ψI' (Complex.I * (t : ℂ))‖ ≤ Cψ0 := by
+  have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht1
+  have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
+    simpa using (hψS_bound (1 / t : ℝ) ht').trans
+      (mul_le_mul_of_nonneg_left
+        (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (one_div_pos.2 ht0).le]))
+        hCψ0)
+  rw [MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis
+    t ht0, show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
+      simpa [ψS_slash_S, zpow_two, pow_two] using
+        ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0, norm_mul]
+  nlinarith [show ‖(-(t ^ (2 : ℕ)) : ℂ)‖ = t ^ (2 : ℕ) by simp, hψS', hCψ0,
+    show t ^ (2 : ℕ) ≤ 1 by simpa using pow_le_one₀ (n := 2) ht0.le ht1]
+
 lemma exists_bound_norm_bAnotherBase_Ioi :
     ∃ C : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C := by
   rcases
@@ -1059,20 +1079,6 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
   have hψS_bound (s : ℝ) (hs : 1 ≤ s) :
       ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s) :=
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
-  have hψI'_small (t : ℝ) (ht0 : 0 < t) (ht1 : t ≤ 1) :
-      ‖ψI' (Complex.I * (t : ℂ))‖ ≤ Cψ0 := by
-    have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht1
-    have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
-      simpa using (hψS_bound (1 / t : ℝ) ht').trans
-        (mul_le_mul_of_nonneg_left
-          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (one_div_pos.2 ht0).le]))
-          hCψ0)
-    rw [MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis
-      t ht0, show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
-        simpa [ψS_slash_S, zpow_two, pow_two] using
-          ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0, norm_mul]
-    nlinarith [show ‖(-(t ^ (2 : ℕ)) : ℂ)‖ = t ^ (2 : ℕ) by simp, hψS', hCψ0,
-      show t ^ (2 : ℕ) ≤ 1 by simpa using pow_le_one₀ (n := 2) ht0.le ht1]
   open MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation in
     rcases exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one with ⟨Ctail, hCtail⟩
   let Ctail0 : ℝ := max Ctail 0
@@ -1101,7 +1107,8 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
                 (‖(144 : ℂ)‖ + ‖(Real.exp (2 * π * t) : ℂ)‖) := by
                 gcongr; exact norm_add_le _ _)
     exact (by
-      grind only [hψI'_small t ht0 ht1, show ‖(144 : ℂ)‖ = (144 : ℝ) by norm_num] :
+      grind only [norm_psiI'_mul_I_le_of_le_one hCψ0 hψS_bound ht0 ht1,
+        show ‖(144 : ℂ)‖ = (144 : ℝ) by norm_num] :
       ‖bAnotherBase t‖ ≤ Csmall).trans (le_max_left _ _)
   · exact (htail t (le_of_not_ge ht1)).trans (le_max_right _ _)
 
