@@ -231,6 +231,21 @@ section Integral_Permutations
 
 section PermI5
 
+/-- Inner integral over `ℝ⁸` of `permI5Kernel w (·, s)` evaluates to a closed form. -/
+private lemma integral_permI5Kernel_x_eq (w : ℝ⁸) (s : ℝ) (hs0 : 0 < s) :
+    (∫ x : ℝ⁸, permI5Kernel w (x, s)) =
+      (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
+  have hfactor :
+      (fun x : ℝ⁸ ↦ permI5Kernel w (x, s)) =
+        fun x : ℝ⁸ ↦
+          ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
+            (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
+    funext x; simp [permI5Kernel, permI5Phase, I₅.g]; ac_rfl
+  rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor,
+    MeasureTheory.integral_const_mul, integral_phase_gaussian (w := w) (s := s) hs0,
+    ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _,
+    zpow_neg_four_mul_pow_four (s := s) hs0.ne', mul_one]
+
 /-- Fourier transform of `I₅` is `I₆`. -/
 public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) I₅ = I₆ := by
   ext w
@@ -247,27 +262,6 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   let f : ℝ⁸ → ℝ → ℂ := fun x s => permI5Kernel w (x, s)
   have hint : Integrable (Function.uncurry f) ((volume : Measure ℝ⁸).prod μs) := by
     simpa only [μIciOne] using integrable_perm_I₅_kernel (w := w)
-  have hinner (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
-      (∫ x : ℝ⁸, f x s) =
-      (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-    have hfactor :
-        (fun x : ℝ⁸ ↦ f x s) =
-          fun x : ℝ⁸ ↦
-            ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
-      funext x
-      simp [f, permI5Kernel, permI5Phase, I₅.g]
-      ac_rfl
-    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor]
-    have hkey : (∫ x : ℝ⁸, -I * φ₀'' (I * ↑s) * (↑s : ℂ) ^ (-4 : ℤ) *
-        (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-↑π * ↑‖x‖ ^ 2 / ↑s))) =
-      ((-I) * φ₀'' (I * ↑s) * (↑s : ℂ) ^ (-4 : ℤ)) * ∫ x : ℝ⁸,
-        (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-↑π * ↑‖x‖ ^ 2 / ↑s)) :=
-      MeasureTheory.integral_const_mul (μ := MeasureTheory.volume) _ _
-    rw [hkey, integral_phase_gaussian (w := w) (s := s) hs0,
-      ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _,
-      zpow_neg_four_mul_pow_four (s := s) hs0.ne', mul_one]
   have hmain :
       (∫ x : ℝ⁸,
           cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -281,22 +275,14 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       funext x
       rw [show (∫ s in Ici (1 : ℝ), f x s) =
             ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * I₅.g (‖x‖ ^ 2) s
-          from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase]]
-      rw [mul_left_comm (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) (-2 : ℂ) _]
-      congr 1
-      exact (MeasureTheory.integral_const_mul (α := ℝ)
-        (μ := MeasureTheory.volume.restrict (Ici (1 : ℝ)))
-        (cexp (↑(-2 * (π * ⟪x, w⟫)) * I)) (I₅.g (‖x‖ ^ 2))).symm
-    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew]
-    simp only []
-    rw [show (∫ x : ℝ⁸, -2 * ∫ s in Ici (1 : ℝ), f x s) =
-        (-2 : ℂ) * ∫ x : ℝ⁸, ∫ s in Ici (1 : ℝ), f x s from
-      MeasureTheory.integral_const_mul (μ := MeasureTheory.volume) (-2 : ℂ)
-        (fun x : ℝ⁸ => ∫ s in Ici (1 : ℝ), f x s),
+          from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase],
+        mul_left_comm (cexp _) (-2 : ℂ) _, MeasureTheory.integral_const_mul]
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew, MeasureTheory.integral_const_mul,
       MeasureTheory.integral_integral_swap (μ := (volume : Measure ℝ⁸)) (ν := μs) (f := f) hint]
-    congr 1
-    refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
-    simpa [f] using hinner s hs
+    refine congrArg ((-2 : ℂ) * ·) (integral_congr_ae <|
+      (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_)
+    have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
+    simpa [f] using integral_permI5Kernel_x_eq w s hs0
   rw [hmain, show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
             (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
           2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) by

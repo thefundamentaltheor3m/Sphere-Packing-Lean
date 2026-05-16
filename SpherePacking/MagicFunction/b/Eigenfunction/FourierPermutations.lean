@@ -1209,6 +1209,25 @@ public lemma integrable_kernel (w : ℝ⁸) :
 
 end PermJ5
 
+/-- Inner integral over `ℝ⁸` of `PermJ5.kernel w (·, s)` evaluates to a closed form. -/
+private lemma integral_permJ5Kernel_x_eq (w : EuclideanSpace ℝ (Fin 8)) (s : ℝ) (hs0 : 0 < s) :
+    (∫ x : EuclideanSpace ℝ (Fin 8), PermJ5.kernel w (x, s)) =
+      (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
+  have hcancel : (s : ℂ) ^ (-4 : ℤ) * (s : ℂ) ^ (4 : ℕ) = 1 := by
+    simpa [Complex.ofReal_zpow] using
+      (PermJ5.zpow_neg_four_mul_pow_four (s := s) (ne_of_gt hs0))
+  have hfactor :
+      (fun x : EuclideanSpace ℝ (Fin 8) ↦ PermJ5.kernel w (x, s)) =
+        fun x : EuclideanSpace ℝ (Fin 8) ↦
+          ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
+            (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
+    funext x; dsimp [PermJ5.kernel, J5Change.g]; simp; ac_rfl
+  rw [congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor,
+    MeasureTheory.integral_const_mul,
+    SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0]
+  linear_combination
+    ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) * hcancel
+
 /-- Fourier permutation identity: `𝓕 J₅ = -J₆`. -/
 public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) J₅ = -J₆ := by
   ext w
@@ -1227,35 +1246,6 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μs) := by
     simpa [μs, SpherePacking.Integration.μIciOne, f, Function.uncurry] using
       (PermJ5.integrable_kernel (w := w))
-  have hinner (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
-      (∫ x : EuclideanSpace ℝ (Fin 8), f x s)
-        =
-      (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-    have hcancel : (s : ℂ) ^ (-4 : ℤ) * (s : ℂ) ^ (4 : ℕ) = 1 := by
-      simpa [Complex.ofReal_zpow] using
-        (PermJ5.zpow_neg_four_mul_pow_four (s := s) (ne_of_gt hs0))
-    have hfactor :
-        (fun x : EuclideanSpace ℝ (Fin 8) ↦ f x s) =
-          fun x : EuclideanSpace ℝ (Fin 8) ↦
-            ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
-      funext x
-      dsimp [f, PermJ5.kernel, J5Change.g]
-      simp
-      ac_rfl
-    rw [show (∫ x : EuclideanSpace ℝ (Fin 8), f x s) =
-          ∫ x : EuclideanSpace ℝ (Fin 8),
-            ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) from
-      congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor]
-    trans ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
-        ∫ x : EuclideanSpace ℝ (Fin 8),
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)
-    · exact MeasureTheory.integral_const_mul _ _
-    rw [SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0]
-    linear_combination
-      ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) * hcancel
   have hmain :
       (∫ x : EuclideanSpace ℝ (Fin 8),
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -1272,24 +1262,17 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       funext x
       rw [show (∫ s in Ici (1 : ℝ), f x s) =
           ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s
-        from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel]]
-      rw [show (∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s) =
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s
-        from MeasureTheory.integral_const_mul _ _]
+        from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel],
+        MeasureTheory.integral_const_mul]
       ring
-    rw [show (∫ x : EuclideanSpace ℝ (Fin 8),
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
-        ∫ x : EuclideanSpace ℝ (Fin 8), (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s from
-      congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew]
-    trans ((-2 : ℂ) *
-        ∫ x : EuclideanSpace ℝ (Fin 8), ∫ s in Ici (1 : ℝ), f x s)
-    · exact MeasureTheory.integral_const_mul _ _
-    rw [MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
+    rw [congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew,
+      MeasureTheory.integral_const_mul,
+      MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
         (ν := μs) (f := f) hint]
-    congr 1
-    refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
-    simpa [f] using hinner s hs
+    refine congrArg ((-2 : ℂ) * ·) (integral_congr_ae <|
+      (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_)
+    have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
+    simpa [f] using integral_permJ5Kernel_x_eq w s hs0
   rw [hmain, J₆'_eq (r := ‖w‖ ^ 2),
     show (∫ s in Ici (1 : ℝ),
               (-I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) =
