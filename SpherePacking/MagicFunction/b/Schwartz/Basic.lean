@@ -170,6 +170,31 @@ public theorem contDiffOn_J₆'_Ioi_neg1 :
         (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)) :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 
+/-- Pointwise a.e. bound on `‖gN n x t‖` for the `J₆'`-integral on `[1, ∞)`. -/
+private lemma decay_J₆'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
+    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
+    ∀ᵐ t ∂μ, ‖gN n x t‖ ≤
+      ((Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ) * Real.exp (-Real.pi * x) :=
+  (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <|
+    .of_forall fun t ht => by
+  have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
+  have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      Real.exp_le_exp.2 (neg_le_neg (le_mul_of_one_le_right
+        (mul_nonneg Real.pi_pos.le hx) ht))
+  calc
+    ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
+          simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
+    _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by
+          gcongr ?_ * ?_
+          · simp [coeff, SmoothIntegralIciOne.coeff_norm (t := t) ht]
+          · simpa [g] using SmoothIntegralIciOne.g_norm_bound
+              (hf := ψS.resToImagAxis) (x := x) (t := t)
+    _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
+          gcongr; exact hCψ t ht
+    _ = ((Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ) *
+          Real.exp (-Real.pi * x) := by ring
+
 /-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₆' : ∀ (k n : ℕ),
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := fun k n => by
@@ -190,26 +215,6 @@ public theorem decay_J₆' : ∀ (k n : ℕ),
       have : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
-    have hbound_ae :
-        ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-Real.pi * x) :=
-      (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <|
-        .of_forall fun t ht => by
-      have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-      have hxexp : Real.exp (-Real.pi * x * t) ≤ Real.exp (-Real.pi * x) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          Real.exp_le_exp.2 (neg_le_neg (le_mul_of_one_le_right
-            (mul_nonneg Real.pi_pos.le hx) ht))
-      calc
-        ‖gN n x t‖ = ‖coeff t‖ ^ n * ‖g x t‖ := by
-              simp [gN, SmoothIntegralIciOne.gN, g, coeff, norm_pow]
-        _ ≤ (Real.pi * t) ^ n * (‖ψS.resToImagAxis t‖ * Real.exp (-Real.pi * x * t)) := by
-              gcongr ?_ * ?_
-              · simp [coeff, SmoothIntegralIciOne.coeff_norm (t := t) ht]
-              · simpa [g] using SmoothIntegralIciOne.g_norm_bound
-                  (hf := ψS.resToImagAxis) (x := x) (t := t)
-        _ ≤ (Real.pi * t) ^ n * ((Cψ * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x)) := by
-              gcongr; exact hCψ t ht
-        _ = bound t * Real.exp (-Real.pi * x) := by ring
     have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := calc
       ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
             simpa [show F n x = ∫ t, gN n x t ∂μ by simp [F, μ, μIciOne]] using
@@ -217,7 +222,8 @@ public theorem decay_J₆' : ∀ (k n : ℕ),
       _ ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ :=
             integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
               (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-                hbound_int.mul_const (Real.exp (-Real.pi * x))) hbound_ae
+                hbound_int.mul_const (Real.exp (-Real.pi * x)))
+              (decay_J₆'_norm_gN_bound n hx hCψ0 hCψ)
       _ = Kn * Real.exp (-Real.pi * x) := by simpa [Kn] using
             (integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound))
     calc ‖G n x‖
@@ -326,6 +332,40 @@ public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
   simpa [I_zero_eq_J₁'] using contDiff_of_hasDerivAt_succ (I := I)
     (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x))
 
+/-- Pointwise a.e. bound on `‖gN n x t‖` for the `J₁'`-integral. Each term decays like
+`bound t · exp(-2π√x)` where `bound t = (2π)ⁿ · Cψ · t²`. The factor `exp(-2π√x)`
+comes from combining `exp(-π/t) · exp(-π·x·t) ≤ exp(-2π√x)` via AM-GM. -/
+private lemma decay_J₁'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
+    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
+    ∀ᵐ t ∂μ, ‖gN n x t‖ ≤
+      (((2 * Real.pi) ^ n) * Cψ * t ^ 2) * Real.exp (-2 * Real.pi * Real.sqrt x) := by
+  filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+    simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
+  have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
+    simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
+      (show (coeff t).re = -Real.pi * t by
+        simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
+          simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
+            simpa [mul_assoc, mul_left_comm, mul_comm] using
+              z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
+  exact le_mul_of_le_mul_of_nonneg_left
+    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
+        norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
+          (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
+          (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
+          (by simpa using
+            (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
+              (ψZ := ψT') (z := z₁') (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t)
+              ⟨ht.1, le_of_lt ht.2⟩))
+          hcexp :
+      ‖gN n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
+        (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
+    (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+      exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
+      Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
+        Real.exp (-2 * Real.pi * Real.sqrt x))
+    (by positivity [hCψ0])
+
 /-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := fun k n => by
@@ -348,36 +388,10 @@ public theorem decay_J₁' :
     exact mul_nonneg (by positivity [hCψ0]) (pow_nonneg ht.1.le _)
   refine ⟨Kn * B, fun x hx => ?_⟩
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-    have hbound_ae :
-        ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-      filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-        simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
-      have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
-          (show (coeff t).re = -Real.pi * t by
-            simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
-              simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
-                simpa [mul_assoc, mul_left_comm, mul_comm] using
-                  z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
-      exact le_mul_of_le_mul_of_nonneg_left
-        (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-            norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
-              (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
-              (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
-              (by simpa using
-                (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
-                  (ψZ := ψT') (z := z₁') (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t)
-                  ⟨ht.1, le_of_lt ht.2⟩))
-              hcexp :
-          ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
-        (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-          exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
-          Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
-            Real.exp (-2 * Real.pi * Real.sqrt x))
-        (by positivity [hCψ0])
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
-        (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
+        (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int)
+        (decay_J₁'_norm_gN_bound n hx hCψ0 hCψ))
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
       = x ^ k * ‖I n x‖ := by
         rw [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
@@ -502,6 +516,39 @@ public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
   simpa [show (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' from
     funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm] using hmul
 
+/-- Pointwise a.e. bound on `‖gN n x t‖` for the `J₅'`-integral: each term is bounded by
+`((2π)ⁿ · Cψ · t²) · exp(-2π√x)`. -/
+private lemma decay_J₅'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
+    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
+    ∀ᵐ t ∂μ, ‖gN n x t‖ ≤
+      (((2 * Real.pi) ^ n) * Cψ * t ^ 2) * Real.exp (-2 * Real.pi * Real.sqrt x) := by
+  filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+    simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
+  have hψI : ‖ψI' (z₅' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
+    simpa [one_div] using
+      (norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψI')
+        (z := z₅') (hCψ := hCψ) (hEq := fun s hs => ψI'_z₅'_eq (t := s) hs)
+        (t := t) ⟨ht.1, le_of_lt ht.2⟩)
+  have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
+    simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
+      (show (coeff t).re = -Real.pi * t by
+        simp [coeff, Complex.mul_re, show (z₅' t).im = t by
+          simp [show z₅' t = (Complex.I : ℂ) * (t : ℂ) by
+            simpa [mul_assoc, mul_left_comm, mul_comm] using
+              z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
+  exact le_mul_of_le_mul_of_nonneg_left
+    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
+        norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψI') (z := z₅') (n := n) (Cψ := Cψ)
+          (x := x) (t := t) hCψ0 (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
+          hψI hcexp :
+      ‖gN n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
+        (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
+    (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+      exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
+      Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
+        Real.exp (-2 * Real.pi * Real.sqrt x))
+    (by positivity [hCψ0])
+
 /-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₅' :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := fun k n => by
@@ -523,36 +570,10 @@ public theorem decay_J₅' :
     simp [iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
       (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
   have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-    have hbound_ae :
-        ∀ᵐ t ∂μ, ‖gN n x t‖ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-      filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-        simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
-      have hψI : ‖ψI' (z₅' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
-        simpa [one_div] using
-          (norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψI')
-            (z := z₅') (hCψ := hCψ) (hEq := fun s hs => ψI'_z₅'_eq (t := s) hs)
-            (t := t) ⟨ht.1, le_of_lt ht.2⟩)
-      have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-        simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
-          (show (coeff t).re = -Real.pi * t by
-            simp [coeff, Complex.mul_re, show (z₅' t).im = t by
-              simp [show z₅' t = (Complex.I : ℂ) * (t : ℂ) by
-                simpa [mul_assoc, mul_left_comm, mul_comm] using
-                  z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
-      exact le_mul_of_le_mul_of_nonneg_left
-        (by simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
-            norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψI') (z := z₅') (n := n) (Cψ := Cψ)
-              (x := x) (t := t) hCψ0 (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
-              hψI hcexp :
-          ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
-        (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-          exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
-          Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
-            Real.exp (-2 * Real.pi * Real.sqrt x))
-        (by positivity [hCψ0])
     simpa [I, Kn] using (norm_integral_le_integral_bound_mul_const
       (μ := μ) (f := gN n x) (bound := bound)
-      (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
+      (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int)
+      (decay_J₅'_norm_gN_bound n hx hCψ0 hCψ))
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖
         = x ^ k * ‖iteratedDeriv n J₅' x‖ := by
