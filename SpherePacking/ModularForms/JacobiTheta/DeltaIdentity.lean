@@ -84,43 +84,26 @@ lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   simp [jacobi_g, sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_T_action, H₃_T_action, H₄_T_action, add_assoc, add_left_comm, add_comm]
 
-/-- Rewrite jacobi_f as a pointwise product -/
-@[grind =]
-lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
-  ext z
-  simp [jacobi_f, sq]
-
-private lemma four_eq_two_add_two : (4 : ℤ) = 2 + 2 := rfl
-
-private lemma jacobi_g_mul_slash (γ : SL(2, ℤ)) :
-    ((jacobi_g * jacobi_g) ∣[(4 : ℤ)] γ) =
-      (jacobi_g ∣[(2 : ℤ)] γ) * (jacobi_g ∣[(2 : ℤ)] γ) := by
-  simpa [four_eq_two_add_two] using (mul_slash_SL2 2 2 γ jacobi_g jacobi_g)
-
 /-- S-invariance of f: f|[4]S = f, because g|[2]S = -g. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
-  simpa [jacobi_f_eq_mul, jacobi_g_S_action] using (jacobi_g_mul_slash S)
+  simpa [jacobi_f, sq, jacobi_g_S_action, show (4 : ℤ) = 2 + 2 from rfl] using
+    (mul_slash_SL2 2 2 S jacobi_g jacobi_g)
 
 /-- T-invariance of f: f|[4]T = f, because g|[2]T = -g. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
-  simpa [jacobi_f_eq_mul, jacobi_g_T_action] using (jacobi_g_mul_slash T)
+  simpa [jacobi_f, sq, jacobi_g_T_action, show (4 : ℤ) = 2 + 2 from rfl] using
+    (mul_slash_SL2 2 2 T jacobi_g jacobi_g)
 
 /-- jacobi_f as a SlashInvariantForm of weight 4 and level Γ(1) -/
 noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 4 where
   toFun := jacobi_f
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
-/-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
-lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
-  (H₂_SIF_MDifferentiable.add H₄_SIF_MDifferentiable).sub H₃_SIF_MDifferentiable
-
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
 lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
-  simpa [jacobi_f, pow_two] using jacobi_g_MDifferentiable.mul jacobi_g_MDifferentiable
-
-/-- jacobi_f_SIF is holomorphic -/
-lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
-  jacobi_f_MDifferentiable
+  have hg : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
+    (H₂_SIF_MDifferentiable.add H₄_SIF_MDifferentiable).sub H₃_SIF_MDifferentiable
+  simpa [jacobi_f, pow_two] using hg.mul hg
 
 end JacobiIdentity
 
@@ -299,23 +282,15 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
   tendsto_cont
 
-private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
-  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
-    jacobi_f_tendsto_atImInfty
-
-/-- jacobi_f = 0 by dimension argument: weight-4 cusp forms vanish. -/
-theorem jacobi_f_eq_zero : jacobi_f = 0 :=
-  congr_arg (·.toFun)
-    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 4 (by norm_num)) jacobi_f_CF)
-
-/-- jacobi_g = 0 as a function (from g² = 0) -/
-theorem jacobi_g_eq_zero : jacobi_g = 0 := by
-  ext z
-  simpa [jacobi_f] using congr_fun jacobi_f_eq_zero z
-
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
 public theorem jacobi_identity : H₂ + H₄ = H₃ := by
-  ext z; simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
+  have hf0 : jacobi_f = 0 := congr_arg (·.toFun) <|
+    rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 4 (by norm_num))
+      (cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable jacobi_f_tendsto_atImInfty)
+  ext z
+  have hg2 : (jacobi_g z) ^ 2 = 0 := by simpa [jacobi_f] using congr_fun hf0 z
+  have : jacobi_g z = 0 := pow_eq_zero_iff two_ne_zero |>.mp hg2
+  simpa [jacobi_g, sub_eq_zero] using this
 
 noncomputable def thetaDelta_f : ℍ → ℂ := H₂ * (H₃ * H₄)
 
