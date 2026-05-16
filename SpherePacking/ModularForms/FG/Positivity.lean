@@ -23,155 +23,96 @@ open ModularForm hiding E₄ E₆
 -- Ensure the `SL(2,ℤ)` Möbius action on `ℍ` is available below.
 noncomputable local instance : MulAction SL(2, ℤ) ℍ := UpperHalfPlane.SLAction (R := ℤ)
 
-/-- The function `F` is positive on the imaginary axis. -/
-public lemma F_pos : ResToImagAxis.Pos F := by
-  have hE2 : ResToImagAxis.Real E₂ := E₂_imag_axis_real
-  have hE4 : ResToImagAxis.Real E₄.toFun := E₄_imag_axis_real
-  have hE6 : ResToImagAxis.Real E₆.toFun := E₆_imag_axis_real
-  have hbase : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) :=
-    ResToImagAxis.Real.sub (ResToImagAxis.Real.mul hE2 hE4) hE6
-  refine ⟨?_, ?_⟩
-  · simpa [F, pow_two] using ResToImagAxis.Real.mul hbase hbase
-  · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
-    set τ : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-    set A : ℂ := A_E τ
-    have hA_im : A.im = 0 := by
-      simpa [A, A_E, τ, Function.resToImagAxis, ResToImagAxis, ht] using hbase t ht
-    let term : ℕ+ → ℂ :=
-      fun n => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))
-    have hseries : A = (720 : ℂ) * ∑' n : ℕ+, term n := by
-      simpa [A, A_E, term, mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ τ)
-    set r : ℝ := Real.exp (-2 * Real.pi * t) with hr
-    have hτ : (τ : ℂ) = Complex.I * t := rfl
-    have hIImul (x : ℂ) : Complex.I * (Complex.I * x) = -x := by
-      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
-    have exp_neg_two_pi_mul_eq (n : ℕ) :
-        Real.exp (-(2 * Real.pi * (n : ℝ) * t)) = r ^ n := by
-      have hn : (-(2 * Real.pi * (n : ℝ) * t)) = (n : ℝ) * (-2 * Real.pi * t) := by ring
-      calc
-        Real.exp (-(2 * Real.pi * (n : ℝ) * t)) = Real.exp ((n : ℝ) * (-2 * Real.pi * t)) := by
-          simp [hn]
-        _ = Real.exp (-2 * Real.pi * t) ^ n := by
-          simpa using (Real.exp_nat_mul (-2 * Real.pi * t) n)
-        _ = r ^ n := by simp [hr]
-    have hr_pos : 0 < r := by
-      simpa [hr] using Real.exp_pos (-2 * Real.pi * t)
-    have hr_lt_one : r < 1 := by
-      have : (-2 * Real.pi * t) < 0 := by nlinarith [Real.pi_pos, ht]
-      simpa [hr] using (Real.exp_lt_one_iff.2 this)
-    have hr_norm : ‖r‖ < 1 := by
-      simpa [Real.norm_of_nonneg hr_pos.le] using hr_lt_one
+/-- The real part of `A_E τ` is positive on the imaginary axis. The proof bounds the q-series
+of `A_E τ = 720 · ∑ n · σ₃(n) · q^n` from below by its positive first term `720 · 1 · σ₃(1) · r`. -/
+private lemma A_E_re_pos_on_imag_axis (t : ℝ) (ht : 0 < t)
+    (τ : UpperHalfPlane) (hτ : (τ : ℂ) = Complex.I * t) :
+    0 < (A_E τ).re := by
+  set A : ℂ := A_E τ
+  let term : ℕ+ → ℂ :=
+    fun n => (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))
+  have hseries : A = (720 : ℂ) * ∑' n : ℕ+, term n := by
+    simpa [A, A_E, term, mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ τ)
+  set r : ℝ := Real.exp (-2 * Real.pi * t) with hr
+  have hIImul (x : ℂ) : Complex.I * (Complex.I * x) = -x := by
+    rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
+  have exp_neg_two_pi_mul_eq (n : ℕ) :
+      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) = r ^ n := by
+    rw [show (-(2 * Real.pi * (n : ℝ) * t)) = (n : ℝ) * (-2 * Real.pi * t) from by ring,
+      Real.exp_nat_mul]
+  have hr_pos : 0 < r := Real.exp_pos _
+  have hr_lt_one : r < 1 := by
+    have : (-2 * Real.pi * t) < 0 := by nlinarith [Real.pi_pos]
+    simpa [hr] using (Real.exp_lt_one_iff.2 this)
+  have hr_norm : ‖r‖ < 1 := by simpa [Real.norm_of_nonneg hr_pos.le] using hr_lt_one
+  -- Each `term n` is a complex number whose real part is `n · σ₃(n) · rⁿ ≥ 0`.
+  have hterm_re (n : ℕ+) :
+      (term n).re = (n : ℝ) * (σ 3 n : ℝ) * r ^ (n : ℕ) := by
+    have harg : (2 * π * Complex.I * (n : ℂ) * (τ : ℂ) : ℂ) =
+        ((-(2 * Real.pi * (n : ℝ) * t) : ℝ) : ℂ) := by
+      simp [hτ, mul_assoc, mul_left_comm, mul_comm, hIImul]
+    have hexp : cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) =
+        (Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ) := by rw [harg]; simp
+    have hexp' : cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) = ((r ^ (n : ℕ) : ℝ) : ℂ) := by
+      rw [hexp]; exact_mod_cast congrArg ((↑) : ℝ → ℂ) (exp_neg_two_pi_mul_eq (n : ℕ))
+    have hterm : term n = ((n : ℂ) * (σ 3 n : ℂ)) * ((r ^ (n : ℕ) : ℝ) : ℂ) := by
+      dsimp [term]; rw [hexp']
+    have hr_re : (((r ^ (n : ℕ) : ℝ) : ℂ)).re = r ^ (n : ℕ) := Complex.ofReal_re _
+    have hr_im : (((r ^ (n : ℕ) : ℝ) : ℂ)).im = 0 := Complex.ofReal_im _
+    rw [hterm, Complex.mul_re, hr_re, hr_im]
+    simp [Complex.mul_re, Complex.mul_im, mul_comm, mul_left_comm]
+  -- Bound the norm of `term n` by `n⁵ · rⁿ`, a summable majorant.
+  have hsum_term : Summable term := by
     have hsum_g : Summable (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) :=
       summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr_norm
-    have hsum_g' : Summable (fun n : ℕ+ => ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ)) := by
-      have hf0 : ((0 : ℕ) : ℝ) ^ 5 * r ^ (0 : ℕ) = (0 : ℝ) := by simp
-      exact (nat_pos_tsum2 (f := fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) hf0).2 hsum_g
-    have hsum_term : Summable term := by
-      refine Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ))
-        hsum_g' ?_
-      intro n
-      have harg :
-          (2 * π * Complex.I * (n : ℂ) * (τ : ℂ) : ℂ) =
-            ((-(2 * Real.pi * (n : ℝ) * t) : ℝ) : ℂ) := by
-        simp [hτ, mul_assoc, mul_left_comm, mul_comm, hIImul]
-      have hnorm_exp : ‖cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))‖ = r ^ (n : ℕ) := by
-        have hexp :
-            cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) =
-              (Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ) := by
-          rw [harg]
-          simp
-        -- Take norms.
-        rw [hexp]
-        -- `‖(a : ℂ)‖ = |a|` for `a : ℝ`, and `Real.exp _` is positive.
-        have hnorm :
-            ‖(Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ)‖ =
-              Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := by
-          have h' :
-              ‖(Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ)‖ =
-                |Real.exp (-(2 * Real.pi * (n : ℝ) * t))| :=
-            RCLike.norm_ofReal (K := ℂ) (Real.exp (-(2 * Real.pi * (n : ℝ) * t)))
-          -- Rewrite the absolute value using positivity of `Real.exp`.
-          rw [h']
-          exact abs_of_nonneg (Real.exp_pos _).le
-        -- Rewrite `Real.exp` in terms of `r ^ n`.
-        rw [hnorm, exp_neg_two_pi_mul_eq (n : ℕ)]
-      -- Bound the coefficient `n * σ 3 n` by `n^5`.
-      have hσ : (σ 3 n : ℝ) ≤ (n : ℝ) ^ 4 := by
-        exact_mod_cast (sigma_bound 3 (n : ℕ))
-      have hcoeff :
-          (n : ℝ) * (σ 3 n : ℝ) ≤ (n : ℝ) ^ 5 := by
-        have hn0 : 0 ≤ (n : ℝ) := by positivity
-        have := mul_le_mul_of_nonneg_left hσ hn0
-        -- `n * n^4 = n^5`.
-        simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm] using this
-      -- Put the pieces together.
-      calc
-        ‖term n‖
-            = ‖(n : ℂ) * (σ 3 n : ℂ)‖ * ‖cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))‖ := by
-              simp [term, mul_assoc]
-        _ ≤ ((n : ℝ) * (σ 3 n : ℝ)) * (r ^ (n : ℕ)) := by simp [hnorm_exp]
-        _ ≤ ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ) := by gcongr
-    have hsum_re : Summable (fun n : ℕ+ => (term n).re) := hsum_term.mapL Complex.reCLM
-    have hterm_re (n : ℕ+) :
-        (term n).re = (n : ℝ) * (σ 3 n : ℝ) * r ^ (n : ℕ) := by
-      have harg :
-          (2 * π * Complex.I * (n : ℂ) * (τ : ℂ) : ℂ) =
-            ((-(2 * Real.pi * (n : ℝ) * t) : ℝ) : ℂ) := by
-        simp [hτ, mul_assoc, mul_left_comm, mul_comm, hIImul]
-      have hexp :
-          cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) =
-            (Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ) := by
-        rw [harg]
-        simp
-      -- Rewrite the exponential term as a real number in `ℂ`, then compute real parts.
-      have hexp' :
-          cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) = (r ^ (n : ℕ) : ℂ) := by
-        have : (Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ) = (r ^ (n : ℕ) : ℂ) := by
-          exact_mod_cast exp_neg_two_pi_mul_eq (n : ℕ)
-        exact hexp.trans this
-      have hterm :
-          term n = ((n : ℂ) * (σ 3 n : ℂ)) * (r ^ (n : ℕ) : ℂ) := by
-        dsimp [term]
-        rw [hexp']
-      have hcoeff_re : ((n : ℂ) * (σ 3 n : ℂ)).re = (n : ℝ) * (σ 3 n : ℝ) := by
-        simp [Complex.mul_re]
-      have hcoeff_im : ((n : ℂ) * (σ 3 n : ℂ)).im = 0 := by
-        simp [Complex.mul_im]
-      have hr_re : ((r : ℂ) ^ (n : ℕ)).re = r ^ (n : ℕ) := by
-        have hpow : ((r : ℂ) ^ (n : ℕ)) = ((r ^ (n : ℕ) : ℝ) : ℂ) := by
-          simp
-        rw [hpow]
-        rfl
-      have hr_im : ((r : ℂ) ^ (n : ℕ)).im = 0 := by
-        have hpow : ((r : ℂ) ^ (n : ℕ)) = ((r ^ (n : ℕ) : ℝ) : ℂ) := by
-          simp
-        rw [hpow]
-        rfl
-      calc
-        (term n).re = (((n : ℂ) * (σ 3 n : ℂ)) * (r ^ (n : ℕ) : ℂ)).re := by
-          simp [hterm]
-        _ = ((n : ℂ) * (σ 3 n : ℂ)).re * ((r ^ (n : ℕ) : ℂ)).re
-              - ((n : ℂ) * (σ 3 n : ℂ)).im * ((r ^ (n : ℕ) : ℂ)).im := by
-          simp [Complex.mul_re]
-        _ = (n : ℝ) * (σ 3 n : ℝ) * r ^ (n : ℕ) := by
-          simp [hcoeff_re, hcoeff_im, hr_re, hr_im, mul_left_comm, mul_comm]
-    have hterm_nonneg (n : ℕ+) : 0 ≤ (term n).re := by
-      rw [hterm_re]
-      exact mul_nonneg (mul_nonneg (by positivity) (by positivity)) (by positivity)
-    have hterm_pos1 : 0 < (term 1).re := by
-      rw [hterm_re]
-      positivity
-    have htsum_pos : 0 < ∑' n : ℕ+, (term n).re :=
-      hsum_re.tsum_pos hterm_nonneg 1 hterm_pos1
-    have hA_re : A.re = 720 * ∑' n : ℕ+, (term n).re := by
-      have h := congrArg Complex.re hseries
-      have hre_tsum : (∑' n : ℕ+, term n).re = ∑' n : ℕ+, (term n).re := by
-        simpa using (Complex.reCLM.map_tsum hsum_term)
-      simpa [hre_tsum, Complex.mul_re, mul_assoc] using h
-    have hA_pos : 0 < A.re := hA_re ▸ mul_pos (by norm_num) htsum_pos
-    have hF_re : (A ^ 2).re = A.re ^ 2 := by simp [pow_two, Complex.mul_re, hA_im]
-    simpa [A] using (hF_re ▸ pow_pos hA_pos 2 : 0 < (A ^ 2).re)
+    have hsum_g' : Summable (fun n : ℕ+ => ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ)) :=
+      (nat_pos_tsum2 (f := fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) (by simp)).2 hsum_g
+    refine Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ))
+      hsum_g' fun n => ?_
+    have harg : (2 * π * Complex.I * (n : ℂ) * (τ : ℂ) : ℂ) =
+        ((-(2 * Real.pi * (n : ℝ) * t) : ℝ) : ℂ) := by
+      simp [hτ, mul_assoc, mul_left_comm, mul_comm, hIImul]
+    have hexp : cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ)) =
+        (Real.exp (-(2 * Real.pi * (n : ℝ) * t)) : ℂ) := by rw [harg]; simp
+    have hnorm_exp : ‖cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))‖ = r ^ (n : ℕ) := by
+      rw [hexp, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le,
+        exp_neg_two_pi_mul_eq (n : ℕ)]
+    have hσ : (σ 3 n : ℝ) ≤ (n : ℝ) ^ 4 := by exact_mod_cast (sigma_bound 3 (n : ℕ))
+    have hcoeff : (n : ℝ) * (σ 3 n : ℝ) ≤ (n : ℝ) ^ 5 := by
+      have hn0 : 0 ≤ (n : ℝ) := by positivity
+      simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left hσ hn0
+    calc
+      ‖term n‖
+          = ‖(n : ℂ) * (σ 3 n : ℂ)‖ * ‖cexp (2 * π * Complex.I * (n : ℂ) * (τ : ℂ))‖ := by
+            simp [term, mul_assoc]
+      _ ≤ ((n : ℝ) * (σ 3 n : ℝ)) * (r ^ (n : ℕ)) := by simp [hnorm_exp]
+      _ ≤ ((n : ℝ) ^ 5 : ℝ) * r ^ (n : ℕ) := by gcongr
+  -- Conclude the real part is positive.
+  have hsum_re : Summable (fun n : ℕ+ => (term n).re) := hsum_term.mapL Complex.reCLM
+  have htsum_pos : 0 < ∑' n : ℕ+, (term n).re :=
+    hsum_re.tsum_pos (fun n => by rw [hterm_re]; positivity)
+      1 (by rw [hterm_re]; positivity)
+  have hA_re : A.re = 720 * ∑' n : ℕ+, (term n).re := by
+    have h := congrArg Complex.re hseries
+    have hre_tsum : (∑' n : ℕ+, term n).re = ∑' n : ℕ+, (term n).re :=
+      Complex.reCLM.map_tsum hsum_term
+    simpa [hre_tsum, Complex.mul_re, mul_assoc] using h
+  rw [show (A_E τ).re = A.re from rfl, hA_re]; exact mul_pos (by norm_num) htsum_pos
+
+/-- The function `F` is positive on the imaginary axis. -/
+public lemma F_pos : ResToImagAxis.Pos F := by
+  have hbase : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) :=
+    .sub (.mul E₂_imag_axis_real E₄_imag_axis_real) E₆_imag_axis_real
+  refine ⟨by simpa [F, pow_two] using hbase.mul hbase, ?_⟩
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
+  set τ : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
+  have hτ : (τ : ℂ) = Complex.I * t := rfl
+  have hA_im : (A_E τ).im = 0 := by
+    simpa [A_E, τ, Function.resToImagAxis, ResToImagAxis, ht] using hbase t ht
+  have hA_pos : 0 < (A_E τ).re := A_E_re_pos_on_imag_axis t ht τ hτ
+  have hF_re : ((A_E τ) ^ 2).re = (A_E τ).re ^ 2 := by simp [pow_two, Complex.mul_re, hA_im]
+  simpa [A_E] using (hF_re ▸ pow_pos hA_pos 2 : 0 < ((A_E τ) ^ 2).re)
 
 /-- The function `G` is positive on the imaginary axis. -/
 public lemma G_pos : ResToImagAxis.Pos G := by
