@@ -278,6 +278,53 @@ private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
 private lemma norm_le_one_add_of_sub_one (x : ℂ) {C : ℝ} (h : ‖x - 1‖ ≤ C) : ‖x‖ ≤ 1 + C :=
   by linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by simpa [sub_add_cancel] using norm_add_le (x - 1) (1 : ℂ)]
 
+/-- Tail bound for the approximant `(2a + 2b)^4` of `Θ₂^4`, where `a := exp(-πt/4)`
+and `b := exp(-9πt/4)`. After subtracting the two leading terms, the remainder
+is bounded by `176·exp(-5πt)`. -/
+private lemma H2_approx_tail_bound (t : ℝ) (ht : 1 ≤ t) :
+    let a : ℂ := (Real.exp (-Real.pi * t / 4) : ℂ)
+    let b : ℂ := (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
+    let y : ℂ := (2 : ℂ) * a + (2 : ℂ) * b
+    ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+        (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
+      176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
+  intro a b y
+  have ha_norm : ‖a‖ = Real.exp (-Real.pi * t / 4) := by
+    simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
+  have hb_norm : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
+    simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
+  have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
+      (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
+        (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by
+    grind only [show a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by
+        rw [← Complex.ofReal_pow, ← Complex.ofReal_mul,
+          ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf,
+      show a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) by
+        rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf]
+  have hab : ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
+    simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
+      congrArg Real.exp (show (2 : ℕ) * (-Real.pi * t / 4) +
+        (2 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) = -(5 : ℝ) * Real.pi * t by ring)
+  have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
+    (show ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) by
+      simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
+        congrArg Real.exp (show -Real.pi * t / 4 + (3 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) =
+          -(7 : ℝ) * Real.pi * t by ring)).le.trans
+      (Real.exp_monotone (by nlinarith [Real.pi_pos, ht]))
+  have hb4_le : ‖b ^ (4 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
+    (show ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) by
+      simpa [norm_pow, hb_norm, ← Real.exp_nat_mul] using congrArg Real.exp
+        (show (4 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) = -(9 : ℝ) * Real.pi * t by ring)).le.trans
+      (Real.exp_monotone (by nlinarith [Real.pi_pos, ht]))
+  rw [hy_main]
+  nlinarith [norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
+    (64 : ℂ) * (a * b ^ (3 : ℕ))) ((16 : ℂ) * (b ^ (4 : ℕ))),
+    norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))) ((64 : ℂ) * (a * b ^ (3 : ℕ))),
+    hab, hab3_le, hb4_le,
+    (by simp : ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖),
+    (by simp : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖),
+    (by simp : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖)]
+
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖H₂.resToImagAxis t - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -308,40 +355,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     exacts [(show ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) by grind only).trans
       (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hCθ0),
       pow_le_pow_left₀ (by positivity) (by linarith [hM t ht]) 3]
-  have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
-      (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
-        (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by
-    grind only [show a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) by
-        rw [← Complex.ofReal_pow, ← Complex.ofReal_mul,
-          ← Real.exp_nat_mul, ← Real.exp_add]; push_cast; ring_nf,
-      show a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) by
-        rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf]
-  have hy_tail : ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-        (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
-          176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-    have hab : ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
-        congrArg Real.exp (show (2 : ℕ) * (-Real.pi * t / 4) +
-          (2 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) = -(5 : ℝ) * Real.pi * t by ring)
-    have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
-      (show ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) by
-        simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
-          congrArg Real.exp (show -Real.pi * t / 4 + (3 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) =
-            -(7 : ℝ) * Real.pi * t by ring)).le.trans
-        (Real.exp_monotone (by nlinarith [Real.pi_pos, ht]))
-    have hb4_le : ‖b ^ (4 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
-      (show ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) by
-        simpa [norm_pow, hb_norm, ← Real.exp_nat_mul] using congrArg Real.exp
-          (show (4 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) = -(9 : ℝ) * Real.pi * t by ring)).le.trans
-        (Real.exp_monotone (by nlinarith [Real.pi_pos, ht]))
-    rw [hy_main]
-    nlinarith [norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
-      (64 : ℂ) * (a * b ^ (3 : ℕ))) ((16 : ℂ) * (b ^ (4 : ℕ))),
-      norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))) ((64 : ℂ) * (a * b ^ (3 : ℕ))),
-      hab, hab3_le, hb4_le,
-      (by simp : ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖),
-      (by simp : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖),
-      (by simp : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖)]
+  have hy_tail := H2_approx_tail_bound t ht
   rw [show H₂.resToImagAxis t = x ^ (4 : ℕ) by
     simp [x, H₂, Function.resToImagAxis, ResToImagAxis, lt_of_lt_of_le zero_lt_one ht]]
   linarith [hpow', hy_tail, (show x ^ (4 : ℕ) - y ^ (4 : ℕ) +
