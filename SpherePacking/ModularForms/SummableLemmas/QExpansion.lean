@@ -122,12 +122,6 @@ public theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
     simp
 
 
-/-- Split `∑_{m=0}^n f m` into `f 0 + ∑_{m < n} f (m+1)`. -/
-public lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1), f m = f 0 +
-  ∑ m ∈ Finset.range n, f (m+1) := by
-  simpa [add_comm] using (Finset.sum_range_succ' (f := fun m : ℕ => f m) n)
-
-
 theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
     {z : ℂ | 0 < z.im} x =

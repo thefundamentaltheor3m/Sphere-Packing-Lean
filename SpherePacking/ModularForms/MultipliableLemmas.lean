@@ -78,8 +78,3 @@ public lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
   apply Multipliable_pow
   apply MultipliableEtaProductExpansion_pnat z
 
-/-- For a multipliable family, the `tprod` commutes with taking a fixed power. -/
-public lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
-    (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
-  simpa using hf.map_tprod (g := powMonoidHom n) (hg := by simpa using continuous_pow n)
-
