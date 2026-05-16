@@ -60,19 +60,6 @@ public lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : �
   show discriminant _ = _
   rw [h, mul_comm]
 
-lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
-  rw [atImInfty_mem]; exact ⟨A, fun _ hz ↦ hz⟩
-
-/-- Scalar multiplication of `ℍ` by a positive natural number. -/
-public instance natPosSMul : SMul ℕ+ ℍ where
-  smul x z := UpperHalfPlane.mk (x * z) <| by
-    have hx : 0 < (x : ℝ) := by exact_mod_cast x.pos
-    simpa [mul_im] using mul_pos hx z.2
-
-/-- Coercion formula for the `ℕ+`-scalar action on `ℍ`. -/
-public theorem natPosSMul_apply (c : ℕ+) (z : ℍ) :
-    ((c • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := rfl
-
 /-- The bounded factor in the discriminant product tends to `1` at `Im z → ∞`. -/
 public theorem Delta_boundedfactor :
     Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24)
