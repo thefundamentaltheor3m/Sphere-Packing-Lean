@@ -140,7 +140,8 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
   have hψS_bound (s : ℝ) (hs : 1 ≤ s) :
       ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s) :=
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
-  have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := fun t ht0 => by
+  have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
+      fun t ht0 => by
     have hψIcomp :
         ContinuousAt
           (fun s : ℝ => ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) t :=
@@ -323,182 +324,254 @@ private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (μ := (volume : Measure ℝ)) (f := f) Set.Ioc_disjoint_Ioi_same measurableSet_Ioi
     (hf.mono_set fun _ ht ↦ ht.1) (hf.mono_set (Set.Ioi_subset_Ioi zero_le_one))
 
-/-- Blueprint `prop:b-double-zeros`. -/
-public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
-    b' u =
-      (-4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ),
-              ψI' ((Complex.I : ℂ) * (t : ℂ)) *
-                Real.exp (-π * u * t)) := by
-  open MagicFunction.b.RealIntegrals in
-  rw [MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (by linarith : 0 ≤ u)]
-  let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
-  rw [MagicFunction.b.RealIntegrals.b', show (-4 * (Complex.I : ℂ)) *
-        (Real.sin (π * u / 2)) ^ (2 : ℕ) * (∫ t in Set.Ioi (0 : ℝ),
-          ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
-      (Complex.I : ℂ) * (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-        Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
-      rw [show (∫ t in Set.Ioi (0 : ℝ),
-            ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) = -VI by
-        rw [← MeasureTheory.integral_neg]
-        exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
-          simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc],
-        show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-            Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
-            ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
-        simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
-          (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
-      simp [mul_assoc, mul_comm]]
-  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} :=
-    fun _ hz => lt_of_lt_of_le zero_lt_one (by simpa using hz.2)
-  have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
-      (Set.Ioi (0 : ℝ)) := by
-    have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
-      (bLaplaceIntegral_convergent (u := u) hu).neg
-    simpa [bContourIntegrandI, bContourWeight_mul_I, bLaplaceIntegrand, mul_assoc] using hneg
+/-- The closed strip `[0,1] × [1, ∞)` lies in the open upper half-plane. -/
+private lemma laplacePsiI_strip0_subset :
+    (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} :=
+  fun _ hz => lt_of_lt_of_le zero_lt_one (by simpa using hz.2)
+
+/-- Integrability of `bContourIntegrandI` on `(0, ∞)` along the imaginary axis. -/
+private lemma laplacePsiI_intI {u : ℝ} (hu : 2 < u) :
+    IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))) (Set.Ioi (0 : ℝ)) := by
+  have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
+    (bLaplaceIntegral_convergent (u := u) hu).neg
+  simpa [bContourIntegrandI, bContourWeight_mul_I, bLaplaceIntegrand, mul_assoc] using hneg
+
+/-- Integrability of `bContourIntegrandT` on `(1, ∞)` along the imaginary axis. -/
+private lemma laplacePsiI_intT_center {u : ℝ} (hu : 2 < u) :
+    IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))) (Set.Ioi (1 : ℝ)) := by
   rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
-  have hintT_center : IntegrableOn (fun t : ℝ => bContourIntegrandT u (I * (t : ℂ)))
-      (Set.Ioi (1 : ℝ)) := by
-    let A : ℝ := max 1 Aψ; let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
-    have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
-        Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
-      fun t ht => by simpa using hS t ht
-    have hdom : ∀ t : ℝ, t ∈ Set.Ioi A →
-        ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := fun t ht => by
-      have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_left 1 Aψ).trans ht.le)
-      have hzI : 0 < ((I * (t : ℂ) + (1 : ℂ)).im) := by simpa [add_assoc, mul_assoc] using ht0
-      rw [show ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) by
-            simp [f, bContourIntegrandT, bContourWeight_mul_I, mul_assoc,
-              -Complex.ofReal_exp, Complex.norm_real, abs_of_nonneg (Real.exp_pos _).le],
-        ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc,
-        show ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ by
-          rw [show ψT' ((Complex.I : ℂ) * (t : ℂ)) =
-              ψI' (((Complex.I : ℂ) * (t : ℂ)) + (1 : ℂ)) by
-            simpa [add_assoc] using
-              (ψT'_eq_ψI'_add_one (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0))]
-          simp [ψI', ht0]]
-      refine mul_le_mul_of_nonneg_right ?_ (Real.exp_pos _).le
-      simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ (by
-        simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using
-          (le_max_right 1 Aψ).trans ht.le :
-        Aψ ≤ UpperHalfPlane.im ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩)
-    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
-      (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_left 1 Aψ)).symm]
-    refine (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)).integrableOn_compact
-          isCompact_Icc |>.mono_set Set.Ioc_subset_Icc_self).union (by
-      simpa [MeasureTheory.IntegrableOn] using
-        (show Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
-          (volume.restrict (Set.Ioi A)) by
-          simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-            (exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
-              (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cψ).mono'
-          (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-            (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
-            measurableSet_Ioi)
-          (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht))
-  have hintT_shift (a : ℂ) (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
-      IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ))) (Set.Ioi (1 : ℝ)) := by
-    refine (show IntegrableOn (fun t : ℝ =>
-        (-bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u a) (Set.Ioi (1 : ℝ)) by
-      simpa [mul_assoc] using
-        ((hintI.mono_set (Set.Ioi_subset_Ioi zero_le_one)).neg.mul_const
-          (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
-    simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
-      bContourWeight_add, mul_comm, mul_left_comm]
-  have htendstoT : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := fun ε hε => by
-    have htend : Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
-      simpa [mul_assoc] using tendsto_const_nhds.mul
-        (Real.tendsto_exp_neg_atTop_nhds_zero.comp
-          (by simpa [mul_assoc, mul_comm, mul_left_comm] using
-            tendsto_id.const_mul_atTop (mul_pos Real.pi_pos (sub_pos.2 hu))))
-    rcases Filter.eventually_atTop.1 (htend.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
-    refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
-    have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
-      (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
-    have hzI : 0 < (z + (1 : ℂ)).im := by simpa using hzpos
-    rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ by
-          simp [bContourIntegrandT], ψT'_eq_ψI'_add_one z hzpos,
-        show ψI' (z + (1 : ℂ)) = ψI ⟨z + (1 : ℂ), hzI⟩ by simp [ψI', hzpos],
-        show ‖bContourWeight u z‖ = Real.exp (-π * u * z.im) by
-          simp [bContourWeight, Complex.norm_exp]]
-    refine lt_of_le_of_lt ?_ (hMε z.im ((le_max_right _ _).trans hzM))
-    refine (mul_le_mul_of_nonneg_right (show
-      ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) by
-      simpa [UpperHalfPlane.im, add_assoc] using hψbd _ (by
-        simpa [UpperHalfPlane.im, add_assoc] using
-          (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im) :
-        Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ))) (Real.exp_pos _).le).trans
-      (le_of_eq (by rw [mul_assoc, ← Real.exp_add]; ring_nf))
-  have hRectLeft :
-      (∫ (x : ℝ) in (0 : ℝ)..1,
-            bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1)) +
-          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
-        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) = 0 := by
-    let f : ℂ → ℂ := fun z : ℂ => bContourIntegrandT u (z - 1)
-    simpa [min_eq_left zero_le_one, max_eq_right zero_le_one, f, sub_eq_add_neg, add_assoc,
-      add_left_comm, add_comm, mul_assoc, mul_comm, mul_left_comm] using
-      integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
-        (y := (1 : ℝ)) (f := f) (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ))
-        ((continuousOn_bContourIntegrandT (u := u)).comp
-          (continuousOn_id.sub continuousOn_const) fun z hz => by
-            simpa [sub_eq_add_neg] using hStrip0 (by simpa [Set.uIcc_of_le zero_le_one] using hz))
-        (s := (∅ : Set ℂ)) (by simp) (fun z hz => by
-          have hzpos' : 0 < (z - 1).im := by
-            simpa [sub_eq_add_neg] using lt_trans zero_lt_one ((Set.mem_Ioi).1 hz.1.2)
-          simpa [f] using ((differentiableOn_bContourIntegrandT (u := u) (z - 1)
-            hzpos').differentiableAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')).comp
-            z (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z))
-        (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
-            mul_left_comm] using hintT_shift (-1 : ℂ) fun t ht0 ↦
-              by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
-        (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
-            mul_left_comm] using hintT_center)
-        (fun ε hε => let ⟨M, hM⟩ := htendstoT ε hε
-          ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩)
-  have hRectRight :
-      (∫ (x : ℝ) in (1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)) +
-          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
-            (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
-    simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, mul_assoc, mul_comm, mul_left_comm,
-      add_assoc, add_left_comm, add_comm] using
-      integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
-        (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
-        (by simpa [Set.uIcc_comm] using
-          (continuousOn_bContourIntegrandT (u := u)).mono hStrip0) (s := (∅ : Set ℂ)) (by simp)
-        (fun z hz ↦ have hzpos : 0 < z.im := lt_trans zero_lt_one (by
-          simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
-          (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
-            (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos))
-        (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
-          hintT_shift (1 : ℂ) fun t ht0 ↦
-            by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
-        (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
-          using hintT_center) htendstoT
+  let A : ℝ := max 1 Aψ; let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
+  have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
+      Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
+    fun t ht => by simpa using hS t ht
+  have hdom : ∀ t : ℝ, t ∈ Set.Ioi A →
+      ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := fun t ht => by
+    have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_left 1 Aψ).trans ht.le)
+    have hzI : 0 < ((I * (t : ℂ) + (1 : ℂ)).im) := by simpa [add_assoc, mul_assoc] using ht0
+    rw [show ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) by
+          simp [f, bContourIntegrandT, bContourWeight_mul_I, mul_assoc,
+            -Complex.ofReal_exp, Complex.norm_real, abs_of_nonneg (Real.exp_pos _).le],
+      ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc,
+      show ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ by
+        rw [show ψT' ((Complex.I : ℂ) * (t : ℂ)) =
+            ψI' (((Complex.I : ℂ) * (t : ℂ)) + (1 : ℂ)) by
+          simpa [add_assoc] using
+            (ψT'_eq_ψI'_add_one (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0))]
+        simp [ψI', ht0]]
+    refine mul_le_mul_of_nonneg_right ?_ (Real.exp_pos _).le
+    simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ (by
+      simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using
+        (le_max_right 1 Aψ).trans ht.le :
+      Aψ ≤ UpperHalfPlane.im ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩)
+  rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
+    (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_left 1 Aψ)).symm]
+  refine (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+      (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)).integrableOn_compact
+        isCompact_Icc |>.mono_set Set.Ioc_subset_Icc_self).union (by
+    simpa [MeasureTheory.IntegrableOn] using
+      (show Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
+        (volume.restrict (Set.Ioi A)) by
+        simpa [MeasureTheory.IntegrableOn, mul_assoc] using
+          (exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
+            (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cψ).mono'
+        (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+          (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
+          measurableSet_Ioi)
+        (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht))
+
+/-- Integrability of `bContourIntegrandT` along the shifted ray `a + I·t` on `(1, ∞)`. -/
+private lemma laplacePsiI_intT_shift {u : ℝ} (hu : 2 < u) (a : ℂ)
+    (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
+    IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ))) (Set.Ioi (1 : ℝ)) := by
+  refine (show IntegrableOn (fun t : ℝ =>
+      (-bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u a) (Set.Ioi (1 : ℝ)) by
+    simpa [mul_assoc] using
+      (((laplacePsiI_intI hu).mono_set (Set.Ioi_subset_Ioi zero_le_one)).neg.mul_const
+        (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
+  simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
+    bContourWeight_add, mul_comm, mul_left_comm]
+
+/-- Decay of `‖bContourIntegrandT u z‖` to zero as `Im z → ∞`. -/
+private lemma laplacePsiI_tendstoT {u : ℝ} (hu : 2 < u) :
+    ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
+  rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
+  intro ε hε
+  have htend : Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
+    simpa [mul_assoc] using tendsto_const_nhds.mul
+      (Real.tendsto_exp_neg_atTop_nhds_zero.comp
+        (by simpa [mul_assoc, mul_comm, mul_left_comm] using
+          tendsto_id.const_mul_atTop (mul_pos Real.pi_pos (sub_pos.2 hu))))
+  rcases Filter.eventually_atTop.1 (htend.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
+  refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
+  have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
+    (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
+  have hzI : 0 < (z + (1 : ℂ)).im := by simpa using hzpos
+  rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ by
+        simp [bContourIntegrandT], ψT'_eq_ψI'_add_one z hzpos,
+      show ψI' (z + (1 : ℂ)) = ψI ⟨z + (1 : ℂ), hzI⟩ by simp [ψI', hzpos],
+      show ‖bContourWeight u z‖ = Real.exp (-π * u * z.im) by
+        simp [bContourWeight, Complex.norm_exp]]
+  refine lt_of_le_of_lt ?_ (hMε z.im ((le_max_right _ _).trans hzM))
+  refine (mul_le_mul_of_nonneg_right (show
+    ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) by
+    simpa [UpperHalfPlane.im, add_assoc] using hψbd _ (by
+      simpa [UpperHalfPlane.im, add_assoc] using
+        (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im) :
+      Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ))) (Real.exp_pos _).le).trans
+    (le_of_eq (by rw [mul_assoc, ← Real.exp_add]; ring_nf))
+
+/-- The left rectangle contour integral vanishes: the boundary integral of `bContourIntegrandT`
+on the rectangle with left side `x = -1`. -/
+private lemma laplacePsiI_rectLeft {u : ℝ} (hu : 2 < u) :
+    (∫ (x : ℝ) in (0 : ℝ)..1,
+          bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1)) +
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
+      (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
+            bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) = 0 := by
+  let f : ℂ → ℂ := fun z : ℂ => bContourIntegrandT u (z - 1)
+  simpa [min_eq_left zero_le_one, max_eq_right zero_le_one, f, sub_eq_add_neg, add_assoc,
+    add_left_comm, add_comm, mul_assoc, mul_comm, mul_left_comm] using
+    integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+      (y := (1 : ℝ)) (f := f) (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ))
+      ((continuousOn_bContourIntegrandT (u := u)).comp
+        (continuousOn_id.sub continuousOn_const) fun z hz => by
+          simpa [sub_eq_add_neg] using laplacePsiI_strip0_subset
+            (by simpa [Set.uIcc_of_le zero_le_one] using hz))
+      (s := (∅ : Set ℂ)) (by simp) (fun z hz => by
+        have hzpos' : 0 < (z - 1).im := by
+          simpa [sub_eq_add_neg] using lt_trans zero_lt_one ((Set.mem_Ioi).1 hz.1.2)
+        simpa [f] using ((differentiableOn_bContourIntegrandT (u := u) (z - 1)
+          hzpos').differentiableAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')).comp
+          z (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z))
+      (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+          mul_left_comm] using laplacePsiI_intT_shift hu (-1 : ℂ) fun t ht0 ↦
+            by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
+      (by simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_comm,
+          mul_left_comm] using laplacePsiI_intT_center hu)
+      (fun ε hε => let ⟨M, hM⟩ := laplacePsiI_tendstoT hu ε hε
+        ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩)
+
+/-- The right rectangle contour integral vanishes: the boundary integral of `bContourIntegrandT`
+on the rectangle with right side `x = 1`. -/
+private lemma laplacePsiI_rectRight {u : ℝ} (hu : 2 < u) :
+    (∫ (x : ℝ) in (1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)) +
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
+          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
+            bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
+  simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, mul_assoc, mul_comm, mul_left_comm,
+    add_assoc, add_left_comm, add_comm] using
+    integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+      (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
+      (by simpa [Set.uIcc_comm] using
+        (continuousOn_bContourIntegrandT (u := u)).mono laplacePsiI_strip0_subset)
+      (s := (∅ : Set ℂ)) (by simp)
+      (fun z hz ↦ have hzpos : 0 < z.im := lt_trans zero_lt_one (by
+        simpa [min_eq_right zero_le_one, max_eq_left zero_le_one, Set.mem_Ioi] using hz.1.2)
+        (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
+          (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos))
+      (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
+        laplacePsiI_intT_shift hu (1 : ℂ) fun t ht0 ↦
+          by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
+      (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
+        using laplacePsiI_intT_center hu) (laplacePsiI_tendstoT hu)
+
+/-- Pointwise identity `bContourIntegrandT + bContourIntegrandS = -bContourIntegrandI`
+on the open upper half-plane (from `ψI = ψT + ψS`). -/
+private lemma laplacePsiI_ITS {u : ℝ} (z : ℂ) (hz : 0 < z.im) :
+    bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
+  simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, add_mul,
+    show ψI' z = ψT' z + ψS' z by
+      simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ ↦ F ⟨z, hz⟩) ψI_eq_add_ψT_ψS]
+
+/-- Splitting of `∫ bContourIntegrandS` on `(1, ∞)` using `ψI = ψT + ψS`. -/
+private lemma laplacePsiI_center_split {u : ℝ} (hu : 2 < u) :
+    (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
+      -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
+        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
+  rw [show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
+      ∫ t in Set.Ioi (1 : ℝ),
+        ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
+          bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) from
+    MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => by
+      have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by
+        simpa using lt_trans zero_lt_one ht
+      with_reducible exact eq_sub_iff_add_eq'.mpr (laplacePsiI_ITS (u := u) (I * ↑t) hz)]
+  simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+    MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ)))
+      ((laplacePsiI_intI hu).mono_set (Set.Ioi_subset_Ioi zero_le_one)).neg
+      (laplacePsiI_intT_center hu)
+
+open MagicFunction.b.RealIntegrals in
+/-- Rewriting `J₂'` as an integral of `bContourIntegrandT` on `[0, 1]`. -/
+private lemma laplacePsiI_J2_top {u : ℝ} : J₂' u =
+    ∫ (x : ℝ) in (0 : ℝ)..1,
+      bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
+  refine intervalIntegral.integral_congr fun x hx ↦ ?_
+  have hmem : x ∈ Set.Icc (0 : ℝ) 1 := by simpa [Set.uIcc_of_le zero_le_one] using hx
+  simp [bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
+    show z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 by
+      have h := z₂'_eq_of_mem (t := x) hmem; push_cast at h; linear_combination h]
+
+open MagicFunction.b.RealIntegrals in
+/-- Rewriting `J₄'` as an integral of `bContourIntegrandT` on `[1, 0]`. -/
+private lemma laplacePsiI_J4_top {u : ℝ} : J₄' u =
+    ∫ (x : ℝ) in (1 : ℝ)..0,
+      bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
+  dsimp [J₄']
+  let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
+  rw [intervalIntegral.integral_congr fun t ht => show _ = (-1 : ℂ) * g (1 - t) by
+      have hmem : t ∈ Set.Icc (0 : ℝ) 1 := by simpa [Set.uIcc_of_le zero_le_one] using ht
+      simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
+        show z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I by
+          have h := z₄'_eq_of_mem (t := t) hmem; push_cast at h ⊢; linear_combination h],
+    show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
+      simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num,
+        (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
+
+/-- Auxiliary identity rewriting a vertical-segment integral using `bContourIntegrandT`. -/
+private lemma laplacePsiI_J_vert_aux {u : ℝ} (a : ℂ) (zp : ℝ → ℂ)
+    (hzp : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)) :
+    (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) * cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
+      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
+  rw [intervalIntegral.integral_congr fun t ht =>
+      show _ = (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) by
+        have hmem : t ∈ Set.Icc (0 : ℝ) 1 := by simpa [Set.uIcc_of_le zero_le_one] using ht
+        simp [bContourIntegrandT, bContourWeight, hzp hmem, mul_assoc]]
+  rw [show (∫ x in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (x : ℂ))) =
+      (I : ℂ) * ∫ x in (0 : ℝ)..1, bContourIntegrandT u (a + I * (x : ℂ)) from
+    intervalIntegral.integral_const_mul _ _,
+    intervalIntegral.integral_of_le zero_le_one]
+
+/-- Shifted-integrand identity: along the contour `a + I·t`, `bContourIntegrandT` factors as
+`bContourIntegrandI · (-bContourWeight a)`. -/
+private lemma laplacePsiI_shift_point {u : ℝ} (a : ℂ)
+    (hψa : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
+    (t : ℝ) (ht : 0 < t) : bContourIntegrandT u (a + I * (t : ℂ)) =
+      bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := by
+  simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, mul_assoc,
+    show bContourWeight u (a + I * (t : ℂ)) =
+      bContourWeight u (I * (t : ℂ)) * bContourWeight u a by
+      simpa [add_assoc, add_left_comm, add_comm] using
+        bContourWeight_add (u := u) (I * (t : ℂ)) a]
+
+open MagicFunction.b.RealIntegrals in
+/-- Reassembled sum identity: the six `J`-integrals add up to
+`I · ((2 - bContourWeight 1 - bContourWeight (-1)) · VI)` where `VI` is the central
+imaginary-axis integral of `bContourIntegrandI`. -/
+private lemma laplacePsiI_hsum {u : ℝ} (hu : 2 < u) :
+    J₁' u + J₂' u + J₃' u + J₄' u + J₅' u + J₆' u =
+      (Complex.I : ℂ) *
+        (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) *
+          (∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))) := by
+  set VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
+  have hintI := laplacePsiI_intI hu
+  have hRectLeft := laplacePsiI_rectLeft hu
+  have hRectRight := laplacePsiI_rectRight hu
+  have hCenter_split := laplacePsiI_center_split hu
+  have hJ2_top := laplacePsiI_J2_top (u := u)
+  have hJ4_top := laplacePsiI_J4_top (u := u)
   have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 :=
     fun hx => by simpa [Set.uIcc_of_le zero_le_one] using hx
-  have hJ2_top : J₂' u =
-      ∫ (x : ℝ) in (0 : ℝ)..1,
-        bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
-    refine intervalIntegral.integral_congr fun x hx ↦ ?_
-    simp [bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
-      show z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 by
-        have h := z₂'_eq_of_mem (t := x) (hmem_Icc hx); push_cast at h; linear_combination h]
-  have hJ4_top : J₄' u =
-      ∫ (x : ℝ) in (1 : ℝ)..0,
-        bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
-    dsimp [J₄']
-    let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
-    rw [intervalIntegral.integral_congr fun t ht => show _ = (-1 : ℂ) * g (1 - t) by
-        simp [g, bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
-          show z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I by
-            have h := z₄'_eq_of_mem (t := t) (hmem_Icc ht); push_cast at h ⊢; linear_combination h],
-      show (∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)) = ∫ t in (1 : ℝ)..0, g t by
-        simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t by norm_num,
-          (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm]]
   have hJ2_ray : J₂' u =
       (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) -
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
@@ -507,23 +580,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) -
         (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     simpa [hJ4_top] using eq_sub_of_add_eq (sub_eq_zero.mp hRectRight)
-  have hJ_vert_aux (a : ℂ) (zp : ℝ → ℂ)
-      (hzp : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)) :
-      (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) * cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
-        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
-    rw [intervalIntegral.integral_congr fun t ht =>
-        show _ = (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) by
-          simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc]]
-    rw [show (∫ x in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (x : ℂ))) =
-        (I : ℂ) * ∫ x in (0 : ℝ)..1, bContourIntegrandT u (a + I * (x : ℂ)) from
-      intervalIntegral.integral_const_mul _ _,
-      intervalIntegral.integral_of_le zero_le_one]
   have hJ1_set : J₁' u =
       (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
-    hJ_vert_aux (-1 : ℂ) z₁' fun ht => by simpa using z₁'_eq_of_mem ht
+    laplacePsiI_J_vert_aux (u := u) (-1 : ℂ) z₁' fun ht => by simpa using z₁'_eq_of_mem ht
   have hJ3_set : J₃' u =
       (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) :=
-    hJ_vert_aux (1 : ℂ) z₃' fun ht => by simpa using z₃'_eq_of_mem ht
+    laplacePsiI_J_vert_aux (u := u) (1 : ℂ) z₃' fun ht => by simpa using z₃'_eq_of_mem ht
   have hJ5_set : J₅' u =
       (2 : ℂ) * (I : ℂ) *
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
@@ -549,58 +611,58 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (I : ℂ) * ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ)) from
         MeasureTheory.integral_const_mul (μ := MeasureTheory.volume.restrict (Set.Ioi 1))
           (I : ℂ) _, mul_assoc]
-  have hShift_point (a : ℂ) (hψa : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
-      (t : ℝ) (ht : 0 < t) : bContourIntegrandT u (a + I * (t : ℂ)) =
-        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := by
-    simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, mul_assoc,
-      show bContourWeight u (a + I * (t : ℂ)) =
-        bContourWeight u (I * (t : ℂ)) * bContourWeight u a by
-        simpa [add_assoc, add_left_comm, add_comm] using
-          bContourWeight_add (u := u) (I * (t : ℂ)) a]
-  have hITS (z : ℂ) (hz : 0 < z.im) :
-      bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
-    simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, add_mul,
-      show ψI' z = ψT' z + ψS' z by
-        simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ ↦ F ⟨z, hz⟩) ψI_eq_add_ψT_ψS]
-  have hCenter_split : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
-      -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
-        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
-    rw [show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
-        ∫ t in Set.Ioi (1 : ℝ),
-          ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
-            bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) from
-      MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => by
-        have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by
-          simpa using lt_trans zero_lt_one ht
-        with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)]
-    simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ)))
-        (hintI.mono_set (Set.Ioi_subset_Ioi zero_le_one)).neg hintT_center
-  have hsum : J₁' u + J₂' u + J₃' u + J₄' u + J₅' u + J₆' u =
-      (Complex.I : ℂ) *
-        (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
-    rw [hJ2_ray, hJ4_ray, hJ1_set, hJ3_set, hJ5_set, hJ6_set]
-    have hfull (a : ℂ) (hpt : ∀ t : ℝ, 0 < t →
-        bContourIntegrandT u (a + I * (t : ℂ)) =
-          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) :
-        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) +
-            (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
-          (-VI) * bContourWeight u a := by
-      rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
-        MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
-          hpt t (lt_trans (by norm_num) ht)]
-      simpa [mul_assoc, mul_left_comm, mul_comm, VI] using
-        (Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi
-          (by simpa [mul_assoc] using hintI.mul_const (-bContourWeight u a)))).trans
-          (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-            (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
-    have hLeft_full := hfull (-1 : ℂ) (hShift_point (-1 : ℂ) ψT'_neg_one_add_I_mul)
-    have hRight_full := hfull (1 : ℂ) (hShift_point (1 : ℂ) ψT'_one_add_I_mul)
-    have hCenterVI := (setIntegral_Ioi0_eq_add_Ioc_Ioi (f := fun t : ℝ =>
-      bContourIntegrandI u (I * (t : ℂ))) hintI).symm
-    simp only [smul_eq_mul, neg_mul]; grind only
+  rw [hJ2_ray, hJ4_ray, hJ1_set, hJ3_set, hJ5_set, hJ6_set]
+  have hfull (a : ℂ) (hpt : ∀ t : ℝ, 0 < t →
+      bContourIntegrandT u (a + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) :
+      (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) +
+          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+        (-VI) * bContourWeight u a := by
+    rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
+        hpt t (lt_trans (by norm_num) ht)]
+    simpa [mul_assoc, mul_left_comm, mul_comm, VI] using
+      (Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi
+        (by simpa [mul_assoc] using hintI.mul_const (-bContourWeight u a)))).trans
+        (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
+          (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
+  have hLeft_full := hfull (-1 : ℂ)
+    (laplacePsiI_shift_point (u := u) (-1 : ℂ) ψT'_neg_one_add_I_mul)
+  have hRight_full := hfull (1 : ℂ)
+    (laplacePsiI_shift_point (u := u) (1 : ℂ) ψT'_one_add_I_mul)
+  have hCenterVI := (setIntegral_Ioi0_eq_add_Ioc_Ioi (f := fun t : ℝ =>
+    bContourIntegrandI u (I * (t : ℂ))) hintI).symm
+  simp only [smul_eq_mul, neg_mul]; grind only
+
+/-- Blueprint `prop:b-double-zeros`. -/
+public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
+    b' u =
+      (-4 * (Complex.I : ℂ)) *
+        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+          (∫ t in Set.Ioi (0 : ℝ),
+              ψI' ((Complex.I : ℂ) * (t : ℂ)) *
+                Real.exp (-π * u * t)) := by
+  open MagicFunction.b.RealIntegrals in
+  rw [MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (by linarith : 0 ≤ u)]
+  set VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
+  rw [MagicFunction.b.RealIntegrals.b', show (-4 * (Complex.I : ℂ)) *
+        (Real.sin (π * u / 2)) ^ (2 : ℕ) * (∫ t in Set.Ioi (0 : ℝ),
+          ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
+      (Complex.I : ℂ) * (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+        Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
+      rw [show (∫ t in Set.Ioi (0 : ℝ),
+            ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) = -VI by
+        rw [← MeasureTheory.integral_neg]
+        exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun _ _ => by
+          simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc],
+        show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+            Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
+            ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
+        simpa using (two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
+          (congrArg (fun r : ℝ => (r : ℂ)) (two_sub_two_cos_eq_four_sin_sq u))]
+      simp [mul_assoc, mul_comm]]
   simpa [bContourWeight, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc, mul_left_comm,
-    mul_comm] using hsum
+    mul_comm] using laplacePsiI_hsum hu
 
 end
 
@@ -753,8 +815,9 @@ lemma J₄'C_differentiable : Differentiable ℂ J₄'C :=
       continuous_z₄' hMψ (fun t ht => by
         have htic := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
         exact (show z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) by
-            simp [z₄'_eq_of_mem (t := t) htic, sub_eq_add_neg, add_comm]) ▸ norm_add_I_le_three _ htic
-              ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg htic.1]))))
+            simp [z₄'_eq_of_mem (t := t) htic, sub_eq_add_neg, add_comm]) ▸
+          norm_add_I_le_three _ htic
+            ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg htic.1]))))
 
 private lemma continuousOn_ψI'_z₅' :
     ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ι (0 : ℝ) 1) := by
@@ -774,7 +837,7 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
   (show J₅'C = fun u : ℂ => (-2 * Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψI' (z₅' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₅' t) from
     funext fun u => by
-      simp only [J₅'C, mul_assoc, mul_left_comm, mul_comm]
+      simp only [J₅'C, mul_assoc, mul_comm]
       rw [show (∫ t in (0 : ℝ)..1, Complex.I *
             (ψI' (z₅' t) * Complex.exp (u * (Complex.I * ((π : ℂ) * z₅' t))))) =
           Complex.I * ∫ t in (0 : ℝ)..1,
@@ -787,6 +850,8 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
         simpa [z₅'_eq_of_mem (t := t) htic, Complex.norm_real, abs_of_nonneg htic.1] using htic.2))
 
 set_option maxHeartbeats 1000000 in
+-- Elaborates a parametric differentiation-under-the-integral argument with several typeclass
+-- inferences over `μIciOne`/`volume`, exceeding the default heartbeat budget.
 lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fun u0 hu0 => by
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
   let μ : Measure ℝ := μIciOne
@@ -1274,8 +1339,8 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
             mul_assoc] using IntegralB.B_mul_exp_eq_decomp (t := t) ht,
     MeasureTheory.integral_add hf1 hf234, MeasureTheory.integral_add hf23 hf4,
     MeasureTheory.integral_add hf2 hf3]
-  simp only [f1, f2, f3, f4, MeasureTheory.integral_neg, μ, sub_eq_add_neg, add_assoc, add_left_comm,
-    add_comm, mul_assoc, MeasureTheory.integral_add, Measure.restrict_apply]
+  simp only [f1, f2, f3, f4, MeasureTheory.integral_neg, μ, sub_eq_add_neg, add_assoc,
+    add_left_comm, add_comm, mul_assoc]
   rw [show (∫ a in Set.Ioi (0 : ℝ), ((36 / π ^ 2 : ℝ) : ℂ) * bAnotherIntegrand u a) =
       ((36 / π ^ 2 : ℝ) : ℂ) * ∫ a in Set.Ioi (0 : ℝ), bAnotherIntegrand u a from
     MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi (0 : ℝ))) _ _,
@@ -2059,8 +2124,8 @@ public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
 /-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
 @[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
-    (LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸) (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv
-    g
+    ((LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸)
+      (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv) g
 
 /-- The value of `scaledMagic` at `0` is `1`. -/
 public theorem scaledMagic_zero : scaledMagic 0 = 1 := by
