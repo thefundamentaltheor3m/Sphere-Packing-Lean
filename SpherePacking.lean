@@ -46,7 +46,6 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.Cotangent
 public import SpherePacking.ModularForms.SummableLemmas.G2
-public import SpherePacking.ModularForms.SummableLemmas.IntPNat
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 public import SpherePacking.ModularForms.ThetaDerivIdentities
 public import SpherePacking.ModularForms.TsumDerivWithin
