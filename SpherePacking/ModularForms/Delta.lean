@@ -83,27 +83,6 @@ public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 *
   ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta,
     by simpa [Delta_apply, Δ] using exp_isBigO_discriminant⟩
 
-/-- Division of a cusp form by the discriminant, as a `ModularForm`
-(transport of mathlib's `CuspForm.divDiscriminant` through `Gamma_one_coe_eq_SL`). -/
-public def CuspForm_div_Discriminant (k : ℤ)
-    (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
-    ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) :=
-  let f' : CuspForm 𝒮ℒ k := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
-  (CuspForm.divDiscriminant f').copy (fun z => f z / Δ z)
-    (funext fun z => (CuspForm.divDiscriminant_apply f' z).symm)
-    CongruenceSubgroup.Gamma_one_coe_eq_SL
-
-/-- Pointwise evaluation of `CuspForm_div_Discriminant`. -/
-public lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
-    (z : ℍ) : (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
-
-/-- The map `CuspForm_div_Discriminant k` is additive. -/
-public theorem CuspForm_div_Discriminant_Add (k : ℤ)
-    (x y : CuspForm (CongruenceSubgroup.Gamma 1) k) :
-    CuspForm_div_Discriminant k (x + y) =
-      CuspForm_div_Discriminant k x + CuspForm_div_Discriminant k y := by
-  ext z; simp [CuspForm_div_Discriminant_apply, add_div]
-
 /-! ## Imaginary-axis positivity -/
 
 private lemma Complex_im_finset_prod_eq_zero_of_im_eq_zero (s : Finset ℕ) (f : ℕ → ℂ)
