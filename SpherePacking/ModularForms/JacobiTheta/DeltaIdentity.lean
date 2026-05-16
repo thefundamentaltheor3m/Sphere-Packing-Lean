@@ -496,22 +496,7 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       CuspForm_to_ModularForm_Fun_coe (Γ 1) 12 thetaDelta_MF thetaDelta_MF_IsCuspForm
     -- `thetaDelta_MF` is definitionally `thetaDeltaFun` as a function.
     simpa [thetaDelta_MF, thetaDeltaFun] using congrArg (fun f : ℍ → ℂ => f z) hcoe
-  have hr : Module.finrank ℂ (CuspForm (Γ 1) 12) = 1 := by
-    have e := CuspForms_iso_Modforms (12 : ℤ)
-    apply Module.finrank_eq_of_rank_eq
-    rw [LinearEquiv.rank_eq e]
-    simp only [Int.reduceSub, Nat.cast_one]
-    -- Bridge `ModularForm Γ(1) 0` to `ModularForm 𝒮ℒ 0` via instance transport.
-    refine rank_eq_one (ModularForm.const 1) (by simp [DFunLike.ne_iff]) fun g ↦ ?_
-    have : ModularFormClass (ModularForm (Γ 1) 0) 𝒮ℒ 0 :=
-      CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ inferInstance
-    obtain ⟨c', hc'⟩ := ModularFormClass.levelOne_weight_zero_const (F := ModularForm (Γ 1) 0) g
-    refine ⟨c', ?_⟩
-    ext z
-    change c' • (ModularForm.const (1 : ℂ) : ModularForm _ 0) z = g z
-    have := congr_fun hc' z
-    simp only [Function.const_apply] at this
-    simp [ModularForm.const_apply, this]
+  have hr : Module.finrank ℂ (CuspForm (Γ 1) 12) = 1 := cuspform_weight_12_finrank_one
   obtain ⟨c, hc⟩ :=
     (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr thetaDelta_CF
   -- Identify the scalar `c` by comparing the leading exponential decay at `i∞`.
