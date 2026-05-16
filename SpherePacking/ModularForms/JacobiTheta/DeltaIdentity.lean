@@ -268,25 +268,17 @@ public theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
 
 /-! ## Jacobi identity proof via limits at i∞. -/
 
-/-- g := H₂ + H₄ - H₃ tends to 0 at i∞. -/
-theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  have := H₂_tendsto_atImInfty
-  have := H₃_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
-  tendsto_cont
-
-/-- f := g² tends to 0 at i∞. -/
-theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  have := jacobi_g_tendsto_atImInfty
-  change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
-  tendsto_cont
-
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
 public theorem jacobi_identity : H₂ + H₄ = H₃ := by
+  have h_tendsto : Tendsto jacobi_f atImInfty (𝓝 0) := by
+    have := H₂_tendsto_atImInfty
+    have := H₃_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    change Tendsto (fun z => (H₂ z + H₄ z - H₃ z) ^ 2) atImInfty (𝓝 0)
+    tendsto_cont
   have hf0 : jacobi_f = 0 := congr_arg (·.toFun) <|
     rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 4 (by norm_num))
-      (cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable jacobi_f_tendsto_atImInfty)
+      (cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable h_tendsto)
   ext z
   have hg2 : (jacobi_g z) ^ 2 = 0 := by simpa [jacobi_f] using congr_fun hf0 z
   have : jacobi_g z = 0 := pow_eq_zero_iff two_ne_zero |>.mp hg2
