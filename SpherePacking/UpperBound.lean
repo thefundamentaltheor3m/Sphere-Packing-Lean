@@ -1449,59 +1449,70 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) (h
         (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) by
     rw [hFourier, hAterm, hBterm]; grind only
 
+/-- Bound the norm of `∫ B(t) · exp(-π u t)` by the `u = 2` integral, uniformly for `u ≥ 2`. -/
+private lemma B_integral_norm_le {u : ℝ} (hu : 2 ≤ u) :
+    ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)‖ ≤
+      ∫ t in Set.Ioi (0 : ℝ), ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ :=
+  norm_integral_le_of_norm_le
+    (by simpa using (IntegralB.integrableOn_B_mul_exp_neg_pi_mul (u := 2) (by positivity)).norm)
+    <| MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+      rw [norm_mul, norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le,
+        Complex.norm_of_nonneg (Real.exp_pos _).le]
+      refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
+      nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_right hu ht.le]
+
+/-- For a sequence `useq` of values `> 2` tending to `2`, the corresponding RHS of
+`fourier_g_eq_integral_B_of_ne_two` tends to zero. -/
+private lemma fourier_g_integral_B_RHS_tendsto_zero {useq : ℕ → ℝ}
+    (huseq_gt2 : ∀ n, 2 < useq n) (huseq_to2 : Filter.Tendsto useq Filter.atTop (𝓝 (2 : ℝ))) :
+    Filter.Tendsto (fun n : ℕ => (π / 2160 : ℂ) *
+        (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *
+          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)))
+      Filter.atTop (𝓝 (0 : ℂ)) := by
+  set M : ℝ := ∫ t in Set.Ioi (0 : ℝ), ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖
+  refine (tendsto_zero_iff_norm_tendsto_zero).2 <|
+    squeeze_zero (fun _ => norm_nonneg _) (fun n => ?_)
+      ((tendsto_const_nhds.mul (show Filter.Tendsto (fun n : ℕ =>
+          (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop (𝓝 (0 : ℝ)) by
+        simpa using (show ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ)
+          by fun_prop).tendsto.comp huseq_to2)).trans (by simp) :
+        Filter.Tendsto (fun n : ℕ => (‖(π / 2160 : ℂ)‖ * M) *
+          (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop (𝓝 (0 : ℝ)))
+  rw [norm_mul, norm_mul,
+    show ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
+        (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) by
+      simpa [pow_two] using Complex.norm_of_nonneg (sq_nonneg (Real.sin (π * (useq n) / 2))),
+    mul_right_comm]
+  gcongr; exact B_integral_norm_le (huseq_gt2 n).le
+
 /-- Integral representation of `𝓕 g` in terms of `B(t)` (for `0 < ‖x‖ ^ 2`). -/
 public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
     ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) = (π / 2160 : ℂ) * (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
       (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   by_cases hx2 : ‖x‖ ^ 2 = 2
-  · let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
-    let xseq : ℕ → ℝ⁸ := fun n => (c n) • x
-    have hxseq : Filter.Tendsto xseq Filter.atTop (𝓝 x) := by
-      simpa [xseq] using (show Filter.Tendsto c Filter.atTop (𝓝 (1 : ℝ)) by
-        simpa [c] using tendsto_const_nhds.add
-          (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))).smul_const x
-    let useq : ℕ → ℝ := fun n => ‖xseq n‖ ^ 2
-    have huseq_gt2 (n : ℕ) : 2 < useq n := by
-      rw [show useq n = (c n) ^ (2 : ℕ) * (‖x‖ ^ 2) by
-        simp [useq, xseq, norm_smul, abs_of_pos (by positivity : (0 : ℝ) < c n), pow_two,
-          mul_assoc, mul_left_comm, mul_comm], hx2]
-      nlinarith [sq_nonneg (c n - 1), (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1))]
-    let M : ℝ := ∫ t in Set.Ioi (0 : ℝ), ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖
-    have hInt_bound (n : ℕ) :
-        ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤ M :=
-      norm_integral_le_of_norm_le
-        (by simpa using (IntegralB.integrableOn_B_mul_exp_neg_pi_mul (u := 2) (by positivity)).norm)
-        <| MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-          rw [norm_mul, norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le,
-            Complex.norm_of_nonneg (Real.exp_pos _).le]
-          refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
-          nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_right (le_of_lt (huseq_gt2 n)) ht.le]
-    have hRHSseq0 : Filter.Tendsto (fun n : ℕ => (π / 2160 : ℂ) *
-        (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)))
-        Filter.atTop (𝓝 (0 : ℂ)) := by
-      refine (tendsto_zero_iff_norm_tendsto_zero).2 <|
-        squeeze_zero (fun _ => norm_nonneg _) (fun n => ?_)
-          ((tendsto_const_nhds.mul (show Filter.Tendsto (fun n : ℕ =>
-              (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop (𝓝 (0 : ℝ)) by
-            simpa using (show ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ)
-              by fun_prop).tendsto.comp (show Filter.Tendsto useq Filter.atTop (𝓝 (2 : ℝ)) by
-                simpa [useq, hx2] using
-                  ((by continuity : Continuous (fun y : ℝ⁸ => ‖y‖ ^ 2)).tendsto x).comp
-                    hxseq))).trans (by simp) :
-            Filter.Tendsto (fun n : ℕ => (‖(π / 2160 : ℂ)‖ * M) *
-              (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop (𝓝 (0 : ℝ)))
-      rw [norm_mul, norm_mul,
-        show ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
-            (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) by
-          simpa [pow_two] using Complex.norm_of_nonneg (sq_nonneg (Real.sin (π * (useq n) / 2))),
-        mul_right_comm]
-      gcongr; exact hInt_bound n
-    rw [tendsto_nhds_unique (((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq)
-      ((Filter.tendsto_congr fun n => fourier_g_eq_integral_B_of_ne_two (x := xseq n)
-        ((by norm_num : (0:ℝ) < 2).trans (huseq_gt2 n)) (huseq_gt2 n).ne').mpr hRHSseq0)]
-    simp [hx2]
+  swap
   · exact fourier_g_eq_integral_B_of_ne_two (x := x) hx hx2
+  -- Approximate `x` by a sequence `xseq n = (1 + 1/(n+1)) • x` with `‖xseq n‖ ^ 2 > 2`.
+  let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
+  let xseq : ℕ → ℝ⁸ := fun n => (c n) • x
+  have hxseq : Filter.Tendsto xseq Filter.atTop (𝓝 x) := by
+    simpa [xseq] using (show Filter.Tendsto c Filter.atTop (𝓝 (1 : ℝ)) by
+      simpa [c] using tendsto_const_nhds.add
+        (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))).smul_const x
+  let useq : ℕ → ℝ := fun n => ‖xseq n‖ ^ 2
+  have huseq_gt2 (n : ℕ) : 2 < useq n := by
+    rw [show useq n = (c n) ^ (2 : ℕ) * (‖x‖ ^ 2) by
+      simp [useq, xseq, norm_smul, abs_of_pos (by positivity : (0 : ℝ) < c n), pow_two,
+        mul_assoc, mul_left_comm, mul_comm], hx2]
+    nlinarith [sq_nonneg (c n - 1), (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1))]
+  have huseq_to2 : Filter.Tendsto useq Filter.atTop (𝓝 (2 : ℝ)) := by
+    simpa [useq, hx2] using
+      ((by continuity : Continuous (fun y : ℝ⁸ => ‖y‖ ^ 2)).tendsto x).comp hxseq
+  rw [tendsto_nhds_unique (((SchwartzMap.continuous (𝓕 g : 𝓢(ℝ⁸, ℂ))).tendsto x).comp hxseq)
+    ((Filter.tendsto_congr fun n => fourier_g_eq_integral_B_of_ne_two (x := xseq n)
+      ((by norm_num : (0:ℝ) < 2).trans (huseq_gt2 n)) (huseq_gt2 n).ne').mpr
+        (fourier_g_integral_B_RHS_tendsto_zero huseq_gt2 huseq_to2))]
+  simp [hx2]
 
 /-! ## Cohn-Elkies sign conditions -/
 
