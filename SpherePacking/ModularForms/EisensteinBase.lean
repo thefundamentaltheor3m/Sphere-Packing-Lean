@@ -573,25 +573,12 @@ variable {α β γ : Type*}
 variable [CommMonoid α] [TopologicalSpace α] [UniformSpace α]
 
 /-- The `q`-coefficient of `E₄` at `n = 1` is `240`. -/
-public lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 := by
-  simpa using congr_fun E4_q_exp 1
+public lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 :=
+  ModularForm.E₄_qExpansion_coeff_one
 
 /-- The `q`-coefficient of `E₆` at `n = 1` is `-504`. -/
-public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
-  simpa using congr_fun E6_q_exp 1
-
-/-- The Eisenstein series `E k` is nonzero (detected by its constant `q`-coefficient). -/
-public lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
-  intro h
-  simpa [h, qExpansion_zero (1 : ℝ)] using Ek_q_exp_zero k hk hk2
-
-/-- The Eisenstein series `E₄` is nonzero. -/
-public lemma E4_ne_zero : E₄ ≠ 0 := by
-  simpa [E4_eq] using Ek_ne_zero 4 (by norm_num) (by exact Nat.even_iff.mpr rfl)
-
-/-- The Eisenstein series `E₆` is nonzero. -/
-public lemma E6_ne_zero : E₆ ≠ 0 := by
-  simpa [E6_eq] using Ek_ne_zero 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 :=
+  ModularForm.E₆_qExpansion_coeff_one
 
 /-- Normalize a non-cusp modular form so that its constant `q`-coefficient becomes `1`. -/
 public lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
