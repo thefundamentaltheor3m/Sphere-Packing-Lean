@@ -374,11 +374,10 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       (thetaDelta_f ∣[(6 : ℤ)] A) =
         (H₂ ∣[(2 : ℤ)] A) * ((H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A)) := by
     have h34 : ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
-      simpa [show (4 : ℤ) = 2 + 2 by norm_num] using (mul_slash_SL2 2 2 A H₃ H₄)
+      simpa [show (4 : ℤ) = 2 + 2 from rfl] using mul_slash_SL2 2 2 A H₃ H₄
     have h234 : ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
         (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
-      simpa [show (6 : ℤ) = 2 + 4 by norm_num, mul_assoc] using
-        (mul_slash_SL2 2 4 A H₂ (H₃ * H₄))
+      simpa [show (6 : ℤ) = 2 + 4 from rfl, mul_assoc] using mul_slash_SL2 2 4 A H₂ (H₃ * H₄)
     simp [thetaDelta_f, h234, h34]
   have hprod_S : (thetaDelta_f ∣[(6 : ℤ)] S) = -thetaDelta_f := by
     rw [hslash3 S, H₂_S_action, H₃_S_action, H₄_S_action]
@@ -390,8 +389,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
   have action (A : SL(2, ℤ)) (hA : (thetaDelta_f ∣[(6 : ℤ)] A) = -thetaDelta_f) :
       (thetaDeltaFun ∣[(12 : ℤ)] A) = thetaDeltaFun := by
     have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] A) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hA] using
-        (mul_slash_SL2 6 6 A thetaDelta_f thetaDelta_f)
+      simpa [pow_two, show (12 : ℤ) = 6 + 6 from rfl, hA] using
+        mul_slash_SL2 6 6 A thetaDelta_f thetaDelta_f
     dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
   have thetaDeltaFun_S_action := action S hprod_S
   have thetaDeltaFun_T_action := action T hprod_T
