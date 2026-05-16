@@ -407,15 +407,9 @@ lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
 
 /-- `ζ(2k)` is real for all `k ≥ 1`. -/
 public lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : k ≠ 0) :
-    (riemannZeta (2 * k : ℕ)).im = 0 := by
-  rw [Nat.cast_mul, Nat.cast_two, riemannZeta_two_mul_nat hk]
-  -- The RHS is the coercion of a real expression
-  have : ((-1 : ℂ) ^ (k + 1) * (2 : ℂ) ^ (2 * k - 1) * (↑Real.pi : ℂ) ^ (2 * k) *
-         ↑(bernoulli (2 * k)) / ↑((2 * k)! : ℕ)) =
-         ↑((-1 : ℝ) ^ (k + 1) * (2 : ℝ) ^ (2 * k - 1) * Real.pi ^ (2 * k) *
-           bernoulli (2 * k) / (2 * k)!) := by push_cast; ring
-  rw [this]
-  exact ofReal_im _
+    (riemannZeta (2 * k : ℕ)).im = 0 :=
+  riemannZeta_im_eq_zero_of_one_lt (show (1 : ℝ) < ((2 * k : ℕ) : ℝ) by
+    exact_mod_cast (show 1 < 2 * k from by omega))
 
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
