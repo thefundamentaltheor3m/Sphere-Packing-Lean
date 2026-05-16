@@ -7,7 +7,6 @@ import SpherePacking.Tactic.FunPropExt
 
 public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.Complex.CauchyIntegral
-public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
@@ -342,12 +341,26 @@ derivative identities of Blueprint Proposition `prop:theta-der`.
 
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
+/-- If `f → c` at i∞ and f is holomorphic and bounded, then `serre_D k f → -k*c/12`. -/
+private lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_lim : Tendsto f atImInfty (𝓝 c)) :
+    Tendsto (serre_D k f) atImInfty (𝓝 (-(k : ℂ) * c / 12)) := by
+  rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
+  have hD := D_tendsto_zero_of_isBoundedAtImInfty hf_holo hf_bdd
+  have hprod := tendsto_E₂_atImInfty.mul hf_lim
+  have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * c = -(k : ℂ) * c / 12 := by ring
+  rw [← hlim]
+  refine hD.sub ?_
+  convert (tendsto_const_nhds (x := (k : ℂ) * 12⁻¹)).mul hprod using 1 <;> ring_nf
+
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
 Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f₂ → 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
-  have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
-    H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
+  have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
+    simpa using serre_D_tendsto_of_tendsto 2 H₂ 0
+      H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
   have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
@@ -362,7 +375,7 @@ H₄(2H₂ + H₄) → 1*(0 + 1) = 1
 So f₄ → -1/6 + (1/6)*1 = 0. -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
   have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
-    convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
+    convert serre_D_tendsto_of_tendsto 2 H₄ 1 H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
       H₄_tendsto_atImInfty using 2
     norm_num
   have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))

@@ -25,7 +25,6 @@ public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein
-public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.EisensteinBase
 public import SpherePacking.ModularForms.EisensteinQExpansions
 public import SpherePacking.ModularForms.ExpLemmas
