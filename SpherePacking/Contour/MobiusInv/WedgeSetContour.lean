@@ -1,28 +1,33 @@
+/-
+Copyright (c) 2025 Sphere Packing in Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing in Lean contributors
+-/
 module
-
-public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
 public import Mathlib.Analysis.Calculus.DiffContOnCl
-public import Mathlib.Topology.Homotopy.Affine
-public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
-public import Mathlib.Analysis.Convex.PathConnected
-public import SpherePacking.Integration.Measure
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.Convex.PathConnected
 public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
+public import Mathlib.MeasureTheory.Integral.CurveIntegral.Basic
+public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
+public import Mathlib.Topology.Homotopy.Affine
+public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
-import Mathlib.LinearAlgebra.Complex.Module
-import Mathlib.Topology.Instances.Complex
-import Mathlib.Topology.Algebra.GroupWithZero
-import Mathlib.Analysis.Calculus.Deriv.AffineMap
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Analysis.Calculus.Deriv.Basic
-import Mathlib.Analysis.Calculus.Deriv.Inv
+
 import Mathlib.Analysis.Calculus.ContDiff.Operations
+import Mathlib.Analysis.Calculus.Deriv.AffineMap
+import Mathlib.Analysis.Calculus.Deriv.Basic
+import Mathlib.Analysis.Calculus.Deriv.Comp
+import Mathlib.Analysis.Calculus.Deriv.Inv
+import Mathlib.LinearAlgebra.Complex.Module
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Order.LatticeIntervals
-import Mathlib.Tactic.FunProp
 import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.FunProp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import Mathlib.Topology.Algebra.GroupWithZero
+import Mathlib.Topology.Instances.Complex
 
 /-! # Contour identities for `mobiusInv` on `wedgeSet`.
 
@@ -32,11 +37,6 @@ together with `ClosedOneFormOn` and the `PermJ12ContourH1/2Hyp` structures) and 
 the underlying continuity, mapped paths, and change-of-variables lemmas for curve integrals
 on segments under `mobiusInv` (via the `SegmentHyp` typeclass).
 -/
-
-/-! ## Shared segment parametrisations
-
-Centralizes parametrisations and continuity/imaginary-part facts for the four segments
-`-1 → -1+I`, `-1+I → I`, `1 → 1+I`, `1+I → I`. -/
 
 namespace SpherePacking.Contour
 
@@ -64,48 +64,26 @@ public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by simp [z₁line]
 public lemma z₁line_im_pos_Ioc {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : 0 < (z₁line t).im := by
   simpa [z₁line_im t] using ht.1
 
-/-! ### `AffineMap.lineMap` descriptions of the `zⱼline` segments -/
-
 public lemma lineMap_z₁line (t : ℝ) :
     AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁line t := by
-  rw [AffineMap.lineMap_apply_module']
-  change (t : ℝ) • ((-1 + Complex.I) - (-1 : ℂ)) + (-1 : ℂ) = -1 + Complex.I * (t : ℂ)
-  have h : (t : ℝ) • Complex.I = (t : ℂ) * Complex.I := Complex.real_smul
-  rw [show ((-1 + Complex.I) - (-1 : ℂ)) = Complex.I from by ring, h]
-  ring
+  simp [AffineMap.lineMap_apply_module', z₁line, Complex.real_smul]; ring
 public lemma lineMap_z₂line (t : ℝ) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂line t := by
-  rw [AffineMap.lineMap_apply_module']
-  change (t : ℝ) • (Complex.I - ((-1) + Complex.I)) + (-1 + Complex.I) = -1 + (t : ℂ) + Complex.I
-  have h : (t : ℝ) • (1 : ℂ) = (t : ℂ) := by rw [Complex.real_smul]; ring
-  rw [show (Complex.I - ((-1 : ℂ) + Complex.I)) = (1 : ℂ) from by ring, h]
-  ring
+  simp [AffineMap.lineMap_apply_module', z₂line, Complex.real_smul]; ring
 public lemma lineMap_z₃line (t : ℝ) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃line t := by
-  rw [AffineMap.lineMap_apply_module']
-  change (t : ℝ) • ((1 + Complex.I) - (1 : ℂ)) + (1 : ℂ) = 1 + Complex.I * (t : ℂ)
-  have h : (t : ℝ) • Complex.I = (t : ℂ) * Complex.I := Complex.real_smul
-  rw [show ((1 + Complex.I) - (1 : ℂ)) = Complex.I from by ring, h]
-  ring
+  simp [AffineMap.lineMap_apply_module', z₃line, Complex.real_smul]; ring
 public lemma lineMap_z₄line (t : ℝ) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄line t := by
-  rw [AffineMap.lineMap_apply_module']
-  change (t : ℝ) • (Complex.I - (1 + Complex.I)) + (1 + Complex.I) = 1 - (t : ℂ) + Complex.I
-  have h : (t : ℝ) • (-1 : ℂ) = -(t : ℂ) := by rw [Complex.real_smul]; ring
-  rw [show (Complex.I - ((1 : ℂ) + Complex.I)) = (-1 : ℂ) from by ring, h]
-  ring
+  simp [AffineMap.lineMap_apply_module', z₄line, Complex.real_smul]; ring
 
 public lemma dir_z₁line : ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
 public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
-
-/-! ### Matching `MagicFunction.Parametrisations.zⱼ'` with `zⱼline` on `[0,1]` -/
 
 public lemma z₁'_eq_z₁line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₁' t = z₁line t := by
   simpa [z₁line, mul_assoc, mul_left_comm, mul_comm] using z₁'_eq_of_mem (t := t) ht
 public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t = z₂line t := by
   simpa [z₂line, add_assoc] using z₂'_eq_of_mem (t := t) ht
-
-/-! ### `AffineMap.lineMap` equals `zⱼ'` on `[0,1]` -/
 
 public lemma lineMap_z₃_eq_z₃' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃' t := by
@@ -115,8 +93,6 @@ public lemma lineMap_z₄_eq_z₄' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄' t := by
   simpa [z₄line, lineMap_z₄line (t := t), sub_eq_add_neg, add_assoc]
     using (z₄'_eq_of_mem (t := t) ht).symm
-
-/-! ### Convenience lemmas for the left-side segments -/
 
 @[simp] public lemma z₁line_add_one (t : ℝ) : z₁line t + 1 = (Complex.I : ℂ) * (t : ℂ) := by
   simp [z₁line, add_left_comm, add_comm]
@@ -132,10 +108,6 @@ namespace SpherePacking
 noncomputable section
 
 open Complex
-
-/-! ### Non-vanishing facts for the left-side segments
-
-Needed so `mobiusInv z = -z⁻¹` is well-defined on the left-side segments. -/
 
 public lemma segment_z₁_ne_zero (t : Set.Icc (0 : ℝ) 1) :
     (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) (t : ℝ)) ≠ 0 := fun hz => by
@@ -190,6 +162,26 @@ public lemma closure_wedgeSet_subset_abs_re_sub_one_le_im :
   closure_minimal (fun _ hz => abs_le.2 ⟨by linarith [hz.2.2], le_of_lt hz.2.1⟩)
     (isClosed_le (continuous_abs.comp (continuous_re.sub continuous_const)) continuous_im)
 
+/--
+Geometric wedge inequality: if `|z.re - 1| ≤ z.im` and `z ≠ 1`, then
+`1 / (2 * z.im) ≤ z.im / normSq (z - 1)`.
+-/
+public lemma one_div_two_im_le_im_div_normSq_sub_one
+    {z : ℂ} (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ))
+    (habs_re : |z.re - 1| ≤ z.im) :
+    (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) := by
+  have hnormSq_pos : 0 < Complex.normSq (z - 1) :=
+    Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
+  have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
+    have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
+      simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
+    nlinarith [show Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 by
+      simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm], hre_sq]
+  calc (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp
+    _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := mul_le_mul_of_nonneg_left
+          (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
+    _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
+
 /-- If `z ∈ closure wedgeSet` and `z ≠ 1`, then `z` lies in the open upper half-plane. -/
 public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
     {z : ℂ} (hz : z ∈ closure wedgeSet) (hne : z ≠ (1 : ℂ)) :
@@ -202,25 +194,11 @@ public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
 
 private lemma re_lineMap_smul (a b : ℂ) (t : ℝ) :
     (AffineMap.lineMap a b t).re = (1 - t) * a.re + t * b.re := by
-  rw [AffineMap.lineMap_apply_module, Complex.add_re]
-  have h1 : ((1 - t) • a).re = (1 - t) * a.re := by
-    rw [show ((1 - t) • a : ℂ) = ((1 - t : ℝ) : ℂ) * a from Complex.real_smul,
-      Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]; ring
-  have h2 : (t • b).re = t * b.re := by
-    rw [show (t • b : ℂ) = ((t : ℝ) : ℂ) * b from Complex.real_smul,
-      Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]; ring
-  exact congr_arg₂ (· + ·) h1 h2
+  simp [AffineMap.lineMap_apply_module, Complex.add_re, Complex.real_smul, Complex.mul_re]
 
 private lemma im_lineMap_smul (a b : ℂ) (t : ℝ) :
     (AffineMap.lineMap a b t).im = (1 - t) * a.im + t * b.im := by
-  rw [AffineMap.lineMap_apply_module, Complex.add_im]
-  have h1 : ((1 - t) • a).im = (1 - t) * a.im := by
-    rw [show ((1 - t) • a : ℂ) = ((1 - t : ℝ) : ℂ) * a from Complex.real_smul,
-      Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]; ring
-  have h2 : (t • b).im = t * b.im := by
-    rw [show (t • b : ℂ) = ((t : ℝ) : ℂ) * b from Complex.real_smul,
-      Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]; ring
-  exact congr_arg₂ (· + ·) h1 h2
+  simp [AffineMap.lineMap_apply_module, Complex.add_im, Complex.real_smul, Complex.mul_im]
 
 /-- Membership in `wedgeSet` for the vertical line segment from `1` to `1 + I`. -/
 public lemma lineMap_z₃line_mem_wedgeSet {t : ℝ} (ht0 : 0 < t) :
@@ -361,11 +339,7 @@ public lemma curveIntegral_segment_neg_inv
       (ContinuousLinearMap.mulLeftRight ℝ ℂ (AffineMap.lineMap a b t)⁻¹
         (AffineMap.lineMap a b t)⁻¹) (AffineMap.lineMap a b t) := by
     have h := (hasFDerivAt_inv' (𝕜 := ℝ) (R := ℂ) hz0).neg
-    convert h using 2
-    ext x
-    change (AffineMap.lineMap a b t)⁻¹ * x * (AffineMap.lineMap a b t)⁻¹ =
-      -(- ((AffineMap.lineMap a b t)⁻¹ * x * (AffineMap.lineMap a b t)⁻¹))
-    ring
+    convert h using 2; simp
   have hderiv :=
     (show HasDerivAt (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s))
         ((b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ)) t by

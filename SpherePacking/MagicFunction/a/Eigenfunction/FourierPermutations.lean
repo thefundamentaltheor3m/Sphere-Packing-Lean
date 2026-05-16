@@ -912,44 +912,18 @@ open MagicFunction.a.ComplexIntegrands
 
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
-/-- `Φ₃' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
-public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
-    Tendsto (Φ₃' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let expNorm : ℂ → ℝ := fun z ↦ ‖cexp (Real.pi * Complex.I * r * z)‖
-  have hExp : ContinuousAt expNorm (1 : ℂ) := by fun_prop
-  let M : ℝ := expNorm (1 : ℂ) + 1
-  obtain ⟨δexp, hδexp_pos, hδexp⟩ := (Metric.continuousAt_iff.1 hExp) 1 (by norm_num)
-  have hExpBound : ∀ {z : ℂ}, dist z (1 : ℂ) < δexp → expNorm z ≤ M := fun {z} hz ↦ by
-    have habs : |expNorm z - expNorm (1 : ℂ)| < 1 := by simpa [Real.dist_eq] using hδexp hz
-    simp only [M]
-    linarith [le_abs_self (expNorm z - expNorm (1 : ℂ))]
-  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
-  have hub : Tendsto (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (𝓝 (1 : ℂ))
-      (𝓝 (0 : ℝ)) := by
-    simpa using (by fun_prop : Continuous (fun z : ℂ => (C₀ : ℝ) *
-      (dist z (1 : ℂ)) ^ (2 : ℕ) * M)).tendsto (1 : ℂ)
-  obtain ⟨δpow, hδpow_pos, hδpow⟩ :=
-    Metric.mem_nhds_iff.1 <| Metric.tendsto_nhds.1 hub ε hε
-  let δ : ℝ := min δexp (min 1 δpow)
-  have hδ_pos : 0 < δ := lt_min hδexp_pos (lt_min (by norm_num) hδpow_pos)
-  refine ⟨δ, hδ_pos, fun z hzcl hdistz => ?_⟩
-  by_cases hz1 : z = (1 : ℂ)
-  · subst hz1
-    simpa [Φ₃'] using hε
-  have hdist_lt1 : dist z (1 : ℂ) < 1 :=
-    hdistz.trans_le ((min_le_right _ _).trans (min_le_left _ _))
-  have hdist_pow : dist z (1 : ℂ) < δpow :=
-    hdistz.trans_le ((min_le_right _ _).trans (min_le_right _ _))
-  have hexpZ : expNorm z ≤ M := hExpBound (hdistz.trans_le (min_le_left _ _))
-  have hz_im_pos : 0 < z.im := by
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using
-      mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
-  have habs_re : |z.re - 1| ≤ z.im :=
-    closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
-  have hz_im_lt1 : z.im < 1 :=
-    (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1) :
-        z.im ≤ ‖z - 1‖).trans_lt (by simpa [dist_eq_norm] using hdist_lt1)
+/--
+Bound on `‖φ₀'' (-1 / (z - 1))‖` by `C₀` when `z` lies in the closure of `wedgeSet`, is small
+enough that `z.im < 1`, and is not equal to `1`. Used in `tendsto_Φ₃'_one_within_closure_wedgeSet`.
+-/
+private lemma norm_φ₀''_inv_sub_one_le_of_close
+    {C₀ : ℝ} (hC₀_pos : 0 < C₀)
+    (hC₀ : ∀ z : UpperHalfPlane, (1 / 2 : ℝ) < z.im →
+      ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * Real.pi * z.im))
+    {z : ℂ} (hzcl : z ∈ closure wedgeSet) (hz1 : z ≠ (1 : ℂ))
+    (hz_im_pos : 0 < z.im) (hz_im_lt1 : z.im < 1) :
+    ‖φ₀'' (-1 / (z - 1))‖ ≤ C₀ := by
+  have habs_re : |z.re - 1| ≤ z.im := closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
   have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
     have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
       simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
@@ -957,31 +931,63 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
       simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm]
     linarith
   have hw_half : (1 / 2 : ℝ) < (-1 / (z - 1)).im := by
-    have him : (-1 / (z - 1)).im = z.im / Complex.normSq (z - 1) := by
-      simp [div_eq_mul_inv, Complex.inv_im, sub_eq_add_neg]
-    rw [him, lt_div_iff₀ (Complex.normSq_pos.2 (sub_ne_zero.mpr hz1))]
+    rw [show (-1 / (z - 1)).im = z.im / Complex.normSq (z - 1) by
+      simp [div_eq_mul_inv, Complex.inv_im, sub_eq_add_neg],
+      lt_div_iff₀ (Complex.normSq_pos.2 (sub_ne_zero.mpr hz1))]
     nlinarith [hnormSq_le, hz_im_pos, hz_im_lt1]
   have hw_pos : 0 < (-1 / (z - 1)).im := lt_trans (by norm_num) hw_half
-  have hφ₀'' : ‖φ₀'' (-1 / (z - 1))‖ ≤ (C₀ : ℝ) := by
-    let wH : UpperHalfPlane := ⟨-1 / (z - 1), hw_pos⟩
-    have hφ₀_eq : φ₀ wH = φ₀'' (-1 / (z - 1)) := by
-      simpa [wH] using (φ₀''_def (z := (-1 / (z - 1))) hw_pos).symm
-    have hexp : Real.exp (-2 * Real.pi * wH.im) ≤ 1 := Real.exp_le_one_iff.2 <| by
-      have : 0 ≤ Real.pi * wH.im := mul_nonneg Real.pi_pos.le wH.2.le; linarith
-    calc ‖φ₀'' (-1 / (z - 1))‖
-        = ‖φ₀ wH‖ := by rw [hφ₀_eq]
-      _ ≤ (C₀ : ℝ) * Real.exp (-2 * Real.pi * wH.im) := hC₀ wH hw_half
-      _ ≤ (C₀ : ℝ) * 1 := by gcongr
-      _ = (C₀ : ℝ) := mul_one _
-  have hmain :
-      ‖Φ₃' r z‖ ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by
+  let wH : UpperHalfPlane := ⟨-1 / (z - 1), hw_pos⟩
+  have hφ₀_eq : φ₀ wH = φ₀'' (-1 / (z - 1)) := by
+    simpa [wH] using (φ₀''_def (z := (-1 / (z - 1))) hw_pos).symm
+  have hexp : Real.exp (-2 * Real.pi * wH.im) ≤ 1 := Real.exp_le_one_iff.2 <| by
+    have : 0 ≤ Real.pi * wH.im := mul_nonneg Real.pi_pos.le wH.2.le; linarith
+  calc ‖φ₀'' (-1 / (z - 1))‖
+      = ‖φ₀ wH‖ := by rw [hφ₀_eq]
+    _ ≤ C₀ * Real.exp (-2 * Real.pi * wH.im) := hC₀ wH hw_half
+    _ ≤ C₀ * 1 := by gcongr
+    _ = C₀ := mul_one _
+
+/-- `Φ₃' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
+public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
+    Tendsto (Φ₃' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  let expNorm : ℂ → ℝ := fun z ↦ ‖cexp (Real.pi * Complex.I * r * z)‖
+  let M : ℝ := expNorm (1 : ℂ) + 1
+  obtain ⟨δexp, hδexp_pos, hδexp⟩ :=
+    (Metric.continuousAt_iff.1 (by fun_prop : ContinuousAt expNorm (1 : ℂ))) 1 (by norm_num)
+  have hExpBound : ∀ {z : ℂ}, dist z (1 : ℂ) < δexp → expNorm z ≤ M := fun {z} hz ↦ by
+    linarith [le_abs_self (expNorm z - expNorm (1 : ℂ)),
+      show |expNorm z - expNorm (1 : ℂ)| < 1 from by simpa [Real.dist_eq] using hδexp hz]
+  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
+  have hub : Tendsto (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (𝓝 (1 : ℂ))
+      (𝓝 (0 : ℝ)) := by
+    simpa using (by fun_prop : Continuous (fun z : ℂ => (C₀ : ℝ) *
+      (dist z (1 : ℂ)) ^ (2 : ℕ) * M)).tendsto (1 : ℂ)
+  obtain ⟨δpow, hδpow_pos, hδpow⟩ := Metric.mem_nhds_iff.1 <| Metric.tendsto_nhds.1 hub ε hε
+  refine ⟨min δexp (min 1 δpow),
+    lt_min hδexp_pos (lt_min (by norm_num) hδpow_pos), fun z hzcl hdistz => ?_⟩
+  by_cases hz1 : z = (1 : ℂ)
+  · subst hz1; simpa [Φ₃'] using hε
+  have hdist_lt1 : dist z (1 : ℂ) < 1 :=
+    hdistz.trans_le ((min_le_right _ _).trans (min_le_left _ _))
+  have hexpZ : expNorm z ≤ M := hExpBound (hdistz.trans_le (min_le_left _ _))
+  have hz_im_pos : 0 < z.im := by
+    simpa [UpperHalfPlane.upperHalfPlaneSet] using
+      mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
+  have hz_im_lt1 : z.im < 1 :=
+    (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1) :
+        z.im ≤ ‖z - 1‖).trans_lt (by simpa [dist_eq_norm] using hdist_lt1)
+  have hmain : ‖Φ₃' r z‖ ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by
     have heq : ‖Φ₃' r z‖
         = ‖φ₀'' (-1 / (z - 1))‖ * (dist z (1 : ℂ)) ^ (2 : ℕ) * expNorm z := by
       simp [Φ₃', expNorm, dist_eq_norm, mul_left_comm, mul_comm]
-    rw [heq]; gcongr
-  have hpow_small : (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M < ε := by
-    have h : dist ((C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (0 : ℝ) < ε :=
-      hδpow (show z ∈ Metric.ball (1 : ℂ) δpow from hdist_pow)
+    rw [heq]
+    gcongr
+    exact norm_φ₀''_inv_sub_one_le_of_close hC₀_pos hC₀ hzcl hz1 hz_im_pos hz_im_lt1
+  have hpow_small : C₀ * (dist z (1 : ℂ)) ^ (2 : ℕ) * M < ε := by
+    have h : dist (C₀ * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (0 : ℝ) < ε :=
+      hδpow (show z ∈ Metric.ball (1 : ℂ) δpow from
+        hdistz.trans_le ((min_le_right _ _).trans (min_le_right _ _)))
     rwa [Real.dist_eq, sub_zero, abs_of_nonneg (by positivity)] at h
   simpa [dist_eq_norm] using hmain.trans_lt hpow_small
 

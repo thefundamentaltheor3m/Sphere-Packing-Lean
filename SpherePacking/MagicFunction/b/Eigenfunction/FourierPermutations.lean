@@ -404,26 +404,6 @@ public structure TendstoPsiOneHypotheses (wedgeSet : Set ℂ) (ψS : UpperHalfPl
 
 private def expNorm (r : ℝ) (z : ℂ) : ℝ := ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
-/--
-Geometric wedge lemma: if `|z.re - 1| ≤ z.im` and `z ≠ 1`, then the imaginary part of `g · z`
-under the Möbius action `z ↦ z.im / normSq (z - 1)` is at least `1 / (2 * z.im)`.
--/
-private lemma one_div_two_im_le_im_div_normSq_sub_one
-    {z : ℂ} (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ))
-    (habs_re : |z.re - 1| ≤ z.im) :
-    (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) := by
-  have hnormSq_pos : 0 < Complex.normSq (z - 1) :=
-    Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
-  have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
-    have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
-      simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
-    nlinarith [show Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 by
-      simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm], hre_sq]
-  calc (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp
-    _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := mul_le_mul_of_nonneg_left
-          (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
-    _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
-
 /-- From a function tending to `0` at `atImInfty`, get a height threshold `A > 0` past which the
 norm is at most `1`. -/
 private lemma exists_height_norm_le_one_of_tendsto_zero
