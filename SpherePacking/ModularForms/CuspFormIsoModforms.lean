@@ -37,7 +37,6 @@ lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 
   have hDelta0 :
       (qExpansion (1 : ℝ) ((ModForm_mk Γ(1) 12 Delta : ℍ → ℂ))).coeff 0 = 0 :=
     (IsCuspForm_iff_coeffZero_eq_zero (k := 12) (f := ModForm_mk Γ(1) 12 Delta)).1 (by
-      rw [_root_.IsCuspForm, CuspFormSubmodule, LinearMap.mem_range]
       exact ⟨Delta, rfl⟩)
   simp [hDelta0]
 
