@@ -83,13 +83,14 @@ public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 *
   ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta,
     by simpa [Delta_apply, Δ] using exp_isBigO_discriminant⟩
 
-/-- Division of a cusp form by the discriminant, as a `ModularForm`. -/
+/-- Division of a cusp form by the discriminant, as a `ModularForm`
+(transport of mathlib's `CuspForm.divDiscriminant` through `Gamma_one_coe_eq_SL`). -/
 public def CuspForm_div_Discriminant (k : ℤ)
     (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
     ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) :=
-  let f' : CuspForm 𝒮ℒ k := f.copy f rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
+  let f' : CuspForm 𝒮ℒ k := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
   (CuspForm.divDiscriminant f').copy (fun z => f z / Δ z)
-    (by ext z; exact (CuspForm.divDiscriminant_apply f' z).symm)
+    (funext fun z => (CuspForm.divDiscriminant_apply f' z).symm)
     CongruenceSubgroup.Gamma_one_coe_eq_SL
 
 /-- Pointwise evaluation of `CuspForm_div_Discriminant`. -/
