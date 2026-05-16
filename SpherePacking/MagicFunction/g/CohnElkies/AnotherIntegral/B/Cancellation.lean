@@ -461,6 +461,30 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
   linarith [hC3 t ht, hC4 t ht, (show A + B = (H₃.resToImagAxis t + H₄.resToImagAxis t) - 2 -
     48 * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) by simp [A, B]; ring) ▸ norm_add_le A B]
 
+/-- On `t > 0`, `1 ≤ ‖H₃.resToImagAxis t‖`. The Jacobi theta series for `Θ₃` at `it`
+has real values `1 + 2·∑ exp(-π(n+1)² t) ≥ 1`, and `H₃ = Θ₃^4`. -/
+private lemma one_le_norm_H3_resToImagAxis {t : ℝ} (ht : 0 < t) :
+    (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := by
+  set τ : ℂ := (Complex.I : ℂ) * (t : ℂ)
+  let f : ℕ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + 1) ^ 2) * t)
+  have hterm : ∀ n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ) = (f n : ℂ) :=
+    fun n => by simp [f, show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ) =
+      (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) by
+      rw [show τ = Complex.I * (t : ℂ) from rfl]; push_cast
+      linear_combination (Complex.I_mul_I) * (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * (t : ℂ)]
+  have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
+    rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
+      simp [Function.resToImagAxis, ResToImagAxis, ht, Theta3_eq_jacobiTheta, τ],
+      show jacobiTheta τ = ((1 + 2 * (∑' n : ℕ, f n) : ℝ) : ℂ) by
+        rw [jacobiTheta_eq_tsum_nat (τ := τ) (by simpa [τ] using ht),
+          show (∑' n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)) =
+            (↑(∑' n : ℕ, f n) : ℂ) by simp [Complex.ofReal_tsum, hterm]]
+        push_cast; ring, Complex.norm_of_nonneg (by positivity)]
+    linarith [(tsum_nonneg fun n => by positivity : 0 ≤ ∑' n : ℕ, f n)]
+  simpa [show ‖ResToImagAxis H₃ t‖ = ‖ResToImagAxis Θ₃ t‖ ^ (4 : ℕ) by
+    simp [H₃, ResToImagAxis, ht, norm_pow]] using
+    pow_le_pow_left₀ (by positivity : (0 : ℝ) ≤ 1) hnormΘ₃ 4
+
 public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ C * Real.exp (-Real.pi * t) := by
@@ -482,31 +506,12 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
           ‖u‖ = 8 * Real.exp (-Real.pi * t)),
         (by simp [v, abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp] :
           ‖v‖ = 24 * Real.exp (-(2 : ℝ) * Real.pi * t))]
-  have hnorm_H3_ge_one : ∀ t : ℝ, 1 ≤ t → (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht => by
-    have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
-    set τ : ℂ := (Complex.I : ℂ) * (t : ℂ)
-    let f : ℕ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + 1) ^ 2) * t)
-    have hterm : ∀ n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ) = (f n : ℂ) :=
-      fun n => by simp [f, show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ) =
-        (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) by
-        rw [show τ = Complex.I * (t : ℂ) from rfl]; push_cast
-        linear_combination (Complex.I_mul_I) * (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * (t : ℂ)]
-    have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
-      rw [show Θ₃.resToImagAxis t = jacobiTheta τ by
-        simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ],
-        show jacobiTheta τ = ((1 + 2 * (∑' n : ℕ, f n) : ℝ) : ℂ) by
-          rw [jacobiTheta_eq_tsum_nat (τ := τ) (by simpa [τ] using ht0),
-            show (∑' n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ)) =
-              (↑(∑' n : ℕ, f n) : ℂ) by simp [Complex.ofReal_tsum, hterm]]
-          push_cast; ring, Complex.norm_of_nonneg (by positivity)]
-      linarith [(tsum_nonneg fun n => by positivity : 0 ≤ ∑' n : ℕ, f n)]
-    simpa [show ‖ResToImagAxis H₃ t‖ = ‖ResToImagAxis Θ₃ t‖ ^ (4 : ℕ) by
-      simp [H₃, ResToImagAxis, ht0, norm_pow]] using
-      pow_le_pow_left₀ (by positivity : (0 : ℝ) ≤ 1) hnormΘ₃ 4
   refine ⟨C0 * (C0 + 2), fun t ht => ?_⟩
   set x : ℂ := H₃.resToImagAxis t
+  have h_ge_one : (1 : ℝ) ≤ ‖x‖ :=
+    one_le_norm_H3_resToImagAxis (lt_of_lt_of_le zero_lt_one ht)
   have hx_inv : ‖(x ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
-    simpa [norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ (hnorm_H3_ge_one t ht))
+    simpa [norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ h_ge_one)
   have hx_le : ‖x‖ + 1 ≤ C0 + 2 := by
     nlinarith [norm_le_one_add_of_sub_one x (hsub1 t ht),
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht] : -Real.pi * t ≤ 0)]
@@ -515,7 +520,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     gcongr ?_ * ?_
     exacts [((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le, hsub1 t ht]
   have hinv_le : ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
-    have : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one (hnorm_H3_ge_one t ht))
+    have : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one h_ge_one)
     rw [show (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ by field_simp,
       norm_mul, norm_sub_rev]
     simpa using mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
