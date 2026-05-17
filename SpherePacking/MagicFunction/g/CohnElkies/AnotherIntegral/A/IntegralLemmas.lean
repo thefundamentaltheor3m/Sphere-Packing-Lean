@@ -1668,6 +1668,53 @@ private def cancelExpr (t : ℝ) : ℂ :=
     ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
     ((8640 / π : ℝ) : ℂ) * t - ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
 
+/-- Algebraic identity: `cancelExpr t` equals the three-term combination involving `φ₀(zI t)`,
+`φ₂'(zI t) - 720`, and `φ₄'(zI t) - exp(2πt) - 504`, obtained from the `S`-transform of `φ₀''`. -/
+private lemma cancelExpr_eq_of_pos {t : ℝ} (ht0 : 0 < t) :
+    cancelExpr t =
+      ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (zI t ht0) -
+        ((12 / π : ℝ) : ℂ) * t * (φ₂' (zI t ht0) - (720 : ℂ)) +
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+          (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)) := by
+  let z : ℍ := zI t ht0
+  have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
+    dsimp [z, zI]; push_cast; simp [mul_pow]
+  have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
+    rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
+      ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
+        ModularGroup.coe_S_smul (z := zI t ht0)]
+    simp [zI, div_eq_mul_inv]
+  have hST' :
+      ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
+        ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
+          ((12 / π : ℝ) : ℂ) * t * φ₂' z +
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * φ₄' z := by
+    have hneg' : (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
+        (t : ℂ) * ((t : ℂ) * φ₀ z) +
+          (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
+            (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
+      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
+        mul_comm, pow_two, neg_add, neg_mul, mul_neg, neg_neg] using congrArg (fun w : ℂ => -w)
+        (show φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
+            φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) + (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
+            (-(36 / (π ^ 2) * φ₄' z)) by
+          simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, hzsq]
+            using φ₀_S_transform_mul_sq z)
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+      mul_assoc, mul_left_comm, mul_comm, pow_two] using
+      (by simpa [show (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
+          -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z)) by dsimp [z, zI]; ring_nf; simp] using hneg' :
+        (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
+          (t : ℂ) * ((t : ℂ) * φ₀ z) +
+            (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z + -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z))))
+  have hSTpow :
+      (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
+        (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
+          (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
+    simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) by
+      simpa using congrArg φ₀'' hcoe.symm] using hST'
+  unfold cancelExpr; push_cast; linear_combination hSTpow
+
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
         ‖cancelExpr t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
@@ -1675,51 +1722,6 @@ lemma exists_phi0_cancellation_bound :
   rcases exists_phi2'_sub_720_bound_ge with ⟨C₂, A₂, hC₂pos, hA₂, hφ₂⟩
   rcases exists_phi4'_sub_exp_sub_504_bound_ge with ⟨C₄, A₄, hC₄pos, hA₄, hφ₄⟩
   let A : ℝ := max A₂ A₄
-  have hrewrite :
-      ∀ {t : ℝ} (ht0 : 0 < t),
-        cancelExpr t =
-          (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (zI t ht0) -
-              ((12 / π : ℝ) : ℂ) * t * (φ₂' (zI t ht0) - (720 : ℂ)) +
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := fun {t} ht0 => by
-    let z : ℍ := zI t ht0
-    have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
-      dsimp [z, zI]; push_cast; simp [mul_pow]
-    have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      rw [show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
-        ext1; simpa [zI, Complex.ofReal_inv, div_eq_mul_inv, mul_comm] using
-          ModularGroup.coe_S_smul (z := zI t ht0)]
-      simp [zI, div_eq_mul_inv]
-    have hST' :
-        ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
-          ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
-            ((12 / π : ℝ) : ℂ) * t * φ₂' z +
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * φ₄' z := by
-      have hneg' : (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
-          (t : ℂ) * ((t : ℂ) * φ₀ z) +
-            (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
-              (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
-          mul_comm, pow_two, neg_add, neg_mul, mul_neg, neg_neg] using congrArg (fun w : ℂ => -w)
-          (show φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
-              φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) + (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
-              (-(36 / (π ^ 2) * φ₄' z)) by
-            simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc, hzsq]
-              using φ₀_S_transform_mul_sq z)
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-        mul_assoc, mul_left_comm, mul_comm, pow_two] using
-        (by simpa [show (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
-            -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z)) by dsimp [z, zI]; ring_nf; simp] using hneg' :
-          (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
-            (t : ℂ) * ((t : ℂ) * φ₀ z) +
-              (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z + -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z))))
-    have hSTpow :
-        (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
-          (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
-            (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
-      simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) by
-        simpa using congrArg φ₀'' hcoe.symm] using hST'
-    unfold cancelExpr; push_cast; linear_combination hSTpow
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
   obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A → ‖cancelExpr t‖ ≤ M := by
     obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn (s := Set.Icc (1 : ℝ) A)
@@ -1776,7 +1778,7 @@ lemma exists_phi0_cancellation_bound :
       set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
       set z' : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
         (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
-      rw [show cancelExpr t = x - y + z' by simpa [x, y, z'] using hrewrite ht0]
+      rw [show cancelExpr t = x - y + z' by simpa [x, y, z'] using cancelExpr_eq_of_pos ht0]
       refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])).trans
         (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
