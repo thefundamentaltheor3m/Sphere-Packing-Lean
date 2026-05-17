@@ -1479,10 +1479,20 @@ def coeff (t : ℝ) : ℂ := (-π * t : ℂ)
 
 def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
+/-- The `hf` specialising `SmoothIntegralIciOne.gN` to the a-side `gN`. -/
+abbrev hφ : ℝ → ℂ := fun t : ℝ ↦ φ₀'' (I * t)
+
+lemma gN_eq_sharedGN (n : ℕ) (r t : ℝ) :
+    gN n r t = SpherePacking.Integration.SmoothIntegralIciOne.gN (hf := hφ) n r t := by
+  simp [gN, coeff, SpherePacking.Integration.SmoothIntegralIciOne.gN,
+    SpherePacking.Integration.SmoothIntegralIciOne.g,
+    SpherePacking.Integration.SmoothIntegralIciOne.coeff, g, hφ,
+    mul_assoc, mul_left_comm, mul_comm]
+
 lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) : ‖coeff t‖ ^ n = (π * t) ^ n := by
   simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht]
 
-private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
+lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
   simpa [gN, μIciOne] using ContinuousOn.aestronglyMeasurable
     (((by unfold coeff; fun_prop : Continuous coeff).pow n).continuousOn.mul
@@ -1504,7 +1514,7 @@ public lemma g_norm_bound_uniform :
   gcongr
   simpa [φ₀'', hpos, one_pos.trans_le ht1] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith)
 
-private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
+lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) μIciOne := by
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
   have hbound_int : Integrable bound μIciOne := by
@@ -1556,7 +1566,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     (F := fun r t ↦ gN n r t) (x₀ := r₀) (s := Metric.ball r₀ (1 : ℝ))
     (hs := by simpa using Metric.ball_mem_nhds r₀ (by norm_num))
     (hF_meas := .of_forall fun r ↦ aestronglyMeasurable_gN (n := n) (r := r))
-    (hF_int := integrable_gN (n := n) (r := r₀) hr₀)
+    (hF_int := integrable_gN (n := n) (r := r₀) (by linarith))
     (hF'_meas := aestronglyMeasurable_gN (n := n + 1) (r := r₀))
     (h_bound := h_bound) (bound_integrable := bound_integrable)
     (h_diff := ae_of_all _ fun t r _ ↦ by
@@ -1601,7 +1611,8 @@ lemma iteratedDeriv_bound (n : ℕ) :
     _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
       gcongr
       refine (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
-        (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := r) hr').norm)
+        (by simpa [IntegrableOn, μIciOne] using
+              (integrable_gN (n := n) (r := r) (by linarith)).norm)
         (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
         measurableSet_Ici fun t ht ↦ by
         have ht0 : 0 ≤ t := zero_le_one.trans ht
@@ -1871,52 +1882,6 @@ open scoped Topology
 open Complex Real Set MeasureTheory Filter
 open MagicFunction.a.RealIntegrals MagicFunction.a.IntegralEstimates.I₆ RadialSchwartz
 
-local notation "μ" => SpherePacking.Integration.μIciOne
-
-/-- The coefficient capturing the `r`-dependence of the exponential factor. -/
-private def coeff (t : ℝ) : ℂ := (-Real.pi * t : ℂ)
-
-private def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
-
-private lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) μ := by
-  refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ici
-  simpa [gN] using
-    (show Continuous fun t : ℝ ↦ (coeff t) ^ n by unfold coeff; fun_prop).continuousOn.mul
-      ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.congr fun t ht ↦ by
-        dsimp [MagicFunction.a.RealIntegrands.Φ₆, MagicFunction.a.ComplexIntegrands.Φ₆', g]
-        rw [MagicFunction.Parametrisations.z₆'_eq_of_mem ht, show (π : ℂ) * I * (r : ℂ) *
-          (I * (t : ℂ)) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by ring_nf; simp [I_sq]]
-        ac_rfl)
-
-private lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) μ := by
-  obtain ⟨C₀, _, hC₀⟩ := g_norm_bound_uniform
-  refine Integrable.mono' (g := fun t : ℝ ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀)
-    (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (show Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) μ by
-        simpa [IntegrableOn, SpherePacking.Integration.μIciOne] using
-          SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
-            (mul_pos Real.pi_pos (by linarith))).const_mul ((π ^ n) * C₀))
-    (gN_measurable n r) <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
-  have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-  calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN, norm_pow]
-    _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by
-          gcongr ?_ * ?_
-          · simp [coeff, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht0]
-          · exact hC₀ r t ht
-    _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by
-          rw [show rexp (-(π * (r + 2)) * t) = rexp (-2 * π * t) * rexp (-π * r * t) by
-            rw [← Real.exp_add]; ring_nf]; ring
-
-/-- The `hf` specialising `SmoothIntegralIciOne.gN` to the a-side `gN`. -/
-private abbrev hφ : ℝ → ℂ := fun t : ℝ ↦ φ₀'' (I * t)
-
-private lemma gN_eq_sharedGN (n : ℕ) (r t : ℝ) :
-    gN n r t = SpherePacking.Integration.SmoothIntegralIciOne.gN (hf := hφ) n r t := by
-  simp [gN, coeff, SpherePacking.Integration.SmoothIntegralIciOne.gN,
-    SpherePacking.Integration.SmoothIntegralIciOne.g,
-    SpherePacking.Integration.SmoothIntegralIciOne.coeff,
-    MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, mul_left_comm, mul_comm]
-
 private theorem I₆'_contDiffOn_Ioi_neg2 :
     ContDiffOn ℝ ∞ MagicFunction.a.RealIntegrals.I₆' (Ioi (-2 : ℝ)) := by
   obtain ⟨C₀, _, hC₀⟩ := MagicFunction.a.IntegralEstimates.I₆.g_norm_bound_uniform
@@ -1931,11 +1896,12 @@ private theorem I₆'_contDiffOn_Ioi_neg2 :
               show rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) by
                 rw [← Real.exp_add]; ring_nf] using hC₀ 0 t (by simpa using ht)⟩)
           (gN_measurable := fun n x =>
-            (aestronglyMeasurable_congr (.of_forall (gN_eq_sharedGN n x))).mp (gN_measurable n x))
+            (aestronglyMeasurable_congr (.of_forall (gN_eq_sharedGN n x))).mp
+              (aestronglyMeasurable_gN n x))
           (n := n) (x := r₀) hr₀
           (hF_int :=
             (integrable_congr (.of_forall (gN_eq_sharedGN n r₀))).mp
-              (gN_integrable n r₀ hr₀)) using 1
+              (integrable_gN n r₀ hr₀)) using 1
         · exact funext fun r => integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
             .of_forall fun t _ ↦ gN_eq_sharedGN n r t)
         · exact integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
