@@ -830,33 +830,14 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
         simpa [μ] using hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one (μ := μ)
           (n := n) (x₀ := r) rfl hg_bound hcoeff hg_repr hmeas hint).deriv]
 
-/-- For each `k`, the function `x ↦ x ^ k * exp (-π * x)` is bounded on `[0, ∞)`. -/
-public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
-    ∃ C, ∀ x : ℝ, 0 ≤ x → x ^ k * rexp (-π * x) ≤ C := by
-  let f : ℝ → ℝ := fun x => x ^ k * rexp (-π * x)
-  have hlim : Tendsto f atTop (𝓝 0) := by
-    simpa [show f = fun x : ℝ => (π ^ k)⁻¹ * ((π * x) ^ k * rexp (-(π * x))) from
-        funext fun x => by simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow,
-          pow_ne_zero k Real.pi_ne_zero]] using
-      tendsto_const_nhds.mul ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).comp
-        (tendsto_id.const_mul_atTop Real.pi_pos))
-  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 <|
-    (hlim.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))).mono fun _ => le_of_lt
-  obtain ⟨x0, _, hxmax⟩ :=
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (max N 0))).exists_isMaxOn
-      (nonempty_Icc.2 (le_max_right N 0)) (by fun_prop : Continuous f).continuousOn
-  refine ⟨max 1 (f x0), fun x hx => ?_⟩
-  by_cases hxN : x ≤ max N 0
-  · exact (hxmax ⟨hx, hxN⟩).trans (le_max_right _ _)
-  · exact (hN x ((le_max_left N 0).trans (le_of_not_ge hxN))).trans (le_max_left _ _)
-
 /-- Variant for iterated derivatives: a uniform exponential bound on `‖iteratedDeriv n I x‖`
 implies Schwartz inverse-power decay. -/
 public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n : ℕ)
     (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) (k : ℕ) :
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
   obtain ⟨C₁, _, hC₁⟩ := hI
-  obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_pi_bounded (k := k)
+  obtain ⟨Cpow, hCpow⟩ :=
+    SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := π) Real.pi_pos
   refine ⟨C₁ * Cpow, fun x hx => ?_⟩
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖
@@ -1442,17 +1423,9 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
 /-- Schwartz-style decay estimate for `RealIntegrals.I₁'`. -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ ≤ C := fun k n => by
-  obtain ⟨Cpow, hCpow⟩ : ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
-    obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
-      (((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k).eventually
-        (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))).mono fun _ => le_of_lt)
-    obtain ⟨u0, _, hu0max⟩ := isCompact_Icc.exists_isMaxOn (s := Icc 0 (max N 0))
-      ⟨0, le_refl _, le_max_right _ _⟩
-      (show Continuous fun u : ℝ ↦ u ^ k * rexp (-u) by fun_prop).continuousOn
-    refine ⟨max 1 (u0 ^ k * rexp (-u0)), fun u hu => ?_⟩
-    by_cases huN : u ≤ max N 0
-    exacts [(hu0max ⟨hu, huN⟩).trans (le_max_right _ _),
-      (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)]
+  obtain ⟨Cpow, hCpow⟩ :=
+    SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := 1) one_pos
+  simp only [neg_one_mul] at hCpow
   let I : ℝ := ∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)
   refine ⟨(2 * π) ^ n * (Cφ * ((π ^ k)⁻¹ * Cpow) * I), fun x hx => ?_⟩
   calc

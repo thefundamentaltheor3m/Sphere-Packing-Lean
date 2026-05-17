@@ -218,15 +218,6 @@ public lemma integrable_perm_I₅_kernel (w : ℝ⁸) :
         (.of_forall (norm_permI5Kernel_le w s hs)),
       integrable_integral_norm_permI5Kernel w⟩
 
-/-- The phase-shifted Gaussian integral used in the computation of `𝓕 I₅`. -/
-public lemma integral_phase_gaussian (w : ℝ⁸) (s : ℝ) (hs0 : 0 < s) :
-    (∫ x : ℝ⁸, cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) =
-      (s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s) := by
-  have h := _root_.SpherePacking.ForMathlib.fourier_gaussian_norm_sq_div_even
-    (k := 4) (s := s) hs0 (w := w)
-  rw [fourier_eq' (fun v : ℝ⁸ ↦ cexp (-π * (‖v‖ ^ 2) / s)) w] at h
-  simpa [smul_eq_mul, mul_assoc] using h
-
 section Integral_Permutations
 
 section PermI5
@@ -242,7 +233,8 @@ private lemma integral_permI5Kernel_x_eq (w : ℝ⁸) (s : ℝ) (hs0 : 0 < s) :
             (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
     funext x; simp [permI5Kernel, permI5Phase, I₅.g]; ac_rfl
   rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor,
-    MeasureTheory.integral_const_mul, integral_phase_gaussian (w := w) (s := s) hs0,
+    MeasureTheory.integral_const_mul,
+    SpherePacking.ForMathlib.integral_phase_gaussian_even (k := 4) (w := w) (s := s) hs0,
     ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _,
     zpow_neg_four_mul_pow_four (s := s) hs0.ne', mul_one]
 
