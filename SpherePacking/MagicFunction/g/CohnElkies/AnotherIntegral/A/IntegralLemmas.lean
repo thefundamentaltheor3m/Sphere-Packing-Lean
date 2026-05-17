@@ -1514,67 +1514,84 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     (pow_nonneg hq_nonneg _)
 
 
+/-- Bound `‖E₄·q - Δ‖` by combining the bounds on `‖E₄ - 1‖` and `‖Δ - q‖`. -/
+private lemma norm_E4q_sub_Delta_le {z : ℍ} {q CE4 CΔq : ℝ} (hq_nonneg : 0 ≤ q)
+    (hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q) (hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ)) :
+    ‖E₄ z * (q : ℂ) - Δ z‖ ≤ (CE4 + CΔq) * q ^ (2 : ℕ) := by
+  have h1 : ‖(E₄ z - (1 : ℂ)) * (q : ℂ)‖ ≤ CE4 * q ^ (2 : ℕ) := by
+    rw [norm_mul, show ‖(q : ℂ)‖ = q from by simp [abs_of_nonneg hq_nonneg], pow_two, ← mul_assoc]
+    exact mul_le_mul_of_nonneg_right hE4sub hq_nonneg
+  calc ‖E₄ z * (q : ℂ) - Δ z‖
+        = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ := by congr 1; ring
+    _ ≤ _ + _ := norm_add_le _ _
+    _ ≤ _ := by linarith [show ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ) from by
+                  simpa [norm_sub_rev] using hΔerr]
+
+/-- Combined bound on the numerator of `φ₂' - 720`. -/
+private lemma norm_phi2'_numerator_le {z : ℍ} {q CE4 CΔq CA E4B : ℝ} (hq_nonneg : 0 ≤ q)
+    (hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q) (hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ))
+    (hE4norm : ‖E₄ z‖ ≤ E4B)
+    (hAq : ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤ CA * q ^ (2 : ℕ)) :
+    ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ ≤
+      (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
+  have hE4qΔ := norm_E4q_sub_Delta_le hq_nonneg hE4sub hΔerr
+  have hB : ‖(720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ ≤ (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
+    rw [norm_mul, Complex.norm_ofNat]
+    linarith [mul_le_mul_of_nonneg_left hE4qΔ (by norm_num : (0:ℝ) ≤ 720)]
+  calc ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖
+        = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)) +
+            (720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ := by congr 1; ring
+    _ ≤ _ + _ := norm_add_le _ _
+    _ ≤ _ := by linarith [norm_mul_le_of_le hE4norm hAq]
+
+/-- Final assembly bound: divide the numerator bound by `Δ z` to obtain the `φ₂' - 720` estimate. -/
+private lemma phi2'_sub_720_final {z : ℍ} {q s CΔinv K : ℝ} (hK : 0 ≤ K) (hq : 0 ≤ q)
+    (hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp s)
+    (hnum : ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ ≤ K * q ^ (2 : ℕ))
+    (hq2 : q ^ (2 : ℕ) * Real.exp s = q) :
+    ‖φ₂' z - (720 : ℂ)‖ ≤ (CΔinv * K) * q := by
+  calc ‖φ₂' z - (720 : ℂ)‖
+        = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ * ‖(Δ z)⁻¹‖ := by
+          rw [show φ₂' z - (720 : ℂ) =
+            ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)) / (Δ z) by
+              dsimp [φ₂']; field_simp [Δ_ne_zero z], div_eq_mul_inv, norm_mul]
+    _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp s) :=
+        mul_le_mul hnum hΔinv' (norm_nonneg _) (mul_nonneg hK (pow_nonneg hq _))
+    _ = (CΔinv * K) * q := by linear_combination (CΔinv * K) * hq2
+
+/-- Bound `‖E₄ z‖ ≤ 1 + CE4 · q1` from `hE4sub` and `q ≤ q1`. -/
+private lemma E4_norm_bound {z : ℍ} {q q1 CE4 : ℝ} (hCE4 : 0 ≤ CE4) (hq_le_q1 : q ≤ q1)
+    (hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q) : ‖E₄ z‖ ≤ 1 + CE4 * q1 := by
+  linarith [hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4),
+    show ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 from by simpa using norm_add_le (E₄ z - (1 : ℂ)) 1]
+
 /-- For large `t`, `φ₂' (it)` differs from `720` by `O(exp (-2π t))`. -/
 public lemma exists_phi2'_sub_720_bound_ge :
     ∃ C A : ℝ, 0 < C ∧ 1 ≤ A ∧
       ∀ t : ℝ, (ht : 0 < t) → A ≤ t →
         ‖φ₂' (zI t ht) - (720 : ℂ)‖ ≤ C * Real.exp (-2 * π * t) := by
-  rcases exists_inv_Delta_bound_exp with ⟨CΔinv, AΔ, hCΔinv_pos, hΔinv⟩
-  rcases exists_E4_sub_one_bound with ⟨CE4, hCE4_pos, hE4⟩
-  rcases exists_Delta_sub_q_bound with ⟨CΔq, hCΔq_pos, hΔq⟩
-  rcases exists_E2E4_sub_E6_sub_720q_bound with ⟨CA, hCA_pos, hAq⟩
-  let A : ℝ := max (1 : ℝ) AΔ; let q1 : ℝ := Real.exp (-2 * π)
-  let E4B : ℝ := 1 + CE4 * q1
-  let C : ℝ := 1 + CΔinv * (E4B * CA + 720 * (CE4 + CΔq))
-  have hA1 : 1 ≤ A := le_max_left _ _
-  refine ⟨C, A, by positivity, hA1, fun t ht0 htA => ?_⟩
-  have ht1 : 1 ≤ t := le_trans hA1 htA
+  obtain ⟨CΔinv, AΔ, hCΔinv_pos, hΔinv⟩ := exists_inv_Delta_bound_exp
+  obtain ⟨CE4, hCE4_pos, hE4⟩ := exists_E4_sub_one_bound
+  obtain ⟨CΔq, _, hΔq⟩ := exists_Delta_sub_q_bound
+  obtain ⟨CA, _, hAq⟩ := exists_E2E4_sub_E6_sub_720q_bound
+  let A : ℝ := max 1 AΔ; let q1 : ℝ := Real.exp (-2 * π)
+  let E4B : ℝ := 1 + CE4 * q1; let K : ℝ := E4B * CA + 720 * (CE4 + CΔq)
+  refine ⟨1 + CΔinv * K, A, by positivity, le_max_left _ _, fun t ht0 htA => ?_⟩
+  have ht1 : 1 ≤ t := le_trans (le_max_left _ _) htA
   let z : ℍ := zI t ht0; let q : ℝ := Real.exp (-2 * π * t)
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
-  have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
   have hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q := by simpa [z, q] using hE4 t ht0 ht1
-  have hE4norm : ‖E₄ z‖ ≤ E4B := by
-    simp only [E4B]; linarith [hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le),
-      show ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 from by simpa using norm_add_le (E₄ z - (1 : ℂ)) 1]
-  have hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ) := by
-    simpa [z, q] using hΔq t ht0 ht1
   have hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := by
     simpa [z, zI_im t ht0] using hΔinv z
       (by simpa [z, zI_im t ht0] using (le_max_right _ _ : AΔ ≤ A).trans htA)
-  have hE4qΔ : ‖E₄ z * (q : ℂ) - Δ z‖ ≤ (CE4 + CΔq) * q ^ (2 : ℕ) := by
-    have h1 : ‖(E₄ z - (1 : ℂ)) * (q : ℂ)‖ ≤ CE4 * q ^ (2 : ℕ) := by
-      rw [norm_mul, show ‖(q : ℂ)‖ = q from by simp [abs_of_nonneg hq_nonneg], pow_two, ← mul_assoc]
-      exact mul_le_mul_of_nonneg_right hE4sub hq_nonneg
-    calc ‖E₄ z * (q : ℂ) - Δ z‖
-          = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ := by congr 1; ring
-      _ ≤ _ + _ := norm_add_le _ _
-      _ ≤ _ := by linarith [show ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ) from by
-                    simpa [norm_sub_rev] using hΔerr]
-  have hrew : φ₂' z - (720 : ℂ) =
-      ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)) / (Δ z) := by
-    dsimp [φ₂']; field_simp [Δ_ne_zero z]
-  have hnum :
-      ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ ≤
-        (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
-    have hB : ‖(720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ ≤ (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
-      rw [norm_mul, Complex.norm_ofNat]
-      linarith [mul_le_mul_of_nonneg_left hE4qΔ (by norm_num : (0:ℝ) ≤ 720)]
-    calc ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖
-          = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)) +
-              (720 : ℂ) * (E₄ z * (q : ℂ) - Δ z)‖ := by congr 1; ring
-      _ ≤ _ + _ := norm_add_le _ _
-      _ ≤ _ := by linarith [norm_mul_le_of_le hE4norm (hAq t ht0 ht1)]
-  have hq2 : q ^ (2 : ℕ) * Real.exp (2 * π * t) = q := by
-    simp only [q]; rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf
-  have : ‖φ₂' z - (720 : ℂ)‖ ≤ (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q := by
-    set K : ℝ := E4B * CA + 720 * (CE4 + CΔq)
-    calc ‖φ₂' z - (720 : ℂ)‖
-          = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ * ‖(Δ z)⁻¹‖ := by
-              simp [hrew, div_eq_mul_inv]
-      _ ≤ (K * q ^ (2 : ℕ)) * (CΔinv * Real.exp (2 * π * t)) := mul_le_mul
-            (by simpa [K] using hnum) hΔinv' (norm_nonneg _) (by positivity)
-      _ = (CΔinv * K) * q := by linear_combination (CΔinv * K) * hq2
-  exact this.trans (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg)
+  refine (phi2'_sub_720_final (K := K) (s := 2 * π * t)
+      (by simp only [K, E4B, q1]; positivity) hq_nonneg hΔinv'
+      (norm_phi2'_numerator_le (z := z) (q := q) hq_nonneg hE4sub
+        (by simpa [z, q] using hΔq t ht0 ht1)
+        (E4_norm_bound hCE4_pos.le (by simpa [q, q1] using q_le_q1 (t := t) ht1) hE4sub)
+        (by simpa [z, q] using hAq t ht0 ht1))
+      (by simp only [q]; rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf)).trans
+    (mul_le_mul_of_nonneg_right (by linarith : CΔinv * K ≤ 1 + CΔinv * K) hq_nonneg)
 
 lemma norm_base_add_e_sq_sub_one_sub_480q_le
     {q CE4 B240 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le_one : q ≤ 1) {e : ℂ}

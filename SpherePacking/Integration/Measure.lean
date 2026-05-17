@@ -461,6 +461,45 @@ public lemma g_norm_bound (hf : ℝ → ℂ) (x t : ℝ) :
     ‖g (hf := hf) x t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * x * t) := by
   simp [g, coeff, Complex.norm_exp, mul_left_comm, mul_comm]
 
+/-- Dominating integrable bound for `gN (n+1)` in dominated differentiation. -/
+private lemma integrable_gN_bound (n : ℕ) (C : ℝ) {ε : ℝ} (ε_pos : 0 < ε) :
+    Integrable (fun t : ℝ ↦
+      (Real.pi ^ (n + 1)) * (t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) * C) μIciOne := by
+  have hInt : Integrable (fun t : ℝ ↦ t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) μIciOne := by
+    simpa [IntegrableOn, μIciOne, mul_assoc] using
+      SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n + 1)
+        (b := Real.pi * ε) (mul_pos Real.pi_pos ε_pos)
+  simpa [mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
+
+/-- The pointwise derivative `(d/dy) gN n y t = gN (n+1) y t`, packaged for use with
+`hasDerivAt_integral_of_dominated_loc_of_deriv_le`. -/
+private lemma hasDerivAt_gN_at (hf : ℝ → ℂ) (n : ℕ) (t y : ℝ) :
+    HasDerivAt (fun y' : ℝ ↦ gN (hf := hf) n y' t) (gN (hf := hf) (n + 1) y t) y := by
+  simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+    (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+      (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y).const_mul ((coeff t) ^ n)
+
+/-- Pointwise dominated bound on `‖gN (n+1) y t‖` for `y` near `x`. -/
+private lemma norm_gN_succ_le {hf : ℝ → ℂ} {shift : ℝ} (n : ℕ) {ε : ℝ} {C : ℝ} (hC0 : 0 ≤ C)
+    (hC : ∀ t : ℝ, 1 ≤ t → ‖hf t‖ ≤ C * Real.exp (-(Real.pi * shift) * t))
+    {y t : ℝ} (ht : 1 ≤ t) (hyε : ε ≤ y + shift) :
+    ‖gN (hf := hf) (n + 1) y t‖ ≤
+      (Real.pi ^ (n + 1)) * (t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) * C := by
+  have ht0 : 0 ≤ t := by linarith
+  have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
+    calc ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := g_norm_bound _ _ _
+      _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by
+            gcongr; exact hC t ht
+      _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by
+            rw [mul_assoc, ← Real.exp_add]; ring_nf
+  calc ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
+        simp [gN, norm_pow]
+    _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * ε) * t)) := by
+        gcongr
+        · simp [coeff_norm (t := t) ht]
+        · exact hg.trans (by gcongr)
+    _ = _ := by simp [mul_pow, mul_assoc, mul_left_comm, mul_comm]
+
 /-- Differentiate under the integral sign for `∫ t ∈ Ici 1, gN n x t`, under standard bounds.
 
 The `shift` is the decay exponent of `hf` on `Ici 1`; differentiability at `x` only requires
@@ -475,7 +514,6 @@ public lemma hasDerivAt_integral_gN
     (hF_int : Integrable (gN (hf := hf) n x) μIciOne) :
     HasDerivAt (fun y : ℝ ↦ ∫ t in Set.Ici (1 : ℝ), gN (hf := hf) n y t)
       (∫ t in Set.Ici (1 : ℝ), gN (hf := hf) (n + 1) x t) x := by
-  -- Shrink the neighborhood so that `x + shift` stays uniformly positive.
   let ε : ℝ := (x + shift) / 2
   have ε_pos : 0 < ε := by simpa [ε] using half_pos (by linarith : 0 < x + shift)
   obtain ⟨C, hC⟩ := exists_bound_norm_hf
@@ -483,46 +521,21 @@ public lemma hasDerivAt_integral_gN
     SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖hf 1‖)
       (b := Real.exp (-(Real.pi * shift) * (1 : ℝ))) (C := C) (norm_nonneg _) (by positivity)
       (by simpa using hC 1 le_rfl)
-  let bound : ℝ → ℝ :=
-    fun t ↦ (Real.pi ^ (n + 1)) * (t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) * C
-  have hbound_int : Integrable bound μIciOne := by
-    have hInt : Integrable (fun t : ℝ ↦ t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) μIciOne := by
-      simpa [IntegrableOn, μIciOne, mul_assoc] using
-        SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n + 1)
-          (b := Real.pi * ε) (mul_pos Real.pi_pos ε_pos)
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
-  have h_bound :
-      ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε, ‖gN (hf := hf) (n + 1) y t‖ ≤ bound t :=
+  have h_bound : ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε,
+      ‖gN (hf := hf) (n + 1) y t‖ ≤
+        (Real.pi ^ (n + 1)) * (t ^ (n + 1) * Real.exp (-(Real.pi * ε) * t)) * C :=
     (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <|
-      .of_forall fun t ht y hy => by
-    have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-    have hy0 : ε ≤ y + shift := by
-      have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
-      grind only [= abs.eq_1, = max_def]
-    have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-      calc ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := g_norm_bound _ _ _
-        _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by
-              gcongr; exact hC t ht
-        _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-              rw [mul_assoc, ← Real.exp_add]; ring_nf
-    calc ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
-            simp [gN, norm_pow]
-      _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * ε) * t)) := by
-            gcongr
-            · simp [coeff_norm (t := t) ht]
-            · exact hg.trans (by gcongr)
-      _ = bound t := by simp [bound, mul_pow, mul_assoc, mul_left_comm, mul_comm]
+      .of_forall fun t ht y hy => norm_gN_succ_le n hC0 hC ht (by
+        have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
+        grind only [= abs.eq_1, = max_def])
   simpa [μIciOne, ε] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μIciOne)
       (s := Metric.ball x ε) (F := fun y t ↦ gN (hf := hf) n y t) (x₀ := x)
       (Metric.ball_mem_nhds x ε_pos)
       (hF_meas := .of_forall fun y ↦ gN_measurable n y) (hF_int := hF_int)
       (hF'_meas := gN_measurable (n + 1) x)
-      (h_bound := h_bound) (bound_integrable := hbound_int)
-      (h_diff := ae_of_all _ fun t y _ => by
-        simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-          (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-            (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y).const_mul ((coeff t) ^ n))).2
+      (h_bound := h_bound) (bound_integrable := integrable_gN_bound n C ε_pos)
+      (h_diff := ae_of_all _ fun t y _ => hasDerivAt_gN_at hf n t y)).2
 
 end
 

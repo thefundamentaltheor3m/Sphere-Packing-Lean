@@ -106,16 +106,11 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_Ici_one :
     simpa [Function.resToImagAxis, ResToImagAxis, lt_of_lt_of_le zero_lt_one ht,
       Theta4_eq_jacobiTheta_add_one] using norm_jacobiTheta_I_mul_add_real_sub_one_le (a := 1) ht⟩
 
-public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
-    ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
-      ‖Θ₂.resToImagAxis t
-          - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
-          - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)‖
-        ≤ C * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by
-  refine ⟨2 / (1 - Real.exp (-Real.pi)), fun t ht => ?_⟩
-  have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
-  set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
-  set f : ℕ → ℂ := fun n ↦ Θ₂_term (n : ℤ) τ
+/-- The `Θ₂` series along the imaginary axis equals twice the natural-indexed tsum of `Θ₂_term`. -/
+private lemma Theta2_resToImagAxis_eq_two_tsum {t : ℝ} (htpos : 0 < t)
+    (τ : ℍ) (hτ : τ = ⟨Complex.I * t, by simp [htpos]⟩) :
+    Summable (fun n : ℤ ↦ Θ₂_term n τ) ∧
+    Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, Θ₂_term (n : ℤ) τ := by
   have hsumZ : Summable (fun n : ℤ ↦ Θ₂_term n τ) := by
     simpa [show (fun n : ℤ ↦ Θ₂_term n τ) = fun n : ℤ ↦
         Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4) *
@@ -123,6 +118,52 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       funext fun n => by simp [Θ₂_term_as_jacobiTheta₂_term, mul_assoc]] using
       ((summable_jacobiTheta₂_term_iff (z := (τ : ℂ) / 2) (τ := (τ : ℂ))).2
         (by simpa using τ.im_pos)).mul_left (Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4))
+  refine ⟨hsumZ, ?_⟩
+  rw [show Θ₂.resToImagAxis t = Θ₂ τ by
+        simp [Function.resToImagAxis, ResToImagAxis, htpos, hτ],
+      Θ₂, (tsum_nat_add_neg_add_one (f := fun n : ℤ ↦ Θ₂_term n τ) hsumZ).symm,
+      ← tsum_mul_left]
+  refine tsum_congr fun n => ?_
+  rw [show Θ₂_term (-(n + 1 : ℤ)) τ = Θ₂_term (n : ℤ) τ by
+    unfold Θ₂_term; grind only, two_mul]
+
+/-- Geometric bound `‖∑' a n‖ ≤ exp(-α·π·t) · (1 - exp(-π))⁻¹` whenever
+`‖a n‖ ≤ exp(-α·π·t)·exp(-π)^n`. -/
+private lemma tsum_geometric_exp_bound {α t : ℝ} {a : ℕ → ℂ}
+    (hterm : ∀ n : ℕ, ‖a n‖ ≤ Real.exp (-α * Real.pi * t) * (Real.exp (-Real.pi)) ^ n) :
+    ‖∑' n : ℕ, a n‖ ≤ Real.exp (-α * Real.pi * t) * ((1 - Real.exp (-Real.pi))⁻¹) := by
+  have hgeom : HasSum (fun n : ℕ ↦ (Real.exp (-Real.pi)) ^ n) ((1 - Real.exp (-Real.pi))⁻¹) :=
+    hasSum_geometric_of_lt_one (Real.exp_pos _).le <| by
+      rw [Real.exp_lt_one_iff]; nlinarith [Real.pi_pos]
+  exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-α * Real.pi * t))) hterm
+
+/-- For `t ≥ 1`, the `(n+2)`-th `Θ₂_term` along the imaginary axis decays geometrically. -/
+private lemma norm_Theta2_term_shift_le {t : ℝ} (ht : 1 ≤ t) (n : ℕ) :
+    ‖Θ₂_term ((n + 2 : ℕ) : ℤ) ⟨Complex.I * t, by simp [lt_of_lt_of_le zero_lt_one ht]⟩‖ ≤
+      Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (Real.exp (-Real.pi)) ^ n := by
+  have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
+  have hnorm : ‖Θ₂_term ((n + 2 : ℕ) : ℤ) ⟨Complex.I * t, by simp [htpos]⟩‖ =
+      Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t) := by
+    have := norm_Theta2_term_resToImagAxis (n := (n + 2 : ℕ)) (t := t) htpos
+    simp at this ⊢; grind only
+  have hbase : ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t ≥ (25 / 4 : ℝ) * t + n := by
+    nlinarith [ht, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)), mul_le_mul_of_nonneg_right
+      (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith)
+      (by linarith : (0:ℝ) ≤ t)]
+  rw [hnorm, show (Real.exp (-Real.pi)) ^ n = Real.exp (n * (-Real.pi)) from
+    (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
+  exact Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos])
+
+/-- The two-term cancellation identity: `Θ₂(it) - 2·exp(-πt/4) - 2·exp(-9πt/4) =
+2 · ∑' n, Θ₂_term (n+2)`. -/
+private lemma Theta2_sub_two_terms_eq {t : ℝ} (htpos : 0 < t) :
+    Θ₂.resToImagAxis t - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
+        - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
+      = (2 : ℂ) * ∑' n : ℕ,
+          Θ₂_term ((n + 2 : ℕ) : ℤ) ⟨Complex.I * t, by simp [htpos]⟩ := by
+  set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
+  set f : ℕ → ℂ := fun n ↦ Θ₂_term (n : ℤ) τ
+  obtain ⟨hsumZ, hΘ₂eq⟩ := Theta2_resToImagAxis_eq_two_tsum (τ := τ) htpos rfl
   have hf : Summable f := hsumZ.comp_injective Nat.cast_injective
   have hshift : (∑' n : ℕ, f n) - (f 0 + f 1) = ∑' n : ℕ, f (n + 2) := sub_eq_iff_eq_add.2 <| by
     simpa [Finset.range_add_one, add_comm, add_left_comm, add_assoc] using
@@ -135,37 +176,22 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
   have hf1 : f 1 = (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) := hf_eq _ 1 (by
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf; simp [div_eq_mul_inv])
-  rw [show Θ₂.resToImagAxis t - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ) -
-        (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) = (2 : ℂ) * ∑' n : ℕ, f (n + 2) by
-    rw [← hf0, ← hf1, ← hshift, show Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n by
-      rw [show Θ₂.resToImagAxis t = Θ₂ τ by
-          simp [Function.resToImagAxis, ResToImagAxis, htpos, τ],
-        Θ₂, (tsum_nat_add_neg_add_one (f := fun n : ℤ ↦ Θ₂_term n τ) hsumZ).symm,
-        ← tsum_mul_left]
-      refine tsum_congr fun n => ?_
-      rw [show Θ₂_term (-(n + 1 : ℤ)) τ = Θ₂_term (n : ℤ) τ by
-        unfold Θ₂_term; grind only, two_mul]]; ring]
-  set r : ℝ := Real.exp (-Real.pi)
-  have hgeom : HasSum (fun n : ℕ ↦ r ^ n) ((1 - r)⁻¹) :=
-    hasSum_geometric_of_lt_one (Real.exp_pos _).le <| by
-      simpa [r, Real.exp_lt_one_iff] using (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) < 0)
-  have hterm : ∀ n : ℕ,
-      ‖f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) := fun n => by
-    have hnorm : ‖f (n + 2)‖ = Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t) := by
-      have := norm_Theta2_term_resToImagAxis (n := (n + 2 : ℕ)) (t := t) htpos
-      simp [f, τ] at this ⊢; grind only
-    have hbase : ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t ≥ (25 / 4 : ℝ) * t + n := by
-      nlinarith [ht, sq_nonneg ((n : ℝ) - (1 / 2 : ℝ)), mul_le_mul_of_nonneg_right
-        (show ((25 / 4 : ℝ) + n) ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 by nlinarith)
-        (by linarith : (0:ℝ) ≤ t)]
-    rw [hnorm, show r ^ n = Real.exp (n * (-Real.pi)) by
-      simpa [r] using (Real.exp_nat_mul (-Real.pi) n).symm, ← Real.exp_add]
-    exact Real.exp_le_exp.mpr (by nlinarith [hbase, Real.pi_pos])
-  rw [norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) by simp,
-    show (2 / (1 - r)) * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) =
-      (2 : ℝ) * (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) by ring]
-  gcongr
-  exact tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) hterm
+  rw [← hf0, ← hf1, ← hshift, hΘ₂eq]; ring
+
+public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
+    ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
+      ‖Θ₂.resToImagAxis t
+          - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
+          - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)‖
+        ≤ C * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by
+  refine ⟨2 / (1 - Real.exp (-Real.pi)), fun t ht => ?_⟩
+  rw [Theta2_sub_two_terms_eq (lt_of_lt_of_le zero_lt_one ht),
+    norm_mul, show ‖(2 : ℂ)‖ = (2 : ℝ) by simp,
+    show (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) =
+      (2 : ℝ) * (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) *
+        ((1 - Real.exp (-Real.pi))⁻¹)) by ring]
+  exact mul_le_mul_of_nonneg_left (tsum_geometric_exp_bound (α := 25 / 4)
+    (fun n => norm_Theta2_term_shift_le ht n)) (by norm_num : (0:ℝ) ≤ 2)
 
 private lemma jacobiTheta_tail_bound {τ : ℂ} {t : ℝ} (hτim : τ.im = t) (ht : 1 ≤ t) :
     ‖(2 : ℂ) * ∑' n : ℕ, (fun n : ℕ ↦
@@ -742,6 +768,71 @@ private lemma inv_H2_sq_decomposition (t : ℝ) (x : ℂ) :
   linear_combination -(by simp [w, mul_inv_rev, hA0, mul_comm, mul_left_comm] :
     A * w⁻¹ = (x ^ (2 : ℕ))⁻¹) - hA8u
 
+/-- Given the tight bound `‖w - 1 - 8u‖ ≤ C0·exp(-4πt)`, derive a coarser
+`‖w - 1‖ ≤ (8 + C0)·exp(-2πt)` using the triangle inequality. -/
+private lemma hw_one_bound {t : ℝ} (ht : 1 ≤ t) {C0 : ℝ} (hC0 : 0 ≤ C0) {w : ℂ}
+    (hw_tail : ‖w - (1 : ℂ) - ((8 * Real.exp (-(2 : ℝ) * Real.pi * t) : ℝ) : ℂ)‖
+      ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t)) :
+    ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
+  set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
+  have hu0 : (0 : ℝ) ≤ u := (Real.exp_pos _).le
+  have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])
+  have hw_tail' : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * (u ^ (2 : ℕ)) := by
+    simpa [show u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
+      simp only [u, ← Real.exp_nat_mul]; ring_nf] using hw_tail
+  refine (show ‖w - (1 : ℂ)‖ ≤ (8 + |C0|) * u from ?_).trans <| by
+    simp [u, abs_of_nonneg hC0]
+  linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
+    simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 by ring]
+      using norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ),
+    hw_tail'.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C0) (pow_nonneg hu0 _)).trans
+      (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
+        (abs_nonneg C0)),
+    show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u by
+      simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
+
+/-- Lower bound `1 ≤ ‖A·x²‖` where `A = exp(2πt)/256`, given `H2_norm_pow_two_ge`. -/
+private lemma one_le_norm_A_mul_H2_sq {t : ℝ} (ht : 1 ≤ t) :
+    (1 : ℝ) ≤ ‖((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ) *
+        ((H₂.resToImagAxis t) ^ (2 : ℕ))‖ := by
+  set e : ℝ := Real.exp (2 * Real.pi * t)
+  set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
+  have he256 : 0 ≤ e / 256 := by positivity
+  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
+  rw [show ‖((e / 256 : ℝ) : ℂ) * ((H₂.resToImagAxis t) ^ (2 : ℕ))‖ =
+      (e / 256) * ‖H₂.resToImagAxis t‖ ^ (2 : ℕ) by
+    rw [norm_mul, norm_pow]; congr 1; exact (RCLike.norm_ofReal (K := ℂ) (e / 256)).trans
+      (abs_of_nonneg he256)]
+  linarith [mul_le_mul_of_nonneg_left (show (256 : ℝ) * u ≤ ‖H₂.resToImagAxis t‖ ^ (2 : ℕ) from
+      H2_norm_pow_two_ge t (lt_of_lt_of_le zero_lt_one ht)) he256,
+    show (e / 256) * ((256 : ℝ) * u) = 1 by linear_combination heu]
+
+/-- Final assembly: combine `inv_H2_sq_decomposition` with the bound `hdiff` on
+`‖w⁻¹ - (1 - 8u)‖` to obtain the bound on `‖(x²)⁻¹ - A + 1/32‖`. -/
+private lemma inv_H2_sq_final_bound {t : ℝ} {C0 : ℝ} (hC0 : 0 ≤ C0)
+    (hdiff : ‖(((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ) *
+        ((H₂.resToImagAxis t) ^ (2 : ℕ)))⁻¹ -
+          (1 - ((8 * Real.exp (-(2 : ℝ) * Real.pi * t) : ℝ) : ℂ))‖
+      ≤ ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t)) :
+    ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
+        - ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ)
+        + ((1 / 32 : ℝ) : ℂ)‖
+      ≤ 256 * ((8 + C0) ^ 2 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
+  set e : ℝ := Real.exp (2 * Real.pi * t)
+  have he256 : 0 ≤ e / 256 := by positivity
+  have hA_norm : ‖((e / 256 : ℝ) : ℂ)‖ = e / 256 := by
+    simpa [abs_of_nonneg he256] using (RCLike.norm_ofReal (K := ℂ) (e / 256))
+  have he4 : e * Real.exp (-(4 : ℝ) * Real.pi * t) =
+    Real.exp (-(2 : ℝ) * Real.pi * t) := by simp only [e, ← Real.exp_add]; ring_nf
+  calc ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ - ((e / 256 : ℝ) : ℂ) + ((1 / 32 : ℝ) : ℂ)‖
+      = ‖((e / 256 : ℝ) : ℂ)‖ * _ := by
+        rw [inv_H2_sq_decomposition t (H₂.resToImagAxis t), norm_mul]
+    _ ≤ (e / 256) * (((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t)) := by
+        rw [hA_norm]; exact mul_le_mul_of_nonneg_left hdiff he256
+    _ ≤ 256 * ((8 + C0) ^ 2 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
+        nlinarith [show (0:ℝ) ≤ (8 + C0) ^ 2 + C0 by positivity,
+          Real.exp_pos (-(2 : ℝ) * Real.pi * t), he4]
+
 public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
       ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
@@ -749,63 +840,18 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
           + ((1 / 32 : ℝ) : ℂ)‖
         ≤ C * Real.exp (-(2 : ℝ) * Real.pi * t) := by
   rcases exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one with ⟨CH2, hH2⟩
-  refine ⟨(256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-        (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) , fun t ht => ?_⟩
-  set e : ℝ := Real.exp (2 * Real.pi * t)
-  set u : ℝ := Real.exp (-(2 : ℝ) * Real.pi * t)
-  set A : ℂ := ((e / 256 : ℝ) : ℂ)
-  set x : ℂ := H₂.resToImagAxis t
-  set w : ℂ := A * (x ^ (2 : ℕ))
-  have he256 : 0 ≤ e / 256 := by positivity
-  have hA_norm : ‖A‖ = e / 256 := by
-    simpa [A, abs_of_nonneg he256] using (RCLike.norm_ofReal (K := ℂ) (e / 256))
-  have hCH2 : 0 ≤ CH2 := nonneg_of_norm_le_mul_exp (hH2 1 le_rfl)
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
-  have heu : e * u = 1 := by simp [e, u, ← Real.exp_add]
-  have hmain_id :
-      ((x ^ (2 : ℕ))⁻¹ - A + ((1 / 32 : ℝ) : ℂ)) = A * (w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))) :=
-    inv_H2_sq_decomposition t x
-  have hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-    simpa [w, A, x, e, u, C0] using hw_tail_bound t ht CH2 (by simpa [x] using hH2 t ht)
-  have hw_one : ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    have hu0 : (0 : ℝ) ≤ u := (Real.exp_pos _).le
-    have hu1 : u ≤ 1 := Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])
-    have hw_tail' : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C0 * (u ^ (2 : ℕ)) := by
-      simpa [show u ^ (2 : ℕ) = Real.exp (-(4 : ℝ) * Real.pi * t) by
-        simp only [u, ← Real.exp_nat_mul]; ring_nf] using hw_tail
-    refine (show ‖w - (1 : ℂ)‖ ≤ (8 + |C0|) * u from ?_).trans <| by
-      simp [u, abs_of_nonneg (show (0:ℝ) ≤ C0 by positivity)]
-    linarith [show ‖w - 1‖ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ by
-      simpa [show (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 by ring]
-        using norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ),
-      hw_tail'.trans <| (mul_le_mul_of_nonneg_right (le_abs_self C0) (pow_nonneg hu0 _)).trans
-        (mul_le_mul_of_nonneg_left (by simpa [pow_two] using mul_le_of_le_one_right hu0 hu1)
-          (abs_nonneg C0)),
-      show ‖((8 * u : ℝ) : ℂ)‖ = 8 * u by
-        simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]]
-  have hw_norm_ge : (1 : ℝ) ≤ ‖w‖ := by
-    rw [show ‖w‖ = (e / 256) * ‖x‖ ^ (2 : ℕ) by simp [w, hA_norm, norm_pow]]
-    linarith [mul_le_mul_of_nonneg_left (show (256 : ℝ) * u ≤ ‖x‖ ^ (2 : ℕ) by
-        simpa [x, u] using H2_norm_pow_two_ge t (lt_of_lt_of_le zero_lt_one ht)) he256,
-      show (e / 256) * ((256 : ℝ) * u) = 1 by linear_combination heu]
-  have hdiff : ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
-      ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) :=
-    bound_w_inv_sub_one_sub t u C0 w hw_norm_ge
-      (norm_inv w ▸ inv_le_one_of_one_le₀ hw_norm_ge) hw_tail hw_one
-  calc ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
-          - ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ)
-          + ((1 / 32 : ℝ) : ℂ)‖
-      = ‖A‖ * ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ := by rw [hmain_id, norm_mul]
-    _ ≤ (e / 256) * (((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t)) := by
-        rw [hA_norm]; exact mul_le_mul_of_nonneg_left hdiff he256
-    _ = (1 / 256 : ℝ) * ((8 + C0) ^ 2 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-        have he4 : e * Real.exp (-(4 : ℝ) * Real.pi * t) =
-            Real.exp (-(2 : ℝ) * Real.pi * t) := by simp only [e, ← Real.exp_add]; ring_nf
-        linear_combination (((8 + C0) ^ 2 + C0) / 256 : ℝ) * he4
-    _ ≤ (256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-          (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-        gcongr; nlinarith [show (0:ℝ) ≤ (8 + C0) ^ 2 + C0 by positivity, show C0 = 16 +
-          (160 / 256) * CH2 + (CH2 ^ 2) / 256 from rfl]
+  have hCH2 : 0 ≤ CH2 := nonneg_of_norm_le_mul_exp (hH2 1 le_rfl)
+  have hC0 : 0 ≤ C0 := by positivity
+  refine ⟨256 * ((8 + C0) ^ 2 + C0), fun t ht => ?_⟩
+  set w : ℂ := ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ) * ((H₂.resToImagAxis t) ^ (2 : ℕ))
+  have hw_tail : ‖w - (1 : ℂ) -
+      ((8 * Real.exp (-(2 : ℝ) * Real.pi * t) : ℝ) : ℂ)‖
+        ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
+    simpa [w, C0] using hw_tail_bound t ht CH2 (hH2 t ht)
+  have hw_norm_ge : (1 : ℝ) ≤ ‖w‖ := one_le_norm_A_mul_H2_sq ht
+  exact inv_H2_sq_final_bound hC0 <| bound_w_inv_sub_one_sub t _ C0 w hw_norm_ge
+    (norm_inv w ▸ inv_le_one_of_one_le₀ hw_norm_ge) hw_tail (hw_one_bound ht hC0 hw_tail)
 
 end
 

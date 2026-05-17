@@ -263,71 +263,51 @@ noncomputable def thetaDelta_f : ℍ → ℂ := H₂ * (H₃ * H₄)
 
 noncomputable def thetaDeltaFun : ℍ → ℂ := ((256 : ℂ)⁻¹) • (thetaDelta_f ^ 2)
 
+/-- Pointwise factorization: `(Θ₂ * Θ₃ * Θ₄) z ^ 8 = exp(2πiz) * (g * h * k) ^ 8`, where
+`g, h, k` are the Jacobi theta evaluations underlying `Θ₂, Θ₃, Θ₄`. -/
+private lemma Θ_prod_pow_eight (z : ℍ) :
+    (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 =
+      cexp (2 * π * I * (z : ℂ)) *
+        (jacobiTheta₂ ((z : ℂ) / 2) z * jacobiTheta₂ 0 z * jacobiTheta₂ (1 / 2 : ℂ) z) ^ 8 := by
+  have hΘprod : Θ₂ z * Θ₃ z * Θ₄ z = cexp (π * I * (z : ℂ) / 4) *
+      (jacobiTheta₂ ((z : ℂ) / 2) z * jacobiTheta₂ 0 z * jacobiTheta₂ (1 / 2 : ℂ) z) := by
+    rw [Θ₂_as_jacobiTheta₂, Θ₃_as_jacobiTheta₂, Θ₄_as_jacobiTheta₂]; ring
+  have hexp : cexp (π * I * (z : ℂ) / 4) ^ 8 = cexp (2 * π * I * (z : ℂ)) := by
+    have h₈ := (Complex.exp_nat_mul (π * I * (z : ℂ) / 4) 8).symm
+    have harg : (8 : ℂ) * (π * I * (z : ℂ) / 4) = 2 * π * I * (z : ℂ) := by ring_nf
+    simpa [harg] using h₈
+  rw [hΘprod, mul_pow, hexp]
+
+/-- Pointwise factorization of `thetaDeltaFun z / exp(2π i z)` as `(g z * h z * k z)^8 / 256`. -/
+private lemma thetaDeltaFun_div_exp_eq (z : ℍ) :
+    thetaDeltaFun z / cexp (2 * π * I * (z : ℂ)) =
+      (jacobiTheta₂ ((z : ℂ) / 2) z * jacobiTheta₂ 0 z * jacobiTheta₂ (1 / 2 : ℂ) z) ^ 8 /
+        (256 : ℂ) := by
+  have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by
+    have : thetaDelta_f z = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 := by
+      dsimp [thetaDelta_f, H₂, H₃, H₄]; ring
+    rw [this]; ring
+  have ha : cexp (2 * π * I * (z : ℂ)) ≠ 0 := Complex.exp_ne_zero _
+  rw [show thetaDeltaFun z = ((256 : ℂ)⁻¹) * (thetaDelta_f z) ^ 2 by
+        simp [thetaDeltaFun, Pi.smul_apply, smul_eq_mul], hfz2, Θ_prod_pow_eight z]
+  field_simp
+
 lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     Tendsto (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) := by
-  -- Rewrite `thetaDeltaFun / exp(2π i z)` using the asymptotics of theta functions.
-  -- For `Θ₂`, divide out the factor `exp(π i z / 4)` (which is `q^(1/8)`).
-  let g : ℍ → ℂ := fun z => jacobiTheta₂ (z / 2) z
-  let h : ℍ → ℂ := fun z => jacobiTheta₂ 0 z
-  let k : ℍ → ℂ := fun z => jacobiTheta₂ (1 / 2 : ℂ) z
-  have hg : Tendsto g atImInfty (𝓝 2) := jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-  have hh : Tendsto h atImInfty (𝓝 1) := by
-    simpa [h] using jacobiTheta₂_zero_apply_tendsto_atImInfty
-  have hk : Tendsto k atImInfty (𝓝 1) := by
-    simpa [k] using jacobiTheta₂_half_apply_tendsto_atImInfty
+  -- Rewrite `thetaDeltaFun / exp(2π i z) = (g*h*k)^8 / 256` and use that `g*h*k → 2`,
+  -- so `(g*h*k)^8 / 256 → 2^8 / 256 = 1`.
+  set g : ℍ → ℂ := fun z => jacobiTheta₂ ((z : ℂ) / 2) z
+  set h : ℍ → ℂ := fun z => jacobiTheta₂ 0 z
+  set k : ℍ → ℂ := fun z => jacobiTheta₂ (1 / 2 : ℂ) z
   have hghk : Tendsto (fun z : ℍ => g z * h z * k z) atImInfty (𝓝 (2 : ℂ)) := by
+    have hg : Tendsto g atImInfty (𝓝 2) := jacobiTheta₂_half_mul_apply_tendsto_atImInfty
+    have hh : Tendsto h atImInfty (𝓝 1) := jacobiTheta₂_zero_apply_tendsto_atImInfty
+    have hk : Tendsto k atImInfty (𝓝 1) := jacobiTheta₂_half_apply_tendsto_atImInfty
     simpa [mul_assoc] using hg.mul (hh.mul hk)
-  have :
-      Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty (𝓝 1) := by
-    have hlim :
-        Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty
-          (𝓝 ((2 : ℂ) ^ 8 / (256 : ℂ))) := by
-      simpa [div_eq_mul_inv] using (hghk.pow 8).mul tendsto_const_nhds
-    simpa using (show ((2 : ℂ) ^ 8 / (256 : ℂ)) = (1 : ℂ) by norm_num) ▸ hlim
-  have hrewrite :
-      (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) =
-        fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ) := by
-    funext z
-    have hΘ₂ : Θ₂ z = cexp (π * I * (z : ℂ) / 4) * g z := by
-      simpa [g] using (Θ₂_as_jacobiTheta₂ z)
-    have hΘ₃ : Θ₃ z = h z := by
-      simpa [h] using (Θ₃_as_jacobiTheta₂ z)
-    have hΘ₄ : Θ₄ z = k z := by
-      simpa [k] using (Θ₄_as_jacobiTheta₂ z)
-    have hfz : thetaDelta_f z = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 := by
-      dsimp [thetaDelta_f, H₂, H₃, H₄]
-      ring
-    have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by rw [hfz]; ring
-    have hΘprod :
-        Θ₂ z * Θ₃ z * Θ₄ z = cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z) := by
-      grind only
-    have hexp : cexp (π * I * (z : ℂ) / 4) ^ 8 = cexp (2 * π * I * (z : ℂ)) := by
-      have h := (Complex.exp_nat_mul (π * I * (z : ℂ) / 4) 8).symm
-      have harg : (8 : ℂ) * (π * I * (z : ℂ) / 4) = 2 * π * I * (z : ℂ) := by
-        ring_nf
-      simpa [harg] using h
-    have hΘ8 :
-        (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 = cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 := by
-      rw [hΘprod, mul_pow, hexp]
-    calc
-      thetaDeltaFun z / cexp (2 * π * I * (z : ℂ)) =
-          ((256 : ℂ)⁻¹) * (thetaDelta_f z) ^ 2 / cexp (2 * π * I * (z : ℂ)) := by
-            simp [thetaDeltaFun, Pi.smul_apply, smul_eq_mul]
-      _ = ((256 : ℂ)⁻¹) * (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 / cexp (2 * π * I * (z : ℂ)) := by
-            simp [hfz2]
-      _ =
-          ((256 : ℂ)⁻¹) *
-              (cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8) /
-            cexp (2 * π * I * (z : ℂ)) := by
-            simp [hΘ8]
-      _ = ((256 : ℂ)⁻¹) * (g z * h z * k z) ^ 8 := by
-            set a : ℂ := cexp (2 * π * I * (z : ℂ))
-            set b : ℂ := (g z * h z * k z) ^ 8
-            have ha : a ≠ 0 := by simp [a]
-            grind only
-      _ = (g z * h z * k z) ^ 8 / (256 : ℂ) := by
-            simp [div_eq_mul_inv, mul_left_comm, mul_comm]
-  simpa [hrewrite] using this
+  have hlim : Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty (𝓝 1) := by
+    have := (hghk.pow 8).mul (tendsto_const_nhds (x := ((256 : ℂ)⁻¹)))
+    simpa [div_eq_mul_inv, show ((2 : ℂ) ^ 8 * (256 : ℂ)⁻¹ = 1) by norm_num] using this
+  exact hlim.congr fun z => (thetaDeltaFun_div_exp_eq z).symm
 
 /-- Slash factorization for `thetaDelta_f = H₂ * (H₃ * H₄)` at weight 6. -/
 private lemma thetaDelta_f_slash (A : SL(2, ℤ)) :

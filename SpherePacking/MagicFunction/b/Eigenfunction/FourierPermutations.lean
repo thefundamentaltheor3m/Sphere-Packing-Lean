@@ -415,65 +415,82 @@ private lemma exists_height_norm_le_one_of_tendsto_zero
   exact ⟨max A0 1, zero_lt_one.trans_le (le_max_right _ _),
     fun τ hτ => (hA0 τ ((le_max_left _ _).trans hτ)).le⟩
 
+/-- Continuity of `expNorm r` at `1` gives a `δ`-neighbourhood where `expNorm r z ≤ M`. -/
+private lemma exists_expNorm_bound (r M : ℝ) (hM : expNorm r 1 < M) :
+    ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ M := by
+  rcases (Metric.continuousAt_iff.1 (by
+    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
+    ContinuousAt (expNorm r) (1 : ℂ))) (M - expNorm r 1) (by linarith) with ⟨δ, hδ_pos, hδ⟩
+  refine ⟨δ, hδ_pos, fun {z} hz => ?_⟩
+  have := (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1
+  linarith
+
+/-- The image height `(gAct zH).im` is `≥ A` when `z` is close enough to `1`. -/
+private lemma A_le_gAct_im_of {wedgeSet : Set ℂ} {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ}
+    {Ψ₁' : ℝ → ℂ → ℂ} {gAct : UpperHalfPlane → UpperHalfPlane} {k : ℕ}
+    (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k)
+    {z : ℂ} (hzcl : z ∈ closure wedgeSet) (hz1 : z ≠ (1 : ℂ)) (hz_im_pos : 0 < z.im)
+    {A : ℝ} (hApos : 0 < A) (hdist_im : dist z (1 : ℂ) < 1 / (2 * A)) :
+    A ≤ (gAct ⟨z, hz_im_pos⟩).im := by
+  have hz_im_lt : z.im < 1 / (2 * A) := lt_of_le_of_lt
+    (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1))
+    (by simpa [dist_eq_norm] using hdist_im)
+  have hbound : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
+    one_div_two_im_le_im_div_normSq_sub_one hz_im_pos hz1
+      (h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl)
+  simpa [h.gAct_im (z := z) (hz := hz_im_pos)] using ((lt_div_iff₀
+    (by positivity : (0:ℝ) < 2 * z.im)).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+      (lt_div_iff₀ (by positivity : (0:ℝ) < 2 * A)).1 hz_im_lt)).trans_le hbound |>.le
+
+/-- Norm bound `‖Ψ₁' r z‖ ≤ (dist z 1)^k * M` from the structural hypotheses. -/
+private lemma norm_Ψ₁'_le_of {wedgeSet : Set ℂ} {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ}
+    {Ψ₁' : ℝ → ℂ → ℂ} {gAct : UpperHalfPlane → UpperHalfPlane} {k : ℕ}
+    (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k) {r M : ℝ}
+    {z : ℂ} (hz_im_pos : 0 < z.im)
+    (hψS_le : ‖ψS (gAct ⟨z, hz_im_pos⟩)‖ ≤ 1) (hexpZ : expNorm r z ≤ M) :
+    ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M := by
+  have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ :=
+    calc ‖ψT' z‖ = ‖ψS (gAct ⟨z, hz_im_pos⟩)‖ * ‖(z - 1) ^ k‖ := by
+          simp [show ψT' z = -ψS (gAct ⟨z, hz_im_pos⟩) * (z - 1) ^ k from
+            h.ψT'_eq_neg_ψS_mul (z := z) (hz := hz_im_pos), norm_neg]
+      _ ≤ 1 * ‖(z - 1) ^ k‖ := mul_le_mul_of_nonneg_right hψS_le (norm_nonneg _)
+      _ = _ := by simp
+  calc ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by
+        simp [h.Ψ₁'_eq, expNorm, show ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
+          z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) by ac_rfl]
+    _ ≤ ‖(z - 1) ^ k‖ * expNorm r z :=
+        mul_le_mul_of_nonneg_right hψT_norm (by simp [expNorm])
+    _ ≤ ‖(z - 1) ^ k‖ * M := mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
+    _ = (dist z (1 : ℂ)) ^ k * M := by simp [dist_eq_norm, norm_pow]
+
 /-- Under `TendstoPsiOneHypotheses`, `Ψ₁' r` tends to `0` as `z → 1` within `closure wedgeSet`. -/
 public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of {wedgeSet : Set ℂ}
     {ψS : UpperHalfPlane → ℂ} {ψT' : ℂ → ℂ} {Ψ₁' : ℝ → ℂ → ℂ}
     {gAct : UpperHalfPlane → UpperHalfPlane} {k : ℕ}
     (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k) (r : ℝ) :
     Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
-  let M : ℝ := expNorm r (1 : ℂ) + 1
+  set M : ℝ := expNorm r (1 : ℂ) + 1
   have hMpos : 0 < M := by linarith [show 0 ≤ expNorm r 1 from norm_nonneg _]
-  obtain ⟨δexp, hδexp_pos, hExpBound⟩ : ∃ δ : ℝ, 0 < δ ∧
-      ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ M := by
-    rcases (Metric.continuousAt_iff.1 (by
-      simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
-      ContinuousAt (expNorm r) (1 : ℂ))) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
-    exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
-      (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
+  obtain ⟨δexp, hδexp_pos, hExpBound⟩ := exists_expNorm_bound r M (by linarith)
   obtain ⟨A, hApos, hA⟩ := exists_height_norm_le_one_of_tendsto_zero h.tendsto_ψS_atImInfty
-  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
-  refine ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
-    lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
-    fun z hzcl hdistz => ?_⟩
+  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε =>
+    ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
+      lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
+      fun z hzcl hdistz => ?_⟩
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1; simpa [h.Ψ₁'_eq, h.ψT'_one] using hε
   have hz_im_pos : 0 < z.im := by
     simpa [UpperHalfPlane.upperHalfPlaneSet] using
       h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
-  let zH : UpperHalfPlane := ⟨z, hz_im_pos⟩
-  have hexpZ : expNorm r z ≤ M := hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _))
-  have hdist_min := lt_of_lt_of_le hdistz (min_le_right _ _)
-  have hdist_lt := lt_of_lt_of_le hdist_min (min_le_left _ _)
-  have hdist_lt_one : dist z (1 : ℂ) < 1 := lt_of_lt_of_le hdist_lt (min_le_left _ _)
+  have hd1 := lt_of_lt_of_le hdistz (min_le_right _ _)
+  have hd2 := lt_of_lt_of_le hd1 (min_le_left _ _)
+  have hd3 := lt_of_lt_of_le hd2 (min_le_left _ _)
   have hdist_pow : (dist z (1 : ℂ)) ^ k < ε / M :=
-    ((by simpa [pow_one] using pow_le_pow_of_le_one dist_nonneg hdist_lt_one.le h.hk
-      : (dist z (1 : ℂ)) ^ k ≤ dist z (1 : ℂ))).trans_lt
-        (lt_of_lt_of_le hdist_lt (min_le_right _ _))
-  have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) := lt_of_lt_of_le hdist_min (min_le_right _ _)
-  have hA_le_im : A ≤ (gAct zH).im := by
-    have hz_im_lt : z.im < 1 / (2 * A) := lt_of_le_of_lt
-      (by simpa [abs_of_nonneg hz_im_pos.le] using Complex.abs_im_le_norm (z - 1))
-      (by simpa [dist_eq_norm] using hdist_im)
-    have hbound : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
-      one_div_two_im_le_im_div_normSq_sub_one hz_im_pos hz1
-        (h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl)
-    simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using ((lt_div_iff₀
-      (by positivity : (0:ℝ) < 2 * z.im)).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-        (lt_div_iff₀ (by positivity : (0:ℝ) < 2 * A)).1 hz_im_lt)).trans_le hbound |>.le
-  have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ :=
-    calc ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by
-            simp [show ψT' z = -ψS (gAct zH) * (z - 1) ^ k by
-              simpa [zH] using h.ψT'_eq_neg_ψS_mul (z := z) (hz := hz_im_pos), norm_neg]
-      _ ≤ 1 * ‖(z - 1) ^ k‖ := mul_le_mul_of_nonneg_right (hA _ hA_le_im) (norm_nonneg _)
-      _ = _ := by simp
-  have hmain : ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M :=
-    calc ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by
-            simp [h.Ψ₁'_eq, expNorm, show ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
-              z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) by ac_rfl]
-      _ ≤ ‖(z - 1) ^ k‖ * expNorm r z :=
-          mul_le_mul_of_nonneg_right hψT_norm (by simp [expNorm])
-      _ ≤ ‖(z - 1) ^ k‖ * M := mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
-      _ = (dist z (1 : ℂ)) ^ k * M := by simp [dist_eq_norm, norm_pow]
+    ((pow_le_pow_of_le_one dist_nonneg hd3.le h.hk).trans (by simp)).trans_lt
+      (lt_of_lt_of_le hd2 (min_le_right _ _))
+  have hmain := norm_Ψ₁'_le_of h hz_im_pos
+    (hA _ <| A_le_gAct_im_of h hzcl hz1 hz_im_pos hApos (lt_of_lt_of_le hd1 (min_le_right _ _)))
+    (hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _)))
   simpa [dist_eq_norm] using hmain.trans_lt ((lt_div_iff₀ hMpos).mp hdist_pow)
 
 /-- Fubini-based curve-integral formula for the Fourier transform of a radial Schwartz map. -/
@@ -1149,63 +1166,75 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
     simp [kernel, J5Change.g]]
   simp only [norm_mul, hphase, Complex.norm_exp_ofReal, norm_neg, Complex.norm_I, one_mul]
 
+/-- For each `s ∈ Ici 1`, the `x`-slice `kernel w (·, s)` is integrable on `ℝ⁸`. -/
+private lemma integrable_kernel_slice (w : ℝ⁸) {s : ℝ} (hs : s ∈ Ici (1 : ℝ)) :
+    Integrable (fun x : ℝ⁸ => kernel w (x, s)) (volume : Measure ℝ⁸) := by
+  have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
+    simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
+      (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
+      (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
+        fun _ _ => ⟨Set.mem_univ _, hs⟩)
+  exact Integrable.mono' (by
+      simpa [mul_assoc] using
+        (SpherePacking.ForMathlib.integrable_gaussian_rexp_even (k := 4) s
+          (lt_of_lt_of_le (by norm_num) hs)).const_mul
+          (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
+    ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
+      hg).aestronglyMeasurable <| .of_forall fun x =>
+    le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s))
+
+/-- For each `s ∈ Ici 1`, `∫ x, ‖kernel w (x,s)‖ ≤ ‖ψS.resToImagAxis s‖`. -/
+private lemma integral_kernel_norm_le (w : ℝ⁸) {s : ℝ} (hs : s ∈ Ici (1 : ℝ)) :
+    ∫ x : ℝ⁸, ‖kernel w (x, s)‖ ≤ ‖ψS.resToImagAxis s‖ := by
+  have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
+  have hs_zpow_pos : 0 < s ^ (-4 : ℤ) := zpow_pos hs0 _
+  have habs : ‖(s ^ (-4 : ℤ) : ℂ)‖ = s ^ (-4 : ℤ) := by
+    change ‖(s : ℂ) ^ (-4 : ℤ)‖ = s ^ (-4 : ℤ)
+    rw [show (s : ℂ) ^ (-4 : ℤ) = ((s ^ (-4 : ℤ) : ℝ) : ℂ) from
+      (Complex.ofReal_zpow s (-4 : ℤ)).symm]
+    exact (RCLike.norm_ofReal _).trans (abs_of_pos hs_zpow_pos)
+  have hscal : (‖(s ^ (-4 : ℤ) : ℂ)‖) * (s ^ 4) = (1 : ℝ) := by
+    rw [habs, show (s ^ (-4 : ℤ)) = (s ^ 4)⁻¹ by simpa using zpow_negSucc s 3]
+    exact inv_mul_cancel₀ (pow_ne_zero 4 hs0.ne')
+  refine le_of_eq ?_
+  calc (∫ x : ℝ⁸, ‖kernel w (x, s)‖)
+      = (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
+          (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) := by
+        rw [funext fun x => kernel_norm_eq (w := w) (x := x) (s := s)]
+        exact MeasureTheory.integral_const_mul _ _
+    _ = ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ := by
+        rw [SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) s hs0, mul_assoc,
+          hscal, mul_one]
+    _ = ‖ψS.resToImagAxis s‖ :=
+        congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
+
+/-- The exponential majorant `C * rexp (-π * s)` is integrable on `μIciOne`. -/
+private lemma integrable_const_exp_neg_pi_mul (C : ℝ) :
+    Integrable (fun s : ℝ ↦ C * rexp (-π * s)) μIciOne := by
+  simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
+    ((show IntegrableOn (fun s : ℝ ↦ rexp (-(π : ℝ) * s)) (Ici (1 : ℝ)) volume by
+      simpa [pow_zero, one_mul] using
+        SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := (π : ℝ))
+          Real.pi_pos).const_mul C)
+
 /-- Integrability of `kernel w` for the product measure `volume × μIciOne`. -/
 public lemma integrable_kernel (w : ℝ⁸) :
     Integrable (kernel w) ((volume : Measure ℝ⁸).prod μIciOne) := by
   haveI : MeasureTheory.SFinite μIciOne := by dsimp [μIciOne]; infer_instance
   refine (MeasureTheory.integrable_prod_iff' (μ := (volume : Measure ℝ⁸)) (ν := μIciOne)
     (aestronglyMeasurable_kernel (w := w))).2
-    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => by
-      have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
-        simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
-          (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
-          (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
-            fun _ _ => ⟨Set.mem_univ _, hs⟩)
-      exact Integrable.mono' (by
-          simpa [mul_assoc] using
-            (SpherePacking.ForMathlib.integrable_gaussian_rexp_even (k := 4) s
-              (lt_of_lt_of_le (by norm_num) hs)).const_mul
-              (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
-        ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
-          hg).aestronglyMeasurable <| .of_forall fun x =>
-        le_of_eq (kernel_norm_eq (w := w) (x := x) (s := s)), ?_⟩
+    ⟨(ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun _ hs =>
+      integrable_kernel_slice (w := w) hs, ?_⟩
   obtain ⟨C, hC⟩ :=
     MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
-  have hmajor : Integrable (fun s : ℝ ↦ C * rexp (-π * s)) μIciOne := by
-    simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using
-      ((show IntegrableOn (fun s : ℝ ↦ rexp (-(π : ℝ) * s)) (Ici (1 : ℝ)) volume by
-        simpa [pow_zero, one_mul] using
-          SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := (π : ℝ))
-            Real.pi_pos).const_mul C)
   have hmeas' : AEStronglyMeasurable (fun s : ℝ ↦ ∫ x : ℝ⁸, ‖kernel w (x, s)‖) μIciOne := by
     simpa using (aestronglyMeasurable_kernel (w := w)).norm.prod_swap.integral_prod_right'
       (μ := μIciOne) (ν := (volume : Measure ℝ⁸))
-  refine Integrable.mono' hmajor hmeas' <| (ae_restrict_iff' measurableSet_Ici).2 <|
-    .of_forall fun s hs => ?_
-  have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-  have hval : ∫ x : ℝ⁸, ‖kernel w (x, s)‖ ≤ ‖ψS.resToImagAxis s‖ := by
-    have hs_zpow_pos : 0 < s ^ (-4 : ℤ) := zpow_pos hs0 _
-    have habs : ‖(s ^ (-4 : ℤ) : ℂ)‖ = s ^ (-4 : ℤ) := by
-      change ‖(s : ℂ) ^ (-4 : ℤ)‖ = s ^ (-4 : ℤ)
-      rw [show (s : ℂ) ^ (-4 : ℤ) = ((s ^ (-4 : ℤ) : ℝ) : ℂ) from
-        (Complex.ofReal_zpow s (-4 : ℤ)).symm]
-      exact (RCLike.norm_ofReal _).trans (abs_of_pos hs_zpow_pos)
-    have hscal : (‖(s ^ (-4 : ℤ) : ℂ)‖) * (s ^ 4) = (1 : ℝ) := by
-      rw [habs, show (s ^ (-4 : ℤ)) = (s ^ 4)⁻¹ by simpa using zpow_negSucc s 3]
-      exact inv_mul_cancel₀ (pow_ne_zero 4 hs0.ne')
-    refine le_of_eq ?_
-    calc (∫ x : ℝ⁸, ‖kernel w (x, s)‖)
-        = (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
-            (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) := by
-          rw [funext fun x => kernel_norm_eq (w := w) (x := x) (s := s)]
-          exact MeasureTheory.integral_const_mul _ _
-      _ = ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ := by
-          rw [SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) s hs0, mul_assoc,
-            hscal, mul_one]
-      _ = ‖ψS.resToImagAxis s‖ :=
-          congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
+  refine Integrable.mono' (integrable_const_exp_neg_pi_mul C) hmeas' <|
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
   simpa [Real.norm_eq_abs, abs_of_nonneg (show 0 ≤ ∫ x : ℝ⁸, ‖kernel w (x, s)‖ from
-    MeasureTheory.integral_nonneg fun _ => norm_nonneg _)] using hval.trans (hC s hs)
+    MeasureTheory.integral_nonneg fun _ => norm_nonneg _)] using
+    (integral_kernel_norm_le (w := w) hs).trans (hC s hs)
 
 end PermJ5
 
