@@ -307,6 +307,103 @@ private lemma aLaplaceIntegrand_integrableOn_Ioc_zero_one {u : ℝ} (hu : 2 < u)
     _ ≤ 1 * C₀ * 1 := by gcongr
     _ = C₀ := by ring
 
+/-- Pointwise modular bound for `φ₀` on the imaginary axis: combine the polynomial bound on
+`E₂ E₄ - E₆` with the exponential bound on `Δ⁻¹`. -/
+private lemma norm_phi0_at_iy_le {zH : ℍ} {BA CΔ τ : ℝ}
+    (hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA)
+    (hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * τ)) (hBA_nonneg : 0 ≤ BA) :
+    ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * τ)) := by
+  rw [show ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by
+    simp [φ₀, div_eq_mul_inv]]
+  refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
+  simpa [norm_pow, pow_two] using mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
+
+private lemma norm_phi2'_at_iy_le {zH : ℍ} {B4 BA CΔ τ : ℝ}
+    (hE4 : ‖E₄ zH‖ ≤ B4) (hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA)
+    (hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * τ))
+    (hB4_nonneg : 0 ≤ B4) (hBA_nonneg : 0 ≤ BA) :
+    ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * τ)) := by
+  rw [show ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ by
+    simp [φ₂', div_eq_mul_inv, mul_assoc]]
+  exact mul_le_mul (mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg) hΔ
+    (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
+
+private lemma norm_phi4'_at_iy_le {zH : ℍ} {B4 CΔ τ : ℝ}
+    (hE4 : ‖E₄ zH‖ ≤ B4) (hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * τ))
+    (hB4_nonneg : 0 ≤ B4) :
+    ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * τ)) := by
+  rw [show ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by simp [φ₄', div_eq_mul_inv]]
+  refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
+  simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
+
+/-- Combined S-transform bound on the imaginary axis: from the φ₀/φ₂'/φ₄' bounds, dominate
+`‖φ₀'' (I/t)‖` by a polynomial-in-`B4, BA, CΔ` constant times `exp(2π t)`. -/
+private lemma norm_phi0''_inv_t_le {t : ℝ} (ht0 : 0 < t) (ht1 : (1 : ℝ) ≤ t) {B4 BA CΔ : ℝ}
+    (hφ0 : ‖φ₀ ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩‖
+      ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)))
+    (hφ2 : ‖φ₂' ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩‖
+      ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)))
+    (hφ4 : ‖φ₄' ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩‖
+      ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t))) :
+    ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖
+      ≤ ((BA ^ (2 : ℕ) + ‖(12 * Complex.I : ℂ) / (π : ℂ)‖ * (B4 * BA)
+          + ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * (B4 ^ (2 : ℕ))) * CΔ) * Real.exp (2 * π * t) := by
+  set C2 : ℝ := ‖(12 * Complex.I : ℂ) / (π : ℂ)‖
+  set C4 : ℝ := ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
+  let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
+  have hphiS : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • zH) :=
+    (congrArg φ₀'' ((ModularGroup.coe_S_smul (z := zH)).trans
+      (by simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])).symm).trans
+      (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • zH))
+  have hz_norm : ‖(zH : ℂ)‖ = t := by simp [zH, abs_of_pos ht0]
+  have hz_inv : ‖(zH : ℂ)⁻¹‖ ≤ 1 := by
+    simpa [norm_inv] using inv_le_one_of_one_le₀ (by simpa [hz_norm] using ht1)
+  have hz2_inv : ‖((zH : ℂ) ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
+    simpa [norm_inv] using inv_le_one_of_one_le₀
+      (by simpa [norm_pow, hz_norm] using (one_le_pow₀ ht1 : (1 : ℝ) ≤ t ^ (2 : ℕ)))
+  have hcoeff2 : ‖(12 * Complex.I : ℂ) / (π * (zH : ℂ))‖ ≤ C2 :=
+    calc ‖(12 * Complex.I : ℂ) / (π * (zH : ℂ))‖
+          = ‖(12 * Complex.I : ℂ) / (π : ℂ)‖ * ‖(zH : ℂ)⁻¹‖ := by
+            simp [show (12 * Complex.I : ℂ) / (π * (zH : ℂ)) =
+              ((12 * Complex.I : ℂ) / (π : ℂ)) * (zH : ℂ)⁻¹ from by
+              simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, mul_inv_rev]]
+      _ ≤ C2 * 1 := by gcongr
+      _ = C2 := by simp
+  have hcoeff4 : ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ))‖ ≤ C4 :=
+    calc ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ))‖
+          = ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * ‖((zH : ℂ) ^ (2 : ℕ))⁻¹‖ := by
+            simp [show (36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) =
+              ((36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))) * ((zH : ℂ) ^ (2 : ℕ))⁻¹ from by
+              simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_inv_rev]]
+      _ ≤ C4 * 1 := by gcongr
+      _ = C4 := by simp
+  have htri : ‖φ₀ (ModularGroup.S • zH)‖ ≤
+      ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * (zH : ℂ)) * φ₂' zH‖ +
+        ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
+    rw [show φ₀ (ModularGroup.S • zH) = φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
+        - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH by simpa using φ₀_S_transform zH]
+    exact (norm_sub_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
+  have h2 := norm_mul_le_of_le hcoeff2 hφ2; have h4 := norm_mul_le_of_le hcoeff4 hφ4
+  rw [hphiS]; grind only
+
+/-- Pointwise domination of `‖aLaplaceIntegrand u t‖` by `Cφ * (t² * exp(-π(u-2)t))` from a
+control of `‖φ₀'' (I/t)‖`. -/
+private lemma norm_aLaplaceIntegrand_le {u Cφ t : ℝ}
+    (hphi : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ * Real.exp (2 * π * t)) :
+    ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
+  have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(π * (u - 2)) * t) := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
+  calc ‖aLaplaceIntegrand u t‖
+        ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ * ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
+            ‖(Real.exp (-π * u * t) : ℂ)‖ := by simp [aLaplaceIntegrand, mul_assoc]
+    _ ≤ (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) := by
+          rw [show ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ = t ^ (2 : ℕ) from by simp [Complex.norm_real],
+            show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
+              simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]]
+          gcongr
+    _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by rw [← hExpRew]; ring
+
 /-- Integrability of `aLaplaceIntegrand u` on `(1, ∞)`: combine the compact piece on `(1, A]`
 with exponential domination on `(A, ∞)` for `A` large enough that the modular bounds on
 `E₂, E₄, E₆, Δ⁻¹` apply. -/
@@ -317,103 +414,40 @@ private lemma aLaplaceIntegrand_integrableOn_Ioi_one {u : ℝ} (hu : 2 < u) :
     ⟨B4, A4, hB4⟩
   rcases (UpperHalfPlane.isBoundedAtImInfty_iff).1 (ModularFormClass.bdd_at_infty E₆) with
     ⟨B6, A6, hB6⟩
-  obtain ⟨CΔ, AΔ, hCΔpos, hΔinv⟩ := exists_inv_Delta_bound_exp
+  obtain ⟨CΔ, AΔ, _, hΔinv⟩ := exists_inv_Delta_bound_exp
   let A : ℝ := max (1 : ℝ) (max AΔ (max A2 (max A4 A6)))
   have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
+  let BA : ℝ := B2 * B4 + B6
+  let Cφ : ℝ := (BA ^ (2 : ℕ) + ‖(12 * Complex.I : ℂ) / (π : ℂ)‖ * (B4 * BA)
+    + ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * (B4 ^ (2 : ℕ))) * CΔ
+  have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) :=
+    MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
+      ((integrableOn_sq_mul_exp_neg A (π * (u - 2))
+        (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cφ)
+      (((continuousOn_aLaplaceIntegrand_Ioi u).mono fun _ ht =>
+        zero_lt_one.trans_le (hA1.trans ht.le)).aestronglyMeasurable measurableSet_Ioi)
+      (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+        have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le
+        have ht0 : 0 < t := zero_lt_one.trans_le ht1
+        let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
+        have htAim : A ≤ zH.im := by simpa [zH, UpperHalfPlane.im] using ht.le
+        have hAle : AΔ ≤ A ∧ A2 ≤ A ∧ A4 ≤ A ∧ A6 ≤ A := by dsimp [A]; simp
+        have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hAle.2.2.1.trans htAim)
+        have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
+          simpa [zH, UpperHalfPlane.im] using hΔinv zH (hAle.1.trans htAim)
+        have hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA :=
+          norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH (hAle.2.1.trans htAim)) hE4)
+            (hB6 zH (hAle.2.2.2.trans htAim))
+        have hBA_nonneg : 0 ≤ BA := (norm_nonneg _).trans hAterm
+        have hB4_nonneg : 0 ≤ B4 := (norm_nonneg _).trans hE4
+        exact norm_aLaplaceIntegrand_le (u := u) <| norm_phi0''_inv_t_le ht0 ht1
+          (norm_phi0_at_iy_le hAterm hΔ hBA_nonneg)
+          (norm_phi2'_at_iy_le hE4 hAterm hΔ hB4_nonneg hBA_nonneg)
+          (norm_phi4'_at_iy_le hE4 hΔ hB4_nonneg))
   have hmid : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
     (((continuousOn_aLaplaceIntegrand_Ioi u).mono fun _ ht =>
         lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
       (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
-  have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
-    let a : ℝ := π * (u - 2); let BA : ℝ := B2 * B4 + B6
-    let C2 : ℝ := ‖(12 * Complex.I : ℂ) / (π : ℂ)‖
-    let C4 : ℝ := ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
-    let Cφ : ℝ := (BA ^ (2 : ℕ) + C2 * (B4 * BA) + C4 * (B4 ^ (2 : ℕ))) * CΔ
-    have hdomReal : Integrable (fun t : ℝ => Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)))
-          (MeasureTheory.volume.restrict (Set.Ioi A)) :=
-      (integrableOn_sq_mul_exp_neg A a (mul_pos Real.pi_pos (sub_pos.2 hu))).const_mul Cφ
-    have hdom :
-        ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
-          ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) :=
-      ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-      have ht1 : (1 : ℝ) ≤ t := hA1.trans ht.le; have ht0 : 0 < t := zero_lt_one.trans_le ht1
-      let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), by simpa using ht0⟩
-      have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-      have htAim : A ≤ zH.im := hz_im ▸ ht.le
-      have hAle : AΔ ≤ A ∧ A2 ≤ A ∧ A4 ≤ A ∧ A6 ≤ A := by dsimp [A]; simp
-      have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hAle.2.2.1.trans htAim)
-      have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
-        simpa [hz_im] using hΔinv zH (hAle.1.trans htAim)
-      have hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA :=
-        norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH (hAle.2.1.trans htAim)) hE4)
-          (hB6 zH (hAle.2.2.2.trans htAim))
-      have hBA_nonneg : 0 ≤ BA := le_trans (norm_nonneg _) hAterm
-      have hB4_nonneg : 0 ≤ B4 := le_trans (norm_nonneg _) hE4
-      have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-        rw [show ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by
-          simp [φ₀, div_eq_mul_inv]]
-        refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
-        simpa [norm_pow, pow_two] using mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
-      have hφ2 : ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) := by
-        rw [show ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ by
-          simp [φ₂', div_eq_mul_inv, mul_assoc]]
-        exact mul_le_mul (mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg) hΔ
-          (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
-      have hφ4 : ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-        rw [show ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by simp [φ₄', div_eq_mul_inv]]
-        refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
-        simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
-      have hphiS : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • zH) :=
-        (congrArg φ₀'' ((ModularGroup.coe_S_smul (z := zH)).trans
-          (by simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])).symm).trans
-          (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • zH))
-      have hz_norm : ‖(zH : ℂ)‖ = t := by simp [zH, abs_of_pos ht0]
-      have hz_inv : ‖(zH : ℂ)⁻¹‖ ≤ 1 := by
-        simpa [norm_inv] using inv_le_one_of_one_le₀ (by simpa [hz_norm] using ht1)
-      have hz2_inv : ‖((zH : ℂ) ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
-        simpa [norm_inv] using inv_le_one_of_one_le₀
-          (by simpa [norm_pow, hz_norm] using (one_le_pow₀ ht1 : (1 : ℝ) ≤ t ^ (2 : ℕ)))
-      have hcoeff2 : ‖(12 * Complex.I : ℂ) / (π * (zH : ℂ))‖ ≤ C2 :=
-        calc ‖(12 * Complex.I : ℂ) / (π * (zH : ℂ))‖
-              = ‖(12 * Complex.I : ℂ) / (π : ℂ)‖ * ‖(zH : ℂ)⁻¹‖ := by
-                simp [show (12 * Complex.I : ℂ) / (π * (zH : ℂ)) =
-                  ((12 * Complex.I : ℂ) / (π : ℂ)) * (zH : ℂ)⁻¹ from by
-                  simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, mul_inv_rev]]
-          _ ≤ C2 * 1 := by gcongr
-          _ = C2 := by simp
-      have hcoeff4 : ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ))‖ ≤ C4 :=
-        calc ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ))‖
-              = ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * ‖((zH : ℂ) ^ (2 : ℕ))⁻¹‖ := by
-                simp [show (36 : ℂ) / ((π : ℂ) ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) =
-                  ((36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))) * ((zH : ℂ) ^ (2 : ℕ))⁻¹ from by
-                  simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_inv_rev]]
-          _ ≤ C4 * 1 := by gcongr
-          _ = C4 := by simp
-      have hphi_bound : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ * Real.exp (2 * π * t) := by
-        have htri : ‖φ₀ (ModularGroup.S • zH)‖ ≤
-            ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * (zH : ℂ)) * φ₂' zH‖ +
-              ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
-          rw [show φ₀ (ModularGroup.S • zH) = φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
-              - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH by simpa using φ₀_S_transform zH]
-          exact (norm_sub_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
-        have h2 := norm_mul_le_of_le hcoeff2 hφ2; have h4 := norm_mul_le_of_le hcoeff4 hφ4
-        grind only
-      have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
-        simpa [a, mul_assoc, mul_left_comm, mul_comm] using
-          exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
-      calc ‖aLaplaceIntegrand u t‖
-            ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
-              ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
-                ‖(Real.exp (-π * u * t) : ℂ)‖ := by simp [aLaplaceIntegrand, mul_assoc]
-        _ ≤ (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) := by
-              rw [show ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ = t ^ (2 : ℕ) from by simp [Complex.norm_real],
-                show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
-                  simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]]
-              gcongr
-        _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by rw [← hExpRew]; ring
-    exact MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi A))
-      hdomReal (((continuousOn_aLaplaceIntegrand_Ioi u).mono fun _ ht =>
-        zero_lt_one.trans_le (hA1.trans ht.le)).aestronglyMeasurable measurableSet_Ioi) hdom
   rw [← Set.Ioc_union_Ioi_eq_Ioi hA1]; exact hmid.union hbig
 
 /-- Convergence of the Laplace integral defining `a'` (integrability on `(0, ∞)` for `u > 2`). -/
@@ -1104,6 +1138,104 @@ lemma base₆_continuousOn : ContinuousOn base₆ (Set.Ici (1 : ℝ)) := by
       fun t ht => by
         simpa [UpperHalfPlane.upperHalfPlaneSet, mul_assoc] using lt_of_lt_of_le (by norm_num) ht)
 
+private lemma norm_base_mul_exp_neg_pi_z_t_le {base : ℝ → ℂ} {M : ℝ} (hM : 0 ≤ M)
+    (hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base t‖ ≤ M) (z : ℂ) {t : ℝ}
+    (ht : t ∈ Set.Ici (1 : ℝ)) :
+    ‖base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ M * Real.exp (-Real.pi * z.re * t) := by
+  rw [norm_mul]
+  refine mul_le_mul (hbase_bound t ht) ?_ (norm_nonneg _) hM
+  simp [Complex.norm_exp, mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
+
+private lemma integrable_const_mul_exp_neg_pi_pos_on_Ici_one {M r : ℝ} (hr : 0 < r) :
+    MeasureTheory.IntegrableOn (fun t : ℝ => M * Real.exp (-Real.pi * r * t))
+      (Set.Ici (1 : ℝ)) MeasureTheory.volume := by
+  refine (integrableOn_Ici_iff_integrableOn_Ioi (b := (1 : ℝ)) (by finiteness)).2 ?_
+  simpa [mul_assoc] using
+    ((exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := Real.pi * r) (by positivity)).const_mul M)
+
+private lemma integrable_t_mul_exp_neg_pi_pos_on_Ici_one {r : ℝ} (hr : 0 < r) :
+    MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-(Real.pi * r) * t))
+      (Set.Ici (1 : ℝ)) MeasureTheory.volume :=
+  (integrableOn_Ici_iff_integrableOn_Ioi (b := (1 : ℝ)) (by finiteness)).2 <|
+    ((by simpa [Real.rpow_one] using
+      (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
+        (hs := by linarith) (hp := le_rfl) (b := Real.pi * r) (by positivity)) :
+      MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-(Real.pi * r) * t))
+        (Set.Ioi (0:ℝ)) MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
+
+private lemma hasDerivAt_base_mul_exp_neg_pi_w_t (base : ℝ → ℂ) (t : ℝ) (z : ℂ) :
+    HasDerivAt (fun w : ℂ => base t * Complex.exp (-(π : ℂ) * w * (t : ℂ)))
+      ((-(π : ℂ) * (t : ℂ)) * (base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)))) z := by
+  have hlin : HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      ((hasDerivAt_id z).const_mul (-(π : ℂ) * (t : ℂ)))
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (by simpa using hlin.cexp : HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
+      (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z).const_mul (base t)
+
+/-- The local dominating bound for the derivative on the ball `Metric.ball u0 ε`. -/
+private lemma deriv_bound_in_ball_aux {base : ℝ → ℂ} {M ε : ℝ} (hM : 0 ≤ M)
+    (hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base t‖ ≤ M) {u0 z : ℂ}
+    (hε : ε ≤ u0.re / 2) (hz : z ∈ Metric.ball u0 ε) {t : ℝ} (ht : t ∈ Set.Ici (1 : ℝ)) :
+    ‖(-(π : ℂ) * (t : ℂ)) * (base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)))‖ ≤
+      (M * Real.pi) * t * Real.exp (-(Real.pi * ε) * t) := by
+  have ht0 : 0 ≤ t := le_trans (by norm_num) ht
+  have hzRe : ε ≤ z.re := by
+    have habs := (abs_lt.mp (lt_of_le_of_lt
+      (by simpa using abs_re_le_norm (z - u0) : |z.re - u0.re| ≤ ‖z - u0‖)
+      (by simpa [Metric.mem_ball, dist_eq_norm] using hz : ‖z - u0‖ < ε))).1
+    linarith
+  have hexp_eq : Real.exp (-π * ε * t) = Real.exp (-(Real.pi * ε) * t) := by ring_nf
+  calc ‖(-(π : ℂ) * (t : ℂ)) * (base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)))‖
+      = ‖(-(π : ℂ) * (t : ℂ))‖ * ‖base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ := by
+        rw [norm_mul]
+    _ ≤ (Real.pi * t) * (M * Real.exp (-π * ε * t)) := by
+        gcongr
+        · simp [Complex.norm_real, abs_of_nonneg ht0, abs_of_nonneg Real.pi_pos.le]
+        · exact (norm_base_mul_exp_neg_pi_z_t_le hM hbase_bound z ht).trans
+            (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr
+              (by nlinarith [mul_nonneg Real.pi_pos.le ht0, hzRe])) hM)
+    _ = (M * Real.pi) * t * Real.exp (-(Real.pi * ε) * t) := by rw [hexp_eq]; ring
+
+/-- The `hasDerivAt_integral_of_dominated_loc_of_deriv_le` application for the
+`base * exp(-π u t)` family integrated over `Ici 1`. -/
+private lemma hasDerivAt_integral_Ici_one_base_exp {base : ℝ → ℂ} {M : ℝ}
+    (hbase_cont : ContinuousOn base (Set.Ici (1 : ℝ)))
+    (hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base t‖ ≤ M)
+    {u0 : ℂ} (hu0re : 0 < u0.re) :
+    HasDerivAt
+      (fun u : ℂ => ∫ t in Set.Ici (1 : ℝ), base t * Complex.exp (-(π : ℂ) * u * (t : ℂ)))
+      (∫ t in Set.Ici (1 : ℝ), (-(π : ℂ) * (t : ℂ)) *
+        (base t * Complex.exp (-(π : ℂ) * u0 * (t : ℂ)))) u0 := by
+  have hε : 0 < u0.re / 2 := by positivity
+  have hM : 0 ≤ M := le_trans (norm_nonneg _) (hbase_bound 1 (by simp))
+  let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))
+  let F : ℂ → ℝ → ℂ := fun z t => base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))
+  let F' : ℂ → ℝ → ℂ := fun z t => (-(π : ℂ) * (t : ℂ)) * F z t
+  have hF_meas : ∀ z, MeasureTheory.AEStronglyMeasurable (F z) μ := fun z =>
+    ((by simp only [F]; have := hbase_cont; fun_prop) :
+      ContinuousOn (F z) (Set.Ici (1 : ℝ))).aestronglyMeasurable measurableSet_Ici
+  have hint_eq : (fun z : ℂ => ∫ t, F z t ∂μ) =
+      fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)) :=
+    funext fun _ => by simp [F, μ]
+  let bound : ℝ → ℝ := fun t => (M * Real.pi) * t * Real.exp (-(Real.pi * (u0.re/2)) * t)
+  refine hint_eq ▸ (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
+    (F := F) (F' := F') (bound := bound)
+    (Metric.ball_mem_nhds u0 hε) (Filter.Eventually.of_forall hF_meas)
+    (MeasureTheory.Integrable.mono' (μ := μ)
+      (by simpa [MeasureTheory.IntegrableOn, μ] using
+        integrable_const_mul_exp_neg_pi_pos_on_Ici_one (M := M) hu0re)
+      (hF_meas u0) (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht => by
+        simpa [F] using norm_base_mul_exp_neg_pi_z_t_le hM hbase_bound u0 ht))
+    ((by simp only [F', F]; have := hbase_cont; fun_prop :
+      ContinuousOn (F' u0) (Set.Ici (1 : ℝ))).aestronglyMeasurable measurableSet_Ici)
+    (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht z hz => by
+      simpa [F', F, bound] using deriv_bound_in_ball_aux hM hbase_bound (le_refl _) hz ht)
+    (by simpa [μ, bound, MeasureTheory.IntegrableOn, mul_assoc] using
+      (integrable_t_mul_exp_neg_pi_pos_on_Ici_one (r := u0.re/2) hε).const_mul (M * Real.pi))
+    (Filter.Eventually.of_forall fun t z _ => by
+      simpa [F, F'] using hasDerivAt_base_mul_exp_neg_pi_w_t base t z)).2
+
 /-- Differentiation under the integral on `Set.Ici 1` for `u ↦ base t * exp(-π u t)`,
 where `base` is continuous and uniformly bounded by `M`. Used for `I₆'C_differentiableAt`. -/
 private lemma differentiableAt_integral_Ici_one_base_exp {base : ℝ → ℂ} {M : ℝ}
@@ -1111,91 +1243,8 @@ private lemma differentiableAt_integral_Ici_one_base_exp {base : ℝ → ℂ} {M
     (hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base t‖ ≤ M)
     {u0 : ℂ} (hu0re : 0 < u0.re) :
     DifferentiableAt ℂ
-      (fun u : ℂ => ∫ t in Set.Ici (1 : ℝ), base t * Complex.exp (-(π : ℂ) * u * (t : ℂ))) u0 := by
-  set ε : ℝ := u0.re / 2 with hε_def
-  have hε : 0 < ε := by positivity
-  have hM_nonneg : 0 ≤ M := le_trans (norm_nonneg _) (hbase_bound 1 (by simp))
-  let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))
-  let F : ℂ → ℝ → ℂ := fun z t => base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))
-  let F' : ℂ → ℝ → ℂ := fun z t => (-(π : ℂ) * (t : ℂ)) * F z t
-  have hF_cont : ∀ z : ℂ, ContinuousOn (F z) (Set.Ici (1 : ℝ)) := fun _ => by
-    simp only [F]; have := hbase_cont; fun_prop
-  have hF_meas : ∀ z : ℂ, MeasureTheory.AEStronglyMeasurable (F z) μ := fun z =>
-    (hF_cont z).aestronglyMeasurable measurableSet_Ici
-  have hbound_pt : ∀ z : ℂ, ∀ t ∈ Set.Ici (1 : ℝ),
-      ‖F z t‖ ≤ M * Real.exp (-Real.pi * z.re * t) := fun z t ht => by
-    have ht0 : 0 ≤ t := le_trans (by norm_num) ht
-    have hExp : ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-Real.pi * z.re * t) := by
-      simp [Complex.norm_exp, mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-    have heq : ‖F z t‖ = ‖base t‖ * ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ := by simp [F]
-    rw [heq]
-    exact mul_le_mul (hbase_bound t ht) hExp (norm_nonneg _) hM_nonneg
-  have hF_int : MeasureTheory.Integrable (F u0) μ := by
-    have hExpRaw : MeasureTheory.Integrable (fun t : ℝ => Real.exp (-(Real.pi * u0.re) * t))
-        (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
-      simpa [mul_assoc] using
-        exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (Real.pi * u0.re)) (by positivity)
-    refine MeasureTheory.Integrable.mono' (μ := μ) (by
-      simpa [MeasureTheory.IntegrableOn, μ, mul_assoc] using
-        (integrableOn_Ici_iff_integrableOn_Ioi (μ := (MeasureTheory.volume : Measure ℝ))
-          (f := fun t : ℝ => M * Real.exp (-(Real.pi * u0.re) * t)) (b := (1 : ℝ))
-          (by finiteness)).2 (hExpRaw.const_mul M))
-      (hF_meas u0) (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht => ?_)
-    simpa [mul_assoc] using hbound_pt u0 t ht
-  have hF'_meas : MeasureTheory.AEStronglyMeasurable (F' u0) μ := by
-    have hcont : ContinuousOn (F' u0) (Set.Ici (1 : ℝ)) := by
-      simp only [F', F]; have := hbase_cont; fun_prop
-    exact hcont.aestronglyMeasurable measurableSet_Ici
-  let bound : ℝ → ℝ := fun t => (M * Real.pi) * t * Real.exp (-(Real.pi * ε) * t)
-  have hbound :
-      ∀ᵐ (t : ℝ) ∂μ, ∀ z ∈ Metric.ball u0 ε, ‖F' z t‖ ≤ bound t := by
-    refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht z hz => ?_
-    have ht0 : 0 ≤ t := le_trans (by norm_num) ht
-    have hzRe : ε ≤ z.re := by
-      have habs := (abs_lt.mp (lt_of_le_of_lt
-        (by simpa using abs_re_le_norm (z - u0) : |z.re - u0.re| ≤ ‖z - u0‖)
-        (by simpa [Metric.mem_ball, dist_eq_norm] using hz : ‖z - u0‖ < ε))).1
-      simp only [hε_def]; linarith
-    have hnorm_F : ‖F z t‖ ≤ M * Real.exp (-π * ε * t) :=
-      (hbound_pt z t ht).trans (mul_le_mul_of_nonneg_left
-        (Real.exp_le_exp.mpr (by nlinarith [mul_nonneg Real.pi_pos.le ht0, hzRe])) hM_nonneg)
-    calc ‖F' z t‖
-        = ‖(-(π : ℂ) * (t : ℂ))‖ * ‖F z t‖ := by simp [F', mul_assoc]
-      _ ≤ (Real.pi * t) * (M * Real.exp (-π * ε * t)) := by
-          gcongr; simp [Complex.norm_real, abs_of_nonneg ht0, abs_of_nonneg Real.pi_pos.le]
-      _ = bound t := by simp [bound]; ring
-  have hbound_int : MeasureTheory.Integrable bound μ := by
-    have hIoi1 : MeasureTheory.IntegrableOn
-        (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t)) (Set.Ioi (1 : ℝ)) MeasureTheory.volume :=
-      ((by simpa [Real.rpow_one] using
-        (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
-          (hs := by linarith) (hp := le_rfl) (b := Real.pi * ε) (by positivity)) :
-        MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-(Real.pi * ε) * t))
-          (Set.Ioi (0:ℝ)) MeasureTheory.volume)).mono_set (Set.Ioi_subset_Ioi (by norm_num))
-    simpa [bound, μ, MeasureTheory.IntegrableOn, mul_assoc] using
-      (integrableOn_Ici_iff_integrableOn_Ioi
-        (f := fun t : ℝ => (M * Real.pi) * t * Real.exp (-(Real.pi * ε) * t))
-        (b := (1 : ℝ)) (by finiteness)).2 <| by
-        simpa [mul_assoc] using hIoi1.const_mul (M * Real.pi)
-  have hdiff :
-      ∀ᵐ (t : ℝ) ∂μ, ∀ z ∈ Metric.ball u0 ε,
-        HasDerivAt (fun w : ℂ => F w t) (F' z t) z :=
-    Filter.Eventually.of_forall fun t z _ => by
-      have hlin : HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          ((hasDerivAt_id z).const_mul (-(π : ℂ) * (t : ℂ)))
-      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
-        (by simpa using hlin.cexp : HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
-          (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z).const_mul (base t)
-  have hHas := (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
-    (F := F) (F' := F') (bound := bound)
-    (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
-    (hF_int := hF_int) (hF'_meas := hF'_meas)
-    (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2
-  have hμ : (fun z : ℂ => ∫ t, F z t ∂μ) =
-      fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), base t * Complex.exp (-(π : ℂ) * z * (t : ℂ)) :=
-    funext fun _ => by simp [F, μ]
-  exact (hμ ▸ hHas).differentiableAt
+      (fun u : ℂ => ∫ t in Set.Ici (1 : ℝ), base t * Complex.exp (-(π : ℂ) * u * (t : ℂ))) u0 :=
+  (hasDerivAt_integral_Ici_one_base_exp hbase_cont hbase_bound hu0re).differentiableAt
 
 lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     DifferentiableAt ℂ I₆'C u0 := by
