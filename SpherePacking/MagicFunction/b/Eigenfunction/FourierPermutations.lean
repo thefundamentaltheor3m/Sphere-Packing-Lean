@@ -1163,7 +1163,7 @@ public lemma integrable_kernel (w : ℝ⁸) :
             fun _ _ => ⟨Set.mem_univ _, hs⟩)
       exact Integrable.mono' (by
           simpa [mul_assoc] using
-            (SpherePacking.ForMathlib.integrable_gaussian_rexp (s := s)
+            (SpherePacking.ForMathlib.integrable_gaussian_rexp_even (k := 4) s
               (lt_of_lt_of_le (by norm_num) hs)).const_mul
               (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖))
         ((by fun_prop : Continuous fun x : ℝ⁸ => cexp (↑(-2 * (π * ⟪x, w⟫)) * I)).mul
@@ -1200,8 +1200,8 @@ public lemma integrable_kernel (w : ℝ⁸) :
           rw [funext fun x => kernel_norm_eq (w := w) (x := x) (s := s)]
           exact MeasureTheory.integral_const_mul _ _
       _ = ‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ := by
-          rw [SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0, mul_assoc, hscal,
-            mul_one]
+          rw [SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) s hs0, mul_assoc,
+            hscal, mul_one]
       _ = ‖ψS.resToImagAxis s‖ :=
           congrArg norm (by simp [ψS', Function.resToImagAxis, ResToImagAxis, hs0, mul_comm])
   simpa [Real.norm_eq_abs, abs_of_nonneg (show 0 ≤ ∫ x : ℝ⁸, ‖kernel w (x, s)‖ from

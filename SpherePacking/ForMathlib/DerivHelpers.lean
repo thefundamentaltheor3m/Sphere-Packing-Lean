@@ -504,17 +504,12 @@ public lemma integral_gaussian_rexp_even (k : ℕ) (s : ℝ) (hs : 0 < s) :
     GaussianFourier.integral_rexp_neg_mul_sq_norm (div_pos Real.pi_pos hs)]
   simp [show (π / (π / s)) = s from by field_simp]
 
-/-- Gaussian `rexp` integral over `ℝ⁸` with a scale parameter. -/
-public lemma integral_gaussian_rexp (s : ℝ) (hs : 0 < s) :
-    (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-π * (‖x‖ ^ 2) / s)) = s ^ 4 := by
-  simpa using integral_gaussian_rexp_even (k := 4) s hs
-
-/-- The real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` is integrable on `ℝ⁸` for `s > 0`. -/
-public lemma integrable_gaussian_rexp (s : ℝ) (hs : 0 < s) :
-    Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ rexp (-π * (‖x‖ ^ 2) / s))
-      (volume : Measure (EuclideanSpace ℝ (Fin 8))) :=
+/-- The real Gaussian `x ↦ exp (-π * ‖x‖^2 / s)` is integrable on `ℝ^(2k)` for `s > 0`. -/
+public lemma integrable_gaussian_rexp_even (k : ℕ) (s : ℝ) (hs : 0 < s) :
+    Integrable (fun x : EuclideanSpace ℝ (Fin (2 * k)) ↦ rexp (-π * (‖x‖ ^ 2) / s))
+      (volume : Measure (EuclideanSpace ℝ (Fin (2 * k)))) :=
   MeasureTheory.Integrable.of_integral_ne_zero (μ := volume) <| by
-    rw [integral_gaussian_rexp s hs]; exact pow_ne_zero 4 hs.ne'
+    rw [integral_gaussian_rexp_even k s hs]; exact pow_ne_zero k hs.ne'
 
 end
 

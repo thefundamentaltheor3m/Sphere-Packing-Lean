@@ -171,10 +171,11 @@ lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
         MeasureTheory.integral_mono_of_nonneg (μ := (volume : Measure ℝ⁸))
           (.of_forall fun _ => norm_nonneg _)
           (by simpa [mul_assoc] using
-            (integrable_gaussian_rexp (s := s) hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖)
+            (integrable_gaussian_rexp_even (k := 4) s hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖)
           (.of_forall (norm_permI5Kernel_le w s hs))
     _ = ‖φ₀'' (I * (s : ℂ))‖ * s ^ 4 := by
-      rw [integral_const_mul, SpherePacking.ForMathlib.integral_gaussian_rexp (s := s) hs0]
+      rw [integral_const_mul,
+        SpherePacking.ForMathlib.integral_gaussian_rexp_even (k := 4) s hs0]
 
 lemma integrable_integral_norm_permI5Kernel (w : ℝ⁸) :
     Integrable (fun s : ℝ ↦ ∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖) μIciOne := by
@@ -212,7 +213,7 @@ public lemma integrable_perm_I₅_kernel (w : ℝ⁸) :
           (fun _ _ => ⟨Set.mem_univ _, hs⟩ :
             MapsTo (fun x : ℝ⁸ => (x, s)) (univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)))
       exact (by simpa [mul_assoc] using
-          (integrable_gaussian_rexp (s := s) hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖ :
+          (integrable_gaussian_rexp_even (k := 4) s hs0).const_mul ‖φ₀'' (I * (s : ℂ))‖ :
           Integrable (fun x : ℝ⁸ ↦ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s)) volume).mono'
         (by simpa [permI5Kernel] using hphase.mul hg : Continuous _).aestronglyMeasurable
         (.of_forall (norm_permI5Kernel_le w s hs)),
@@ -517,7 +518,7 @@ open MagicFunction.a.ComplexIntegrands
 public lemma integral_rexp_neg_pi_mul_sq_norm (t : ℝ) (ht : 0 < t) :
     (∫ x : ℝ⁸, rexp (-Real.pi * t * (‖x‖ ^ 2))) = (1 / t) ^ (4 : ℕ) := by
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-    integral_gaussian_rexp (s := (1 / t)) (by positivity)
+    integral_gaussian_rexp_even (k := 4) (s := (1 / t)) (by positivity)
 
 /-- For almost every `t ∈ Ioc 0 1`, the slice `x ↦ permI2Kernel w (x, t)` is integrable. -/
 public lemma ae_integrable_permI2Kernel_slice (w : ℝ⁸) :
