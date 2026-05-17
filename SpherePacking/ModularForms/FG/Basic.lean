@@ -251,218 +251,266 @@ public theorem MLDE_F :
   simp [hF, hA, hB, Δ_fun, hnegDE₂', smul_eq_mul]
   ring_nf
 
-/-- Modular linear differential equation satisfied by `G`. -/
-public theorem MLDE_G :
-    serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
-  -- The blueprint statement is `∂₁₂∂₁₀ G - (5/6)E₄·G = -640·Δ·H₂`.
-  -- We compute both sides using the product rule for `serre_D` and the theta-derivative identities.
+/-- Serre derivative of `H₂^2` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_four_H₂_sq :
+    serre_D 4 (H₂ ^ 2) = (1 / 3 : ℂ) • (H₂ ^ 3) + (2 / 3 : ℂ) • (H₂ ^ 2 * H₄) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hmul' : serre_D 4 (H₂ ^ 2) = (serre_D 2 H₂) * H₂ + H₂ * (serre_D 2 H₂) := by
+    simpa [pow_two, show (2 : ℂ) + 2 = 4 by norm_num] using
+      (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₂ H₂ hH2 hH2)
+  rw [hmul', serre_D_two_H₂]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^3` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_six_H₂_cube :
+    serre_D 6 (H₂ ^ 3) = (1 / 2 : ℂ) • (H₂ ^ 4) + H₂ ^ 3 * H₄ := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH2_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := hH2.pow 2
+  have hmul' : serre_D 6 (H₂ ^ 3) = (serre_D 4 (H₂ ^ 2)) * H₂ + (H₂ ^ 2) * (serre_D 2 H₂) := by
+    simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
+      show (4 : ℂ) + 2 = 6 by norm_num] using
+      (serre_D_mul (k₁ := (4 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 2) H₂ hH2_sq hH2)
+  rw [hmul', serre_D_four_H₂_sq, serre_D_two_H₂]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^4` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_eight_H₂_pow4 :
+    serre_D 8 (H₂ ^ 4) = (2 / 3 : ℂ) • (H₂ ^ 5) + (4 / 3 : ℂ) • (H₂ ^ 4 * H₄) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH2_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := hH2.pow 3
+  have hmul' : serre_D 8 (H₂ ^ 4) = (serre_D 6 (H₂ ^ 3)) * H₂ + (H₂ ^ 3) * (serre_D 2 H₂) := by
+    simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
+      show (6 : ℂ) + 2 = 8 by norm_num] using
+      (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 3) H₂ hH2_cube hH2)
+  rw [hmul', serre_D_six_H₂_cube, serre_D_two_H₂]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^5` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_ten_H₂_pow5 :
+    serre_D 10 (H₂ ^ 5) = (5 / 6 : ℂ) • (H₂ ^ 6) + (5 / 3 : ℂ) • (H₂ ^ 5 * H₄) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH2_pow4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 4) := hH2.pow 4
+  have hmul' : serre_D 10 (H₂ ^ 5) = (serre_D 8 (H₂ ^ 4)) * H₂ + (H₂ ^ 4) * (serre_D 2 H₂) := by
+    simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
+      show (8 : ℂ) + 2 = 10 by norm_num] using
+      (serre_D_mul (k₁ := (8 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 4) H₂ hH2_pow4 hH2)
+  rw [hmul', serre_D_eight_H₂_pow4, serre_D_two_H₂]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₄^2` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_four_H₄_sq :
+    serre_D 4 (H₄ ^ 2) = (-2 / 3 : ℂ) • (H₂ * H₄ ^ 2) + (-1 / 3 : ℂ) • (H₄ ^ 3) := by
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hmul' : serre_D 4 (H₄ ^ 2) = (serre_D 2 H₄) * H₄ + H₄ * (serre_D 2 H₄) := by
+    simpa [pow_two, show (2 : ℂ) + 2 = 4 by norm_num] using
+      (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₄ H₄ hH4 hH4)
+  rw [hmul', serre_D_two_H₄]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₄^3` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_six_H₄_cube :
+    serre_D 6 (H₄ ^ 3) = (-1 : ℂ) • (H₂ * H₄ ^ 3) + (-1 / 2 : ℂ) • (H₄ ^ 4) := by
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH4_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := hH4.pow 2
+  have hmul' : serre_D 6 (H₄ ^ 3) = (serre_D 4 (H₄ ^ 2)) * H₄ + (H₄ ^ 2) * (serre_D 2 H₄) := by
+    simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
+      show (4 : ℂ) + 2 = 6 by norm_num] using
+      (serre_D_mul (k₁ := (4 : ℤ)) (k₂ := (2 : ℤ)) (H₄ ^ 2) H₄ hH4_sq hH4)
+  rw [hmul', serre_D_four_H₄_sq, serre_D_two_H₄]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂ * H₄` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_four_H₂_mul_H₄ :
+    serre_D 4 (H₂ * H₄) = (1 / 6 : ℂ) • (H₂ * H₄ ^ 2 - H₂ ^ 2 * H₄) := by
   have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
   have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-  have hH2_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by fun_prop
-  have hH2_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := by fun_prop
-  have hH2_pow4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 4) := by fun_prop
-  have hH2_pow5 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 5) := by fun_prop
-  have hH4_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by fun_prop
-  have hH4_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 3) := by fun_prop
-  have hS4_H2_sq :
-      serre_D 4 (H₂ ^ 2) = (1 / 3 : ℂ) • (H₂ ^ 3) + (2 / 3 : ℂ) • (H₂ ^ 2 * H₄) := by
-    have hmul' : serre_D 4 (H₂ ^ 2) = (serre_D 2 H₂) * H₂ + H₂ * (serre_D 2 H₂) := by
-      simpa [pow_two, show (2 : ℂ) + 2 = 4 by norm_num] using
-        (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₂ H₂ hH2 hH2)
-    rw [hmul', serre_D_two_H₂]
+  have hmul' : serre_D 4 (H₂ * H₄) = (serre_D 2 H₂) * H₄ + H₂ * (serre_D 2 H₄) := by
+    simpa [show (2 : ℂ) + 2 = 4 by norm_num] using
+      (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₂ H₄ hH2 hH4)
+  rw [hmul', serre_D_two_H₂, serre_D_two_H₄]
+  ext z
+  simp [smul_eq_mul, pow_two, mul_assoc, mul_left_comm, mul_comm, Pi.mul_apply, Pi.add_apply,
+    Pi.sub_apply]
+  ring_nf
+
+/-- Serre derivative of the polynomial part of `G`, i.e. `2*H₂^2 + 5*H₂*H₄ + 5*H₄^2`. -/
+private lemma serre_D_four_G_poly :
+    serre_D 4 (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2 : UpperHalfPlane → ℂ) =
+      (2 / 3 : ℂ) • (H₂ ^ 3) + (1 / 2 : ℂ) • (H₂ ^ 2 * H₄) +
+        (-5 / 2 : ℂ) • (H₂ * H₄ ^ 2) + (-5 / 3 : ℂ) • (H₄ ^ 3) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  set T1 : UpperHalfPlane → ℂ := (2 : ℂ) • (H₂ ^ 2)
+  set T2 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₂ * H₄)
+  set T3 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₄ ^ 2)
+  have hT1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T1 := (hH2.pow 2).const_smul _
+  have hT2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T2 := (hH2.mul hH4).const_smul _
+  have hT3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T3 := (hH4.pow 2).const_smul _
+  have hT12 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (T1 + T2) := hT1.add hT2
+  have hP_eq :
+      (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2 : UpperHalfPlane → ℂ) = T1 + T2 + T3 := by
     ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS6_H2_cube : serre_D 6 (H₂ ^ 3) = (1 / 2 : ℂ) • (H₂ ^ 4) + H₂ ^ 3 * H₄ := by
-    have hmul' : serre_D 6 (H₂ ^ 3) = (serre_D 4 (H₂ ^ 2)) * H₂ + (H₂ ^ 2) * (serre_D 2 H₂) := by
-      simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
-        show (4 : ℂ) + 2 = 6 by norm_num] using
-        (serre_D_mul (k₁ := (4 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 2) H₂ hH2_sq hH2)
-    rw [hmul', hS4_H2_sq, serre_D_two_H₂]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS8_H2_pow4 : serre_D 8 (H₂ ^ 4) = (2 / 3 : ℂ) • (H₂ ^ 5) + (4 / 3 : ℂ) • (H₂ ^ 4 * H₄) := by
-    have hmul' : serre_D 8 (H₂ ^ 4) = (serre_D 6 (H₂ ^ 3)) * H₂ + (H₂ ^ 3) * (serre_D 2 H₂) := by
-      simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
-        show (6 : ℂ) + 2 = 8 by norm_num] using
-        (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 3) H₂ hH2_cube hH2)
-    rw [hmul', hS6_H2_cube, serre_D_two_H₂]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS10_H2_pow5 :
-      serre_D 10 (H₂ ^ 5) = (5 / 6 : ℂ) • (H₂ ^ 6) + (5 / 3 : ℂ) • (H₂ ^ 5 * H₄) := by
-    have hmul' : serre_D 10 (H₂ ^ 5) = (serre_D 8 (H₂ ^ 4)) * H₂ + (H₂ ^ 4) * (serre_D 2 H₂) := by
-      simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
-        show (8 : ℂ) + 2 = 10 by norm_num] using
-        (serre_D_mul (k₁ := (8 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 4) H₂ hH2_pow4 hH2)
-    rw [hmul', hS8_H2_pow4, serre_D_two_H₂]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS4_H4_sq :
-      serre_D 4 (H₄ ^ 2) = (-2 / 3 : ℂ) • (H₂ * H₄ ^ 2) + (-1 / 3 : ℂ) • (H₄ ^ 3) := by
-    have hmul' : serre_D 4 (H₄ ^ 2) = (serre_D 2 H₄) * H₄ + H₄ * (serre_D 2 H₄) := by
-      simpa [pow_two, show (2 : ℂ) + 2 = 4 by norm_num] using
-        (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₄ H₄ hH4 hH4)
-    rw [hmul', serre_D_two_H₄]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS6_H4_cube :
-      serre_D 6 (H₄ ^ 3) = (-1 : ℂ) • (H₂ * H₄ ^ 3) + (-1 / 2 : ℂ) • (H₄ ^ 4) := by
-    have hmul' : serre_D 6 (H₄ ^ 3) = (serre_D 4 (H₄ ^ 2)) * H₄ + (H₄ ^ 2) * (serre_D 2 H₄) := by
-      simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
-        show (4 : ℂ) + 2 = 6 by norm_num] using
-        (serre_D_mul (k₁ := (4 : ℤ)) (k₂ := (2 : ℤ)) (H₄ ^ 2) H₄ hH4_sq hH4)
-    rw [hmul', hS4_H4_sq, serre_D_two_H₄]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hH2_mul_H4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ * H₄) := hH2.mul hH4
-  set hP : UpperHalfPlane → ℂ :=
-      2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2 with hP_def
+    simp [T1, T2, T3, smul_eq_mul, Pi.add_apply, Pi.mul_apply, mul_assoc, add_assoc]
+  rw [hP_eq]
+  rw [serre_D_addC (k := (4 : ℂ)) (T1 + T2) T3 hT12 hT3]
+  rw [serre_D_addC (k := (4 : ℂ)) T1 T2 hT1 hT2]
+  simp only [one_div]
+  rw [serre_D_smulC (k := (4 : ℂ)) (c := (2 : ℂ)) (H₂ ^ 2)]
+  rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₂ * H₄)]
+  rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₄ ^ 2)]
+  rw [serre_D_four_H₂_sq, serre_D_four_H₂_mul_H₄, serre_D_four_H₄_sq]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply, Pi.sub_apply]
+  ring_nf
+
+/-- Explicit expansion of `serre_D 10 G` as a sum of monomials in `H₂` and `H₄`. -/
+private lemma serre_D_ten_G :
+    serre_D 10 G =
+      (5 / 3 : ℂ) • (H₂ ^ 6) + (5 : ℂ) • (H₂ ^ 5 * H₄) + (5 : ℂ) • (H₂ ^ 4 * H₄ ^ 2) +
+        (10 / 3 : ℂ) • (H₂ ^ 3 * H₄ ^ 3) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH2_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := hH2.pow 3
+  set hP : UpperHalfPlane → ℂ := 2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2 with hP_def
   have hP_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) hP := by
     simpa [hP_def] using (by
       fun_prop : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2))
-  have hS4_H2_mul_H4 : serre_D 4 (H₂ * H₄) = (1 / 6 : ℂ) • (H₂ * H₄ ^ 2 - H₂ ^ 2 * H₄) := by
-    have hmul' : serre_D 4 (H₂ * H₄) = (serre_D 2 H₂) * H₄ + H₂ * (serre_D 2 H₄) := by
-      simpa [show (2 : ℂ) + 2 = 4 by norm_num] using
-        (serre_D_mul (k₁ := (2 : ℤ)) (k₂ := (2 : ℤ)) H₂ H₄ hH2 hH4)
-    rw [hmul', serre_D_two_H₂, serre_D_two_H₄]
-    ext z
-    simp [smul_eq_mul, pow_two, mul_assoc, mul_left_comm, mul_comm, Pi.mul_apply, Pi.add_apply,
-      Pi.sub_apply]
-    ring_nf
-  have hS4_P :
-      serre_D 4 hP =
-        (2 / 3 : ℂ) • (H₂ ^ 3) + (1 / 2 : ℂ) • (H₂ ^ 2 * H₄) +
-          (-5 / 2 : ℂ) • (H₂ * H₄ ^ 2) + (-5 / 3 : ℂ) • (H₄ ^ 3) := by
-    -- Rewrite `hP` as a sum and use linearity + the auxiliary identities above.
-    set T1 : UpperHalfPlane → ℂ := (2 : ℂ) • (H₂ ^ 2)
-    set T2 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₂ * H₄)
-    set T3 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₄ ^ 2)
-    have hT1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T1 := hH2_sq.const_smul _
-    have hT2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T2 := hH2_mul_H4.const_smul _
-    have hT3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) T3 := hH4_sq.const_smul _
-    have hT12 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (T1 + T2) := hT1.add hT2
-    have hP_eq : hP = T1 + T2 + T3 := by
-      ext z
-      simp [hP_def, T1, T2, T3, smul_eq_mul, Pi.add_apply, Pi.mul_apply, mul_assoc, add_assoc]
-    -- Expand `serre_D 4` over the sum.
-    rw [hP_eq]
-    rw [serre_D_addC (k := (4 : ℂ)) (T1 + T2) T3 hT12 hT3]
-    rw [serre_D_addC (k := (4 : ℂ)) T1 T2 hT1 hT2]
-    -- Reassociate for convenience.
-    simp only [one_div]
-    -- Pull scalars out of `serre_D` and substitute the computed monomial identities.
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (2 : ℂ)) (H₂ ^ 2)]
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₂ * H₄)]
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₄ ^ 2)]
-    rw [hS4_H2_sq, hS4_H2_mul_H4, hS4_H4_sq]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply, Pi.sub_apply]
-    ring_nf
-  -- Now compute `serre_D 10 G` and then apply `serre_D 12` one more time.
-  have hS10_G :
-      serre_D 10 G =
-        (5 / 3 : ℂ) • (H₂ ^ 6) + (5 : ℂ) • (H₂ ^ 5 * H₄) + (5 : ℂ) • (H₂ ^ 4 * H₄ ^ 2) +
-          (10 / 3 : ℂ) • (H₂ ^ 3 * H₄ ^ 3) := by
-    have hmul' :
-        serre_D 10 G = (serre_D 6 (H₂ ^ 3)) * hP + (H₂ ^ 3) * (serre_D 4 hP) := by
-      simpa [G, hP_def, mul_assoc, show (6 : ℂ) + 4 = 10 by norm_num] using
-        (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (4 : ℤ)) (H₂ ^ 3) hP hH2_cube hP_holo)
-    rw [hmul', hS6_H2_cube, hS4_P]
-    ext z
-    simp [hP_def, smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS12_H2_pow6 : serre_D 12 (H₂ ^ 6) = (H₂ ^ 7) + (2 : ℂ) • (H₂ ^ 6 * H₄) := by
-    have hmul' :
-        serre_D 12 (H₂ ^ 6) = (serre_D 10 (H₂ ^ 5)) * H₂ + (H₂ ^ 5) * (serre_D 2 H₂) := by
-      simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
-        show (10 : ℂ) + 2 = 12 by norm_num] using
-        (serre_D_mul (k₁ := (10 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 5) H₂ hH2_pow5 hH2)
-    rw [hmul', hS10_H2_pow5, serre_D_two_H₂]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS12_H2pow5_mul_H4 :
-      serre_D 12 (H₂ ^ 5 * H₄) = (1 / 2 : ℂ) • (H₂ ^ 6 * H₄) + (3 / 2 : ℂ) • (H₂ ^ 5 * H₄ ^ 2) := by
-    have hmul' :
-        serre_D 12 (H₂ ^ 5 * H₄) = (serre_D 10 (H₂ ^ 5)) * H₄ + (H₂ ^ 5) * (serre_D 2 H₄) := by
-      simpa [show (10 : ℂ) + 2 = 12 by norm_num] using
-        (serre_D_mul (k₁ := (10 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 5) H₄ hH2_pow5 hH4)
-    rw [hmul', hS10_H2_pow5, serre_D_two_H₄]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS12_H2pow4_mul_H4sq :
-      serre_D 12 (H₂ ^ 4 * H₄ ^ 2) = H₂ ^ 4 * H₄ ^ 3 := by
-    have hmul' :
-        serre_D 12 (H₂ ^ 4 * H₄ ^ 2) =
-          (serre_D 8 (H₂ ^ 4)) * (H₄ ^ 2) + (H₂ ^ 4) * (serre_D 4 (H₄ ^ 2)) := by
-      simpa [show (8 : ℂ) + 4 = 12 by norm_num] using
-        (serre_D_mul (k₁ := (8 : ℤ)) (k₂ := (4 : ℤ)) (H₂ ^ 4) (H₄ ^ 2) hH2_pow4 hH4_sq)
-    rw [hmul', hS8_H2_pow4, hS4_H4_sq]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  have hS12_H2cube_mul_H4cube :
+  have hmul' :
+      serre_D 10 G = (serre_D 6 (H₂ ^ 3)) * hP + (H₂ ^ 3) * (serre_D 4 hP) := by
+    simpa [G, hP_def, mul_assoc, show (6 : ℂ) + 4 = 10 by norm_num] using
+      (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (4 : ℤ)) (H₂ ^ 3) hP hH2_cube hP_holo)
+  rw [hmul', serre_D_six_H₂_cube, show hP = _ from hP_def, serre_D_four_G_poly]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^6` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_twelve_H₂_pow6 :
+    serre_D 12 (H₂ ^ 6) = (H₂ ^ 7) + (2 : ℂ) • (H₂ ^ 6 * H₄) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH2_pow5 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 5) := hH2.pow 5
+  have hmul' :
+      serre_D 12 (H₂ ^ 6) = (serre_D 10 (H₂ ^ 5)) * H₂ + (H₂ ^ 5) * (serre_D 2 H₂) := by
+    simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc,
+      show (10 : ℂ) + 2 = 12 by norm_num] using
+      (serre_D_mul (k₁ := (10 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 5) H₂ hH2_pow5 hH2)
+  rw [hmul', serre_D_ten_H₂_pow5, serre_D_two_H₂]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^5 * H₄` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_twelve_H₂pow5_mul_H₄ :
+    serre_D 12 (H₂ ^ 5 * H₄) = (1 / 2 : ℂ) • (H₂ ^ 6 * H₄) + (3 / 2 : ℂ) • (H₂ ^ 5 * H₄ ^ 2) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH2_pow5 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 5) := hH2.pow 5
+  have hmul' :
+      serre_D 12 (H₂ ^ 5 * H₄) = (serre_D 10 (H₂ ^ 5)) * H₄ + (H₂ ^ 5) * (serre_D 2 H₄) := by
+    simpa [show (10 : ℂ) + 2 = 12 by norm_num] using
+      (serre_D_mul (k₁ := (10 : ℤ)) (k₂ := (2 : ℤ)) (H₂ ^ 5) H₄ hH2_pow5 hH4)
+  rw [hmul', serre_D_ten_H₂_pow5, serre_D_two_H₄]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^4 * H₄^2` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_twelve_H₂pow4_mul_H₄sq :
+    serre_D 12 (H₂ ^ 4 * H₄ ^ 2) = H₂ ^ 4 * H₄ ^ 3 := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH2_pow4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 4) := hH2.pow 4
+  have hH4_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := hH4.pow 2
+  have hmul' :
+      serre_D 12 (H₂ ^ 4 * H₄ ^ 2) =
+        (serre_D 8 (H₂ ^ 4)) * (H₄ ^ 2) + (H₂ ^ 4) * (serre_D 4 (H₄ ^ 2)) := by
+    simpa [show (8 : ℂ) + 4 = 12 by norm_num] using
+      (serre_D_mul (k₁ := (8 : ℤ)) (k₂ := (4 : ℤ)) (H₂ ^ 4) (H₄ ^ 2) hH2_pow4 hH4_sq)
+  rw [hmul', serre_D_eight_H₂_pow4, serre_D_four_H₄_sq]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Serre derivative of `H₂^3 * H₄^3` (intermediate step toward `MLDE_G`). -/
+private lemma serre_D_twelve_H₂cube_mul_H₄cube :
+    serre_D 12 (H₂ ^ 3 * H₄ ^ 3) =
+      (-1 / 2 : ℂ) • (H₂ ^ 4 * H₄ ^ 3) + (1 / 2 : ℂ) • (H₂ ^ 3 * H₄ ^ 4) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH2_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := hH2.pow 3
+  have hH4_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 3) := hH4.pow 3
+  have hmul' :
       serre_D 12 (H₂ ^ 3 * H₄ ^ 3) =
-        (-1 / 2 : ℂ) • (H₂ ^ 4 * H₄ ^ 3) + (1 / 2 : ℂ) • (H₂ ^ 3 * H₄ ^ 4) := by
-    have hmul' :
-        serre_D 12 (H₂ ^ 3 * H₄ ^ 3) =
-          (serre_D 6 (H₂ ^ 3)) * (H₄ ^ 3) + (H₂ ^ 3) * (serre_D 6 (H₄ ^ 3)) := by
-      simpa [show (6 : ℂ) + 6 = 12 by norm_num] using
-        (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (6 : ℤ)) (H₂ ^ 3) (H₄ ^ 3) hH2_cube hH4_cube)
-    rw [hmul', hS6_H2_cube, hS6_H4_cube]
-    ext z
-    simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
-    ring_nf
-  -- Expand the outer Serre derivative using linearity, then rewrite each monomial Serre derivative.
-  have hH2_pow6 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 6) := by fun_prop
-  have hH2pow5_mul_H4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 5 * H₄) := hH2_pow5.mul hH4
-  have hH2pow4_mul_H4sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 4 * H₄ ^ 2) := hH2_pow4.mul hH4_sq
-  have hH2cube_mul_H4cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3 * H₄ ^ 3) := hH2_cube.mul hH4_cube
+        (serre_D 6 (H₂ ^ 3)) * (H₄ ^ 3) + (H₂ ^ 3) * (serre_D 6 (H₄ ^ 3)) := by
+    simpa [show (6 : ℂ) + 6 = 12 by norm_num] using
+      (serre_D_mul (k₁ := (6 : ℤ)) (k₂ := (6 : ℤ)) (H₂ ^ 3) (H₄ ^ 3) hH2_cube hH4_cube)
+  rw [hmul', serre_D_six_H₂_cube, serre_D_six_H₄_cube]
+  ext z
+  simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply]
+  ring_nf
+
+/-- Expand `serre_D 12 (serre_D 10 G)` as a linear combination of monomial Serre derivatives. -/
+private lemma serre_D_twelve_serre_D_ten_G_expand :
+    serre_D 12 (serre_D 10 G) =
+      (5 / 3 : ℂ) • (serre_D 12 (H₂ ^ 6)) +
+        (5 : ℂ) • (serre_D 12 (H₂ ^ 5 * H₄)) +
+        (5 : ℂ) • (serre_D 12 (H₂ ^ 4 * H₄ ^ 2)) +
+        (10 / 3 : ℂ) • (serre_D 12 (H₂ ^ 3 * H₄ ^ 3)) := by
+  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH2_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := hH2.pow 3
+  have hH2_pow4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 4) := hH2.pow 4
+  have hH2_pow5 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 5) := hH2.pow 5
+  have hH2_pow6 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 6) := hH2.pow 6
+  have hH4_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := hH4.pow 2
+  have hH4_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 3) := hH4.pow 3
   set U1 : UpperHalfPlane → ℂ := (5 / 3 : ℂ) • (H₂ ^ 6)
   set U2 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₂ ^ 5 * H₄)
   set U3 : UpperHalfPlane → ℂ := (5 : ℂ) • (H₂ ^ 4 * H₄ ^ 2)
   set U4 : UpperHalfPlane → ℂ := (10 / 3 : ℂ) • (H₂ ^ 3 * H₄ ^ 3)
   have hU1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U1 := hH2_pow6.const_smul _
-  have hU2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U2 := hH2pow5_mul_H4.const_smul _
-  have hU3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U3 := hH2pow4_mul_H4sq.const_smul _
-  have hU4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U4 := hH2cube_mul_H4cube.const_smul _
+  have hU2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U2 := (hH2_pow5.mul hH4).const_smul _
+  have hU3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U3 := (hH2_pow4.mul hH4_sq).const_smul _
+  have hU4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) U4 := (hH2_cube.mul hH4_cube).const_smul _
   have hU12 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (U1 + U2) := hU1.add hU2
   have hU123 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) ((U1 + U2) + U3) := hU12.add hU3
-  have hS12_S10_G :
-      serre_D 12 (serre_D 10 G) =
-        (5 / 3 : ℂ) • (serre_D 12 (H₂ ^ 6)) +
-          (5 : ℂ) • (serre_D 12 (H₂ ^ 5 * H₄)) +
-          (5 : ℂ) • (serre_D 12 (H₂ ^ 4 * H₄ ^ 2)) +
-          (10 / 3 : ℂ) • (serre_D 12 (H₂ ^ 3 * H₄ ^ 3)) := by
-    -- Start from the explicit formula for `serre_D 10 G` and distribute `serre_D 12` over the sum.
-    have hS10G' : serre_D 10 G = ((U1 + U2) + U3) + U4 := by
-      simpa [U1, U2, U3, U4, add_assoc] using hS10_G
-    rw [hS10G']
-    rw [serre_D_addC (k := (12 : ℂ)) ((U1 + U2) + U3) U4 hU123 hU4]
-    rw [serre_D_addC (k := (12 : ℂ)) (U1 + U2) U3 hU12 hU3]
-    rw [serre_D_addC (k := (12 : ℂ)) U1 U2 hU1 hU2]
-    -- Pull the scalar coefficients out.
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 / 3 : ℂ)) (H₂ ^ 6)]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 5 * H₄)]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 4 * H₄ ^ 2)]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (10 / 3 : ℂ)) (H₂ ^ 3 * H₄ ^ 3)]
-  -- Substitute the explicit monomial identities.
-  rw [hS12_S10_G, hS12_H2_pow6, hS12_H2pow5_mul_H4, hS12_H2pow4_mul_H4sq, hS12_H2cube_mul_H4cube]
-  -- Now everything is a polynomial identity in `H₂` and `H₄`, plus the standard level-1 objects.
+  have hS10G' : serre_D 10 G = ((U1 + U2) + U3) + U4 := by
+    simpa [U1, U2, U3, U4, add_assoc] using serre_D_ten_G
+  rw [hS10G']
+  rw [serre_D_addC (k := (12 : ℂ)) ((U1 + U2) + U3) U4 hU123 hU4]
+  rw [serre_D_addC (k := (12 : ℂ)) (U1 + U2) U3 hU12 hU3]
+  rw [serre_D_addC (k := (12 : ℂ)) U1 U2 hU1 hU2]
+  rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 / 3 : ℂ)) (H₂ ^ 6)]
+  rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 5 * H₄)]
+  rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 4 * H₄ ^ 2)]
+  rw [serre_D_smulC (k := (12 : ℂ)) (c := (10 / 3 : ℂ)) (H₂ ^ 3 * H₄ ^ 3)]
+
+/-- Modular linear differential equation satisfied by `G`. -/
+public theorem MLDE_G :
+    serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
+  -- The blueprint statement is `∂₁₂∂₁₀ G - (5/6)E₄·G = -640·Δ·H₂`.
+  -- Distribute `serre_D 12` over the four monomial summands of `serre_D 10 G`, then substitute
+  -- the explicit identities. The remaining pointwise identity is polynomial in `H₂` and `H₄`.
+  rw [serre_D_twelve_serre_D_ten_G_expand, serre_D_twelve_H₂_pow6, serre_D_twelve_H₂pow5_mul_H₄,
+    serre_D_twelve_H₂pow4_mul_H₄sq, serre_D_twelve_H₂cube_mul_H₄cube]
   ext z
   have hE4 := congrArg (fun f => f z) SpherePacking.ModularForms.E₄_eq_thetaE4
   have hE6 := congrArg (fun f => f z) SpherePacking.ModularForms.E₆_eq_thetaE6
   simp [SpherePacking.ModularForms.thetaE4, SpherePacking.ModularForms.thetaE6,
     smul_eq_mul] at hE4 hE6
-  simp [G, Δ_fun, U1, U2, U3, U4, hE4, hE6, smul_eq_mul,
-    Pi.mul_apply, Pi.add_apply, Pi.sub_apply] at *
+  simp [G, Δ_fun, hE4, hE6, smul_eq_mul, Pi.mul_apply, Pi.add_apply, Pi.sub_apply] at *
   ring_nf
 
 /- Positivity of (quasi)modular forms. $F, G, H_2$ are all (sum of) squares. -/

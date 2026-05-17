@@ -130,113 +130,125 @@ public lemma exists_ψI_bound_exp :
         have := mul_le_mul (hA0 z (le_trans (le_max_left _ _) hz))
           (hΔ z (le_trans (le_max_right _ _) hz)) (by positivity) (by positivity); linarith
 
-/-- Convergence of the Laplace integral defining `b'` (integrability on `(0, ∞)` for `u > 2`). -/
-public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
-    IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  have hu0 : 0 ≤ u := by linarith
+/-- Continuity of the Laplace integrand `bLaplaceIntegrand u` on `(0, ∞)`. -/
+public lemma continuousOn_bLaplaceIntegrand (u : ℝ) :
+    ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := fun t ht0 => by
+  have hψIcomp :
+      ContinuousAt (fun s : ℝ => ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) t :=
+    ContinuousAt.comp MagicFunction.b.PsiBounds.continuous_ψI.continuousAt
+      (ContinuousAt.comp (UpperHalfPlane.contMDiffAt_ofComplex (n := ⊤) (by simpa using ht0 :
+        0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im)).continuousAt
+        (by fun_prop : ContinuousAt (fun s : ℝ => (Complex.I : ℂ) * (s : ℂ)) t))
+  refine ((show ContinuousAt
+      (fun s : ℝ => (ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) *
+          (Real.exp (-π * u * s) : ℂ)) t by
+    simpa [mul_assoc] using hψIcomp.mul (by fun_prop :
+      ContinuousAt (fun s : ℝ => (Real.exp (-π * u * s) : ℂ)) t)).congr_of_eventuallyEq ?_
+    ).continuousWithinAt
+  filter_upwards [lt_mem_nhds ht0] with s hs
+  have hsIm : 0 < (((Complex.I : ℂ) * (s : ℂ) : ℂ)).im := by simpa using hs
+  simp [bLaplaceIntegrand, ψI', UpperHalfPlane.ofComplex_apply_of_im_pos hsIm, hs]
+
+/-- Integrability of `bLaplaceIntegrand u` on `(0, 1]` for `u ≥ 0`. Uses the `S`-slash-action of
+`ψS` to reduce the bound near `0` to the exponential decay of `ψS` at infinity. -/
+private lemma bLaplaceIntegrand_integrable_Ioc_zero_one {u : ℝ} (hu0 : 0 ≤ u) :
+    IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
   obtain ⟨Cψ, hCψ⟩ :=
     MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
   let Cψ0 : ℝ := max Cψ 0
   have hψS_bound (s : ℝ) (hs : 1 ≤ s) :
       ‖ψS.resToImagAxis s‖ ≤ Cψ0 * Real.exp (-π * s) :=
     (hCψ s hs).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
-  have hcontIoi : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
-      fun t ht0 => by
-    have hψIcomp :
-        ContinuousAt
-          (fun s : ℝ => ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) t :=
-      ContinuousAt.comp MagicFunction.b.PsiBounds.continuous_ψI.continuousAt
-        (ContinuousAt.comp (UpperHalfPlane.contMDiffAt_ofComplex (n := ⊤) (by simpa using ht0 :
-          0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im)).continuousAt
-          (by fun_prop : ContinuousAt (fun s : ℝ => (Complex.I : ℂ) * (s : ℂ)) t))
-    refine ((show ContinuousAt
-        (fun s : ℝ => (ψI (UpperHalfPlane.ofComplex ((Complex.I : ℂ) * (s : ℂ)))) *
-            (Real.exp (-π * u * s) : ℂ)) t by
-      simpa [mul_assoc] using hψIcomp.mul (by fun_prop :
-        ContinuousAt (fun s : ℝ => (Real.exp (-π * u * s) : ℂ)) t)).congr_of_eventuallyEq ?_
-      ).continuousWithinAt
-    filter_upwards [lt_mem_nhds ht0] with s hs
-    have hsIm : 0 < (((Complex.I : ℂ) * (s : ℂ) : ℂ)).im := by simpa using hs
-    simp [bLaplaceIntegrand, ψI', UpperHalfPlane.ofComplex_apply_of_im_pos hsIm, hs]
-  have hint_small : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) :=
-    IntegrableOn.of_bound measure_Ioc_lt_top
-      ((hcontIoi.mono fun t ht => ht.1).aestronglyMeasurable measurableSet_Ioc) Cψ0 <| by
-      refine ae_restrict_of_forall_mem measurableSet_Ioc fun t ht => ?_
-      have ht0 : 0 < t := ht.1
-      have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht.2
-      have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
-        simpa using (hψS_bound (1 / t : ℝ) ht').trans (mul_le_mul_of_nonneg_left
-          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
-            : Real.exp (-π * (1 / t : ℝ)) ≤ 1) (le_max_right _ _))
-      have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
-        rw [show ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t by
-            simp [ψI', Function.resToImagAxis, ResToImagAxis, ht0],
-          show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
-            simpa [zpow_two, pow_two, ψS_slash_S] using
-              ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0]
-        calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
-              = (t ^ (2 : ℕ)) * ‖ψS.resToImagAxis (1 / t)‖ := by simp
-          _ ≤ 1 * Cψ0 := mul_le_mul (by simpa using pow_le_one₀ (n := 2) ht0.le ht.2) hψS'
-            (norm_nonneg _) zero_le_one
-          _ = Cψ0 := one_mul _
-      calc ‖bLaplaceIntegrand u t‖
-            = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-              simp [bLaplaceIntegrand]
-        _ ≤ ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * 1 := mul_le_mul_of_nonneg_left (by
-              rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
-                simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)]
-              exact Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, mul_nonneg hu0 ht0.le]))
-              (norm_nonneg _)
-        _ ≤ Cψ0 := by simpa using hψI
-  rcases exists_ψI_bound_exp with ⟨CI, AI, hCI, hI⟩
-  let A : ℝ := max AI 1
+  refine IntegrableOn.of_bound measure_Ioc_lt_top
+    (((continuousOn_bLaplaceIntegrand u).mono fun t ht => ht.1).aestronglyMeasurable
+      measurableSet_Ioc) Cψ0 ?_
+  refine ae_restrict_of_forall_mem measurableSet_Ioc fun t ht => ?_
+  have ht0 : 0 < t := ht.1
+  have ht' : 1 ≤ (1 / t : ℝ) := by simpa [one_div] using (one_le_div ht0).2 ht.2
+  have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
+    simpa using (hψS_bound (1 / t : ℝ) ht').trans (mul_le_mul_of_nonneg_left
+      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
+        : Real.exp (-π * (1 / t : ℝ)) ≤ 1) (le_max_right _ _))
+  have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
+    rw [show ψI' ((Complex.I : ℂ) * (t : ℂ)) = ψI.resToImagAxis t by
+          simp [ψI', Function.resToImagAxis, ResToImagAxis, ht0],
+        show ψI.resToImagAxis t = (-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t) by
+          simpa [zpow_two, pow_two, ψS_slash_S] using
+            ResToImagAxis.SlashActionS (F := ψS) (k := (-2 : ℤ)) (t := t) ht0]
+    calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
+          = (t ^ (2 : ℕ)) * ‖ψS.resToImagAxis (1 / t)‖ := by simp
+      _ ≤ 1 * Cψ0 := mul_le_mul (by simpa using pow_le_one₀ (n := 2) ht0.le ht.2) hψS'
+        (norm_nonneg _) zero_le_one
+      _ = Cψ0 := one_mul _
+  calc ‖bLaplaceIntegrand u t‖
+        = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
+          simp [bLaplaceIntegrand]
+    _ ≤ ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * 1 := mul_le_mul_of_nonneg_left (by
+          rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
+            simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)]
+          exact Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, mul_nonneg hu0 ht0.le]))
+          (norm_nonneg _)
+    _ ≤ Cψ0 := by simpa using hψI
+
+/-- Integrability of `bLaplaceIntegrand u` on `(A, ∞)` whenever `AI ≤ A` and `ψI` enjoys the
+exponential growth bound `‖ψI z‖ ≤ CI * exp(2π z.im)` for `z.im ≥ AI`. -/
+private lemma bLaplaceIntegrand_integrable_Ioi_of_ψI_bound {u : ℝ} (hu : 2 < u)
+    {CI AI A : ℝ} (hCI : 0 < CI)
+    (hI : ∀ z : ℍ, AI ≤ z.im → ‖ψI z‖ ≤ CI * Real.exp (2 * π * z.im))
+    (hA0 : 0 < A) (hAAI : AI ≤ A) :
+    IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi A) := by
+  have hmeas : AEStronglyMeasurable (fun t : ℝ => bLaplaceIntegrand u t)
+        (volume.restrict (Set.Ioi A)) :=
+    ((continuousOn_bLaplaceIntegrand u).mono fun t ht =>
+      lt_trans hA0 ht).aestronglyMeasurable measurableSet_Ioi
+  have hdom :
+      ∀ᵐ t ∂(volume.restrict (Set.Ioi A)),
+        ‖bLaplaceIntegrand u t‖ ≤ ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ := by
+    refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
+    have ht0 : 0 < t := lt_trans hA0 ht
+    have htIm : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
+    calc ‖bLaplaceIntegrand u t‖
+          = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
+            simp [bLaplaceIntegrand]
+      _ = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * Real.exp (-π * u * t) := by
+            rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
+              simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)]
+      _ ≤ (CI * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
+            mul_le_mul_of_nonneg_right (by
+              simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
+                  ψI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ) from by simp [ψI', ht0],
+                UpperHalfPlane.im] using
+                hI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ)
+                  (by simpa [UpperHalfPlane.im] using hAAI.trans ht.le))
+              (Real.exp_pos _).le
+      _ = CI * Real.exp (-(π * (u - 2)) * t) := by
+            simpa [mul_assoc] using congrArg (fun x : ℝ => CI * x)
+              (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t)
+      _ = ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ := by
+            rw [norm_mul, show ‖(CI : ℂ)‖ = CI from by simp [abs_of_nonneg hCI.le],
+              show ‖(Real.exp (-(π * (u - 2)) * t) : ℂ)‖ = Real.exp (-(π * (u - 2)) * t) from by
+                simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-(π * (u - 2)) * t)]
+  exact MeasureTheory.Integrable.mono (μ := volume.restrict (Set.Ioi A))
+    (by simpa [IntegrableOn] using
+      (show IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) by
+        simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
+          (mul_pos Real.pi_pos (sub_pos.2 hu))).ofReal.const_mul (CI : ℂ))
+    hmeas hdom
+
+/-- Convergence of the Laplace integral defining `b'` (integrability on `(0, ∞)` for `u > 2`). -/
+public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
+    IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) := by
+  obtain ⟨CI, AI, hCI, hI⟩ := exists_ψI_bound_exp
+  set A : ℝ := max AI 1
+  have hA1 : (1 : ℝ) ≤ A := le_max_right _ _
   have hint_mid : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
-    ((hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num) ht.1).integrableOn_Icc
-      (μ := (volume : Measure ℝ))).mono_set Set.Ioc_subset_Icc_self
-  have hint_tail : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi A) := by
-    have hmeas : AEStronglyMeasurable (fun t : ℝ => bLaplaceIntegrand u t)
-          (volume.restrict (Set.Ioi A)) :=
-      (hcontIoi.mono fun t ht =>
-        lt_trans (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _))
-          ht).aestronglyMeasurable measurableSet_Ioi
-    have hdom :
-        ∀ᵐ t ∂(volume.restrict (Set.Ioi A)),
-          ‖bLaplaceIntegrand u t‖ ≤ ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ := by
-      refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
-      have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans ht.le)
-      have htIm : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
-      calc ‖bLaplaceIntegrand u t‖
-            = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-              simp [bLaplaceIntegrand]
-        _ = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * Real.exp (-π * u * t) := by
-              rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
-                simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)]
-        _ ≤ (CI * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
-              mul_le_mul_of_nonneg_right (by
-                simpa [show ψI' ((Complex.I : ℂ) * (t : ℂ)) =
-                    ψI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ) from by simp [ψI', ht0],
-                  UpperHalfPlane.im] using
-                  hI (⟨(Complex.I : ℂ) * (t : ℂ), htIm⟩ : ℍ)
-                    (by simpa [UpperHalfPlane.im] using (le_max_left _ _).trans ht.le))
-                (Real.exp_pos _).le
-        _ = CI * Real.exp (-(π * (u - 2)) * t) := by
-              simpa [mul_assoc] using congrArg (fun x : ℝ => CI * x)
-                (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t)
-        _ = ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ := by
-              rw [norm_mul, show ‖(CI : ℂ)‖ = CI from by simp [abs_of_nonneg hCI.le],
-                show ‖(Real.exp (-(π * (u - 2)) * t) : ℂ)‖ = Real.exp (-(π * (u - 2)) * t) from by
-                  simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-(π * (u - 2)) * t)]
-    exact MeasureTheory.Integrable.mono (μ := volume.restrict (Set.Ioi A))
-      (by simpa [IntegrableOn] using
-        (show IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) by
-          simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2))
-            (mul_pos Real.pi_pos (sub_pos.2 hu))).ofReal.const_mul (CI : ℂ))
-      hmeas hdom
-  rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) from by norm_num]
-  exact hint_small.union <| by
-    simpa [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A by
-      simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_right _ _)).symm]
-      using hint_mid.union hint_tail
+    (((continuousOn_bLaplaceIntegrand u).mono fun t ht =>
+      lt_of_lt_of_le zero_lt_one ht.1).integrableOn_Icc).mono_set Set.Ioc_subset_Icc_self
+  rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) from by norm_num,
+    show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from (Set.Ioc_union_Ioi_eq_Ioi hA1).symm]
+  exact (bLaplaceIntegrand_integrable_Ioc_zero_one (by linarith)).union (hint_mid.union
+    (bLaplaceIntegrand_integrable_Ioi_of_ψI_bound (u := u) hu hCI hI
+      (lt_of_lt_of_le zero_lt_one hA1) (le_max_left _ _)))
 
 /-! ## Contour integrands -/
 

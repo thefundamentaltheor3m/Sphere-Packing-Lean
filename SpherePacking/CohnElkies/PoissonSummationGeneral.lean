@@ -544,9 +544,13 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
             ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
           (norm_nonneg _) (by norm_num)).trans (one_mul _).le)
 
-lemma mFourierCoeff_descended (n : Fin d → ℤ) :
+/-- The `n`-th torus Fourier coefficient of `descended f` is the integral over the unit cube
+of `mFourier(-n)(coeFunE x)` times the periodization `∑' ℓ, f (x + ℓ)`. -/
+private lemma mFourierCoeff_descended_eq_iocCube_integral (n : Fin d → ℤ) :
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
-      𝓕 (fun x : E => f x) (intVec (d := d) n) := by
+      ∫ x in iocCube (d := d),
+        UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
+          (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E) := by
   have hpull : (∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y) =
         ∫ x in iocCube (d := d), UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) •
             descended (d := d) f (coeFunE (d := d) x) ∂(volume : Measure E) :=
@@ -554,6 +558,48 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
       (fun y => UnitAddTorus.mFourier (-n) y • descended f y)
       ((UnitAddTorus.mFourier (-n)).continuous.smul
         (descended (d := d) f).continuous).aestronglyMeasurable
+  calc
+    UnitAddTorus.mFourierCoeff (descended (d := d) f) n
+        = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
+            simp only [UnitAddTorus.mFourierCoeff, smul_eq_mul]
+            haveI : Fact (0 < (1 : ℝ)) := ⟨one_pos⟩
+            simp [show (@volume (UnitAddTorus (Fin d))
+                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
+                    (fun _ => instMeasureSpaceUnitAddCircle))) =
+                (@volume (UnitAddTorus (Fin d))
+                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
+                    (fun _ => AddCircle.measureSpace (1 : ℝ)))) from
+              congrArg Measure.pi (funext fun _ => by
+                change (AddCircle.haarAddCircle (T := (1 : ℝ)) : Measure UnitAddCircle) =
+                  (@volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ)))
+                simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle])]
+    _ = ∫ x in iocCube (d := d),
+          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) •
+            descended (d := d) f (coeFunE (d := d) x)
+            ∂(volume : Measure E) := by simpa using hpull
+    _ = _ :=
+          integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d))
+            fun _ _ => by simp [descended_comp (d := d) (f := f),
+              periodized_apply (d := d) (f := f), smul_eq_mul]
+
+/-- The integral over the unit cube of `mFourier(-n)(coeFunE x)` times the periodization of `f`
+equals the integral of `mFourier(-n)(coeFunE x) * f x` over the whole space, by swapping the
+integral with the lattice sum and applying the fundamental-domain property of `iocCube`. -/
+private lemma integral_iocCube_mFourier_periodized_eq_integral (n : Fin d → ℤ) :
+    (∫ x in iocCube (d := d),
+        UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
+          (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E)) =
+      ∫ x : E, UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x ∂(volume : Measure E) := by
+  have hint : Integrable
+      (fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x)
+      (volume : Measure E) := by
+    simpa using Integrable.bdd_mul (μ := (volume : Measure E))
+      (SchwartzMap.integrable (μ := (volume : Measure E)) f)
+      (((UnitAddTorus.mFourier (-n)).continuous.comp
+        (continuous_coeFunE (d := d))).aestronglyMeasurable)
+      (ae_of_all _ fun x => by
+        simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+          (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)))
   have hsum_int :
       (∫ x in iocCube (d := d),
             UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
@@ -573,80 +619,28 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               (integrableOn_mFourier_mul_translate_iocCube (d := d) (f := f) n ℓ))
           (by simpa [s] using
             (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n))).symm
-  have hint : Integrable
-      (fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x)
-      (volume : Measure E) := by
-    simpa using Integrable.bdd_mul (μ := (volume : Measure E))
-      (SchwartzMap.integrable (μ := (volume : Measure E)) f)
-      (((UnitAddTorus.mFourier (-n)).continuous.comp
-        (continuous_coeFunE (d := d))).aestronglyMeasurable)
-      (ae_of_all _ fun x => by
-        simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-          (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)))
-  have hFD' : ∑' ℓ : Λ,
-        ∫ x in iocCube (d := d),
-          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-            f (x + (ℓ : E)) ∂(volume : Measure E) =
-        ∫ x : E, UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x
-          ∂(volume : Measure E) := by
-    let g : E → ℂ := fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x
-    have hterm : ∀ ℓ : Λ,
-        (∫ x in iocCube (d := d), g (ℓ +ᵥ x) ∂(volume : Measure E)) =
-            ∫ x in iocCube (d := d),
-              UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-                f (x + (ℓ : E)) ∂(volume : Measure E) := fun ℓ =>
-      integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d)) fun x _ => by
-        simp [g, Submodule.vadd_def, vadd_eq_add, add_comm,
-          mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)]
-    have hres :
-        ∫ x : E, g x ∂(volume : Measure E) =
-          ∑' ℓ : ↥(SchwartzMap.standardLattice d),
-            ∫ x in iocCube (d := d), g (ℓ +ᵥ x) ∂(volume : Measure E) := by
-      have hs' : IsAddFundamentalDomain (SchwartzMap.standardLattice d).toAddSubgroup
-          (iocCube (d := d)) (volume : Measure E) :=
-        isAddFundamentalDomain_iocCube (d := d)
-      haveI : Countable (SchwartzMap.standardLattice d).toAddSubgroup :=
-        inferInstanceAs (Countable (SchwartzMap.standardLattice d))
-      exact (hs'.integral_eq_tsum'' g hint).trans (tsum_congr fun _ => rfl)
-    simpa [g, hterm] using hres.symm
-  calc
-    UnitAddTorus.mFourierCoeff (descended (d := d) f) n
-        = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
-            simp only [UnitAddTorus.mFourierCoeff, smul_eq_mul]
-            haveI : Fact (0 < (1 : ℝ)) := ⟨one_pos⟩
-            simp [show (@volume (UnitAddTorus (Fin d))
-                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
-                    (fun _ => instMeasureSpaceUnitAddCircle))) =
-                (@volume (UnitAddTorus (Fin d))
-                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
-                    (fun _ => AddCircle.measureSpace (1 : ℝ)))) from
-              congrArg Measure.pi (funext fun _ => by
-                change (AddCircle.haarAddCircle (T := (1 : ℝ)) : Measure UnitAddCircle) =
-                  (@volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ)))
-                simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle])]
-    _ = ∫ x in iocCube (d := d),
-          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) •
-            descended (d := d) f (coeFunE (d := d) x)
-            ∂(volume : Measure E) := by
-          simpa using hpull
-    _ = ∫ x in iocCube (d := d),
-          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-            (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E) :=
-          integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d))
-            fun _ _ => by simp [descended_comp (d := d) (f := f),
-              periodized_apply (d := d) (f := f), smul_eq_mul]
-    _ = ∑' ℓ : Λ,
+  let g : E → ℂ := fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x
+  have hterm : ∀ ℓ : Λ,
+      (∫ x in iocCube (d := d), g (ℓ +ᵥ x) ∂(volume : Measure E)) =
           ∫ x in iocCube (d := d),
             UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-              f (x + (ℓ : E)) ∂(volume : Measure E) := by
-          simpa using hsum_int
-    _ = ∫ x : E,
-          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x
-            ∂(volume : Measure E) := by
-          simpa using hFD'
-    _ = 𝓕 (fun x : E => f x) (intVec (d := d) n) := by
-          simp [Real.fourier_eq, Circle.smul_def, smul_eq_mul,
-            mFourier_neg_apply_coeFunE (d := d) (n := n)]
+              f (x + (ℓ : E)) ∂(volume : Measure E) := fun ℓ =>
+    integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d)) fun x _ => by
+      simp [g, Submodule.vadd_def, vadd_eq_add, add_comm,
+        mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)]
+  haveI : Countable (SchwartzMap.standardLattice d).toAddSubgroup :=
+    inferInstanceAs (Countable (SchwartzMap.standardLattice d))
+  rw [hsum_int]
+  simpa [g, hterm] using
+    ((isAddFundamentalDomain_iocCube (d := d)).integral_eq_tsum'' g hint).symm
+
+lemma mFourierCoeff_descended (n : Fin d → ℤ) :
+    UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
+      𝓕 (fun x : E => f x) (intVec (d := d) n) := by
+  rw [mFourierCoeff_descended_eq_iocCube_integral (d := d) (f := f) (n := n),
+      integral_iocCube_mFourier_periodized_eq_integral (d := d) (f := f) (n := n)]
+  simp [Real.fourier_eq, Circle.smul_def, smul_eq_mul,
+    mFourier_neg_apply_coeFunE (d := d) (n := n)]
 
 lemma summable_mFourierCoeff_descended :
     Summable (UnitAddTorus.mFourierCoeff (descended (d := d) f)) := by
