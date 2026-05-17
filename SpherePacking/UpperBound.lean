@@ -861,56 +861,73 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C :=
         have htic := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
         simpa [z₅'_eq_of_mem (t := t) htic, Complex.norm_real, abs_of_nonneg htic.1] using htic.2))
 
+/-- The `J₆'C` integrand reduces on `[1, ∞)` to a clean exponential form using `ψS.resToImagAxis`.
+
+Packages `z₆' t = I * t`, `ψS' (I * t) = ψS.resToImagAxis t` and
+`exp (π * I * u * (I * t)) = exp (u * (-π * t))` for `t ≥ 1`. -/
+private lemma J₆'C_eq_integral_Ici_one (u : ℂ) :
+    J₆'C u = -2 * ∫ t in Set.Ici (1 : ℝ),
+      (Complex.I : ℂ) * ψS.resToImagAxis t * Complex.exp (u * (-(π : ℂ) * (t : ℂ))) := by
+  refine congrArg ((-2 : ℂ) * ·) (MeasureTheory.integral_congr_ae <|
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
+  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
+  have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
+  have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
+    simp [ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
+  have hIexp : u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
+        u * (-((π : ℂ) * (t : ℂ))) := by ring_nf; simp [Complex.I_sq]
+  simp [hz, hψ', hIexp, mul_left_comm, mul_comm]
+
 set_option maxHeartbeats 1000000 in
 -- Elaborates a parametric differentiation-under-the-integral argument with several typeclass
 -- inferences over `μIciOne`/`volume`, exceeding the default heartbeat budget.
-lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fun u0 hu0 => by
+/-- The parametric integral `u ↦ ∫ t in [1, ∞), g t * exp (u * (-π * t))` is differentiable
+on the right half-plane whenever `g` is continuous on `[1, ∞)` and bounded there.
+
+This is the core analytic content of `J₆'C_differentiableOn`: a differentiation-under-the-integral
+argument dominated by `(M * π) * t * exp (-(π * ε) * t)` on a small ball around any `u₀` with
+`0 < u₀.re`. -/
+private lemma differentiableOn_integral_Ici_one_exp_neg_pi
+    {g : ℝ → ℂ} {M : ℝ} (hg_cont : ContinuousOn g (Set.Ici (1 : ℝ)))
+    (hg_bound : ∀ t : ℝ, 1 ≤ t → ‖g t‖ ≤ M) :
+    DifferentiableOn ℂ
+      (fun u => ∫ t in Set.Ici (1 : ℝ), g t * Complex.exp (u * (-(π : ℂ) * (t : ℂ))))
+      rightHalfPlane := fun u0 hu0 => by
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
   let μ : Measure ℝ := μIciOne
-  have hψS'_eq : ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ψS' (z₆' t) = ψS.resToImagAxis t := fun t ht => by
-    have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-    simp [show z₆' t = (Complex.I : ℂ) * (t : ℂ) by simpa using (z₆'_eq_of_mem (t := t) ht),
-      ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
-  let base : ℝ → ℂ := fun t => (Complex.I : ℂ) * ψS.resToImagAxis t
   let k : ℝ → ℂ := fun t => (-(π : ℂ)) * (t : ℂ)
-  let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
-  let F' : ℂ → ℝ → ℂ := fun u t => base t * k t * Complex.exp (u * k t)
-  have hcont_base : ContinuousOn base (Set.Ici (1 : ℝ)) := by
-    simpa [base] using continuousOn_const.mul (Function.continuousOn_resToImagAxis_Ici_one_of
-      (F := ψS) MagicFunction.b.PsiBounds.continuous_ψS)
+  let F : ℂ → ℝ → ℂ := fun u t => g t * Complex.exp (u * k t)
+  let F' : ℂ → ℝ → ℂ := fun u t => g t * k t * Complex.exp (u * k t)
   have hk_cont : ContinuousOn k (Set.Ici (1 : ℝ)) := by fun_prop
   have hExp : ∀ u : ℂ, ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)) :=
     fun u => ContinuousOn.cexp (continuousOn_const.mul hk_cont)
   have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ := .of_forall fun u => by
-    simpa [μ] using ((hcont_base.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
+    simpa [μ] using ((hg_cont.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
   have hF'_meas : AEStronglyMeasurable (F' u0) μ := by simpa [F', μ, mul_assoc] using
-    ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable (μ := volume) measurableSet_Ici
-  obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
-  have hbase_bound : ∀ t : ℝ, 1 ≤ t → ‖base t‖ ≤ Mψ := fun t ht => by
-    simpa [base, norm_mul] using mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ))
+    ((hg_cont.mul hk_cont).mul (hExp u0)).aestronglyMeasurable (μ := volume) measurableSet_Ici
   have hF_int : Integrable (F u0) μ := by
     let b : ℝ := Real.pi * u0.re
     refine Integrable.mono' (by
       simpa [μ, MeasureTheory.IntegrableOn, pow_zero, one_mul] using
         ((SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := b)
-          (by positivity)) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul Mψ :
-      Integrable (fun t : ℝ => Mψ * Real.exp (-b * t)) μ) hF_meas.self_of_nhds
+          (by positivity)) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul M :
+      Integrable (fun t : ℝ => M * Real.exp (-b * t)) μ) hF_meas.self_of_nhds
       ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
       simp [Complex.norm_exp, mul_re, show (k t).re = -Real.pi * t by simp [k],
         show (k t).im = 0 by simp [k], b, mul_left_comm, mul_comm]
-    rw [show ‖F u0 t‖ = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ by simp [F], hexp]
-    exact mul_le_mul_of_nonneg_right (hbase_bound t ht) (Real.exp_pos _).le
+    rw [show ‖F u0 t‖ = ‖g t‖ * ‖Complex.exp (u0 * k t)‖ by simp [F], hexp]
+    exact mul_le_mul_of_nonneg_right (hg_bound t ht) (Real.exp_pos _).le
   let ε : ℝ := u0.re / 2
   have ε_pos : 0 < ε := div_pos hu0re (by norm_num)
-  let b : ℝ := Real.pi * ε; let bound : ℝ → ℝ := fun t => (Mψ * Real.pi) * t * Real.exp (-b * t)
+  let b : ℝ := Real.pi * ε; let bound : ℝ → ℝ := fun t => (M * Real.pi) * t * Real.exp (-b * t)
   have bound_int : Integrable bound μ := by
     simpa [μ, MeasureTheory.IntegrableOn, bound, mul_assoc, mul_left_comm, mul_comm] using
       (by simpa [pow_one] using
           (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 1) (b := b)
             (by positivity)) :
         IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ici (1 : ℝ))
-          (volume : Measure ℝ)).const_mul (Mψ * Real.pi)
+          (volume : Measure ℝ)).const_mul (M * Real.pi)
   have hre_lower : ∀ u : ℂ, u ∈ Metric.ball u0 ε → (u0.re / 2) ≤ u.re := fun u hu => by
     have hu' : ‖u - u0‖ < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hu
     have hre : |u.re - u0.re| ≤ ‖u - u0‖ := by simpa using abs_re_le_norm (u - u0)
@@ -928,38 +945,37 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := fu
       have hk_norm : ‖k t‖ = Real.pi * t := by
         simp [k, Complex.norm_real, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg ht0, mul_comm]
       calc ‖F' u t‖
-          = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by simp [F', mul_assoc]
-        _ ≤ Mψ * ((Real.pi * t) * Real.exp (-b * t)) := by
+          = ‖g t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by simp [F', mul_assoc]
+        _ ≤ M * ((Real.pi * t) * Real.exp (-b * t)) := by
             simpa [mul_assoc, mul_left_comm, mul_comm] using
               (mul_le_mul_of_nonneg_left (mul_le_mul (le_of_eq hk_norm) hexp_le (norm_nonneg _)
-                (mul_nonneg Real.pi_pos.le ht0)) (norm_nonneg (base t))).trans
-                (mul_le_mul_of_nonneg_right (hbase_bound t ht) (by positivity))
+                (mul_nonneg Real.pi_pos.le ht0)) (norm_nonneg (g t))).trans
+                (mul_le_mul_of_nonneg_right (hg_bound t ht) (by positivity))
         _ = bound t := by simp [bound, mul_assoc, mul_left_comm, mul_comm]
   have h_diff : ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε,
       HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
     .of_forall fun t u _ => by simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
       (HasDerivAt.comp u (Complex.hasDerivAt_exp (u * k t))
-        (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
-  have h :=
-    hasDerivAt_integral_of_dominated_loc_of_deriv_le
-      (μ := μ) (F := F) (x₀ := u0) (s := Metric.ball u0 ε) (hs := Metric.ball_mem_nhds u0 ε_pos)
-      (bound := bound) (hF_meas := hF_meas) (hF_int := hF_int) (hF'_meas := hF'_meas)
-      (h_bound := h_bound) (bound_integrable := bound_int) (h_diff := h_diff)
-  have hEq : (fun u : ℂ => (-2 : ℂ) * ∫ t, F u t ∂μ) = J₆'C := by
-    funext u
-    simp only [J₆'C, μ]
-    have hμ : (∫ t, F u t ∂μIciOne) = ∫ t in Set.Ici (1 : ℝ), F u t := by simp [μIciOne]
-    rw [hμ]
-    refine congrArg ((-2 : ℂ) * ·) (MeasureTheory.integral_congr_ae <|
-      (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
-    have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
-    have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
-      simpa [hz] using hψS'_eq t ht
-    have hIexp' : u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
-          -(u * ((t : ℂ) * (π : ℂ))) := by ring_nf; simp [Complex.I_sq]
-    simp [F, base, k, hz, hψ', hIexp', mul_left_comm, mul_comm]
-  exact (hEq ▸ (h.2.differentiableAt.const_mul (-2 : ℂ)) : DifferentiableAt ℂ J₆'C u0)
-    |>.differentiableWithinAt
+        (hasDerivAt_mul_const (k t) (x := u))).const_mul (g t)
+  have h := hasDerivAt_integral_of_dominated_loc_of_deriv_le
+    (μ := μ) (F := F) (x₀ := u0) (s := Metric.ball u0 ε) (hs := Metric.ball_mem_nhds u0 ε_pos)
+    (bound := bound) (hF_meas := hF_meas) (hF_int := hF_int) (hF'_meas := hF'_meas)
+    (h_bound := h_bound) (bound_integrable := bound_int) (h_diff := h_diff)
+  have hμ : (fun u : ℂ => ∫ t, F u t ∂μ) =
+      fun u => ∫ t in Set.Ici (1 : ℝ), g t * Complex.exp (u * (-(π : ℂ) * (t : ℂ))) :=
+    funext fun u => by simp [F, k, μ, μIciOne]
+  exact (hμ ▸ h.2.differentiableAt).differentiableWithinAt
+
+lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
+  obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
+  have h := differentiableOn_integral_Ici_one_exp_neg_pi (M := Mψ)
+    (g := fun t => (Complex.I : ℂ) * ψS.resToImagAxis t)
+    ((continuousOn_const (c := (Complex.I : ℂ))).mul
+      (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS)
+        MagicFunction.b.PsiBounds.continuous_ψS))
+    (fun t ht => by simpa [norm_mul] using
+      mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ)))
+  exact (funext J₆'C_eq_integral_Ici_one : J₆'C = _) ▸ h.const_mul (-2 : ℂ)
 
 /-- `bPrimeC` is analytic on the right half-plane. -/
 public lemma bPrimeC_analyticOnNhd : AnalyticOnNhd ℂ bPrimeC rightHalfPlane := by
