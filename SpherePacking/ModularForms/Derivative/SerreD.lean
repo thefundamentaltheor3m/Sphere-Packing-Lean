@@ -34,9 +34,6 @@ Re-exports mathlib's `Derivative.serreDerivative`. -/
 lemma serre_D_apply (k : ℂ) (F : ℍ → ℂ) (z : ℍ) :
     serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z := rfl
 
-public lemma serre_D_eq (k : ℂ) (F : ℍ → ℂ) :
-    serre_D k F = fun z => D F z - k * 12⁻¹ * E₂ z * F z := rfl
-
 /-- Compatibility of `serre_D` with addition. -/
 public theorem serre_D_add (k : ℤ) (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
     serre_D k (F + G) = serre_D k F + serre_D k G :=

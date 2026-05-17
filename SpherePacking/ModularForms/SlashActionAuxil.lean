@@ -75,7 +75,7 @@ variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
 
 open ModularForm
 
-theorem modular_negI_smul : negI.1 • z = z := by
+private theorem modular_negI_smul : negI.1 • z = z := by
   simp [specialLinearGroup_apply, negI]
 
 /-- If `k` is even, then the slash action by `-I` is the identity. -/

@@ -329,7 +329,7 @@ private lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
     (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Tendsto f atImInfty (𝓝 c)) :
     Tendsto (serre_D k f) atImInfty (𝓝 (-(k : ℂ) * c / 12)) := by
-  rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
+  rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from rfl]
   have hD := D_tendsto_zero_of_isBoundedAtImInfty hf_holo hf_bdd
   have hprod := tendsto_E₂_atImInfty.mul hf_lim
   have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * c = -(k : ℂ) * c / 12 := by ring

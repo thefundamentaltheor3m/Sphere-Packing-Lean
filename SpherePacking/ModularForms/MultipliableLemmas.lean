@@ -12,7 +12,6 @@ expansions (notably eta and delta product formulas).
 ## Main statements
 * `MultipliableEtaProductExpansion`
 * `MultipliableDeltaProductExpansion_pnat`
-* `Multipliable_pow`
 -/
 
 open scoped BigOperators Real
@@ -43,13 +42,9 @@ public lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
     (f := fun n : ℕ ↦ (1 - cexp (2 * π * Complex.I * n * z)))).2 ?_
   simpa using MultipliableEtaProductExpansion z
 
-/-- If `f` is multipliable, then so is `fun i => f i ^ n`. -/
-public lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : ℕ) :
-    Multipliable (fun i => f i ^ n) := by
-  simpa using hf.map (g := powMonoidHom n) (hg := by simpa using continuous_pow n)
-
 /-- The delta product factors `∏ (1 - exp(2π i n z))^24` form a convergent infinite product. -/
 public lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
-    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) :=
-  Multipliable_pow _ (MultipliableEtaProductExpansion_pnat z) 24
+    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
+  simpa using (MultipliableEtaProductExpansion_pnat z).map
+    (g := powMonoidHom 24) (hg := by simpa using continuous_pow 24)
 
