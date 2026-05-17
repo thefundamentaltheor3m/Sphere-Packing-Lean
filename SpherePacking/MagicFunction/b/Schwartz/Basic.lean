@@ -195,6 +195,40 @@ private lemma decay_J₆'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ 
     _ = ((Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ) *
           Real.exp (-Real.pi * x) := by ring
 
+/-- For `0 ≤ x`, the iterated derivative of `J₆'` equals `G n x`. -/
+private lemma iteratedDeriv_J₆'_eq_G {n : ℕ} {x : ℝ} (hx : 0 ≤ x) :
+    iteratedDeriv n RealIntegrals.J₆' x = G n x := by
+  simpa [show RealIntegrals.J₆' = G 0 from funext J₆'_eq_G0] using
+    (iteratedDeriv_G_eq (n := n) (m := 0)) (lt_of_lt_of_le (by norm_num) hx : x ∈ s)
+
+/-- `G n x` is bounded by `2 * Kn * exp(-πx)` where `Kn := ∫ π^n * (t^n * exp(-πt)) * Cψ ∂μ`. -/
+private lemma decay_J₆'_G_norm_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
+    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
+    ‖G n x‖ ≤
+      2 * (∫ t, (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ ∂μ) *
+        Real.exp (-Real.pi * x) := by
+  set bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ with hbnd
+  have hbound_int : Integrable bound μ := by
+    simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
+      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
+        Real.pi_pos).const_mul ((Real.pi ^ n) * Cψ)
+  have hFn : ‖F n x‖ ≤ (∫ t, bound t ∂μ) * Real.exp (-Real.pi * x) := calc
+    ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
+          simpa [show F n x = ∫ t, gN n x t ∂μ by simp [F, μ, μIciOne]] using
+            (norm_integral_le_integral_norm (μ := μ) (f := gN n x))
+    _ ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ :=
+          integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
+            (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+              hbound_int.mul_const (Real.exp (-Real.pi * x)))
+            (decay_J₆'_norm_gN_bound n hx hCψ0 hCψ)
+    _ = (∫ t, bound t ∂μ) * Real.exp (-Real.pi * x) :=
+          integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound)
+  calc ‖G n x‖
+      ≤ 2 * ((∫ t, bound t ∂μ) * Real.exp (-Real.pi * x)) := by
+        simpa [G, norm_mul, mul_assoc] using
+          mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
+    _ = 2 * (∫ t, bound t ∂μ) * Real.exp (-Real.pi * x) := by ring
+
 /-- Schwartz-type decay bounds for `RealIntegrals.J₆'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₆' : ∀ (k n : ℕ),
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := fun k n => by
@@ -204,42 +238,18 @@ public theorem decay_J₆' : ∀ (k n : ℕ),
   have hCψ0 : 0 ≤ Cψ := SpherePacking.ForMathlib.nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
     (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
     (by simpa using hCψ 1 le_rfl)
-  let bound : ℝ → ℝ := fun t ↦ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ
-  have hbound_int : Integrable bound μ := by
-    simpa [bound, mul_assoc, mul_left_comm, mul_comm, IntegrableOn, μ, μIciOne] using
-      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := Real.pi)
-        Real.pi_pos).const_mul ((Real.pi ^ n) * Cψ)
-  let Kn : ℝ := ∫ t, bound t ∂μ
+  set Kn : ℝ := ∫ t, (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ ∂μ with hKn
   have hKn_nonneg : 0 ≤ Kn := integral_nonneg_of_ae <|
     (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall fun t ht => by
       have : 0 ≤ t := zero_le_one.trans ht; positivity
   refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
-    have hFn : ‖F n x‖ ≤ Kn * Real.exp (-Real.pi * x) := calc
-      ‖F n x‖ ≤ ∫ t, ‖gN n x t‖ ∂μ := by
-            simpa [show F n x = ∫ t, gN n x t ∂μ by simp [F, μ, μIciOne]] using
-              (norm_integral_le_integral_norm (μ := μ) (f := gN n x))
-      _ ≤ ∫ t, bound t * Real.exp (-Real.pi * x) ∂μ :=
-            integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg (gN n x t))
-              (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-                hbound_int.mul_const (Real.exp (-Real.pi * x)))
-              (decay_J₆'_norm_gN_bound n hx hCψ0 hCψ)
-      _ = Kn * Real.exp (-Real.pi * x) := by simpa [Kn] using
-            (integral_mul_const (μ := μ) (r := Real.exp (-Real.pi * x)) (f := bound))
-    calc ‖G n x‖
-        ≤ 2 * (Kn * Real.exp (-Real.pi * x)) := by
-          simpa [G, norm_mul, mul_assoc] using
-            mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
-      _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖
         = x ^ k * ‖G n x‖ := by
           simp [Real.norm_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-            show iteratedDeriv n RealIntegrals.J₆' x = G n x by
-              simpa [show RealIntegrals.J₆' = G 0 from funext J₆'_eq_G0] using
-                (iteratedDeriv_G_eq (n := n) (m := 0))
-                  (lt_of_lt_of_le (by norm_num) hx : x ∈ s)]
-    _ ≤ x ^ k * (2 * Kn * Real.exp (-Real.pi * x)) := by gcongr
+            iteratedDeriv_J₆'_eq_G hx]
+    _ ≤ x ^ k * (2 * Kn * Real.exp (-Real.pi * x)) := by
+          gcongr; exact decay_J₆'_G_norm_bound n hx hCψ0 hCψ
     _ = (2 * Kn) * (x ^ k * Real.exp (-Real.pi * x)) := by ring
     _ ≤ (2 * Kn) * B :=
       mul_le_mul_of_nonneg_left (hB x hx) (by positivity)
@@ -692,9 +702,42 @@ public theorem contDiff_integral
         simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
           continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le n x)
 
+/-- The `n`-th iterated derivative of `x ↦ I 0 x` equals `x ↦ I n x`. -/
+private lemma iteratedDeriv_I_eq
+    (continuous_hf : Continuous hf) (continuous_coeff : Continuous coeff)
+    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
+    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) (n : ℕ) :
+    iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
+      fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x := by
+  simpa using SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+    (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
+    (fun n x => by
+      simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
+        continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x)) n
+
+/-- Pointwise bound on `‖I n x‖` when `Re (coeff t) = -π` and `coeff`, `hf` are bounded. -/
+private lemma norm_I_le_of_coeff_re
+    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
+    (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ))
+    {Mh : ℝ} (hMh : ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ Mh) (n : ℕ) (x : ℝ) :
+    ‖I (coeff := coeff) (hf := hf) n x‖ ≤
+      (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
+  rw [I]
+  refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
+    (C := (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x))
+    (f := fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t) (fun t ht => ?_)).trans_eq (by simp)
+  have hmul : ‖coeff t‖ ^ n * ‖hf t‖ ≤ (2 * Real.pi) ^ n * Mh :=
+    mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n) (hMh t ht)
+      (norm_nonneg _) (pow_nonneg (by positivity : 0 ≤ 2 * Real.pi) _)
+  calc ‖gN (coeff := coeff) (hf := hf) n x t‖
+      = ‖coeff t‖ ^ n * ‖hf t‖ * ‖cexp ((x : ℂ) * coeff t)‖ := by
+        simp [gN, g, norm_pow, mul_left_comm, mul_comm, mul_assoc]
+    _ ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
+        simpa [mul_assoc, Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm] using
+          mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t)))
+
 /-- One-sided decay for `I 0 x`, specialized when `Re (coeff t) = -π` for all `t`. -/
-public theorem decay_integral_of_coeff_re
-    (continuous_hf : Continuous hf)
+public theorem decay_integral_of_coeff_re (continuous_hf : Continuous hf)
     (continuous_coeff : Continuous coeff)
     (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
@@ -702,45 +745,20 @@ public theorem decay_integral_of_coeff_re
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C :=
     fun k n => by
-  obtain ⟨B, hB⟩ :=
-    SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul (k := k) (b := Real.pi) Real.pi_pos
+  obtain ⟨B, hB⟩ := SpherePacking.ForMathlib.exists_bound_pow_mul_exp_neg_mul
+    (k := k) (b := Real.pi) Real.pi_pos
   obtain ⟨Mh, hMh⟩ := exists_bound_norm_h
   have hMh0 : 0 ≤ Mh := (norm_nonneg (hf 1)).trans (hMh 1 (by simp))
-  have norm_cexp : ∀ x t : ℝ, ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x) := fun x t => by
-    simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm]
+  have hrepr := iteratedDeriv_I_eq continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le n
   refine ⟨(2 * Real.pi) ^ n * Mh * B, fun x hx => ?_⟩
-  have hrepr := congrArg (fun f : ℝ → ℂ => f x) <|
-    show iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
-        fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x by
-      simpa using
-        SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
-          (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
-          (fun n x => by
-            simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
-              continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n) (x₀ := x)) n
-  have hnormI :
-      ‖I (coeff := coeff) (hf := hf) n x‖ ≤
-        (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
-    rw [I]
-    refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
-      (C := (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x))
-      (f := fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t) (fun t ht => ?_)).trans_eq (by simp)
-    have hmul : ‖coeff t‖ ^ n * ‖hf t‖ ≤ (2 * Real.pi) ^ n * Mh :=
-      mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n) (hMh t ht)
-        (norm_nonneg _) (pow_nonneg (by positivity : 0 ≤ 2 * Real.pi) _)
-    calc ‖gN (coeff := coeff) (hf := hf) n x t‖
-        = ‖coeff t‖ ^ n * ‖hf t‖ * ‖cexp ((x : ℂ) * coeff t)‖ := by
-          simp [gN, g, norm_pow, mul_left_comm, mul_comm, mul_assoc]
-      _ ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
-          simpa [mul_assoc, norm_cexp] using
-            mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t)))
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖
       = x ^ k * ‖I (coeff := coeff) (hf := hf) n x‖ := by
-        simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hrepr]
-    _ ≤ x ^ k * ((2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x)) := by gcongr
+        simp [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
+          congrFun hrepr x]
+    _ ≤ x ^ k * ((2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x)) := by
+        gcongr; exact norm_I_le_of_coeff_re coeff_norm_le coeff_re hMh n x
     _ = (2 * Real.pi) ^ n * Mh * (x ^ k * Real.exp (-Real.pi * x)) := by ring
-    _ ≤ (2 * Real.pi) ^ n * Mh * B :=
-        mul_le_mul_of_nonneg_left (hB x hx)
+    _ ≤ (2 * Real.pi) ^ n * Mh * B := mul_le_mul_of_nonneg_left (hB x hx)
           (mul_nonneg (pow_nonneg (by positivity) n) hMh0)
 
 end SpherePacking.Integration.SmoothIntegralCommon

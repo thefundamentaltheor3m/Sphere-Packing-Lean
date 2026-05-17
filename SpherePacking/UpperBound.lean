@@ -1169,6 +1169,34 @@ private lemma corrIntegral_arithmetic (u : ℝ) :
   field_simp
   ring
 
+/-- Linearisation: the integral of `(c36 * exp(2πt) - c8640 * t + c18144) * exp(-πut)` over
+`Ioi 0` splits as `c36 * I2 + (-c8640) * I1 + c18144 * I0`. -/
+private lemma corrIntegral_linearise (u : ℝ) (c36 c8640 c18144 : ℂ)
+    (hExpInt : IntegrableOn (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
+    (hTExpInt : IntegrableOn (fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ)))
+    (h2ExpInt : IntegrableOn
+        (fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) (Set.Ioi (0 : ℝ))) :
+    (∫ t in Set.Ioi (0 : ℝ),
+        (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
+      c36 * (∫ t in Set.Ioi (0 : ℝ), (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)) +
+        (-c8640) * (∫ t in Set.Ioi (0 : ℝ), (t * Real.exp (-π * u * t) : ℂ)) +
+        c18144 * (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
+  let f0 : ℝ → ℂ := fun t : ℝ => (Real.exp (-π * u * t) : ℂ)
+  let f1 : ℝ → ℂ := fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)
+  let f2 : ℝ → ℂ := fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)
+  rw [show (∫ t in Set.Ioi (0 : ℝ),
+      (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
+      ∫ t in Set.Ioi (0 : ℝ), ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) from
+    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by
+      funext t; exact corrIntegrand_split u c36 c8640 c18144 t]
+  have hI (f : ℝ → ℂ) (hf : IntegrableOn f (Set.Ioi (0 : ℝ))) : Integrable f μIoi0 := by
+    simpa [MeasureTheory.IntegrableOn, μIoi0] using hf
+  change (∫ t, ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) ∂ μIoi0) = _
+  rw [integral_add_add (μ := μIoi0) ((hI f2 h2ExpInt).const_mul c36)
+      ((hI f1 hTExpInt).const_mul (-c8640)) ((hI f0 hExpInt).const_mul c18144),
+    integral_const_mul c36 f2, integral_const_mul (-c8640) f1, integral_const_mul c18144 f0]
+  rfl
+
 lemma corrIntegral_eval {u : ℝ}
     {c36 c8640 c18144 : ℂ}
     (hc36 : c36 = ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
@@ -1191,31 +1219,8 @@ lemma corrIntegral_eval {u : ℝ}
       (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
         (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
           (18144 : ℂ) / (π ^ (3 : ℕ) * u) := by
-  rw [hcorr]
-  let f0 : ℝ → ℂ := fun t : ℝ => (Real.exp (-π * u * t) : ℂ)
-  let f1 : ℝ → ℂ := fun t : ℝ => (t * Real.exp (-π * u * t) : ℂ)
-  let f2 : ℝ → ℂ := fun t : ℝ => (Real.exp (2 * π * t) * Real.exp (-π * u * t) : ℂ)
-  rw [show (∫ t in Set.Ioi (0 : ℝ),
-      (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
-      ∫ t in Set.Ioi (0 : ℝ), ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) from
-    congrArg (integral (volume.restrict (Set.Ioi 0))) <| by
-      funext t; exact corrIntegrand_split u c36 c8640 c18144 t]
-  change (∫ t, ((c36 * f2 t + (-c8640) * f1 t) + c18144 * f0 t) ∂ μIoi0) =
-    (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-      (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) + (18144 : ℂ) / (π ^ (3 : ℕ) * u)
-  have hI (f : ℝ → ℂ) (hf : IntegrableOn f (Set.Ioi (0 : ℝ))) : Integrable f μIoi0 := by
-    simpa [MeasureTheory.IntegrableOn, μIoi0] using hf
-  rw [integral_add_add (μ := μIoi0) ((hI f2 h2ExpInt).const_mul c36)
-      ((hI f1 hTExpInt).const_mul (-c8640)) ((hI f0 hExpInt).const_mul c18144),
-    show (∫ x, c36 * f2 x ∂μIoi0) = c36 * ∫ x, f2 x ∂μIoi0 from integral_const_mul c36 f2,
-    show (∫ x, -c8640 * f1 x ∂μIoi0) = -c8640 * ∫ x, f1 x ∂μIoi0 from
-      integral_const_mul (-c8640) f1,
-    show (∫ x, c18144 * f0 x ∂μIoi0) = c18144 * ∫ x, f0 x ∂μIoi0 from
-      integral_const_mul c18144 f0,
-    show (∫ t, f2 t ∂μIoi0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) by simpa [f2, μIoi0] using hI2exp,
-    show (∫ t, f1 t ∂μIoi0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) by simpa [f1, μIoi0] using hItexp,
-    show (∫ t, f0 t ∂μIoi0) = ((1 / (π * u) : ℝ) : ℂ) by simpa [f0, μIoi0] using hIexp,
-    hc36, hc8640, hc18144]
+  rw [hcorr, corrIntegral_linearise u c36 c8640 c18144 hExpInt hTExpInt h2ExpInt,
+    hI2exp, hItexp, hIexp, hc36, hc8640, hc18144]
   exact corrIntegral_arithmetic u
 
 /-- Integrability of the `a` correction integrand `(c36 * exp(2πt) - c8640 t + c18144) * exp(-πut)`

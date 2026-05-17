@@ -26,6 +26,19 @@ open ModularFormClass
 open Metric Filter Function
 open scoped Derivative
 
+/-- Expansion of the Serre derivative: `serre_D k F = D F - (k/12) • (E₂ * F)`. -/
+private lemma serre_D_eq_sub_smul (k : ℤ) (F : ℍ → ℂ) :
+    serre_D k F = D F - ((k : ℂ) * 12⁻¹) • (E₂ * F) := by
+  funext w
+  simp [serre_D, E₂]
+  ring
+
+/-- Slash action commutes with the product `E₂ * F` for `SL(2, ℤ)`. -/
+private lemma E₂_mul_slash (k : ℤ) (F : ℍ → ℂ) (γ : SL(2, ℤ)) :
+    (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
+  simpa [add_comm, add_left_comm, add_assoc] using
+    ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F)
+
 /-- Serre derivative is equivariant under the slash action. -/
 public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) :
     ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
@@ -33,47 +46,24 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
   ext z
   let c : ℂ := (k : ℂ) * 12⁻¹
   let corr : ℍ → ℂ := fun w : ℍ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ w)
-  have h12 : (12 : ℂ) ≠ 0 := by norm_num
-  have hD := congrFun (D_slash k F hF γ) z
+  have hD' : D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
+      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
+    simpa [Pi.sub_apply] using congrFun (D_slash k F hF γ) z
   have hE : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr z := by
     simpa [corr] using congrFun (E₂_slash γ) z
-  have hserre : serre_D k F = D F - c • (E₂ * F) := by
-    funext w
-    simp [serre_D, c, E₂]
-    ring
-  have hmul : (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
-    simpa [add_comm, add_left_comm, add_assoc] using
-      ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F)
   calc
     (serre_D k F ∣[k + 2] γ) z
-        = ((D F - c • (E₂ * F)) ∣[k + 2] γ) z := by rw [hserre]
-    _ = (D F ∣[k + 2] γ) z - (c • ((E₂ * F) ∣[k + 2] γ)) z := by
-          simp [sub_eq_add_neg, SlashAction.neg_slash]
-    _ = (D F ∣[k + 2] γ) z - c * ((E₂ * F) ∣[k + 2] γ) z := by
-          simp [Pi.smul_apply, smul_eq_mul]
+        = ((D F - c • (E₂ * F)) ∣[k + 2] γ) z := by rw [serre_D_eq_sub_smul]
     _ = (D F ∣[k + 2] γ) z - c * ((E₂ ∣[(2 : ℤ)] γ) z * (F ∣[k] γ) z) := by
-          simp [hmul, Pi.mul_apply]
-    _ = (D F ∣[k + 2] γ) z - c * ((E₂ z + corr z) * (F ∣[k] γ) z) := by
-          rw [hE]
-    _ = (D F ∣[k + 2] γ) z
-          - c * (corr z * (F ∣[k] γ) z)
-          - c * (E₂ z * (F ∣[k] γ) z) := by
-          ring
+          simp [sub_eq_add_neg, SlashAction.neg_slash, Pi.smul_apply, smul_eq_mul,
+            E₂_mul_slash k F γ, Pi.mul_apply]
     _ = (D F ∣[k + 2] γ) z
           - (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z
-          - c * (E₂ z * (F ∣[k] γ) z) := by
-          ring
+          - c * (E₂ z * (F ∣[k] γ) z) := by rw [hE]; ring
     _ = serre_D k (F ∣[k] γ) z := by
-          have hD' :
-              D (F ∣[k] γ) z =
-                (D F ∣[k + 2] γ) z -
-                  (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
-            simpa [Pi.sub_apply] using hD
           change _ =
             D (F ∣[k] γ) z - (k : ℂ) * 12⁻¹ * EisensteinSeries.E2 z * (F ∣[k] γ) z
-          rw [hD', show EisensteinSeries.E2 z = E₂ z from rfl]
-          simp [c]
-          ring
+          rw [hD', show EisensteinSeries.E2 z = E₂ z from rfl]; simp [c]; ring
 
 public theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ))
     (h : F ∣[k] γ = F) : serre_D k F ∣[k + 2] γ = serre_D k F := by

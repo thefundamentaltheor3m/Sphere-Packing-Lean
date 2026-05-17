@@ -201,54 +201,42 @@ lemma serre_D_E₂_mul_E₆_sub_E₄_sq :
     mul_left_comm, mul_comm]
   ring_nf
 
+/-- `serre_D 10 F = (-5/6) • ((E₂E₄ - E₆) * (E₂E₆ - E₄²))`. -/
+private lemma serre_D_ten_F :
+    serre_D 10 F = ((-5 : ℂ) * 6⁻¹) •
+      ((E₂ * E₄.toFun - E₆.toFun) * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun)) := by
+  set A := E₂ * E₄.toFun - E₆.toFun with hA
+  set B := E₂ * E₆.toFun - E₄.toFun * E₄.toFun
+  have hA_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A :=
+    (MDifferentiable.mul E₂_holo' E₄.holo').sub E₆.holo'
+  have hS5 : serre_D 5 A = ((-5 : ℂ) * 12⁻¹) • B := serre_D_E₂_mul_E₄_sub_E₆
+  have hmul : serre_D 10 (A * A) = (serre_D 5 A) * A + A * (serre_D 5 A) := by
+    simpa [show (5 : ℂ) + 5 = 10 by norm_num] using
+      (serre_D_mul (k₁ := (5 : ℤ)) (k₂ := (5 : ℤ)) A A hA_holo hA_holo)
+  rw [show F = A ^ 2 by simp [F, hA], pow_two, hmul]
+  simp only [hS5, neg_mul, _root_.neg_smul]
+  ext z; simp [smul_eq_mul]; ring_nf
+
 /-- Modular linear differential equation satisfied by `F`. -/
 public theorem MLDE_F :
     serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
-  -- Use the shorthand from the blueprint: `A = E₂E₄ - E₆` and `B = E₂E₆ - E₄²`.
   set A := E₂ * E₄.toFun - E₆.toFun with hA
   set B := E₂ * E₆.toFun - E₄.toFun * E₄.toFun with hB
-  have hA_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by
-    simpa [hA] using (MDifferentiable.mul E₂_holo' E₄.holo').sub E₆.holo'
-  have hB_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by
-    simpa [hB] using (
-      MDifferentiable.mul E₂_holo' E₆.holo').sub (MDifferentiable.mul E₄.holo' E₄.holo')
-  have hF : F = A ^ 2 := by simp [F, hA]
-  -- First compute `∂₁₀ F = - (5/6) A B`.
-  have hS5 : serre_D 5 A = ((-5 : ℂ) * 12⁻¹) • B := by simpa [hA, hB] using serre_D_E₂_mul_E₄_sub_E₆
-  have hSerre10 : serre_D 10 F = ((-5 : ℂ) * 6⁻¹) • (A * B) := by
-    have hmul : serre_D 10 (A * A) = (serre_D 5 A) * A + A * (serre_D 5 A) := by
-      simpa [show (5 : ℂ) + 5 = 10 by norm_num] using
-        (serre_D_mul (k₁ := (5 : ℤ)) (k₂ := (5 : ℤ)) A A hA_holo hA_holo)
-    rw [hF, pow_two, hmul]
-    simp only [hS5, neg_mul, _root_.neg_smul]
-    -- Clear the remaining scalar arithmetic pointwise.
-    ext z
-    simp [smul_eq_mul]
-    ring_nf
-  -- Now compute `∂₁₂ ∂₁₀ F` using the product rule and the two auxiliary identities.
-  have hAB_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (A * B) := MDifferentiable.mul hA_holo hB_holo
+  have hA_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A :=
+    (MDifferentiable.mul E₂_holo' E₄.holo').sub E₆.holo'
+  have hB_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B :=
+    (MDifferentiable.mul E₂_holo' E₆.holo').sub (MDifferentiable.mul E₄.holo' E₄.holo')
+  have hS5 : serre_D 5 A = ((-5 : ℂ) * 12⁻¹) • B := serre_D_E₂_mul_E₄_sub_E₆
   have hS7 : serre_D 7 B = ((-7 : ℂ) * 12⁻¹) • (E₄.toFun * A) := by
     simpa [hA, hB, mul_assoc] using serre_D_E₂_mul_E₆_sub_E₄_sq
   have hAB : serre_D 12 (A * B) = (serre_D 5 A) * B + A * (serre_D 7 B) := by
     simpa [show (5 : ℂ) + 7 = 12 by norm_num] using
       (serre_D_mul (k₁ := (5 : ℤ)) (k₂ := (7 : ℤ)) A B hA_holo hB_holo)
-  -- Rewrite `-D E₂` in the form used in the blueprint.
   have hnegDE₂' : negDE₂ = 12⁻¹ * (E₄.toFun - E₂ * E₂) := by
-    ext w
-    simp [negDE₂, ramanujan_E₂, sub_eq_add_neg]
-    ring_nf
-  -- Compute `∂₁₂(∂₁₀F)` and reduce to a pointwise polynomial identity.
-  rw [hSerre10]
-  -- Pull the scalar out.
-  rw [serre_D_smulC (k := (12 : ℂ)) (c := ((-5 : ℂ) * 6⁻¹)) (A * B)]
-  -- Expand `serre_D 12 (A * B)` via the product rule.
-  rw [hAB]
-  -- Rewrite `serre_D 5 A` and `serre_D 7 B` using the auxiliary identities.
-  rw [hS5, hS7]
-  -- Substitute the two auxiliary identities.
-  -- From here on, it is just algebra in the commutative ring of pointwise functions.
+    ext w; simp [negDE₂, ramanujan_E₂, sub_eq_add_neg]; ring_nf
+  rw [serre_D_ten_F, serre_D_smulC (k := (12 : ℂ)) (c := ((-5 : ℂ) * 6⁻¹)) (A * B), hAB, hS5, hS7]
   ext z
-  simp [hF, hA, hB, Δ_fun, hnegDE₂', smul_eq_mul]
+  simp [show F = A ^ 2 by simp [F, hA], hA, hB, Δ_fun, hnegDE₂', smul_eq_mul]
   ring_nf
 
 /-- Serre derivative of `H₂^2` (intermediate step toward `MLDE_G`). -/

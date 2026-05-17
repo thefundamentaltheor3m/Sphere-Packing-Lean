@@ -197,6 +197,43 @@ open SpherePacking.Integration (μIoc01)
 
 noncomputable section
 
+/-- Algebraic identity: `t^k * (1/t)^(k+2) = 1/t²` for `t > 0`. -/
+private lemma pow_mul_one_div_pow_add_two {t : ℝ} (ht0 : 0 < t) (k : ℕ) :
+    (t ^ k) * (1 / t) ^ (k + 2) = 1 / t ^ (2 : ℕ) := by
+  calc (t ^ k) * (1 / t) ^ (k + 2)
+      = (t ^ k * (1 / t) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [pow_add]; ac_rfl
+    _ = ((t * (1 / t)) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [mul_pow, mul_assoc]
+    _ = 1 / t ^ (2 : ℕ) := by simp [one_div, ht0.ne']
+
+/-- Integrability on `μIoc01` of the dominating function `Cψ * (1/t² * exp(-π/t))`. -/
+private lemma integrable_const_mul_one_div_sq_mul_exp_neg_pi_div (Cψ : ℝ) :
+    Integrable (fun t : ℝ ↦ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t))) μIoc01 := by
+  have h0 : IntegrableOn (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
+      (Ioc (0 : ℝ) 1) volume := by
+    simpa using SpherePacking.Integration.integrableOn_one_div_sq_mul_exp_neg_div
+      (c := Real.pi) (by simpa using Real.pi_pos)
+  simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using
+    (show Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
+      ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) by
+      simpa [MeasureTheory.IntegrableOn] using h0).const_mul Cψ
+
+/-- Pointwise bound: from `nh ≤ Cψ * exp(-π/t) * t^k` and `0 ≤ nh`, `0 < t`, deduce
+`‖nh * (1/t)^(k+2)‖ ≤ Cψ * (1/t² * exp(-π/t))`. -/
+private lemma norm_mul_one_div_pow_le_const_one_div_sq_mul_exp
+    {nh t Cψ : ℝ} (k : ℕ) (ht0 : 0 < t) (hnh : 0 ≤ nh)
+    (hb : nh ≤ (Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) :
+    ‖nh * (1 / t) ^ (k + 2)‖ ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) := by
+  have hpow_nonneg : 0 ≤ (1 / t : ℝ) ^ (k + 2) := pow_nonneg (one_div_nonneg.2 ht0.le) (k + 2)
+  have hnorm : ‖nh * (1 / t) ^ (k + 2)‖ = nh * (1 / t) ^ (k + 2) :=
+    Real.norm_of_nonneg (mul_nonneg hnh hpow_nonneg)
+  rw [hnorm]
+  refine (mul_le_mul_of_nonneg_right hb hpow_nonneg).trans_eq ?_
+  calc ((Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) * (1 / t) ^ (k + 2)
+      = (Cψ : ℝ) * (rexp (-Real.pi / t) * (t ^ k * (1 / t) ^ (k + 2))) := by ac_rfl
+    _ = (Cψ : ℝ) * (rexp (-Real.pi / t) * (1 / t ^ (2 : ℕ))) := by
+          rw [pow_mul_one_div_pow_add_two ht0 k]
+    _ = (Cψ : ℝ) * ((1 / t ^ (2 : ℕ)) * rexp (-Real.pi / t)) := by ac_rfl
+
 /-- Integrability on `μIoc01` of `t ↦ ‖ψT' (z₁line t)‖ * (1 / t)^(k+2)`, given the standard modular
 bound by `exp(-π/t) * t^k`. -/
 public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
@@ -208,16 +245,6 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
     Integrable
       (fun t : ℝ => ‖ψT' (SpherePacking.Contour.z₁line t)‖ * (1 / t) ^ (k + 2)) μIoc01 := by
   let g : ℝ → ℝ := fun t => ‖ψT' (SpherePacking.Contour.z₁line t)‖ * (1 / t) ^ (k + 2)
-  have hmajor0 :
-      IntegrableOn (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t)) (Ioc (0 : ℝ) 1) volume := by
-    simpa using SpherePacking.Integration.integrableOn_one_div_sq_mul_exp_neg_div
-      (c := Real.pi) (by simpa using Real.pi_pos)
-  have hmajor :
-      Integrable (fun t : ℝ ↦ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t))) μIoc01 := by
-    simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using
-      (show Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
-        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) by
-        simpa [MeasureTheory.IntegrableOn] using hmajor0).const_mul Cψ
   have hmeas_g : AEStronglyMeasurable g μIoc01 := by
     have hcont_g : ContinuousOn g (Ioc (0 : ℝ) 1) := by
       simpa [g, one_div] using hcont.norm.mul
@@ -225,28 +252,9 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
           (fun t ht => by simp [ne_of_gt ht.1])).pow (k + 2))
     simpa [μIoc01] using hcont_g.aestronglyMeasurable
       (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc
-  have hg_bound :
-      ∀ᵐ t : ℝ ∂μIoc01, ‖g t‖ ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) :=
-    (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => by
-    have ht0 : 0 < t := ht.1
-    have hpow_nonneg : 0 ≤ (1 / t : ℝ) ^ (k + 2) := pow_nonneg (one_div_nonneg.2 ht0.le) (k + 2)
-    have hgt0 : 0 ≤ g t := mul_nonneg (norm_nonneg _) hpow_nonneg
-    have hnorm_g : ‖g t‖ = g t := by simp [Real.norm_eq_abs, abs_of_nonneg hgt0]
-    have hpow_simp : (t ^ k) * (1 / t) ^ (k + 2) = 1 / t ^ (2 : ℕ) := by
-      calc (t ^ k) * (1 / t) ^ (k + 2)
-          = (t ^ k * (1 / t) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [pow_add]; ac_rfl
-        _ = ((t * (1 / t)) ^ k) * (1 / t) ^ (2 : ℕ) := by simp [mul_pow, mul_assoc]
-        _ = 1 / t ^ (2 : ℕ) := by simp [one_div, ht0.ne']
-    have : g t ≤ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t)) :=
-      (mul_le_mul_of_nonneg_right (hbound t ht) hpow_nonneg).trans_eq <| by
-        calc ((Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) * (1 / t) ^ (k + 2)
-            = (Cψ : ℝ) * (rexp (-Real.pi / t) * (t ^ k * (1 / t) ^ (k + 2))) := by ac_rfl
-          _ = (Cψ : ℝ) * (rexp (-Real.pi / t) * (1 / t ^ (2 : ℕ))) := by
-                simpa [mul_assoc] using
-                  congrArg (fun u : ℝ => (Cψ : ℝ) * (rexp (-Real.pi / t) * u)) hpow_simp
-          _ = (Cψ : ℝ) * ((1 / t ^ (2 : ℕ)) * rexp (-Real.pi / t)) := by ac_rfl
-    simpa [hnorm_g] using this
-  exact Integrable.mono' hmajor hmeas_g hg_bound
+  refine Integrable.mono' (integrable_const_mul_one_div_sq_mul_exp_neg_pi_div Cψ) hmeas_g <|
+    (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht =>
+      norm_mul_one_div_pow_le_const_one_div_sq_mul_exp k ht.1 (norm_nonneg _) (hbound t ht)
 
 end
 
