@@ -3,7 +3,6 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 
-
 /-!
 # Multipliability lemmas for product expansions
 
@@ -14,13 +13,13 @@ expansions (notably eta and delta product formulas).
 * `MultipliableEtaProductExpansion`
 * `MultipliableDeltaProductExpansion_pnat`
 * `tprod_ne_zero`
-* `tprod_pow`
+* `Multipliable_pow`
 -/
 
 open scoped BigOperators Real
 open UpperHalfPlane Complex
 
-/-this is being PRd-/
+-- TODO: upstream to mathlib.
 lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f) :
     Multipliable (fun n : ℕ => 1 + f n) :=
   Complex.multipliable_of_summable_log (Complex.summable_log_one_add_of_summable hf)
@@ -28,13 +27,13 @@ lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable
 /-- A basic nonvanishing lemma for the factors in the eta product on `ℍ`. -/
 public theorem term_ne_zero (z : ℍ) (n : ℕ) :
     1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z) ≠ 0 := by
-  rw [@sub_ne_zero]
+  rw [sub_ne_zero]
   intro h
   simpa [h.symm] using exp_upperHalfPlane_lt_one_nat z n
 
 /-- The eta product factors `∏ (1 - exp(2π i (n+1) z))` form a convergent infinite product. -/
 public lemma MultipliableEtaProductExpansion (z : ℍ) :
-    Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
+    Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z))) := by
   refine (Complex.summable_nat_multipliable_one_add
     (fun n : ℕ ↦ -cexp (2 * π * Complex.I * (n + 1) * z)) ?_).congr ?_
   · rw [← summable_norm_iff]
@@ -44,14 +43,14 @@ public lemma MultipliableEtaProductExpansion (z : ℍ) :
 
 /-- A `ℕ+`-indexed variant of `MultipliableEtaProductExpansion`. -/
 public lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
-  Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by
+    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by
   refine (multipliable_pnat_iff_multipliable_succ
     (f := fun n : ℕ ↦ (1 - cexp (2 * π * Complex.I * n * z)))).2 ?_
   simpa using MultipliableEtaProductExpansion z
 
 /-- If each factor is nonzero and the logarithms are summable, then the `tprod` is nonzero. -/
 public lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
-  (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
+    (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
   have htprod :=
     Complex.cexp_tsum_eq_tprod (fun n => hf n x) (Complex.summable_log_one_add_of_summable (hu x))
   simpa [htprod, Pi.add_apply, Pi.one_apply] using
@@ -64,7 +63,6 @@ public lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f
 
 /-- The delta product factors `∏ (1 - exp(2π i n z))^24` form a convergent infinite product. -/
 public lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
-  Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))^24) := by
-  apply Multipliable_pow
-  apply MultipliableEtaProductExpansion_pnat z
+    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) :=
+  Multipliable_pow _ (MultipliableEtaProductExpansion_pnat z) 24
 

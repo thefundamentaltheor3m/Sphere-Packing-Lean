@@ -1,10 +1,12 @@
 module
-
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
-/-! # Imaginary-axis exponential weights
-Rewrite and norm lemmas for the exponential weights arising on the imaginary axis. -/
+/-!
+# Imaginary-axis exponential weights
+
+Rewrite and norm lemmas for the exponential weights arising on the imaginary axis.
+-/
 
 namespace SpherePacking.ForMathlib
 

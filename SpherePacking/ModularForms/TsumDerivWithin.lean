@@ -3,6 +3,13 @@ public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
 public import Mathlib.Analysis.Normed.Group.FunctionSeries
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
 
+/-!
+# Derivative of a `tsum` under local uniform summability bounds
+
+A `HasDerivAt`-of-`tsum` lemma: under a locally uniform summability bound on the derivatives,
+the termwise derivative gives the derivative of the sum.
+-/
+
 open UpperHalfPlane TopologicalSpace Set Metric Filter Function Complex
 
 /-- A `HasDerivAt`-of-`tsum` lemma under a locally uniform summability bound. -/

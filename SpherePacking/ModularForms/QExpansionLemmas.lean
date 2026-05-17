@@ -6,7 +6,6 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import Mathlib.Order.CompletePartialOrder
 import Mathlib.Tactic.Cases
 
-
 /-!
 # Limits at infinity
 
@@ -36,7 +35,6 @@ public theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F 
   simpa [cuspFunction, Function.comp] using
     (Function.Periodic.tendsto_nhds_zero (h := (n : ℝ)) (f := ⇑f ∘ (↑ofComplex : ℂ → ℍ)) hcont)
 
-
 /-- A modular form converges to its `valueAtInfty` as `im τ → ∞` (for `Γ(n)`). -/
 public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularForm Γ(n) k)
     [NeZero n] :
@@ -44,34 +42,24 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
   have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
   have hmem : (n : ℝ) ∈ (Γ(n) : Subgroup (GL (Fin 2) ℝ)).strictPeriods := by
     simp [CongruenceSubgroup.strictPeriods_Gamma]
-  have hn_ne : (n : ℝ) ≠ 0 := by exact_mod_cast (NeZero.ne n)
-  have ht :
-      Tendsto (fun τ : ℍ => cuspFunction (n : ℝ) f (Periodic.qParam (n : ℝ) τ)) atImInfty
-        (𝓝 (cuspFunction (n : ℝ) f 0)) := by
+  have hzero : cuspFunction (n : ℝ) f 0 = UpperHalfPlane.valueAtInfty (f : ℍ → ℂ) :=
+    cuspFunction_apply_zero (f := (f : ℍ → ℂ)) hn_pos
+      (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem)
+      (SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hmem)
+  have ht : Tendsto (fun τ : ℍ => cuspFunction (n : ℝ) f (Periodic.qParam (n : ℝ) τ)) atImInfty
+      (𝓝 (UpperHalfPlane.valueAtInfty (f : ℍ → ℂ))) := by
+    rw [← hzero]
     simpa [cuspFunction] using
       (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem).continuousAt.tendsto.comp
         (UpperHalfPlane.qParam_tendsto_atImInfty hn_pos)
-  have hper := SlashInvariantFormClass.periodic_comp_ofComplex (f := f) hmem
-  have hzero : cuspFunction (n : ℝ) f 0 = UpperHalfPlane.valueAtInfty (f : ℍ → ℂ) :=
-    cuspFunction_apply_zero (f := (f : ℍ → ℂ)) hn_pos
-      (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem) hper
-  have ht' :
-      Tendsto (fun τ : ℍ => cuspFunction (n : ℝ) f (Periodic.qParam (n : ℝ) τ)) atImInfty
-        (𝓝 (UpperHalfPlane.valueAtInfty (f : ℍ → ℂ))) := by
-    simpa [hzero] using ht
-  refine ht'.congr fun τ ↦ ?_
-  exact SlashInvariantFormClass.eq_cuspFunction (f := f) τ hmem hn_ne
+  exact ht.congr fun τ ↦ SlashInvariantFormClass.eq_cuspFunction (f := f) τ hmem
+    (by exact_mod_cast NeZero.ne n)
 
 /-- The `qExpansion` of a product is the product of the `qExpansion`s (coeffwise). -/
 public lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
-    [hn : NeZero n] : qExpansion n (f.mul g) = qExpansion n f * qExpansion n g := by
-  exact ModularForm.qExpansion_mul (Γ := Γ(n)) (h := (n : ℝ)) (Nat.cast_pos.mpr (NeZero.pos n))
+    [NeZero n] : qExpansion n (f.mul g) = qExpansion n f * qExpansion n g :=
+  ModularForm.qExpansion_mul (Γ := Γ(n)) (h := (n : ℝ)) (Nat.cast_pos.mpr (NeZero.pos n))
     (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f g
-
-variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
-variable {F : Type*} [NormedAddCommGroup F] [NormedSpace 𝕜 F]
-
-
 
 lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
     iteratedDeriv m (a • f) = a • iteratedDeriv m f := by
@@ -80,7 +68,6 @@ lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
   | succ m hm =>
     rw [iteratedDeriv_succ, iteratedDeriv_succ, hm]
     ext x
-    rw [@Pi.smul_def]
     exact deriv_const_smul_field a ..
 
 public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
@@ -94,10 +81,8 @@ public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
     · simp_rw [h, cuspFunction,Periodic.cuspFunction]
       simp only [update_self, Pi.smul_apply, smul_eq_mul]
       rw [Filter.limUnder_eq_iff ]
-      · have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex)
-          (Periodic.invQParam ↑n x) := by
-          ext y
-          simp
+      · have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n =
+            fun x => a * (f ∘ ↑ofComplex) (Periodic.invQParam ↑n x) := by ext y; simp
         rw [hl]
         simp only [comp_apply]
         apply Filter.Tendsto.const_mul

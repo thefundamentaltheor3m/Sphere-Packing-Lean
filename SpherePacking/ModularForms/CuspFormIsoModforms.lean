@@ -1,10 +1,16 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
 module
-import Mathlib.LinearAlgebra.Dimension.Localization
-import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+
+public import Mathlib.LinearAlgebra.Dimension.Localization
+public import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.QExpansionLemmas
-
 
 /-!
 # Cusp forms vs. modular forms
@@ -66,8 +72,6 @@ public lemma cuspform_weight_12_finrank_one : Module.finrank ℂ (CuspForm Γ(1)
 public lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by
   obtain ⟨g, hg⟩ := hf
-  let g' : CuspForm 𝒮ℒ k := cuspForm_Gamma_one_equiv_SL k g
-  have hg'_zero : g' = 0 :=
-    rank_zero_iff_forall_zero.mp (CuspForm.rank_eq_zero_of_weight_lt_twelve hk) g'
+  have hg_zero : g = 0 := rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero k hk) g
   ext z
-  rw [← hg]; simpa [g', cuspForm_Gamma_one_equiv_SL] using DFunLike.congr_fun hg'_zero z
+  rw [← hg]; simpa using DFunLike.congr_fun hg_zero z

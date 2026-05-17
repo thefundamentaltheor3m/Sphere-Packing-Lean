@@ -1,4 +1,10 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
 module
+
 public import SpherePacking.ModularForms.Derivative.SlashFormula
 
 @[expose] public section
@@ -33,16 +39,11 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
     simpa [corr] using congrFun (E₂_slash γ) z
   have hserre : serre_D k F = D F - c • (E₂ * F) := by
     funext w
-    show D F w - (k : ℂ) * 12⁻¹ * EisensteinSeries.E2 w * F w =
-      D F w - c * (E₂ w * F w)
-    show D F w - (k : ℂ) * 12⁻¹ * E₂ w * F w =
-      D F w - c * (E₂ w * F w)
+    simp [serre_D, c, E₂]
     ring
   have hmul : (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
-    -- Mathlib's lemma is stated for weight `2 + k`; rewrite to `k + 2`.
     simpa [add_comm, add_left_comm, add_assoc] using
-      (ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F))
-  -- Main computation, pointwise at `z`.
+      ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F)
   calc
     (serre_D k F ∣[k + 2] γ) z
         = ((D F - c • (E₂ * F)) ∣[k + 2] γ) z := by rw [hserre]
@@ -63,13 +64,12 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
           - c * (E₂ z * (F ∣[k] γ) z) := by
           ring
     _ = serre_D k (F ∣[k] γ) z := by
-          -- Substitute the `D_slash` anomaly and unfold the Serre derivative.
           have hD' :
               D (F ∣[k] γ) z =
                 (D F ∣[k + 2] γ) z -
                   (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
             simpa [Pi.sub_apply] using hD
-          show _ =
+          change _ =
             D (F ∣[k] γ) z - (k : ℂ) * 12⁻¹ * EisensteinSeries.E2 z * (F ∣[k] γ) z
           rw [hD', show EisensteinSeries.E2 z = E₂ z from rfl]
           simp [c]

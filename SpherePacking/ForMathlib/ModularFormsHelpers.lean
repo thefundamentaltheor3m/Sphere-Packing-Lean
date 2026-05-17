@@ -19,8 +19,6 @@ Collected small lemmas about:
 open UpperHalfPlane ModularForm
 open scoped MatrixGroups
 
-/-! ### `atImInfty` -/
-
 /-- Unfold `∀ᶠ z in UpperHalfPlane.atImInfty, p z` into an explicit bound on the imaginary part. -/
 public lemma Filter.eventually_atImInfty {p : UpperHalfPlane → Prop} :
     (∀ᶠ x in UpperHalfPlane.atImInfty, p x) ↔
@@ -31,8 +29,6 @@ public lemma Filter.eventually_atImInfty {p : UpperHalfPlane → Prop} :
 public lemma Filter.tendsto_im_atImInfty :
     Tendsto (fun x : UpperHalfPlane ↦ x.im) UpperHalfPlane.atImInfty atTop := by
   simp [UpperHalfPlane.atImInfty, Filter.tendsto_iff_comap]
-
-/-! ### `ModularGroup.S` action -/
 
 /-- Coercion of the `S`-action on `ℍ`: `(S • z : ℂ) = -1 / z`. -/
 public theorem ModularGroup.coe_S_smul (z : UpperHalfPlane) :
@@ -52,8 +48,6 @@ public theorem ModularGroup.coe_S_smul (z : UpperHalfPlane) :
 public theorem ModularGroup.coe_ST_smul (z : UpperHalfPlane) :
     (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := by
   simpa [ModularGroup.S_mul_T] using coe_specialLinearGroup_apply (g := S * T) (z := z)
-
-/-! ### Slash actions by negated matrices in even weight -/
 
 /-- Negating a matrix does not change the slash action for even weight (`SL(2, ℤ)` version). -/
 @[simp] public theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk : Even k) :

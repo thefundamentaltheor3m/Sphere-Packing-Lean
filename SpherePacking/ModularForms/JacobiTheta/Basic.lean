@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Mathlib.Algebra.Field.Power
 public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Ring.Int.Parity
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.NumberTheory.ModularForms.Basic
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
@@ -56,10 +56,6 @@ local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 /-- The fourth power of `Θ₄`. -/
 @[expose] public noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
-/-!
-## Connection with `jacobiTheta₂`
--/
-
 /-- Identify `Θ₂_term` with a specialization of `jacobiTheta₂_term`. -/
 public theorem Θ₂_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
     Θ₂_term n τ = cexp (π * I * τ / 4) * jacobiTheta₂_term n (τ / 2) τ := by
@@ -89,10 +85,6 @@ public theorem Θ₄_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
 /-- Identify `Θ₄` with a specialization of `jacobiTheta₂`. -/
 public theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
   simp_rw [Θ₄, Θ₄_term_as_jacobiTheta₂_term, jacobiTheta₂]
-
-/-!
-## Shared helpers
--/
 
 @[grind =] public lemma I_mul_mul_I (x y : ℂ) : I * (x * (I * y)) = -(x * y) := by
   simp [mul_left_comm, mul_comm]

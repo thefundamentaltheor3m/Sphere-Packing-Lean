@@ -1,14 +1,13 @@
 module
-public import Mathlib.Analysis.Fourier.FourierTransform
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
-import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
-public import Mathlib.Topology.MetricSpace.Bounded
+public import Mathlib.Algebra.Module.Submodule.Equiv
 public import Mathlib.Algebra.Module.Submodule.Map
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 public import Mathlib.Algebra.Module.ZLattice.Summable
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.Fourier.AddCircleMulti
+public import Mathlib.Analysis.Fourier.FourierTransform
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
 public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.Analysis.RCLike.Inner
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
@@ -18,12 +17,12 @@ public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.MeasureTheory.Integral.Pi
 public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 public import Mathlib.Topology.ContinuousMap.Compact
-
-public import Mathlib.Algebra.Module.Submodule.Equiv
+public import Mathlib.Topology.MetricSpace.Bounded
 import Mathlib.Analysis.Normed.Operator.Banach
 import Mathlib.LinearAlgebra.Determinant
-public import Mathlib.Topology.Algebra.InfiniteSum.Ring
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 
 /-! # Poisson summation for Schwartz functions
 
@@ -321,8 +320,6 @@ variable {d : ℕ}
 local notation "E" => EuclideanSpace ℝ (Fin d)
 local notation "Λ" => SchwartzMap.standardLattice d
 
-/-! ## Basic infrastructure (merged from `PoissonSummationSchwartz.Basic`) -/
-
 /-- Equivalence between integer vectors `Fin d → ℤ` and the standard lattice `Λ = ℤ^d ⊆ ℝ^d`. -/
 @[expose] public noncomputable def equivIntVec : (Fin d → ℤ) ≃ Λ :=
   Equiv.ofBijective
@@ -336,14 +333,14 @@ local notation "Λ" => SchwartzMap.standardLattice d
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
 public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
-  measurable_const_vadd c := by
+  measurable_const_vadd _ := by
     simpa [Submodule.vadd_def, vadd_eq_add] using (continuous_const.add continuous_id).measurable
-  measurable_vadd_const x := by simpa [Submodule.vadd_def, vadd_eq_add] using
+  measurable_vadd_const _ := by simpa [Submodule.vadd_def, vadd_eq_add] using
     (continuous_subtype_val.add continuous_const).measurable
 
 public instance instVAddInvariantMeasure_standardLattice :
     MeasureTheory.VAddInvariantMeasure Λ E (volume : Measure E) where
-  measure_preimage_vadd c s hs := by
+  measure_preimage_vadd _ _ _ := by
     simp [Submodule.vadd_def, vadd_eq_add, MeasureTheory.measure_preimage_add]
 
 /-- Translate the Schwartz function `f` by a lattice vector, as a continuous map. -/
@@ -458,7 +455,7 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
       (RCLike.inner_apply' (x.ofLp i : ℝ) (n i : ℝ)).trans (by simp)]
   rw [hinner]
   simp [coeFunE, UnitAddTorus.mFourier_apply_coeFun_ofLp,
-    Real.fourierChar_apply, intVec, Finset.sum_neg_distrib,
+    Real.fourierChar_apply, Finset.sum_neg_distrib,
     mul_assoc, mul_comm]
 
 @[simp] lemma intVec_neg (n : Fin d → ℤ) :
@@ -512,8 +509,6 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
       simpa [translate_apply, ContinuousMap.restrict_apply] using
         ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
           ⟨x, iocCube_subset_closedBall (d := d) hx⟩
-
-/-! ## Standard Poisson summation (merged from `PoissonSummationSchwartz.PoissonSummation`) -/
 
 section StandardPoissonSummation
 

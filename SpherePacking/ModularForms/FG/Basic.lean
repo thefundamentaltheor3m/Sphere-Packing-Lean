@@ -68,38 +68,33 @@ private theorem resToImagAxis_eq_of_real (F : ℍ → ℂ) (hF : ResToImagAxis.R
     simpa [Function.resToImagAxis_apply] using hF t ht
   apply Complex.ext <;> simp [Function.resToImagAxis_apply, him]
 
+
 /-- On the imaginary axis, `F` takes real values (so it agrees with `FReal`). -/
 public theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by
   have hbase : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) :=
-    ResToImagAxis.Real.sub (ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real)
-      E₆_imag_axis_real
-  have hF : ResToImagAxis.Real F := by
-    simpa [F, pow_two] using ResToImagAxis.Real.mul hbase hbase
+    .sub (.mul E₂_imag_axis_real E₄_imag_axis_real) E₆_imag_axis_real
+  have hF : ResToImagAxis.Real F := by simpa [F, pow_two] using hbase.mul hbase
   simpa [FReal] using resToImagAxis_eq_of_real (F := F) hF ht
 
 /-- On the imaginary axis, `G` takes real values (so it agrees with `GReal`). -/
 public theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by
   have hconst (c : ℝ) : ResToImagAxis.Real (fun _ : ℍ => (c : ℂ)) := by
-    intro u hu
-    simp [Function.resToImagAxis, ResToImagAxis, hu]
+    intro u hu; simp [Function.resToImagAxis, ResToImagAxis, hu]
   have hH2_sq : ResToImagAxis.Real (H₂ ^ 2) := by
-    simpa [pow_two] using ResToImagAxis.Real.mul H₂_imag_axis_real H₂_imag_axis_real
+    simpa [pow_two] using H₂_imag_axis_real.mul H₂_imag_axis_real
   have hH2_cube : ResToImagAxis.Real (H₂ ^ 3) := by
     simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc] using
-      ResToImagAxis.Real.mul hH2_sq H₂_imag_axis_real
+      hH2_sq.mul H₂_imag_axis_real
   have hH4_sq : ResToImagAxis.Real (H₄ ^ 2) := by
-    simpa [pow_two] using ResToImagAxis.Real.mul H₄_imag_axis_real H₄_imag_axis_real
+    simpa [pow_two] using H₄_imag_axis_real.mul H₄_imag_axis_real
   have hpoly : ResToImagAxis.Real (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2) := by
-    refine ResToImagAxis.Real.add
-      (ResToImagAxis.Real.add ?_ ?_) ?_
-    · exact ResToImagAxis.Real.mul (hconst 2) hH2_sq
-    · -- `5 * H₂ * H₄ = 5 * (H₂ * H₄)`
-      simpa [mul_assoc] using
-        ResToImagAxis.Real.mul (hconst 5)
-          (ResToImagAxis.Real.mul H₂_imag_axis_real H₄_imag_axis_real)
-    · exact ResToImagAxis.Real.mul (hconst 5) hH4_sq
+    refine .add (.add ?_ ?_) ?_
+    · exact (hconst 2).mul hH2_sq
+    · simpa [mul_assoc] using
+        (hconst 5).mul (H₂_imag_axis_real.mul H₄_imag_axis_real)
+    · exact (hconst 5).mul hH4_sq
   have hG : ResToImagAxis.Real G := by
-    simpa [G, mul_assoc] using ResToImagAxis.Real.mul hH2_cube hpoly
+    simpa [G, mul_assoc] using hH2_cube.mul hpoly
   simpa [GReal] using resToImagAxis_eq_of_real (F := G) hG ht
 
 /-- Relate `FmodGReal` to the complex quotient `F/G` on the imaginary axis. -/
@@ -121,8 +116,7 @@ public theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
 public theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
   have : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
   have : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-  simpa [G] using
-    (by fun_prop : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)))
+  unfold G; fun_prop
 
 /-- The function `L₁₀` is holomorphic on the upper half-plane. -/
 public theorem L₁₀_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) L₁₀ := by
@@ -140,15 +134,13 @@ public theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt �
   simpa [GReal] using
     (Complex.reCLM.differentiableAt.comp t (ResToImagAxis.Differentiable G G_holo t ht))
 
-/-! Auxiliary Serre-derivative computations used for the MLDEs below. -/
-
 lemma serre_D_smulC (k c : ℂ) (F : UpperHalfPlane → ℂ) :
     serre_D k (c • F) = c • (serre_D k F) := by
   ext z
   simp only [serre_D_apply, Pi.smul_apply, smul_eq_mul]
   have hderiv : deriv ((c • F) ∘ ofComplex) (z : ℂ) = c • deriv (F ∘ ofComplex) z := by
     simpa [Pi.smul_apply] using (deriv_const_smul_field (x := (z : ℂ)) c (F ∘ ofComplex))
-  show (2 * (π : ℂ) * Complex.I)⁻¹ * deriv ((c • F) ∘ ofComplex) z -
+  change (2 * (π : ℂ) * Complex.I)⁻¹ * deriv ((c • F) ∘ ofComplex) z -
       k * 12⁻¹ * E₂ z * (c * F z) =
     c * ((2 * (π : ℂ) * Complex.I)⁻¹ * deriv (F ∘ ofComplex) z - k * 12⁻¹ * E₂ z * F z)
   rw [hderiv, smul_eq_mul]
@@ -179,8 +171,7 @@ lemma serre_D_E₂_mul_E₄_sub_E₆ :
         (D E₂ * (E₄ : ℍ → ℂ) + E₂ * D (E₄ : ℍ → ℂ)) z := by
     simpa using congrArg (fun f : ℍ → ℂ => f z) (D_mul E₂ (E₄ : ℍ → ℂ) E₂_holo' E₄.holo')
   simp [serre_D_apply, hDsub, hDmul, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc,
-    mul_left_comm, mul_comm,
-    show EisensteinSeries.E2 = E₂ from rfl]
+    mul_left_comm, mul_comm]
   ring_nf
 
 lemma serre_D_E₂_mul_E₆_sub_E₄_sq :
@@ -207,13 +198,8 @@ lemma serre_D_E₂_mul_E₆_sub_E₄_sq :
     simpa using congrArg (fun f : ℍ → ℂ => f z)
       (D_mul (E₄ : ℍ → ℂ) (E₄ : ℍ → ℂ) E₄.holo' E₄.holo')
   simp [serre_D_apply, hDsub, hDmul₁, hDmul₂, hDE₄, hDE₆, ramanujan_E₂, smul_eq_mul, mul_assoc,
-    mul_left_comm, mul_comm,
-    show EisensteinSeries.E2 = E₂ from rfl]
+    mul_left_comm, mul_comm]
   ring_nf
-
-/-!
-## Modular linear differential equations
--/
 
 /-- Modular linear differential equation satisfied by `F`. -/
 public theorem MLDE_F :

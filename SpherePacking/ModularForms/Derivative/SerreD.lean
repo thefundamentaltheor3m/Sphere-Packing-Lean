@@ -1,4 +1,10 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
 module
+
 public import SpherePacking.ModularForms.Derivative.Basic
 
 @[expose] public section
@@ -56,19 +62,14 @@ public theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     (hF : MDiff F) : MDiff (serre_D k F) :=
   Derivative.serreDerivative_mdifferentiable k hF
 
-/-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
-
-serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
-- D f is bounded by `D_isBoundedAtImInfty_of_bounded`
-- (k/12)·E₂·f is bounded since E₂ and f are bounded -/
+/-- The Serre derivative of a bounded holomorphic function is bounded at infinity. -/
 public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
-  have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) := Filter.const_boundedAtFilter _ _
     convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
     ext z
     simp only [Pi.mul_apply]
     ring
-  exact hD.sub hE₂f
+  exact (D_isBoundedAtImInfty_of_bounded hf hbdd).sub hE₂f

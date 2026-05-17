@@ -4,8 +4,6 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import Mathlib.Topology.Order.Compact
 import SpherePacking.ForMathlib.ExpPiIMulMulI
 
-@[expose] public section
-
 /-!
 # The Eisenstein combination `A_E`
 
@@ -19,6 +17,9 @@ This file studies the weight-6 combination `A_E = E₂ * E₄ - E₆` and record
 * `E₂_mul_E₄_sub_E₆`
 * `A_E_eq_tsum`
 -/
+
+@[expose] public section
+
 section Ramanujan_Formula
 
 open scoped Topology Real BigOperators Nat
@@ -44,7 +45,6 @@ local notation "𝕢" => Function.Periodic.qParam
 /-- The norm of `A_E_coeff n` expressed as a real number. -/
 public lemma norm_A_E_coeff (n : ℕ) :
     ‖A_E_coeff n‖ = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
-  -- `simp` rewrites `((n+1 : ℕ) : ℂ)` as `(n : ℂ) + 1`, so package the corresponding norm lemma.
   have hn : ‖(n : ℂ) + 1‖ = (n : ℝ) + 1 := by
     simpa [Nat.cast_add, Nat.cast_one] using (Complex.norm_natCast (n + 1))
   simp [A_E_coeff, hn, Nat.cast_add, Nat.cast_one, mul_assoc, mul_comm]
@@ -76,8 +76,7 @@ private lemma E4qSeries_hasSum
   simp [hcoeff, hqpow, smul_eq_mul, mul_left_comm, mul_comm]
 
 private lemma E4qSeries_eq : E4qSeries = E₄.toFun := by
-  ext w
-  simpa [E4qSeries] using (E4qSeries_hasSum w).tsum_eq
+  ext w; simpa [E4qSeries] using (E4qSeries_hasSum w).tsum_eq
 
 private lemma E4qSeries_derivBound :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
@@ -115,21 +114,18 @@ private lemma E4qSeries_derivBound :
     simp [Real.norm_of_nonneg Real.pi_pos.le, mul_left_comm, mul_comm]
   have hmul1 :
       ‖E4Coeff n‖ * ‖(2 * Real.pi * Complex.I * (n : ℂ) : ℂ)‖ ≤
-        ((240 : ℝ) * (n : ℝ) ^ 4) * (2 * Real.pi * (n : ℝ)) := by
-    exact mul_le_mul hcoeff_norm (le_of_eq hnorm_2pin) (norm_nonneg _) (by positivity)
+        ((240 : ℝ) * (n : ℝ) ^ 4) * (2 * Real.pi * (n : ℝ)) :=
+    mul_le_mul hcoeff_norm (le_of_eq hnorm_2pin) (norm_nonneg _) (by positivity)
   calc
     ‖E4Coeff n * (2 * Real.pi * Complex.I * n) * cexp (2 * Real.pi * Complex.I * n * k.1)‖ =
         (‖E4Coeff n‖ * ‖(2 * Real.pi * Complex.I * (n : ℂ) : ℂ)‖) *
-          ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ := by
-          simp [mul_assoc]
+          ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ := by simp [mul_assoc]
     _ ≤ (((240 : ℝ) * (n : ℝ) ^ 4) * (2 * Real.pi * (n : ℝ))) *
-          ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ := by
-          exact mul_le_mul_of_nonneg_right hmul1 (norm_nonneg _)
-    _ ≤ (((240 : ℝ) * (n : ℝ) ^ 4) * (2 * Real.pi * (n : ℝ))) * (r ^ n) := by
-          exact mul_le_mul_of_nonneg_left hnorm_exp (by positivity)
-    _ = u n := by
-          dsimp [u]
-          ring_nf
+          ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ :=
+      mul_le_mul_of_nonneg_right hmul1 (norm_nonneg _)
+    _ ≤ (((240 : ℝ) * (n : ℝ) ^ 4) * (2 * Real.pi * (n : ℝ))) * (r ^ n) :=
+      mul_le_mul_of_nonneg_left hnorm_exp (by positivity)
+    _ = u n := by dsimp [u]; ring_nf
 
 /-- The Fourier expansion of `E₂ * E₄ - E₆` as an `ℕ+`-indexed series. -/
 public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
@@ -137,7 +133,6 @@ public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
       720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
   have hDE4 :
       D E₄.toFun z = ∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z) := by
-    -- Differentiate the `q`-expansion termwise, then identify it with `E₄`.
     have hD :
         D E4qSeries z =
           ∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z) := by
@@ -167,16 +162,13 @@ public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
 
 /-- Rewrite `A_E` as an `ℕ`-indexed series with terms `A_E_term z n`. -/
 public lemma A_E_eq_tsum (z : ℍ) : A_E z = ∑' n : ℕ, A_E_term z n := by
-  -- Start from the `ℕ+`-Fourier expansion.
   have h :=
     (E₂_mul_E₄_sub_E₆ z : (E₂ z) * (E₄ z) - (E₆ z) =
       720 * ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * Real.pi * Complex.I * (n : ℂ) * (z : ℂ)))
-  -- Shift the `ℕ+`-series to an `ℕ`-series with exponent `n+1`.
   let f : ℕ → ℂ := fun n =>
     (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * Real.pi * Complex.I * (n : ℂ) * (z : ℂ))
   have hshift : (∑' n : ℕ+, f n) = ∑' n : ℕ, f (n + 1) := by
     simpa [f] using (tsum_pnat_eq_tsum_succ (f := f))
-  -- Absorb the scalar `720` and rewrite coefficients.
   calc
     A_E z = (720 : ℂ) * ∑' n : ℕ+, f n := by
       simpa [A_E, f, mul_assoc, mul_left_comm, mul_comm] using h

@@ -4,11 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Mathlib.Algebra.Field.Power
 public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Ring.Int.Parity
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.LevelOne
+import Mathlib.NumberTheory.ModularForms.LevelOne.Basic
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 public import Mathlib.Order.CompletePartialOrder
 
@@ -109,13 +109,13 @@ private lemma slash_inv_eq_of_slash_eq {k : ℤ} {F G : ℍ → ℂ} {γ : SL(2,
     (h : (F ∣[k] γ) = G) : (G ∣[k] γ⁻¹) = F := by
   simpa [← slash_mul, mul_inv_cancel, slash_one] using (congrArg (fun H => H ∣[k] γ⁻¹) h).symm
 
-lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
+private lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
-lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by
+private lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by
   nth_rw 1 [← H₄_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
-lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
+private lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
   nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use α = T * T -/
@@ -210,31 +210,27 @@ public lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 /-- `H₄(it)` is real and positive for all `t > 0`. -/
 public theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
-  refine ⟨H₄_imag_axis_real, ?_⟩
-  intro t ht
+  refine ⟨H₄_imag_axis_real, fun t ht => ?_⟩
   set a : ℝ := t ^ (-(2 : ℤ)) with ha
   have hrel : H₄.resToImagAxis t = (a : ℂ) * H₂.resToImagAxis (1 / t) := by
-    have hS := (ResToImagAxis.SlashActionS (F := H₂) (k := (2 : ℤ)) (t := t) ht)
     have hIz : (Complex.I : ℂ) ^ (-(2 : ℤ)) = (-1 : ℂ) := by norm_num1
-    apply neg_injective
+    refine neg_injective ?_
     simpa [H₂_S_action, hIz, ha, Function.resToImagAxis, ResToImagAxis, ht, mul_assoc,
-      mul_left_comm, mul_comm] using hS
-  have ht2 : 0 < a := by simpa [ha] using zpow_pos ht (-(2 : ℤ))
-  have hH2pos : 0 < (H₂.resToImagAxis (1 / t)).re :=
-    (H₂_imag_axis_pos).2 (1 / t) (one_div_pos.2 ht)
+      mul_left_comm, mul_comm]
+      using ResToImagAxis.SlashActionS (F := H₂) (k := (2 : ℤ)) (t := t) ht
   have hre : (H₄.resToImagAxis t).re = a * (H₂.resToImagAxis (1 / t)).re := by
-    have := congrArg Complex.re hrel
-    simpa [Complex.mul_re] using this
+    simpa [Complex.mul_re] using congrArg Complex.re hrel
   rw [hre]
-  exact mul_pos ht2 hH2pos
+  exact mul_pos (by simpa [ha] using zpow_pos ht (-(2 : ℤ)))
+    (H₂_imag_axis_pos.2 (1 / t) (one_div_pos.2 ht))
 
-lemma H₂_S_inv_action : (H₂ ∣[(2 : ℤ)] S⁻¹) = -H₄ := by
+private lemma H₂_S_inv_action : (H₂ ∣[(2 : ℤ)] S⁻¹) = -H₄ := by
   rw [← neg_eq_iff_eq_neg.mpr H₄_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
-lemma H₃_S_inv_action : (H₃ ∣[(2 : ℤ)] S⁻¹) = -H₃ := by
+private lemma H₃_S_inv_action : (H₃ ∣[(2 : ℤ)] S⁻¹) = -H₃ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₃_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
-lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
+private lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use β = -S * α^(-1) * S -/
@@ -288,24 +284,17 @@ section H_MDifferentiable
 public lemma H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by
   rw [mdifferentiable_iff]
   simp only [H₂_SIF, SlashInvariantForm.coe_mk]
-  have h_exp : DifferentiableOn ℂ (fun z : ℂ => cexp (((π : ℂ) * I / 4) * z)) {z | 0 < z.im} := by
-    intro z hz
-    exact ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).differentiableWithinAt
+  have h_exp : DifferentiableOn ℂ (fun z : ℂ => cexp (((π : ℂ) * I / 4) * z)) {z | 0 < z.im} :=
+    fun z _ => ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).differentiableWithinAt
   have h_theta : DifferentiableOn ℂ (fun z : ℂ => jacobiTheta₂ (z / 2) z) {z | 0 < z.im} := by
     intro z hz
     let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
     let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
     have hg : DifferentiableAt ℂ g (f z) := by
       simpa [f, g] using (hasFDerivAt_jacobiTheta₂ (z / 2) (by simpa using hz)).differentiableAt
-    have hf : DifferentiableAt ℂ f z := by
-      simp [f, div_eq_mul_inv]
+    have hf : DifferentiableAt ℂ f z := by simp [f, div_eq_mul_inv]
     simpa [f, g] using (DifferentiableAt.fun_comp' z hg hf).differentiableWithinAt
-  have h_prod :
-      DifferentiableOn ℂ
-        (fun z : ℂ => cexp (((π : ℂ) * I / 4) * z) * jacobiTheta₂ (z / 2) z) {z | 0 < z.im} :=
-    h_exp.mul h_theta
-  refine (h_prod.pow 4).congr ?_
-  intro z hz
+  refine ((h_exp.mul h_theta).pow 4).congr fun z hz => ?_
   simp [Function.comp, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz, div_eq_mul_inv,
     mul_assoc, mul_comm]
 
@@ -366,35 +355,27 @@ public lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
 /-- The norm of `cexp (z * I)` is `Real.exp (-z.im)`. -/
 public lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by simp [norm_exp]
 
-lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
+private lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
     ‖Θ₂_term n z‖ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
-    apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
+    have : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
     simp_all
   have h_mulI :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * z : ℂ) = (π * ((r ^ 2 : ℝ) : ℂ) * z) * I := by
     simp [hsq, mul_assoc, mul_left_comm, mul_comm]
   have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
-    calc
-      (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = (((π : ℂ) * ((r ^ 2 : ℝ) : ℂ)) * z : ℂ).im := by
-        simp [mul_assoc]
-      _ = (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im := by simp
-      _ = (Real.pi * (r ^ 2)) * z.im := im_ofReal_mul (Real.pi * (r ^ 2)) (z : ℂ)
-      _ = π * (r ^ 2) * z.im := by simp [mul_assoc]
+    have : (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im = (Real.pi * (r ^ 2)) * z.im :=
+      im_ofReal_mul (Real.pi * (r ^ 2)) (z : ℂ)
+    simpa [mul_assoc] using this
   calc
     ‖Θ₂_term n z‖ = ‖cexp ((π * ((r ^ 2 : ℝ) : ℂ) * z) * I)‖ := by
       simp [Θ₂_term, one_div, h_mulI]
-    _ = rexp (-(π * ((r ^ 2 : ℝ) : ℂ) * z).im) := by
-      simp [Complex.norm_exp_mul_I]
-    _ = rexp (-π * (r ^ 2) * z.im) := by
-      rw [him]
-      simp [mul_assoc]
-    _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
-      simp [r, pow_two, mul_assoc]
+    _ = rexp (-(π * ((r ^ 2 : ℝ) : ℂ) * z).im) := by simp [Complex.norm_exp_mul_I]
+    _ = rexp (-π * (r ^ 2) * z.im) := by rw [him]; simp [mul_assoc]
+    _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by simp [r, pow_two, mul_assoc]
 
-lemma summable_exp_neg_pi_mul_int_add_half_sq :
+private lemma summable_exp_neg_pi_mul_int_add_half_sq :
     Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
   simpa [norm_Θ₂_term, mul_one] using (summable_Θ₂_term UpperHalfPlane.I).norm
 
@@ -405,25 +386,20 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   rw [norm_pow]
   gcongr
   have hsum_norm : Summable fun n : ℤ => ‖Θ₂_term n z‖ := (summable_Θ₂_term z).norm
-  have hsum_exp : Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) :=
-    summable_exp_neg_pi_mul_int_add_half_sq
   have hterm_le (n : ℤ) :
       ‖Θ₂_term n z‖ ≤ rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
-    have h' :
-        -π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im ≤ -π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2 := by
-      have hπ : -π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) ≤ 0 := by
-        have : 0 ≤ (π : ℝ) * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by positivity
-        have : -((π : ℝ) * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2)) ≤ 0 := neg_nonpos.2 this
-        simpa [neg_mul, mul_assoc] using this
-      simpa [mul_one, mul_assoc] using (mul_le_mul_of_nonpos_left hz hπ)
     rw [norm_Θ₂_term]
-    exact Real.exp_monotone h'
-  have hnorm : ‖Θ₂ z‖ ≤ ∑' n : ℤ, ‖Θ₂_term n z‖ := by
-    simpa [Θ₂] using (norm_tsum_le_tsum_norm hsum_norm)
-  exact hnorm.trans (Summable.tsum_le_tsum (fun n ↦ hterm_le n) hsum_norm hsum_exp)
+    refine Real.exp_monotone ?_
+    have hπ : -π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) ≤ 0 := by
+      simpa [neg_mul, mul_assoc] using
+        (neg_nonpos.2 (by positivity : 0 ≤ (π : ℝ) * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2)))
+    simpa [mul_one, mul_assoc] using (mul_le_mul_of_nonpos_left hz hπ)
+  refine ((by simpa [Θ₂] using norm_tsum_le_tsum_norm hsum_norm :
+      ‖Θ₂ z‖ ≤ ∑' n : ℤ, ‖Θ₂_term n z‖)).trans
+    (hsum_norm.tsum_le_tsum hterm_le summable_exp_neg_pi_mul_int_add_half_sq)
 
 -- We isolate this lemma out as it's also used in the proof for Θ₄
-lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
+private lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
     ∑' (n : ℤ), ‖Θ₃_term n z‖ ≤ ∑' (n : ℤ), rexp (-π * n ^ 2) := by
   have h_rw (z : ℍ) (n : ℤ) : -(π * n ^ 2 * z : ℂ).im = -π * n ^ 2 * z.im := by
     rw [mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← ofReal_intCast, im_ofReal_mul]
@@ -448,7 +424,7 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
   · exact h_sum z
   · simpa using h_sum UpperHalfPlane.I
 
-theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
+public theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₃, Θ₃]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
   intro z hz
@@ -519,10 +495,6 @@ public theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : �
         Set.insert_subset_insert]
     simp only [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs2,
       Subgroup.mem_top]
-
-/-!
-## Boundedness at infinity for slash translates
--/
 
 /-- Every `SL(2,ℤ)` slash translate of `H₂` is bounded at `Im z → ∞`. -/
 public theorem isBoundedAtImInfty_H₂_slash :

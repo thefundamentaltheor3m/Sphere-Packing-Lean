@@ -162,8 +162,9 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
       by simpa [mul_inv_cancel₀ hL.ne'] using
         (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
           (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
-  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1,
-      by simpa [mul_assoc, inv_mul_cancel₀ hL.ne'] using mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
+  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
+      simpa [mul_assoc, inv_mul_cancel₀ hL.ne'] using
+        mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
@@ -238,7 +239,8 @@ public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L) (v : cubeLattic
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
   obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
-  exact ⟨g + v, (hvadd _).2 (by simpa), fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ <| (hvadd _).1 ha)⟩
+  exact ⟨g + v, (hvadd _).2 (by simpa),
+    fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ <| (hvadd _).1 ha)⟩
 
 public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
@@ -249,7 +251,7 @@ public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < 
   intro z hz
   refine ⟨z - v, hball ?_, by simp [vadd_eq_add]⟩
   change dist z ((v : EuclideanSpace ℝ (Fin d)) + y) < r at hz
-  rw [mem_ball, dist_eq_norm, show z - ↑v - y = z - (↑v + y) from by abel, ← dist_eq_norm]
+  rw [mem_ball, dist_eq_norm, show z - ↑v - y = z - (↑v + y) by abel, ← dist_eq_norm]
   exact hz
 
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
@@ -383,7 +385,6 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       refine ⟨x0, ⟨hxB1', hxB2'⟩, y0 - x0, ?_, by simp [sub_eq_add_neg, add_left_comm]⟩
       have : ‖y - x‖ < r := by simpa [Metric.mem_ball, dist_eq_norm] using hyBall
       simpa [Metric.mem_ball, dist_eq_norm, x0, y0, r] using this
-    -- Now convert hy0 : y0 ∈ (... \ ...) where y0 = -↑g +ᵥ y to y ∈ g +ᵥ (... \ ...)
     exact Set.mem_vadd_set_iff_neg_vadd_mem.mpr hy0
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
       = volume (⋃ x ∈ s, ball x r) := by
@@ -568,9 +569,6 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (Finset.mem_filter.1 hx).2.symm
     rw [h]
     have hspec := PeriodicConstantApprox.coordCubeCover_spec L hLpos x
-    -- hspec : PeriodicConstantApprox.coordCubeCover L hLpos x +ᵥ x ∈ coordCube d L
-    -- Goal: x ∈ -PeriodicConstantApprox.coordCubeCover L hLpos x +ᵥ coordCube d L
-    -- By Set.mem_vadd_set_iff_neg_vadd_mem, this is -(-cover) +ᵥ x = cover +ᵥ x ∈ coordCube
     have : -(-PeriodicConstantApprox.coordCubeCover L hLpos x) +ᵥ x ∈ coordCube d L := by
       rw [neg_neg]; exact hspec
     exact Set.mem_vadd_set_iff_neg_vadd_mem.mpr this
@@ -706,7 +704,6 @@ end
 
 end LPPrereqs
 
-/-! ## Summability and reindexing helpers (merged from `LPBoundReindex`) -/
 
 namespace SpherePacking.CohnElkies
 variable {d : ℕ}
@@ -744,7 +741,7 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
         ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k *
           ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤ C := by
       simpa [show ‖a + (ℓ : EuclideanSpace ℝ (Fin d))‖ =
-          ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ from by simp [b, sub_eq_add_neg, add_comm],
+          ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ by simp [b, sub_eq_add_neg, add_comm],
         norm_iteratedFDeriv_zero] using hC (a + (ℓ : EuclideanSpace ℝ (Fin d)))
     refine hfail (by simpa [div_eq_mul_inv, inv_pow] using
       ((le_div_iff₀' hpos).2 hdec).trans (by
@@ -900,7 +897,6 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
 
 end
 
-/-! ## Main LP bound -/
 
 /-- Commute the finite `x,y` sums with the dual-lattice `m` sum in the Poisson summation
 expression. We assume `𝓕 f` is real-valued so the result lives in real parts. -/
@@ -1005,7 +1001,6 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
           (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
             (ℓ : EuclideanSpace ℝ (Fin d)))).re)
       ≤ ite (x = y) (f 0).re 0 := by
-  -- If `x,y ∈ D` and `x + ℓ = y`, then `ℓ = 0` by uniqueness of the cover of `y`.
   have hℓ_eq_zero_of_vadd_eq {x y : ↑(P.centers ∩ D)} {ℓ : P.lattice}
       (hxy : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) =
           (y : EuclideanSpace ℝ (Fin d))) : ℓ = 0 := by
@@ -1023,8 +1018,9 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
   by_cases hxy : x = y
   · subst hxy
     have hs : Summable fun ℓ : P.lattice => (f (ℓ : EuclideanSpace ℝ (Fin d))).re := by
-      simpa [zero_add] using SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
-        (Λ := P.lattice) (f := f) (a := (0 : EuclideanSpace ℝ (Fin d)))
+      simpa [zero_add] using
+        SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
+          (Λ := P.lattice) (f := f) (a := (0 : EuclideanSpace ℝ (Fin d)))
     have htail : (∑' ℓ : P.lattice,
           ite (ℓ = (0 : P.lattice)) 0 (f (ℓ : EuclideanSpace ℝ (Fin d))).re) ≤ 0 := by
       refine tsum_nonpos fun ℓ => ?_
@@ -1091,9 +1087,9 @@ theorem f_zero_pos : 0 < (f 0).re := by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
         (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
-    simpa [fourierInv_eq, show f 0 = 0 from by simpa [hf0re.symm] using (hReal 0).symm] using
+    simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion))
-  ext x; simpa [show (𝓕 f x).re = 0 from by simpa using congrFun hfun x] using (hRealFourier x).symm
+  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 section Fundamental_Domain_Dependent
 

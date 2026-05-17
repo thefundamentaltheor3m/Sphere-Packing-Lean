@@ -9,14 +9,14 @@ import SpherePacking.Tactic.NormNumI
 
 public import SpherePacking.ForMathlib.Cusps
 
-@[expose] public section
-
 /-!
 # Discriminant Product Formula
 
 This file re-exports mathlib's `ModularForm.discriminant` under the project notations `Δ`/`Delta`
 and packages the corollaries used in the sphere-packing argument.
 -/
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -57,15 +57,15 @@ public lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : �
   rw [SL_slash_apply] at h
   simp only [ModularGroup.denom_S, zpow_neg] at h
   field_simp [ne_zero z] at h
-  show discriminant _ = _
+  change discriminant _ = _
   rw [h, mul_comm]
 
 /-- The bounded factor in the discriminant product tends to `1` at `Im z → ∞`. -/
 public theorem Delta_boundedfactor :
     Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24)
-      atImInfty (𝓝 1) := by
-  refine (tendsto_atImInfty_tprod_one_sub_eta_q_pow.congr fun z => ?_)
-  exact tprod_congr fun n => by rw [eta_q_eq_cexp]
+      atImInfty (𝓝 1) :=
+  tendsto_atImInfty_tprod_one_sub_eta_q_pow.congr fun _ =>
+    tprod_congr fun _ => by rw [eta_q_eq_cexp]
 
 /-- The discriminant cusp form of weight `12` on `Γ(1)`. -/
 def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
@@ -82,8 +82,6 @@ public lemma Delta_ne_zero : Delta ≠ 0 :=
 public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * τ.im)) :=
   ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta,
     by simpa [Delta_apply, Δ] using exp_isBigO_discriminant⟩
-
-/-! ## Imaginary-axis positivity -/
 
 private lemma Complex_im_finset_prod_eq_zero_of_im_eq_zero (s : Finset ℕ) (f : ℕ → ℂ)
     (h : ∀ i ∈ s, (f i).im = 0) : (∏ i ∈ s, f i).im = 0 := by
@@ -173,9 +171,8 @@ private lemma Delta_tprod_pos_nat_im (z : ℍ) :
   have hsum_log :
       Summable (fun n : ℕ => Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)) := by
     simp only [Real.log_pow, Nat.cast_ofNat, ← smul_eq_mul]
-    apply Summable.const_smul
-    apply Real.summable_log_one_add_of_summable
-    apply Summable.neg
+    refine (Real.summable_log_one_add_of_summable ?_).const_smul _
+    refine .neg ?_
     have h0 : Summable (fun n : ℕ => Real.exp (n * (-(2 * π * z.im)))) :=
       Real.summable_exp_nat_mul_iff.mpr
         (by simpa using (neg_lt_zero.mpr (by positivity : 0 < 2 * π * z.im)))

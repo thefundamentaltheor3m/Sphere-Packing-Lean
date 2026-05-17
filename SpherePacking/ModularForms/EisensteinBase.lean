@@ -26,15 +26,13 @@ noncomputable section
 
 section Definitions
 
-/-! ## Level-one Eisenstein series -/
-
 /-- The normalized level-one Eisenstein series of weight `4` as a modular form. -/
 @[expose] public def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by decide) standardcongruencecondition -- normalization
+  (1/2 : ℂ) • eisensteinSeriesMF (by decide) standardCongruenceCondition -- normalization
 
 /-- The normalized level-one Eisenstein series of weight `6` as a modular form. -/
 @[expose] public def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by decide) standardcongruencecondition
+  (1/2 : ℂ) • eisensteinSeriesMF (by decide) standardCongruenceCondition
 
 /-- Evaluation of `E₄` agrees with `E 4` pointwise. -/
 @[simp] public lemma E4_apply (z : ℍ) : E₄ z = E 4 (by decide) z := rfl
@@ -43,12 +41,12 @@ section Definitions
 @[simp] public lemma E6_apply (z : ℍ) : E₆ z = E 6 (by decide) z := rfl
 
 /-- E₄ is 1-periodic: E₄(z + 1) = E₄(z). This follows from E₄ being a modular form for Γ(1). -/
-public lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z :=
-  by simpa using SlashInvariantForm.vAdd_width_periodic 1 4 1 E₄.toSlashInvariantForm z
+public lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z := by
+  simpa using SlashInvariantForm.vAdd_width_periodic 1 4 1 E₄.toSlashInvariantForm z
 
 /-- E₆ is 1-periodic: E₆(z + 1) = E₆(z). This follows from E₆ being a modular form for Γ(1). -/
-public lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z :=
-  by simpa using SlashInvariantForm.vAdd_width_periodic 1 6 1 E₆.toSlashInvariantForm z
+public lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
+  simpa using SlashInvariantForm.vAdd_width_periodic 1 6 1 E₆.toSlashInvariantForm z
 
 /-- E₄ transforms under S as: E₄(-1/z) = z⁴ · E₄(z) -/
 private lemma ModularForm.S_transform_of_level_one (m : ℕ)
@@ -64,18 +62,16 @@ private lemma ModularForm.S_transform_of_level_one (m : ℕ)
   exact h
 
 /-- The `S`-transformation formula for `E₄`. -/
-public lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z := by
-  simpa using (ModularForm.S_transform_of_level_one 4 E₄ z)
+public lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z :=
+  ModularForm.S_transform_of_level_one 4 E₄ z
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
-public lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z := by
-  simpa using (ModularForm.S_transform_of_level_one 6 E₆ z)
+public lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z :=
+  ModularForm.S_transform_of_level_one 6 E₆ z
 
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
 
 end Definitions
-
-/-! ## Auxiliary ratios `φ` -/
 
 /-- The ratio `φ₀ = (E₂ * E₄ - E₆)^2 / Δ` on `ℍ`. -/
 @[expose] public def φ₀ (z : ℍ) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
@@ -98,11 +94,6 @@ end Definitions
 /-- Unfold `φ₀''` on the upper half-plane. -/
 @[simp] public lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
   simp [φ₀'', hz]
-
-/-- Unfold `φ₀''` when `z` is in `upperHalfPlaneSet`. -/
-@[simp] public lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) :
-    φ₀'' z = φ₀ ⟨z, hz⟩ :=
-  φ₀''_def hz
 
 /-- Unfold `φ₀''` on an upper-half-plane point `z : ℍ`. -/
 @[simp] public lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
@@ -226,7 +217,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   have hsum : Summable fun n : ℕ+ ↦ ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
     refine .of_norm (.of_nonneg_of_le (fun n ↦ norm_nonneg _) (fun n ↦ ?_)
-      (summable_norm_iff.mpr (by have := a33 k 1 z; simpa using this)))
+      (summable_norm_iff.mpr (by simpa using summable_pow_mul_exp_nat k 1 z)))
     simp only [norm_mul, Complex.norm_natCast]
     refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
     rw [Complex.norm_pow, Complex.norm_natCast]
@@ -301,8 +292,6 @@ public theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
 
 end ImagAxisProperties
 
-/-! ## Boundedness of E₂. -/
-
 /-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π); useful for q-expansion bounds. -/
 public lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
     ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
@@ -357,12 +346,6 @@ public lemma norm_tsum_logDeriv_expo_le_of_norm_le {q : ℂ} {r : ℝ} (hqr : �
         have := sub_pos.mpr hq
         gcongr
 
-/-!
-## Boundedness and limit at infinity
-
-We use `E₂_eq` to bound the tail series in terms of `q = exp(2π i z)` when `Im z ≥ 1`.
--/
-
 /-- `E₂` is bounded at `Im z → ∞`. -/
 public lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   rw [UpperHalfPlane.isBoundedAtImInfty_iff]
@@ -383,8 +366,7 @@ public lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   calc ‖1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
       = ‖1 - 24 * S‖ := by rw [hS_eq]
-    _ ≤ 1 + 24 * ‖S‖ := by
-        have := norm_sub_le (1 : ℂ) (24 * S); simp at this; linarith
+    _ ≤ 1 + 24 * ‖S‖ := by simpa using norm_sub_le (1 : ℂ) (24 * S)
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
         gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
 

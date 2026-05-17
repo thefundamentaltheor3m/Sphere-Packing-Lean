@@ -74,8 +74,6 @@ public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
     D (F * G) = D F * G + F * D G :=
   Derivative.normalizedDerivOfComplex_mul F G hF hG
 
-/-! ### Termwise differentiation of q-series (Lemma 6.45) -/
-
 /-- Helper: HasDerivAt for a·exp(2πicw) with chain rule. -/
 lemma hasDerivAt_qexp (a c w : ℂ) :
     HasDerivAt (fun z => a * cexp (2 * π * I * c * z))
@@ -105,11 +103,9 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     D (fun w => ∑' n, a n * cexp (2 * π * I * n * w)) z =
       ∑' n : ℕ, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
   simp only [Derivative.normalizedDerivOfComplex]
-  -- Each term is differentiable
   have hf_diff : ∀ n (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ
       (fun w => a n * cexp (2 * π * I * n * w)) r := fun n r =>
     ((differentiableAt_id.const_mul (2 * π * I * n)).cexp).const_mul (a n)
-  -- Summability at each point (bound holds for n ≥ 1, exception set ⊆ {0})
   have hf_sum : ∀ y : ℂ, y ∈ {w : ℂ | 0 < w.im} →
       Summable (fun n => a n * cexp (2 * π * I * n * y)) := by
     intro y hy
@@ -139,7 +135,6 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
             apply div_le_div_of_nonneg_left (le_trans (norm_nonneg _) h_deriv_bound)
               (by positivity); nlinarith
     exact hn.not_ge h_bound
-  -- Derivative bound for uniform convergence
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
         ‖derivWithin (fun w => a n * cexp (2 * π * I * n * w))
@@ -147,24 +142,19 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     intro K hK1 hK2
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
     exact ⟨u, hu_sum, fun n k => by rw [derivWithin_qexp _ _ _ (hK1 k.2)]; exact hu_bound n k⟩
-  -- Apply termwise differentiation
   have h_tsum_deriv := hasDerivAt_tsum_fun (fun n w => a n * cexp (2 * π * I * n * w))
     isOpen_upperHalfPlaneSet (z : ℂ) z.2 hf_sum hu hf_diff
-  -- The composed function agrees with ℂ → ℂ in a neighborhood
   have h_agree :
       ((fun w : ℍ => ∑' n, a n * cexp (2 * π * I * n * w)) ∘ ofComplex)
         =ᶠ[nhds (z : ℂ)] fun w => ∑' n, a n * cexp (2 * π * I * n * w) := by
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
   rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
-  -- Simplify derivWithin using helper
   have h_deriv_simp : ∀ n, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
       {w : ℂ | 0 < w.im} z = a n * (2 * π * I * n) * cexp (2 * π * I * n * z) :=
     fun n => derivWithin_qexp _ _ _ z.2
   simp_rw [h_deriv_simp, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
-
-/-! ## Cauchy estimates for `D` -/
 
 /-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper
 half-plane, then `f ∘ ofComplex` is `DiffContOnCl` on the corresponding open disk. -/
@@ -187,9 +177,9 @@ public lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
   have hdist : dist w z ≤ z.im / 2 := Metric.mem_closedBall.mp hw
   have habs : |w.im - z.im| ≤ z.im / 2 := by
     simpa [Complex.sub_im] using
-      (le_trans (by simpa [dist_eq_norm] using (abs_im_le_norm (w - z))) hdist)
-  have hw_im : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-  exact lt_of_lt_of_le (by linarith [z.im_pos] : 0 < z.im / 2) hw_im
+      (le_trans (by simpa [dist_eq_norm] using abs_im_le_norm (w - z)) hdist)
+  change 0 < w.im
+  linarith [(abs_le.mp habs).1, z.im_pos]
 
 /-- Cauchy estimate for the D-derivative: if `f ∘ ofComplex` is holomorphic on a disk
 of radius `r` around `z` and bounded by `M` on the boundary sphere,
@@ -210,8 +200,6 @@ lemma norm_D_le_div_pi_im_of_bounded {f : ℍ → ℂ}
     ‖D f z‖ ≤ M / (π * z.im) := by
   have hR_pos : 0 < z.im / 2 := by linarith [z.im_pos]
   have hclosed := closedBall_center_subset_upperHalfPlane z
-  have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
-    diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
   have hf_bdd_sphere :
       ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
     intro w hw
@@ -219,14 +207,13 @@ lemma norm_D_le_div_pi_im_of_bounded {f : ℍ → ℂ}
     have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
     have habs : |w.im - z.im| ≤ z.im / 2 := by
       simpa [Complex.sub_im, hdist] using
-          (by simpa [dist_eq_norm] using (abs_im_le_norm (w - z)) : |(w - z).im| ≤ dist w z)
-    have hmax : max A 0 ≤ z.im / 2 := by linarith [hz]
-    have hw_im_ge : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-    have hw_im_ge_A : A ≤ w.im := le_trans (le_trans (le_max_left A 0) hmax) hw_im_ge
+        (by simpa [dist_eq_norm] using (abs_im_le_norm (w - z)) : |(w - z).im| ≤ dist w z)
+    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
     simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
   have hDz : ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) :=
-    norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
-  simpa [div_eq_mul_inv] using (hDz.trans_eq (by ring))
+    norm_D_le_of_sphere_bound hR_pos
+      (diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed) hf_bdd_sphere
+  simpa [div_eq_mul_inv] using hDz.trans_eq (by ring)
 
 /-- The D-derivative is bounded at infinity for bounded holomorphic functions.
 
@@ -254,45 +241,23 @@ public lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 For z with im(z) = y, a Cauchy estimate on a ball of radius y/2 gives
 ‖D f z‖ ≤ M / (π · y), which tends to zero as y → ∞. -/
 theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    (hbdd : IsBoundedAtImInfty f) :
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hbdd : IsBoundedAtImInfty f) :
     Filter.Tendsto (D f) atImInfty (nhds 0) := by
   obtain ⟨M, A, hMA⟩ := isBoundedAtImInfty_iff.mp hbdd
-  -- ‖D f z‖ ≤ M / (π · z.im) by Cauchy estimate; the bound → 0 since z.im → ∞.
   suffices h : ∀ᶠ z : ℍ in atImInfty, ‖D f z‖ ≤ M / (π * z.im) by
     apply squeeze_zero_norm' h
     have := Filter.tendsto_im_atImInfty.inv_tendsto_atTop.const_mul (M / π)
     simp only [Pi.inv_apply, mul_zero] at this
     exact this.congr fun z => by field_simp
-  have h_sphere_bdd : ∀ z : ℍ, 2 * max A 0 + 1 ≤ z.im →
-      ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
-    intro z hz_ge w hw
-    have hw_im_pos : 0 < w.im :=
-      closedBall_center_subset_upperHalfPlane z (Metric.sphere_subset_closedBall hw)
-    have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
-    have habs : |w.im - z.im| ≤ z.im / 2 := by
-      calc |w.im - z.im| = |(w - z).im| := by simp [Complex.sub_im]
-        _ ≤ ‖w - z‖ := abs_im_le_norm _
-        _ = dist w z := (dist_eq_norm _ _).symm
-        _ = z.im / 2 := hdist
-    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
-    simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
   rw [Filter.eventually_iff_exists_mem]
-  refine ⟨{z : ℍ | 2 * max A 0 + 1 ≤ z.im},
-    (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩, fun z hz => ?_⟩
-  calc ‖D f z‖
-      ≤ M / (2 * π * (z.im / 2)) := norm_D_le_of_sphere_bound (by linarith [z.im_pos])
-          (diffContOnCl_comp_ofComplex_of_mdifferentiable hf
-            (closedBall_center_subset_upperHalfPlane z)) (h_sphere_bdd z hz)
-    _ = M / (π * z.im) := by ring
+  exact ⟨{z : ℍ | 2 * max A 0 + 1 ≤ z.im}, (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩,
+    fun _ hz => norm_D_le_div_pi_im_of_bounded hf hMA hz⟩
 
+/-- The D-derivative tends to 0 at infinity for bounded holomorphic functions.
 
--- TODO: The following lemma from Gauss overlaps with `D_tendsto_zero_of_isBoundedAtImInfty`
--- above. We will probably want to drop it.
-/-- The D-derivative tends to 0 at infinity for bounded holomorphic functions. -/
+This overlaps with `D_tendsto_zero_of_isBoundedAtImInfty`; it is kept for backward compatibility. -/
 public lemma D_isZeroAtImInfty_of_bounded {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    (hbdd : IsBoundedAtImInfty f) :
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hbdd : IsBoundedAtImInfty f) :
     IsZeroAtImInfty (D f) := by
   rw [UpperHalfPlane.isZeroAtImInfty_iff]
   intro ε hε
@@ -301,11 +266,10 @@ public lemma D_isZeroAtImInfty_of_bounded {f : ℍ → ℂ}
   refine ⟨max (2 * max A 0 + 1) (M / (Real.pi * ε)), fun z hz => ?_⟩
   have hz' : 2 * max A 0 + 1 ≤ z.im := le_trans (le_max_left _ _) hz
   have hz_im : M / (Real.pi * ε) ≤ z.im := le_trans (le_max_right _ _) hz
-  have hpiε : 0 < (Real.pi * ε) := mul_pos Real.pi_pos hε
-  have hpiIm : 0 < (Real.pi * z.im) := mul_pos Real.pi_pos z.im_pos
+  have hpiε : 0 < Real.pi * ε := mul_pos Real.pi_pos hε
+  have hpiIm : 0 < Real.pi * z.im := mul_pos Real.pi_pos z.im_pos
   have hMle : M ≤ ε * (Real.pi * z.im) := by
-    have hMle' : M ≤ z.im * (Real.pi * ε) := (div_le_iff₀ hpiε).1 hz_im
-    simpa [mul_assoc, mul_left_comm, mul_comm] using hMle'
+    simpa [mul_assoc, mul_left_comm, mul_comm] using (div_le_iff₀ hpiε).1 hz_im
   have hbound : M / (π * z.im) ≤ ε :=
     (div_le_iff₀ hpiIm).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using hMle)
   exact (norm_D_le_div_pi_im_of_bounded hf hMA hz').trans hbound

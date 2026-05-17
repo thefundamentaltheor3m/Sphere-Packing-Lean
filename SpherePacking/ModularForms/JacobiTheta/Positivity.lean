@@ -26,25 +26,21 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
-/-! ## Imaginary axis properties: realness on the positive imaginary axis. -/
-
 section ImagAxisProperties
 
 private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
       (Real.exp (-(Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)) : ℂ) := by
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
-    apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
+    have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
     simp_all
   have harg :
       (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
         ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by
     calc
       (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
-          π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by
-            simp [mul_assoc]
+          π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by simp [mul_assoc]
       _ = π * (Complex.I * (((r ^ 2 : ℝ) : ℂ) * (Complex.I * t))) := by simp [hsq]
       _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by simp [I_mul_mul_I]
       _ = ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by simp [mul_left_comm, mul_comm]
@@ -60,19 +56,17 @@ theorem Θ₂_imag_axis_real : ResToImagAxis.Real Θ₂ := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set τ : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hsum : Summable (fun n : ℤ => Θ₂_term n τ) := summable_Θ₂_term τ
-  have hterm_im (n : ℤ) : (Θ₂_term n τ).im = 0 := by
-    have h := congrArg Complex.im (Θ₂_term_eq_ofReal_exp_imag_axis (n := n) (t := t) ht)
-    assumption
+  have hterm_im (n : ℤ) : (Θ₂_term n τ).im = 0 :=
+    congrArg Complex.im (Θ₂_term_eq_ofReal_exp_imag_axis (n := n) (t := t) ht)
   rw [Θ₂, im_tsum hsum]
   simp [hterm_im]
 
 lemma Θ₂_term_re_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ)).re =
       Real.exp (-(Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)) := by
-  have h := congrArg Complex.re (Θ₂_term_eq_ofReal_exp_imag_axis (n := n) (t := t) ht)
-  -- avoid rewriting `(Real.exp _ : ℂ)` into `Complex.exp _`
-  -- (whose `re` is definitionally `Real.exp _`)
-  simpa only [Complex.ofReal_re] using h
+  -- `simp only` here avoids rewriting `(Real.exp _ : ℂ)` into `Complex.exp _`.
+  simpa only [Complex.ofReal_re] using
+    congrArg Complex.re (Θ₂_term_eq_ofReal_exp_imag_axis (n := n) (t := t) ht)
 
 /-- `Θ₂(it)` is real and positive for all `t > 0`. -/
 theorem Θ₂_imag_axis_pos : ResToImagAxis.Pos Θ₂ := by
@@ -88,17 +82,10 @@ theorem Θ₂_imag_axis_pos : ResToImagAxis.Pos Θ₂ := by
     simpa [τ] using Θ₂_term_re_imag_axis n t ht
   have hterm_nonneg (n : ℤ) : 0 ≤ (Θ₂_term n τ).re := by
     simpa [hterm_re n] using (Real.exp_pos _).le
-  have hterm_pos0 : 0 < (Θ₂_term 0 τ).re := by
-    rw [hterm_re 0]
-    exact Real.exp_pos _
-  have hre_tsum :
-      (Θ₂ τ).re = ∑' n : ℤ, (Θ₂_term n τ).re := by
-    -- `re` commutes with `tsum`.
+  have hterm_pos0 : 0 < (Θ₂_term 0 τ).re := (hterm_re 0).symm ▸ Real.exp_pos _
+  have hre_tsum : (Θ₂ τ).re = ∑' n : ℤ, (Θ₂_term n τ).re := by
     simpa [Θ₂] using (Complex.reCLM.map_tsum hsum)
-  -- Positivity of the sum follows from termwise nonnegativity and one positive term.
-  have : 0 < ∑' n : ℤ, (Θ₂_term n τ).re :=
-    hsumRe.tsum_pos hterm_nonneg 0 hterm_pos0
-  simpa [hre_tsum] using this
+  simpa [hre_tsum] using hsumRe.tsum_pos hterm_nonneg 0 hterm_pos0
 
 /-- `Θ₄(it)` is real for all `t > 0`. -/
 theorem Θ₄_imag_axis_real : ResToImagAxis.Real Θ₄ := by
@@ -145,22 +132,9 @@ public theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using Θ₂_imag_axis_real t ht
   have hΘpos : 0 < (Θ₂ τ).re := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using (Θ₂_imag_axis_pos).2 t ht
-  have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := by
-    refine Complex.ext (by simp) ?_
-    simpa using hΘreal
+  have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := Complex.ext rfl (by simpa using hΘreal)
   have hre : (H₂ τ).re = (Θ₂ τ).re ^ 4 := by
-    have hre' : ((Θ₂ τ) ^ 4).re = (Θ₂ τ).re ^ 4 := by
-      have hpow : (Θ₂ τ) ^ 4 = ((Θ₂ τ).re : ℂ) ^ 4 := by
-        simpa using congrArg (fun z : ℂ => z ^ 4) hΘeq
-      calc
-        ((Θ₂ τ) ^ 4).re = (((Θ₂ τ).re : ℂ) ^ 4).re := by simp [hpow]
-        _ = (Θ₂ τ).re ^ 4 := by
-          have h :
-              ((Θ₂ τ).re : ℂ) ^ 4 = (↑((Θ₂ τ).re ^ 4) : ℂ) :=
-            (Complex.ofReal_pow (Θ₂ τ).re 4).symm
-          rw [h]
-          exact Complex.ofReal_re ((Θ₂ τ).re ^ 4)
-    simpa [H₂] using hre'
+    rw [H₂, hΘeq, ← Complex.ofReal_pow]; exact Complex.ofReal_re _
   simpa [hre] using pow_pos hΘpos 4
 
 /-- `H₄(it)` is real for all `t > 0`. -/

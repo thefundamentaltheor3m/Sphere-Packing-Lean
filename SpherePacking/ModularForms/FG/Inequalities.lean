@@ -20,19 +20,18 @@ open SpherePacking.ModularForms
 noncomputable local instance : MulAction SL(2, ℤ) ℍ := UpperHalfPlane.SLAction (R := ℤ)
 
 
-/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
+private lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
   antiSerreDerPos (F := L₁₀) (k := 22) L₁₀_holo SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
 
-lemma hasDerivAt_FReal (t : ℝ) (ht : 0 < t) :
+private lemma hasDerivAt_FReal (t : ℝ) (ht : 0 < t) :
     HasDerivAt FReal (-2 * π * (D F).resToImagAxis t).re t := by
   simpa [FReal] using hasDerivAt_resToImagAxis_re F_holo ht
 
-lemma hasDerivAt_GReal (t : ℝ) (ht : 0 < t) :
+private lemma hasDerivAt_GReal (t : ℝ) (ht : 0 < t) :
     HasDerivAt GReal (-2 * π * (D G).resToImagAxis t).re t := by
   simpa [GReal] using hasDerivAt_resToImagAxis_re G_holo ht
 
-lemma L₁₀_resToImagAxis_re_eq (t : ℝ) (ht : 0 < t) :
+private lemma L₁₀_resToImagAxis_re_eq (t : ℝ) (ht : 0 < t) :
     (L₁₀.resToImagAxis t).re =
       ((D F).resToImagAxis t).re * GReal t - FReal t * ((D G).resToImagAxis t).re := by
   have hF_real : ResToImagAxis.Real F := F_pos.1
@@ -50,54 +49,40 @@ lemma L₁₀_resToImagAxis_re_eq (t : ℝ) (ht : 0 < t) :
   simp [L₁₀, FReal, GReal, Function.resToImagAxis, ResToImagAxis, ht, Complex.mul_re, hFim, hGim,
     hDFim, hDGim]
 
-lemma deriv_FmodGReal_neg {t : ℝ} (ht : 0 < t) : deriv FmodGReal t < 0 := by
-  have hGpos : 0 < GReal t := by simpa [GReal] using (G_pos.2 t ht)
-  have hGne : GReal t ≠ 0 := ne_of_gt hGpos
-  have hquot := (hasDerivAt_FReal t ht).div (hasDerivAt_GReal t ht) hGne
-  have hLpos : 0 < (L₁₀.resToImagAxis t).re := by
-    simpa using (L₁₀_pos.2 t ht)
+private lemma deriv_FmodGReal_neg {t : ℝ} (ht : 0 < t) : deriv FmodGReal t < 0 := by
+  have hGne : GReal t ≠ 0 := ne_of_gt (by simpa [GReal] using (G_pos.2 t ht))
+  have hLpos : 0 < (L₁₀.resToImagAxis t).re := by simpa using (L₁₀_pos.2 t ht)
   have hderiv :
       deriv FmodGReal t =
         ((-2 * π * (D F).resToImagAxis t).re * GReal t -
             FReal t * (-2 * π * (D G).resToImagAxis t).re) / (GReal t) ^ 2 := by
-    simpa [FmodGReal] using hquot.deriv
-  have hscale (z : ℂ) : (-2 * π * z).re = (-2 * Real.pi) * z.re := by
-    simp [Complex.mul_re]
+    simpa [FmodGReal] using ((hasDerivAt_FReal t ht).div (hasDerivAt_GReal t ht) hGne).deriv
+  have hscale (z : ℂ) : (-2 * π * z).re = (-2 * Real.pi) * z.re := by simp [Complex.mul_re]
   have hnum :
       (-2 * Real.pi) * ((D F).resToImagAxis t).re * GReal t -
           FReal t * ((-2 * Real.pi) * ((D G).resToImagAxis t).re)
         = (-2 * Real.pi) * (L₁₀.resToImagAxis t).re := by
-    have := congrArg (fun x : ℝ => (-2 * Real.pi) * x) (L₁₀_resToImagAxis_re_eq t ht)
-    nlinarith [this]
-  have hdenpos : 0 < (GReal t) ^ 2 := by
-    simpa [pow_two] using sq_pos_of_ne_zero hGne
-  have hpi_neg : (-2 * Real.pi : ℝ) < 0 := by nlinarith [Real.pi_pos]
+    nlinarith [congrArg (fun x : ℝ => (-2 * Real.pi) * x) (L₁₀_resToImagAxis_re_eq t ht)]
   rw [hderiv, hscale, hscale, hnum]
-  exact div_neg_of_neg_of_pos (mul_neg_of_neg_of_pos hpi_neg hLpos) hdenpos
+  exact div_neg_of_neg_of_pos (mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) hLpos)
+    (by simpa [pow_two] using sq_pos_of_ne_zero hGne)
 
-/--
-$t \mapsto F(it) / G(it)$ is monotone decreasing.
--/
-private lemma FmodG_strictAnti_aux : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := by
-  have hcont : ContinuousOn FmodGReal (Set.Ioi (0 : ℝ)) := by
-    intro x hx
-    have hFdiff : DifferentiableAt ℝ FReal x := FReal_Differentiable (t := x) hx
-    have hGdiff : DifferentiableAt ℝ GReal x := GReal_Differentiable (t := x) hx
+/-- $t \mapsto F(it) / G(it)$ is strictly antitone on the positive real axis. -/
+public lemma FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := by
+  have hcont : ContinuousOn FmodGReal (Set.Ioi (0 : ℝ)) := fun x hx => by
     have hGne : GReal x ≠ 0 := ne_of_gt (by simpa [GReal] using (G_pos.2 x hx))
-    exact (hFdiff.div hGdiff hGne).continuousAt.continuousWithinAt
-  exact
-    strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ)) hcont (by
-      intro t ht
-      have ht' : 0 < t := by
-        have : t ∈ Set.Ioi (0 : ℝ) := by simpa [interior_Ioi] using ht
-        simpa [Set.mem_Ioi] using this
-      simpa using deriv_FmodGReal_neg (t := t) ht')
+    exact ((FReal_Differentiable hx).div (GReal_Differentiable hx) hGne)
+      |>.continuousAt.continuousWithinAt
+  refine strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ)) hcont (fun t ht => ?_)
+  have ht' : 0 < t :=
+    by simpa [Set.mem_Ioi] using (by simpa [interior_Ioi] using ht : t ∈ Set.Ioi 0)
+  simpa using deriv_FmodGReal_neg (t := t) ht'
 
 /-- The function `FmodGReal` is antitone on the positive real axis. -/
 public theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) :=
-  (FmodG_strictAnti_aux).antitoneOn
+  FmodG_strictAntiOn.antitoneOn
 
-lemma tendsto_mul_t_resToImagAxis_A_E :
+private lemma tendsto_mul_t_resToImagAxis_A_E :
     Tendsto (fun t : ℝ => (t : ℂ) * (A_E.resToImagAxis t)) atTop (nhds (0 : ℂ)) := by
   let a : ℕ → ℂ := A_E_coeff
   have hA_series : ∀ z : ℍ, A_E z =
@@ -112,8 +97,7 @@ lemma tendsto_mul_t_resToImagAxis_A_E :
     have hr0 : 0 ≤ r := (Real.exp_pos _).le
     have hr : ‖r‖ < 1 := by
       have hr' : r < 1 := by
-        have : (-2 * Real.pi) < 0 := by nlinarith [Real.pi_pos]
-        simpa [r] using (Real.exp_lt_one_iff.2 this)
+        simpa [r] using Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-2 * Real.pi : ℝ) < 0)
       simpa [Real.norm_of_nonneg hr0] using hr'
     have hs : Summable (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * r ^ n) :=
       summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hr
@@ -169,7 +153,7 @@ lemma tendsto_mul_t_resToImagAxis_A_E :
       (by norm_num) hA_series ha 1)
 
 /-- `S • (it) = i/t` on the imaginary axis. -/
-lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
+private lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
     ModularGroup.S • UpperHalfPlane.mk (Complex.I * t) (by simp [ht]) =
       UpperHalfPlane.mk (Complex.I * t⁻¹) (by simp [inv_pos.2 ht]) := by
   ext1
@@ -181,7 +165,7 @@ lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
 
 /-- The `A_E` combination transforms on the imaginary axis as in the blueprint:
 `A_E(i/t) = -t^6 A_E(it) + (6/π) t^5 E₄(it)`. -/
-lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
+private lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     A_E.resToImagAxis t⁻¹ =
       -((t : ℂ) ^ (6 : ℕ)) * (A_E.resToImagAxis t) + ((6 : ℂ) / π) * ((t : ℂ) ^ (5 : ℕ)) *
         ((E₄.toFun).resToImagAxis t) := by
@@ -217,14 +201,11 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
   have hAE :
       A_E (ModularGroup.S • z) =
         -((t : ℂ) ^ (6 : ℕ)) * (A_E z) + ((6 : ℂ) / π) * ((t : ℂ) ^ (5 : ℕ)) * (E₄ z) := by
-    have ht0 : (t : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt ht)
     set a : ℂ := (6 : ℂ) / (π * Complex.I * z)
-    have ha : a = -((6 : ℂ) / π) * ((t : ℂ)⁻¹) := by
-      simpa [a] using hdiv
+    have ha : a = -((6 : ℂ) / π) * ((t : ℂ)⁻¹) := by simpa [a] using hdiv
     have hmul :
         ((z : ℂ) ^ (2 : ℕ) * (E₂ z + a)) * ((z : ℂ) ^ (4 : ℕ) * E₄ z) =
-          (z : ℂ) ^ (6 : ℕ) * ((E₂ z + a) * E₄ z) := by
-      ring
+          (z : ℂ) ^ (6 : ℕ) * ((E₂ z + a) * E₄ z) := by ring
     dsimp [A_E]
     have hE2' :
         E₂
@@ -233,74 +214,40 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
           (z : ℂ) ^ (2 : ℕ) * (E₂ z + a) := by
       simpa [UpperHalfPlane.SLAction, MulAction.compHom_smul_def, a, mul_assoc, mul_left_comm,
         mul_comm] using hE2
-    have hE4_gl :
-        E₄
-            (Matrix.SpecialLinearGroup.toGL
-                  ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
-          (z : ℂ) ^ (4 : ℕ) * E₄ z := by
-      simpa [UpperHalfPlane.SLAction, MulAction.compHom_smul_def] using hE4
     have hE4' :
         (E 4 (by decide))
             (Matrix.SpecialLinearGroup.toGL
                   ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
           (z : ℂ) ^ (4 : ℕ) * E₄ z := by
-      assumption
-    have hE6_gl :
-        E₆
-            (Matrix.SpecialLinearGroup.toGL
-                  ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
-          (z : ℂ) ^ (6 : ℕ) * E₆ z := by
-      simpa [UpperHalfPlane.SLAction, MulAction.compHom_smul_def] using hE6
+      simpa [UpperHalfPlane.SLAction, MulAction.compHom_smul_def] using hE4
     have hE6' :
         (E 6 (by decide))
             (Matrix.SpecialLinearGroup.toGL
                   ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
           (z : ℂ) ^ (6 : ℕ) * E₆ z := by
-      assumption
-    rw [hE2', hE4', hE6']
-    -- Regroup the main product into `z^6 * (...)`.
-    rw [hmul]
-    -- Factor out `z^6` and rewrite the remaining term in terms of `A_E`.
-    rw [← mul_sub]
-    have hins : (E₂ z + a) * E₄ z - E₆ z = A_E z + a * E₄ z := by
-      dsimp [A_E]
-      ring
-    rw [hins, mul_add]
-    -- Rewrite `z = i*t` and simplify.
-    rw [hz6]
+      simpa [UpperHalfPlane.SLAction, MulAction.compHom_smul_def] using hE6
+    rw [hE2', hE4', hE6', hmul, ← mul_sub]
+    have hins : (E₂ z + a) * E₄ z - E₆ z = A_E z + a * E₄ z := by dsimp [A_E]; ring
+    rw [hins, mul_add, hz6]
     have hcorr :
         (-((t : ℂ) ^ (6 : ℕ))) * (a * E₄ z) =
-          ((6 : ℂ) / π) * ((t : ℂ) ^ (5 : ℕ)) * E₄ z := by
-      grind only
-    -- Conclude after rewriting the correction term.
-    rw [hcorr]
-    rw [← (E4_apply (z := z)), ← (E6_apply (z := z))]
+          ((6 : ℂ) / π) * ((t : ℂ) ^ (5 : ℕ)) * E₄ z := by grind only
+    rw [hcorr, ← (E4_apply (z := z)), ← (E6_apply (z := z))]
     dsimp [A_E]
   -- Convert back to `resToImagAxis`.
-  let z0 : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   let zinv : ℍ := ⟨Complex.I * t⁻¹, by simp [htinv]⟩
-  have hz0 : z0 = z := by
-    ext1; simp [z0, z]
-  have hzinv : UpperHalfPlane.mk (Complex.I * t⁻¹) (by simp [htinv]) = zinv := by
-    ext1; rfl
-  have hS' : ModularGroup.S • z = zinv := hS.trans hzinv
   have hres_inv : A_E.resToImagAxis t⁻¹ = A_E (ModularGroup.S • z) := by
     have hleft : A_E.resToImagAxis t⁻¹ = A_E zinv := by
       simp [Function.resToImagAxis, ResToImagAxis, htinv, zinv]
     exact Mathlib.Meta.NormNumI.eq_of_eq_of_eq_of_eq hleft (congrArg A_E hS) rfl rfl
   have hres_t : A_E.resToImagAxis t = A_E z := by
-    have : A_E.resToImagAxis t = A_E z0 := by
-      simp [Function.resToImagAxis, ResToImagAxis, ht, z0]
-    simpa [hz0] using this
+    simp [Function.resToImagAxis, ResToImagAxis, ht, z]
   have hE4_t : (E₄.toFun).resToImagAxis t = E₄ z := by
-    have : (E₄.toFun).resToImagAxis t = E₄ z0 := by
-      simp [Function.resToImagAxis, ResToImagAxis, ht, z0]
-    simpa [hz0] using this
-  -- Rewrite in terms of `resToImagAxis`.
+    simp [Function.resToImagAxis, ResToImagAxis, ht, z]
   rw [hres_inv, hAE, hres_t, hE4_t]
 
 /-- As a consequence, `F(i/t)` has the quadratic polynomial expansion in `t` from the blueprint. -/
-lemma F_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
+private lemma F_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     F.resToImagAxis t⁻¹ =
       ((t : ℂ) ^ (12 : ℕ)) * (F.resToImagAxis t) -
         ((12 : ℂ) / π) * ((t : ℂ) ^ (11 : ℕ)) *
@@ -345,17 +292,17 @@ private lemma resToImagAxis_inv_of_S_action₂ (F G : ℍ → ℂ)
             simp
   simpa [zpow_natCast] using hmul.symm
 
-lemma H₂_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
+private lemma H₂_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     H₂.resToImagAxis t⁻¹ = ((t : ℂ) ^ (2 : ℕ)) * (H₄.resToImagAxis t) := by
   simpa [one_div] using (resToImagAxis_inv_of_S_action₂ H₂ H₄ H₂_S_action t ht)
 
 /-- Transformation of `H₄` on the imaginary axis: `H₄(i/t) = t^2 * H₂(it)`. -/
-lemma H₄_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
+private lemma H₄_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     H₄.resToImagAxis t⁻¹ = ((t : ℂ) ^ (2 : ℕ)) * (H₂.resToImagAxis t) := by
   simpa [one_div] using (resToImagAxis_inv_of_S_action₂ H₄ H₂ H₄_S_action t ht)
 
 /-- The corresponding `S`-transform formula for `G` on the imaginary axis. -/
-lemma G_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
+private lemma G_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     G.resToImagAxis t⁻¹ =
       ((t : ℂ) ^ (10 : ℕ)) *
         (H₄.resToImagAxis t) ^ 3 *
@@ -372,22 +319,22 @@ lemma G_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
   ring_nf
 
 /-- `E₄(it) → 1` along the imaginary axis as `t → ∞`. -/
-lemma tendsto_E₄_resToImagAxis_atTop :
+private lemma tendsto_E₄_resToImagAxis_atTop :
     Tendsto (E₄.toFun.resToImagAxis) atTop (nhds (1 : ℂ)) := by
   simpa using (Function.tendsto_resToImagAxis_atImInfty (E₄ : ℍ → ℂ) (1 : ℂ) tendsto_E₄_atImInfty)
 
 /-- `H₂(it) → 0` along the imaginary axis as `t → ∞`. -/
-lemma tendsto_H₂_resToImagAxis_atTop :
+private lemma tendsto_H₂_resToImagAxis_atTop :
     Tendsto (H₂.resToImagAxis) atTop (nhds (0 : ℂ)) := by
   simpa using (Function.tendsto_resToImagAxis_atImInfty H₂ (0 : ℂ) H₂_tendsto_atImInfty)
 
 /-- `H₄(it) → 1` along the imaginary axis as `t → ∞`. -/
-lemma tendsto_H₄_resToImagAxis_atTop :
+private lemma tendsto_H₄_resToImagAxis_atTop :
     Tendsto (H₄.resToImagAxis) atTop (nhds (1 : ℂ)) := by
   simpa using (Function.tendsto_resToImagAxis_atImInfty H₄ (1 : ℂ) H₄_tendsto_atImInfty)
 
 /-- Cusp decay for `F = A_E^2` on the imaginary axis: `t^2 * F(it) → 0`. -/
-lemma tendsto_mul_t_sq_resToImagAxis_F :
+private lemma tendsto_mul_t_sq_resToImagAxis_F :
     Tendsto (fun t : ℝ => ((t : ℂ) ^ (2 : ℕ)) * F.resToImagAxis t) atTop (nhds (0 : ℂ)) := by
   have hA : Tendsto (fun t : ℝ => (t : ℂ) * (A_E.resToImagAxis t)) atTop (nhds (0 : ℂ)) :=
     tendsto_mul_t_resToImagAxis_A_E
@@ -399,19 +346,14 @@ lemma tendsto_mul_t_sq_resToImagAxis_F :
     mul_left_comm, mul_comm, sub_eq_add_neg]
 
 /-- The numerator in the blueprint formula for `F(i/t)/G(i/t)` tends to `36/π^2`. -/
-lemma tendsto_FmodG_num_atTop :
+private lemma tendsto_FmodG_num_atTop :
     Tendsto
       (fun t : ℝ =>
         ((t : ℂ) ^ (2 : ℕ)) * F.resToImagAxis t -
           ((12 : ℂ) / π) * ((t : ℂ) * (A_E.resToImagAxis t) * (E₄.toFun.resToImagAxis t)) +
             ((36 : ℂ) / (π ^ (2 : ℕ))) * (E₄.toFun.resToImagAxis t) ^ 2)
       atTop (nhds ((36 : ℂ) / (π ^ (2 : ℕ)))) := by
-  have hF : Tendsto (fun t : ℝ => ((t : ℂ) ^ (2 : ℕ)) * F.resToImagAxis t) atTop (nhds (0 : ℂ)) :=
-    tendsto_mul_t_sq_resToImagAxis_F
-  have hE4 : Tendsto (E₄.toFun.resToImagAxis) atTop (nhds (1 : ℂ)) :=
-    tendsto_E₄_resToImagAxis_atTop
-  have hAE : Tendsto (fun t : ℝ => (t : ℂ) * (A_E.resToImagAxis t)) atTop (nhds (0 : ℂ)) :=
-    tendsto_mul_t_resToImagAxis_A_E
+  have hE4 := tendsto_E₄_resToImagAxis_atTop
   have hmiddle :
       Tendsto
         (fun t : ℝ =>
@@ -420,43 +362,34 @@ lemma tendsto_FmodG_num_atTop :
     have hprod :
         Tendsto (fun t : ℝ => ((t : ℂ) * (A_E.resToImagAxis t)) * (E₄.toFun.resToImagAxis t)) atTop
           (nhds (0 : ℂ)) := by
-      simpa [zero_mul] using hAE.mul hE4
+      simpa [zero_mul] using tendsto_mul_t_resToImagAxis_A_E.mul hE4
     simpa [mul_assoc, mul_zero] using (tendsto_const_nhds.mul hprod)
-  have hE4sq :
-      Tendsto (fun t : ℝ => (E₄.toFun.resToImagAxis t) ^ 2) atTop (nhds (1 : ℂ)) := by
+  have hE4sq : Tendsto (fun t : ℝ => (E₄.toFun.resToImagAxis t) ^ 2) atTop (nhds (1 : ℂ)) := by
     simpa [pow_two] using hE4.mul hE4
   have hlast :
       Tendsto (fun t : ℝ => ((36 : ℂ) / (π ^ (2 : ℕ))) * (E₄.toFun.resToImagAxis t) ^ 2) atTop
         (nhds (((36 : ℂ) / (π ^ (2 : ℕ))) * (1 : ℂ))) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using (tendsto_const_nhds.mul hE4sq)
-  have hsum :
-      Tendsto
-        (fun t : ℝ =>
-          (((t : ℂ) ^ (2 : ℕ)) * F.resToImagAxis t -
-              ((12 : ℂ) / π) *
-                ((t : ℂ) * (A_E.resToImagAxis t) * (E₄.toFun.resToImagAxis t))) +
-            ((36 : ℂ) / (π ^ (2 : ℕ))) * (E₄.toFun.resToImagAxis t) ^ 2)
-        atTop (nhds ((0 : ℂ) + (((36 : ℂ) / (π ^ (2 : ℕ))) * (1 : ℂ)))) := by
-    simpa using (hF.sub hmiddle).add hlast
-  simpa [sub_eq_add_neg, add_assoc, mul_assoc] using hsum
+  simpa [sub_eq_add_neg, add_assoc, mul_assoc]
+    using (tendsto_mul_t_sq_resToImagAxis_F.sub hmiddle).add hlast
 
 /-- The denominator in the blueprint formula for `F(i/t)/G(i/t)` tends to `2`. -/
-lemma tendsto_FmodG_den_atTop :
+private lemma tendsto_FmodG_den_atTop :
     Tendsto
       (fun t : ℝ =>
         (H₄.resToImagAxis t) ^ 3 *
           (2 * (H₄.resToImagAxis t) ^ 2 + 5 * (H₄.resToImagAxis t) * (H₂.resToImagAxis t) +
             5 * (H₂.resToImagAxis t) ^ 2))
       atTop (nhds (2 : ℂ)) := by
-  have hH2 : Tendsto (H₂.resToImagAxis) atTop (nhds (0 : ℂ)) := tendsto_H₂_resToImagAxis_atTop
-  have hH4 : Tendsto (H₄.resToImagAxis) atTop (nhds (1 : ℂ)) := tendsto_H₄_resToImagAxis_atTop
+  have hH2 := tendsto_H₂_resToImagAxis_atTop
+  have hH4 := tendsto_H₄_resToImagAxis_atTop
   have hH4sq : Tendsto (fun t : ℝ => (H₄.resToImagAxis t) ^ 2) atTop (nhds (1 : ℂ)) := by
     simpa [pow_two] using hH4.mul hH4
   have hH2sq : Tendsto (fun t : ℝ => (H₂.resToImagAxis t) ^ 2) atTop (nhds (0 : ℂ)) := by
     simpa [pow_two, zero_mul] using hH2.mul hH2
   have hH4H2 :
-      Tendsto (fun t : ℝ => (H₄.resToImagAxis t) * (H₂.resToImagAxis t)) atTop (nhds (0 : ℂ)) :=
-    by simpa [mul_zero] using hH4.mul hH2
+      Tendsto (fun t : ℝ => (H₄.resToImagAxis t) * (H₂.resToImagAxis t)) atTop (nhds (0 : ℂ)) := by
+    simpa [mul_zero] using hH4.mul hH2
   have hpoly :
       Tendsto
         (fun t : ℝ =>
@@ -464,21 +397,19 @@ lemma tendsto_FmodG_den_atTop :
             5 * (H₂.resToImagAxis t) ^ 2)
         atTop (nhds (2 : ℂ)) := by
     have h1 : Tendsto (fun t : ℝ => (2 : ℂ) * (H₄.resToImagAxis t) ^ 2) atTop (nhds (2 : ℂ)) := by
-      simpa [mul_assoc] using (tendsto_const_nhds.mul hH4sq)
+      simpa [mul_assoc] using tendsto_const_nhds.mul hH4sq
     have h2 :
         Tendsto (fun t : ℝ => (5 : ℂ) * ((H₄.resToImagAxis t) * (H₂.resToImagAxis t))) atTop
-          (nhds (0 : ℂ)) := by
-      simpa [mul_assoc] using (tendsto_const_nhds.mul hH4H2)
+          (nhds (0 : ℂ)) := by simpa [mul_assoc] using tendsto_const_nhds.mul hH4H2
     have h3 : Tendsto (fun t : ℝ => (5 : ℂ) * (H₂.resToImagAxis t) ^ 2) atTop (nhds (0 : ℂ)) := by
-      simpa [mul_assoc] using (tendsto_const_nhds.mul hH2sq)
+      simpa [mul_assoc] using tendsto_const_nhds.mul hH2sq
     simpa [add_assoc, add_left_comm, add_comm, mul_assoc] using h1.add (h2.add h3)
   have hH4cube : Tendsto (fun t : ℝ => (H₄.resToImagAxis t) ^ 3) atTop (nhds (1 : ℂ)) := by
     simpa [pow_succ, pow_two, Nat.succ_eq_add_one, mul_assoc] using hH4sq.mul hH4
-  -- Multiply the limiting factors: `1 * 2 = 2`.
   simpa [mul_assoc] using hH4cube.mul hpoly
 
 /-- The blueprint quotient formula on the imaginary axis after applying `S` and canceling `t^10`. -/
-lemma FmodG_resToImagAxis_inv_formula (t : ℝ) (ht : 0 < t) :
+private lemma FmodG_resToImagAxis_inv_formula (t : ℝ) (ht : 0 < t) :
     F.resToImagAxis t⁻¹ / G.resToImagAxis t⁻¹ =
       (((t : ℂ) ^ (2 : ℕ)) * F.resToImagAxis t -
           ((12 : ℂ) / π) * ((t : ℂ) * (A_E.resToImagAxis t) * (E₄.toFun.resToImagAxis t)) +
@@ -493,7 +424,7 @@ lemma FmodG_resToImagAxis_inv_formula (t : ℝ) (ht : 0 < t) :
   field_simp [ht0]
 
 /-- `F(i/t)/G(i/t) → 18/π^2` as `t → ∞`. -/
-lemma tendsto_FmodG_resToImagAxis_inv_atTop :
+private lemma tendsto_FmodG_resToImagAxis_inv_atTop :
     Tendsto (fun t : ℝ => F.resToImagAxis t⁻¹ / G.resToImagAxis t⁻¹) atTop
       (nhds ((18 : ℂ) / (π ^ (2 : ℕ)))) := by
   have hEq :
@@ -523,11 +454,9 @@ public theorem FmodG_rightLimitAt_zero :
   -- Work in `ℂ` and take real parts at the end.
   have hQc :
       Tendsto (fun t : ℝ => F.resToImagAxis t / G.resToImagAxis t) (𝓝[>] (0 : ℝ))
-        (nhds ((18 : ℂ) / (π ^ (2 : ℕ)))) := by
-    have h := tendsto_FmodG_resToImagAxis_inv_atTop.comp tendsto_inv_nhdsGT_zero
-    refine h.congr' (Eventually.of_forall ?_)
-    intro t
-    simp [Function.comp, inv_inv]
+        (nhds ((18 : ℂ) / (π ^ (2 : ℕ)))) :=
+    (tendsto_FmodG_resToImagAxis_inv_atTop.comp tendsto_inv_nhdsGT_zero).congr'
+      (Eventually.of_forall fun t => by simp [Function.comp, inv_inv])
   have hRe :
       Tendsto (fun t : ℝ => (F.resToImagAxis t / G.resToImagAxis t).re) (𝓝[>] (0 : ℝ))
         (nhds (18 / (π ^ (2 : ℕ)) : ℝ)) := by
@@ -536,25 +465,17 @@ public theorem FmodG_rightLimitAt_zero :
           (nhds (((18 : ℂ) / (π ^ (2 : ℕ))).re)) :=
       (Complex.continuous_re.tendsto ((18 : ℂ) / (π ^ (2 : ℕ)))).comp hQc
     have hre : (((18 : ℂ) / (π ^ (2 : ℕ))).re) = (18 / (π ^ (2 : ℕ)) : ℝ) := by
-      have h :
-          (18 / (π ^ (2 : ℕ)) : ℝ) =
-            ((18 : ℂ) / ((π ^ (2 : ℕ) : ℝ) : ℂ)).re := by
-        have h0 := congrArg Complex.re (Complex.ofReal_div 18 (π ^ (2 : ℕ) : ℝ))
+      have h0 := congrArg Complex.re (Complex.ofReal_div 18 (π ^ (2 : ℕ) : ℝ))
+      have : (18 / (π ^ (2 : ℕ)) : ℝ) = ((18 : ℂ) / ((π ^ (2 : ℕ) : ℝ) : ℂ)).re := by
         simpa only [Complex.ofReal_re] using h0
       simp_all
     simpa [hre] using hRe'
   have hEq :
       FmodGReal =ᶠ[𝓝[>] (0 : ℝ)] fun t : ℝ => (F.resToImagAxis t / G.resToImagAxis t).re := by
     filter_upwards [self_mem_nhdsWithin] with t ht
-    have hF : (FmodGReal t : ℂ) = F.resToImagAxis t / G.resToImagAxis t := by
-      simpa using (FmodG_eq_FmodGReal (t := t) ht)
-    -- Take real parts.
-    simpa [Complex.ofReal_re] using congrArg Complex.re hF
-  have hR :
-      Tendsto FmodGReal (𝓝[>] (0 : ℝ)) (nhds (18 / (π ^ (2 : ℕ)) : ℝ)) :=
-    (hRe.congr' hEq.symm)
-  -- Rewrite the target constant as `18 * π^(-2)`.
-  simpa
+    simpa [Complex.ofReal_re] using
+      congrArg Complex.re (by simpa using (FmodG_eq_FmodGReal (t := t) ht))
+  simpa using hRe.congr' hEq.symm
 
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.
@@ -566,31 +487,21 @@ public theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
   have hG : 0 < GReal t := by simpa [GReal] using (G_pos.2 t ht)
   exact add_pos hF (mul_pos hcoef hG)
 
-public lemma FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := by
-  exact FmodG_strictAnti_aux
-
-lemma FmodGReal_le_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
+private lemma FmodGReal_le_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
     FmodGReal t ≤ 18 * (π ^ (-2 : ℤ)) := by
-  set c : ℝ := 18 * (π ^ (-2 : ℤ))
-  have hlim : Tendsto FmodGReal (𝓝[>] (0 : ℝ)) (nhds c) := by
-    simpa [c, nhdsWithin_univ] using FmodG_rightLimitAt_zero
-  have hant : AntitoneOn FmodGReal (Set.Ioi (0 : ℝ)) := FmodG_antitone
-  have htI : t ∈ Set.Ioi (0 : ℝ) := ht
-  have hEv : ∀ᶠ u in 𝓝[>] (0 : ℝ), FmodGReal t ≤ FmodGReal u := by
-    have hul : ∀ᶠ u in 𝓝[>] (0 : ℝ), u ≤ t := by
-      have : Set.Ioi (0 : ℝ) ∩ Set.Iio t ∈ nhdsWithin (0 : ℝ) (Set.Ioi 0) :=
-        inter_mem_nhdsWithin _ (Iio_mem_nhds ht)
-      exact mem_of_superset this (by intro u hu; exact le_of_lt (by simpa [Set.mem_Iio] using hu.2))
-    filter_upwards [self_mem_nhdsWithin, hul] with u hu0 hut
-    exact hant hu0 htI hut
-  exact ge_of_tendsto hlim hEv
+  have hlim : Tendsto FmodGReal (𝓝[>] (0 : ℝ)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
+    simpa [nhdsWithin_univ] using FmodG_rightLimitAt_zero
+  refine ge_of_tendsto hlim ?_
+  have hul : ∀ᶠ u in 𝓝[>] (0 : ℝ), u ≤ t :=
+    mem_of_superset (inter_mem_nhdsWithin _ (Iio_mem_nhds ht))
+      (fun u hu => le_of_lt (by simpa [Set.mem_Iio] using hu.2))
+  filter_upwards [self_mem_nhdsWithin, hul] with u hu0 hut
+  exact FmodG_antitone hu0 ht hut
 
-lemma FmodGReal_lt_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
-    FmodGReal t < 18 * (π ^ (-2 : ℤ)) := by
-  have hstrict : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := FmodG_strictAntiOn
-  have hlt : FmodGReal t < FmodGReal (t / 2) :=
-    hstrict (by simpa using half_pos ht) ht (half_lt_self ht)
-  exact lt_of_lt_of_le hlt (FmodGReal_le_rightLimitAt_zero (t := t / 2) (half_pos ht))
+private lemma FmodGReal_lt_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
+    FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
+  lt_of_lt_of_le (FmodG_strictAntiOn (by simpa using half_pos ht) ht (half_lt_self ht))
+    (FmodGReal_le_rightLimitAt_zero (t := t / 2) (half_pos ht))
 
 /-- An explicit inequality relating `FReal` and `GReal` on the imaginary axis. -/
 public theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
@@ -598,8 +509,6 @@ public theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
   have hGpos : 0 < GReal t := by simpa [GReal] using (G_pos.2 t ht)
   have hquot : FReal t / GReal t < 18 * (π ^ (-2 : ℤ)) := by
     simpa [FmodGReal] using FmodGReal_lt_rightLimitAt_zero ht
-  have hmul := mul_lt_mul_of_pos_right hquot hGpos
-  have hGne : GReal t ≠ 0 := ne_of_gt hGpos
-  have hmul' : FReal t < (18 * (π ^ (-2 : ℤ))) * GReal t := by
-    simpa [div_eq_mul_inv, hGne, mul_assoc, mul_left_comm, mul_comm] using hmul
-  exact sub_lt_zero.2 hmul'
+  refine sub_lt_zero.2 ?_
+  simpa [div_eq_mul_inv, ne_of_gt hGpos, mul_assoc, mul_left_comm, mul_comm]
+    using mul_lt_mul_of_pos_right hquot hGpos

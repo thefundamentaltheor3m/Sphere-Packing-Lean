@@ -27,8 +27,6 @@ import Mathlib.LinearAlgebra.Basis.SMul
 (blueprint Theorem 2.2)
 -/
 
-/-! ## Density of Sphere Packings: definitions and basic notions for periodic packings. -/
-
 open MeasureTheory Metric Filter Module
 open scoped BigOperators ENNReal Pointwise
 
@@ -432,7 +430,8 @@ open scoped Pointwise
 
 variable {d : ℕ}
 
-/-- If `D` meets each lattice orbit at exactly one point, distinct translates of `D` are disjoint. -/
+/-- If `D` meets each lattice orbit at exactly one point, distinct translates of `D` are
+disjoint. -/
 public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D)
     {g h : Λ} (hgh : g ≠ h) : Disjoint (g +ᵥ D) (h +ᵥ D) := by
@@ -645,8 +644,6 @@ public theorem PeriodicSpherePacking.aux_le
 
 end Pointwise
 
-/-! ## Theorem 2.2 (blueprint) and density formula -/
-
 section DensityFormula
 
 /-- Cancel a common numerator in a ratio of `ENNReal` divisions.
@@ -709,7 +706,7 @@ public theorem PeriodicSpherePacking.aux2_ge'
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have ⟨_⟩ : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
   have hD_unique_covers := fundamentalDomain_unique_covers S b
   have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _
@@ -736,7 +733,7 @@ public theorem PeriodicSpherePacking.aux2_le'
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have ⟨_⟩ : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   set D : Set (EuclideanSpace ℝ (Fin d)) := fundamentalDomain (b.ofZLatticeBasis ℝ _)
   have hD_unique_covers := fundamentalDomain_unique_covers S b
   have hD_measurable : MeasurableSet D := fundamentalDomain_measurableSet _

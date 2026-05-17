@@ -4,12 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Mathlib.Algebra.Field.Power
 public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Ring.Int.Parity
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.LevelOne
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
+import Mathlib.NumberTheory.ModularForms.LevelOne.Basic
 public import Mathlib.Order.CompletePartialOrder
 
 public import SpherePacking.ModularForms.JacobiTheta.Basic
@@ -44,23 +44,6 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
-
-/-!
-## Jacobi identity
-
-The Jacobi identity states H₂ + H₄ = H₃ (equivalently Θ₂⁴ + Θ₄⁴ = Θ₃⁴).
-This is blueprint Lemma 6.41, proved via dimension vanishing for weight 4 cusp forms.
-
-The proof strategy:
-1. Define g := H₂ + H₄ - H₃ and f := g²
-2. Show f is SL₂(ℤ)-invariant (weight 4, level 1) via S/T invariance
-3. Show f vanishes at i∞ (is a cusp form)
-4. Apply cusp form vanishing: dim S₄(Γ₁) = 0
-5. From g² = 0 conclude g = 0
-
-The S/T slash action lemmas are proved here. The full proof requiring
-asymptotics (atImInfty) is in AtImInfty.lean to avoid circular imports.
--/
 
 section JacobiIdentity
 
@@ -107,11 +90,6 @@ lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f :=
 
 end JacobiIdentity
 
-/-!
-## Limits at infinity
-
-We prove the limit of Θᵢ(z) and Hᵢ(z) as z tends to i∞. This is used to prove the Jacobi identity.
--/
 
 /-- The function `x ↦ jacobiTheta₂ (x / 2) x` tends to `2` at `Im x → ∞`. -/
 public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
@@ -266,8 +244,6 @@ public theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
 public theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
   simpa [H₄] using (Θ₄_tendsto_atImInfty.pow 4)
 
-/-! ## Jacobi identity proof via limits at i∞. -/
-
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
 public theorem jacobi_identity : H₂ + H₄ = H₃ := by
   have h_tendsto : Tendsto jacobi_f atImInfty (𝓝 0) := by
@@ -281,8 +257,7 @@ public theorem jacobi_identity : H₂ + H₄ = H₃ := by
       (cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable h_tendsto)
   ext z
   have hg2 : (jacobi_g z) ^ 2 = 0 := by simpa [jacobi_f] using congr_fun hf0 z
-  have : jacobi_g z = 0 := pow_eq_zero_iff two_ne_zero |>.mp hg2
-  simpa [jacobi_g, sub_eq_zero] using this
+  simpa [jacobi_g, sub_eq_zero] using pow_eq_zero_iff two_ne_zero |>.mp hg2
 
 noncomputable def thetaDelta_f : ℍ → ℂ := H₂ * (H₃ * H₄)
 
@@ -322,12 +297,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     have hfz : thetaDelta_f z = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 := by
       dsimp [thetaDelta_f, H₂, H₃, H₄]
       ring
-    have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by
-      calc
-        (thetaDelta_f z) ^ 2 = ((Θ₂ z * Θ₃ z * Θ₄ z) ^ 4) ^ 2 := by
-          simp [hfz]
-        _ = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by
-          simpa [show 4 * 2 = 8 by norm_num] using (pow_mul (Θ₂ z * Θ₃ z * Θ₄ z) 4 2).symm
+    have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by rw [hfz]; ring
     have hΘprod :
         Θ₂ z * Θ₃ z * Θ₄ z = cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z) := by
       grind only
@@ -338,14 +308,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
       simpa [harg] using h
     have hΘ8 :
         (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 = cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 := by
-      calc
-        (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 =
-            (cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z)) ^ 8 := by
-              simp [hΘprod]
-        _ = cexp (π * I * (z : ℂ) / 4) ^ 8 * (g z * h z * k z) ^ 8 := by
-              simp [mul_pow]
-        _ = cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 :=
-              congrArg (fun t : ℂ => t * (g z * h z * k z) ^ 8) hexp
+      rw [hΘprod, mul_pow, hexp]
     calc
       thetaDeltaFun z / cexp (2 * π * I * (z : ℂ)) =
           ((256 : ℂ)⁻¹) * (thetaDelta_f z) ^ 2 / cexp (2 * π * I * (z : ℂ)) := by
@@ -449,11 +412,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
 
 /-- The product `H₂ z * H₃ z * H₄ z` is nonzero for `z ∈ ℍ`. -/
 public lemma H₂_mul_H₃_mul_H₄_ne_zero (z : ℍ) : H₂ z * H₃ z * H₄ z ≠ 0 := by
-  have hD : (Δ z : ℂ) ≠ 0 := Δ_ne_zero z
-  have hEq : (Δ z : ℂ) = ((H₂ z) * (H₃ z) * (H₄ z)) ^ 2 / (256 : ℂ) := by
-    simpa [Delta_apply] using (Delta_eq_H₂_H₃_H₄ z)
   intro h0
-  exact hD (by simp [hEq, h0])
+  exact Δ_ne_zero z (by simpa [Delta_apply, h0] using Delta_eq_H₂_H₃_H₄ z)
 
 /-- The function `H₂` does not vanish on `ℍ`. -/
 public lemma H₂_ne_zero (z : ℍ) : H₂ z ≠ 0 := by

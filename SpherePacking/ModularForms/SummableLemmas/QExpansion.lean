@@ -2,12 +2,18 @@ module
 public import SpherePacking.ModularForms.ExpLemmas
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+/-!
+# Summability lemmas for `q`-expansion terms
 
+Summability results for the basic exponential building blocks of `q`-expansions on the upper
+half-plane, used in the Eisenstein and Delta product expansions.
+-/
+
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 open UpperHalfPlane TopologicalSpace Set Metric Filter Function Complex
 
 /-- Summability of `∑_{c>0} c^k * exp(2π i e z c)` for `z ∈ ℍ`. -/
-public theorem a33 (k : ℕ) (e : ℕ+) (z : ℍ) :
+public theorem summable_pow_mul_exp_nat (k : ℕ) (e : ℕ+) (z : ℍ) :
     Summable fun c : ℕ+ => (c : ℂ) ^ k * exp (2 * ↑π * Complex.I * e * ↑z * c) := by
   apply Summable.of_norm
   conv =>

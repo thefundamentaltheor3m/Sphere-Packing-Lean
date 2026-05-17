@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2025 Auguste Poiroux. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Auguste Poiroux, Chris Birkbeck
+-/
+
 module
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
@@ -37,7 +43,6 @@ import SpherePacking.ForMathlib.ModularFormsHelpers
 import SpherePacking.ModularForms.PhiTransformLemmas
 
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-import Mathlib.Tactic
 
 /-!
 # Laplace-type integrals and analytic continuation for `AnotherIntegral.A`
@@ -245,7 +250,6 @@ open MeasureTheory Real Complex Filter MagicFunction.FourierEigenfunctions
   MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrals
   MagicFunction.a.RealIntegrands MagicFunction.Parametrisations
 
-/-! ## Laplace integrand and convergence (merged from `LaplaceA.Basic`) -/
 
 noncomputable section LaplaceIntegrand
 
@@ -413,7 +417,6 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
 
 end LaplaceIntegrand
 
-/-! ## Finite-difference identities (merged from `LaplaceA.FiniteDifference`) -/
 
 /-- Shift `Φ₁'` by `-1` and rewrite it in terms of `Φ₅'` at the point `it`. -/
 public lemma Φ₁'_shift_left (u t : ℝ) :
@@ -478,7 +481,6 @@ public lemma Φ_finite_difference_imag_axis {u t : ℝ} (ht : 0 < t) :
     simp [MagicFunction.a.ComplexIntegrands.Φ₆', hzH, e, mul_assoc, mul_left_comm, mul_comm]
   simpa [hL, hR] using congrArg (fun w : ℂ => w * e) hcore
 
-/-! ## Strip bounds -/
 
 local notation "c12π" => ‖(12 * (I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
@@ -1162,7 +1164,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     simpa [bound, μ, MeasureTheory.IntegrableOn, mul_assoc] using
       (integrableOn_Ici_iff_integrableOn_Ioi
         (f := fun t : ℝ => (C₀ * Real.pi) * t * Real.exp (-(Real.pi * ε) * t))
-        (b := (1 : ℝ)) (by finiteness)).2 (by simpa [mul_assoc] using hIoi1.const_mul (C₀ * Real.pi))
+        (b := (1 : ℝ)) (by finiteness)).2 <| by
+        simpa [mul_assoc] using hIoi1.const_mul (C₀ * Real.pi)
   have hdiff :
       ∀ᵐ (t : ℝ) ∂μ, ∀ z ∈ Metric.ball u0 ε,
         HasDerivAt (fun w : ℂ => I₆IntegrandC w t) (I₆IntegrandC_deriv z t) z :=
@@ -1230,7 +1233,6 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
-/-! ## Imaginary-axis helpers (merged from `Cancellation.ImagAxis`) -/
 
 /-- The integrand used in the "another integral" representation of `a'`. -/
 @[expose] public def aAnotherIntegrand (u t : ℝ) : ℂ :=
@@ -1302,7 +1304,6 @@ lemma qExpansionFormalMultilinearSeries_partialSum_two
 private lemma hΓ1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma (↑1)).strictPeriods := by simp
 private def r0 : ℝ≥0 := ⟨Real.exp (-π), (Real.exp_pos _).le⟩
 
-set_option maxHeartbeats 400000 in
 private lemma exists_sub_partialSum_bound
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
     [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]
@@ -1335,11 +1336,8 @@ private lemma exists_sub_partialSum_bound
         show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n by
           simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
         hbound q (by
-          have h_neg : Real.exp (-2 * π * t) < (r0 : ℝ) := by
-            have hπ : (0 : ℝ) < π := Real.pi_pos
-            refine Real.exp_lt_exp.2 ?_
-            simp [r0]
-            nlinarith
+          have h_neg : Real.exp (-2 * π * t) < (r0 : ℝ) :=
+            Real.exp_lt_exp.2 <| by simp; nlinarith [Real.pi_pos]
           rw [Metric.mem_ball, dist_zero_right, hqn]
           exact h_neg) n)
 
@@ -1469,7 +1467,6 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     (by linarith : (720 : ℝ) * (∑' n : ℕ, b n) ≤ 1 + (720 : ℝ) * (∑' n : ℕ, b n))
     (pow_nonneg hq_nonneg _)
 
-/-! ## Large-imaginary asymptotics (merged from `LargeImagApprox`) -/
 
 /-- For large `t`, `φ₂' (it)` differs from `720` by `O(exp (-2π t))`. -/
 public lemma exists_phi2'_sub_720_bound_ge :
@@ -1649,7 +1646,6 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       _ = (CΔinv * K) * q := by linear_combination (CΔinv * K) * hq2
   exact this.trans (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg)
 
-/-! ## Integrability of `AnotherIntegral.A` integrand -/
 
 private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
     ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
@@ -1882,7 +1878,6 @@ open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrals MagicFuncti
 local notation "c12π" => ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖
 local notation "c36π2" => ‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖
 
-/-! ## Tail deformation -/
 
 /-- Strip-bound core: bound `‖F (x + tI)‖` by the standard envelope when
 `F (x + tI) = (φ₀''(-1/w) * w²) * exp(πIu(x + tI))` with `w = s + tI`, `|s| ≤ 1`. -/
@@ -2116,7 +2111,6 @@ public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) 
       (fun t _ => by simpa [mul_assoc] using Φ₃'_shift_right (u := u) (t := t))]
   simp [smul_eq_mul, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_comm]; ring
 
-/-! ## Main Laplace representation -/
 
 /-- Main lemma for blueprint proposition `prop:a-double-zeros`. -/
 public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
@@ -2149,9 +2143,10 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioc (0 : ℝ) 1, Φ₅' u ((t : ℂ) * Complex.I)) +
           (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) =
         ∫ t in Set.Ioi (0 : ℝ), Φ₅' u ((t : ℂ) * Complex.I) := by
-    have h5Ioi0 : IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (0 : ℝ)) volume :=
-      by simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
-        (aLaplaceIntegral_convergent hu).neg'
+    have h5Ioi0 :
+        IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (0 : ℝ)) volume := by
+      simpa [IntegrableOn, Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand] using
+        (aLaplaceIntegral_convergent hu).fun_neg
     have h5Ioc := h5Ioi0.mono_set (fun t (ht : t ∈ Set.Ioc (0 : ℝ) 1) => ht.1)
     rw [show (Set.Ioi (0 : ℝ)) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) by
       simp [Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]]
@@ -2440,12 +2435,7 @@ public lemma aAnotherIntegralC_analyticOnNhd :
       Filter.Eventually.of_forall fun t => by
         simp [aAnotherIntegrand, aAnotherBase, mul_assoc]) using 1
 
-/-!
-## Analytic RHS function on `ℂ`
-
-This is the complex-analytic function whose restriction to the real axis is the blueprint RHS.
--/
-
+/-- Complex-analytic RHS whose restriction to the real axis is the blueprint RHS. -/
 def aAnotherRHS (u : ℂ) : ℂ :=
   (4 * Complex.I) * (Complex.sin ((π : ℂ) * u / 2)) ^ (2 : ℕ) *
     ((36 : ℂ) / ((π : ℂ) ^ (3 : ℕ) * (u - 2)) -

@@ -52,7 +52,7 @@ theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
 theorem split_neg {z : ℂ} {a b : ℝ} (h : z = ⟨a, b⟩) : -z = ⟨-a, -b⟩ := by subst h; rfl
 
 /-- Componentwise conjugate in `Complex.mk` form. -/
-theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩) : conj w = ⟨a, -b⟩ := by rw [hw]; rfl
+theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩) : conj w = ⟨a, -b⟩ := by subst hw; rfl
 
 /-- Numerals: `n = ⟨n, 0⟩`. -/
 theorem split_num (n : ℕ) [n.AtLeastTwo] : OfNat.ofNat (α := ℂ) n = ⟨OfNat.ofNat n, 0⟩ := rfl
@@ -67,15 +67,15 @@ theorem eq_eq {z : ℂ} {a b a' b' : ℝ} (pf : z = ⟨a, b⟩) (pf_a : a = a') 
 
 /-- Combine componentwise equalities. -/
 theorem eq_of_eq_of_eq_of_eq {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (ha : az = aw) (hb : bz = bw) : z = w := by simp [hz, hw, ha, hb]
+    (ha : az = aw) (hb : bz = bw) : z = w := by simp_all
 
 /-- Distinct real parts ⇒ distinct complex numbers. -/
 theorem ne_of_re_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (ha : az ≠ aw) : z ≠ w := by simp [hz, hw, ha]
+    (ha : az ≠ aw) : z ≠ w := by simp_all
 
 /-- Distinct imaginary parts ⇒ distinct complex numbers. -/
 theorem ne_of_im_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
-    (hb : bz ≠ bw) : z ≠ w := by simp [hz, hw, hb]
+    (hb : bz ≠ bw) : z ≠ w := by simp_all
 
 /-- Real part from `z = ⟨a, b⟩`. -/
 theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z = a := by simp [hz]

@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 
 module
@@ -53,8 +51,6 @@ Also includes the `I₃` integrand bounds and the Schwartz decay estimate for `R
 
 Also packages bounds and Schwartz decay for `I₂'` and `I₄'`, the `I24Common` skeleton, and
 auxiliary integral bounds (originally in `IntegralEstimates.I2`). -/
-
-/-! ## Integral representation of the magic function `a` (originally in `a.Basic`) -/
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -211,8 +207,6 @@ end MagicFunction.a.RadialFunctions
 
 end
 
-/-! ## Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane. -/
-
 open scoped Function Manifold
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands UpperHalfPlane ContDiff
 
@@ -293,8 +287,6 @@ public theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ :=
 
 end MagicFunction.a.ComplexIntegrands
 
-/-! ### Smoothness of the real integrands `Φ₂`, `Φ₄`, `Φ₆` -/
-
 namespace MagicFunction.a.RealIntegrands
 
 variable {r : ℝ}
@@ -327,14 +319,6 @@ public theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) :
 end MagicFunction.a.RealIntegrands
 
 end a_Basic_section
-
-/-! ## Polynomial Fourier coefficient bounds (originally in `MagicFunction.PolyFourierCoeffBound`)
-
-* Core lemma `DivDiscBoundOfPolyFourierCoeff` (Lemma 7.4 in the blueprint): explicit upper bound
-  on `‖f / Δ‖` for `f : ℍ → ℂ` whose Fourier coefficients are polynomially bounded.
-* Corollaries: Fourier coefficients of `(A_E)^2` via the Cauchy product, repackaged as `fouterm`,
-  and concrete exponential decay estimates on `φ₀`.
--/
 
 namespace MagicFunction.PolyFourierCoeffBound
 
@@ -535,8 +519,6 @@ public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     (fun _ => by positivity) 0 ?_) aux_11
   simpa using norm_pos_iff.2 hcn₀
 
-/-! ### Corollaries: Fourier coefficients of `(A_E)^2` -/
-
 public def A_E_sq_coeff (m : ℕ) : ℂ :=
   ∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2
 
@@ -603,8 +585,6 @@ public lemma A_E_sq_eq_tsum (z : ℍ) :
       (∑' n : ℕ, A_E_term z n) * (∑' n : ℕ, A_E_term z n) =
         ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, A_E_term z p.1 * A_E_term z p.2)]
   exact tsum_congr hanti
-
-/-! ### Converting to `fouterm` coefficients -/
 
 public noncomputable def A_E_sq_fourierCoeff : ℤ → ℂ
   | (Int.ofNat j) => if 4 ≤ j ∧ Even j then A_E_sq_coeff (j / 2 - 2) else 0
@@ -738,8 +718,6 @@ public lemma norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im {C₀ : ℝ} (hC�
 end
 
 end MagicFunction.PolyFourierCoeffBound
-
-/-! ## Schwartz property and integral estimates (originally in `Schwartz.Basic`) -/
 
 open scoped Topology
 open Complex Real Set MeasureTheory Filter intervalIntegral
@@ -904,8 +882,6 @@ public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
   let ⟨C₁, hC₁_pos, hC₁⟩ :=
     iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) hg_bound hcoeff (hrepr n)
   decay_of_bounding_uniform_norm_iteratedDeriv (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k
-
-/-! ## Common skeleton for `I₂'`/`I₄'` integral estimates. -/
 
 namespace I24Common
 
@@ -2130,18 +2106,6 @@ end MagicFunction.FourierEigenfunctions
 
 end
 
-/-!
-# The special value `a 0`
-
-This section proves the explicit special value of the magic function at the origin,
-`a 0 = -8640 * I / π` (blueprint Proposition `prop:a0`).
-
-## Main statements
-* `φ₀_finite_difference`
-* `φ₀''_add_one`
-* `a_zero`
--/
-
 namespace MagicFunction.a.SpecialValues
 
 noncomputable section
@@ -2163,8 +2127,6 @@ public theorem φ₀_finite_difference (z : ℍ) :
     φ₀_S_transform_mul_sq ((-1 : ℝ) +ᵥ z)]
   simp [φ₀_periodic, φ₂'_periodic, φ₄'_periodic, φ₀_periodic_neg_one, φ₂'_periodic_neg_one,
     φ₄'_periodic_neg_one, pow_two]; ring_nf
-
-/-! ## Evaluating `a(0)` via the strip contour. -/
 
 section StripContour
 

@@ -48,8 +48,6 @@ private lemma tendsto_modularForm_q_coeff_zero (k : ℤ) (f : ModularForm Γ(1) 
   have hval : UpperHalfPlane.valueAtInfty (f : ℍ → ℂ) = 1 := by simpa [hcoeff] using h
   simpa [hval] using modularForm_tendsto_atImInfty 1 f
 
-/-! ## The `E₄` identity -/
-
 /-- The theta-polynomial giving `E₄` (Blueprint equation (e4theta)). -/
 @[expose] public noncomputable def thetaE4 : ℍ → ℂ :=
   H₂ ^ 2 + H₂ * H₄ + H₄ ^ 2
@@ -62,18 +60,17 @@ private lemma mul_slash_SL2_2_2 (A : SL(2, ℤ)) (f g : ℍ → ℂ) :
 lemma thetaE4_S_action : (thetaE4 ∣[(4 : ℤ)] S) = thetaE4 := by
   ext z
   simp [thetaE4, pow_two, add_slash, mul_slash_SL2_2_2, H₂_S_action, H₄_S_action]
-  ring_nf
+  ring
 
 lemma thetaE4_T_action : (thetaE4 ∣[(4 : ℤ)] T) = thetaE4 := by
   ext z
   simp [thetaE4, pow_two, add_slash, mul_slash_SL2_2_2, H₂_T_action, H₄_T_action,
     jacobi_identity.symm]
-  ring_nf
+  ring
 
 lemma thetaE4_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaE4 := by
-  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-  simpa [thetaE4] using ((hH2.pow 2).add (hH2.mul hH4)).add (hH4.pow 2)
+  simpa [thetaE4] using ((H₂_SIF_MDifferentiable.pow 2).add
+    (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add (H₄_SIF_MDifferentiable.pow 2)
 
 lemma thetaE4_tendsto_atImInfty : Tendsto thetaE4 atImInfty (𝓝 (1 : ℂ)) := by
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
@@ -92,8 +89,6 @@ noncomputable def thetaE4_SIF : SlashInvariantForm (Γ 1) 4 where
 
 /-- The theta-polynomial `thetaE4` agrees with the Eisenstein series `E₄`. -/
 public theorem E₄_eq_thetaE4 : (E₄ : ℍ → ℂ) = thetaE4 := by
-  -- Build `(E₄ - thetaE4)` as a weight-4 cusp form on `Γ(1)`, then apply
-  -- the dimension-0 vanishing theorem for weight-4 cusp forms.
   let diffSIF : SlashInvariantForm (Γ 1) 4 := E₄.toSlashInvariantForm - thetaE4_SIF
   let diffCF : CuspForm (Γ 1) 4 :=
     cuspFormOfSIFTendstoZero diffSIF (E₄.holo'.sub thetaE4_MDifferentiable)
@@ -105,8 +100,6 @@ public theorem E₄_eq_thetaE4 : (E₄ : ℍ → ℂ) = thetaE4 := by
   have h : diffSIF.toFun z = 0 := congrFun (congrArg (·.toFun) hzero) z
   simpa [diffSIF, sub_eq_zero] using h
 
-/-! ## The `E₆` identity -/
-
 /-- The theta-polynomial giving `E₆` (Blueprint equation (e6theta), second form). -/
 @[expose] public noncomputable def thetaE6 : ℍ → ℂ :=
   (1 / 2 : ℂ) • ((H₂ + (2 : ℂ) • H₄) * (((2 : ℂ) • H₂ + H₄) * (H₄ - H₂)))
@@ -115,43 +108,30 @@ lemma thetaE6_S_action : (thetaE6 ∣[(6 : ℤ)] S) = thetaE6 := by
   ext z
   simp [thetaE6, add_slash, sub_eq_add_neg, SlashAction.neg_slash, SL_smul_slash,
     mul_slash_SL2_2_2, mul_slash_SL2_2_4, H₂_S_action, H₄_S_action, smul_eq_mul]
-  ring_nf
+  ring
 
 lemma thetaE6_T_action : (thetaE6 ∣[(6 : ℤ)] T) = thetaE6 := by
   ext z
   simp [thetaE6, add_slash, sub_eq_add_neg, SlashAction.neg_slash, SL_smul_slash,
     mul_slash_SL2_2_2, mul_slash_SL2_2_4, H₂_T_action, H₄_T_action, jacobi_identity.symm,
     smul_eq_mul]
-  ring_nf
+  ring
 
 lemma thetaE6_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaE6 := by
-  have hH2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-  have hH4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
   simpa [thetaE6, mul_assoc] using
-    (((hH2.add (hH4.const_smul (2 : ℂ))).mul
-      (((hH2.const_smul (2 : ℂ)).add hH4).mul (hH4.sub hH2))).const_smul (1 / 2 : ℂ))
+    (((H₂_SIF_MDifferentiable.add (H₄_SIF_MDifferentiable.const_smul (2 : ℂ))).mul
+      (((H₂_SIF_MDifferentiable.const_smul (2 : ℂ)).add H₄_SIF_MDifferentiable).mul
+        (H₄_SIF_MDifferentiable.sub H₂_SIF_MDifferentiable))).const_smul (1 / 2 : ℂ))
 
 lemma thetaE6_tendsto_atImInfty : Tendsto thetaE6 atImInfty (𝓝 (1 : ℂ)) := by
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
-  have h2 : Tendsto (fun _ : ℍ => (2 : ℂ)) atImInfty (𝓝 (2 : ℂ)) := tendsto_const_nhds
-  have h2H2 : Tendsto ((2 : ℂ) • H₂) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa using h2.smul hH2
-  have h2H4 : Tendsto ((2 : ℂ) • H₄) atImInfty (𝓝 (2 : ℂ)) := by
-    simpa using h2.smul hH4
   have hA : Tendsto (H₂ + (2 : ℂ) • H₄) atImInfty (𝓝 (2 : ℂ)) := by
-    simpa using hH2.add h2H4
+    simpa using hH2.add (hH4.const_smul (2 : ℂ))
   have hB : Tendsto ((2 : ℂ) • H₂ + H₄) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa using h2H2.add hH4
-  have hC : Tendsto (H₄ - H₂) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa using hH4.sub hH2
-  have hBC : Tendsto (((2 : ℂ) • H₂ + H₄) * (H₄ - H₂)) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa [mul_assoc] using hB.mul hC
-  have hmul :
-      Tendsto ((H₂ + (2 : ℂ) • H₄) * (((2 : ℂ) • H₂ + H₄) * (H₄ - H₂))) atImInfty (𝓝 (2 : ℂ)) := by
-    simpa [mul_assoc] using hA.mul hBC
-  simpa [thetaE6, smul_eq_mul, mul_assoc] using (tendsto_const_nhds : Tendsto (fun _ : ℍ =>
-    (1 / 2 : ℂ)) atImInfty (𝓝 (1 / 2 : ℂ))).smul hmul
+    simpa using (hH2.const_smul (2 : ℂ)).add hH4
+  have hC : Tendsto (H₄ - H₂) atImInfty (𝓝 (1 : ℂ)) := by simpa using hH4.sub hH2
+  simpa [thetaE6, smul_eq_mul, mul_assoc] using (hA.mul (hB.mul hC)).const_smul (1 / 2 : ℂ)
 
 /-- The Eisenstein series `E₆` tends to `1` at the cusp `∞`. -/
 public lemma tendsto_E₆_atImInfty : Tendsto (fun z : ℍ => E₆ z) atImInfty (𝓝 (1 : ℂ)) :=
