@@ -89,6 +89,49 @@ lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
   ((hasDerivAt_qexp a c w).hasDerivWithinAt).derivWithin
     (isOpen_upperHalfPlaneSet.uniqueDiffWithinAt hw)
 
+/-- The norm of `2πin` for `n : ℕ` is `2πn`. -/
+private lemma norm_two_pi_I_nat (n : ℕ) : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
+  rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
+    Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
+
+/-- For `z ∈ ℍ`, a q-series in `ℍ → ℂ` composed with `ofComplex` agrees eventually near `z`
+with the underlying ℂ-valued function. -/
+private lemma qexp_comp_ofComplex_eventuallyEq (a : ℕ → ℂ) (z : ℍ) :
+    ((fun w : ℍ => ∑' n, a n * cexp (2 * π * I * n * w)) ∘ ofComplex)
+      =ᶠ[nhds (z : ℂ)] fun w => ∑' n, a n * cexp (2 * π * I * n * w) := by
+  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
+  simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
+
+/-- Summability of `a n * qⁿ` from summability of `a n * (2πin) * qⁿ` for `n ≥ 1`. -/
+private lemma summable_qexp_of_summable_deriv (a : ℕ → ℂ) (y : ℂ) (hy : 0 < y.im)
+    (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+        ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a n * (2 * π * I * n) *
+          cexp (2 * π * I * n * k.1)‖ ≤ u n) :
+    Summable (fun n => a n * cexp (2 * π * I * n * y)) := by
+  obtain ⟨u, hu_sum, hu_bound⟩ :=
+    hsum_deriv {y} (Set.singleton_subset_iff.mpr hy) isCompact_singleton
+  apply Summable.of_norm_bounded_eventually (g := fun n => u n / (2 * π)) (hu_sum.div_const _)
+  rw [Filter.eventually_cofinite]
+  refine Set.Finite.subset (Set.finite_singleton 0) fun n hn => ?_
+  simp only [Set.mem_setOf_eq, not_le] at hn
+  by_contra h_ne
+  have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
+  have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
+  have h_pos : (0 : ℝ) < 2 * π * n := by positivity
+  have h_key : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
+      ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
+    rw [show ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖
+        = ‖a n‖ * ‖(2 : ℂ) * π * I * n‖ * ‖cexp (2 * π * I * n * y)‖ from by simp]
+    rw [norm_two_pi_I_nat, norm_mul]; ring
+  refine hn.not_ge ?_
+  calc ‖a n * cexp (2 * π * I * n * y)‖
+      = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by field_simp
+    _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by rw [h_key]
+    _ ≤ u n / (2 * π * n) := div_le_div_of_nonneg_right h_deriv_bound h_pos.le
+    _ ≤ u n / (2 * π) := by
+        apply div_le_div_of_nonneg_left (le_trans (norm_nonneg _) h_deriv_bound)
+          (by positivity); nlinarith
+
 /--
 **Lemma 6.45 (Blueprint)**: $D$ commutes with tsum for $q$-series.
 If F(z) = Σ a(n)·qⁿ where q = exp(2πiz), then D F(z) = Σ n·a(n)·qⁿ.
@@ -106,54 +149,16 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   have hf_diff : ∀ n (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ
       (fun w => a n * cexp (2 * π * I * n * w)) r := fun n r =>
     ((differentiableAt_id.const_mul (2 * π * I * n)).cexp).const_mul (a n)
-  have hf_sum : ∀ y : ℂ, y ∈ {w : ℂ | 0 < w.im} →
-      Summable (fun n => a n * cexp (2 * π * I * n * y)) := by
-    intro y hy
-    obtain ⟨u, hu_sum, hu_bound⟩ :=
-      hsum_deriv {y} (Set.singleton_subset_iff.mpr hy) isCompact_singleton
-    apply Summable.of_norm_bounded_eventually (g := fun n => u n / (2 * π)) (hu_sum.div_const _)
-    rw [Filter.eventually_cofinite]
-    refine Set.Finite.subset (Set.finite_singleton 0) fun n hn => ?_
-    simp only [Set.mem_setOf_eq, not_le] at hn
-    by_contra h_ne
-    have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
-    have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
-    have h_norm_2pin : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
-      rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
-          Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
-    have h_bound : ‖a n * cexp (2 * π * I * n * y)‖ ≤ u n / (2 * π) := by
-      have h_pos : (0 : ℝ) < 2 * π * n := by positivity
-      have h_key : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
-          ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
-        simp only [norm_mul, h_norm_2pin]; ring
-      calc ‖a n * cexp (2 * π * I * n * y)‖
-          = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by field_simp
-        _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by
-            rw [h_key]
-        _ ≤ u n / (2 * π * n) := div_le_div_of_nonneg_right h_deriv_bound h_pos.le
-        _ ≤ u n / (2 * π) := by
-            apply div_le_div_of_nonneg_left (le_trans (norm_nonneg _) h_deriv_bound)
-              (by positivity); nlinarith
-    exact hn.not_ge h_bound
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
-        ‖derivWithin (fun w => a n * cexp (2 * π * I * n * w))
-            {w : ℂ | 0 < w.im} k‖ ≤ u n := by
-    intro K hK1 hK2
-    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
-    exact ⟨u, hu_sum, fun n k => by rw [derivWithin_qexp _ _ _ (hK1 k.2)]; exact hu_bound n k⟩
+        ‖derivWithin (fun w => a n * cexp (2 * π * I * n * w)) {w : ℂ | 0 < w.im} k‖ ≤ u n :=
+    fun K hK1 hK2 => let ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
+      ⟨u, hu_sum, fun n k => by rw [derivWithin_qexp _ _ _ (hK1 k.2)]; exact hu_bound n k⟩
   have h_tsum_deriv := hasDerivAt_tsum_fun (fun n w => a n * cexp (2 * π * I * n * w))
-    isOpen_upperHalfPlaneSet (z : ℂ) z.2 hf_sum hu hf_diff
-  have h_agree :
-      ((fun w : ℍ => ∑' n, a n * cexp (2 * π * I * n * w)) ∘ ofComplex)
-        =ᶠ[nhds (z : ℂ)] fun w => ∑' n, a n * cexp (2 * π * I * n * w) := by
-    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
-  rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
-  have h_deriv_simp : ∀ n, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
-      {w : ℂ | 0 < w.im} z = a n * (2 * π * I * n) * cexp (2 * π * I * n * z) :=
-    fun n => derivWithin_qexp _ _ _ z.2
-  simp_rw [h_deriv_simp, ← tsum_mul_left]
+    isOpen_upperHalfPlaneSet (z : ℂ) z.2
+    (fun y hy => summable_qexp_of_summable_deriv a y hy hsum_deriv) hu hf_diff
+  rw [(qexp_comp_ofComplex_eventuallyEq a z).deriv_eq, h_tsum_deriv.deriv]
+  simp_rw [fun n => derivWithin_qexp (a n) n z z.2, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
 /-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper

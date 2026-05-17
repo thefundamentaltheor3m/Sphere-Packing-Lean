@@ -1257,6 +1257,41 @@ private lemma integral_permJ5Kernel_x_eq (w : EuclideanSpace ℝ (Fin 8)) (s : �
   linear_combination
     ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) * hcancel
 
+/-- Fubini swap + inner-integral evaluation for the `J₅`/`J₆` permutation argument. -/
+private lemma fourier_J₅_inner_eq (w : EuclideanSpace ℝ (Fin 8)) :
+    (∫ x : EuclideanSpace ℝ (Fin 8),
+          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
+            ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s))
+      =
+      (-2 : ℂ) *
+        ∫ s in Ici (1 : ℝ),
+          (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
+  let μs : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
+  let f : (EuclideanSpace ℝ (Fin 8)) → ℝ → ℂ := fun x s ↦ PermJ5.kernel w (x, s)
+  have hint : Integrable (Function.uncurry f)
+      ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μs) := by
+    simpa [μs, SpherePacking.Integration.μIciOne, f, Function.uncurry] using
+      (PermJ5.integrable_kernel (w := w))
+  have hrew : (fun x : EuclideanSpace ℝ (Fin 8) ↦
+        cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
+          ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
+      fun x : EuclideanSpace ℝ (Fin 8) ↦
+        (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s := by
+    funext x
+    rw [show (∫ s in Ici (1 : ℝ), f x s) =
+        ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s
+      from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel],
+      MeasureTheory.integral_const_mul]
+    ring
+  rw [congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew,
+    MeasureTheory.integral_const_mul,
+    MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
+      (ν := μs) (f := f) hint]
+  refine congrArg ((-2 : ℂ) * ·) (integral_congr_ae <|
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_)
+  have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
+  simpa [f] using integral_permJ5Kernel_x_eq w s hs0
+
 /-- Fourier permutation identity: `𝓕 J₅ = -J₆`. -/
 public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) J₅ = -J₆ := by
   ext w
@@ -1269,40 +1304,7 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
         (-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s := by
     simpa using (J5Change.Complete_Change_of_Variables (r := (‖x‖ ^ 2)))
   simp only [hJ5', mul_assoc]
-  let μs : Measure ℝ := (volume : Measure ℝ).restrict (Ici (1 : ℝ))
-  let f : (EuclideanSpace ℝ (Fin 8)) → ℝ → ℂ := fun x s ↦ PermJ5.kernel w (x, s)
-  have hint : Integrable (Function.uncurry f)
-      ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μs) := by
-    simpa [μs, SpherePacking.Integration.μIciOne, f, Function.uncurry] using
-      (PermJ5.integrable_kernel (w := w))
-  have hmain :
-      (∫ x : EuclideanSpace ℝ (Fin 8),
-            cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s))
-        =
-        (-2 : ℂ) *
-          ∫ s in Ici (1 : ℝ),
-            (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
-    have hrew : (fun x : EuclideanSpace ℝ (Fin 8) ↦
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
-        fun x : EuclideanSpace ℝ (Fin 8) ↦
-          (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s := by
-      funext x
-      rw [show (∫ s in Ici (1 : ℝ), f x s) =
-          ∫ s in Ici (1 : ℝ), cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * J5Change.g (‖x‖ ^ 2) s
-        from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, PermJ5.kernel],
-        MeasureTheory.integral_const_mul]
-      ring
-    rw [congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hrew,
-      MeasureTheory.integral_const_mul,
-      MeasureTheory.integral_integral_swap (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-        (ν := μs) (f := f) hint]
-    refine congrArg ((-2 : ℂ) * ·) (integral_congr_ae <|
-      (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_)
-    have hs0 : 0 < s := lt_of_lt_of_le (by norm_num) hs
-    simpa [f] using integral_permJ5Kernel_x_eq w s hs0
-  rw [hmain, J₆'_eq (r := ‖w‖ ^ 2),
+  rw [fourier_J₅_inner_eq w, J₆'_eq (r := ‖w‖ ^ 2),
     show (∫ s in Ici (1 : ℝ),
               (-I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) =
             -(∫ s in Ici (1 : ℝ),

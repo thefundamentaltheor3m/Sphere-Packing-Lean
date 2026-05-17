@@ -748,6 +748,39 @@ open MeasureTheory Real Complex Filter
 open SpherePacking intervalIntegral
 open MagicFunction.a.RealIntegrals
 
+/-- Pointwise bound `‖base t * exp(u * k t)‖ ≤ Cbase * exp(‖u‖ * K)` from norm bounds on
+`base` and `k`. -/
+private lemma norm_base_mul_exp_le {base k : ℝ → ℂ} {Cbase K : ℝ} {t : ℝ}
+    (ht : t ∈ Ι (0 : ℝ) 1)
+    (hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base t‖ ≤ Cbase)
+    (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ K) (u : ℂ) :
+    ‖base t * Complex.exp (u * k t)‖ ≤ Cbase * Real.exp (‖u‖ * K) :=
+  norm_mul_le_of_le (hbase_bound t ht) <| (Complex.norm_exp_le_exp_norm _).trans
+    (Real.exp_le_exp.2 ((norm_mul_le u (k t)).trans (by gcongr; exact hk_bound t ht)))
+
+/-- Pointwise derivative bound `‖base t * k t * exp(u * k t)‖ ≤ Cbase * (K * E)` for `u` in a
+ball of radius `1` around `u0`. -/
+private lemma norm_base_k_mul_exp_le {base k : ℝ → ℂ} {Cbase K : ℝ} {u0 u : ℂ} {t : ℝ}
+    (ht : t ∈ Ι (0 : ℝ) 1) (hu : u ∈ Metric.ball u0 (1 : ℝ))
+    (hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base t‖ ≤ Cbase)
+    (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ K) :
+    ‖base t * k t * Complex.exp (u * k t)‖ ≤ Cbase * (K * Real.exp ((‖u0‖ + 1) * K)) := by
+  have hCbase : 0 ≤ Cbase := (norm_nonneg _).trans (hbase_bound t ht)
+  have hK : 0 ≤ K := (norm_nonneg _).trans (hk_bound t ht)
+  have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
+    have h1 : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le u0 (u - u0)
+    linarith [show ‖u - u0‖ < 1 from by simpa [Metric.mem_ball, dist_eq_norm] using hu]
+  calc ‖base t * k t * Complex.exp (u * k t)‖
+      = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
+        simp [mul_left_comm, mul_comm]
+    _ ≤ ‖base t‖ * (‖k t‖ * Real.exp ((‖u0‖ + 1) * K)) := by
+        gcongr
+        exact (Complex.norm_exp_le_exp_norm _).trans
+          (Real.exp_le_exp.2 (norm_mul_le_of_le hu' (hk_bound t ht)))
+    _ ≤ Cbase * (K * Real.exp ((‖u0‖ + 1) * K)) := by
+        gcongr <;> [exact hbase_bound t ht; exact hk_bound t ht]
+
 /-- Differentiability of a parameter-dependent interval integral with an exponential factor. -/
 public lemma differentiableAt_intervalIntegral_mul_exp
     {base k : ℝ → ℂ} (u0 : ℂ) (Cbase K : ℝ)
@@ -757,56 +790,29 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ K) :
     DifferentiableAt ℂ
       (fun u : ℂ => ∫ t in (0 : ℝ)..1, base t * Complex.exp (u * k t)) u0 := by
-  have hCbase : 0 ≤ Cbase := (norm_nonneg (base 1)).trans (hbase_bound 1 (by simp))
-  have hK : 0 ≤ K := (norm_nonneg (k 1)).trans (hk_bound 1 (by simp))
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * (k t) * Complex.exp (u * k t)
-  have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by
-    fun_prop
+  have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by fun_prop
   have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) :=
-    Filter.Eventually.of_forall fun u => (hbase.mul (hexp u)).aestronglyMeasurable
+    .of_forall fun u => (hbase.mul (hexp u)).aestronglyMeasurable
       (μ := (volume : Measure ℝ)) measurableSet_uIoc
   have hF'_meas : AEStronglyMeasurable (F' u0) (volume.restrict (Ι (0 : ℝ) 1)) := by
     simpa [F', mul_assoc] using (hbase.mul (hk.mul (hexp u0))).aestronglyMeasurable
       (μ := (volume : Measure ℝ)) measurableSet_uIoc
-  have hF_int : IntervalIntegrable (F u0) volume (0 : ℝ) 1 := by
-    refine intervalIntegrable_iff.2 ?_
-    refine MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Ι (0 : ℝ) 1) < ⊤)
-      hF_meas.self_of_nhds (Cbase * Real.exp (‖u0‖ * K)) <|
-      (ae_restrict_iff' measurableSet_uIoc).2 <| .of_forall fun t ht => ?_
-    refine norm_mul_le_of_le (hbase_bound t ht) ?_
-    exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2
-      ((norm_mul_le u0 (k t)).trans (by gcongr; exact hk_bound t ht)))
-  let E : ℝ := Real.exp ((‖u0‖ + 1) * K); let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
-  have h_bound : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
-      ∀ u ∈ Metric.ball u0 (1 : ℝ), ‖F' u t‖ ≤ bound t := by
-    refine Filter.Eventually.of_forall (fun t ht u hu => ?_)
-    have hk' : ‖k t‖ ≤ K := hk_bound t ht
-    have hu' : ‖u‖ ≤ ‖u0‖ + 1 := by
-      have : ‖u‖ ≤ ‖u0‖ + ‖u - u0‖ := by
-        simpa [sub_eq_add_neg, add_assoc] using norm_add_le u0 (u - u0)
-      linarith [show ‖u - u0‖ < 1 from by simpa [Metric.mem_ball, dist_eq_norm] using hu]
-    have hstep1 : ‖F' u t‖ ≤ ‖base t‖ * (‖k t‖ * E) := by
-      calc
-        ‖F' u t‖ = ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) := by
-          simp [F', mul_left_comm, mul_comm]
-        _ ≤ ‖base t‖ * (‖k t‖ * E) := by
-          gcongr
-          exact (Complex.norm_exp_le_exp_norm _).trans
-            (Real.exp_le_exp.2 (norm_mul_le_of_le hu' hk'))
-    simpa [bound, E, mul_assoc] using hstep1.trans (by gcongr; exact hbase_bound t ht)
-  have h_diff : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Ι (0 : ℝ) 1 →
-      ∀ u ∈ Metric.ball u0 (1 : ℝ), HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
-    Filter.Eventually.of_forall fun t _ u _ => by
+  have hF_int : IntervalIntegrable (F u0) volume (0 : ℝ) 1 := intervalIntegrable_iff.2 <|
+    MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Ι (0 : ℝ) 1) < ⊤)
+      hF_meas.self_of_nhds (Cbase * Real.exp (‖u0‖ * K))
+      ((ae_restrict_iff' measurableSet_uIoc).2 <| .of_forall fun t ht =>
+        norm_base_mul_exp_le ht hbase_bound hk_bound u0)
+  exact (intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le
+    (μ := (volume : Measure ℝ)) (F := F) (F' := F') (s := Metric.ball u0 (1 : ℝ))
+    (bound := fun _ => Cbase * (K * Real.exp ((‖u0‖ + 1) * K)))
+    (Metric.ball_mem_nhds u0 (by norm_num)) hF_meas hF_int hF'_meas
+    (.of_forall fun t ht u hu => norm_base_k_mul_exp_le ht hu hbase_bound hk_bound) (by simp)
+    (.of_forall fun t _ u _ => by
       simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
         ((Complex.hasDerivAt_exp (u * k t)).comp u
-          (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
-  exact (intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-    (F := F) (F' := F') (x₀ := u0) (s := Metric.ball u0 (1 : ℝ)) (bound := bound)
-    (Metric.ball_mem_nhds u0 (by norm_num)) (hF_meas := hF_meas) (hF_int := hF_int)
-    (hF'_meas := hF'_meas) (h_bound := h_bound)
-    (bound_integrable := by simp [bound]) (h_diff := h_diff)).2.differentiableAt
+          (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t))).2.differentiableAt
 
 noncomputable section
 
@@ -1893,6 +1899,49 @@ private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
   have := continuousOn_phi0''_Idiv hs; unfold aAnotherIntegrand; fun_prop
 
+/-- A `Cφ₀`-bound on `‖φ₀''(i/t)‖` for `t ∈ (0, 1]`, derived from the Fourier-coefficient bound. -/
+private lemma norm_phi0''_Idiv_le_on_Ioc {t : ℝ} (ht : t ∈ Set.Ioc (0 : ℝ) 1)
+    {Cφ₀ : ℝ} (hCφ₀_pos : 0 < Cφ₀)
+    (hCφ₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ Cφ₀ * Real.exp (-2 * π * z.im)) :
+    ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
+  have him_pos : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
+    simpa [imag_I_div] using inv_pos.2 ht.1
+  let z : ℍ := ⟨(Complex.I : ℂ) / (t : ℂ), him_pos⟩
+  have hzHalf : (1 / 2 : ℝ) < z.im := by
+    linarith [(by simpa [z, UpperHalfPlane.im, imag_I_div] using (one_le_inv₀ ht.1).2 ht.2 :
+      (1 : ℝ) ≤ z.im)]
+  simpa [show φ₀ z = φ₀'' ((Complex.I : ℂ) / (t : ℂ)) by
+    simpa [z] using (φ₀''_def (z := (Complex.I : ℂ) / (t : ℂ)) him_pos).symm] using
+    (hCφ₀ z hzHalf).trans
+      (by simpa using mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
+        (by nlinarith [Real.pi_pos, (z.2).le])) hCφ₀_pos.le)
+
+/-- Term-by-term bound on `‖cancelExpr t‖` for `t ∈ (0, 1]`. -/
+private lemma norm_cancelExpr_le_on_Ioc {t : ℝ} (ht : t ∈ Set.Ioc (0 : ℝ) 1)
+    {Cφ₀ : ℝ} (hφ0'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀) :
+    ‖cancelExpr t‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
+      ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
+      ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
+  unfold cancelExpr
+  set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
+  set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
+  set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
+  set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+  have ht2nn : (0 : ℝ) ≤ t ^ (2 : ℕ) := by positivity
+  have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
+    simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nn]
+      using mul_le_mul_of_nonneg_left hφ0'' ht2nn
+  have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
+    rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
+      simp [-Complex.ofReal_exp, B]]
+    exact mul_le_mul_of_nonneg_left
+      (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2])) (norm_nonneg _)
+  have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
+    simpa [Cc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht.1.le] using
+      mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
+  linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
+    (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
+
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨Cφ₀, hCφ₀_pos, hCφ₀⟩
@@ -1901,48 +1950,15 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
       measurableSet_Ioc) (Cφ₀ + ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
         ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖)
     ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun t ht => ?_))
-  have him_pos : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
-    simpa [imag_I_div] using inv_pos.2 ht.1
-  let z : ℍ := ⟨(Complex.I : ℂ) / (t : ℂ), him_pos⟩
-  have hzHalf : (1 / 2 : ℝ) < z.im := by
-    linarith [(by simpa [z, UpperHalfPlane.im, imag_I_div] using (one_le_inv₀ ht.1).2 ht.2 :
-      (1 : ℝ) ≤ z.im)]
-  have hφ0'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
-    simpa [show φ₀ z = φ₀'' ((Complex.I : ℂ) / (t : ℂ)) by
-      simpa [z] using (φ₀''_def (z := (Complex.I : ℂ) / (t : ℂ)) him_pos).symm] using
-      (hCφ₀ z hzHalf).trans
-        (by simpa using mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
-          (by nlinarith [Real.pi_pos, (z.2).le])) hCφ₀_pos.le)
   have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht.1.le, ht.2]
-  have hbr : ‖cancelExpr t‖ ≤
-      (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-        ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-        ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
-    unfold cancelExpr
-    set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
-    set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
-    set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
-    set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-    have ht2nn : (0 : ℝ) ≤ t ^ (2 : ℕ) := by positivity
-    have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
-      simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nn]
-        using mul_le_mul_of_nonneg_left hφ0'' ht2nn
-    have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
-      rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
-        simp [-Complex.ofReal_exp, B]]
-      exact mul_le_mul_of_nonneg_left
-        (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2])) (norm_nonneg _)
-    have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
-      simpa [Cc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht.1.le] using
-        mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
-    linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
-      (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
+  have hφ0'' := norm_phi0''_Idiv_le_on_Ioc ht hCφ₀_pos hCφ₀
   have hmul : ‖aAnotherIntegrand u t‖ ≤ ‖cancelExpr t‖ := by
     simpa [cancelExpr, aAnotherIntegrand, norm_mul, mul_assoc] using mul_le_mul_of_nonneg_left
       (by rw [norm_ofReal_exp]; exact Real.exp_le_one_iff.2 (by
         nlinarith [mul_nonneg (mul_nonneg Real.pi_pos.le hu.le) ht.1.le]) :
         ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1) (norm_nonneg _)
-  nlinarith [hmul.trans hbr, mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le]
+  nlinarith [hmul.trans (norm_cancelExpr_le_on_Ioc ht hφ0''),
+    mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le]
 
 /-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
 public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
@@ -2299,58 +2315,49 @@ open MagicFunction.FourierEigenfunctions
 /-- The analytic continuation domain `U = {u : ℂ | 0 < re u} \ {2}`. -/
 @[expose] public def ACDomain : Set ℂ := rightHalfPlane \ {2}
 
+/-- A homeomorphism `(Ioi 0) × ℝ ≃ₜ {u : ℂ // 0 < u.re}` sending `(x, y)` to `x + yi`. -/
+private noncomputable def rightHalfPlaneProdHomeomorph :
+    (Set.Ioi (0 : ℝ) × ℝ) ≃ₜ {u : ℂ // 0 < u.re} where
+  toEquiv :=
+    { toFun := fun p =>
+        ⟨(p.1 : ℝ) + p.2 * Complex.I, by have hp : (0 : ℝ) < (p.1 : ℝ) := p.1.2; simpa using hp⟩
+      invFun := fun z => (⟨z.1.re, z.2⟩, z.1.im)
+      left_inv := by rintro ⟨x, y⟩; ext <;> simp
+      right_inv := by rintro ⟨z, hz⟩; exact Subtype.ext (by simp [Complex.re_add_im]) }
+  continuous_toFun :=
+    (show Continuous (fun p : Set.Ioi (0 : ℝ) × ℝ => (p.1 : ℝ) + p.2 * Complex.I) by
+      fun_prop).subtype_mk fun p => by have hp : (0 : ℝ) < (p.1 : ℝ) := p.1.2; simpa using hp
+  continuous_invFun := by fun_prop
+
+/-- A homeomorphism `ℂ ≃ₜ {u : ℂ // 0 < u.re}` obtained by exponentiating the real part. -/
+private noncomputable def rightHalfPlaneHomeomorph : ℂ ≃ₜ {u : ℂ // 0 < u.re} :=
+  (Complex.equivRealProdCLM.toHomeomorph.trans
+    ((Real.expOrderIso.toHomeomorph).prodCongr (Homeomorph.refl ℝ))).trans
+    rightHalfPlaneProdHomeomorph
+
 /-- The analytic continuation domain `ACDomain` is preconnected. -/
 public lemma ACDomain_isPreconnected : IsPreconnected ACDomain := by
-  -- We use a homeomorphism `ℂ ≃ₜ {u : ℂ // 0 < u.re}` to reduce to connectedness of the
-  -- complement of a singleton in `ℂ`.
   let z2 : {u : ℂ // 0 < u.re} := ⟨(2 : ℂ), by simp⟩
-  let h₃ : (Set.Ioi (0 : ℝ) × ℝ) ≃ₜ {u : ℂ // 0 < u.re} :=
-    { toEquiv :=
-        { toFun := fun p =>
-            ⟨(p.1 : ℝ) + p.2 * Complex.I, by
-              have hp : (0 : ℝ) < (p.1 : ℝ) := p.1.2
-              simpa using hp⟩
-          invFun := fun z => (⟨z.1.re, z.2⟩, z.1.im)
-          left_inv := by
-            rintro ⟨x, y⟩
-            ext <;> simp
-          right_inv := by
-            rintro ⟨z, hz⟩
-            apply Subtype.ext
-            simp [Complex.re_add_im] }
-      continuous_toFun := by
-        refine
-            (show Continuous (fun p : Set.Ioi (0 : ℝ) × ℝ => (p.1 : ℝ) + p.2 * Complex.I) by
-              fun_prop).subtype_mk fun p => by
-            have hp : (0 : ℝ) < (p.1 : ℝ) := p.1.2
-            simpa using hp
-      continuous_invFun := by
-        fun_prop }
-  let h : ℂ ≃ₜ {u : ℂ // 0 < u.re} :=
-    (Complex.equivRealProdCLM.toHomeomorph.trans
-          ((Real.expOrderIso.toHomeomorph).prodCongr (Homeomorph.refl ℝ))).trans h₃
+  let h := rightHalfPlaneHomeomorph
   have hpre : IsPreconnected ({z2}ᶜ : Set {u : ℂ // 0 < u.re}) := by
     have hconn : IsConnected ({h.symm z2}ᶜ : Set ℂ) :=
       isConnected_compl_singleton_of_one_lt_rank (rank_real_complex ▸ Nat.one_lt_ofNat) (h.symm z2)
-    have himage :
-        h '' ({h.symm z2}ᶜ : Set ℂ) = ({z2}ᶜ : Set {u : ℂ // 0 < u.re}) := by
+    have himage : h '' ({h.symm z2}ᶜ : Set ℂ) = ({z2}ᶜ : Set {u : ℂ // 0 < u.re}) := by
       ext z
       refine ⟨?_, fun hz => ⟨h.symm z, by simpa, by simp⟩⟩
       rintro ⟨x, hx, rfl⟩
       have hx' : x ≠ h.symm z2 := by simpa using hx
       simpa using fun hz => hx' (by simpa using congrArg h.symm hz)
     simpa [himage] using hconn.isPreconnected.image h h.continuous.continuousOn
-  have hval :
-      ((Subtype.val : {u : ℂ // 0 < u.re} → ℂ) '' ({z2}ᶜ :
-          Set {u : ℂ // 0 < u.re})) = ACDomain := by
+  have hval : ((Subtype.val : {u : ℂ // 0 < u.re} → ℂ) '' ({z2}ᶜ :
+      Set {u : ℂ // 0 < u.re})) = ACDomain := by
     ext u
     refine ⟨?_, ?_⟩
     · rintro ⟨z, hz, rfl⟩
       have hz' : z ≠ z2 := by simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using hz
       exact ⟨z.2, by simpa using fun hEq => hz' (Subtype.ext hEq)⟩
     · rintro hu
-      have hu_re : 0 < u.re := by simpa [rightHalfPlane] using hu.1
-      refine ⟨⟨u, hu_re⟩, ?_, rfl⟩
+      refine ⟨⟨u, by simpa [rightHalfPlane] using hu.1⟩, ?_, rfl⟩
       simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using fun hEq =>
         (by simpa using hu.2 : u ≠ (2 : ℂ)) (congrArg Subtype.val hEq)
   simpa [hval] using

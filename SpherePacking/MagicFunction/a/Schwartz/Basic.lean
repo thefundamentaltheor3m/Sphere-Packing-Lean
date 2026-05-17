@@ -1591,54 +1591,67 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
         SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
           (a := I * φ₀'' (I * t)) (c := coeff t) (n := n) (x := r))).2
 
+/-- The `n`-th iterated derivative of `I₆'` is `2 * ∫ t in Ici 1, gN n r t` for `r > -1`. -/
+private lemma iteratedDeriv_I₆'_eq_integral_gN :
+    ∀ n : ℕ, ∀ r : ℝ, -1 < r → iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t := by
+  intro n
+  induction n with
+  | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
+  | succ n hn =>
+    intro r hr
+    calc iteratedDeriv (n + 1) I₆' r
+        = deriv (iteratedDeriv n I₆') r := congrFun iteratedDeriv_succ r
+      _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
+        Filter.EventuallyEq.deriv_eq
+          (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
+      _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t :=
+        ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
+
+/-- Pointwise bound `‖gN n r t‖ ≤ B t * rexp (-π r)` for `t ≥ 1`, `r ≥ 0`,
+where `B t = C₀ * π^n * t^n * rexp(-2π t)`. -/
+private lemma gN_norm_le_B_mul_exp {n : ℕ} {C₀ : ℝ} (hC₀_pos : 0 < C₀) {r t : ℝ}
+    (hC₀ : ∀ r : ℝ, ∀ t ∈ Ici (1 : ℝ),
+      ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
+    (hr : 0 ≤ r) (ht : t ∈ Ici (1 : ℝ)) :
+    ‖gN n r t‖ ≤ (C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t))) * rexp (-π * r) := by
+  have ht0 : 0 ≤ t := zero_le_one.trans ht
+  calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
+    _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
+      mul_le_mul (by simpa [mul_pow] using (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le)
+        (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (Real.exp_le_exp.2 <| by
+          nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
+          (by positivity)) (by positivity) (by positivity)
+    _ = (C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t))) * rexp (-π * r) := by
+      simp [mul_assoc, mul_left_comm, mul_comm]
+
+/-- The majorant `t ↦ C₀ * π^n * t^n * rexp(-2π t)` is integrable on `Ici 1`. -/
+private lemma integrableOn_B_const (n : ℕ) (C₀ : ℝ) :
+    IntegrableOn (fun t : ℝ ↦ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t)))
+      (Ici (1 : ℝ)) volume := by
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (show IntegrableOn (fun t : ℝ ↦ t ^ n * rexp (-(2 * π) * t)) (Ici (1 : ℝ)) volume by
+      simpa using SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici
+        (n := n) (b := 2 * π) (by positivity)).const_mul (C₀ * (π ^ n))
+
 lemma iteratedDeriv_bound (n : ℕ) :
     ∃ C₁ > 0, ∀ r : ℝ, 0 ≤ r → ‖iteratedDeriv n I₆' r‖ ≤ C₁ * rexp (-π * r) := by
-  have iteratedDeriv_eq : ∀ n : ℕ, ∀ r : ℝ, -1 < r →
-      iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t := by
-    intro n
-    induction n with
-    | zero => intro r _; simp [gN, I₆'_eq_integral_g_Ioo]
-    | succ n hn =>
-      intro r hr
-      calc iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r :=
-            congrFun iteratedDeriv_succ r
-        _ = deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r :=
-          Filter.EventuallyEq.deriv_eq
-            (by filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx)
-        _ = 2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t :=
-          ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
   let B : ℝ → ℝ := fun t ↦ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t))
-  have hB_int : IntegrableOn B (Ici (1 : ℝ)) volume := by
-    simpa [B, mul_assoc, mul_left_comm, mul_comm] using
-      (show IntegrableOn (fun t : ℝ ↦ t ^ n * rexp (-(2 * π) * t)) (Ici (1 : ℝ)) volume by
-        simpa using SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici
-          (n := n) (b := 2 * π) (by positivity)).const_mul (C₀ * (π ^ n))
+  have hB_int : IntegrableOn B (Ici (1 : ℝ)) volume := integrableOn_B_const n C₀
   let A : ℝ := ∫ t in Ici (1 : ℝ), B t
-  have hA_nonneg : 0 ≤ A :=
-    MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ)) measurableSet_Ici
-      fun t ht ↦ by have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
+  have hA_nonneg : 0 ≤ A := MeasureTheory.setIntegral_nonneg measurableSet_Ici
+    fun t ht ↦ by have : 0 ≤ t := zero_le_one.trans ht; simp only [B]; positivity
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
+  have hgN_le : ‖∫ t in Ici (1 : ℝ), gN n r t‖ ≤ ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) :=
+    (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
+      (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := r) (by linarith)).norm)
+      (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
+      measurableSet_Ici fun t ht ↦ gN_norm_le_B_mul_exp (n := n) hC₀_pos hC₀ hr ht
   simpa [mul_assoc, mul_left_comm, mul_comm] using calc
     ‖iteratedDeriv n I₆' r‖ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by
-      rw [iteratedDeriv_eq n r hr']; simp
-    _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by
-      gcongr
-      refine (norm_integral_le_integral_norm (gN n r)).trans <| setIntegral_mono_on
-        (by simpa [IntegrableOn, μIciOne] using
-              (integrable_gN (n := n) (r := r) (by linarith)).norm)
-        (by simpa [mul_assoc] using hB_int.mul_const (rexp (-π * r)))
-        measurableSet_Ici fun t ht ↦ by
-        have ht0 : 0 ≤ t := zero_le_one.trans ht
-        calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by simp [gN]
-          _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
-            mul_le_mul (by simpa [mul_pow] using
-                (coeff_norm_pow_of_nonneg (n := n) (t := t) ht0).le)
-              (le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (Real.exp_le_exp.2 <| by
-                nlinarith [Real.pi_pos, mul_le_mul_of_nonneg_left (ht : (1 : ℝ) ≤ t) hr])
-                (by positivity)) (by positivity) (by positivity)
-          _ = B t * rexp (-π * r) := by simp [B, mul_assoc, mul_left_comm, mul_comm]
+      rw [iteratedDeriv_I₆'_eq_integral_gN n r hr']; simp
+    _ ≤ 2 * ∫ t in Ici (1 : ℝ), B t * rexp (-π * r) := by gcongr
     _ = 2 * (A * rexp (-π * r)) := by
       rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))]
     _ ≤ (2 * (A + 1)) * rexp (-π * r) := by nlinarith [hA_nonneg, Real.exp_pos (-π * r)]
