@@ -944,6 +944,51 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
 end
 
 
+/-- Swap a constant-scaled doubly-finite sum past an infinite sum, given pointwise summability.
+The infinite sum `∑' m, c * (a m * e x y m)` is pushed outside the finite `x, y` sums. -/
+private lemma tsum_finset_finset_const_mul_swap {ι κ μ : Type*} [Finite ι] [Finite κ]
+    (c : ℂ) (a : μ → ℂ) (e : ι → κ → μ → ℂ)
+    (hSummable : ∀ x : ι, ∀ y : κ, Summable fun m : μ => c * a m * e x y m) :
+    (∑' x : ι, ∑' y : κ, c * ∑' m : μ, a m * e x y m)
+      = c * ∑' m : μ, a m * (∑' x : ι, ∑' y : κ, e x y m) := by
+  letI : Fintype ι := Fintype.ofFinite ι
+  letI : Fintype κ := Fintype.ofFinite κ
+  simp only [tsum_fintype]
+  simp_rw [← tsum_mul_left]
+  simp_rw [show ∀ x : ι, (∑ y : κ, ∑' m : μ, c * (a m * e x y m))
+        = ∑' m : μ, ∑ y : κ, c * (a m * e x y m) from fun x =>
+    (Summable.tsum_finsetSum (fun y _ => by
+      simpa [mul_assoc] using hSummable x y)).symm]
+  rw [show (∑ x : ι, ∑' m : μ, ∑ y : κ, c * (a m * e x y m))
+        = ∑' m : μ, ∑ x : ι, ∑ y : κ, c * (a m * e x y m) from
+    (Summable.tsum_finsetSum (fun x _ =>
+      summable_sum (f := fun (y : κ) (m : μ) => c * (a m * e x y m)) fun y _ => by
+        simpa [mul_assoc] using hSummable x y)).symm]
+  exact tsum_congr fun m => by simp_rw [← Finset.mul_sum]
+
+/-- Summability on the dual lattice of `c * (𝓕 f m).re * exp(2πi⟪x - y, m⟫)`. -/
+private lemma summable_const_mul_re_fourier_mul_exp {d : ℕ}
+    (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (P : PeriodicSpherePacking d) (c : ℂ)
+    (x y : EuclideanSpace ℝ (Fin d)) :
+    Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
+      c * (((𝓕 f m).re : ℂ)) *
+        exp (2 * π * I * ⟪x - y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) := by
+  have hFNorm : Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
+      ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ := by
+    simpa using SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
+      (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
+      (a := (0 : EuclideanSpace ℝ (Fin d)))
+  refine Summable.of_norm_bounded
+    (g := fun m => ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖)
+    (by simpa [mul_assoc] using hFNorm.mul_left ‖c‖) fun m => by
+    have hnexp : ‖exp (2 * π * I *
+        ⟪x - y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (Complex.norm_exp_I_mul_ofReal (x := 2 * π *
+          ⟪x - y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
+    simp only [norm_mul, hnexp, mul_one, Complex.norm_real, Real.norm_eq_abs]
+    gcongr; exact abs_re_le_norm _
+
 /-- Commute the finite `x,y` sums with the dual-lattice `m` sum in the Poisson summation
 expression. We assume `𝓕 f` is real-valued so the result lives in real parts. -/
 public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
@@ -974,66 +1019,13 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
   let a : SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun m => ((𝓕 f m).re : ℂ)
   let e : ↑(P.centers ∩ D) → ↑(P.centers ∩ D) →
       SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun x y m =>
-    exp (2 * π * I *
-      ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
+    exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
+      (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hFourierReal : ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) = a m := fun m => by
     simpa [a] using (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  have hSummableFourierNorm :
-      Summable (fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-        ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖) := by
-    simpa using
-      (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
-        (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
-        (a := (0 : EuclideanSpace ℝ (Fin d))))
-  have hSummable_c_mul_a_mul_e : ∀ x y : ↑(P.centers ∩ D),
-      Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice => c * a m * e x y m := fun x y =>
-    Summable.of_norm_bounded
-      (g := fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-        ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖)
-      (by simpa [mul_assoc] using hSummableFourierNorm.mul_left ‖c‖) fun m => by
-        have hnexp : ‖e x y m‖ = (1 : ℝ) := by
-          simpa [e, mul_assoc, mul_left_comm, mul_comm] using
-            (Complex.norm_exp_I_mul_ofReal (x := 2 * π *
-              ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
-                (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
-        simp_all
-  have hmain :
-      (∑' x : ↑(P.centers ∩ D),
-          ∑' y : ↑(P.centers ∩ D),
-            c * ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, a m * e x y m)
-        =
-        c * ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-            a m * (∑' x : ↑(P.centers ∩ D), ∑' y : ↑(P.centers ∩ D), e x y m) := by
-    simp only [tsum_fintype]
-    simp_rw [← tsum_mul_left]
-    simp_rw [show ∀ x : ↑(P.centers ∩ D),
-        (∑ y : ↑(P.centers ∩ D),
-            ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, c * (a m * e x y m))
-          = ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-            ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) from fun x =>
-      (Summable.tsum_finsetSum (fun y _ => by
-        simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y)).symm]
-    rw [show (∑ x : ↑(P.centers ∩ D),
-            ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-              ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m))
-          = ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-            ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) from
-      (Summable.tsum_finsetSum (fun x _ => by
-        simpa using
-          (summable_sum fun y _ => by simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y :
-            Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-              ∑ y ∈ (Finset.univ : Finset ↑(P.centers ∩ D)),
-                c * (a m * e x y m)))).symm]
-    refine tsum_congr fun m => ?_
-    calc
-      (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m))
-          = ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), (c * a m) * e x y m := by
-              simp [mul_assoc]
-      _ = (c * a m) * (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m) := by
-              simp_rw [← Finset.mul_sum]
-      _ = c * (a m * (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m)) := by ring
-  simpa (config := { zeta := false }) [c, e, hFourierReal] using hmain
+  simpa (config := { zeta := false }) [c, e, hFourierReal] using
+    tsum_finset_finset_const_mul_swap c a e fun x y =>
+      summable_const_mul_re_fourier_mul_exp f P c x y
 
 variable {d : ℕ} {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)}
 variable {P : PeriodicSpherePacking d} {D : Set (EuclideanSpace ℝ (Fin d))}
@@ -1162,6 +1154,77 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
 
+omit hRealFourier in include hP hCohnElkies₁ hD_unique_covers in
+/-- Bound `numReps * (f 0).re` by the double sum of `f` values via `lattice_sum_re_le_ite`. -/
+private lemma numReps_mul_f_zero_ge_double_tsum (hd : 0 < d) :
+    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
+      ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
+  letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
+  classical
+  simp_rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
+    (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd, tsum_fintype]
+  exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
+    CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
+    (by simp [PeriodicSpherePacking.numReps'])
+
+omit [Nonempty ↑P.centers] in include hD_isBounded in
+/-- Pull `Complex.re` outside the triply-nested centers/centers/lattice sum. -/
+private lemma re_tsum_triple_centers_inter_lattice (hd : 0 < d) :
+    (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
+        (f (↑x - ↑y + ↑ℓ : EuclideanSpace ℝ (Fin d))).re) =
+      (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
+        f (↑x - ↑y + ↑ℓ : EuclideanSpace ℝ (Fin d))).re := by
+  haveI : Finite ↑(P.centers ∩ D) := finite_centers_inter_of_isBounded P D hD_isBounded hd
+  rw [re_tsum Summable.of_finite]
+  exact tsum_congr fun x => by
+    rw [re_tsum Summable.of_finite]; exact tsum_congr fun y => by
+      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+        (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
+          (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
+
+/-- The exp factor `exp(2πi⟪x - y, m⟫)` factors as a product over the two arguments. -/
+private lemma exp_two_pi_I_inner_sub_eq_mul {d : ℕ}
+    (x y m : EuclideanSpace ℝ (Fin d)) :
+    exp (2 * π * I * ⟪x - y, m⟫_[ℝ]) =
+      exp (2 * π * I * ⟪x, m⟫_[ℝ]) * exp (2 * π * I * ⟪-y, m⟫_[ℝ]) := by
+  simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
+    mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
+
+/-- `exp(-(2πi⟪x, m⟫)) = conj (exp(2πi⟪x, m⟫))`. -/
+private lemma exp_neg_two_pi_I_inner_eq_conj {d : ℕ} (x m : EuclideanSpace ℝ (Fin d)) :
+    Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
+      = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
+  calc Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
+      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by
+        rw [Circle.coe_exp]; push_cast; ring_nf
+    _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ])) := by
+        rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
+    _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
+        rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
+
+/-- Reduce `((c * ∑' m, a m * (z * conj z)).re : ℂ) = ↑((c * ∑' m, a m * ‖z‖^2).re)`,
+the final normSq-identity step in the LP-bound calculation. -/
+private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
+    (P : PeriodicSpherePacking d) {D : Set (EuclideanSpace ℝ (Fin d))}
+    (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) :
+    ((1 / ZLattice.covolume P.lattice volume) *
+        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re *
+          (∑' x : ↑(P.centers ∩ D),
+            exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
+          conj (∑' x : ↑(P.centers ∩ D),
+            exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re =
+      (1 / ZLattice.covolume P.lattice volume) *
+        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+          (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+            exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
+  rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
+    ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
+      (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
+      cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
+  congr 1; push_cast; congr! 3 with m
+  rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
+
+
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
 theorem calc_steps_part1 (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
@@ -1172,26 +1235,13 @@ theorem calc_steps_part1 (hd : 0 < d) :
               exp (2 * π * I *
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
   calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
-  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
-        letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
-        classical
-        simp_rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
-          (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd, tsum_fintype]
-        exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
-          CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
-          (by simp [PeriodicSpherePacking.numReps'])
+  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
+        numReps_mul_f_zero_ge_double_tsum hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
         CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
           hD_isBounded hD_unique_covers hd
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
-      f (↑x - ↑y + ↑ℓ)).re := by
-        haveI : Finite ↑(P.centers ∩ D) := finite_centers_inter_of_isBounded P D hD_isBounded hd
-        rw [re_tsum Summable.of_finite]
-        exact tsum_congr fun x => by
-          rw [re_tsum Summable.of_finite]; exact tsum_congr fun y => by
-            simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-              (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
-                (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
+      f (↑x - ↑y + ↑ℓ)).re := re_tsum_triple_centers_inter_lattice hD_isBounded hd
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) *
@@ -1208,8 +1258,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-        congr! 9 with m x y; simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
-          mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
+        congr! 9 with m x y; exact exp_two_pi_I_inner_sub_eq_mul _ _ _
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
@@ -1224,27 +1273,13 @@ theorem calc_steps_part1 (hd : 0 < d) :
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-        simp_rw [conj_tsum]
-        congr! 7 with m x
-        calc Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I *
-              (⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ] : ℂ)))
-            = Circle.exp (-2 * Real.pi * ⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ]) := by
-              rw [Circle.coe_exp]; push_cast; ring_nf
-          _ = conj (Circle.exp (2 * Real.pi * ⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ])) := by
-              rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-          _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
-                (⟪(x : EuclideanSpace ℝ (Fin d)), m⟫_[ℝ] : ℂ))) := by
-              rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
+        simp_rw [conj_tsum]; congr! 7 with m x
+        exact exp_neg_two_pi_I_inner_eq_conj _ _
   _ = (1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
         (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
-        rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-          ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
-            (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
-            cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
-        congr 1; push_cast; congr! 3 with m
-        rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) :=
+        re_mul_conj_eq_norm_sq_step P f
 
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
 theorem calc_steps_part2 (hd : 0 < d) :

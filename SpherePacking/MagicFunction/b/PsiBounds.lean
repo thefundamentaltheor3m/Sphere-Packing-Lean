@@ -604,6 +604,58 @@ private lemma exists_H3_H4_bounds_Ici_one :
         linarith [(hT0 t ((le_max_left _ _).trans (le_of_not_ge htT))).2]
       exact h32.trans ((by norm_num : (3 / 2 : ℝ) ≤ 2).trans (le_max_right _ _))
 
+/-- Generic polynomial bound: `‖2a² + 5ab + 5b²‖ ≤ 2A² + 5AB + 5B²`. -/
+private lemma norm_quadratic_bound {a b : ℂ} {A B : ℝ} (hA : ‖a‖ ≤ A) (hB : ‖b‖ ≤ B) :
+    ‖(2 : ℂ) * a ^ 2 + (5 : ℂ) * a * b + (5 : ℂ) * b ^ 2‖ ≤ 2 * A ^ 2 + 5 * A * B + 5 * B ^ 2 := by
+  have hA0 : 0 ≤ A := (norm_nonneg _).trans hA
+  have hB0 : 0 ≤ B := (norm_nonneg _).trans hB
+  have h1 : ‖(2 : ℂ) * a ^ 2‖ ≤ 2 * A ^ 2 := by
+    simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
+      (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hA 2) (norm_nonneg (2 : ℂ))
+  have h2 : ‖(5 : ℂ) * a * b‖ ≤ 5 * A * B := by
+    simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
+      (mul_le_mul hA hB (norm_nonneg _) hA0) (norm_nonneg (5 : ℂ))
+  have h3 : ‖(5 : ℂ) * b ^ 2‖ ≤ 5 * B ^ 2 := by
+    simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
+      (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hB 2) (norm_nonneg (5 : ℂ))
+  exact norm_add_le_of_le ((norm_add_le _ _).trans (by linarith [h1, h2])) h3
+
+/-- Bound for the inverse `‖(a² * b²)⁻¹‖` from positive lower bounds on `‖a‖, ‖b‖`. -/
+private lemma norm_inv_sq_mul_sq_le {a b : ℂ} {c d : ℝ} (hc : 0 < c) (hd : 0 < d)
+    (ha : c ≤ ‖a‖) (hb : d ≤ ‖b‖) (hane : a ≠ 0) (hbne : b ≠ 0) :
+    ‖(a ^ 2 * b ^ 2)⁻¹‖ ≤ (c ^ 2 * d ^ 2)⁻¹ := by
+  have hpos : 0 < ‖a ^ 2 * b ^ 2‖ :=
+    norm_pos_iff.2 (mul_ne_zero (pow_ne_zero 2 hane) (pow_ne_zero 2 hbne))
+  have hden : c ^ 2 * d ^ 2 ≤ ‖a ^ 2 * b ^ 2‖ := by
+    simpa [norm_mul, norm_pow] using mul_le_mul (pow_le_pow_left₀ hc.le ha 2)
+      (pow_le_pow_left₀ hd.le hb 2) (by positivity) (by positivity)
+  simpa [norm_inv] using (inv_le_inv₀ hpos (by positivity)).2 hden
+
+/-- Pointwise norm bound assembly for `ψS` on the imaginary axis. -/
+private lemma norm_ψS_bound_pointwise {t CH2' P c3 c4 : ℝ} (hP0 : 0 ≤ P)
+    (z : ℍ) (hz : ResToImagAxis ψS t = ψS z)
+    (h2 : ‖H₂ z‖ ≤ CH2' * rexp (-π * t))
+    (hQ : ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P)
+    (hD : ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹) :
+    ‖ψS.resToImagAxis t‖ ≤ ((128 : ℝ) * P * (c3 ^ 2 * c4 ^ 2)⁻¹ * CH2') * rexp (-π * t) := by
+  have hC0 : 0 ≤ CH2' * rexp (-π * t) := (norm_nonneg _).trans h2
+  calc
+    ‖ψS.resToImagAxis t‖ = ‖(-128 : ℂ) *
+        (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) *
+          ((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by
+      change ‖ResToImagAxis ψS t‖ = _
+      rw [hz, show ψS z = (-128 : ℂ) *
+            (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
+            ((H₃ z) ^ 2 * (H₄ z) ^ 2) by simpa using ψS_apply_eq_factor z]
+      simp [div_eq_mul_inv, mul_assoc]
+    _ ≤ (128 : ℝ) * (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
+          ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by simp [mul_assoc]
+    _ ≤ (128 : ℝ) * ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
+      have h := mul_le_mul (mul_le_mul h2 hQ (norm_nonneg _) hC0) hD
+        (norm_nonneg _) (mul_nonneg hC0 hP0)
+      grind only
+    _ = ((128 : ℝ) * P * (c3 ^ 2 * c4 ^ 2)⁻¹ * CH2') * rexp (-π * t) := by ring
+
 /-- Exponential decay bound for `ψS.resToImagAxis` on `Ici (1 : ℝ)`. -/
 public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ C * rexp (-π * t) := by
@@ -617,75 +669,20 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   let P : ℝ := 2 * (CH2' ^ 2) + 5 * CH2' * M4 + 5 * (M4 ^ 2)
   refine ⟨(128 : ℝ) * P * ((c3 ^ 2 * c4 ^ 2)⁻¹) * CH2', fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := (hH2' t ht).trans <| by
+  set z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩ with hzdef
+  have hHz (H : ℍ → ℂ) : ResToImagAxis H t = H z := by simp [ResToImagAxis, ht0, z]
+  have hH2z : ‖H₂ z‖ ≤ CH2' * rexp (-π * t) := by
+    simpa [hHz H₂, Function.resToImagAxis] using hH2' t ht
+  have hH2le : ‖H₂ z‖ ≤ CH2' := hH2z.trans <| by
     simpa using mul_le_mul_of_nonneg_left
       (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hCH2'
-  have hH4le : ‖H₄.resToImagAxis t‖ ≤ M4 := hH4_upper t ht
-  have hpoly :
-      ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2
-          + (5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)
-          + (5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ P := by
-    have h1 : ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2‖ ≤ 2 * (CH2' ^ 2) := by
-      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
-        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH2le 2) (norm_nonneg (2 : ℂ))
-    have h2 : ‖(5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)‖ ≤ 5 * CH2' * M4 := by
-      simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left
-        (by gcongr : ‖H₂.resToImagAxis t‖ * ‖H₄.resToImagAxis t‖ ≤ CH2' * M4) (norm_nonneg (5 : ℂ))
-    have h3 : ‖(5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ 5 * (M4 ^ 2) := by
-      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
-        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2) (norm_nonneg (5 : ℂ))
-    exact norm_add_le_of_le ((norm_add_le _ _).trans (by linarith [h1, h2])) h3
-  let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
-  have hψS : ‖ψS.resToImagAxis t‖ = ‖(-128 : ℂ) *
-      (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
-        ((H₃ z) ^ 2 * (H₄ z) ^ 2)‖ := by
-    change ‖ResToImagAxis ψS t‖ = _
-    rw [show ResToImagAxis ψS t = ψS z by simp [ResToImagAxis, ht0, z],
-      show ψS z = (-128 : ℂ) *
-            (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
-            ((H₃ z) ^ 2 * (H₄ z) ^ 2) by simpa using ψS_apply_eq_factor z]
-  have hHz2 : ResToImagAxis H₂ t = H₂ z := by simp [ResToImagAxis, ht0, z]
-  have hHz3 : ResToImagAxis H₃ t = H₃ z := by simp [ResToImagAxis, ht0, z]
-  have hHz4 : ResToImagAxis H₄ t = H₄ z := by simp [ResToImagAxis, ht0, z]
-  have hden_lower : c3 ≤ ‖H₃ z‖ := by
-    simpa [hHz3, Function.resToImagAxis] using hH3_lower t ht
-  have hden_lower4 : c4 ≤ ‖H₄ z‖ := by
-    simpa [hHz4, Function.resToImagAxis] using hH4_lower t ht
-  have hinv : ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-    have hpos : 0 < ‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖ :=
-      norm_pos_iff.2 (mul_ne_zero (pow_ne_zero 2 (H₃_ne_zero z)) (pow_ne_zero 2 (H₄_ne_zero z)))
-    have hden : c3 ^ 2 * c4 ^ 2 ≤ ‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖ := by
-      simpa [norm_mul, norm_pow] using mul_le_mul (pow_le_pow_left₀ hc3.le hden_lower 2)
-        (pow_le_pow_left₀ hc4.le hden_lower4 2) (by positivity) (by positivity)
-    simpa [norm_inv] using (inv_le_inv₀ hpos (by positivity)).2 hden
-  have hH2z : ‖H₂ z‖ ≤ CH2' * rexp (-π * t) := by
-    simpa [hHz2, Function.resToImagAxis] using hH2' t ht
-  have hpoly' :
-      ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P := by
-    simpa [hHz2, hHz4, Function.resToImagAxis] using hpoly
-  have hP0 : (0 : ℝ) ≤ P := (norm_nonneg _).trans hpoly'
-  calc
-    ‖ψS.resToImagAxis t‖ = ‖(-128 : ℂ) *
-        (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) /
-          ((H₃ z) ^ 2 * (H₄ z) ^ 2)‖ := hψS
-    _ = ‖(-128 : ℂ) *
-            (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)) *
-              ((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by
-          simp [div_eq_mul_inv, mul_assoc]
-    _ ≤ (128 : ℝ) * (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
-          ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ := by
-          simp [mul_assoc]
-    _ ≤ (128 : ℝ) * (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have h2 : (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
-                ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
-            mul_le_mul (mul_le_mul_of_nonneg_left hpoly' (norm_nonneg _)) hinv (norm_nonneg _)
-              (mul_nonneg (norm_nonneg _) hP0)
-          grind only
-    _ ≤ (128 : ℝ) * ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-          have h2 : (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ ≤
-              ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
-            mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hH2z hP0) (by positivity)
-          simpa [mul_assoc] using mul_le_mul_of_nonneg_left h2 (by positivity : (0:ℝ) ≤ 128)
-    _ = ((128 : ℝ) * P * (c3 ^ 2 * c4 ^ 2)⁻¹ * CH2') * rexp (-π * t) := by ring
+  have hH4le : ‖H₄ z‖ ≤ M4 := by
+    simpa [hHz H₄, Function.resToImagAxis] using hH4_upper t ht
+  have hpoly' := norm_quadratic_bound hH2le hH4le
+  have hinv := norm_inv_sq_mul_sq_le hc3 hc4
+    (by simpa [hHz H₃, Function.resToImagAxis] using hH3_lower t ht)
+    (by simpa [hHz H₄, Function.resToImagAxis] using hH4_lower t ht)
+    (H₃_ne_zero z) (H₄_ne_zero z)
+  exact norm_ψS_bound_pointwise ((norm_nonneg _).trans hpoly') z (hHz ψS) hH2z hpoly' hinv
 
 end MagicFunction.b.PsiBounds.PsiExpBounds
