@@ -680,8 +680,8 @@ section Integration
 
 open MeasureTheory Filter
 
-variable {E : Type*} [NormedAddCommGroup E]
-variable [TopologicalSpace E] [IsTopologicalAddGroup E] [MeasureSpace E] [BorelSpace E]
+variable {E : Type*} [TopologicalSpace E] [AddGroup E] [IsTopologicalAddGroup E]
+  [MeasureSpace E] [BorelSpace E]
 variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
   [NeZero (volume : Measure E)]
 
