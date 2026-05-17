@@ -107,19 +107,19 @@ public theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
   simp [FmodGReal, FReal, GReal, Complex.ofReal_div]
 
 /-- The function `F` is holomorphic on the upper half-plane. -/
-public theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+@[fun_prop] public theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) :=
     MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
   simpa [F, pow_two] using MDifferentiable.mul h h
 
 /-- The function `G` is holomorphic on the upper half-plane. -/
-public theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
+@[fun_prop] public theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
   have : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
   have : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
   unfold G; fun_prop
 
 /-- The function `L₁₀` is holomorphic on the upper half-plane. -/
-public theorem L₁₀_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) L₁₀ := by
+@[fun_prop] public theorem L₁₀_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) L₁₀ := by
   simpa [L₁₀] using
     (MDifferentiable.mul (D_differentiable F_holo) G_holo).sub
       (MDifferentiable.mul F_holo (D_differentiable G_holo))

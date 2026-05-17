@@ -328,7 +328,7 @@ private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
-public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
+@[fun_prop] public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
   simpa [I_zero_eq_J₁'] using contDiff_of_hasDerivAt_succ (I := I)
     (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x))
 
@@ -508,7 +508,7 @@ lemma J₅'_eq_integral_g_Ioo (x : ℝ) :
     mul_assoc, mul_left_comm, mul_comm]
 
 /-- Smoothness of `J₅'`. -/
-public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
+@[fun_prop] public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
   have hmul : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ (-2 : ℂ) * I 0 x) :=
     contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I) (fun n x => by
       simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
@@ -851,7 +851,7 @@ private lemma hfEq_J₂' (x : ℝ) :
     SpherePacking.Integration.DifferentiationUnderIntegral.g, mul_assoc, mul_left_comm, mul_comm]
 
 /-- Smoothness of `J₂'` (the primed radial profile used to define the Schwartz kernel `J₂`). -/
-public theorem contDiff_J₂' : ContDiff ℝ (⊤ : ℕ∞) J₂' :=
+@[fun_prop] public theorem contDiff_J₂' : ContDiff ℝ (⊤ : ℕ∞) J₂' :=
   SmoothJ24Common.contDiff_of_eq_I0_mul (z := z₂') (c := (1 : ℂ)) hfEq_J₂'
     continuous_z₂' (fun t => by simpa using im_z₂'_pos_all t) norm_z₂'_le_two
 
@@ -878,7 +878,7 @@ private lemma hfEq_J₄' (x : ℝ) :
     SpherePacking.Integration.DifferentiationUnderIntegral.g, mul_assoc, mul_left_comm, mul_comm]
 
 /-- Smoothness of `J₄'` (the primed radial profile). -/
-public theorem contDiff_J₄' : ContDiff ℝ (⊤ : ℕ∞) J₄' :=
+@[fun_prop] public theorem contDiff_J₄' : ContDiff ℝ (⊤ : ℕ∞) J₄' :=
   SmoothJ24Common.contDiff_of_eq_I0_mul (z := z₄') (c := (-1 : ℂ)) hfEq_J₄'
     continuous_z₄' (fun t => by simpa using im_z₄'_pos_all t) norm_z₄'_le_two
 
@@ -944,7 +944,7 @@ lemma J₃'_eq (x : ℝ) :
     _ = (-1 / 2 : ℂ) * cexp ((π : ℂ) * Complex.I * (x : ℂ)) * J₅' x := by ring_nf
 
 /-- Smoothness of `J₃'`. -/
-public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
+@[fun_prop] public theorem contDiff_J₃' : ContDiff ℝ (⊤ : ℕ∞) J₃' := by
   have hExp : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ cexp ((π : ℂ) * Complex.I * (x : ℂ))) :=
     ((contDiff_const.mul contDiff_const).mul ofRealCLM.contDiff).cexp
   have hmul : ContDiff ℝ (⊤ : ℕ∞)

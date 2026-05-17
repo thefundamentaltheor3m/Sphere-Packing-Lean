@@ -1726,7 +1726,7 @@ private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   field_simp [show (t : ℂ) ≠ 0 from mod_cast ht.1.ne']; ring_nf; simp [Complex.I_sq]
 
 /-- Smoothness of `RealIntegrals.I₁'` as a function `ℝ → ℂ`. -/
-public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
+@[fun_prop] public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
   contDiff_of_eq_integral_g_Ioo (z := z₁') (shift := (1 : ℂ)) (prefactor := I)
     (f := I₁') (fun x => by
       simp [RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def,
@@ -1761,7 +1761,7 @@ private lemma arg_z₂'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   simpa [harg] using im_neg_one_div_ofReal_add_I (t := t)
 
 /-- Smoothness of `RealIntegrals.I₂'` as a function `ℝ → ℂ`. -/
-public theorem I₂'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₂' :=
+@[fun_prop] public theorem I₂'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₂' :=
   contDiff_of_eq_integral_g_Ioo (z := z₂') (shift := (1 : ℂ)) (prefactor := (1 : ℂ))
     (f := I₂') (fun x => by
       simp [RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def,
@@ -1798,7 +1798,7 @@ private lemma arg_z₄'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   simpa [harg] using im_neg_one_div_neg_ofReal_add_I (t := t)
 
 /-- Smoothness of `RealIntegrals.I₄'` as a function `ℝ → ℂ`. -/
-public theorem I₄'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₄' :=
+@[fun_prop] public theorem I₄'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₄' :=
   contDiff_of_eq_integral_g_Ioo (z := z₄') (shift := (-1 : ℂ)) (prefactor := (-1 : ℂ))
     (f := I₄') (fun x => by
       simp [RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def,
@@ -1941,7 +1941,7 @@ private theorem I₆'_contDiffOn_Ioi_neg2 :
   simpa [gN, coeff] using MagicFunction.a.IntegralEstimates.I₆.I₆'_eq_integral_g_Ioo (r := r)
 
 /-- Smoothness of the cutoff radial profile `r ↦ cutoffC r * RealIntegrals.I₆' r`. -/
-public theorem cutoffC_mul_I₆'_contDiff :
+@[fun_prop] public theorem cutoffC_mul_I₆'_contDiff :
     ContDiff ℝ ∞ (fun r : ℝ ↦ cutoffC r * RealIntegrals.I₆' r) :=
   contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 <| I₆'_contDiffOn_Ioi_neg2.mono fun x hx => by
     simpa [Set.mem_Ioi] using lt_trans (by norm_num : (-2 : ℝ) < -1) hx
