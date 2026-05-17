@@ -53,9 +53,11 @@ noncomputable section Parametrisations
 @[expose] public def z₆' (t : ℝ) : ℂ := IciExtend z₆ t
 
 /-- `(z₂' t).im = 1`. -/
-public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by simp [z₂', Set.IccExtend_apply, z₂]
+@[simp] public lemma im_z₂'_eq_one (t : ℝ) : (z₂' t).im = (1 : ℝ) := by
+  simp [z₂', Set.IccExtend_apply, z₂]
 /-- `(z₄' t).im = 1`. -/
-public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by simp [z₄', Set.IccExtend_apply, z₄]
+@[simp] public lemma im_z₄'_eq_one (t : ℝ) : (z₄' t).im = (1 : ℝ) := by
+  simp [z₄', Set.IccExtend_apply, z₄]
 /-- `(z₂' t).im > 0`. -/
 public lemma im_z₂'_pos_all (t : ℝ) : 0 < (z₂' t).im := by simp [im_z₂'_eq_one]
 /-- `(z₄' t).im > 0`. -/
@@ -63,9 +65,7 @@ public lemma im_z₄'_pos_all (t : ℝ) : 0 < (z₄' t).im := by simp [im_z₄'_
 
 /-- `‖z₅' t‖ ≤ 1`. -/
 public lemma norm_z₅'_le_one (t : ℝ) : ‖z₅' t‖ ≤ 1 := by
-  set u : ℝ := max 0 (min 1 t) with hu
-  simpa [show ‖z₅' t‖ = u from by simp [z₅', Set.IccExtend_apply, z₅, hu, Complex.norm_real]]
-    using (by simp [hu] : u ≤ 1)
+  simp [z₅', Set.IccExtend_apply, z₅, Complex.norm_real, abs_of_nonneg]
 
 /-- `‖z₁' t‖ ≤ 2`. -/
 public lemma norm_z₁'_le_two (t : ℝ) : ‖z₁' t‖ ≤ 2 := by
@@ -163,23 +163,23 @@ public lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := b
 /-! ### Continuity of `z₁'`--`z₅'` -/
 
 /-- The extension `z₁' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₁' : Continuous z₁' :=
+@[fun_prop] public lemma continuous_z₁' : Continuous z₁' :=
   Continuous.Icc_extend' (f := z₁) <| by unfold z₁; fun_prop
 
 /-- The extension `z₂' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₂' : Continuous z₂' :=
+@[fun_prop] public lemma continuous_z₂' : Continuous z₂' :=
   Continuous.Icc_extend' (f := z₂) <| by unfold z₂; fun_prop
 
 /-- The extension `z₃' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₃' : Continuous z₃' :=
+@[fun_prop] public lemma continuous_z₃' : Continuous z₃' :=
   Continuous.Icc_extend' (f := z₃) <| by unfold z₃; fun_prop
 
 /-- The extension `z₄' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₄' : Continuous z₄' :=
+@[fun_prop] public lemma continuous_z₄' : Continuous z₄' :=
   Continuous.Icc_extend' (f := z₄) <| by unfold z₄; fun_prop
 
 /-- The extension `z₅' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₅' : Continuous z₅' :=
+@[fun_prop] public lemma continuous_z₅' : Continuous z₅' :=
   Continuous.Icc_extend' (f := z₅) <| by unfold z₅; fun_prop
 
 end MagicFunction.Parametrisations
