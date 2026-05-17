@@ -248,6 +248,167 @@ end
 
 end MagicFunction.b.Schwartz.J6Smooth
 
+/-! ## Common skeleton for `J₁'` and `J₅'` smoothness/decay
+
+Both `J₁'` and `J₅'` are obtained as `c · ∫₀¹ I · ψ(z t) · exp(π · I · x · z t) dt` for the
+parametrisations `z₁'` / `z₅'` and Schwartz-side functions `ψT'` / `ψI'`. The shared structure
+(coefficient, gN, dominated differentiation, polynomial-times-exponential decay) is packaged here
+and reused by `J1Smooth` and `J5Smooth` below. -/
+namespace MagicFunction.b.Schwartz.SmoothJ15Common
+
+noncomputable section
+
+open scoped Interval Topology UpperHalfPlane
+open Complex Real Set MeasureTheory Filter intervalIntegral
+open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
+  SpherePacking.Integration SpherePacking.Integration.DifferentiationUnderIntegral
+  SpherePacking.ForMathlib
+
+@[expose] public def μ : Measure ℝ := μIoo01
+
+attribute [irreducible] μ
+
+public instance : IsFiniteMeasure μ :=
+  ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
+
+/-- Generic `(π * I) * z t` coefficient used by both `J₁'` and `J₅'`. -/
+@[expose] public def coeff (z : ℝ → ℂ) : ℝ → ℂ := fun t : ℝ ↦ ((π : ℂ) * Complex.I) * z t
+
+/-- Generic `I * ψ (z t)` integrand used by both `J₁'` and `J₅'`. -/
+@[expose] public def hf (ψ : ℂ → ℂ) (z : ℝ → ℂ) : ℝ → ℂ :=
+  fun t : ℝ ↦ (Complex.I : ℂ) * ψ (z t)
+
+/-- The `n`-th `x`-derivative integrand for the `J₁'/J₅'` family. -/
+@[expose] public def gN (ψ : ℂ → ℂ) (z : ℝ → ℂ) (n : ℕ) (x t : ℝ) : ℂ :=
+  DifferentiationUnderIntegral.gN (coeff := coeff z) (hf := hf ψ z) n x t
+
+/-- The `n`-th derivative integral for the `J₁'/J₅'` family. -/
+@[expose] public def I (ψ : ℂ → ℂ) (z : ℝ → ℂ) (n : ℕ) (x : ℝ) : ℂ :=
+  ∫ t, gN ψ z n x t ∂μ
+
+lemma coeff_norm_le {z : ℝ → ℂ} (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2) (t : ℝ) : ‖coeff z t‖ ≤ 2 * π := by
+  simpa [coeff, mul_assoc] using norm_mul_pi_I_le_two_pi (z := z t) (hz := hnorm t)
+
+lemma continuous_coeff {z : ℝ → ℂ} (hz : Continuous z) : Continuous (coeff z) := by
+  unfold coeff; fun_prop
+
+lemma continuousOn_hf {ψ : ℂ → ℂ} {z : ℝ → ℂ}
+    (hψz : ContinuousOn (fun t : ℝ => ψ (z t)) (Ioo (0 : ℝ) 1)) :
+    ContinuousOn (hf ψ z) (Ioo (0 : ℝ) 1) := by
+  simpa [hf] using continuousOn_const.mul hψz
+
+lemma exists_bound_norm_hf {ψ : ℂ → ℂ} {z : ℝ → ℂ}
+    (hBound : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψ (z t)‖ ≤ M) :
+    ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf ψ z t‖ ≤ M :=
+  hBound.imp fun _ hM t ht => by simpa [hf] using hM t ht
+
+lemma hasDerivAt_integral_gN {ψ : ℂ → ℂ} {z : ℝ → ℂ}
+    (hψz : ContinuousOn (fun t : ℝ => ψ (z t)) (Ioo (0 : ℝ) 1)) (hz : Continuous z)
+    (hBound : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψ (z t)‖ ≤ M) (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2)
+    (n : ℕ) (x₀ : ℝ) :
+    HasDerivAt (fun x : ℝ ↦ I ψ z n x) (I ψ z (n + 1) x₀) x₀ := by
+  simpa [I, μ, μIoo01, gN] using
+    DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo (coeff := coeff z) (hf := hf ψ z)
+      (continuousOn_hf hψz) (continuous_coeff hz) (exists_bound_norm_hf hBound)
+      (coeff_norm_le hnorm) n x₀
+
+/-- Pointwise a.e. decay bound for the `J₁'/J₅'` integrand: each term decays like
+`((2π)ⁿ · Cψ · t²) · exp(-2π√x)`. -/
+lemma decay_norm_gN_bound {ψ : ℂ → ℂ} {z : ℝ → ℂ} (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2)
+    (him_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (z t).im = t)
+    (hψEq : ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
+      ψ (z t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ))
+    (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
+    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
+    ∀ᵐ t ∂μ, ‖gN ψ z n x t‖ ≤
+      (((2 * Real.pi) ^ n) * Cψ * t ^ 2) * Real.exp (-2 * Real.pi * Real.sqrt x) := by
+  filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+    simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
+  have hcexp : ‖cexp ((x : ℂ) * coeff z t)‖ = Real.exp (-Real.pi * x * t) := by
+    simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff z) (x := x) (t := t)
+      (show (coeff z t).re = -Real.pi * t by
+        simp [coeff, Complex.mul_re, him_eq t ht, mul_assoc])
+  exact le_mul_of_le_mul_of_nonneg_left
+    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
+        norm_gN_le_bound_mul_exp (coeff := coeff z) (ψ := ψ) (z := z) (n := n) (Cψ := Cψ)
+          (x := x) (t := t) hCψ0
+          (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le hnorm t) n)
+          (by simpa using
+            (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
+              (ψZ := ψ) (z := z) (hCψ := hCψ) (hEq := hψEq) (t := t)
+              ⟨ht.1, le_of_lt ht.2⟩))
+          hcexp :
+      ‖gN ψ z n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
+        (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
+    (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+      exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
+      Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
+        Real.exp (-2 * Real.pi * Real.sqrt x))
+    (by positivity [hCψ0])
+
+/-- Smoothness packaging: if `f = c • (I 0)`, then `f` is `C^∞`. -/
+public theorem contDiff_of_eq_I0_smul {ψ : ℂ → ℂ} {z : ℝ → ℂ} {c : ℂ} {f : ℝ → ℂ}
+    (hψz : ContinuousOn (fun t : ℝ => ψ (z t)) (Ioo (0 : ℝ) 1)) (hz : Continuous z)
+    (hBound : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψ (z t)‖ ≤ M) (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2)
+    (hfEq : f = fun x : ℝ ↦ c * I ψ z 0 x) :
+    ContDiff ℝ (⊤ : ℕ∞) f := by
+  rw [hfEq]
+  exact contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I ψ z) (fun n x => by
+    simpa using hasDerivAt_integral_gN hψz hz hBound hnorm (n := n) (x₀ := x)))
+
+/-- Decay packaging: if `f = c • (I 0)`, then `f` has Schwartz-type polynomial-times-exponential
+decay on `0 ≤ x`. -/
+public theorem decay_of_eq_I0_smul {ψ : ℂ → ℂ} {z : ℝ → ℂ} (c : ℂ) {f : ℝ → ℂ}
+    (hψz : ContinuousOn (fun t : ℝ => ψ (z t)) (Ioo (0 : ℝ) 1)) (hz : Continuous z)
+    (hBound : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψ (z t)‖ ≤ M) (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2)
+    (him_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (z t).im = t)
+    (hψEq : ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
+      ψ (z t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ))
+    (hfEq : f = fun x : ℝ ↦ c * I ψ z 0 x) :
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C := fun k n => by
+  obtain ⟨B, hB⟩ := exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
+  obtain ⟨Cψ, hCψ⟩ :=
+    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
+  have hCψ0 : 0 ≤ Cψ :=
+    nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
+      (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
+      (by simpa using hCψ 1 le_rfl)
+  let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
+  have hbound_int : Integrable bound μ := by
+    simpa [bound, μ, μIoo01, mul_assoc, mul_left_comm, mul_comm] using
+      (integrable_const_mul_pow_muIoo01 (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
+  let Kn : ℝ := ∫ t, bound t ∂μ
+  have hKn_nonneg : 0 ≤ Kn := by
+    refine integral_nonneg_of_ae <| ?_
+    filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
+      simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
+    exact mul_nonneg (by positivity [hCψ0]) (pow_nonneg ht.1.le _)
+  refine ⟨‖c‖ * Kn * B, fun x hx => ?_⟩
+  have hIn : ‖I ψ z n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
+    simpa [I, Kn] using
+      (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN ψ z n x) (bound := bound)
+        (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int)
+        (decay_norm_gN_bound hnorm him_eq hψEq n hx hCψ0 hCψ))
+  have hiter : iteratedDeriv n f x = c * I ψ z n x := by
+    rw [show f = (c : ℂ) • (fun y : ℝ => I ψ z 0 y) from
+      hfEq.trans (funext fun y => by simp [Pi.smul_apply, smul_eq_mul])]
+    simp [iteratedDeriv_eq_of_hasDerivAt_succ (I := I ψ z)
+      (fun m y => by simpa using hasDerivAt_integral_gN hψz hz hBound hnorm (n := m) (x₀ := y)) n,
+      smul_eq_mul]
+  calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖
+      = x ^ k * (‖c‖ * ‖I ψ z n x‖) := by
+        rw [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hiter,
+          norm_mul]
+    _ ≤ x ^ k * (‖c‖ * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
+    _ = (‖c‖ * Kn) * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring
+    _ ≤ (‖c‖ * Kn) * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx)
+        (mul_nonneg (norm_nonneg _) hKn_nonneg)
+    _ = ‖c‖ * Kn * B := by ring
+
+end
+
+end MagicFunction.b.Schwartz.SmoothJ15Common
+
 namespace MagicFunction.b.Schwartz.J1Smooth
 
 noncomputable section
@@ -257,22 +418,6 @@ open Complex Real Set MeasureTheory Filter intervalIntegral UpperHalfPlane
 open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.b.PsiBounds
 open Matrix ModularGroup ModularForm SpherePacking.Integration
   SpherePacking.Integration.DifferentiationUnderIntegral SpherePacking.ForMathlib
-
-def μ : Measure ℝ := μIoo01
-
-attribute [irreducible] μ
-
-instance : IsFiniteMeasure μ :=
-  ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
-
-def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₁' t
-def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψT' (z₁' t)
-def gN (n : ℕ) (x t : ℝ) : ℂ :=
-  DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
-
-lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
-  simpa [coeff, mul_assoc] using
-    norm_mul_pi_I_le_two_pi (z := z₁' t) (hz := norm_z₁'_le_two t)
 
 /-- Modular rewrite for `ψT' (z₁' t)`, used to control the integrand near `t = 0`. -/
 public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
@@ -295,112 +440,34 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
   rw [hψS', hzplus] at hψT
   simpa [heq] using hψT
 
-lemma continuous_coeff : Continuous coeff := by
-  have := continuous_z₁'; unfold coeff; fun_prop
+private lemma continuousOn_ψT'_z₁' : ContinuousOn (fun t : ℝ => ψT' (z₁' t)) (Ioo (0 : ℝ) 1) :=
+  MagicFunction.continuousOn_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+    (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS) ψT'_z₁'_eq
 
-lemma continuousOn_hf :
-    ContinuousOn hf (Ioo (0 : ℝ) 1) := by
-  simpa [hf] using
-    (continuousOn_const.mul <| by
-      simpa using
-        MagicFunction.continuousOn_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
-          (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS)
-          ψT'_z₁'_eq)
-
-lemma exists_bound_norm_hf : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M :=
-  let ⟨Mψ, hMψ⟩ := MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+private lemma exists_bound_norm_ψT'_z₁' : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M :=
+  MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
     exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq
-  ⟨Mψ, fun t ht => by simpa [hf] using hMψ t ht⟩
 
-def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
-
-lemma hasDerivAt_integral_gN (n : ℕ) (x₀ : ℝ) :
-    HasDerivAt (fun x : ℝ ↦ I n x) (I (n + 1) x₀) x₀ := by
-  simpa [I, μ, μIoo01, gN] using
-    DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf)
-      continuousOn_hf continuous_coeff exists_bound_norm_hf coeff_norm_le n x₀
-
-private lemma I_zero_eq_J₁' : (fun x : ℝ => I 0 x) = J₁' := by
+private lemma hfEq_J₁' : J₁' = fun x : ℝ ↦ (1 : ℂ) * SmoothJ15Common.I ψT' z₁' 0 x := by
   funext x
-  simp [RealIntegrals.J₁', I, μ, μIoo01, gN, hf, coeff,
+  simp [SmoothJ15Common.I, SmoothJ15Common.gN, SmoothJ15Common.hf, SmoothJ15Common.coeff,
+    SmoothJ15Common.μ, μIoo01, RealIntegrals.J₁',
     DifferentiationUnderIntegral.g, DifferentiationUnderIntegral.gN,
     mul_assoc, mul_left_comm, mul_comm,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo]
 
 /-- Smoothness of `J₁'` (the primed radial profile). -/
-@[fun_prop] public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' := by
-  simpa [I_zero_eq_J₁'] using contDiff_of_hasDerivAt_succ (I := I)
-    (fun n x => by simpa using hasDerivAt_integral_gN (n := n) (x₀ := x))
-
-/-- Pointwise a.e. bound on `‖gN n x t‖` for the `J₁'`-integral. Each term decays like
-`bound t · exp(-2π√x)` where `bound t = (2π)ⁿ · Cψ · t²`. The factor `exp(-2π√x)`
-comes from combining `exp(-π/t) · exp(-π·x·t) ≤ exp(-2π√x)` via AM-GM. -/
-private lemma decay_J₁'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
-    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
-    ∀ᵐ t ∂μ, ‖gN n x t‖ ≤
-      (((2 * Real.pi) ^ n) * Cψ * t ^ 2) * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-  filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-    simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
-  have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-    simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
-      (show (coeff t).re = -Real.pi * t by
-        simp [coeff, Complex.mul_re, show (z₁' t).im = t from by
-          simp [show z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) from by
-            simpa [mul_assoc, mul_left_comm, mul_comm] using
-              z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
-  exact le_mul_of_le_mul_of_nonneg_left
-    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
-        norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT')
-          (z := z₁') (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0
-          (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
-          (by simpa using
-            (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
-              (ψZ := ψT') (z := z₁') (hCψ := hCψ) (hEq := ψT'_z₁'_eq) (t := t)
-              ⟨ht.1, le_of_lt ht.2⟩))
-          hcexp :
-      ‖gN n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
-        (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
-    (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-      exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
-      Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
-        Real.exp (-2 * Real.pi * Real.sqrt x))
-    (by positivity [hCψ0])
+@[fun_prop] public theorem contDiff_J₁' : ContDiff ℝ (⊤ : ℕ∞) J₁' :=
+  SmoothJ15Common.contDiff_of_eq_I0_smul (ψ := ψT') (z := z₁') (c := (1 : ℂ))
+    continuousOn_ψT'_z₁' continuous_z₁' exists_bound_norm_ψT'_z₁' norm_z₁'_le_two hfEq_J₁'
 
 /-- Schwartz-type decay bounds for `J₁'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₁' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C := fun k n => by
-  obtain ⟨B, hB⟩ := exists_bound_pow_mul_exp_neg_mul_sqrt k (b := 2*π) (by positivity)
-  obtain ⟨Cψ, hCψ⟩ :=
-    MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
-  have hCψ0 : 0 ≤ Cψ :=
-    nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖)
-      (b := Real.exp (-Real.pi * (1 : ℝ))) (C := Cψ) (norm_nonneg _) (by positivity)
-      (by simpa using hCψ 1 le_rfl)
-  let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
-  have hbound_int : Integrable bound μ := by
-    simpa [bound, μ, μIoo01, mul_assoc, mul_left_comm, mul_comm] using
-      (integrable_const_mul_pow_muIoo01 (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
-  let Kn : ℝ := ∫ t, bound t ∂μ
-  have hKn_nonneg : 0 ≤ Kn := by
-    refine integral_nonneg_of_ae <| ?_
-    filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-      simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
-    exact mul_nonneg (by positivity [hCψ0]) (pow_nonneg ht.1.le _)
-  refine ⟨Kn * B, fun x hx => ?_⟩
-  have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-    simpa [I, Kn] using
-      (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
-        (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int)
-        (decay_J₁'_norm_gN_bound n hx hCψ0 hCψ))
-  calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
-      = x ^ k * ‖I n x‖ := by
-        rw [Real.norm_eq_abs, abs_of_nonneg hx, norm_iteratedFDeriv_eq_norm_iteratedDeriv,
-          congrArg (fun F : ℝ → ℂ => ‖F x‖) (show iteratedDeriv n J₁' = fun x : ℝ ↦ I n x by
-            simpa [I_zero_eq_J₁'] using iteratedDeriv_eq_of_hasDerivAt_succ
-              (I := I) (hI := fun n x => hasDerivAt_integral_gN (n := n) (x₀ := x)) n)]
-    _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
-    _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring
-    _ ≤ Kn * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx) hKn_nonneg
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖ ≤ C :=
+  SmoothJ15Common.decay_of_eq_I0_smul (ψ := ψT') (z := z₁') (c := (1 : ℂ))
+    continuousOn_ψT'_z₁' continuous_z₁' exists_bound_norm_ψT'_z₁' norm_z₁'_le_two
+    (fun t ht => by simp [z₁'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)])
+    ψT'_z₁'_eq hfEq_J₁'
 
 end
 
@@ -420,22 +487,6 @@ open MagicFunction.Parametrisations MagicFunction.b.RealIntegrals MagicFunction.
   SpherePacking.Integration.DifferentiationUnderIntegral Matrix ModularGroup ModularForm
   MagicFunction MagicFunction.b.Schwartz
 
-def μ : Measure ℝ := μIoo01
-
-attribute [irreducible] μ
-
-instance : IsFiniteMeasure μ :=
-  ⟨by simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]⟩
-
-def coeff (t : ℝ) : ℂ := ((π : ℂ) * (Complex.I : ℂ)) * z₅' t
-def hf (t : ℝ) : ℂ := (Complex.I : ℂ) * ψI' (z₅' t)
-def gN (n : ℕ) (x t : ℝ) : ℂ :=
-  DifferentiationUnderIntegral.gN (coeff := coeff) (hf := hf) n x t
-
-lemma coeff_norm_le (t : ℝ) : ‖coeff t‖ ≤ 2 * π := by
-  simpa [coeff, mul_assoc] using
-    norm_mul_pi_I_le_two_pi (z := z₅' t) (hz := (norm_z₅'_le_one t).trans (by norm_num))
-
 lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ioo (0 : ℝ) 1) := by
   refine continuousOn_iff_continuous_restrict.2 ?_
   have him : ∀ t : Ioo (0 : ℝ) 1, 0 < (z₅' (t : ℝ)).im := fun t =>
@@ -443,12 +494,6 @@ lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Io
   simpa [Set.restrict] using continuous_comp_upperHalfPlane_mk (ψT := ψI) (ψT' := ψI')
     MagicFunction.b.PsiBounds.continuous_ψI (z := fun t : Ioo (0 : ℝ) 1 => z₅' (t : ℝ))
     (continuous_z₅'.comp continuous_subtype_val) him (fun t => by simp [ψI', him t])
-
-lemma continuous_coeff : Continuous coeff := by
-  have := continuous_z₅'; unfold coeff; fun_prop
-
-lemma continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1) := by
-  simpa [hf] using continuousOn_const.mul continuousOn_ψI'_z₅'
 
 /-- Modular rewrite for `ψI' (z₅' t)` in terms of `ψS.resToImagAxis (1 / t)`. -/
 public lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
@@ -489,102 +534,28 @@ lemma exists_bound_norm_ψI'_z₅' :
       simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht0.le htle)
         ((norm_nonneg _).trans hψS)
 
-lemma exists_bound_norm_hf : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M :=
-  exists_bound_norm_ψI'_z₅'.imp fun _ hM t ht => by simpa [hf] using hM t ht
-
-def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
-
-lemma hasDerivAt_integral_gN (n : ℕ) (x₀ : ℝ) :
-    HasDerivAt (fun x : ℝ ↦ I n x) (I (n + 1) x₀) x₀ := by
-  simpa [I, μ, μIoo01, gN] using
-    DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf)
-      continuousOn_hf continuous_coeff exists_bound_norm_hf coeff_norm_le n x₀
-
-lemma J₅'_eq_integral_g_Ioo (x : ℝ) :
-    J₅' x = (-2 : ℂ) * I 0 x := by
-  simp [RealIntegrals.J₅', I, gN, hf, coeff, μ, μIoo01,
+private lemma hfEq_J₅' : J₅' = fun x : ℝ ↦ (-2 : ℂ) * SmoothJ15Common.I ψI' z₅' 0 x := by
+  funext x
+  simp [SmoothJ15Common.I, SmoothJ15Common.gN, SmoothJ15Common.hf, SmoothJ15Common.coeff,
+    SmoothJ15Common.μ, μIoo01, RealIntegrals.J₅',
     DifferentiationUnderIntegral.gN, DifferentiationUnderIntegral.g,
     intervalIntegral_eq_integral_uIoc, zero_le_one, uIoc_of_le, integral_Ioc_eq_integral_Ioo,
     mul_assoc, mul_left_comm, mul_comm]
 
 /-- Smoothness of `J₅'`. -/
-@[fun_prop] public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' := by
-  have hmul : ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ (-2 : ℂ) * I 0 x) :=
-    contDiff_const.mul (contDiff_of_hasDerivAt_succ (I := I) (fun n x => by
-      simpa using hasDerivAt_integral_gN (n := n) (x₀ := x)))
-  -- `simp` normalizes `(-2) * f` to `-(2 * f)`, so match that normal form.
-  simpa [show (fun x : ℝ ↦ -(2 * I 0 x)) = J₅' from
-    funext fun x => by simpa [mul_assoc] using (J₅'_eq_integral_g_Ioo (x := x)).symm] using hmul
-
-/-- Pointwise a.e. bound on `‖gN n x t‖` for the `J₅'`-integral: each term is bounded by
-`((2π)ⁿ · Cψ · t²) · exp(-2π√x)`. -/
-private lemma decay_J₅'_norm_gN_bound (n : ℕ) {x : ℝ} (hx : 0 ≤ x) {Cψ : ℝ} (hCψ0 : 0 ≤ Cψ)
-    (hCψ : ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ Cψ * Real.exp (-Real.pi * t)) :
-    ∀ᵐ t ∂μ, ‖gN n x t‖ ≤
-      (((2 * Real.pi) ^ n) * Cψ * t ^ 2) * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-  filter_upwards [show ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 by
-    simpa [μ] using ae_mem_Ioo01_muIoo01] with t ht
-  have hψI : ‖ψI' (z₅' t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ 2 := by
-    simpa [one_div] using
-      (norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS) (ψZ := ψI')
-        (z := z₅') (hCψ := hCψ) (hEq := fun s hs => ψI'_z₅'_eq (t := s) hs)
-        (t := t) ⟨ht.1, le_of_lt ht.2⟩)
-  have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
-    simpa using norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t)
-      (show (coeff t).re = -Real.pi * t by
-        simp [coeff, Complex.mul_re, show (z₅' t).im = t by
-          simp [show z₅' t = (Complex.I : ℂ) * (t : ℂ) by
-            simpa [mul_assoc, mul_left_comm, mul_comm] using
-              z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)], mul_assoc])
-  exact le_mul_of_le_mul_of_nonneg_left
-    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
-        norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψI') (z := z₅') (n := n) (Cψ := Cψ)
-          (x := x) (t := t) hCψ0 (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n)
-          hψI hcexp :
-      ‖gN n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
-        (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
-    (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-      exp_neg_pi_div_mul_exp_neg_pi_mul_le (x := x) (t := t) hx ht.1 :
-      Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t) ≤
-        Real.exp (-2 * Real.pi * Real.sqrt x))
-    (by positivity [hCψ0])
+@[fun_prop] public theorem contDiff_J₅' : ContDiff ℝ (⊤ : ℕ∞) J₅' :=
+  SmoothJ15Common.contDiff_of_eq_I0_smul (ψ := ψI') (z := z₅') (c := (-2 : ℂ))
+    continuousOn_ψI'_z₅' continuous_z₅' exists_bound_norm_ψI'_z₅'
+    (fun t => (norm_z₅'_le_one t).trans (by norm_num)) hfEq_J₅'
 
 /-- Schwartz-type decay bounds for `J₅'` and its iterated derivatives on `0 ≤ x`. -/
 public theorem decay_J₅' :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := fun k n => by
-  obtain ⟨B, hB⟩ :=
-    exists_bound_pow_mul_exp_neg_mul_sqrt (k := k) (b := 2 * Real.pi) (by positivity)
-  obtain ⟨Cψ, hCψ⟩ := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one
-  have hCψ0 : 0 ≤ Cψ :=
-    nonneg_of_nonneg_le_mul (a := ‖ψS.resToImagAxis 1‖) (b := Real.exp (-Real.pi * (1 : ℝ)))
-      (C := Cψ) (norm_nonneg _) (by positivity) (by simpa using hCψ 1 le_rfl)
-  let bound : ℝ → ℝ := fun t ↦ ((2 * Real.pi) ^ n) * Cψ * t ^ 2
-  have hbound_int : Integrable bound μ := by
-    simpa [bound, μ, μIoo01, mul_assoc, mul_left_comm, mul_comm] using
-      (integrable_const_mul_pow_muIoo01 (((2 * Real.pi) ^ n) * Cψ) 2 (by positivity [hCψ0]))
-  let Kn : ℝ := ∫ t, bound t ∂μ
-  refine ⟨2 * Kn * B, fun x hx => ?_⟩
-  have hiterJ : iteratedDeriv n J₅' x = (-2 : ℂ) * I n x := by
-    rw [show J₅' = (-2 : ℂ) • (fun y : ℝ => I 0 y) from funext fun y => by
-      simpa [Pi.smul_apply, smul_eq_mul, mul_assoc] using J₅'_eq_integral_g_Ioo (x := y)]
-    simp [iteratedDeriv_eq_of_hasDerivAt_succ (I := I)
-      (fun m y => by simpa using hasDerivAt_integral_gN (n := m) (x₀ := y)) n, smul_eq_mul]
-  have hIn : ‖I n x‖ ≤ Kn * Real.exp (-2 * Real.pi * Real.sqrt x) := by
-    simpa [I, Kn] using (norm_integral_le_integral_bound_mul_const
-      (μ := μ) (f := gN n x) (bound := bound)
-      (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int)
-      (decay_J₅'_norm_gN_bound n hx hCψ0 hCψ))
-  calc
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖
-        = x ^ k * ‖iteratedDeriv n J₅' x‖ := by
-          simp [Real.norm_of_nonneg hx,
-            norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := J₅') (x := x)]
-    _ = x ^ k * (2 * ‖I n x‖) := by simp [hiterJ]
-    _ ≤ x ^ k * (2 * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x))) := by gcongr
-    _ ≤ (2 * Kn) * B := by
-      nlinarith [mul_le_mul_of_nonneg_left
-        (by simpa [mul_assoc] using hB x hx : x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B)
-        (by positivity : (0 : ℝ) ≤ 2 * Kn)]
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C :=
+  SmoothJ15Common.decay_of_eq_I0_smul (ψ := ψI') (z := z₅') (c := (-2 : ℂ))
+    continuousOn_ψI'_z₅' continuous_z₅' exists_bound_norm_ψI'_z₅'
+    (fun t => (norm_z₅'_le_one t).trans (by norm_num))
+    (fun t ht => by simp [z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht)])
+    ψI'_z₅'_eq hfEq_J₅'
 
 end
 
