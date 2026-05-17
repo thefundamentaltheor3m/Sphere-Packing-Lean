@@ -438,81 +438,96 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
     nlinarith [show (0 : ℝ) < (i : ℝ) from mod_cast i.pos]
   exact summable_log_one_sub_rexp_pow_24 hr
 
+include hf in
+/-- Rewrite `f z / Δ z` as an explicit product times shifted Fourier series and `η`-product. -/
+private lemma divDisc_norm_eq_explicit :
+    norm (f z / Δ z) =
+      norm (cexp (π * I * (n₀ - 2) * z)) *
+        norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+        ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by
+  rw [show f z / Δ z = cexp (π * I * (n₀ - 2) * z) *
+      (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+      (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) from ?_, norm_div, norm_mul,
+    norm_tprod_eta_pow_24_eq z]
+  rw [DiscriminantProductFormula, hf, show (∑' (n : ℕ), fouterm c z (n + n₀)) =
+      cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z) from by
+    rw [← tsum_mul_left]; refine tsum_congr fun n => ?_
+    simp only [fouterm, mul_left_comm _ (c _), ← Complex.exp_add]
+    congr 2; push_cast; ring]
+  rw [show cexp (π * I * (n₀ - 2) * z) =
+      cexp (π * I * (n₀ : ℂ) * z) / cexp (2 * π * I * z) from by
+    rw [eq_div_iff (Complex.exp_ne_zero _), ← Complex.exp_add]; congr 1; push_cast; ring]
+  field_simp
+
+include hcsum in
+/-- Bound the numerator `∑ c · e^{π i n z}` (in norm) by the real series in `rexp (-π n z.im)`. -/
+private lemma norm_tsum_fouterm_le_rexp :
+    norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) ≤
+      ∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im) := by
+  refine (norm_tsum_le_tsum_norm (summable_norm_fouterm_shifted z c n₀ hcsum)).trans
+    ((Summable.tsum_le_tsum (fun n => ?_)
+      (by simpa [norm_mul] using summable_norm_fouterm_shifted z c n₀ hcsum)
+      (summable_norm_fouterm_atIm z c n₀ hcsum)))
+  rw [norm_mul, show (↑π * I * (n : ℂ) * z) = I * ((↑π * n) * z) by ring, Complex.norm_exp]; simp
+
+/-- Replace `∏ ‖1 - e^{2π i n z}‖^24` by `∏ (1 - rexp (-2π n z.im))^24` (a smaller real product). -/
+private lemma tprod_rexp_le_tprod_norm_one_sub_exp :
+    ∏' (n : ℕ+), (1 - rexp (-2 * π * (n : ℝ) * z.im)) ^ 24 ≤
+      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * (n : ℂ) * z)) ^ 24 := by
+  have hpow : Multipliable fun b : ℕ+ ↦ ‖(1 - cexp (2 * ↑π * I * (b : ℂ) * z))‖ ^ 24 := by
+    have h := (MultipliableEtaProductExpansion_pnat z).norm
+    induction (24 : ℕ) with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul h
+  refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_ hpow
+  · simp only [neg_mul]; gcongr
+    · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
+    · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
+      exact (le_abs_self _).trans <| by
+        simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp (2 * π * I * n * z))
+  · simpa [mul_assoc, mul_left_comm, mul_comm] using
+      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
+
+include hz hcsum hpoly in
+/-- Using `hz : 1/2 < z.im`, bound `rexp(-π n z.im) ≤ rexp(-π n / 2)`. -/
+private lemma tsum_rexp_im_le_rexp_half :
+    ∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im) ≤
+      ∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2) := by
+  refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_)
+    (norm_nonneg _)) (summable_norm_fouterm_atIm z c n₀ hcsum)
+    (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
+  simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
+    neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
+
+include hz in
+/-- Replace the `z.im`-dependent denominator by the universal `(1 - rexp(-π n))^24` product. -/
+private lemma tprod_one_sub_rexp_pi_le_im :
+    ∏' (n : ℕ+), (1 - rexp (-π * (n : ℝ))) ^ 24 ≤
+      ∏' (n : ℕ+), (1 - rexp (-2 * π * (n : ℝ) * z.im)) ^ 24 := by
+  have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
+    sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
+  refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n =>
+    pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 (by
+      simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
+        neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
+          (by positivity : 0 ≤ (π : ℝ) * (n : ℝ))))) 1) 24)
+    (step_12a pi_pos)
+    (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
+
 include f hf z hz c n₀ hcsum k hpoly in
 /-- A uniform bound on `‖(f z) / (Δ z)‖` for a function given by a Fourier series with polynomially
 bounded coefficients, in terms of `DivDiscBound` and an exponential factor depending on `n₀`. -/
 public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
-  (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
-  _ = norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
-      (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        simp [DiscriminantProductFormula, hf, fouterm]
-  _ = norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        congr; rw [← tsum_mul_left]; refine tsum_congr fun n => ?_
-        rw [mul_left_comm, ← Complex.exp_add]; congr 2; ring
-  _ = norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
-      (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
-  _ = norm ((cexp (π * I * (n₀ - 2) * z)) *
-      (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        rw [mul_sub, sub_mul, ← Complex.exp_sub]; congr 6; ac_rfl
-  _ = norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by simp [← norm_tprod_eta_pow_24_eq z]
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-        gcongr; exacts [tprod_norm_eta_pow_24_nonneg z, by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-        gcongr
-        exacts [tprod_norm_eta_pow_24_nonneg z, by simpa [norm_mul] using norm_tsum_le_tsum_norm (summable_norm_fouterm_shifted z c n₀ hcsum)]
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-        gcongr
-        exacts [tprod_norm_eta_pow_24_nonneg z,
-          by simpa [norm_mul] using summable_norm_fouterm_shifted z c n₀ hcsum,
-          summable_norm_fouterm_atIm z c n₀ hcsum,
-          by simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]]
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-    have hpow : Multipliable fun b : ℕ+ ↦ ‖(1 - cexp (2 * ↑π * I * (b : ℂ) * z))‖ ^ 24 := by
-      have h := (MultipliableEtaProductExpansion_pnat z).norm
-      induction (24 : ℕ) with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul h
-    gcongr
-    · exact tprod_one_sub_exp_imag_pow_24_pos z
-    refine tprod_le_of_nonneg_of_multipliable (fun n => by positivity) (fun n => ?_) ?_ hpow
-    · simp only [neg_mul]; gcongr
-      · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
-      · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
-        exact (le_abs_self _).trans <| by
-          simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp (2 * π * I * n * z))
-    · simpa [mul_assoc, mul_left_comm, mul_comm] using
-        step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-    gcongr ?_ * ?_ / _
-    · exact (tprod_one_sub_exp_imag_pow_24_pos z).le
-    refine Summable.tsum_le_tsum (fun n ↦ mul_le_mul_of_nonneg_left
-      (Real.exp_le_exp.2 ?_) (norm_nonneg _)) (summable_norm_fouterm_atIm z c n₀ hcsum)
-      (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using
-      neg_le_neg (mul_le_mul_of_nonneg_left hz.le (by positivity : 0 ≤ (π : ℝ) * (n : ℝ)))
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
-    have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
-      sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
-    gcongr
-    · exact tprod_one_sub_exp_pi_pow_24_pos
-    refine tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24) (fun n =>
-      pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 (by
-        simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using
-          neg_le_neg (mul_le_mul_of_nonneg_left (by nlinarith [hz] : (1 : ℝ) ≤ 2 * z.im)
-            (by positivity : 0 ≤ (π : ℝ) * (n : ℝ))))) 1) 24)
-      (step_12a pi_pos)
-      (by simpa [mul_assoc, mul_left_comm, mul_comm] using
-        step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
-  _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
-      simp [DivDiscBound, mul_div_assoc, mul_comm, mul_assoc]
+    (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
+  rw [divDisc_norm_eq_explicit z c n₀ f hf, DivDiscBound,
+    show norm (cexp (π * I * (n₀ - 2) * z)) = rexp (-π * (n₀ - 2) * z.im) by
+      simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm],
+    show ∀ (a b c : ℝ), a * b / c = (b / c) * a from fun a b c ↦ by ring]
+  refine mul_le_mul_of_nonneg_right (div_le_div₀ (by positivity)
+    ((norm_tsum_fouterm_le_rexp z c n₀ hcsum).trans
+      (tsum_rexp_im_le_rexp_half z hz c n₀ hcsum k hpoly))
+    tprod_one_sub_exp_pi_pow_24_pos
+    ((tprod_one_sub_rexp_pi_le_im z hz).trans (tprod_rexp_le_tprod_norm_one_sub_exp z)))
+    (Real.exp_pos _).le
 
 include hpoly hcn₀ in
 public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by

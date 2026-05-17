@@ -136,6 +136,62 @@ private lemma serre_resToImagAxis_eq {F : ℍ → ℂ} (k : ℤ) {t : ℝ} (ht :
     dif_pos ht, show EisensteinSeries.E2 = E₂ from rfl]
   ring
 
+/-- Chain-rule derivative for `t ↦ g t * (d t)^(-a)` when `d t > 0`. -/
+private lemma hasDerivAt_mul_rpow_neg {g d : ℝ → ℝ} {g' d' : ℝ} {t a : ℝ}
+    (hg : HasDerivAt g g' t) (hd : HasDerivAt d d' t) (hdpos : 0 < d t) :
+    HasDerivAt (fun t => g t * (d t) ^ (-a))
+      (g' * (d t) ^ (-a) + g t * ((-a) * (d t) ^ (-a - 1) * d')) t := by
+  have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
+    simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
+      Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl (ne_of_gt hdpos))
+  simpa [mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
+    hg.mul (hpow0.comp t hd)
+
+/-- On the imaginary axis (with `F(it), E₂(it)` real-valued), the real part of `(serre_D k F)`
+splits as `(D F)(it).re - a · E₂(it).re · F(it).re`, with `a = ((k : ℂ) * 12⁻¹).re`. -/
+private lemma serre_resToImagAxis_re_eq {F : ℍ → ℂ} (k : ℤ) {t : ℝ} (ht : 0 < t)
+    (hF_real : ResToImagAxis.Real F) :
+    ((serre_D k F).resToImagAxis t).re =
+      (ResToImagAxis (D F) t).re -
+        (((k : ℂ) * 12⁻¹) : ℂ).re * (E₂.resToImagAxis t).re * (F.resToImagAxis t).re := by
+  have h' := congrArg Complex.re (serre_resToImagAxis_eq (F := F) k ht)
+  have houter :
+      (((((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t))).re =
+        (((k : ℂ) * 12⁻¹) : ℂ).re * (E₂.resToImagAxis t * F.resToImagAxis t).re := by
+    rw [Complex.mul_re]; simp
+  simpa [Complex.sub_re, houter,
+    mul_re_of_im_eq_zero (x := ResToImagAxis E₂ t) (y := ResToImagAxis F t)
+      (E₂_imag_axis_real t ht) (hF_real t ht), mul_assoc] using h'
+
+/-- Given the chain-rule derivative `hh` of `h(t) := F(it).re · Δ(it).re^(-a)` (with
+`a = ((k : ℂ) * 12⁻¹).re`), the negativity `deriv h t < 0` for `t > 0` follows from
+`(serre_D k F)(it).re > 0` and `Δ(it).re > 0`. -/
+private lemma antiSerreDerPos_deriv_neg {F : ℍ → ℂ} {k : ℤ}
+    (hF_real : ResToImagAxis.Real F) (hSDF : ResToImagAxis.Pos (serre_D k F))
+    {t : ℝ} (ht : 0 < t) (hdpos : 0 < (Δ.resToImagAxis t).re)
+    {a : ℝ} (ha : a = (((k : ℂ) * 12⁻¹) : ℂ).re)
+    (hh : HasDerivAt (fun t => (F.resToImagAxis t).re * ((Δ.resToImagAxis t).re) ^ (-a))
+          ((-2 * π * (ResToImagAxis (D F) t).re) * ((Δ.resToImagAxis t).re) ^ (-a) +
+            (F.resToImagAxis t).re * ((-a) *
+              ((Δ.resToImagAxis t).re) ^ (-a - 1) *
+              (-2 * π * (ResToImagAxis (D Δ) t).re))) t) :
+    deriv (fun t => (F.resToImagAxis t).re * ((Δ.resToImagAxis t).re) ^ (-a)) t < 0 := by
+  set d : ℝ → ℝ := fun t => (Δ.resToImagAxis t).re
+  have hderiv :
+      deriv (fun t => (F.resToImagAxis t).re * (d t) ^ (-a)) t =
+        (-2 * π) * (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := by
+    rw [hh.deriv, ha, serre_resToImagAxis_re_eq (F := F) k ht hF_real]
+    have hDΔre : (ResToImagAxis (D Δ) t).re = (E₂.resToImagAxis t).re * d t := by
+      simpa [D_Delta_eq_E₂_mul_Delta, ResToImagAxis, Function.resToImagAxis, ht, d] using
+        mul_re_of_im_eq_zero (E₂_imag_axis_real t ht) (Delta_imag_axis_pos.1 t ht)
+    have hrpow : (d t) ^ (-a - 1) * d t = (d t) ^ (-a) := by
+      simpa [add_assoc, add_left_comm, add_comm] using
+        (Real.rpow_add_one (x := d t) (ne_of_gt hdpos) (-a - 1)).symm
+    grind only
+  rw [hderiv, mul_assoc]
+  exact mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos])
+    (mul_pos (Real.rpow_pos_of_pos hdpos (-a)) (hSDF.2 t ht))
+
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be holomorphic with $F(it)$ real for all $t > 0$.
 Assume $\partial_k F$ is positive on the imaginary axis and $F(it)$ is positive for large $t$.
@@ -144,70 +200,19 @@ Then $F(it)$ is positive for all $t > 0$.
 public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
     (hSDF : ResToImagAxis.Pos (serre_D k F)) (hF : ResToImagAxis.EventuallyPos F) :
     ResToImagAxis.Pos F := by
-  have hF_real : ResToImagAxis.Real F := hF.1
-  obtain ⟨-, t₀, ht₀_pos, hF_pos⟩ := hF
-  have hΔpos : ResToImagAxis.Pos Δ := Delta_imag_axis_pos
-  have hΔre_pos : ∀ t : ℝ, 0 < t → 0 < (Δ.resToImagAxis t).re := hΔpos.2
-  have hΔholo : MDiff Δ := by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)
-  let a : ℝ := (((k : ℂ) * 12⁻¹) : ℂ).re
-  let g : ℝ → ℝ := fun t => (F.resToImagAxis t).re
-  let d : ℝ → ℝ := fun t => (Δ.resToImagAxis t).re
-  let h : ℝ → ℝ := fun t => g t * (d t) ^ (-a)
-  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
-    fun t ht => hasDerivAt_re_resToImagAxis F hFderiv t ht
-  have hd : ∀ t, 0 < t → HasDerivAt d (-2 * π * (ResToImagAxis (D Δ) t).re) t :=
-    fun t ht => hasDerivAt_re_resToImagAxis Δ hΔholo t ht
-  have hh : ∀ t, 0 < t →
-      HasDerivAt h
-        ((-2 * π * (ResToImagAxis (D F) t).re) * (d t) ^ (-a) +
-            (g t) * ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re))) t :=
-    fun t ht => by
-      have hdne : d t ≠ 0 := ne_of_gt (hΔre_pos t ht)
-      have hpow :
-          HasDerivAt (fun t => (d t) ^ (-a))
-            ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re)) t := by
-        have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
-          simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
-            (Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl hdne))
-        simpa [mul_assoc, mul_left_comm, mul_comm] using hpow0.comp t (hd t ht)
-      simpa [h, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
-        (hg t ht).mul hpow
-  have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv h t < 0 := fun t (ht : 0 < t) => by
-    have hdpos : 0 < d t := hΔre_pos t ht
-    have hdpowpos : 0 < (d t) ^ (-a) := Real.rpow_pos_of_pos hdpos (-a)
-    have hSpos : 0 < ((serre_D k F).resToImagAxis t).re := hSDF.2 t ht
-    have hDΔre : (ResToImagAxis (D Δ) t).re = (E₂.resToImagAxis t).re * d t := by
-      simpa [D_Delta_eq_E₂_mul_Delta, ResToImagAxis, Function.resToImagAxis, ht, d] using
-        mul_re_of_im_eq_zero (E₂_imag_axis_real t ht) (hΔpos.1 t ht)
-    have hSerre_re :
-        ((serre_D k F).resToImagAxis t).re =
-          (ResToImagAxis (D F) t).re - a * (E₂.resToImagAxis t).re * g t := by
-      have h' := congrArg Complex.re (serre_resToImagAxis_eq (F := F) k ht)
-      have houter :
-          (((((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t))).re =
-            a * (E₂.resToImagAxis t * F.resToImagAxis t).re := by
-        rw [Complex.mul_re]; simp [a]
-      have hE₂im0 : (ResToImagAxis E₂ t).im = 0 := E₂_imag_axis_real t ht
-      have hFim0 : (ResToImagAxis F t).im = 0 := hF_real t ht
-      simpa [a, g, Complex.sub_re, houter,
-        mul_re_of_im_eq_zero (x := ResToImagAxis E₂ t) (y := ResToImagAxis F t) hE₂im0 hFim0,
-        mul_assoc] using h'
-    have hderiv :
-        deriv h t = (-2 * π) * (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := by
-      rw [(hh t ht).deriv, hSerre_re]
-      have hrpow : (d t) ^ (-a - 1) * d t = (d t) ^ (-a) := by
-        simpa [add_assoc, add_left_comm, add_comm] using
-          (Real.rpow_add_one (x := d t) (ne_of_gt hdpos) (-a - 1)).symm
-      grind only
-    rw [hderiv, mul_assoc]
-    exact mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (mul_pos hdpowpos hSpos)
-  have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) :=
-    strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ))
-      (fun x hx => (hh x hx).continuousAt.continuousWithinAt)
-      (by simpa [interior_Ioi] using hn)
-  have hEv : ∀ t : ℝ, t₀ ≤ t → 0 < h t := fun t ht =>
-    mul_pos (hF_pos t ht) (Real.rpow_pos_of_pos (hΔre_pos t (lt_of_lt_of_le ht₀_pos ht)) _)
-  have hall : ∀ t : ℝ, 0 < t → 0 < h t :=
-    StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hEv
-  refine ⟨hF_real, fun t ht => ?_⟩
-  exact pos_of_mul_pos_left (hall t ht) (Real.rpow_pos_of_pos (hΔre_pos t ht) _).le
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hF
+  have hΔre_pos : ∀ t : ℝ, 0 < t → 0 < (Δ.resToImagAxis t).re := Delta_imag_axis_pos.2
+  set a : ℝ := (((k : ℂ) * 12⁻¹) : ℂ).re with ha_def
+  set h : ℝ → ℝ := fun t => (F.resToImagAxis t).re * ((Δ.resToImagAxis t).re) ^ (-a)
+  have hh : ∀ t, 0 < t → HasDerivAt h _ t := fun t ht =>
+    hasDerivAt_mul_rpow_neg (hasDerivAt_re_resToImagAxis F hFderiv t ht)
+      (hasDerivAt_re_resToImagAxis Δ
+        (by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)) t ht) (hΔre_pos t ht)
+  have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) := strictAntiOn_of_deriv_neg (convex_Ioi _)
+    (fun x hx => (hh x hx).continuousAt.continuousWithinAt) <| by
+      simpa [interior_Ioi] using fun t (ht : 0 < t) =>
+        antiSerreDerPos_deriv_neg hF_real hSDF ht (hΔre_pos t ht) ha_def (hh t ht)
+  exact ⟨hF_real, fun t ht => pos_of_mul_pos_left
+    (StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos (fun t ht => mul_pos (hF_pos t ht)
+      (Real.rpow_pos_of_pos (hΔre_pos t (lt_of_lt_of_le ht₀_pos ht)) _)) t ht)
+    (Real.rpow_pos_of_pos (hΔre_pos t ht) _).le⟩

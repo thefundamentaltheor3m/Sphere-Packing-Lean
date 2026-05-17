@@ -1150,43 +1150,64 @@ private lemma differentiableOn_ψS_ofComplex :
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl] using
     congrArg (fun f : ℍ → ℂ => f (UpperHalfPlane.ofComplex z)) ψS_eq'
 
-lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
-  have hJ24 := J2'_add_J4'_zero_eq
-  have hdiffψS := differentiableOn_ψS_ofComplex
-  have hcont : ContinuousOn ψS' (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) := by
-    have hsubset : (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
-      lt_of_lt_of_le (by norm_num) (by simpa [mem_Ici] using hz.2 : (1 : ℝ) ≤ z.im)
-    refine (hdiffψS.continuousOn.mono hsubset).congr fun z hz => ?_
-    have hz' : 0 < z.im := hsubset hz
-    simp [ψS', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
-  have hdiff : ∀ z ∈ ((Ioo (min (0 : ℝ) 1) (max (0 : ℝ) 1)) ×ℂ (Ioi (1 : ℝ))) \ (∅ : Set ℂ),
+/-- `ψS'` is continuous on the closed strip `[0,1] × [1,∞)`. -/
+private lemma continuousOn_ψS'_strip :
+    ContinuousOn ψS' (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) := by
+  have hsubset : (Set.uIcc (0 : ℝ) 1 ×ℂ (Ici (1 : ℝ))) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
+    lt_of_lt_of_le (by norm_num) (by simpa [mem_Ici] using hz.2 : (1 : ℝ) ≤ z.im)
+  refine (differentiableOn_ψS_ofComplex.continuousOn.mono hsubset).congr fun z hz => ?_
+  have hz' : 0 < z.im := hsubset hz
+  simp [ψS', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
+
+/-- `ψS'` is differentiable at every interior point of the strip `(0,1) × (1,∞)`. -/
+private lemma differentiableAt_ψS'_strip :
+    ∀ z ∈ ((Ioo (min (0 : ℝ) 1) (max (0 : ℝ) 1)) ×ℂ (Ioi (1 : ℝ))) \ (∅ : Set ℂ),
       DifferentiableAt ℂ ψS' z := fun z hz => by
-    have hzpos : 0 < z.im := lt_trans (by norm_num)
-      (by simpa [mem_Ioi] using hz.1.2 : (1 : ℝ) < z.im)
-    refine ((hdiffψS z hzpos).differentiableAt
-      (isOpen_upperHalfPlaneSet.mem_nhds hzpos)).congr_of_eventuallyEq ?_
-    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds hzpos] with w hw
-    simp [ψS', hw, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
-  have hrect :
-      (∫ (x : ℝ) in (0 : ℝ)..1, ψS' (x + (1 : ℝ) * Complex.I)) +
-          (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((1 : ℂ) + t * Complex.I)) -
-            (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((0 : ℂ) + t * Complex.I)) = 0 := by
-    simpa [min_eq_left (zero_le_one : (0 : ℝ) ≤ 1), max_eq_right (zero_le_one : (0 : ℝ) ≤ 1)] using
-    (Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
-        (y := (1 : ℝ)) (f := ψS') (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ)) hcont (s := (∅ : Set ℂ))
-        (by simp) hdiff (by simpa using integrableOn_ψS'_vertical_left)
-        (by
-          simpa [MeasureTheory.IntegrableOn] using (integrableOn_ψS'_vertical_left.neg).congr
-            (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-              simp [ψS'_add_one t (lt_trans (by norm_num) ht)] :
-              (fun t : ℝ => -ψS' (t * Complex.I)) =ᵐ[MeasureTheory.volume.restrict (Ioi (1 : ℝ))]
-                fun t : ℝ => ψS' ((1 : ℂ) + t * Complex.I))) (fun ε hε => by
-          obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
-            ‖ψS z‖ < ε by simpa [dist_eq_norm] using
-              (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
-          refine ⟨max M 1, fun z hz => ?_⟩
-          have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
-          simpa [ψS', hzpos] using hM ⟨z, hzpos⟩ ((le_max_left _ _).trans hz)))
+  have hzpos : 0 < z.im := lt_trans (by norm_num)
+    (by simpa [mem_Ioi] using hz.1.2 : (1 : ℝ) < z.im)
+  refine ((differentiableOn_ψS_ofComplex z hzpos).differentiableAt
+    (isOpen_upperHalfPlaneSet.mem_nhds hzpos)).congr_of_eventuallyEq ?_
+  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds hzpos] with w hw
+  simp [ψS', hw, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+/-- The rectangle integral of `ψS'` over the strip `[0,1] × [1,∞)` vanishes by Cauchy's theorem. -/
+private lemma integral_ψS'_rect_eq_zero :
+    (∫ (x : ℝ) in (0 : ℝ)..1, ψS' (x + (1 : ℝ) * Complex.I)) +
+        (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((1 : ℂ) + t * Complex.I)) -
+          (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((0 : ℂ) + t * Complex.I)) = 0 := by
+  simpa [min_eq_left (zero_le_one : (0 : ℝ) ≤ 1), max_eq_right (zero_le_one : (0 : ℝ) ≤ 1)] using
+  (Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+      (y := (1 : ℝ)) (f := ψS') (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ)) continuousOn_ψS'_strip
+      (s := (∅ : Set ℂ)) (by simp) differentiableAt_ψS'_strip
+      (by simpa using integrableOn_ψS'_vertical_left)
+      (by
+        simpa [MeasureTheory.IntegrableOn] using (integrableOn_ψS'_vertical_left.neg).congr
+          (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+            simp [ψS'_add_one t (lt_trans (by norm_num) ht)] :
+            (fun t : ℝ => -ψS' (t * Complex.I)) =ᵐ[MeasureTheory.volume.restrict (Ioi (1 : ℝ))]
+              fun t : ℝ => ψS' ((1 : ℂ) + t * Complex.I))) (fun ε hε => by
+        obtain ⟨M, hM⟩ := Filter.eventually_atImInfty.1 (show ∀ᶠ z in UpperHalfPlane.atImInfty,
+          ‖ψS z‖ < ε by simpa [dist_eq_norm] using
+            (Metric.tendsto_nhds.1 MagicFunction.b.PsiBounds.tendsto_ψS_atImInfty) ε hε)
+        refine ⟨max M 1, fun z hz => ?_⟩
+        have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) hz
+        simpa [ψS', hzpos] using hM ⟨z, hzpos⟩ ((le_max_left _ _).trans hz)))
+
+/-- `J₆' 0 = -2 * I • ∫ ψS' (t I)` via parametrisation of `z₆'`. -/
+private lemma J₆'_zero_eq :
+    J₆' (0 : ℝ) =
+      (-2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) := by
+  rw [show J₆' (0 : ℝ) = (-2 : ℂ) *
+      ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) by simp [J₆'],
+    MeasureTheory.integral_Ici_eq_integral_Ioi,
+    MeasureTheory.integral_congr_ae (g := fun t : ℝ => (Complex.I : ℂ) * ψS' (t * Complex.I))
+      (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+        simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t)
+          (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])]
+  simp [smul_eq_mul]
+  exact MeasureTheory.integral_const_mul Complex.I _
+
+lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
   have hright : (∫ (t : ℝ) in Ioi (1 : ℝ), ψS' ((1 : ℂ) + t * Complex.I)) =
       -∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I) := by
     simpa [MeasureTheory.integral_neg] using MeasureTheory.integral_congr_ae
@@ -1199,22 +1220,11 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
       using show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' (x + (1 : ℝ) * Complex.I)) +
         (Complex.I • (-∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I))) -
           (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) = 0 by
-        simpa [hright] using hrect
-  have hJ6 : J₆' (0 : ℝ) =
-      (-2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) := by
-    rw [show J₆' (0 : ℝ) = (-2 : ℂ) *
-        ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) by simp [J₆'],
-      MeasureTheory.integral_Ici_eq_integral_Ioi,
-      MeasureTheory.integral_congr_ae (g := fun t : ℝ => (Complex.I : ℂ) * ψS' (t * Complex.I))
-        (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-          simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t)
-            (le_of_lt (by simpa [Set.mem_Ioi] using ht)), mul_comm])]
-    simp [smul_eq_mul]
-    exact MeasureTheory.integral_const_mul Complex.I _
-  exact hJ24.trans (eq_neg_of_add_eq_zero_left (by
+        simpa [hright] using integral_ψS'_rect_eq_zero
+  exact J2'_add_J4'_zero_eq.trans (eq_neg_of_add_eq_zero_left (by
     simp [show (∫ (x : ℝ) in (0 : ℝ)..1, ψS' ((x : ℂ) + Complex.I)) =
         (2 : ℂ) * (Complex.I • ∫ (t : ℝ) in Ioi (1 : ℝ), ψS' (t * Complex.I)) by
-      simpa [sub_eq_zero] using hhor, hJ6]))
+      simpa [sub_eq_zero] using hhor, J₆'_zero_eq]))
 
 theorem b_zero : MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) = 0 := by
   rw [show MagicFunction.FourierEigenfunctions.b (0 : ℝ⁸) =

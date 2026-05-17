@@ -949,6 +949,90 @@ private lemma psiI'_cancellation_hB {t : ℝ} {z w : ℂ} {Cz Cw : ℝ}
     mul_le_mul hz1 hw_bd (norm_nonneg _) (by positivity)
   grind only
 
+/-- Decomposition of `ψI' (I t) - 144 - exp(2π t)` into the cross-terms `128·(x·y) - e - 16`
+and `128·(z·w) - 128`, where `x, y, z, w` are the standard combinations of `H₂, H₃, H₄`. -/
+private lemma psiI'_cancellation_decomp {t : ℝ} (ht0 : 0 < t) :
+    ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t) : ℝ) : ℂ) =
+      ((128 : ℂ) * ((H₃.resToImagAxis t + H₄.resToImagAxis t) *
+            ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹) -
+          ((Real.exp (2 * Real.pi * t) : ℝ) : ℂ) - (16 : ℂ)) +
+        ((128 : ℂ) * ((H₄.resToImagAxis t - H₂.resToImagAxis t) *
+            ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹) - (128 : ℂ)) := by
+  rw [psiI'_mul_I_eq_resToImagAxis t ht0,
+    show ψI.resToImagAxis t = (128 : ℂ) * ((H₃.resToImagAxis t + H₄.resToImagAxis t) *
+        ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ +
+        (H₄.resToImagAxis t - H₂.resToImagAxis t) *
+        ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹) by
+      simpa [Function.resToImagAxis, ResToImagAxis, ht0, nsmul_eq_mul, div_eq_mul_inv,
+        mul_add, add_mul] using
+          congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht0⟩) ψI_eq]
+  ring
+
+/-- Combined bound for the two cross-terms in the `ψI'(it)` cancellation estimate: starting from
+the five raw constituent bounds (as produced by their `exists_…` lemmas), derive the `hA + hB`
+inequality after the `psiI'_cancellation_decomp` expansion. -/
+private lemma psiI'_cancellation_cross_bounds {t : ℝ} (ht : 1 ≤ t)
+    {Csum Cinv2 Cinv3 CH2 CH4 : ℝ}
+    (hCsum : 0 ≤ Csum) (hCinv2 : 0 ≤ Cinv2) (hCinv3 : 0 ≤ Cinv3)
+    (hCH2 : 0 ≤ CH2) (hCH4 : 0 ≤ CH4)
+    (hsum_raw : ‖H₃.resToImagAxis t + H₄.resToImagAxis t - (2 : ℂ) -
+        (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ ≤
+          Csum * Real.exp (-(3 : ℝ) * Real.pi * t))
+    (hinv2_raw : ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ -
+        ((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ) + ((1 / 32 : ℝ) : ℂ)‖ ≤
+          Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t))
+    (hinv3_raw : ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ Cinv3 * Real.exp (-Real.pi * t))
+    (hH2_raw : ‖H₂.resToImagAxis t - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+        (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
+          CH2 * Real.exp (-(5 : ℝ) * Real.pi * t))
+    (hH4_raw : ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+        (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ ≤
+          CH4 * Real.exp (-(3 : ℝ) * Real.pi * t)) :
+    ‖(128 : ℂ) * ((H₃.resToImagAxis t + H₄.resToImagAxis t) *
+          ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹) -
+        ((Real.exp (2 * Real.pi * t) : ℝ) : ℂ) - (16 : ℂ)‖ +
+      ‖(128 : ℂ) * ((H₄.resToImagAxis t - H₂.resToImagAxis t) *
+          ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹) - (128 : ℂ)‖ ≤
+      ((128 : ℝ) * (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
+          ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) := by
+  have ht0' : 0 ≤ t := (zero_lt_one.trans_le ht).le
+  have hsum : ‖H₃.resToImagAxis t + H₄.resToImagAxis t -
+      ((2 : ℂ) + (48 : ℂ) * ((Real.exp (-(2 : ℝ) * Real.pi * t) : ℝ) : ℂ))‖ ≤
+        Csum * Real.exp (-(3 : ℝ) * Real.pi * t) := by
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hsum_raw
+  have hinv2 : ‖((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ -
+      (((Real.exp (2 * Real.pi * t) / 256 : ℝ) : ℂ) - ((1 / 32 : ℝ) : ℂ))‖ ≤
+        Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t) := by
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hinv2_raw
+  have hinv3 : ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - 1‖ ≤ Cinv3 * Real.exp (-Real.pi * t) :=
+    hinv3_raw
+  have hH4 : ‖H₄.resToImagAxis t - 1‖ ≤ (CH4 + 32) * Real.exp (-Real.pi * t) :=
+    norm_le_err_plus_main (by ring) hCH4 (by norm_num : (1 : ℝ) ≤ 3) ht0' hH4_raw <|
+      norm_two_exp_le_const (A := -(8 : ℂ)) (B := (24 : ℂ)) (k := 2) (by norm_num) ht0'
+        (by norm_num)
+  have hH2_bd : ‖H₂.resToImagAxis t‖ ≤ (CH2 + 80) * Real.exp (-Real.pi * t) :=
+    norm_le_err_plus_main (by ring) hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' hH2_raw <|
+      norm_two_exp_le_const (A := (16 : ℂ)) (B := (64 : ℂ)) (k := 3) (by norm_num) ht0'
+        (by norm_num)
+  have hz1 : ‖(H₄.resToImagAxis t - H₂.resToImagAxis t) - 1‖ ≤
+      (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) :=
+    calc ‖(H₄.resToImagAxis t - H₂.resToImagAxis t) - 1‖
+        = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by ring_nf
+      _ ≤ ‖H₄.resToImagAxis t - 1‖ + ‖H₂.resToImagAxis t‖ := norm_sub_le _ _
+      _ ≤ _ := by linarith [hH4, hH2_bd]
+  have hw_bd : ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹‖ ≤ Cinv3 + 2 := by
+    have h : ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹‖ ≤
+        ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - 1‖ + 1 := by
+      simpa [sub_add_cancel] using
+        norm_add_le (((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - 1) (1 : ℂ)
+    nlinarith [mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
+      (by nlinarith [Real.pi_pos, ht0'] : -Real.pi * t ≤ 0)) hCinv3, hinv3]
+  have hA := psiI'_cancellation_hA (t := t) ht hCsum hCinv2
+    (H₃.resToImagAxis t + H₄.resToImagAxis t) ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ hsum hinv2
+  have hB := psiI'_cancellation_hB (t := t) (Cz := CH2 + CH4 + 112) (Cw := Cinv3)
+    hz1 hw_bd hinv3 (by linarith)
+  nlinarith [hA, hB, Real.exp_pos (-Real.pi * t)]
+
 /-- Cancellation estimate for `ψI'(it)` on `t ≥ 1`: after subtracting `144` and `exp (2π t)`,
 the remainder is `O(exp (-π t))`. -/
 public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
@@ -960,67 +1044,16 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   obtain ⟨Cinv3, hinv3⟩ := exists_bound_norm_inv_H3_sq_sub_one_Ici_one
   obtain ⟨CH2, hH2⟩ := exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one
   obtain ⟨CH4, hH4⟩ := exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one
-  have hCsum := nonneg_of_norm_le_mul_exp (hsum 1 le_rfl)
-  have hCinv2 := nonneg_of_norm_le_mul_exp (hinv2 1 le_rfl)
-  have hCinv3 := nonneg_of_norm_le_mul_exp (hinv3 1 le_rfl)
-  have hCH2 := nonneg_of_norm_le_mul_exp (hH2 1 le_rfl)
-  have hCH4 := nonneg_of_norm_le_mul_exp (hH4 1 le_rfl)
   refine ⟨(128 : ℝ) *
       (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
         ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192, fun t ht => ?_⟩
-  have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
-  have ht0' : 0 ≤ t := ht0.le
-  set e : ℝ := Real.exp (2 * Real.pi * t)
-  set x : ℂ := H₃.resToImagAxis t + H₄.resToImagAxis t
-  set y : ℂ := ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹
-  set z : ℂ := H₄.resToImagAxis t - H₂.resToImagAxis t
-  set w : ℂ := ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹
-  have hx : ‖x - ((2 : ℂ) + (48 : ℂ) *
-      ((Real.exp (-(2 : ℝ) * Real.pi * t) : ℝ) : ℂ))‖ ≤
-        Csum * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-    simpa [x, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hsum t ht
-  have hy : ‖y - (((e / 256 : ℝ) : ℂ) - ((1 / 32 : ℝ) : ℂ))‖ ≤
-      Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    simpa [y, e, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hinv2 t ht
-  have hw1 : ‖w - 1‖ ≤ Cinv3 * Real.exp (-Real.pi * t) := by
-    simpa [w, sub_eq_add_neg] using hinv3 t ht
-  have hH2_bd : ‖H₂.resToImagAxis t‖ ≤ (CH2 + 80) * Real.exp (-Real.pi * t) :=
-    norm_le_err_plus_main (by ring) hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' (hH2 t ht) <|
-      norm_two_exp_le_const (A := (16 : ℂ)) (B := (64 : ℂ)) (k := 3) (by norm_num) ht0'
-        (by norm_num)
-  have hH4_bd : ‖H₄.resToImagAxis t - 1‖ ≤ (CH4 + 32) * Real.exp (-Real.pi * t) := by
-    have herr : ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-          (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
-            ≤ CH4 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hH4 t ht
-    refine norm_le_err_plus_main (by ring) hCH4 (by norm_num : (1 : ℝ) ≤ 3) ht0' herr <|
-      norm_two_exp_le_const (A := -(8 : ℂ)) (B := (24 : ℂ)) (k := 2) (by norm_num) ht0'
-        (by norm_num)
-  have hz1 : ‖z - 1‖ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by
-    calc ‖z - 1‖ = ‖(H₄.resToImagAxis t - 1) - H₂.resToImagAxis t‖ := by dsimp [z]; ring_nf
-      _ ≤ ‖H₄.resToImagAxis t - 1‖ + ‖H₂.resToImagAxis t‖ := norm_sub_le _ _
-      _ ≤ (CH2 + CH4 + 112) * Real.exp (-Real.pi * t) := by linarith [hH4_bd, hH2_bd]
-  have hw_bd : ‖w‖ ≤ Cinv3 + 2 := by
-    have h := norm_add_le (w - 1) (1 : ℂ); simp at h
-    nlinarith [mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.2
-      (by nlinarith [Real.pi_pos, ht0'] : -Real.pi * t ≤ 0)) hCinv3, hw1]
-  have hA := psiI'_cancellation_hA (t := t) ht hCsum hCinv2 (x := x) (y := y) hx hy
-  have hB := psiI'_cancellation_hB (t := t) (Cz := CH2 + CH4 + 112) (Cw := Cinv3)
-    hz1 hw_bd hw1 (by linarith)
-  calc ‖ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t) : ℝ) : ℂ)‖
-      = ‖((128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)) +
-          ((128 : ℂ) * (z * w) - (128 : ℂ))‖ := by
-        rw [show ((Real.exp (2 * π * t) : ℝ) : ℂ) = (e : ℂ) from rfl,
-          psiI'_mul_I_eq_resToImagAxis t ht0, show ψI.resToImagAxis t =
-            (128 : ℂ) * (x * y + z * w) by
-          simpa [Function.resToImagAxis, ResToImagAxis, ht0, nsmul_eq_mul, div_eq_mul_inv,
-            mul_add, add_mul, x, y, z, w] using
-              congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht0⟩) ψI_eq]
-        congr 1; ring
-    _ ≤ _ + _ := norm_add_le _ _
-    _ ≤ ((128 : ℝ) * (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
-          ((CH2 + CH4 + 112) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) := by
-        nlinarith [hA, hB, Real.exp_pos (-Real.pi * t)]
+  refine ((congrArg _ (psiI'_cancellation_decomp (lt_of_lt_of_le zero_lt_one ht))).le.trans
+    (norm_add_le _ _)).trans <|
+    psiI'_cancellation_cross_bounds ht
+      (nonneg_of_norm_le_mul_exp (hsum 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hinv2 1 le_rfl))
+      (nonneg_of_norm_le_mul_exp (hinv3 1 le_rfl)) (nonneg_of_norm_le_mul_exp (hH2 1 le_rfl))
+      (nonneg_of_norm_le_mul_exp (hH4 1 le_rfl))
+      (hsum t ht) (hinv2 t ht) (hinv3 t ht) (hH2 t ht) (hH4 t ht)
 
 end
 
