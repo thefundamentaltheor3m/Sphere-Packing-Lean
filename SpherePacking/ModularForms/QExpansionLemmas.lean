@@ -13,7 +13,6 @@ For modular forms, the value at the cusp `∞` is a genuine limit as `im τ → 
 
 ## Main statements
 * `modularForm_tendsto_atImInfty`
-* `qExpansion_mul_coeff`
 -/
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat MatrixGroups CongruenceSubgroup
 
@@ -55,21 +54,6 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
   exact ht.congr fun τ ↦ SlashInvariantFormClass.eq_cuspFunction (f := f) τ hmem
     (by exact_mod_cast NeZero.ne n)
 
-/-- The `qExpansion` of a product is the product of the `qExpansion`s (coeffwise). -/
-public lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
-    [NeZero n] : qExpansion n (f.mul g) = qExpansion n f * qExpansion n g :=
-  ModularForm.qExpansion_mul (Γ := Γ(n)) (h := (n : ℝ)) (Nat.cast_pos.mpr (NeZero.pos n))
-    (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f g
-
-lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
-    iteratedDeriv m (a • f) = a • iteratedDeriv m f := by
-  induction m with
-  | zero => simp
-  | succ m hm =>
-    rw [iteratedDeriv_succ, iteratedDeriv_succ, hm]
-    ext x
-    exact deriv_const_smul_field a ..
-
 public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
     (a • qExpansion n f) = (qExpansion n (a • f)) := by
   ext m
@@ -101,24 +85,19 @@ public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
   simp only [PowerSeries.coeff_mk, this]
   conv =>
     enter [2,2]
-    rw [IteratedDeriv_smul]
+    rw [iteratedDeriv_const_smul_field]
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
 
-lemma cuspFunction_congr_funLike
-    {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (h : ℝ) (f : α) (g : β) (hf : ⇑f = ⇑g) :
-    cuspFunction h f = cuspFunction h g := by
-  ext z
-  by_cases hz : z = 0 <;> simp [cuspFunction, Periodic.cuspFunction, hf, hz]
-
 /-- If two `FunLike` objects have the same underlying function, then their `qExpansion`s agree. -/
 public lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (f : α) (g : β)
     (h : ⇑f = ⇑g) :
     qExpansion 1 f = qExpansion 1 g := by
-  ext m
-  simp [qExpansion_coeff, cuspFunction_congr_funLike (h := (1 : ℝ)) (f := f) (g := g) h]
+  have hcf : cuspFunction (1 : ℝ) f = cuspFunction (1 : ℝ) g := by
+    ext z; by_cases hz : z = 0 <;> simp [cuspFunction, Periodic.cuspFunction, h, hz]
+  ext m; simp [qExpansion_coeff, hcf]
 
 /-- On `Γ(1)`, `qExpansion` commutes with subtraction. -/
 public lemma qExpansion_sub1 {a b : ℤ} (f : ModularForm Γ(1) a) (g : ModularForm Γ(1) b) :
