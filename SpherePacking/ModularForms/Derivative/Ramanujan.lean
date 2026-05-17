@@ -34,7 +34,7 @@ private lemma tendsto_serre_D_of_bounded_tendsto_one {f : ℍ → ℂ} (k : ℂ)
      (h1 : Tendsto f atImInfty (𝓝 (1 : ℂ))) :
      Tendsto (fun z : ℍ => serre_D k f z) atImInfty (𝓝 (-(k * 12⁻¹))) := by
   have hD : Tendsto (fun z : ℍ => D f z) atImInfty (𝓝 (0 : ℂ)) :=
-    D_isZeroAtImInfty_of_bounded hf hbdd
+    D_tendsto_zero_of_isBoundedAtImInfty hf hbdd
   have hE₂ : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := tendsto_E₂_atImInfty
   have hconst : Tendsto (fun _ : ℍ => k * 12⁻¹) atImInfty (𝓝 (k * 12⁻¹)) :=
     tendsto_const_nhds
@@ -280,7 +280,7 @@ private lemma ramanujanE2_F₄_tendsto :
     Tendsto (fun z : ℍ => ramanujanE2_F₄ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
   have hbddE₂ : IsBoundedAtImInfty E₂ := E₂_isBoundedAtImInfty
   have hDlim : Tendsto (fun z : ℍ => D E₂ z) atImInfty (𝓝 (0 : ℂ)) :=
-    D_isZeroAtImInfty_of_bounded E₂_holo' hbddE₂
+    D_tendsto_zero_of_isBoundedAtImInfty E₂_holo' hbddE₂
   have hE₂lim : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := tendsto_E₂_atImInfty
   have hterm :
       Tendsto (fun z => 12⁻¹ * E₂ z * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by

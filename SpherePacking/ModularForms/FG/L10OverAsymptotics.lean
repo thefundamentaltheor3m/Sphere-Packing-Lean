@@ -269,10 +269,9 @@ private lemma isBoundedAtImInfty_of_tendsto {f : UpperHalfPlane → ℂ} {c : �
 
 /-- The derivative `D F₀ → 0` at `i∞`. -/
 private lemma DF₀fun_tendsto_zero :
-    Tendsto (D F₀fun) UpperHalfPlane.atImInfty (nhds (0 : ℂ)) := by
-  have := D_isZeroAtImInfty_of_bounded F₀fun_holo
+    Tendsto (D F₀fun) UpperHalfPlane.atImInfty (nhds (0 : ℂ)) :=
+  D_tendsto_zero_of_isBoundedAtImInfty F₀fun_holo
     (isBoundedAtImInfty_of_tendsto F₀fun_tendsto_atImInfty)
-  simpa [UpperHalfPlane.IsZeroAtImInfty] using this
 
 /-- `H₂' = H₂ / qπ → 16` at `i∞`, using the Jacobi theta expansion of `H₂`. -/
 private lemma H₂'fun_tendsto_atImInfty :
@@ -316,10 +315,9 @@ private lemma G₀fun_tendsto_atImInfty :
 
 /-- The derivative `D G₀ → 0` at `i∞`. -/
 private lemma DG₀fun_tendsto_zero :
-    Tendsto (D G₀fun) UpperHalfPlane.atImInfty (nhds (0 : ℂ)) := by
-  have := D_isZeroAtImInfty_of_bounded G₀fun_holo
+    Tendsto (D G₀fun) UpperHalfPlane.atImInfty (nhds (0 : ℂ)) :=
+  D_tendsto_zero_of_isBoundedAtImInfty G₀fun_holo
     (isBoundedAtImInfty_of_tendsto G₀fun_tendsto_atImInfty)
-  simpa [UpperHalfPlane.IsZeroAtImInfty] using this
 
 /-- Factorization `F = q₂ · F₀`. -/
 private lemma F_factor : F = fun z : UpperHalfPlane => q₂ z * F₀fun z := by

@@ -240,7 +240,7 @@ public lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 
 For z with im(z) = y, a Cauchy estimate on a ball of radius y/2 gives
 ‖D f z‖ ≤ M / (π · y), which tends to zero as y → ∞. -/
-theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
+public theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hbdd : IsBoundedAtImInfty f) :
     Filter.Tendsto (D f) atImInfty (nhds 0) := by
   obtain ⟨M, A, hMA⟩ := isBoundedAtImInfty_iff.mp hbdd
@@ -252,24 +252,3 @@ theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
   rw [Filter.eventually_iff_exists_mem]
   exact ⟨{z : ℍ | 2 * max A 0 + 1 ≤ z.im}, (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩,
     fun _ hz => norm_D_le_div_pi_im_of_bounded hf hMA hz⟩
-
-/-- The D-derivative tends to 0 at infinity for bounded holomorphic functions.
-
-This overlaps with `D_tendsto_zero_of_isBoundedAtImInfty`; it is kept for backward compatibility. -/
-public lemma D_isZeroAtImInfty_of_bounded {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hbdd : IsBoundedAtImInfty f) :
-    IsZeroAtImInfty (D f) := by
-  rw [UpperHalfPlane.isZeroAtImInfty_iff]
-  intro ε hε
-  rw [UpperHalfPlane.isBoundedAtImInfty_iff] at hbdd
-  obtain ⟨M, A, hMA⟩ := hbdd
-  refine ⟨max (2 * max A 0 + 1) (M / (Real.pi * ε)), fun z hz => ?_⟩
-  have hz' : 2 * max A 0 + 1 ≤ z.im := le_trans (le_max_left _ _) hz
-  have hz_im : M / (Real.pi * ε) ≤ z.im := le_trans (le_max_right _ _) hz
-  have hpiε : 0 < Real.pi * ε := mul_pos Real.pi_pos hε
-  have hpiIm : 0 < Real.pi * z.im := mul_pos Real.pi_pos z.im_pos
-  have hMle : M ≤ ε * (Real.pi * z.im) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (div_le_iff₀ hpiε).1 hz_im
-  have hbound : M / (π * z.im) ≤ ε :=
-    (div_le_iff₀ hpiIm).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using hMle)
-  exact (norm_D_le_div_pi_im_of_bounded hf hMA hz').trans hbound
