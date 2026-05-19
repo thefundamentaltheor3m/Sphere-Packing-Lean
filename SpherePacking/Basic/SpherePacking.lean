@@ -54,7 +54,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
     S.separation ≤ dist x y := by
   have := S.centers_dist (Subtype.coe_ne_coe.mp hxy : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩)
-  simpa using this
+  exact this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -117,7 +117,9 @@ theorem PeriodicSpherePacking.basis_R_span
 end Definitions
 
 section Scaling
+
 variable {d : ℕ}
+
 open Real
 
 /-- Scale a sphere packing by a positive real factor `c`. -/
@@ -236,6 +238,7 @@ def SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
 end Density
 
 section DensityLemmas
+
 namespace SpherePacking
 
 lemma finiteDensity_le_one {d : ℕ} (S : SpherePacking d) (R : ℝ) : S.finiteDensity R ≤ 1 := by
@@ -306,10 +309,13 @@ theorem constant_eq_constant_normalized {d : ℕ} (hd : 0 < d) :
     exact le_iSup density S
 
 end SpherePacking
+
 end DensityLemmas
 
 section BasicResults
+
 open scoped ENNReal
+
 open EuclideanSpace
 
 variable {d : ℕ} (S : SpherePacking d)
