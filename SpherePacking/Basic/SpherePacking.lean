@@ -6,14 +6,9 @@ Authors: Sidharth Hariharan, Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Analysis.Normed.Lp.MeasurableSpace
+public import Mathlib.Data.ENat.Lattice
 public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-public import Mathlib.Topology.Metrizable.Basic
-public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
-
-public import SpherePacking.ForMathlib.VolumeOfBalls
 
 @[expose] public section
 
@@ -400,7 +395,7 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
-theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.inter_ball_encard_le (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≤
       volume (S.balls ∩ ball 0 (R + S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
@@ -409,14 +404,13 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  · exact measure_ball_lt_top.ne
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
-theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
       volume (S.balls ∩ ball 0 (R - S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
@@ -425,22 +419,22 @@ theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  · exact measure_ball_lt_top.ne
 
 theorem SpherePacking.centers_inter_ball_finite (R : ℝ) : Finite ↑(S.centers ∩ ball 0 R) := by
   apply Set.encard_lt_top_iff.mp
   by_cases hd : 0 < d
   · haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     apply ENat.toENNReal_lt.mp
-    apply lt_of_le_of_lt (S.inter_ball_encard_le hd R)
-    apply ENNReal.div_lt_top ?_ (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
+    apply lt_of_le_of_lt (S.inter_ball_encard_le R)
+    apply ENNReal.div_lt_top ?_ (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
     rw [← lt_top_iff_ne_top]
     calc
-      _ ≤ volume (ball 0 (R + S.separation / 2)) := volume.mono Set.inter_subset_right
-      _ < ⊤ := EuclideanSpace.volume_ball_lt_top _
+      _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2)) :=
+        volume.mono Set.inter_subset_right
+      _ < ⊤ := measure_ball_lt_top
   · rw [not_lt, nonpos_iff_eq_zero] at hd
     have : (ball (0 : EuclideanSpace ℝ (Fin 0)) R).encard ≤ 1 := by
       rw [← Set.Finite.cast_ncard_eq (Set.toFinite _), Nat.cast_le_one]
@@ -448,32 +442,30 @@ theorem SpherePacking.centers_inter_ball_finite (R : ℝ) : Finite ↑(S.centers
     subst hd
     exact (Set.encard_mono inf_le_right).trans_lt (this.trans_lt (by decide))
 
-theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.finiteDensity_ge (R : ℝ) :
     S.finiteDensity R
       ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.le_div_iff_mul_le] <;> try left
-  · have := S.inter_ball_encard_le hd (R - S.separation / 2)
+  · have := S.inter_ball_encard_le (R - S.separation / 2)
     rwa [sub_add_cancel] at this
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  · exact measure_ball_lt_top.ne
 
-theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.finiteDensity_le (R : ℝ) :
     S.finiteDensity R
       ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.div_le_iff_le_mul] <;> try left
-  · have := S.inter_ball_encard_ge hd (R + S.separation / 2)
+  · have := S.inter_ball_encard_ge (R + S.separation / 2)
     rwa [add_sub_cancel_right] at this
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  · exact measure_ball_lt_top.ne
 
 end BasicResults
