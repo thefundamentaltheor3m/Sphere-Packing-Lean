@@ -18,16 +18,59 @@ public import SpherePacking.ForMathlib.VolumeOfBalls
 @[expose] public section
 
 /-!
-# Density of Sphere Packings
+# Sphere Packings
 
-Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart. Putting
-a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*. We call `X`
-the sphere packing centers.
+A *sphere packing* in `ℝᵈ` is a set of *centers* `X ⊆ ℝᵈ` with a positive `separation` such
+that distinct centers are at distance at least `separation`. Placing an open ball of radius
+`separation / 2` around each center yields the packing's (disjoint) balls. In this file, we define
+sphere packings and periodic sphere packings in `ℝᵈ` and the notions of sphere packing density and
+the sphere packing constant and prove basic facts about these definitions.
 
-We also define the *density* of the configuration.
+## Main definitions
+
+* `SpherePacking d`: a sphere packing in dimension `d`, with `centers` and `separation`.
+* `PeriodicSpherePacking d`: a packing whose centers are invariant under a `ℤ`-lattice.
+* `SpherePacking.balls`: union of open balls of radius `separation / 2` around the centers.
+* `SpherePacking.finiteDensity S R`: fraction of `ball 0 R` covered by `S.balls`.
+* `SpherePacking.density`: the `limsup` of `finiteDensity` as `R → ∞`.
+* `SpherePackingConstant d`, `PeriodicSpherePackingConstant d`: supremum of densities.
+* `SpherePacking.scale`: scale a (periodic) packing by a positive real factor.
+
+## Main results
+
+* `SpherePacking.density_le_one`: every packing has density at most `1`.
+* `SpherePacking.scale_density`: density is invariant under scaling.
+* `SpherePacking.constant_eq_constant_normalized`: for `0 < d`, attained at `separation = 1`.
+* `SpherePacking.finiteDensity_le`/`finiteDensity_ge`: two-sided bounds via center counts.
+* `SpherePacking.centers_inter_ball_finite`: each ball contains only finitely many centers.
+
+## Implementation notes
+
+`PeriodicSpherePacking` bundles `DiscreteTopology`/`IsZLattice` on its lattice; the induced
+`AddAction S.lattice S.centers` is `noncomputable` due to subtype repackaging.
+
+## Scope for Further Work
+
+While sphere packings can be defined in arbitrary metric spaces, we consciously focus on Euclidean
+spaces here because we are more interested in the theory of sphere packing densities than we are in
+more general notions, and densities can be quite poorly behaved in other settings. We do believe
+that it may be valuable to develop the theory in more general settings in the future, and invite
+contributions in that directions that are supported by formalisations of their applications.
+
+## Reference
+
+These definitions were developed as part of the Sphere Packing Project, which aims to formalise the
+solution to the sphere packing problem in dimension 8 by Viazovska. The primary references for this
+file are:
+* C. Birkbeck, S. Hariharan, S. Lee, G. Ma, B. Mehta, and M. Viazovska. Sphere Packing in Lean -
+  Project Blueprint, Sections 1 and 2.
+  https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint/index.html.
+* M. S. Viazovska. The sphere packing problem in dimension 8. Annals of Mathematics,
+  185(3):991–1015, 2017.
 -/
 
 open BigOperators MeasureTheory Metric Pointwise Filter Module
+
 open scoped ENNReal
 
 section Definitions
