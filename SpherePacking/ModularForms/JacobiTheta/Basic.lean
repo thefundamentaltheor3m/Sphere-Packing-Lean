@@ -31,7 +31,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
   suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
     simp_rw [modular_slash_T_apply, Pi.neg_apply, H₂, hΘ₂, mul_pow, ← Complex.exp_nat_mul,
-      mul_comm ((4 : ℕ) : ℂ), Nat.cast_ofNat, div_mul_cancel₀ (b := (4 : ℂ)) _ (by simp),
+      Nat.cast_ofNat, mul_comm (4 : ℂ), div_mul_cancel₀ (b := (4 : ℂ)) _ (by simp),
       Complex.exp_pi_mul_I, neg_one_mul]
   simp_rw [Θ₂, Θ₂_term, ← tsum_mul_left]
   refine tsum_congr fun b ↦ ?_
@@ -57,7 +57,7 @@ lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
   ext x
   simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc,
-    show ((1 : ℝ) : ℂ) + ((1 : ℝ) : ℂ) = 2 by norm_num, add_comm (2 : ℂ), jacobiTheta₂_add_right]
+    ofReal_one, show (1 : ℂ) + 1 = 2 by norm_num, add_comm (2 : ℂ), jacobiTheta₂_add_right]
 
 lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
@@ -88,12 +88,12 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
       show ((-I * -x⁻¹) : ℂ) = I * x⁻¹ by ring] at hfe
   simp only [modular_slash_S_apply, Pi.neg_apply, H₂, Θ₂_as_jacobiTheta₂, H₄, Θ₄_as_jacobiTheta₂]
   rw [show ((-x : ℂ))⁻¹ = -x⁻¹ by simp, hfe, mul_pow, mul_pow, mul_pow, div_pow, one_pow,
-      ← cpow_mul_nat, show ((1:ℂ)/2 * (4:ℕ)) = 2 by push_cast; ring, Complex.cpow_two, mul_pow,
-      I_sq, ← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
-  have hexp : cexp ((4:ℕ) * (↑π * I * -x⁻¹ / 4)) *
-              cexp ((4:ℕ) * (-↑π * I * (-x⁻¹ / 2) ^ 2 / -x⁻¹)) = 1 := by
-    rw [← Complex.exp_add, show ((4 : ℕ) : ℂ) * (↑π * I * -x⁻¹ / 4) +
-      (4 : ℕ) * (-↑π * I * (-x⁻¹ / 2) ^ 2 / -x⁻¹) = 0 by field_simp; ring, Complex.exp_zero]
+      ← cpow_mul_nat, show ((1 : ℂ) / 2 * (4 : ℕ)) = 2 by norm_num, Complex.cpow_two, mul_pow,
+      I_sq, ← Complex.exp_nat_mul, ← Complex.exp_nat_mul, Nat.cast_ofNat]
+  have hexp : cexp ((4 : ℂ) * (↑π * I * -x⁻¹ / 4)) *
+              cexp ((4 : ℂ) * (-↑π * I * (-x⁻¹ / 2) ^ 2 / -x⁻¹)) = 1 := by
+    rw [← Complex.exp_add, show (4 : ℂ) * (↑π * I * -x⁻¹ / 4) +
+      4 * (-↑π * I * (-x⁻¹ / 2) ^ 2 / -x⁻¹) = 0 by field_simp; ring, Complex.exp_zero]
   have hzpow : (1 / (-1 * x⁻¹ ^ 2) * x ^ (-2 : ℤ) : ℂ) = -1 := by
     rw [zpow_neg, zpow_ofNat]; field_simp
   linear_combination hexp * (1 / (-1 * x⁻¹ ^ 2) * x ^ (-2 : ℤ) * jacobiTheta₂ (1 / 2) x ^ 4) +
@@ -634,7 +634,7 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   rw [H₄_S_action] at hSlash
   have hI2 : (I : ℂ) ^ (-2 : ℤ) = -1 := by
     change (I ^ 2)⁻¹ = -1; rw [I_sq]; norm_num
-  have h1t2 : ((1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
+  have h1t2 : (↑(1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
     have : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr ht.ne'
     simp only [one_div, ofReal_inv, zpow_neg]; field_simp
   have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
