@@ -101,7 +101,6 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
 
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
-  have hx' := x.ne_zero
   have := jacobiTheta₂_functional_equation 0
   simp [-one_div] at this
   simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
@@ -111,7 +110,7 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   rw [div_pow, one_pow, ← cpow_mul_nat, show (1 / 2 * (4 : ℕ) : ℂ) = 2 by norm_num,
     mul_neg, neg_neg, Complex.cpow_two, mul_pow, I_sq, neg_one_mul, inv_pow,
     one_div, ← neg_inv, inv_inv, neg_mul]
-  exact congrArg Neg.neg (mul_inv_cancel₀ (pow_ne_zero _ hx'))
+  exact congrArg Neg.neg (mul_inv_cancel₀ (pow_ne_zero _ x.ne_zero))
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
