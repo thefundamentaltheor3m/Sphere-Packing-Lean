@@ -629,10 +629,11 @@ lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₂_term
   change (cexp (Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * t))).im = 0
-  rw [show Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
-        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) from by
-      push_cast
-      linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq]
+  have : Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
+        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) := by
+    push_cast
+    linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq
+  rw [this]
   exact exp_ofReal_im _
 
 /-- `Θ₂(I*t)` has zero imaginary part for `t > 0`. -/
@@ -650,9 +651,10 @@ lemma Θ₄_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₄_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₄_term
   change ((-1 : ℂ) ^ n * cexp (Real.pi * I * (n : ℂ) ^ 2 * (I * t))).im = 0
-  rw [show Real.pi * I * (n : ℂ) ^ 2 * (I * ↑t) = ((-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ) : ℂ) by
-      push_cast
-      linear_combination ((Real.pi : ℂ) * (n : ℂ) ^ 2 * ↑t) * I_sq]
+  have : Real.pi * I * (n : ℂ) ^ 2 * (I * ↑t) = ((-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ) : ℂ) := by
+    push_cast
+    linear_combination ((Real.pi : ℂ) * (n : ℂ) ^ 2 * ↑t) * I_sq
+  rw [this]
   simp only [Complex.mul_im, neg_one_zpow_im_eq_zero, exp_ofReal_im,
     mul_zero, zero_mul, add_zero]
 
@@ -679,11 +681,11 @@ lemma Θ₂_term_imag_axis_re (n : ℤ) (t : ℝ) (ht : 0 < t) :
       Real.exp (-Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) := by
   unfold Θ₂_term
   change (cexp (Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * t))).re = _
-  rw [show Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
-        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) by
-      push_cast
-      linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq,
-    Complex.exp_ofReal_re]
+  have : Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
+        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) := by
+    push_cast
+    linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq
+  rw [this, Complex.exp_ofReal_re]
   ring_nf
 
 /-- Each term `Θ₂_term n (I*t)` has positive real part for `t > 0`. -/
