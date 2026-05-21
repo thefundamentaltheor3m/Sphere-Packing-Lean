@@ -7,11 +7,11 @@ module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 public import Mathlib.Dynamics.Ergodic.Action.Regular
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard
-public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.ZLattice
 
 @[expose] public section
@@ -88,8 +88,8 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
         refine lt_of_le_of_lt ((ENNReal.le_div_iff_mul_le ?_ ?_).mpr h₁) <|
           ENNReal.div_lt_top ?_ hc.ne.symm
         · left; positivity
-        · right; exact (volume_ball_lt_top _).ne
-        · exact (volume_ball_lt_top _).ne
+        · right; exact measure_ball_lt_top.ne
+        · exact measure_ball_lt_top.ne
       · exact ENNReal.summable
       · exact ENNReal.summable
       · intro x
@@ -107,7 +107,7 @@ lemma aux4 (hD_isBounded : IsBounded D) (hd : 0 < d) : Finite ↑(S.centers ∩ 
   · intro x hx y hy hxy
     apply ball_disjoint_ball
     simpa [add_halves] using S.centers_dist' _ _ hx.left hy.left hxy
-  · apply volume_ball_pos
+  · apply measure_ball_pos
     linarith [S.separation_pos]
   · intros
     exact measurableSet_ball
@@ -735,7 +735,7 @@ theorem aux_big_le
   _ ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
       * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-    S.finiteDensity_le hd R
+    S.finiteDensity_le R
   _ ≤ S.numReps
         • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L)).encard
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
@@ -772,7 +772,7 @@ theorem aux_big_ge
   _ ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
       * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-    S.finiteDensity_ge hd R
+    S.finiteDensity_ge R
   _ ≥ S.numReps
         • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L)).encard
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
@@ -840,8 +840,8 @@ theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C)
     use 1
     intro b hb
     rw [ENNReal.div_self, Pi.one_apply]
-    · exact (volume_ball_pos _ (by linarith)).ne.symm
-    · exact (volume_ball_lt_top _).ne
+    · exact (measure_ball_pos volume 0 (by positivity)).ne.symm
+    · exact measure_ball_lt_top.ne
   · have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
           = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
@@ -875,9 +875,9 @@ theorem volume_ball_ratio_tendsto_nhds_one'
     intro R hR
     have hR' : 0 < R := by linarith
     rw [ENNReal.div_div_div_cancel_left]
-    · exact (volume_ball_pos _ hR').ne.symm
-    · exact (volume_ball_lt_top _).ne
-    · exact (volume_ball_lt_top _).ne
+    · exact (measure_ball_pos volume 0 hR').ne.symm
+    · exact (measure_ball_lt_top).ne
+    · exact (measure_ball_lt_top).ne
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
