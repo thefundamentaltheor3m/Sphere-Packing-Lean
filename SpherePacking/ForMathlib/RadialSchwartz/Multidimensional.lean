@@ -3,11 +3,15 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
-import Mathlib.Analysis.InnerProductSpace.Calculus
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Analysis.Calculus.ContDiff.Bounds
+
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
+public import Mathlib.Analysis.InnerProductSpace.Calculus
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Analysis.Calculus.ContDiff.Bounds
+
+@[expose] public section
 
 open SchwartzMap Function RCLike
 

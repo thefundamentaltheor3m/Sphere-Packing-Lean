@@ -1,9 +1,13 @@
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
-import Mathlib.Analysis.SpecialFunctions.Log.Summable
-import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-import Mathlib.Tactic.Cases
+module
+
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
+public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+public import Mathlib.Tactic.Cases
+
+@[expose] public section
 
 open UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

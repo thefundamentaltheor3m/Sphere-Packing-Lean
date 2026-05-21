@@ -3,14 +3,18 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import Mathlib.Analysis.Real.Pi.Bounds
 
-import SpherePacking.MagicFunction.a.Eigenfunction
-import SpherePacking.MagicFunction.a.SpecialValues
-import SpherePacking.MagicFunction.b.Eigenfunction
-import SpherePacking.MagicFunction.b.SpecialValues
-import SpherePacking.Tactic.NormNumI
+public import Mathlib.Analysis.Real.Pi.Bounds
+
+public import SpherePacking.MagicFunction.a.Eigenfunction
+public import SpherePacking.MagicFunction.a.SpecialValues
+public import SpherePacking.MagicFunction.b.Eigenfunction
+public import SpherePacking.MagicFunction.b.SpecialValues
+public import SpherePacking.Tactic.NormNumI
+
+@[expose] public section
 
 /-! # Viazovska's Magic Function
 

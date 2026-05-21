@@ -1,7 +1,11 @@
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Data.Int.Star
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
+module
+
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Data.Int.Star
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex

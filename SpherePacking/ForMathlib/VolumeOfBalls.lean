@@ -1,7 +1,11 @@
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
-import Mathlib.MeasureTheory.Measure.Haar.OfBasis
-import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+module
+
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
+public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+
+@[expose] public section
 
 /- This file contains several (semi-adhoc) lemmas about volume of balls, e.g. that they are positive
 generally, or 0 over (ι → ℝ) if ι is Empty. -/
@@ -23,6 +27,7 @@ theorem EuclideanSpace.volume_ball_pos [Nonempty ι] (x : EuclideanSpace ℝ ι)
       linarith
 
 open Classical in
+@[implicit_reducible]
 noncomputable def Fintype.ofSingletonOnly (α : Type*) [Subsingleton α] : Fintype α :=
   if h : Nonempty α then
     Fintype.ofSubsingleton (Classical.choice h)

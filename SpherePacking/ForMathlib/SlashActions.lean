@@ -1,5 +1,9 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.NumberTheory.ModularForms.SlashActions
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.NumberTheory.ModularForms.SlashActions
+
+@[expose] public section
 
 -- Maybe this belongs in NumberTheory/ModularForms/SlashActions.lean, next to ModularForm.mul_slash
 

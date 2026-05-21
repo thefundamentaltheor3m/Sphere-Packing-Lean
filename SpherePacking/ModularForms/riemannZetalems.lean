@@ -1,6 +1,10 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.NumberTheory.LSeries.RiemannZeta
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.NumberTheory.LSeries.RiemannZeta
+
+@[expose] public section
 
 open TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

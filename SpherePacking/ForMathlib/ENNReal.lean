@@ -1,4 +1,8 @@
-import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+
+@[expose] public section
 
 /- Maybe put this in Mathlib/Analysis/SpecialFunctions/Pow/Continuity.lean -/
 

@@ -1,4 +1,8 @@
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+@[expose] public section
 
 theorem Real.rpow_ne_one {a b : ℝ} (ha : 0 < a) (ha' : a ≠ 1) (hb : b ≠ 0) : a ^ b ≠ 1 := by
   contrapose! hb

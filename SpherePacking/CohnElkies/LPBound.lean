@@ -3,15 +3,19 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import Mathlib.Logic.IsEmpty
-import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.Bochner.Set
-import Mathlib.Analysis.Complex.Basic
+module
 
-import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.Basic.PeriodicPacking
+public import Mathlib.Logic.IsEmpty.Basic
+public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
+public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.Analysis.Complex.Basic
+
+public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.ForMathlib.VolumeOfBalls
+public import SpherePacking.Basic.PeriodicPacking
+
+@[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
@@ -79,29 +83,26 @@ end Complex_Function_Helpers
 section Nonnegativity
 
 private theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
-    ((FourierTransform.fourierCLE ℝ _) f).integrable
+    (𝓕 f).integrable
 
 include hne_zero in
 theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
-  rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
   intro hFourierZero
   apply hne_zero
-  rw [← ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)]
-  exact hFourierZero
+  simpa using congrArg (fun g => 𝓕⁻ g) hFourierZero
 
 -- include hReal hRealFourier hCohnElkies₂
 
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
-  rw [← f.fourierInversion ℝ, fourierInv_eq]
+  have hfourier : (f 0).re = (𝓕⁻ (𝓕 f) 0).re := by
+    exact congrArg (fun g : 𝓢(EuclideanSpace ℝ (Fin d), ℂ) => (g 0).re)
+      (FourierTransform.fourierInv_fourier_eq f).symm
+  rw [hfourier, SchwartzMap.fourierInv_coe, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
-  have hcalc₁ :
-    (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v).re =
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
-  rw [hcalc₁]
-  exact integral_nonneg hCohnElkies₂
+  exact (integral_nonneg (f := fun v : EuclideanSpace ℝ (Fin d) => ((𝓕 f) v).re) hCohnElkies₂).trans
+    (integral_re (μ := volume) (f := fun v : EuclideanSpace ℝ (Fin d) => (𝓕 f) v) hIntegrable).le
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
@@ -110,57 +111,52 @@ theorem f_zero_pos : 0 < (f 0).re := by
   -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
   -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
   -- apply ne_of_gt
-  have haux₁ : f 0 = 𝓕⁻ (𝓕 ⇑f) 0 := by rw [f.fourierInversion ℝ]
-  rw [fourierInv_eq] at haux₁
+  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by
+    exact congrArg (fun g : 𝓢(EuclideanSpace ℝ (Fin d), ℂ) => g 0)
+      (FourierTransform.fourierInv_fourier_eq f).symm
+  rw [SchwartzMap.fourierInv_coe, fourierInv_eq] at haux₁
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
   -- We need to take real parts at haux₁
   rw [← re_add_im (f 0), hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
   -- We need to take real and imaginary parts inside the integral.
-  have haux₂ : ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v =
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re :=
-    calc ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v
-    _ = ↑(∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re) +
-    (∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).im) * I
-      := by
-         rw [← re_add_im (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v)]
-         rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable, RCLike.re_eq_complex_re]
-         rw [← RCLike.im_eq_complex_im, ← integral_im hIntegrable, RCLike.im_eq_complex_im]
-    _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
-      := by
-         rw [add_eq_left]
-         suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0 by
-           simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
-         exact hFourierImZero hRealFourier
+  have haux₂ : ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 f) v =
+    ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) := by
+    calc ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 f) v
+    _ = ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) +
+        (∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).im : ℝ) * I := by
+          symm
+          exact integral_re_add_im (μ := volume)
+            (f := fun v : EuclideanSpace ℝ (Fin d) => (𝓕 f) v) hIntegrable
+    _ = ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) := by
+          rw [add_eq_left]
+          suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), ((𝓕 f) v).im = 0 by
+            simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
+          exact hFourierImZero hRealFourier
   rw [haux₂] at haux₁
   norm_cast at haux₁
   rw [haux₁, lt_iff_not_ge]
   by_contra hantisymm₁
-  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg
+  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re := integral_nonneg
     hCohnElkies₂
-  have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    --rw [ge_iff_le] at hantisymm₁
+  have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re := by
     exact antisymm' hantisymm₁ hantisymm₂
-  have h𝓕frezero : ∀ x, (𝓕 ⇑f x).re = 0 := by
+  have h𝓕frezero : ∀ x, ((𝓕 f) x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero
-    suffices hfun : (fun x => (𝓕 ⇑f x).re) = 0 by
+    suffices hfun : (fun x => ((𝓕 f) x).re) = 0 by
       -- (This is the function actually being integrated)
       intro x
-      calc (𝓕 (⇑f) x).re
-      _ = (fun x => (𝓕 ⇑f x).re) x := rfl
+      calc ((𝓕 f) x).re
+      _ = (fun x => ((𝓕 f) x).re) x := rfl
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
       _ = 0 := by rw [Pi.zero_apply]
     have hcont : Continuous (fun x ↦ (𝓕 f x).re) := by
-      rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
-      exact Continuous.comp' continuous_re ((FourierTransform.fourierCLE ℝ _) f).continuous
+      exact Continuous.comp' continuous_re (𝓕 f).continuous
     refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
-    rw [← RCLike.re_eq_complex_re]
-    refine MeasureTheory.Integrable.re ?_
-    rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
-    exact ((FourierTransform.fourierCLE ℝ _) f).integrable
+    exact MeasureTheory.Integrable.re ((𝓕 f).integrable (μ := volume))
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
-        add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
+      add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
     exact h𝓕frezero x
   exact fourier_ne_zero hne_zero h𝓕fzero
 
@@ -260,7 +256,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
                   intro a b hab
                   field_simp at hab
                   aesop
-            · apply summable_of_finite_support
+            · apply summable_of_hasFiniteSupport
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
               · rw [Set.finite_coe_iff] at sum_finite

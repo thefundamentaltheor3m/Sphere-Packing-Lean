@@ -3,14 +3,18 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-import SpherePacking.MagicFunction.a.IntegralEstimates.I3
-import SpherePacking.MagicFunction.a.IntegralEstimates.I4
-import SpherePacking.MagicFunction.a.IntegralEstimates.I5
-import SpherePacking.MagicFunction.a.IntegralEstimates.I6
-import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+
+@[expose] public section
 
 /-! # Integrability
 

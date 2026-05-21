@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.Icc_Ico_lems
-import SpherePacking.ModularForms.riemannZetalems
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.Icc_Ico_lems
+public import SpherePacking.ModularForms.riemannZetalems
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
@@ -261,7 +265,7 @@ lemma t8 (z : ℍ) :
     ext d
     let Z : ℍ := ⟨(d +1)* z, by simp; exact mul_pos (by linarith) z.2⟩
     have := q_exp_iden 2 (by norm_num) (z := Z)
-    simp only [coe_mk_subtype, one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
+    simp only [one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
       Nat.factorial_one, Nat.cast_one, div_one, pow_one, Z] at *
     rw [this]
     ring_nf

@@ -1,5 +1,9 @@
-import Mathlib.LinearAlgebra.Matrix.SpecialLinearGroup
-import Mathlib.Data.Fintype.Parity
+module
+
+public import Mathlib.LinearAlgebra.Matrix.SpecialLinearGroup
+public import Mathlib.Data.Fintype.Parity
+
+@[expose] public section
 
 -- Probably put it at LinearAlgebra/Matrix/SpecialLinearGroup.lean
 

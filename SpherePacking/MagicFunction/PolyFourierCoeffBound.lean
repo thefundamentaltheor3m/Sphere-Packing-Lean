@@ -5,11 +5,15 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import SpherePacking.ForMathlib.Fourier
-import SpherePacking.ForMathlib.SpecificLimits
-import SpherePacking.ForMathlib.tprod
-import SpherePacking.ModularForms.Eisenstein
+
+public import SpherePacking.ForMathlib.Fourier
+public import SpherePacking.ForMathlib.SpecificLimits
+public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 
 /-
@@ -33,7 +37,7 @@ open scoped ArithmeticFunction.sigma
 
 namespace MagicFunction.PolyFourierCoeffBound
 
-private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
+noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
 variable (z : ℍ) (hz : 1 / 2 < z.im)
@@ -184,7 +188,7 @@ private lemma step_1 :
     norm ((f z) / (Δ z)) = norm (
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
-    ) := by simp [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe];
+    ) := by simp [DiscriminantProductFormula, hf, fouterm];
 
 private lemma step_2 :
     norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
@@ -282,7 +286,7 @@ by
   have hpow : ∀ {ι} (f : ι → ℝ), Multipliable f → ∀ n, Multipliable (fun i => f i ^ n) := by
     intro ι f hf n
     induction n with
-    | zero => simpa using (multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))
+    | zero => simp [(multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))]
     | succ n hn => simpa [pow_succ] using (hn.mul hf)
   gcongr
   · exact aux_8 z

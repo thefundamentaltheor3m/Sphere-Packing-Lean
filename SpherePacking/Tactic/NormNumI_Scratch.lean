@@ -1,4 +1,8 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+
+@[expose] public section
 
 open Complex
 
@@ -32,7 +36,7 @@ lemma congr_aux_1' (x : ℝ) :
 
 set_option push_neg.use_distrib true in
 lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by
-  rw [ne_eq, Complex.ext_iff]; push_neg; rfl
+  rw [ne_eq, Complex.ext_iff]; push Not; rfl
 
 example (z : ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
 example : 1 + I ≠ 0 := by rw [Complex.ne_iff]; norm_num

@@ -3,14 +3,18 @@ Copyright (c) 2024 Gareth Ma. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gareth Ma
 -/
-import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Dynamics.Ergodic.Action.Regular
+module
 
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.ENNReal
-import SpherePacking.ForMathlib.Encard
-import SpherePacking.ForMathlib.ENat
-import SpherePacking.ForMathlib.ZLattice
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Dynamics.Ergodic.Action.Regular
+
+public import SpherePacking.Basic.SpherePacking
+public import SpherePacking.ForMathlib.ENNReal
+public import SpherePacking.ForMathlib.Encard
+public import SpherePacking.ForMathlib.ENat
+public import SpherePacking.ForMathlib.ZLattice
+
+@[expose] public section
 
 -- import Mathlib
 
@@ -188,6 +192,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     · apply hg'
       exact (Classical.choose_spec (hD_unique_covers x)).left
     · apply (hg' 0 ?_).symm
+      set_option backward.isDefEq.respectTransparency false in
       simpa using hx.right
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
@@ -337,9 +342,10 @@ theorem PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d
   convert Set.encard_eq_coe_toFinset_card _
 
 theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| aux4'' S b hd v
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
+  letI := Fintype.ofFinite ι
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv'' b _).symm
@@ -560,7 +566,7 @@ private theorem hD_isAddFundamentalDomain
       rw [Set.disjoint_iff]
       intro x ⟨hx₁, hx₂⟩
       have ⟨y, ⟨_, hy_unique⟩⟩ := hD_unique_covers x
-      have hy₁ := hy_unique 0 (by simpa)
+      have hy₁ := hy_unique 0 (by simpa [Submodule.vadd_def, vadd_eq_add] using hx₂)
       have hy₂ := hy_unique (-g) (Set.mem_vadd_set_iff_neg_vadd_mem.mp hx₁)
       rw [neg_eq_iff_eq_neg.mp hy₂, ← hy₁] at hg
       norm_num at hg
@@ -584,11 +590,11 @@ theorem aux7 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, neg_neg]
     exact hg
 
+omit d S D L R ι in
 instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
-    VAddInvariantMeasure s E μ where
-  measure_preimage_vadd c t ht := by
-    simp only [Submodule.vadd_def, vadd_eq_add, measure_preimage_add]
+    VAddInvariantMeasure s E μ :=
+  inferInstanceAs <| VAddInvariantMeasure s.toAddSubgroup E μ
 
 -- Theorem 2.2, lower bound
 theorem PeriodicSpherePacking.aux2_ge
@@ -616,7 +622,8 @@ theorem PeriodicSpherePacking.aux2_ge
       exact hxy (hx'.trans hy'.symm)
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
-  · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+  · convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+    exact inferInstanceAs <| VAddInvariantMeasure S.lattice.toAddSubgroup _ volume
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
@@ -662,7 +669,8 @@ theorem PeriodicSpherePacking.aux2_le
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
   · left
-    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+    convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+    exact inferInstanceAs <| VAddInvariantMeasure S.lattice.toAddSubgroup _ volume
   · left
     have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
@@ -1003,16 +1011,16 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
       rw [hy]
       -- Idea: closure under additive action
       exact hy₁
-    rw [hy, neg_vadd_vadd]
+    rw [hy]
+    exact (neg_vadd_vadd g x).symm
   · intro hexa
     obtain ⟨g, hg₁, hg₂⟩ := hexa
-    rw [Set.vadd_set_inter, Set.mem_inter_iff] at hg₂
-    obtain ⟨hg₂, _⟩ := hg₂
+    rw [Set.mem_vadd_set] at hg₂
     -- Idea: x = g +ᵥ y for some y in the set of centers
     -- Then apply closure under action
-    obtain ⟨y, hy₁, hy₂⟩ := hg₂
+    obtain ⟨y, hy, hy₂⟩ := hg₂
     rw [← hy₂]
-    exact S.lattice_action hg₁ hy₁
+    exact S.lattice_action hg₁ hy.left
 
 -- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
@@ -1169,11 +1177,8 @@ theorem SpherePacking.density_of_centers_empty (S : SpherePacking d) (hd : 0 < d
     centers_dist := S.centers_dist
     lattice := Λ
     lattice_action := by
-      simp only
       intros x y _ hy
-      rw [Set.isEmpty_coe_sort.mp instEmpty, Set.mem_empty_iff_false] at hy
-      exfalso
-      exact hy
+      simp [Set.isEmpty_coe_sort.mp instEmpty] at hy
     lattice_discrete := inferInstance
     lattice_isZLattice := inferInstance
   }

@@ -1,11 +1,15 @@
-import Mathlib.Algebra.Group.NatPowAssoc
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
-import Mathlib.NumberTheory.ArithmeticFunction.Defs
-import Mathlib.NumberTheory.ArithmeticFunction.Moebius
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
+module
+
+public import Mathlib.Algebra.Group.NatPowAssoc
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
+public import Mathlib.NumberTheory.ArithmeticFunction.Defs
+public import Mathlib.NumberTheory.ArithmeticFunction.Moebius
+public import Mathlib.NumberTheory.ModularForms.Basic
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

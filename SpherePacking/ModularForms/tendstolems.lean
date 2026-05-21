@@ -1,6 +1,10 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.SpecificLimits.Normed
-import Mathlib.Topology.EMetricSpace.Paracompact
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.SpecificLimits.Normed
+public import Mathlib.Topology.EMetricSpace.Paracompact
+
+@[expose] public section
 
 open TopologicalSpace Set
   Metric Filter Function Complex

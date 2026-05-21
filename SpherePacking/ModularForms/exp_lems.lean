@@ -1,5 +1,9 @@
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+module
+
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+@[expose] public section
 
 
 open UpperHalfPlane TopologicalSpace Set

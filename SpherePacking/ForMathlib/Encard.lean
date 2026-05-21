@@ -1,10 +1,14 @@
-import Mathlib.Data.Set.Card
-import Mathlib.Topology.Algebra.InfiniteSum.Defs
-import Mathlib.Topology.Instances.ENat
-import Mathlib.Data.ENat.Lattice
-import Mathlib.Topology.Algebra.InfiniteSum.Order
-import Mathlib.Topology.Order.T5
-import SpherePacking.ForMathlib.ENat
+module
+
+public import Mathlib.Data.Set.Card
+public import Mathlib.Topology.Algebra.InfiniteSum.Defs
+public import Mathlib.Topology.Instances.ENat
+public import Mathlib.Data.ENat.Lattice
+public import Mathlib.Topology.Algebra.InfiniteSum.Order
+public import Mathlib.Topology.Order.T5
+public import SpherePacking.ForMathlib.ENat
+
+@[expose] public section
 
 
 -- TODO (BM): make `Scott` a def so we don't end up with a weird topology on ENat
@@ -84,7 +88,7 @@ protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
 
 protected theorem tsum_sub (hfin : ∑' a, g a ≠ ⊤) (h : g ≤ f) :
     ∑' a, (f a - g a) = ∑' a, f a - ∑' a, g a := by
-  rw [← WithTop.add_right_inj hfin, ← ENat.tsum_add,
+  rw [← add_left_inj_of_ne_top hfin, ← ENat.tsum_add,
     tsum_congr (fun i ↦ tsub_add_cancel_of_le (h i)), tsub_add_cancel_of_le (ENat.tsum_le_tsum h)]
 
 protected theorem mul_tsum (c : ℕ∞) : c * ∑' a, f a = ∑' a, c * f a := by
@@ -138,9 +142,14 @@ protected theorem tsum_eq_top_iff : ∑' a, f a = ⊤ ↔ f.support.Infinite ∨
 protected theorem tsum_subtype_eq_top_iff {s : Set α} :
     ∑' (a : s), f a = ⊤ ↔ (s ∩ f.support).Infinite ∨ ∃ a ∈ s, f a = ⊤ := by
   simp only [ENat.tsum_eq_top_iff, Subtype.exists, exists_prop]
-  convert Iff.rfl
-  convert Set.finite_image_iff Subtype.val_injective.injOn
-  aesop
+  apply or_congr _ Iff.rfl
+  have heq : Subtype.val '' (support fun a : s ↦ f ↑a) = s ∩ support f := by
+    ext x
+    simp only [Set.mem_image, Function.mem_support, Set.mem_inter_iff]
+    constructor
+    · rintro ⟨⟨a, ha⟩, hfa, hax⟩; exact ⟨hax ▸ ha, hax ▸ hfa⟩
+    · rintro ⟨hx, hfx⟩; exact ⟨⟨x, hx⟩, hfx, rfl⟩
+  rw [← heq, Set.infinite_image_iff Subtype.val_injective.injOn]
 
 protected theorem tsum_subtype_eq_top_of_inter_support_infinite {s : Set α}
     (hf : (s ∩ f.support).Infinite) : ∑' (a : s), f a = ⊤ :=

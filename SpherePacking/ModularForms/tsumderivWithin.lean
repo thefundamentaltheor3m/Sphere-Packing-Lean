@@ -1,9 +1,13 @@
-import Mathlib.Analysis.Calculus.UniformLimitsDeriv
-import Mathlib.Analysis.Normed.Group.FunctionSeries
-import Mathlib.Topology.Algebra.Module.ModuleTopology
-import Mathlib.Topology.ContinuousMap.Compact
-import SpherePacking.ModularForms.exp_lems
-import SpherePacking.ModularForms.iteratedderivs
+module
+
+public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
+public import Mathlib.Analysis.Normed.Group.FunctionSeries
+public import Mathlib.Topology.Algebra.Module.ModuleTopology
+public import Mathlib.Topology.ContinuousMap.Compact
+public import SpherePacking.ModularForms.exp_lems
+public import SpherePacking.ModularForms.iteratedderivs
+
+@[expose] public section
 
 
 open UpperHalfPlane TopologicalSpace Set

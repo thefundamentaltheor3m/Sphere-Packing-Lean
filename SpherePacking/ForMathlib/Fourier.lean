@@ -3,9 +3,13 @@ Copyright (c) 2025 Sidharth Hariharan, Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
+module
 
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.RingTheory.Binomial
+
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.RingTheory.Binomial
+
+@[expose] public section
 
 /-! # Fourier Series
 The purpose of this file is to include some results on Fourier series.

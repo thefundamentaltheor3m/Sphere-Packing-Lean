@@ -1,7 +1,11 @@
-import SpherePacking.Tactic.NormNumI
-import Mathlib.Tactic.NormNum
-import Mathlib.Data.ZMod.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+module
+
+public import SpherePacking.Tactic.NormNumI
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+@[expose] public section
 
 
 open Complex ComplexConjugate Mathlib.Meta.NormNumI Real Qq

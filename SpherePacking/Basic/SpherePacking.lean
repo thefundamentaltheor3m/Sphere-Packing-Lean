@@ -3,15 +3,19 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Algebra.Module.ZLattice.Basic
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-import Mathlib.Topology.Metrizable.Basic
-import Mathlib.Topology.Compactness.Lindelof
-import Mathlib.Topology.EMetricSpace.Paracompact
+module
 
-import SpherePacking.ForMathlib.VolumeOfBalls
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+public import Mathlib.Topology.Metrizable.Basic
+public import Mathlib.Topology.Compactness.Lindelof
+public import Mathlib.Topology.EMetricSpace.Paracompact
+
+public import SpherePacking.ForMathlib.VolumeOfBalls
+
+@[expose] public section
 
 open BigOperators MeasureTheory Metric
 
@@ -152,6 +156,13 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have := S.centers_dist this
     exact (mul_le_mul_iff_right₀ hc).mpr this
 
+lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
+    DiscreteTopology ↥(c • S.lattice) := by
+  letI : DiscreteTopology S.lattice := S.lattice_discrete
+  change DiscreteTopology ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice :
+    Set (EuclideanSpace ℝ (Fin d))))
+  exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
+    (S.lattice : Set (EuclideanSpace ℝ (Fin d)))).discreteTopology
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
   PeriodicSpherePacking d := {
@@ -162,24 +173,10 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     obtain ⟨x, hx, rfl⟩ := hx
     obtain ⟨y, hy, rfl⟩ := hy
     use x + y, S.lattice_action hx hy, smul_add ..
-  lattice_discrete := by
-    have := S.lattice_discrete
-    rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
-    obtain ⟨ε, hε, hε'⟩ := this
-    use c * ε, mul_pos hc hε
-    simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
-    rintro x ⟨x, hx, rfl⟩ hx'
-    -- rw [mul_lt_mul_left hc] at hx'
-    -- rw [hε' x hx hx', smul_zero]
-    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
-    right
-    specialize hε' x hx
-    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm,
-      Submodule.mk_eq_zero] at hx' hε'
-    rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
-    exact hε' hx'
+  lattice_discrete := scale_lattice_discrete S hc
   lattice_isZLattice := by
-    use ?_
+    letI : DiscreteTopology ↥(c • S.lattice) := scale_lattice_discrete S hc
+    refine ⟨?_⟩
     rw [← S.lattice_isZLattice.span_top]
     ext v
     simp_rw [Submodule.mem_span]
@@ -201,7 +198,8 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
 
 lemma PeriodicSpherePacking.scale_toSpherePacking
     {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
-    (S.scale hc).toSpherePacking = S.toSpherePacking.scale hc :=
+    (S.scale hc).toSpherePacking = S.toSpherePacking.scale hc := by
+  cases S
   rfl
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
@@ -232,8 +230,8 @@ lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
     gcongr
 
 lemma PeriodicSpherePacking.scale_balls {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
-    (S.scale hc).balls = c • S.balls :=
-  SpherePacking.scale_balls hc
+    (S.scale hc).balls = c • S.balls := by
+  exact S.scale_toSpherePacking hc ▸ SpherePacking.scale_balls (S := S.toSpherePacking) hc
 
 end Scaling
 

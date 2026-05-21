@@ -1,5 +1,9 @@
-import Mathlib.Data.Set.Card
-import Mathlib.SetTheory.Cardinal.Basic
+module
+
+public import Mathlib.Data.Set.Card
+public import Mathlib.SetTheory.Cardinal.Basic
+
+@[expose] public section
 
 open scoped Cardinal
 

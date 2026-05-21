@@ -1,4 +1,8 @@
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+module
+
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+
+@[expose] public section
 
 open UpperHalfPlane
 
