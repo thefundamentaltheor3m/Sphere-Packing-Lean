@@ -35,6 +35,11 @@ open scoped ContDiff
 
 namespace MagicFunction.a.SchwartzProperties
 
+-- Mathlib's typeclass synthesis fails to derive these from `NormedSpace ℝ ℂ`
+-- (which goes through `restrictScalars`), so we provide them explicitly.
+private instance : IsBoundedSMul ℝ ℂ :=
+  IsBoundedSMul.of_norm_smul_le NormedSpace.norm_smul_le
+
 section Smooth
 
 /-! # `a` is smooth.
@@ -55,20 +60,21 @@ theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
 private lemma I₃'_eq_cexp_mul_I₁' :
     RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
   ext x
-  have hEqOn : EqOn
-      (fun t => I * φ₀'' (-1 / (z₃' t - 1)) * (z₃' t - 1) ^ 2 * cexp (π * I * x * z₃' t))
-      (fun t => cexp (2 * π * I * x) * (I * φ₀'' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 *
-                                        cexp (π * I * x * z₁' t)))
-      (uIcc 0 1) := fun t ht => by
-    rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-    have h1 := z₁'_eq_of_mem ht; have h3 := z₃'_eq_of_mem ht
-    simp_rw [
-      show z₃' t - 1 = I * t by simp [h3],
-      show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
-      show z₁' t + 1 = I * t by simp [h1],
-      mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
-  simpa [RealIntegrals.I₃', Φ₃, Φ₃', RealIntegrals.I₁', Φ₁, Φ₁', mul_comm, mul_left_comm,
-    mul_assoc] using intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+  calc RealIntegrals.I₃' x
+      = ∫ t in (0 : ℝ)..1, Φ₃ x t := rfl
+    _ = ∫ t in (0 : ℝ)..1, cexp (2 * π * I * x) * Φ₁ x t := by
+        refine intervalIntegral.integral_congr fun t ht => ?_
+        rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
+        simp only [Φ₃, Φ₃', Φ₁, Φ₁']
+        rw [show z₃' t - 1 = I * t by simp [z₃'_eq_of_mem ht],
+            show z₃' t = z₁' t + 2 by simp [z₁'_eq_of_mem ht, z₃'_eq_of_mem ht]; ring,
+            show z₁' t + 1 = I * t by simp [z₁'_eq_of_mem ht],
+            show π * I * x * (z₁' t + 2) = π * I * x * z₁' t + 2 * π * I * x from by ring,
+            Complex.exp_add]
+        ring
+    _ = cexp (2 * π * I * x) * ∫ t in (0 : ℝ)..1, Φ₁ x t :=
+        intervalIntegral.integral_const_mul _ _
+    _ = cexp (2 * π * I * x) * RealIntegrals.I₁' x := rfl
 
 theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
   simpa [I₃'_eq_cexp_mul_I₁'] using
@@ -102,10 +108,9 @@ theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
 
 private lemma hasDerivAt_cexp_cmul_ofReal (c : ℂ) (x : ℝ) :
     HasDerivAt (fun x : ℝ => cexp (c * (↑x : ℂ))) (c * cexp (c * (↑x : ℂ))) x := by
-  have : HasDerivAt (fun x : ℝ => c * (↑x : ℂ)) c x := by
-    simpa using ofRealCLM.hasDerivAt.const_mul c
-  rw [show c * cexp (c * ↑x) = cexp (c * ↑x) * c from mul_comm _ _]
-  exact this.cexp
+  have he : HasDerivAt (fun z : ℂ => cexp (c * z)) (c * cexp (c * ↑x)) (↑x : ℂ) := by
+    convert (hasDerivAt_const_mul c).cexp using 1; ring
+  exact he.comp_ofReal
 
 private lemma iteratedDeriv_cexp_cmul_ofReal (c : ℂ) (n : ℕ) :
     iteratedDeriv n (fun x : ℝ => cexp (c * (↑x : ℂ))) =
