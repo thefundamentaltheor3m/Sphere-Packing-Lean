@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 public import Mathlib.Dynamics.Ergodic.Action.Regular
-import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
