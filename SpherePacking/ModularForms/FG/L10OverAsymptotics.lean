@@ -90,12 +90,10 @@ private lemma hqπ_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) qπ := by
     mdifferentiable_cexp_mul (π * Complex.I)
   exact h
 
-private lemma A_E_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A_E :=
-  (MDifferentiable.mul E₂_holo' E₄.holo').sub E₆.holo'
-
 private lemma Bfun_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Bfun := by
   rw [UpperHalfPlane.mdifferentiable_iff]
-  have hA' := (UpperHalfPlane.mdifferentiable_iff).1 A_E_holo
+  have hA' := (UpperHalfPlane.mdifferentiable_iff).1
+    ((MDifferentiable.mul E₂_holo' E₄.holo').sub E₆.holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A_E)
   have hq₁' := (UpperHalfPlane.mdifferentiable_iff).1 hq₁_holo
   simpa [Bfun, Function.comp] using
     hA'.div hq₁' (by intro w _; simpa using hq₁_ne (UpperHalfPlane.ofComplex w))

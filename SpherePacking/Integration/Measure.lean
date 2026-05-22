@@ -471,14 +471,6 @@ private lemma integrable_gN_bound (n : ℕ) (C : ℝ) {ε : ℝ} (ε_pos : 0 < �
         (b := Real.pi * ε) (mul_pos Real.pi_pos ε_pos)
   simpa [mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((Real.pi ^ (n + 1)) * C)
 
-/-- The pointwise derivative `(d/dy) gN n y t = gN (n+1) y t`, packaged for use with
-`hasDerivAt_integral_of_dominated_loc_of_deriv_le`. -/
-private lemma hasDerivAt_gN_at (hf : ℝ → ℂ) (n : ℕ) (t y : ℝ) :
-    HasDerivAt (fun y' : ℝ ↦ gN (hf := hf) n y' t) (gN (hf := hf) (n + 1) y t) y := by
-  simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-    (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-      (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y).const_mul ((coeff t) ^ n)
-
 /-- Pointwise dominated bound on `‖gN (n+1) y t‖` for `y` near `x`. -/
 private lemma norm_gN_succ_le {hf : ℝ → ℂ} {shift : ℝ} (n : ℕ) {ε : ℝ} {C : ℝ} (hC0 : 0 ≤ C)
     (hC : ∀ t : ℝ, 1 ≤ t → ‖hf t‖ ≤ C * Real.exp (-(Real.pi * shift) * t))
@@ -535,7 +527,10 @@ public lemma hasDerivAt_integral_gN
       (hF_meas := .of_forall fun y ↦ gN_measurable n y) (hF_int := hF_int)
       (hF'_meas := gN_measurable (n + 1) x)
       (h_bound := h_bound) (bound_integrable := integrable_gN_bound n C ε_pos)
-      (h_diff := ae_of_all _ fun t y _ => hasDerivAt_gN_at hf n t y)).2
+      (h_diff := ae_of_all _ fun t y _ => by
+        simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+          (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+            (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y).const_mul ((coeff t) ^ n))).2
 
 end
 

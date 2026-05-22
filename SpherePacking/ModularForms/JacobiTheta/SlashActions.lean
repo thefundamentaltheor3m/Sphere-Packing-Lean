@@ -386,10 +386,6 @@ private lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
     _ = rexp (-π * (r ^ 2) * z.im) := by rw [him]; simp [mul_assoc]
     _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by simp [r, pow_two, mul_assoc]
 
-private lemma summable_exp_neg_pi_mul_int_add_half_sq :
-    Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
-  simpa [norm_Θ₂_term, mul_one] using (summable_Θ₂_term UpperHalfPlane.I).norm
-
 public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
   use (∑' n : ℤ, rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2)) ^ 4, 1
@@ -407,7 +403,8 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     simpa [mul_one, mul_assoc] using (mul_le_mul_of_nonpos_left hz hπ)
   refine ((by simpa [Θ₂] using norm_tsum_le_tsum_norm hsum_norm :
       ‖Θ₂ z‖ ≤ ∑' n : ℤ, ‖Θ₂_term n z‖)).trans
-    (hsum_norm.tsum_le_tsum hterm_le summable_exp_neg_pi_mul_int_add_half_sq)
+    (hsum_norm.tsum_le_tsum hterm_le (by simpa [norm_Θ₂_term, mul_one] using
+      (summable_Θ₂_term UpperHalfPlane.I).norm))
 
 -- We isolate this lemma out as it's also used in the proof for Θ₄
 private lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :

@@ -74,19 +74,15 @@ public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
     D (F * G) = D F * G + F * D G :=
   Derivative.normalizedDerivOfComplex_mul F G hF hG
 
-/-- Helper: HasDerivAt for a·exp(2πicw) with chain rule. -/
-lemma hasDerivAt_qexp (a c w : ℂ) :
-    HasDerivAt (fun z => a * cexp (2 * π * I * c * z))
-      (a * (2 * π * I * c) * cexp (2 * π * I * c * w)) w := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    ((Complex.hasDerivAt_exp (2 * π * I * c * w)).scomp w
-      ((hasDerivAt_id w).const_mul (2 * π * I * c))).const_mul a
-
-/-- Helper: derivWithin for qexp term on upper half-plane. -/
+/-- Helper: derivWithin for `a · exp(2πicw)` on the upper half-plane, via chain rule. -/
 lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
     derivWithin (fun z => a * cexp (2 * π * I * c * z))
       {z : ℂ | 0 < z.im} w = a * (2 * π * I * c) * cexp (2 * π * I * c * w) :=
-  ((hasDerivAt_qexp a c w).hasDerivWithinAt).derivWithin
+  ((show HasDerivAt (fun z => a * cexp (2 * π * I * c * z))
+        (a * (2 * π * I * c) * cexp (2 * π * I * c * w)) w from by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        ((Complex.hasDerivAt_exp (2 * π * I * c * w)).scomp w
+          ((hasDerivAt_id w).const_mul (2 * π * I * c))).const_mul a).hasDerivWithinAt).derivWithin
     (isOpen_upperHalfPlaneSet.uniqueDiffWithinAt hw)
 
 /-- The norm of `2πin` for `n : ℕ` is `2πn`. -/

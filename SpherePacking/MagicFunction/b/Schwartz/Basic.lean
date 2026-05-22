@@ -99,8 +99,6 @@ open Complex Real Set MeasureTheory Filter MagicFunction.Parametrisations
 def μ : Measure ℝ := μIciOne
 def s : Set ℝ := Ioi (-1 : ℝ)
 
-lemma isOpen_s : IsOpen s := isOpen_Ioi
-
 abbrev coeff (t : ℝ) : ℂ := SmoothIntegralIciOne.coeff t
 abbrev g (x t : ℝ) : ℂ := SmoothIntegralIciOne.g (hf := ψS.resToImagAxis) x t
 abbrev gN (n : ℕ) (x t : ℝ) : ℂ := SmoothIntegralIciOne.gN (hf := ψS.resToImagAxis) n x t
@@ -140,7 +138,7 @@ lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n
   | succ n ih =>
       intro m x hx
       have hEq : iteratedDeriv n (G m) =ᶠ[𝓝 x] G (n + m) := by
-        filter_upwards [isOpen_s.mem_nhds hx] with y hy using ih (m := m) hy
+        filter_upwards [(isOpen_Ioi (a := (-1 : ℝ))).mem_nhds hx] with y hy using ih (m := m) hy
       simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
         (Filter.EventuallyEq.deriv_eq hEq).trans
           ((by simpa [G] using (hasDerivAt_F (n := n + m) (x := x) hx).const_mul (-2 : ℂ) :
@@ -166,7 +164,7 @@ private lemma J₆'_eq_G0 (x : ℝ) : RealIntegrals.J₆' x = G 0 x := by
 public theorem contDiffOn_J₆'_Ioi_neg1 :
     ContDiffOn ℝ ∞ RealIntegrals.J₆' (Ioi (-1 : ℝ)) :=
   (by simpa [G] using contDiffOn_const.mul (by simpa using
-      (SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt (F := F) (s := s) isOpen_s
+      (SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt (F := F) (s := s) isOpen_Ioi
         (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)) :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
 

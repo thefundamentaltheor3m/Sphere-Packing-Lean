@@ -75,13 +75,10 @@ variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
 
 open ModularForm
 
-private theorem modular_negI_smul : negI.1 • z = z := by
-  simp [specialLinearGroup_apply, negI]
-
 /-- If `k` is even, then the slash action by `-I` is the identity. -/
 public theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
   ext x
-  rw [slash_action_eq'_iff, modular_negI_smul]
+  rw [slash_action_eq'_iff, show negI.1 • x = x by simp [specialLinearGroup_apply, negI]]
   simp [negI, hk.neg_one_zpow]
 
 /-- Evaluate the slash action by `S` explicitly. -/
@@ -108,9 +105,6 @@ private lemma mem_closure_α : α ∈ Subgroup.closure {α, β, negI} :=
 
 private lemma mem_closure_β : β ∈ Subgroup.closure {α, β, negI} :=
   Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_insert _ _))
-
-private lemma mem_closure_negI : negI ∈ Subgroup.closure {α, β, negI} :=
-  Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ rfl))
 
 private lemma α_zpow_mem_closure (k : ℤ) : α ^ k ∈ Subgroup.closure {α, β, negI} :=
   Subgroup.zpow_mem _ mem_closure_α k
@@ -160,7 +154,9 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
   · have hA : (⟨val, property⟩ : Γ 2) = negI * α ^ (-k) := by
       ext i j
       fin_cases i <;> fin_cases j <;> simp [α_zpow_val, ha, h11, h10, hk, negI]
-    refine hA ▸ Subgroup.mul_mem _ mem_closure_negI (α_zpow_mem_closure (-k))
+    refine hA ▸ Subgroup.mul_mem _
+      (Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ rfl)))
+      (α_zpow_mem_closure (-k))
 
 lemma Γ2_reduce_row (a c : ℤ) (ha : Odd a) (hc : Even c) (hc0 : c ≠ 0) :
     ∃ n, |a + 2 * n * c| < |c| := by

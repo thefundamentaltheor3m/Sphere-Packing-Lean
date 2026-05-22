@@ -124,18 +124,6 @@ public theorem D_Delta_eq_E₂_mul_Delta : D Δ = E₂ * Δ := by
           field_simp [h2piI]
     _ = E₂ z * Δ z := by simp [hηpow]
 
-/--
-Decomposition of `(serre_D k F).resToImagAxis t` as a `ℂ`-valued expression involving `E₂` and
-`F` on the imaginary axis. Used in the `antiSerreDerPos` real-part computation.
--/
-private lemma serre_resToImagAxis_eq {F : ℍ → ℂ} (k : ℤ) {t : ℝ} (ht : 0 < t) :
-    (serre_D k F).resToImagAxis t =
-      (D F).resToImagAxis t -
-        (((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t) := by
-  simp only [serre_D, Derivative.serreDerivative, Function.resToImagAxis, ResToImagAxis,
-    dif_pos ht, show EisensteinSeries.E2 = E₂ from rfl]
-  ring
-
 /-- Chain-rule derivative for `t ↦ g t * (d t)^(-a)` when `d t > 0`. -/
 private lemma hasDerivAt_mul_rpow_neg {g d : ℝ → ℝ} {g' d' : ℝ} {t a : ℝ}
     (hg : HasDerivAt g g' t) (hd : HasDerivAt d d' t) (hdpos : 0 < d t) :
@@ -154,7 +142,12 @@ private lemma serre_resToImagAxis_re_eq {F : ℍ → ℂ} (k : ℤ) {t : ℝ} (h
     ((serre_D k F).resToImagAxis t).re =
       (ResToImagAxis (D F) t).re -
         (((k : ℂ) * 12⁻¹) : ℂ).re * (E₂.resToImagAxis t).re * (F.resToImagAxis t).re := by
-  have h' := congrArg Complex.re (serre_resToImagAxis_eq (F := F) k ht)
+  have h' := congrArg Complex.re (show (serre_D k F).resToImagAxis t =
+      (D F).resToImagAxis t -
+        (((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t) by
+    simp only [serre_D, Derivative.serreDerivative, Function.resToImagAxis, ResToImagAxis,
+      dif_pos ht, show EisensteinSeries.E2 = E₂ from rfl]
+    ring)
   have houter :
       (((((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t))).re =
         (((k : ℂ) * 12⁻¹) : ℂ).re * (E₂.resToImagAxis t * F.resToImagAxis t).re := by

@@ -367,36 +367,23 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     tendsto_cont
   simpa [f₄] using h_serre_H₄.add h_scaled
 
-lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g := by unfold theta_g; fun_prop
-
-lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by unfold theta_h; fun_prop
-
-/-- theta_g tends to 0 at infinity.
-theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
-Since 2H₂ + H₄ → 1, H₂ + 2H₄ → 2, and f₂, f₄ → 0, we get theta_g → 0. -/
-lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
-  have := H₂_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  have := f₂_tendsto_atImInfty
-  have := f₄_tendsto_atImInfty
-  change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
-    atImInfty (𝓝 0)
-  tendsto_cont
-
-lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  have := f₂_tendsto_atImInfty
-  have := f₄_tendsto_atImInfty
-  change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
-  tendsto_cont
-
-/-- g = 0 by dimension argument: weight-6 cusp forms vanish. -/
+/-- g = 0 by dimension argument: weight-6 cusp forms vanish.
+`theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄`, and since `2H₂ + H₄ → 1`, `H₂ + 2H₄ → 2`,
+and `f₂, f₄ → 0`, we get `theta_g → 0`. -/
 lemma theta_g_eq_zero : theta_g = 0 :=
   congr_arg (·.toFun) <| rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num))
     (cuspFormOfSIFTendstoZero
       { toFun := theta_g
         slash_action_eq' :=
           slashaction_generators_GL2R theta_g 6 theta_g_S_action theta_g_T_action }
-      theta_g_MDifferentiable theta_g_tendsto_atImInfty)
+      (by unfold theta_g; fun_prop) (by
+        have := H₂_tendsto_atImInfty
+        have := H₄_tendsto_atImInfty
+        have := f₂_tendsto_atImInfty
+        have := f₄_tendsto_atImInfty
+        change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
+          atImInfty (𝓝 0)
+        tendsto_cont))
 
 /-- h = 0 by dimension argument: weight-8 cusp forms vanish. -/
 lemma theta_h_eq_zero : theta_h = 0 :=
@@ -405,7 +392,11 @@ lemma theta_h_eq_zero : theta_h = 0 :=
       { toFun := theta_h
         slash_action_eq' :=
           slashaction_generators_GL2R theta_h 8 theta_h_S_action theta_h_T_action }
-      theta_h_MDifferentiable theta_h_tendsto_atImInfty)
+      (by unfold theta_h; fun_prop) (by
+        have := f₂_tendsto_atImInfty
+        have := f₄_tendsto_atImInfty
+        change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
+        tendsto_cont))
 
 lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 := by
   funext z

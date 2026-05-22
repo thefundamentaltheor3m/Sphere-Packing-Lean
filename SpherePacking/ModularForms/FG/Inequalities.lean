@@ -23,14 +23,6 @@ noncomputable local instance : MulAction SL(2, ℤ) ℍ := UpperHalfPlane.SLActi
 private lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
   antiSerreDerPos (F := L₁₀) (k := 22) L₁₀_holo SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
 
-private lemma hasDerivAt_FReal (t : ℝ) (ht : 0 < t) :
-    HasDerivAt FReal (-2 * π * (D F).resToImagAxis t).re t := by
-  simpa [FReal] using hasDerivAt_resToImagAxis_re F_holo ht
-
-private lemma hasDerivAt_GReal (t : ℝ) (ht : 0 < t) :
-    HasDerivAt GReal (-2 * π * (D G).resToImagAxis t).re t := by
-  simpa [GReal] using hasDerivAt_resToImagAxis_re G_holo ht
-
 private lemma L₁₀_resToImagAxis_re_eq (t : ℝ) (ht : 0 < t) :
     (L₁₀.resToImagAxis t).re =
       ((D F).resToImagAxis t).re * GReal t - FReal t * ((D G).resToImagAxis t).re := by
@@ -56,7 +48,11 @@ private lemma deriv_FmodGReal_neg {t : ℝ} (ht : 0 < t) : deriv FmodGReal t < 0
       deriv FmodGReal t =
         ((-2 * π * (D F).resToImagAxis t).re * GReal t -
             FReal t * (-2 * π * (D G).resToImagAxis t).re) / (GReal t) ^ 2 := by
-    simpa [FmodGReal] using ((hasDerivAt_FReal t ht).div (hasDerivAt_GReal t ht) hGne).deriv
+    simpa [FmodGReal] using
+      (((by simpa [FReal] using hasDerivAt_resToImagAxis_re F_holo ht :
+            HasDerivAt FReal (-2 * π * (D F).resToImagAxis t).re t)).div
+        ((by simpa [GReal] using hasDerivAt_resToImagAxis_re G_holo ht :
+            HasDerivAt GReal (-2 * π * (D G).resToImagAxis t).re t)) hGne).deriv
   have hscale (z : ℂ) : (-2 * π * z).re = (-2 * Real.pi) * z.re := by simp [Complex.mul_re]
   have hnum :
       (-2 * Real.pi) * ((D F).resToImagAxis t).re * GReal t -
@@ -498,17 +494,14 @@ private lemma FmodGReal_le_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
   filter_upwards [self_mem_nhdsWithin, hul] with u hu0 hut
   exact FmodG_antitone hu0 ht hut
 
-private lemma FmodGReal_lt_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
-    FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
-  lt_of_lt_of_le (FmodG_strictAntiOn (by simpa using half_pos ht) ht (half_lt_self ht))
-    (FmodGReal_le_rightLimitAt_zero (t := t / 2) (half_pos ht))
-
 /-- An explicit inequality relating `FReal` and `GReal` on the imaginary axis. -/
 public theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   have hGpos : 0 < GReal t := by simpa [GReal] using (G_pos.2 t ht)
   have hquot : FReal t / GReal t < 18 * (π ^ (-2 : ℤ)) := by
-    simpa [FmodGReal] using FmodGReal_lt_rightLimitAt_zero ht
+    simpa [FmodGReal] using lt_of_lt_of_le
+      (FmodG_strictAntiOn (by simpa using half_pos ht) ht (half_lt_self ht))
+      (FmodGReal_le_rightLimitAt_zero (t := t / 2) (half_pos ht))
   refine sub_lt_zero.2 ?_
   simpa [div_eq_mul_inv, ne_of_gt hGpos, mul_assoc, mul_left_comm, mul_comm]
     using mul_lt_mul_of_pos_right hquot hGpos

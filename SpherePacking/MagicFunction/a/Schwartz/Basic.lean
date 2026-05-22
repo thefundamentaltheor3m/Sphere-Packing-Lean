@@ -402,9 +402,6 @@ private lemma norm_tprod_eta_pow_24_eq (z : ℍ) : norm (∏' (n : ℕ+), (1 - c
     ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simpa [← norm_pow] using Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z)
 
-private lemma tprod_norm_eta_pow_24_nonneg (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 :=
-  (norm_tprod_eta_pow_24_eq z).symm ▸ norm_nonneg _
-
 private lemma summable_log_one_sub_rexp_pow_24 {c : ℝ} (hc : 0 < c) :
     Summable fun b : ℕ+ ↦ Real.log ((1 - rexp (-c * (b : ℝ))) ^ 24) := by
   simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
@@ -418,10 +415,6 @@ private lemma tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod (fun i ↦ by simp_all)]
   exacts [Real.exp_pos _, summable_log_one_sub_rexp_pow_24 hc]
-
-private lemma tprod_one_sub_exp_imag_pow_24_pos : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    tprod_one_sub_rexp_pow_24_pos (c := 2 * π * z.im) (by positivity)
 
 include hcsum in
 private lemma summable_norm_fouterm_atIm : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by

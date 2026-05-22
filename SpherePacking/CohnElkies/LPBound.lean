@@ -1202,14 +1202,6 @@ private lemma re_tsum_triple_centers_inter_lattice (hd : 0 < d) :
         (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
           (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
-/-- The exp factor `exp(2πi⟪x - y, m⟫)` factors as a product over the two arguments. -/
-private lemma exp_two_pi_I_inner_sub_eq_mul {d : ℕ}
-    (x y m : EuclideanSpace ℝ (Fin d)) :
-    exp (2 * π * I * ⟪x - y, m⟫_[ℝ]) =
-      exp (2 * π * I * ⟪x, m⟫_[ℝ]) * exp (2 * π * I * ⟪-y, m⟫_[ℝ]) := by
-  simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
-    mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
-
 /-- `exp(-(2πi⟪x, m⟫)) = conj (exp(2πi⟪x, m⟫))`. -/
 private lemma exp_neg_two_pi_I_inner_eq_conj {d : ℕ} (x m : EuclideanSpace ℝ (Fin d)) :
     Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
@@ -1278,7 +1270,9 @@ theorem calc_steps_part1 (hd : 0 < d) :
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-        congr! 9 with m x y; exact exp_two_pi_I_inner_sub_eq_mul _ _ _
+        congr! 9 with m x y
+        simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
+          mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),

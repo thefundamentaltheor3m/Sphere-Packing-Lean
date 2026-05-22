@@ -343,22 +343,6 @@ private lemma thetaDeltaFun_slash_invariant (A : SL(2, ℤ))
       mul_slash_SL2 6 6 A thetaDelta_f thetaDelta_f
   dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
 
-/-- The function `thetaDeltaFun` is `MDifferentiable`. -/
-private lemma thetaDeltaFun_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDeltaFun := by
-  have hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDelta_f := by
-    simpa [thetaDelta_f] using
-      H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
-  simpa [thetaDeltaFun, pow_two] using (hf.mul hf).const_smul ((256 : ℂ)⁻¹)
-
-/-- The function `thetaDeltaFun` tends to `0` at `i∞`. -/
-private lemma thetaDeltaFun_tendsto_zero : Tendsto thetaDeltaFun atImInfty (𝓝 0) := by
-  have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
-    simpa [thetaDelta_f, mul_assoc] using
-      H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
-  simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
-    tendsto_const_nhds.mul (by simpa using hf0.pow 2 :
-      Tendsto (fun z : ℍ => (thetaDelta_f z) ^ 2) atImInfty (𝓝 (0 : ℂ)))
-
 /-- `Delta z / exp(2 π i z)` tends to `1` at `i∞` (the leading-coefficient identification). -/
 private lemma Delta_div_exp_tendsto_one_atImInfty :
     Tendsto (fun z : ℍ => Delta z / cexp (2 * π * I * (z : ℂ))) atImInfty (𝓝 1) := by
@@ -377,7 +361,18 @@ private noncomputable def thetaDelta_CF : CuspForm (Γ 1) 12 :=
     { toFun := thetaDeltaFun
       slash_action_eq' := slashaction_generators_GL2R thetaDeltaFun 12
         (thetaDeltaFun_slash_invariant S hprod_S) (thetaDeltaFun_slash_invariant T hprod_T) }
-    thetaDeltaFun_holo thetaDeltaFun_tendsto_zero
+    (by
+      have hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDelta_f := by
+        simpa [thetaDelta_f] using
+          H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
+      simpa [thetaDeltaFun, pow_two] using (hf.mul hf).const_smul ((256 : ℂ)⁻¹))
+    (by
+      have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
+        simpa [thetaDelta_f, mul_assoc] using
+          H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+      simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
+        tendsto_const_nhds.mul (by simpa using hf0.pow 2 :
+          Tendsto (fun z : ℍ => (thetaDelta_f z) ^ 2) atImInfty (𝓝 (0 : ℂ))))
 
 private lemma thetaDelta_CF_apply (z : ℍ) : thetaDelta_CF z = thetaDeltaFun z := rfl
 
