@@ -23,8 +23,8 @@ public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
-import SpherePacking.MagicFunction.a.Eigenfunction.FourierPermutations
-import SpherePacking.MagicFunction.b.Eigenfunction.FourierPermutations
+import SpherePacking.MagicFunction.a.Eigenfunction
+import SpherePacking.MagicFunction.b.Eigenfunction
 import SpherePacking.Tactic.NormNumI
 public import Mathlib.Analysis.Complex.Trigonometric
 public import Mathlib.Data.Matrix.Mul

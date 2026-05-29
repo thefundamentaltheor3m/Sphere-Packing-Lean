@@ -1,6 +1,14 @@
 module
-public import SpherePacking.ModularForms.JacobiTheta
-public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.JacobiTheta.Basic
+public import SpherePacking.ModularForms.JacobiTheta.Positivity
+public import SpherePacking.ModularForms.JacobiTheta.SlashActions
+public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
+public import SpherePacking.ModularForms.Derivative.Basic
+public import SpherePacking.ModularForms.Derivative.SerreD
+public import SpherePacking.ModularForms.Derivative.SlashFormula
+public import SpherePacking.ModularForms.Derivative.Equivariance
+public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
+public import SpherePacking.ModularForms.Derivative.Ramanujan
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.Tactic.FunPropExt

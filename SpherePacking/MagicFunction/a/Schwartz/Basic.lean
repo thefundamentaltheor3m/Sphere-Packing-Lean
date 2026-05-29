@@ -30,7 +30,12 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.Derivative.Basic
+import SpherePacking.ModularForms.Derivative.SerreD
+import SpherePacking.ModularForms.Derivative.SlashFormula
+import SpherePacking.ModularForms.Derivative.Equivariance
+import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
+import SpherePacking.ModularForms.Derivative.Ramanujan
 import SpherePacking.ModularForms.Lv1Lv2Identities
 import SpherePacking.ModularForms.PhiTransformLemmas
 import SpherePacking.ModularForms.QExpansion

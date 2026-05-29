@@ -29,7 +29,7 @@ public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.Topology.Separation.CompletelyRegular
 
-public import SpherePacking.Basic.PeriodicPacking.Aux
+public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 import Mathlib.Combinatorics.Pigeonhole

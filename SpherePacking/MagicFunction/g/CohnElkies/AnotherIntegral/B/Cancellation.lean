@@ -5,7 +5,10 @@ public import SpherePacking.MagicFunction.b.PsiBounds
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 import Mathlib.Topology.Order.Compact
-import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.JacobiTheta.Basic
+import SpherePacking.ModularForms.JacobiTheta.Positivity
+import SpherePacking.ModularForms.JacobiTheta.SlashActions
+import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 
 /-! Cancellation estimates for `ψI'(it)` and the `bAnotherBase` bracket.
 

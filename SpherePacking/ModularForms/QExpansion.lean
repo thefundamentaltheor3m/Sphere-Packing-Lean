@@ -1,6 +1,9 @@
 module
 public import Mathlib.Analysis.Normed.Group.Tannery
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.Basic
+public import SpherePacking.ModularForms.JacobiTheta.Positivity
+public import SpherePacking.ModularForms.JacobiTheta.SlashActions
+public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 public import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-!

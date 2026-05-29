@@ -1,5 +1,10 @@
 module
-public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.Derivative.Basic
+public import SpherePacking.ModularForms.Derivative.SerreD
+public import SpherePacking.ModularForms.Derivative.SlashFormula
+public import SpherePacking.ModularForms.Derivative.Equivariance
+public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
+public import SpherePacking.ModularForms.Derivative.Ramanujan
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import Mathlib.Topology.Order.Compact
 import SpherePacking.ForMathlib.ExpPiIMulMulI

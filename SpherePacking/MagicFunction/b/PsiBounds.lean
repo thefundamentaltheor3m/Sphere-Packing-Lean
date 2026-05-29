@@ -7,7 +7,10 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.ModularForms.Delta
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.Basic
+public import SpherePacking.ModularForms.JacobiTheta.Positivity
+public import SpherePacking.ModularForms.JacobiTheta.SlashActions
+public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 public import SpherePacking.ModularForms.ResToImagAxis
 
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
