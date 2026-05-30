@@ -27,7 +27,8 @@ and constructs the ModularForm structures for Serre derivatives.
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
-open ModularForm EisensteinSeries TopologicalSpace Set MeasureTheory
+open ModularForm hiding E₄ E₆
+open EisensteinSeries TopologicalSpace Set MeasureTheory
 open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
 open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
@@ -53,7 +54,11 @@ lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
 lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
   obtain ⟨c, hc, hO⟩ := ModularFormClass.exp_decay_sub_atImInfty' f
-  rw [qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z]
+  have hΓ : (1 : ℝ) ∈ (↑(CongruenceSubgroup.Gamma 1) : Subgroup (GL (Fin 2) ℝ)).strictPeriods :=
+    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ one_mem_strictPeriods_SL
+  rw [qExpansion_coeff_zero (by norm_num : (0 : ℝ) < 1)
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) hΓ)
+    (periodic_comp_ofComplex f hΓ)]
   simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/

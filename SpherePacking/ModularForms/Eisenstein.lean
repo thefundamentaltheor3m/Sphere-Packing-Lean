@@ -6,7 +6,8 @@ public import SpherePacking.ModularForms.summable_lems
 
 @[expose] public section
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
@@ -153,8 +154,8 @@ private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
     PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
       PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
         PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  rw [coe_mul, qExpansion_mul (analyticAt_cuspFunction_zero f (by positivity) (by simp))
-                              (analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  rw [coe_mul, qExpansion_mul (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
+                              (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
   exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
 
 theorem E4E6_coeff_zero_eq_zero :
@@ -172,7 +173,7 @@ theorem E4E6_coeff_zero_eq_zero :
       qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
         qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) := by
     simpa using
-      (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+      (ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
         (hh := by positivity) (hΓ := by simp)
         ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
         ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
@@ -353,8 +354,11 @@ lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 =
   simp_rw [E4_q_exp_one, this]
   ring
 
-lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 :=
-  EisensteinSeries.E_ne_zero (mod_cast hk) hk2
+lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
+  have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
+  rw [DFunLike.ne_iff] at h ⊢
+  obtain ⟨z, hz⟩ := h
+  exact ⟨z, by simpa [_root_.E, ModularForm.E, standardcongruencecondition] using hz⟩
 
 /-This is in the mod forms repo-/
 lemma E4_ne_zero : E₄ ≠ 0 := by

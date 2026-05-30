@@ -29,174 +29,79 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 open ArithmeticFunction
 
 theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Space α] (f : ℤ → α) :
-  ∑' d : ℤ, f d = ∑' d, f (-d) := by
-  have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
-    by
-    funext
-    simp
-    rfl
-  rw [h]
-  apply symm
-  apply negEquiv.tsum_eq
+  ∑' d : ℤ, f d = ∑' d, f (-d) :=
+  (negEquiv.tsum_eq f).symm
 
 theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α)
-    (hf : Summable f) : Summable fun d => f (-d) := by
-  have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
-    by
-    funext
-    simp
-    rfl
-  rw [h]
-  have := negEquiv.summable_iff.mpr hf
-  apply this
+    (hf : Summable f) : Summable fun d => f (-d) := negEquiv.summable_iff.mpr hf
 
 
-lemma aux33 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n) =
-    limUnder atTop (fun N : ℕ => ∑ n ∈ Finset.range N, f (n)) := by
-  rw [Filter.Tendsto.limUnder_eq]
-  have := hf.hasSum
-  have V := this.comp tendsto_finset_range
-  apply V
 
 /- this is being Pr'd-/
 lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
-  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) := by
-  apply tsum_pnat_eq_tsum_succ
+  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) :=
+  tsum_pnat_eq_tsum_succ
 
 
 
 theorem nat_pos_tsum2 {α : Type _} [TopologicalSpace α] [AddCommMonoid α]
     (f : ℕ → α) (hf : f 0 = 0) : (Summable fun x : ℕ+ => f x) ↔ Summable f := by
   apply PNat.coe_injective.summable_iff
-  intro x hx
-  simp only [mem_range, not_exists] at *
-  by_cases h : 0 < x
-  · simpa using hx ⟨x,h⟩
-  simp only [not_lt, nonpos_iff_eq_zero] at *
-  rw [h]
-  exact hf
+  rintro (_ | x) hx
+  · exact hf
+  · exact (hx ⟨⟨x + 1, x.succ_pos⟩, rfl⟩).elim
 
 theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAddGroup α] [T2Space α]
-  [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n :=
-  by
+  [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n := by
   by_cases hf2 : Summable f
   · rw [hf2.tsum_eq_zero_add, hf, zero_add]
     exact tsum_pnat_eq_tsum_succ
-  have h1 := tsum_eq_zero_of_not_summable hf2
-  rw [← nat_pos_tsum2 f hf] at hf2
-  have h2 := tsum_eq_zero_of_not_summable hf2
-  simp [h1, h2]
+  rw [tsum_eq_zero_of_not_summable hf2,
+    tsum_eq_zero_of_not_summable ((nat_pos_tsum2 f hf).not.mpr hf2)]
 
 
-lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommGroup α]
-    [IsTopologicalAddGroup α] [T2Space α]
-  (f : ℕ → α) (hf : Summable f) : f 0 + ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f n := by
-  rw [Summable.tsum_eq_zero_add hf]
-  simp only [add_right_inj]
-  apply tsum_pnat_eq_tsum_succ
 
 /-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
 lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
     (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-  rw [tsum_pNat (f := fun n => (n : ℝ) * r ^ n) (by simp)]
-  exact tsum_coe_mul_geometric_of_norm_lt_one hr
+  exact (tsum_pNat (fun n => (n : ℝ) * r ^ n) (by simp)).trans
+    (tsum_coe_mul_geometric_of_norm_lt_one hr)
 
 theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℕ → α) :
-    (Summable fun x : ℕ+ => f x) ↔ Summable fun x : ℕ => f (x + 1) :=
-  by
+    (Summable fun x : ℕ+ => f x) ↔ Summable fun x : ℕ => f (x + 1) := by
   rw [← Equiv.summable_iff _root_.Equiv.pnatEquivNat]
-  constructor
-  · intro hf
-    apply Summable.congr hf
-    intro b
-    simp
-  intro hf
-  apply Summable.congr hf
-  intro b
-  simp
-
-theorem int_nat_sum {α : Type*} [AddCommGroup α] [UniformSpace α] [IsUniformAddGroup α]
-  [CompleteSpace α]
-  (f : ℤ → α) : Summable f → Summable fun x : ℕ => f x := by
-  have : IsCompl (Set.range (Int.ofNat : ℕ → ℤ)) (Set.range Int.negSucc) :=
-    by
-    constructor
-    · rw [disjoint_iff_inf_le]
-      rintro _ ⟨⟨i, rfl⟩, ⟨j, ⟨⟩⟩⟩
-    · rw [codisjoint_iff_le_sup]
-      rintro (i | j) _
-      exacts [Or.inl ⟨_, rfl⟩, Or.inr ⟨_, rfl⟩]
-  rw [← summable_subtype_and_compl (s := Set.range (Int.ofNat : ℕ → ℤ))]
-  rintro ⟨h_left, h_right⟩
-  rw [← (Equiv.ofInjective (Int.ofNat : ℕ → ℤ) Nat.cast_injective).symm.summable_iff]
-  apply Summable.congr h_left
-  intro b
-  simp only [comp_apply]
-  apply congr_arg
-  exact Eq.symm (Equiv.apply_ofInjective_symm Nat.cast_injective b)
-
-theorem HasSum.nonneg_add_neg {α : Type*} [TopologicalSpace α] [AddCommGroup α]
-    [IsTopologicalAddGroup α] [T2Space α] {a b : α} {f : ℤ → α} (hnonneg : HasSum (fun n : ℕ => f n)
-      a)
-    (hneg : HasSum (fun n : ℕ => f (-n.succ)) b) : HasSum f (a + b) := by
-  convert hnonneg.int_rec hneg using 1
-  ext (i | j) <;> rfl
+  exact summable_congr (fun b => by simp)
 
 
-theorem HasSum.pos_add_zero_add_neg {α : Type*} [TopologicalSpace α] [AddCommGroup α]
-    [IsTopologicalAddGroup α] [T2Space α] {a b : α} {f : ℤ → α} (hpos : HasSum (fun n : ℕ => f (n +
-      1)) a)
-    (hneg : HasSum (fun n : ℕ => f (-n.succ)) b) : HasSum f (a + f 0 + b) :=
-  haveI : ∀ g : ℕ → α, HasSum (fun k => g (k + 1)) a → HasSum g (a + g 0) := by
-    intro g hg
-    simpa using (hasSum_nat_add_iff _).mp hg
-  (this (fun n => f n) hpos).nonneg_add_neg hneg
-
-theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n :=
-  by
-  simp only [ne_eq]
-  apply UpperHalfPlane.ne_intCast
 
 
-lemma aus (a b : ℂ) : a + b ≠ 0 ↔ a ≠ -b := by
-  refine Iff.ne ?_
-  exact Iff.symm eq_neg_iff_add_eq_zero
+
+theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n := z.ne_intCast n
+
+
+lemma aus (a b : ℂ) : a + b ≠ 0 ↔ a ≠ -b := eq_neg_iff_add_eq_zero.symm.ne
 
 lemma pnat_inv_sub_squares (z : ℍ) :
   (fun n : ℕ+ => 1 / ((z : ℂ) - n) + 1 / (z + n)) = fun n : ℕ+ => 2 * z.1 * (1 / (z ^ 2 - n ^ 2)):=
   by
   funext n
+  have h1 : (z : ℂ) - n ≠ 0 := by rw [sub_ne_zero]; exact upp_half_not_ints z n
+  have h2 : (z : ℂ) + n ≠ 0 := by rw [aus]; simpa using upp_half_not_ints z (-(n : ℤ))
+  have h3 : (z : ℂ) ^ 2 - (n : ℂ) ^ 2 ≠ 0 := by rw [sq_sub_sq]; exact mul_ne_zero h2 h1
   field_simp
-  rw [one_div_add_one_div]
-  · norm_cast
-    ring_nf
-    have h2 := upp_half_not_ints z n
-    simp only [Int.cast_natCast, ne_eq, PNat.pow_coe, Nat.cast_pow] at *
-  · have h1 := upp_half_not_ints z (n)
-    norm_cast at *
-    rw [@sub_eq_zero]
-    apply UpperHalfPlane.ne_intCast
-  have := UpperHalfPlane.ne_intCast z (-(n : ℤ))
-  rw [aus]
-  aesop
+  ring
 
 
 lemma upper_half_plane_ne_int_pow_two (z : ℍ) (n : ℤ) : (z : ℂ) ^ 2 - n ^ 2 ≠ 0 := by
   intro h
-  rw [sq_sub_sq, mul_eq_zero] at h
-  cases h with
-  | inr h =>
-    have := upp_half_not_ints z n
-    rw [sub_eq_zero] at h
-    apply absurd h this
-  | inl h =>
-    have := upp_half_not_ints z (-n)
-    rw [add_eq_zero_iff_eq_neg] at h
-    simp only [Int.cast_neg, ne_eq] at *
-    apply absurd h this
+  rw [sq_sub_sq, mul_eq_zero, add_eq_zero_iff_eq_neg, sub_eq_zero] at h
+  rcases h with h | h
+  · exact upp_half_not_ints z (-n) (by simpa using h)
+  · exact upp_half_not_ints z n h
 
 theorem upbnd (z : ℍ) (d : ℤ) : (d ^ 2 : ℝ) * r z ^ 2 ≤ ‖((z : ℂ) ^ 2 - d ^ 2)‖ := by
-  by_cases hd : d ≠ 0
+  by_cases hd : d = 0
+  · simp [hd]
   · have h1 : (z ^ 2 : ℂ) - d ^ 2 = d ^ 2 * (1 / d * z - 1) * (1 / d * z + 1) := by
       ring_nf; simp [hd]
     rw [h1]
@@ -206,27 +111,19 @@ theorem upbnd (z : ℍ) (d : ℤ) : (d ^ 2 : ℝ) * r z ^ 2 ≤ ‖((z : ℂ) ^ 
     rw [pow_two]
     gcongr
     · exact (r_pos _).le
-    · have h1 := auxbound2 z ((d : ℝ)⁻¹) (d := -1) (by norm_num)
-      apply le_trans h1
-      apply le_of_eq
+    · refine (auxbound2 z ((d : ℝ)⁻¹) (d := -1) (by norm_num)).trans_eq ?_
       congr
       simp only [ofReal_inv, ofReal_intCast, ofReal_neg, ofReal_one]
       ring
-    · have h1 := auxbound2 z ((d : ℝ)⁻¹) (d := 1) (by norm_num)
-      apply le_trans h1
-      apply le_of_eq
+    · refine (auxbound2 z ((d : ℝ)⁻¹) (d := 1) (by norm_num)).trans_eq ?_
       congr
       simp only [ofReal_inv, ofReal_intCast]
-  · simp only [ne_eq, Decidable.not_not] at hd
-    simp only [hd, Int.cast_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_mul,
-      sub_zero, norm_pow, norm_nonneg, pow_nonneg]
 
 
 
 /- This is from the mod forms repo -/
 theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 1 / (z + n) := by
-  have h1 := pnat_inv_sub_squares z
-  rw [h1]
+  rw [pnat_inv_sub_squares z]
   apply Summable.mul_left
   apply summable_norm_iff.1
   simp only [one_div, norm_inv]
@@ -256,234 +153,26 @@ theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 
   simpa using hb
 
 
-theorem sum_int_even {α : Type*} [UniformSpace α] [CommRing α] [IsUniformAddGroup α]
-    [CompleteSpace α] [T2Space α] (f : ℤ → α) (hf : ∀ n : ℤ, f n = f (-n)) (hf2 : Summable f) :
-    ∑' n, f n = f 0 + 2 * ∑' n : ℕ+, f n := by
-  have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) :=
-    by
-    rw [← _root_.Equiv.pnatEquivNat.hasSum_iff]
-    simp_rw [Equiv.pnatEquivNat] at *
-    simp only [Equiv.coe_fn_mk] at *
-    have hf3 : Summable ((fun n : ℕ => f (↑n + 1)) ∘ PNat.natPred) :=
-      by
-      have hs : Summable fun n : ℕ+ => f n := by apply (int_nat_sum f hf2).subtype
-      apply Summable.congr hs
-      intro b; simp; congr; simp
-    rw [Summable.hasSum_iff hf3]
-    congr
-    funext
-    simp
-    congr
-    norm_cast
-    simp
-  have hneg : HasSum (fun n : ℕ => f (-n.succ)) (∑' n : ℕ+, f n) :=
-    by
-    have h1 : (fun n : ℕ => f (-↑n.succ)) = fun n : ℕ => f ↑n.succ :=
-      by
-      funext
-      apply hf
-    rw [h1]
-    convert hpos
-  have := (HasSum.pos_add_zero_add_neg hpos hneg).tsum_eq
-  rw [this]
-  ring
-
-lemma neg_div_neg_aux (a b : ℂ) : -a/b = a / -b := by
-  ring
 
 
-theorem summable_diff (z : ℍ) (d : ℤ) :
-    Summable fun m : ℕ+ ↦ 1 / (-(d : ℂ) / ↑z - ↑↑m) + 1 / (-↑d / ↑z + ↑↑m) := by
-  by_cases hd : d = 0
-  · rw [hd]
-    simp only [Int.cast_zero, neg_zero, zero_div, zero_sub, one_div, zero_add]
-    conv =>
-      enter [1]
-      ext m
-      ring_nf
-    apply summable_zero
-  by_cases hd2 : 0 < d
-  · have := lhs_summable ⟨ -d / z, by simpa using pos_nat_div_upper d hd2 z⟩
-    apply this.congr
-    intro b
-    simp
-  let D := (-d).natAbs
-  have hd : 0 < D := by
-    aesop
-  have hd22 : (D : ℂ) = -d := by
-    simp only [Int.natAbs_neg, D]
-    have : 0 ≤ -d := by
-      linarith
-    have := Int.natAbs_of_nonneg this
-    norm_cast
-    rw [← this, Int.natAbs_neg]
-    rfl
-  have := lhs_summable ⟨ -D/ z, by simpa using pnat_div_upper ⟨D, hd⟩ z⟩
-  rw [← summable_mul_left_iff (a := -1) (by norm_num)]
-  simp only [not_lt, one_div, neg_mul, one_mul, neg_add_rev] at *
-  rw [hd22] at this
-  apply this.congr
-  intro b
-  field_simp
-  congr 1 <;> grind
-
-lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
-    := by ring
-
-lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
-  ∑' m : ℕ+,
-    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d))
-      =
-  (2 / z) * ∑' m : ℕ+,
-    ((1 / (-(d : ℂ)/↑z - m) + 1 / (-d/↑z + m))) := by
-  rw [← Summable.tsum_mul_left]
-  · congr
-    funext m
-    have he : ∀ m d : ℂ , ((m : ℂ) * z + d) = z * ((d : ℂ)/z + m) := by
-      intro m
-      ring_nf
-      have : (z : ℂ) ≠ (0 : ℂ) := by
-        exact ne_zero z
-      field_simp
-      exact fun _ ↦ trivial
-    rw [arg1]
-    ring_nf
-    rw [add_comm]
-    have : (z : ℂ) ≠ (0 : ℂ) := ne_zero z
-    field_simp
-  · apply summable_diff
-
-lemma pow_max (x y : ℕ) : (max x y)^2 = max (x^2) (y ^ 2) := by
-  by_cases h: max x y = x
-  · rw [h]
-    simp at *
-    nlinarith
-  have hh : max x y = y := by
-    simp only [sup_eq_left, not_le, sup_eq_right] at *
-    apply h.le
-  rw [hh]
-  simp at *
-  nlinarith
-
-theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
-  Summable fun m ↦ 1 / (r z ^ 2 * 2⁻¹ * ‖![m, i]‖ ^ 2) := by
-  have hS : Summable fun m : ℤ => 1 / (r z ^ 2 * 2⁻¹ * m ^ 2) := by
-    simp only [one_div, mul_inv_rev, inv_inv]
-    apply Summable.mul_right
-    norm_cast
-    have := (Real.summable_one_div_int_pow (p := 2)).mpr (by norm_num)
-    simpa only [Int.cast_pow, one_div] using this
-  apply hS.of_norm_bounded_eventually
-  rw [Filter.eventually_iff_exists_mem]
-  use (Finset.Icc (-|i|) (|i|))ᶜ
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, mem_cofinite, compl_compl,
-    mem_compl_iff, one_div, mul_inv_rev, norm_mul, norm_inv, norm_pow]
-  simp only [Finset.coe_Icc, Real.norm_ofNat, inv_inv,
-    Real.norm_eq_abs, _root_.sq_abs]
-  refine ⟨finite_Icc .., ?_⟩
-  intro y hy
-  apply le_of_eq
-  simp only [mul_eq_mul_right_iff, inv_inj, mul_eq_zero, OfNat.ofNat_ne_zero,
-    inv_eq_zero, ne_eq, not_false_eq_true, pow_eq_zero_iff, false_or]
-  left
-  simp only [norm_eq_max_natAbs, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_fin_one, Nat.cast_max, Nat.cast_natAbs, Int.cast_abs]
-  have hg : ((y.natAbs : ℝ) ⊔ ↑i.natAbs) ^ 2 = y.natAbs ^ 2 ⊔ i.natAbs ^ 2 := by
-    zify
-    norm_cast
-    rw [pow_max]
-  have hg2 : y.natAbs ^ 2 ⊔ i.natAbs ^ 2 = y.natAbs ^ 2:= by
-    simp only [sup_eq_left]
-    have hii : i^2 ≤ y^2 := by
-      rw [@sq_le_sq]
-      simp only [mem_Icc, not_and, not_le] at hy
-      rw [@le_abs']
-      by_cases hh : -|i| ≤ y
-      · have hhy := hy hh
-        right
-        exact hhy.le
-      simp only [not_le] at hh
-      left
-      exact hh.le
-    zify
-    aesop
-  aesop
 
 
-private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a :=
-    by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · simp_rw [inv_eq_one_div] at h
-    rw [mul_one_div, le_div_comm₀ _ hb] at h
-    · simp only [one_div, div_inv_eq_mul] at h
-      exact h
-    simp only [one_div, inv_pos]
-    exact ha
-  · simp_rw [inv_eq_one_div]
-    rw [← div_le_comm₀ _ ha]
-    · simp only [one_div, mul_inv_rev, inv_inv]
-      rw [propext (mul_inv_le_iff₀ hc), mul_comm]
-      exact h
-    simp only [one_div]
-    apply mul_pos hc (inv_pos.mpr hb)
+
+
+
 
 lemma summable_hammerTime_nat {α : Type} [NormedField α] [CompleteSpace α] (f : ℕ → α) (a : ℝ) (hab
   : 1 < a)
     (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
     Summable fun n => (f n)⁻¹ := by
-  apply summable_of_isBigO _ hf
-  have := Real.summable_nat_rpow_inv.mpr hab
-  apply this.congr
-  intro b
-  simp
+  exact summable_of_isBigO ((Real.summable_nat_rpow_inv.mpr hab).congr (by intro b; simp)) hf
 
-theorem summable_diff_denom (z : ℍ) (i : ℤ) :
-  Summable fun (m : ℤ) ↦ ((m : ℂ) * ↑z + ↑i + 1)⁻¹ * ((m : ℂ) * ↑z + ↑i)⁻¹ := by
-  conv =>
-    enter [1]
-    ext m
-    rw [← mul_inv]
-  apply summable_inv_of_isBigO_rpow_inv one_lt_two
-  have h1 := linear_bigO' (i+1) z
-  have h2 := linear_bigO' i z
-  have h3 := h2.mul h1
-  apply h3.congr
-  · intro n
-    rw [mul_comm]
-    simp
-    ring
-  · intro n
-    norm_cast
-    rw [pow_two]
-    rw [← mul_inv]
-    simp
 
-lemma summable_pain (z : ℍ) (i : ℤ) :
-  Summable (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) := by
-  rw [← Finset.summable_compl_iff (s := {0})]
-  have h1 : (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i +
-    1)) =
-    (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / (((m.1 : ℂ) * ↑z + ↑i)*((m : ℂ) * ↑z + ↑i + 1)))
-    := by
-    funext m
-    rw [div_sub_div]
-    · simp only [one_mul, mul_one, add_sub_cancel_left, one_div, mul_inv_rev]
-    · have := linear_ne_zero (cd := ![m, i]) z ?_
-      · simpa using this
-      aesop
-    have h2 := linear_ne_zero (cd := ![m, i + 1]) z ?_
-    · simp only [Fin.isValue, Matrix.cons_val_zero, ofReal_intCast, Matrix.cons_val_one,
-        ofReal_add, ofReal_one, ne_eq] at h2
-      rw [add_assoc]
-      exact h2
-    aesop
-  rw [h1]
-  simp only [one_div, mul_inv_rev]
-  have : Summable fun (m : ℤ) ↦ (↑(m : ℂ) * (z : ℂ) + ↑i + 1)⁻¹ * (↑(m : ℂ) * (z : ℂ) + ↑i)⁻¹ := by
-    apply summable_diff_denom
-  rw [← Finset.summable_compl_iff (s := {0})] at this
-  apply this
 
+
+private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
+  rw [inv_le_iff_one_le_mul₀ ha, mul_comm c b⁻¹, mul_assoc, mul_comm b⁻¹, ← div_eq_mul_inv,
+    le_div_iff₀ hb, one_mul]
 
 theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
     ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by
@@ -491,7 +180,7 @@ theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -
   have ht : b = ![b 0, b 1] := by
     ext i
     fin_cases i <;> rfl
-  nth_rw 3 [Real.rpow_of_add_eq (y := -1) (z := -2) (by apply norm_nonneg) (by norm_num)
+  nth_rw 3 [Real.rpow_of_add_eq (y := -1) (z := -2) (norm_nonneg _) (by norm_num)
     (by norm_num)]
   rw [← mul_assoc]
   apply mul_le_mul
@@ -566,7 +255,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun (m : Fin 2 → ℤ) =>
       by norm_cast
     have hpow2 : ‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1)) + 1‖ ^ (-1 : ℝ) =
       (‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1)) + 1‖)⁻¹ :=
-      by apply Real.rpow_neg_one
+      Real.rpow_neg_one _
     rw [← hpow, ← hpow2]
     rw [← add_assoc] at this
     apply le_trans this
@@ -601,105 +290,48 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun (m : Fin 2 → ℤ) =>
 noncomputable def δ (a b : ℤ) : ℂ := if a = 0 ∧ b = 0 then 1 else if a = 0 ∧ b = -1 then 2 else 0
 
 @[simp]
-lemma δ_eq : δ 0 0 = 1 := by simp [δ]
+lemma δ_eq : δ 0 0 = 1 := rfl
 
 @[simp]
-lemma δ_eq2 : δ 0 (-1) = 2 := by simp [δ]
+lemma δ_eq2 : δ 0 (-1) = 2 := rfl
 
-lemma δ_neq (a b : ℤ) (h : a ≠ 0) : δ a b = 0 := by
-  simp [δ, h]
+lemma δ_neq (a b : ℤ) (h : a ≠ 0) : δ a b = 0 := by simp [δ, h]
 
 lemma G_2_alt_summable_δ (z : ℍ) : Summable fun (m : Fin 2 → ℤ) =>
     (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1)):= by
-    let s : Finset (Fin 2 → ℤ) := { ![0,0], ![0,-1]}
-    rw [← Finset.summable_compl_iff s]
-    have := (G_2_alt_summable z).subtype sᶜ
-    simp only [Fin.isValue, one_div, mul_inv_rev] at *
-    apply this.congr
+    rw [← Finset.summable_compl_iff ({ ![0,0], ![0,-1]} : Finset (Fin 2 → ℤ))]
+    apply ((G_2_alt_summable z).subtype _).congr
     intro b
-    simp only [Fin.isValue, comp_apply, left_eq_add] at *
-    have hb1 : b.1 ≠ ![0, 0] := by aesop
-    have hb2 : b.1 ≠ ![0, -1] := by aesop
+    simp only [Fin.isValue, one_div, mul_inv_rev, comp_apply, left_eq_add]
+    have hmem : (↑b : Fin 2 → ℤ) ∉ ({![0, 0], ![0, -1]} : Finset (Fin 2 → ℤ)) := b.2
+    rw [Finset.mem_insert, Finset.mem_singleton, not_or] at hmem
+    obtain ⟨hb1, hb2⟩ := hmem
     simp only [δ, Fin.isValue, Int.reduceNeg]
     split_ifs with h1 h2
-    · exfalso
-      have hb : b.1 = ![0, 0] := by
-        nth_rw 1 [← h1.1, ← h1.2]
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue]
-        exact List.ofFn_inj.mp rfl
-      exact hb1 hb
-    · exfalso
-      have hb : b.1 = ![0, -1] := by
-        nth_rw 1 [← h2.1, ← h2.2]
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue]
-        exact List.ofFn_inj.mp rfl
-      exact hb2 hb
-    rfl
+    · exact absurd (by funext i; fin_cases i <;> simp [h1.1, h1.2]) hb1
+    · exact absurd (by funext i; fin_cases i <;> simp [h2.1, h2.2]) hb2
+    · rfl
 
 theorem G2_prod_summable1 (z : ℍ) (b : ℤ) :
     Summable fun c : ℤ ↦ ((b : ℂ) * ↑z + ↑c + 1)⁻¹ * (((b : ℂ) * ↑z + ↑c) ^ 2)⁻¹ := by
   have := G_2_alt_summable z
   simp only [Fin.isValue, one_div, mul_inv_rev] at this
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-  apply this.prod_factor b
+  exact this.prod_factor b
 
 theorem G2_prod_summable1_δ (z : ℍ) (b : ℤ) :
     Summable fun c : ℤ ↦ ((b : ℂ) * ↑z + ↑c + 1)⁻¹ * (((b : ℂ) * ↑z + ↑c) ^ 2)⁻¹ + δ b c := by
   have := G_2_alt_summable_δ z
   simp only [Fin.isValue, one_div, mul_inv_rev] at this
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-  apply this.prod_factor b
-
-
-
-lemma G2_alt_indexing_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
-    (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1)) =
-    ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z + n)^2 * (m * z + n +1)) + (δ m n)) := by
-  rw [← (finTwoArrowEquiv _).symm.tsum_eq]
-  simp only [Fin.isValue, finTwoArrowEquiv_symm_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_fin_one, one_div, mul_inv_rev]
-  refine Summable.tsum_prod' ?h ?h₁
-  · have := G_2_alt_summable_δ z
-    simp only [Fin.isValue, one_div, mul_inv_rev] at this
-    rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-    apply this
-  intro b
-  simp only
-  have := G_2_alt_summable_δ z
-  simp only [Fin.isValue, one_div, mul_inv_rev] at this
-  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-  apply this.prod_factor
+  exact this.prod_factor b
 
 
 
 
-lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
-    (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1)) =
-    ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
-  have := (G_2_alt_summable_δ z)
-  simp only [Fin.isValue, one_div, mul_inv_rev] at this
-  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-  rw [Summable.tsum_comm']
-  · rw [G2_alt_indexing_δ]
-  · apply this.congr
-    intro b
-    simp
-    rfl
-  · intro b
-    simp only [one_div, mul_inv_rev]
-    apply this.prod_factor
-  intro c
-  simp only [one_div, mul_inv_rev]
-  have H := (G_2_alt_summable_δ z)
-  simp at this
-  rw [← swap_equiv.summable_iff] at H
-  rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
-  simp [Fin.isValue, one_div, mul_inv_rev, swap_equiv, Equiv.coe_fn_mk,
-    finTwoArrowEquiv_symm_apply] at H
-  have := H.prod_factor c
-  simp only [Fin.isValue, comp_apply, swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val_zero] at this
-  apply this
+
+
+
 
 
 
@@ -725,8 +357,7 @@ theorem summable_1 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
   apply Asymptotics.IsBigO.of_abs_right
   simp only [Nat.cast_pow, inv_pow, Int.reduceNeg, Int.cast_neg, Int.cast_one, neg_mul, one_mul,
     Nat.abs_cast, Asymptotics.isBigO_abs_right] at *
-  have hl2 := Asymptotics.IsBigO.neg_left hl
-  apply hl2.congr_left
+  apply (Asymptotics.IsBigO.neg_left hl).congr_left
   intro n
   rw [@neg_inv]
   congr
@@ -746,9 +377,8 @@ theorem summable_2 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
   apply Asymptotics.IsBigO.pow
   have hl := linear_bigO_nat 1 z
   apply Asymptotics.IsBigO.of_abs_right
-  simp only [Nat.cast_pow, inv_pow, Int.cast_one, one_mul, Nat.abs_cast,
-    Asymptotics.isBigO_abs_right] at *
-  exact hl
+  simpa only [Nat.cast_pow, inv_pow, Int.cast_one, one_mul, Nat.abs_cast,
+    Asymptotics.isBigO_abs_right] using hl
 
 
 
@@ -761,17 +391,13 @@ theorem summable_3 (m : ℕ) (y : {z : ℂ | 0 < z.im}) :
     simp
     have := lhs_summable (⟨y, y.2⟩ : ℍ)
     simpa using this
-  have hm2 : 2 ≤ m + 1 := by
-    have : 1 ≤ m := by
-      apply Nat.one_le_iff_ne_zero.mpr hm;
-    linarith
   simp_rw [← mul_add]
   rw [summable_mul_left_iff]
   · apply Summable.add
-    · have h0 := summable_1 m (⟨y, y.2⟩ : ℍ) (by linarith)
+    · have h0 := summable_1 m (⟨y, y.2⟩ : ℍ) (by omega)
       simp only [Nat.reduceLeDiff, mem_setOf_eq, one_div] at *
       apply h0.subtype
-    have h1 := summable_2 m (⟨y, y.2⟩ : ℍ) (by linarith)
+    have h1 := summable_2 m (⟨y, y.2⟩ : ℍ) (by omega)
     simp only [Nat.reduceLeDiff, mem_setOf_eq, one_div] at *
     apply h1.subtype
   simp [Nat.factorial_ne_zero]
@@ -788,21 +414,16 @@ theorem summable_iter_derv' (k : ℕ) (y : ℍ') :
   conv =>
     enter [1]
     ext n
-    rw [← norm_pow]
-    rw [← norm_mul]
-    rw [show cexp (2 * (↑π * (Complex.I * (↑n * ↑y)))) = cexp (2 * (↑π * (Complex.I * (↑y)))) ^ n by
+    rw [← norm_pow, ← norm_mul,
+      show cexp (2 * (↑π * (Complex.I * (↑n * ↑y)))) = cexp (2 * (↑π * (Complex.I * (↑y)))) ^ n by
       rw [← Complex.exp_nsmul]
       congr
       ring]
   apply summable_norm_pow_mul_geometric_of_norm_lt_one
-  have := exp_upperHalfPlane_lt_one (⟨y, y.2⟩ : ℍ)
-  simp only [mem_setOf_eq, gt_iff_lt] at *
-  simp_rw [← mul_assoc] at *
-  exact this
+  simpa [← mul_assoc] using exp_upperHalfPlane_lt_one (⟨y, y.2⟩ : ℍ)
 
 
-theorem sigma_eq_sum_div' (k n : ℕ) : sigma k n = ∑ d ∈ Nat.divisors n, (n / d) ^ k :=
-  by
+theorem sigma_eq_sum_div' (k n : ℕ) : sigma k n = ∑ d ∈ Nat.divisors n, (n / d) ^ k := by
   simp only [sigma, ArithmeticFunction.coe_mk]
   rw [← Nat.sum_div_divisors]
 
@@ -818,16 +439,12 @@ theorem a33 (k : ℕ) (e : ℕ+) (z : ℍ) :
   have := summable_norm_pow_mul_geometric_of_norm_lt_one
     (r := cexp (2 * ↑π * Complex.I * (↑e)* z)) k ?_
   · apply this.subtype
-  simp only [norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, natCast_re,
-    natCast_im, coe_re, zero_add, coe_im, zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
-  positivity
+  simp [norm_exp, mul_re, mul_im, Real.exp_lt_one_iff]; positivity
 
 lemma hsum (k : ℕ) (z : ℍ) : Summable fun b : ℕ+ => ∑ _ ∈ (b : ℕ).divisors, b ^ k *
     ‖exp (2 * ↑π * Complex.I * ↑z * b)‖ := by
     simp only [Finset.sum_const, nsmul_eq_mul]
-    have hs := summable_norm_iff.mpr (a33 (k+1) 1 z)
-    apply Summable.of_nonneg_of_le _ _ hs
+    apply Summable.of_nonneg_of_le _ _ (summable_norm_iff.mpr (a33 (k+1) 1 z))
     · simp only [Nat.cast_pos, Finset.card_pos, Nat.nonempty_divisors, ne_eq, PNat.ne_zero,
         not_false_eq_true, mul_nonneg_iff_of_pos_left, PNat.pos, pow_pos, norm_nonneg, implies_true]
     intro b
@@ -855,8 +472,7 @@ theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
       enter [1]
       ext b
       simp
-      rw [H b]
-      rw [H2 b]
+      rw [H b, H2 b]
     have hsum := hsum k z
     apply Summable.of_nonneg_of_le _ _ hsum
     · intro b
@@ -886,9 +502,7 @@ theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
 
 lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1), f m = f 0 +
   ∑ m ∈ Finset.range n, f (m+1) := by
-  rw [Finset.sum_range_succ']
-  rw [add_comm]
-  simp
+  simp [Finset.sum_range_succ', add_comm]
 
 
 
@@ -928,11 +542,6 @@ theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
       apply symm
       apply exp_iter_deriv_within k b hy
     · intro K hK1 hK2
-      let K2 := Set.image (Set.inclusion hK1) univ
-      have hKK2 : IsCompact (Set.image (inclusion hK1) univ) := by
-        apply IsCompact.image_of_continuousOn
-        · exact isCompact_iff_isCompact_univ.mp hK2
-        · exact continuous_inclusion hK1 |>.continuousOn
       apply iter_deriv_comp_bound2 K hK1 hK2 k
     apply der_iter_eq_der_aux2
 
@@ -942,17 +551,13 @@ theorem exp_series_ite_deriv_uexp'' (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n * x) :=
   by
   rw [exp_series_ite_deriv_uexp2 k x]
-  apply tsum_congr
-  intro b
-  apply exp_iter_deriv_within k b x.2
+  exact tsum_congr fun b => exp_iter_deriv_within k b x.2
 
 theorem exp_series_ite_deriv_uexp''' (k : ℕ) :
     EqOn (iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z)) ℍ')
       (fun x : ℂ => ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n *
         x)) ℍ' :=
-  by
-  intro x hx
-  apply exp_series_ite_deriv_uexp'' k ⟨x, hx⟩
+  fun x hx => exp_series_ite_deriv_uexp'' k ⟨x, hx⟩
 
 
 theorem tsum_uexp_contDiffOn (k : ℕ) :
@@ -976,17 +581,16 @@ theorem tsum_uexp_contDiffOn (k : ℕ) :
   apply le_of_eq
   norm_cast
   simp only [ofReal_mul, ofReal_ofNat]
-  rw [derivWithin_fun_mul (by fun_prop) (by fun_prop)]
-  rw [derivWithin_cexp (by fun_prop) (upper_half_plane_isOpen.uniqueDiffOn _ <| by aesop)]
-  rw [derivWithin_const_mul _ (by fun_prop)]
+  rw [derivWithin_fun_mul (by fun_prop) (by fun_prop),
+    derivWithin_cexp (by fun_prop) (upper_half_plane_isOpen.uniqueDiffOn _ <| by aesop),
+    derivWithin_const_mul _ (by fun_prop)]
   simp only [derivWithin_fun_const, Pi.zero_apply, zero_mul, zero_add, Complex.norm_mul, norm_pow,
     norm_ofNat, norm_real, Real.norm_eq_abs, norm_I, mul_one, RCLike.norm_natCast]
   have hr : derivWithin (fun y ↦ y) ℍ' ↑r = 1 := by
     apply derivWithin_id
     apply IsOpen.uniqueDiffOn upper_half_plane_isOpen
     aesop
-  rw [hr]
-  simp
+  rw [hr, norm_one]
   ring
 
 theorem iter_der_within_add (k : ℕ+) (x : {z : ℂ | 0 < z.im}) :
@@ -1018,9 +622,7 @@ theorem iter_exp_eqOn (k : ℕ+) :
         -(2 * ↑π * Complex.I) * ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ (k : ℕ) * Complex.exp (2 * ↑π *
           Complex.I * n * x))
       {z : ℂ | 0 < z.im} :=
-  by
-  intro z hz
-  apply iter_der_within_add k ⟨z, hz⟩
+  by intro z hz; exact iter_der_within_add k ⟨z, hz⟩
 
 theorem summable_iter_aut (k : ℕ) (z : ℍ) :
     Summable fun n : ℕ+ => iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n))
@@ -1031,10 +633,7 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
   have ht := (summable_congr (L := SummationFilter.unconditional _) this).2 ?_
   · norm_cast at *
   by_cases hk : 1 ≤ k
-  · conv =>
-      enter [1]
-      ext b
-      rw [← mul_add]
+  · simp_rw [← mul_add]
     rw [summable_mul_left_iff]
     · exact .add ((summable_1 k z hk).subtype _) ((summable_2 k z hk).subtype _)
     simp only [ne_eq, mul_eq_zero, pow_eq_zero_iff', neg_eq_zero, one_ne_zero, false_and,
@@ -1054,8 +653,7 @@ lemma sub_bound (s : ℍ) (A B : ℝ) (hB : 0 < B) (hs : s ∈ verticalStrip A B
     ‖((k + 1)! / r ⟨⟨A, B⟩, by simp [hB]⟩ ^ (k + 2)) * ((n : ℝ) ^ ((k : ℤ) +2))⁻¹‖ := by
   simp only [one_div, norm_pow, norm_neg, one_mem, CStarRing.norm_of_mem_unitary, one_pow,
     RCLike.norm_natCast, one_mul, norm_inv, norm_mul, norm_div, Real.norm_eq_abs, norm_zpow]
-  rw [div_eq_mul_inv]
-  rw [mul_assoc]
+  rw [div_eq_mul_inv, mul_assoc]
   gcongr
   have := summand_bound_of_mem_verticalStrip (k := (k + 2)) (by norm_cast; omega) ![1,-n] hB hs
   simp only [Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul, Matrix.cons_val_one,
@@ -1086,8 +684,7 @@ lemma add_bound (s : ℍ) (A B : ℝ) (hB : 0 < B) (hs : s ∈ verticalStrip A B
     ‖((k + 1)! / r ⟨⟨A, B⟩, by simp [hB]⟩ ^ (k + 2)) * ((n : ℝ) ^ ((k : ℤ) +2))⁻¹‖ := by
   simp only [one_div, norm_pow, norm_neg, one_mem, CStarRing.norm_of_mem_unitary, one_pow,
     RCLike.norm_natCast, one_mul, norm_inv, norm_mul, norm_div, Real.norm_eq_abs, norm_zpow]
-  rw [div_eq_mul_inv]
-  rw [mul_assoc]
+  rw [div_eq_mul_inv, mul_assoc]
   gcongr
   have := summand_bound_of_mem_verticalStrip (k := (k + 2)) (by norm_cast; omega) ![1,n] hB hs
   simp only [Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul, Matrix.cons_val_one,
@@ -1178,9 +775,7 @@ theorem diff_at_aux (s : {z : ℂ | 0 < z.im}) (k : ℕ) (n : ℕ+) :
   apply DifferentiableOn.differentiableAt
   · apply DifferentiableOn.congr (diff_on_aux k n)
     intro r hr
-    have ht := this hr
-    simp only [Int.cast_natCast, one_div, mem_setOf_eq, Pi.add_apply] at *
-    apply ht
+    simpa using this hr
   exact (isOpen_lt (by fun_prop) (by fun_prop)).mem_nhds (by simp)
 
 theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
@@ -1211,9 +806,7 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
     · apply tsum_congr
       intro b
       rw [iteratedDerivWithin_succ]
-    · refine isOpen_lt ?_ ?_
-      · fun_prop
-      · fun_prop
+    · exact isOpen_lt (by fun_prop) (by fun_prop)
     · simpa using x.2
     · intro y hy
       simpa using summable_iter_aut k ⟨y, hy⟩
@@ -1241,11 +834,7 @@ theorem tsum_ider_der_eq (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ | 0 < z.im} x =
       ∑' n : ℕ+,
         ((-1 : ℂ) ^ k * k ! * (1 / (x - n) ^ (k + 1)) + (-1) ^ k * k ! * (1 / (x + n) ^ (k + 1))) :=
-  by
-  apply tsum_congr
-  intro b
-  have h2 := iter_div_aut_add b k x.2
-  simpa using h2
+  tsum_congr fun b => by simpa using iter_div_aut_add b k x.2
 
 
 
@@ -1260,8 +849,7 @@ theorem auxp_series_ite_deriv_uexp''' (k : ℕ) :
   have := aut_series_ite_deriv_uexp2 k ⟨x, hx⟩
   simp only [one_div] at *
   rw [this]
-  have h2 := tsum_ider_der_eq k ⟨x, hx⟩
-  simpa using h2
+  simpa using tsum_ider_der_eq k ⟨x, hx⟩
 
 
 
@@ -1286,8 +874,7 @@ theorem tsum_aexp_contDiffOn (k : ℕ) :
     have hKK2 : IsCompact K2 := by
       have hK2' : IsCompact (Set.univ : Set K) := isCompact_iff_isCompact_univ.mp hK2
       simpa [K2, toUpper] using hK2'.image htoUpper
-    have := aut_bound_on_comp K2 hKK2 m
-    obtain ⟨u, hu1, hu2⟩ := this
+    obtain ⟨u, hu1, hu2⟩ := aut_bound_on_comp K2 hKK2 m
     refine ⟨u, hu1, ?_⟩
     intro n s
     have hsK2 : toUpper s ∈ K2 := by
@@ -1332,14 +919,10 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     rw [this]
     have h2 := tsum_ider_der_eq k ⟨x, x.2⟩
     simp only [one_div] at h2
-    rw [h2]
-    rw [tsum_int_eq_zero_add_tsum_pnat]
+    rw [h2, tsum_int_eq_zero_add_tsum_pnat]
     · simp only [Int.cast_zero, add_zero, Int.cast_natCast, Int.cast_neg]
       rw [Summable.tsum_add]
-      · rw [tsum_mul_left]
-        rw [tsum_mul_left]
-        rw [mul_add]
-        rw [mul_add]
+      · rw [tsum_mul_left, tsum_mul_left, mul_add, mul_add]
         conv =>
           enter [2]
           rw [add_assoc]
@@ -1385,10 +968,7 @@ theorem aux_iter_der_tsum_eqOn (k : ℕ) (hk : 2 ≤ k) :
   intro z hz
   have hk0 : 1 ≤ k - 1 := le_tsub_of_add_le_left hk
   have := aux_iter_der_tsum (k - 1) hk0 ⟨z, hz⟩
-  have hk1 : k - 1 + 1 = k := by
-    apply Nat.sub_add_cancel
-    linarith
-  rw [hk1] at this
+  rw [Nat.sub_add_cancel (by linarith : 1 ≤ k)] at this
   norm_cast at *
 
 
@@ -1407,8 +987,7 @@ theorem pos_sum_eq (k : ℕ) (hk : 0 < k) :
     Complex.I * n * x)
   simp only [CharP.cast_eq_zero, mul_zero, zero_mul, exp_zero, mul_one, pow_eq_zero_iff', ne_eq,
     true_and] at this
-  apply this
-  linarith
+  exact this hk.ne'
 
 theorem cot_series_repr (z : ℍ) :
     ↑π * cot (↑π * z) - 1 / z = ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := by
@@ -1416,17 +995,13 @@ theorem cot_series_repr (z : ℍ) :
   simp only [one_div] at *
   have hrw := tsum_pnat_eq_tsum_succ3 fun n : ℕ => (1 / ((z : ℂ) - n) + 1 / (z + n))
   simp only [one_div, Nat.cast_add, Nat.cast_one] at hrw
-  rw [hrw]
-  apply this
+  rw [hrw]; exact this
 
 
 lemma EisensteinSeries_Identity (z : ℍ) :
     1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) =
       π * Complex.I - 2 * π * Complex.I * ∑' n : ℕ, Complex.exp (2 * π * Complex.I * z) ^ n := by
-  have h1 := cot_series_repr z
-  rw [pi_mul_cot_pi_q_exp z] at h1
-  rw [← h1]
-  ring
+  rw [← cot_series_repr z, pi_mul_cot_pi_q_exp z]; ring
 
 
 theorem q_exp_iden'' (k : ℕ) (hk : 2 ≤ k) :
@@ -1446,8 +1021,7 @@ theorem q_exp_iden'' (k : ℕ) (hk : 2 ≤ k) :
   have h3 := pos_sum_eq (k - 1) hkpos
   simp only [neg_mul] at h3
   rw [h3] at h2
-  apply EqOn.symm
-  apply EqOn.trans h2
+  refine (h2.trans ?_).symm
   apply iteratedDerivWithin_congr
   intro z hz
   simp only [Pi.add_apply]
@@ -1471,12 +1045,11 @@ theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
   have hk2 : (-1 : ℂ) ^ ((k - 1)) * (k - 1)! ≠ 0 := by
     simp only [ne_eq, mul_eq_zero, pow_eq_zero_iff', neg_eq_zero, one_ne_zero, false_and,
       Nat.cast_eq_zero, Nat.factorial_ne_zero, or_self, not_false_eq_true]
-  rw [← mul_right_inj' hk2]
-  rw [this]
+  rw [← mul_right_inj' hk2, this]
   have h3 : (-1) ^ ((k - 1)) * ↑(k - 1)! * ((-(2 * ↑π * Complex.I)) ^ k / ↑(k - 1)!) = -(2 * ↑π *
     Complex.I) ^ k :=
     by
-    rw [mul_div]; rw [div_eq_mul_one_div]; rw [div_eq_inv_mul]; simp_rw [← mul_assoc];
+    rw [mul_div, div_eq_mul_one_div, div_eq_inv_mul]; simp_rw [← mul_assoc]
     simp only [mul_one]
     have hj : (-1) ^ (↑k - 1) * ↑(k - 1)! * (-(2 * ↑π * Complex.I)) ^ (k : ℕ) * (↑(k - 1)! : ℂ)⁻¹ =
        (-1) ^ (↑k - 1) * (-(2 * ↑π * Complex.I)) ^ (k : ℕ) * (↑(k - 1)! * (↑(k - 1)!)⁻¹) := by ring
@@ -1487,16 +1060,11 @@ theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
       apply Nat.factorial_ne_zero
     rw [h2]
     simp only [mul_one]
-    rw [mul_comm]
-    rw [neg_pow]
-    rw [mul_comm, ←mul_assoc]
-    rw [←pow_add]
-    rw [Odd.neg_one_pow]
+    rw [mul_comm, neg_pow, mul_comm, ←mul_assoc, ←pow_add, Odd.neg_one_pow]
     · ring
     have hkk : (k - 1) + k = 2 * k - 1 :=
         by
-        rw [add_comm]
-        rw [← Nat.add_sub_assoc]
+        rw [add_comm, ← Nat.add_sub_assoc]
         · rw [two_mul]
         linarith
     rw [hkk]
@@ -1540,8 +1108,7 @@ theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
 theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
     ∑' (c : Fin 2 → ℕ+), (c 0 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c 0 * c 1) =
       ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * z * e) := by
-  rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
-  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
+  rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq, ← sigmaAntidiagonalEquivProd.tsum_eq]
   simp only [sigmaAntidiagonalEquivProd, divisorsAntidiagonalFactors, PNat.mk_coe,
     Equiv.coe_fn_mk, Fin.isValue, piFinTwoEquiv_symm_apply, Fin.cons_zero, Fin.cons_one]
   simp_rw [sigma_eq_sum_div']
@@ -1557,9 +1124,7 @@ theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
   have H := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
     (x.1 : ℂ) ^ (k : ℕ) * Complex.exp (2 * ↑π * Complex.I * z * x.1 * x.2))
   simp only at H
-  rw [H]
-  rw [this]
-  rw [Finset.sum_mul]
+  rw [H, this, Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro i hi
   simp only [mul_eq_mul_left_iff, pow_eq_zero_iff', Nat.cast_eq_zero, Nat.div_eq_zero_iff, ne_eq]
@@ -1576,8 +1141,7 @@ lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by
   apply summable_inv_of_isBigO_rpow_inv (show 1 < (k : ℝ) by norm_cast)
   lift k to ℕ using (by linarith)
-  have := linear_bigO_pow n z k
-  norm_cast at *
+  exact_mod_cast linear_bigO_pow n z k
 
 /-This is straight from the mod forms repo-/
 theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
@@ -1585,14 +1149,11 @@ theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
       ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * e * z) := by
   rw [← (piFinTwoEquiv fun _ => ℕ+).tsum_eq]
   have := tsum_sigma_eqn2 k z
-  simp only [piFinTwoEquiv_apply, Fin.isValue]
-  grind
+  grind [piFinTwoEquiv_apply]
 
 lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
     cexp (2 * ↑π * Complex.I * ↑z) ^ n := by
-  rw [← Complex.exp_nat_mul]
-  congr 1
-  ring
+  rw [← Complex.exp_nat_mul]; ring_nf
 
 theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
      ‖(cexp (2 * ↑π * Complex.I * (↑i + 1) * z))‖ := by
@@ -1601,28 +1162,20 @@ theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
     ext i
     rw [show ((i : ℂ) + 1) = ((i + 1) : ℕ) by simp, exp_aux, norm_pow]
   rw [summable_nat_add_iff 1]
-  simp only [summable_geometric_iff_norm_lt_one, norm_norm]
-  apply exp_upperHalfPlane_lt_one
+  simpa only [summable_geometric_iff_norm_lt_one, norm_norm] using exp_upperHalfPlane_lt_one z
 
 /-This is straight from the mod forms repo-/
 theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
     Summable fun c : ℕ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by
   apply Summable.mul_left
-  apply Summable.of_norm
-  have : (fun a : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e * ↑↑a)‖) =
-    fun a : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e) ^ (a : ℕ)‖ := by
-    ext a
-    rw [← Complex.exp_nat_mul]
-    ring_nf
-  rw [this]
-  have h1 : ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e)‖ < 1 := by
-    simp only [norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-      Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im,
-      zero_sub, natCast_re, neg_mul, zero_add, natCast_im, Real.exp_lt_one_iff, Left.neg_neg_iff,
-      Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_right]
-    positivity
-  have h2 := summable_norm_iff.mpr (summable_geometric_iff_norm_lt_one.mpr h1)
-  apply h2
+  refine Summable.congr (f := fun c : ℕ ↦ cexp (2 * ↑π * Complex.I * ↑z * ↑↑e) ^ c)
+    (summable_geometric_iff_norm_lt_one.mpr ?_)
+    (fun c => by simp only []; rw [← Complex.exp_nat_mul]; ring_nf)
+  simp only [norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im,
+    zero_sub, natCast_re, neg_mul, zero_add, natCast_im, Real.exp_lt_one_iff, Left.neg_neg_iff,
+    Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_right]
+  positivity
 
 
 /-This is straight from the mod forms repo-/
@@ -1649,9 +1202,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   have := tsum_sigma_eqn z (k := 1)
   rw [tsum_mul_left, ← this]
   have he : 2 * (2 * ↑π * Complex.I) ^ 2 = - 8 * π ^ 2 := by
-     rw [pow_two]
-     ring_nf
-     simp only [I_sq, mul_neg, mul_one, neg_mul]
+     rw [mul_pow, I_sq]; ring
   rw [he]
   simp only [neg_mul, pow_one, neg_inj, mul_eq_mul_left_iff, mul_eq_zero, OfNat.ofNat_ne_zero,
     ne_eq, not_false_eq_true, pow_eq_zero_iff, ofReal_eq_zero, false_or]
@@ -1692,69 +1243,8 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
 
 
 
-lemma summable_pnats (f : ℕ → ℂ) : Summable (fun n : ℕ+ => f n) ↔ Summable f := by
-  rw [nat_pos_tsum2', summable_nat_add_iff]
 
-lemma auxf (a b c d : ℂ) : a / b - (c / d) = a / b + (c / -d) := by
-  ring
 
-theorem summable_diff_right_a (z : ℍ) (d : ℕ+) :
-  Summable fun n : ℕ ↦ 1 / ((n : ℂ) * ↑z - ↑↑d) - 1 / (↑↑n * ↑z + ↑↑d) := by
-  rw [← summable_pnats]
-  have := (summable_diff z d).mul_left ((z : ℂ))⁻¹
-  apply this.congr
-  intro b
-  have hz := ne_zero z
-  simp at *
-  grind
 
-theorem summable_diff_right (z : ℍ) (d : ℕ+) :
-  Summable fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z - ↑↑d) - 1 / (↑m * ↑z + ↑↑d) := by
-  rw [summable_int_iff_summable_nat_and_neg]
-  constructor
-  · apply summable_diff_right_a
-  · rw [← summable_pnats]
-    have := (summable_diff z d).mul_left ((z : ℂ))⁻¹
-    apply this.congr
-    intro b
-    have hz := ne_zero z
-    simp at *
-    grind
 
-lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :
-  2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d)) = ∑' m : ℕ+,
-    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d))
-      := by
-  rw [tsum_int_eq_zero_add_tsum_pnat (summable_diff_right z d)]
-  simp only [Int.cast_zero, zero_mul, zero_sub, one_div, zero_add, Int.cast_natCast, Int.cast_neg,
-    neg_mul]
-  ring_nf
-  rw [← Summable.tsum_add]
-  · congr
-    funext m
-    ring
-  · have := (summable_diff_right z d)
-    rw [summable_int_iff_summable_nat_and_neg] at this
-    have H := this.1
-    simp only [Int.cast_natCast, one_div, Int.cast_neg, neg_mul] at *
-    have v : Summable fun (n : ℕ) ↦ (-↑(d : ℂ) + (n : ℂ) * ↑z)⁻¹ - (↑↑d + (n : ℂ)* ↑z)⁻¹ := by
-      apply H.congr
-      intro b
-      ring
-    apply v.subtype
-  · have := (summable_diff_right z d)
-    rw [summable_int_iff_summable_nat_and_neg] at this
-    have H := this.2
-    simp only [Int.cast_natCast, one_div, Int.cast_neg, neg_mul] at *
-    have v : Summable fun (n : ℕ) ↦ ( - ↑(d : ℂ)- z * ((n : ℂ)))⁻¹ - (↑↑d - z * ((n : ℂ)))⁻¹ := by
-      apply H.congr
-      intro b
-      ring
-    apply v.subtype
 
-lemma sum_int_pnat2_pnat (z : ℍ) (d : ℕ+) :
-  ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d)) = -2/d + ∑' m : ℕ+,
-    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d))
-      := by
-  rw [← sum_int_pnatt]
-  ring

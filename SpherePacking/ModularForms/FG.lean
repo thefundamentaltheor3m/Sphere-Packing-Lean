@@ -313,28 +313,31 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
   -- Use hasSum_qExpansion to get E₄ z = ∑ (qExpansion 1 E₄).coeff m * q^m
-  have hsum := ModularFormClass.hasSum_qExpansion (h := 1) E₄ (by norm_num) (by simp) z
+  have hsum := UpperHalfPlane.hasSum_qExpansion (f := (E₄ : ℍ → ℂ)) (by norm_num : (0 : ℝ) < 1)
+    (SlashInvariantFormClass.periodic_comp_ofComplex E₄
+      (by rw [CongruenceSubgroup.Gamma_one_coe_eq_SL]; exact one_mem_strictPeriods_SL))
+    (ModularFormClass.holo E₄) (ModularFormClass.bdd_at_infty E₄) z
   -- Convert HasSum to tsum equation
-  have heq : E₄ z = ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have heq : E₄ z = ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m := by
     rw [← hsum.tsum_eq]
     simp [smul_eq_mul]
   rw [heq]
   -- Split off the m=0 term
-  have hsum_smul : Summable fun m => (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have hsum_smul : Summable fun m => (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m :=
     hsum.summable.congr (fun m => by simp [smul_eq_mul])
-  have hsplit : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have hsplit : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m =
-      (ModularFormClass.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
-      ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+      (UpperHalfPlane.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
+      ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
         (Function.Periodic.qParam 1 z) ^ (m + 1) :=
     hsum_smul.tsum_eq_zero_add
   rw [hsplit]
   simp only [pow_zero, mul_one]
   -- Use E4_q_exp to substitute coefficients
-  have hcoeff0 : (ModularFormClass.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
-  have hcoeffn : ∀ n : ℕ, 0 < n → (ModularFormClass.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
+  have hcoeff0 : (UpperHalfPlane.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
+  have hcoeffn : ∀ n : ℕ, 0 < n → (UpperHalfPlane.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
     intro n hn
     have h := congr_fun E4_q_exp n
     simp only [hn.ne', ↓reduceIte] at h
@@ -342,15 +345,15 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
   rw [hcoeff0]
   congr 1
   -- Convert sum over ℕ to sum over ℕ+
-  have hconv : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+  have hconv : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
       (Function.Periodic.qParam 1 z) ^ (m + 1) =
-      ∑' n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+      ∑' n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ (n : ℕ) := by
-    rw [← tsum_pnat_eq_tsum_succ3 (fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
+    rw [← tsum_pnat_eq_tsum_succ3 (fun n => (UpperHalfPlane.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ n)]
   rw [hconv]
   -- Now substitute the coefficients for n ≥ 1
-  have hterm : ∀ n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+  have hterm : ∀ n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
       (Function.Periodic.qParam 1 z) ^ (n : ℕ) =
       240 * ((σ 3 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)) := by
     intro n

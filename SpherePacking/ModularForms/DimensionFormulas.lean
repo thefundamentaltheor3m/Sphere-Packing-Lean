@@ -7,7 +7,8 @@ public import SpherePacking.ModularForms.Eisenstein
 
 @[expose] public section
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
@@ -99,22 +100,30 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
         rw [mul_div_cancel_right₀]
         apply Δ_ne_zero
 
+/-- `Module.rank` of a `ModularForm` space is invariant under equality of the underlying subgroup.
+Bridges the project's `Γ(1)`-indexed spaces to mathlib's `𝒮ℒ`-indexed level-one dimension lemmas
+(`𝒮ℒ = (mapGL ℝ).range = ↑Γ(1)`, via `CongruenceSubgroup.Gamma_one_coe_eq_SL`). -/
+private lemma rank_modularForm_congr {k : ℤ} {G₁ G₂ : Subgroup (GL (Fin 2) ℝ)}
+    [G₁.HasDetOne] [G₂.HasDetOne] (h : G₁ = G₂) :
+    Module.rank ℂ (ModularForm G₁ k) = Module.rank ℂ (ModularForm G₂ k) := by
+  subst h; rfl
+
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
   have := CuspForms_iso_Modforms 12
   have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 := by
     apply Module.finrank_eq_of_rank_eq
     rw [LinearEquiv.rank_eq this]
     simp
-    exact ModularForm.levelOne_weight_zero_rank_one
+    exact (rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
+      ModularForm.levelOne_weight_zero_rank_one
   simp at this
   apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
 
 lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
   have := CuspForms_iso_Modforms k
   --apply Module.finrank_eq_of_rank_eq
-  rw [LinearEquiv.rank_eq this]
-  apply ModularForm.levelOne_neg_weight_rank_zero
-  linarith
+  rw [LinearEquiv.rank_eq this, rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL]
+  exact ModularForm.levelOne_neg_weight_rank_zero (by linarith)
 
 lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by
@@ -154,7 +163,7 @@ lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 :=
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2]
   have hsub1 : qExpansion 1 ⇑(A - B) = qExpansion 1 (⇑A - ⇑B) := by rfl
   have hsub2 : qExpansion 1 (⇑A - ⇑B) = qExpansion 1 ⇑A - qExpansion 1 ⇑B := by
-    simpa using (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+    simpa using (ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
       (hh := by positivity) (hΓ := by simp) (f := A) (g := B))
   have hmain : (PowerSeries.coeff 1) ((1728⁻¹ : ℂ) • (qExpansion 1 ⇑A - qExpansion 1 ⇑B)) = 1 := by
     have h4 := qExpansion_pow E₄ 3
@@ -192,7 +201,7 @@ theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
   · have h1 := Delta_q_one_term
     have h2 := Delta_E4_E6_aux_q_one_term
     rw [← H] at h2
-    have hs := (qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
+    have hs := (ModularForm.qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
       (hh := by positivity) (hΓ := by simp) c Delta).symm
     have hsmul : qExpansion 1 ⇑(c • Delta) = qExpansion 1 (c • ⇑Delta) := by rfl
     rw [hsmul, ← Nat.cast_one (R := ℝ), ← hs] at h2
@@ -220,7 +229,7 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
     have hcusp : IsCuspForm Γ(1) 6 (E₆ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
-        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
+        ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -258,7 +267,7 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     have hcusp : IsCuspForm Γ(1) 4 (E₄ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
-        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
+        ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -296,7 +305,7 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
     have hcusp : IsCuspForm Γ(1) k (E k hk - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
-        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
+        ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -450,7 +459,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
         qExpansion 1 ⇑(c • E k hk - f) =
           qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
       simpa using
-        (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)
+        (ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)
           (f := c • E k hk) (g := f))
     have hsmul : qExpansion 1 ⇑(c • E k hk) = c • qExpansion 1 (E k hk) := by
       calc
@@ -526,13 +535,16 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
         (1 : Cardinal) + Module.rank ℂ (ModularForm Γ(1) b) =
           (if 12 ∣ (a : ℤ) - 2 then ↑⌊(a : ℚ) / 12⌋₊ else ↑(⌊(a : ℚ) / 12⌋₊ + 1) : Cardinal) := by
       simpa [hdiv, hfloor] using congrArg ((1 : Cardinal) + ·)
-        (ModularForm.levelOne_neg_weight_rank_zero hb)
+        ((rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
+          (ModularForm.levelOne_neg_weight_rank_zero hb))
     fin_cases hkop
     · exact hneg (a := 4) (b := -8) (by norm_num) (by norm_num) (by norm_num)
     · exact hneg (a := 6) (b := -6) (by norm_num) (by norm_num) (by norm_num)
     · exact hneg (a := 8) (b := -4) (by norm_num) (by norm_num) (by norm_num)
     · exact hneg (a := 10) (b := -2) (by norm_num) (by norm_num) (by norm_num)
-    · have hrank := congrArg ((1 : Cardinal) + ·) ModularForm.levelOne_weight_zero_rank_one
+    · have hrank := congrArg ((1 : Cardinal) + ·)
+        ((rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
+          ModularForm.levelOne_weight_zero_rank_one)
       norm_num at hrank ⊢
       exact hrank
     · have hrank : (1 : Cardinal) + Module.rank ℂ (ModularForm Γ(1) 2) = 1 := by

@@ -505,7 +505,6 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
           (fun (n : ℕ) ↦ (n ^ k) * rexp (-π * ↑n / 2)) := by
         refine IsBigO.mul (hpoly' c n₀ k hpoly) ?_
         norm_cast
-        exact isBigO_refl _ atTop
       refine summable_of_isBigO_nat ?_ h₂
       have h₃ (n : ℕ) : rexp (-π * ↑n / 2) = (rexp (-π / 2)) ^ n := by
         symm; calc (rexp (-π / 2)) ^ n
