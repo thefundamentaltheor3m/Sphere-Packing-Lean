@@ -152,23 +152,11 @@ theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 
   apply pow_pos
   simpa using hb
 
-
-
-
-
-
-
-
-
-
 lemma summable_hammerTime_nat {α : Type} [NormedField α] [CompleteSpace α] (f : ℕ → α) (a : ℝ) (hab
   : 1 < a)
     (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
     Summable fun n => (f n)⁻¹ := by
   exact summable_of_isBigO ((Real.summable_nat_rpow_inv.mpr hab).congr (by intro b; simp)) hf
-
-
-
 
 private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   rw [inv_le_iff_one_le_mul₀ ha, mul_comm c b⁻¹, mul_assoc, mul_comm b⁻¹, ← div_eq_mul_inv,
@@ -326,16 +314,6 @@ theorem G2_prod_summable1_δ (z : ℍ) (b : ℤ) :
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
   exact this.prod_factor b
 
-
-
-
-
-
-
-
-
-
-
 theorem summable_1 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
     Summable fun (b : ℕ) ↦ (((z : ℂ) - ↑↑b) ^ (k + 1))⁻¹ := by
   have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1)
@@ -379,8 +357,6 @@ theorem summable_2 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
   apply Asymptotics.IsBigO.of_abs_right
   simpa only [Nat.cast_pow, inv_pow, Int.cast_one, one_mul, Nat.abs_cast,
     Asymptotics.isBigO_abs_right] using hl
-
-
 
 theorem summable_3 (m : ℕ) (y : {z : ℂ | 0 < z.im}) :
     Summable fun n : ℕ+ =>
@@ -494,17 +470,9 @@ theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
   · intro i
     simp
 
-
-
-
-
-
-
 lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1), f m = f 0 +
   ∑ m ∈ Finset.range n, f (m+1) := by
   simp [Finset.sum_range_succ', add_comm]
-
-
 
 theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
@@ -558,7 +526,6 @@ theorem exp_series_ite_deriv_uexp''' (k : ℕ) :
       (fun x : ℂ => ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n *
         x)) ℍ' :=
   fun x hx => exp_series_ite_deriv_uexp'' k ⟨x, hx⟩
-
 
 theorem tsum_uexp_contDiffOn (k : ℕ) :
     ContDiffOn ℂ k (fun z : ℂ => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z)) ℍ' :=
@@ -1240,11 +1207,3 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   simp [uncurry]
   congr 1
   ring
-
-
-
-
-
-
-
-
