@@ -5,7 +5,6 @@ public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.ForMathlib.Asymptotics
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.Cardinal
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
