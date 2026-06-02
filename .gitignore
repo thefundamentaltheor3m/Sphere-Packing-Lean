@@ -18,4 +18,5 @@ blueprint/src/print.pdf
 blueprint/src/print.synctex.gz
 .mcp.json
 
-.claude/
+.claude*/
+.mathlib-quality/
