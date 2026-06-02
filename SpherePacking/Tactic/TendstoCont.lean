@@ -10,6 +10,7 @@ public import Mathlib.Tactic.FunProp
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Convert
 public import Mathlib.Tactic.Ring
+public meta import SpherePacking.Tactic.TendstoContAttr
 
 /-!
 # `tendsto_cont` tactic
@@ -140,34 +141,125 @@ private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
     for child in exprChildren e do
       findAtomsAux child bvar candidates atomsRef fnsRef
 
-/-- Collect atoms matching the goal filter and appearing in body.
-    Returns `(candidates, usedAtoms)` — candidates for diagnostics. -/
-private meta def collectAtoms (body : Expr) (bvar : FVarId)
-    (goalFilter : Expr) : TacticM (Array Atom × Array Atom) := do
+/-- Bucket 1: Collect candidates from inline arguments. -/
+private meta def collectInlineCands (goalFilter : Expr)
+    (extraHyps : Array Expr) : TacticM (Array Atom) := do
+  let mut cands : Array Atom := #[]
+  for hyp in extraHyps do
+    let ty ← inferType hyp >>= instantiateMVars
+    match ← matchTendstoNhds? ty with
+    | some (codTy, f, l, a) =>
+      if ← withNewMCtxDepth (isDefEq l goalFilter) then
+        cands := cands.push
+          { fn := f, limit := a, hyp := hyp, codTy := codTy }
+    | none => continue
+  return cands
+
+/-- Warn about inline args that are redundant (already in local context
+    without disambiguation). -/
+private meta def warnRedundantInlineArgs (inlineCands : Array Atom)
+    (goalFilter : Expr) : TacticM Unit := do
   let ctx ← getLCtx
-  let mut candidates : Array Atom := #[]
+  for i in [:inlineCands.size] do
+    let inlineCand := inlineCands[i]!
+    unless inlineCand.hyp.isFVar do continue
+    let mut hasConflict := false
+    -- Check other inline args for conflicts (same fn, different limit)
+    for j in [:inlineCands.size] do
+      if i == j then continue
+      let other := inlineCands[j]!
+      if ← withNewMCtxDepth (isDefEq other.fn inlineCand.fn) then
+        unless ← withNewMCtxDepth (isDefEq other.limit inlineCand.limit) do
+          hasConflict := true
+    -- Check local context for conflicts (same fn, different limit)
+    unless hasConflict do
+      for decl in ctx do
+        if decl.isImplementationDetail then continue
+        if decl.fvarId == inlineCand.hyp.fvarId! then continue
+        let ty ← instantiateMVars decl.type
+        match ← matchTendstoNhds? ty with
+        | some (_, f, l, a) =>
+          if ← withNewMCtxDepth (isDefEq l goalFilter) then
+            if ← withNewMCtxDepth (isDefEq f inlineCand.fn) then
+              unless ← withNewMCtxDepth (isDefEq a inlineCand.limit) do
+                hasConflict := true
+        | none => continue
+    unless hasConflict do
+      let name ← ppExpr inlineCand.hyp
+      logWarning m!"tendsto_cont: inline argument `{name}` is redundant \
+        — it is already available as a local hypothesis"
+
+/-- Bucket 2: Collect candidates from local context, shadowed by
+    higher-priority inline candidates. -/
+private meta def collectContextCands (goalFilter : Expr)
+    (inlineCands : Array Atom) : TacticM (Array Atom) := do
+  let ctx ← getLCtx
+  let mut cands : Array Atom := #[]
   for decl in ctx do
     if decl.isImplementationDetail then continue
     let ty ← instantiateMVars decl.type
     match ← matchTendstoNhds? ty with
     | some (codTy, f, l, a) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
-        candidates := candidates.push
-          { fn := f, limit := a, hyp := decl.toExpr, codTy := codTy }
+        let dominated ← inlineCands.anyM fun c =>
+          withNewMCtxDepth (isDefEq c.fn f)
+        unless dominated do
+          cands := cands.push
+            { fn := f, limit := a, hyp := decl.toExpr, codTy := codTy }
     | none => continue
-  let atomsRef ← IO.mkRef (α := Array Atom) #[]
-  let fnsRef ← IO.mkRef (α := Array Expr) #[]
-  findAtomsAux body bvar candidates atomsRef fnsRef
-  let atoms ← atomsRef.get
-  -- Ambiguity detection: check if any used atom's fn matches a
-  -- candidate with a different limit
+  return cands
+
+/-- Bucket 3: Collect candidates from the `@[tendsto_cont]` attribute
+    registry, shadowed by higher-priority candidates. -/
+private meta def collectAttrCands (goalFilter : Expr)
+    (higherPriority : Array Atom) : TacticM (Array Atom) := do
+  let env ← getEnv
+  let mut cands : Array Atom := #[]
+  for name in (tendstoContExt.getState env).toList do
+    try
+      let e ← mkConstWithFreshMVarLevels name
+      let ty ← inferType e >>= instantiateMVars
+      match ← matchTendstoNhds? ty with
+      | some (codTy, f, l, a) =>
+        if ← withNewMCtxDepth (isDefEq l goalFilter) then
+          let dominated ← higherPriority.anyM fun c =>
+            withNewMCtxDepth (isDefEq c.fn f)
+          unless dominated do
+            cands := cands.push
+              { fn := f, limit := a, hyp := e, codTy := codTy }
+      | none => continue
+    catch _ => continue
+  return cands
+
+/-- Check for ambiguous atoms: same `fn` but different `limit` across
+    candidates. Throws an error if ambiguity is detected. -/
+private meta def checkAmbiguity (atoms : Array Atom)
+    (allCandidates : Array Atom) : MetaM Unit := do
   for atom in atoms do
-    for cand in candidates do
+    for cand in allCandidates do
       if ← withNewMCtxDepth (isDefEq atom.fn cand.fn) then
         unless ← withNewMCtxDepth (isDefEq atom.limit cand.limit) do
           throwError m!"tendsto_cont: ambiguous limit for atom — \
             found hypotheses with limits `{atom.limit}` and \
             `{cand.limit}` for the same function"
+
+/-- Collect atoms matching the goal filter and appearing in body.
+    Three-bucket collection with cross-bucket shadowing:
+    inline args > local context > attribute registry.
+    Returns `(candidates, usedAtoms)` — candidates for diagnostics. -/
+private meta def collectAtoms (body : Expr) (bvar : FVarId)
+    (goalFilter : Expr) (extraHyps : Array Expr := #[]) :
+    TacticM (Array Atom × Array Atom) := do
+  let inlineCands ← collectInlineCands goalFilter extraHyps
+  warnRedundantInlineArgs inlineCands goalFilter
+  let contextCands ← collectContextCands goalFilter inlineCands
+  let attrCands ← collectAttrCands goalFilter (inlineCands ++ contextCands)
+  let candidates := inlineCands ++ contextCands ++ attrCands
+  let atomsRef ← IO.mkRef (α := Array Atom) #[]
+  let fnsRef ← IO.mkRef (α := Array Expr) #[]
+  findAtomsAux body bvar candidates atomsRef fnsRef
+  let atoms ← atomsRef.get
+  checkAmbiguity atoms candidates
   return (candidates, atoms)
 
 -- ══════════════════════════════════════════════════════════════
@@ -301,7 +393,8 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     mkAppM ``tendsto_continuousAt_comp #[contMVar, prodMkProof]
 
 /-- Core implementation of the `tendsto_cont` tactic. -/
-private meta def tendstoCont : TacticM Unit := withMainContext do
+private meta def tendstoCont (extraHyps : Array Expr := #[]) :
+    TacticM Unit := withMainContext do
   let goal ← getMainGoal
   let goalTy ← goal.getType >>= instantiateMVars
 
@@ -317,7 +410,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
   let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
     let bvar := zVar.fvarId!
-    let (candidates, atoms) ← collectAtoms body bvar goalFilter
+    let (candidates, atoms) ← collectAtoms body bvar goalFilter extraHyps
 
     if atoms.size == 0 then
       if body.containsFVar bvar then
@@ -345,6 +438,13 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
   | none => return
   | some proof => reconcileLimits goal proof
 
-elab "tendsto_cont" : tactic => TendstoCont.tendstoCont
+syntax "tendsto_cont" ("[" term,* "]")? : tactic
+
+elab_rules : tactic
+  | `(tactic| tendsto_cont [ $extras,* ]) => do
+    let extraHyps ← withMainContext <|
+      extras.getElems.mapM fun h => Term.elabTerm h none
+    tendstoCont extraHyps
+  | `(tactic| tendsto_cont) => tendstoCont
 
 end TendstoCont

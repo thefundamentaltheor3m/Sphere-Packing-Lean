@@ -93,5 +93,6 @@ public import SpherePacking.ModularForms.upperhalfplane
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.NormNumI_Scratch
 public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.Tactic.TendstoContAttr
 public import SpherePacking.Tactic.Test.NormNumI
 public import SpherePacking.Tactic.Test.TendstoCont
