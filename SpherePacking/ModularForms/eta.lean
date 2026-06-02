@@ -11,13 +11,9 @@ public import Mathlib.NumberTheory.ModularForms.DedekindEta
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat ModularForm
 
 open scoped ArithmeticFunction.sigma
-
-
-/- The eta function. We use mathlib's upstream definition. -/
-noncomputable abbrev η : ℂ → ℂ := ModularForm.eta
 
 lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   (logDeriv ((csqrt) * η)) z := by
@@ -33,7 +29,7 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
         simp
       simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
       norm_cast
-    · simpa [η] using
+    · simpa using
         (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := (-1 / (z : ℂ)))
           (by simpa using pnat_div_upper 1 z))
     conv =>
@@ -59,10 +55,10 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
           show -(2⁻¹ * Complex.log ↑z) - 2⁻¹ * Complex.log ↑z = -Complex.log ↑z by ring,
           Complex.exp_neg, Complex.exp_log,
           show logDeriv η z = (π * Complex.I / 12) * E₂ z by
-            simpa [η, E₂] using (ModularForm.logDeriv_eta_eq_E2 z)]
+            simpa [E₂] using (ModularForm.logDeriv_eta_eq_E2 z)]
       · have Rb : logDeriv η (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) =
           (π * Complex.I / 12) * E₂ (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
-          simpa [η, E₂] using
+          simpa [E₂] using
             (ModularForm.logDeriv_eta_eq_E2 (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ))
         rw [Rb]
         have E := E₂_transform z
@@ -86,9 +82,9 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
         rw [mul_comm]
       simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
   · simp only [csqrt, one_div, ne_eq, Complex.exp_ne_zero, not_false_eq_true]
-  · simpa [η] using (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
+  · simpa using (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
   · exact csqrt_differentiableAt z
-  · simpa [η] using
+  · simpa using
       (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := (z : ℂ)) z.2)
 
 lemma eta_logderivs : {z : ℂ | 0 < z.im}.EqOn (logDeriv (η ∘ (fun z : ℂ => -1/z)))
@@ -108,7 +104,7 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     · rw [DifferentiableOn]
       intro x hx
       apply DifferentiableAt.differentiableWithinAt
-      simpa [η] using
+      simpa using
         (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
     · apply DifferentiableOn.div
       · fun_prop
@@ -133,14 +129,14 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     simp only [DifferentiableOn, mem_setOf_eq]
     intro x hx
     have hηx : DifferentiableAt ℂ η x := by
-      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
+      simpa using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
     exact hηx.differentiableWithinAt
   · exact isOpen_lt continuous_const Complex.continuous_im
   · apply Convex.isPreconnected
     exact convex_halfSpace_im_gt 0
   · intro x hx
     simp only [Pi.mul_apply, ne_eq, mul_eq_zero, not_or]
-    refine ⟨ ?_ , by simpa [η] using (ModularForm.eta_ne_zero (z := x) hx)⟩
+    refine ⟨ ?_ , by simpa using (ModularForm.eta_ne_zero (z := x) hx)⟩
     unfold csqrt
     simp only [one_div, Complex.exp_ne_zero, not_false_eq_true]
   · intro x hx
@@ -163,7 +159,7 @@ lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
     enter [2]
     rw [← mul_assoc]
   have he : η Complex.I ≠ 0 := by
-    simpa [η] using (ModularForm.eta_ne_zero (z := (Complex.I : ℂ)) (by simp))
+    simpa using (ModularForm.eta_ne_zero (z := (Complex.I : ℂ)) (by simp))
   have hcd := (mul_eq_right₀ he).mp (_root_.id (Eq.symm h3))
   rw [mul_eq_one_iff_inv_eq₀ hz] at hcd
   rw [@inv_eq_iff_eq_inv] at hcd

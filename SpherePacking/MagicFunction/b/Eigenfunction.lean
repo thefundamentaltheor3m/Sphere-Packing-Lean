@@ -41,15 +41,16 @@ theorem perm_₃_J₄ : (FourierTransform.fourierCLE ℂ _) (J₃ + J₄) = -(J�
     congrArg (-(FourierTransform.fourierCLE ℂ _) ·) perm_J₁_J₂ |>.symm
 
 theorem perm_J₆ : (FourierTransform.fourierCLE ℂ _) (J₆) = -J₅ := by
-  have h : ((FourierTransform.fourierCLE ℂ _)).symm J₆ = (FourierTransform.fourierCLE ℂ _) J₆ := by
+  let F := FourierTransform.fourierCLE ℂ 𝓢(EuclideanSpace ℝ (Fin 8), ℂ)
+  have h : F.symm J₆ = F J₆ := by
     ext x
-    simp only [FourierTransform.fourierCLE_symm_apply, FourierTransform.fourierCLE_apply,
+    simp only [F, FourierTransform.fourierCLE_symm_apply, FourierTransform.fourierCLE_apply,
       fourier_coe, fourierInv_coe, Real.fourierInv_eq_fourier_comp_neg]
     suffices (fun x ↦ J₆ (-x)) = ⇑J₆ by exact congr(𝓕 $this x)
     ext
     simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
-  have := (congrArg ((FourierTransform.fourierCLE ℂ _)).symm perm_J₅).symm
-  simp only [map_neg, ContinuousLinearEquiv.symm_apply_apply, ← h] at this ⊢
+  have := (congrArg F.symm perm_J₅).symm
+  simp only [F, map_neg, ContinuousLinearEquiv.symm_apply_apply, ← h] at this ⊢
   rw [← this, neg_neg]
 
 end Integral_Permutations

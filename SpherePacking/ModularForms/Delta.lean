@@ -15,7 +15,7 @@ public import SpherePacking.ForMathlib.Cusps
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat ModularForm
 
 open ArithmeticFunction
 
@@ -41,7 +41,7 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
     refine (MultipliableEtaProductExpansion z).congr ?_
     intro n
     simp [ModularForm.eta_q_eq_cexp]
-  rw [η, ModularForm.eta, Δ, mul_pow, tprod_pow (f := fun n : ℕ => 1 - ModularForm.eta_q n z)
+  rw [ModularForm.eta, Δ, mul_pow, tprod_pow (f := fun n : ℕ => 1 - ModularForm.eta_q n z)
     hm 24]
   congr
   · rw [Periodic.qParam]
@@ -55,7 +55,7 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
 /-This should be easy from the definition and the Mulitpliable bit. -/
 lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
   rw [Delta_eq_eta_pow]
-  simpa [η] using (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
+  exact pow_ne_zero 24 (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
 
 /-This one is easy.-/
 lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
@@ -316,7 +316,7 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
       apply DifferentiableOn.pow
       intro x hx
       apply DifferentiableAt.differentiableWithinAt
-      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
+      simpa using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
     rw [Discriminant_SIF]
     simp only [SlashInvariantForm.coe_mk]
     apply he2.congr

@@ -308,28 +308,19 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [_root_.E]
-  rw [IsGLPos.smul_apply]
-  have hmf : (ModularForm.eisensteinSeriesMF hk standardcongruencecondition) z =
-      (eisensteinSeriesSIF standardcongruencecondition k) z := rfl
-  rw [hmf]
-  have hsif := eisensteinSeriesSIF_apply standardcongruencecondition k z
-  rw [hsif, eisensteinSeries, standardcongruencecondition]
-  simp
-  simp_rw [eisSummand]
-  have HE1 := EQ1 k hk hk2 z
-  have HE2 := EQ2 k hk z
-  have z2 : (riemannZeta (k)) ≠ 0 := by
-    refine riemannZeta_ne_zero_of_one_lt_re ?_
-    simp
-    omega
-  rw [← inv_mul_eq_iff_eq_mul₀ z2 ] at HE2
-  simp at *
-  conv =>
-    enter [1,2]
-    rw [← HE2]
-  simp_rw [← mul_assoc]
-  rw [HE1, mul_add]
-  have : 2⁻¹ * (riemannZeta (k))⁻¹ * (2 * riemannZeta (k)) = 1 := by
-    field_simp
-  rw [this]
-  ring
+  change (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition z) = _
+  calc
+    (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition z) =
+        1 + (riemannZeta k)⁻¹ * (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
+          ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) := by
+      simpa [ModularForm.E, standardcongruencecondition, smul_eq_mul] using
+        EisensteinSeries.q_expansion_riemannZeta (k := k) (by omega) hk2 z
+    _ = 1 + (1 / riemannZeta k) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
+          ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
+      rw [show ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) =
+          ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) from by
+            apply tsum_congr
+            intro n
+            rw [zpow_natCast, ← Complex.exp_nat_mul]
+            ring_nf]
+      simp [div_eq_mul_inv, mul_assoc]

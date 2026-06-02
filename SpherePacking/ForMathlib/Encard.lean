@@ -88,7 +88,7 @@ protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
 
 protected theorem tsum_sub (hfin : ∑' a, g a ≠ ⊤) (h : g ≤ f) :
     ∑' a, (f a - g a) = ∑' a, f a - ∑' a, g a := by
-  rw [← WithTop.add_right_inj hfin, ← ENat.tsum_add,
+  rw [← add_left_inj_of_ne_top hfin, ← ENat.tsum_add,
     tsum_congr (fun i ↦ tsub_add_cancel_of_le (h i)), tsub_add_cancel_of_le (ENat.tsum_le_tsum h)]
 
 protected theorem mul_tsum (c : ℕ∞) : c * ∑' a, f a = ∑' a, c * f a := by

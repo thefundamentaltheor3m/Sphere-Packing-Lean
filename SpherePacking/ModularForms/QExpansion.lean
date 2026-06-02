@@ -2,7 +2,7 @@ module
 
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ForMathlib.AtImInfty
 
 @[expose] public section

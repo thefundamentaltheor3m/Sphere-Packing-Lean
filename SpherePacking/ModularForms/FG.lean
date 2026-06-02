@@ -6,9 +6,9 @@ public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.Eisenstein
-public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.JacobiTheta.Derivative
 public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
@@ -39,14 +39,10 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
     ext w
     rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]
-    simp
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
     rfl
   have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
     ext w
     rw [pow_two, @DirectSum.of_mul_of]
-    simp
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
     rfl
   have h := congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
   have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
@@ -99,11 +95,14 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
 @[fun_prop]
 theorem F_holo : MDiff F := by unfold F; fun_prop
 
+@[fun_prop]
 theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
 theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
 
 theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
+
+theorem L₁₀_holo : MDiff L₁₀ := by unfold L₁₀; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -208,7 +207,7 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
       _ ≤ (n : ℝ)^(a + b + 1) * ‖Complex.exp (2 * π * Complex.I * n * z)‖ := by
           apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
           rw [Complex.norm_mul, Complex.norm_pow, Complex.norm_natCast, Complex.norm_natCast]
-          have hbound := sigma_bound b n
+          have hbound := ArithmeticFunction.sigma_le_pow_succ b n
           calc (n : ℝ)^a * (ArithmeticFunction.sigma b n : ℝ)
               ≤ (n : ℝ)^a * (n : ℝ)^(b + 1) := by
                 exact_mod_cast mul_le_mul_of_nonneg_left hbound (pow_nonneg (Nat.cast_nonneg n) a)
@@ -268,7 +267,7 @@ lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
     _ ≤ (n : ℝ) ^ (k + 1) * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
         apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
         have hs : ‖(ArithmeticFunction.sigma k n : ℂ)‖ ≤ (n : ℝ) ^ (k + 1) := by
-          simp only [Complex.norm_natCast]; exact_mod_cast sigma_bound k n
+          simp only [Complex.norm_natCast]; exact_mod_cast ArithmeticFunction.sigma_le_pow_succ k n
         have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
           simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
             abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
@@ -438,8 +437,7 @@ lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
   simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- D E₄ is real on the imaginary axis. -/
-lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) :=
-  D_real_of_real E₄_imag_axis_real E₄.holo'
+lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by fun_prop
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -523,8 +521,7 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ :=
-  ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by simp only [negDE₂]; fun_prop
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -708,7 +705,7 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
     simp only [ha, norm_mul, Complex.norm_natCast]
     calc (↑(m + 1) : ℝ) * ↑(ArithmeticFunction.sigma 3 (m + 1))
         ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
-          mul_le_mul_of_nonneg_left (by exact_mod_cast sigma_bound 3 (m + 1))
+          mul_le_mul_of_nonneg_left (mod_cast ArithmeticFunction.sigma_le_pow_succ 3 (m + 1))
             (Nat.cast_nonneg _)
       _ = _ := by ring
   have h_eq2 : ∀ z : ℍ,
@@ -767,7 +764,7 @@ theorem D_diff_qexp (z : ℍ) :
   have norm_a_le : ∀ n : ℕ+, ‖a n‖ ≤ (n : ℝ)^5 := fun n => by
     simp only [a, Complex.norm_mul, Complex.norm_natCast]
     calc (n : ℝ) * ↑(σ 3 ↑n) ≤ (n : ℝ) * (n : ℝ)^4 := by
-           gcongr; exact_mod_cast sigma_bound 3 n
+           gcongr; exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 n
        _ = (n : ℝ)^5 := by ring
   have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := by
     simpa [pow_one] using sigma_qexp_summable_generic 1 3 z
@@ -835,7 +832,7 @@ private theorem D_diff_div_q_tendsto :
     simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
     calc (↑(m + 1) : ℝ) ^ 2 * ↑(ArithmeticFunction.sigma 3 (m + 1))
         ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
-          mul_le_mul_of_nonneg_left (by exact_mod_cast sigma_bound 3 (m + 1))
+          mul_le_mul_of_nonneg_left (mod_cast ArithmeticFunction.sigma_le_pow_succ 3 (m + 1))
             (pow_nonneg (Nat.cast_nonneg _) _)
       _ = _ := by ring
   have h_eq2 : ∀ z : ℍ,
@@ -1021,14 +1018,11 @@ theorem D_G_div_G_tendsto :
 
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
-  intro t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, L₁₀_eq_FD_G_sub_F_DG]
-  have hF := F_imag_axis_real t ht
-  have hG := G_imag_axis_real t ht
-  have hDF := D_real_of_real F_imag_axis_real F_holo t ht
-  have hDG := D_real_of_real G_imag_axis_real G_holo t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF hG hDF hDG
-  simp [sub_im, mul_im, hF, hG, hDF, hDG]
+  unfold L₁₀
+  have hF := F_imag_axis_real
+  have hG := G_imag_axis_real
+  have hGh := G_holo
+  fun_prop
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
 theorem L₁₀_div_FG_tendsto :
@@ -1077,7 +1071,7 @@ end AsymptoticAnalysis
 
 /- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
 lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
-  antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
+    antiSerreDerPos L₁₀_holo SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
 
 /-!
 ## Monotonicity of F/G on the Imaginary Axis
