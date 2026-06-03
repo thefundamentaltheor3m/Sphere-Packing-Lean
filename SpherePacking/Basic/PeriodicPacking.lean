@@ -51,7 +51,7 @@ lemma aux2 (D : Set (EuclideanSpace ℝ (Fin d))) :
   intro x hx y hy hxy
   apply ball_disjoint_ball
   rw [add_halves]
-  exact S.centers_dist' _ _ hx.left hy.left hxy
+  exact S.centers_dist' hx.left hy.left hxy
 
 theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
     [Fintype τ] [NoAtoms (volume : Measure (EuclideanSpace ℝ τ))]
@@ -104,7 +104,7 @@ lemma aux4 (hD_isBounded : IsBounded D) (hd : 0 < d) : Finite ↑(S.centers ∩ 
     simp [Measure.addHaar_ball_center]
   · intro x hx y hy hxy
     apply ball_disjoint_ball
-    simpa [add_halves] using S.centers_dist' _ _ hx.left hy.left hxy
+    simpa [add_halves] using S.centers_dist' hx.left hy.left hxy
   · apply measure_ball_pos
     linarith [S.separation_pos]
   · intros

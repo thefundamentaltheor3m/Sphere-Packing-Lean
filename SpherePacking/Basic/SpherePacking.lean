@@ -104,7 +104,7 @@ abbrev PeriodicSpherePacking (d : ℕ) := Metric.PeriodicSpherePacking ℝ (Eucl
 end EuclideanSpace
 
 theorem Metric.SpherePacking.centers_dist' {X : Type*} [MetricSpace X] (S : SpherePacking X)
-    (x y : X) (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
+    {x y : X} (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
     S.separation ≤ dist x y := by
   have := S.centers_dist (Subtype.coe_ne_coe.mp hxy : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩)
   exact this
@@ -201,7 +201,7 @@ def Metric.SpherePacking.scale (S : SpherePacking E) {c : ℝ} (hc : 0 < c) : Sp
     rw [ne_eq, Subtype.mk.injEq] at *
     have hxy' : x' ≠ y' := by rintro rfl; tauto
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [hxy']
-    have hd := S.centers_dist' x' y' hx' hy' hxy'
+    have hd := S.centers_dist' hx' hy' hxy'
     rw [dist_eq_norm] at hd
     exact (mul_le_mul_iff_right₀ hc).mpr hd
 
@@ -423,7 +423,7 @@ theorem volume_iUnion_balls_eq_tsum
   intro ⟨x, hx⟩ ⟨y, hy⟩ h
   apply ball_disjoint_ball
   simp_rw [ne_eq, Subtype.mk.injEq] at h ⊢
-  linarith [S.centers_dist' x y hx.left hy.left h]
+  linarith [S.centers_dist' hx.left hy.left h]
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
