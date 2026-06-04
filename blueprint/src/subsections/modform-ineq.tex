@@ -1,6 +1,6 @@
 \section{Proof of Theorem \ref{thm:g}}\label{sec: g}
 Our proof of the Theorem~\ref{thm:g} relies on the following two inequalities for modular objects.
-\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, cor:ineqAnew}\lean{MagicFunction.g.CohnElkies.A_neg}\leanok
+\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, cor:ineqAnew}\lean{MagicFunction.g.CohnElkies.g_nonpos_of_norm_sq_ge_two}\leanok
 Consider the function $A:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defA}
 A(t):=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).
@@ -15,7 +15,7 @@ for all $t > 0$.
 \leanok
 \end{proof}
 
-\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, cor:ineqBnew}\lean{MagicFunction.g.CohnElkies.B_pos}\leanok
+\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, cor:ineqBnew}\lean{MagicFunction.g.CohnElkies.fourier_g_nonneg}\leanok
 Consider the function $B:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defB}
     B(t) := -t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it)
@@ -225,7 +225,7 @@ and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
 
 
 Finally, we are ready to prove Theorem~\ref{thm:g}.
-\begin{theorem}\label{thm:g1}\uses{prop:a-fourier, prop:b-fourier, prop:a-double-zeros, prop:b-double-zeros, prop:ineqA, prop:ineqB, prop:a0, prop:b0}\lean{MagicFunction.g.CohnElkies.g_cohnElkies₁,MagicFunction.g.CohnElkies.g_cohnElkies₂,g_zero,fourier_g_zero}\leanok
+\begin{theorem}\label{thm:g1}\uses{prop:a-fourier, prop:b-fourier, prop:a-double-zeros, prop:b-double-zeros, prop:ineqA, prop:ineqB, prop:a0, prop:b0}\lean{MagicFunction.g.CohnElkies.g_nonpos_of_norm_sq_ge_two,MagicFunction.g.CohnElkies.fourier_g_nonneg,g_zero,fourier_g_zero}\leanok
 The function
 $$g(x):=\frac{\pi\,i}{8640}a(x)-\frac{i}{240\pi}\,b(x)$$
 satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.

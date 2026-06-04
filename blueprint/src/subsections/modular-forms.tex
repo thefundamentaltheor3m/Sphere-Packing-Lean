@@ -184,7 +184,7 @@ More generally, we have
     Then \eqref{eqn:E2-transform-general} follows from \eqref{eqn:E2-S-transform} and $E_2|_T = E_2$.
 \end{proof}
 
-\begin{definition}\label{def:dedekind_eta}\leanok \lean{η}
+\begin{definition}\label{def:dedekind_eta}\leanok \lean{ModularForm.eta}
 The Dedekind eta function is defined as
 $$
     \eta(z) = q^{1/24} \prod_{n \ge 1} (1 - q^n)
@@ -192,7 +192,7 @@ $$
 where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}\uses{def:dedekind_eta}\leanok
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}\leanok
 The Dedekind eta function transforms as
 $$
     \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
@@ -220,7 +220,7 @@ Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$
 
 
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{Delta_E4_eqn}\leanok
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{Delta_apply_eq_one_div_1728_mul_E4_pow_three_sub_E6_sq}\leanok
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
@@ -278,13 +278,6 @@ So we only need to know the dimensions of $M_k(\Gamma_1)$ for $0 \le k \le 12$. 
 
 Finally we need to check that $\dim M_2(\Gamma_1) = 0$. Firstly, there can't be any cuspforms here by the same argument as above. So we need to check that there are no modular forms of weight $2$. If we did have one, call it $f$ then $f^2$ would be a non-cuspform of weight $4$ and so $f^2 = a E_4$, where in fact $a=a_0(f)^2$ (since $(f^2-a_0(f)E_4)$ is now a cuspform of weight $4$ which means its zero). Similarly, $f^3 = a_0(f)^3 E_6$. But now taking powers to make them weight $12$ forms we see that $a_0(f)^6(E_4^3 - E_6^2) = 0 = 1728 a_0(f)^6 \Delta$
 but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\Delta =0$ which we know can't happen.
-\end{proof}
-
-\begin{theorem}\label{thm:dim-mf-general-level}\uses{def:Mk, thm:lvl1_dims}\lean{dim_gen_cong_levels}\leanok
-Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
-\end{theorem}
-\begin{proof}\leanok
-We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now this means that there is some $r_k$ such that any element of $M_k(\Gamma_1)$ vanishing at infinity to degree $> r_k$ must be zero. Now take $f \in M_k(\Gamma)$ and vanishes to degree $n$ at infinity, then consider $F = \prod_\gamma f\mid_k \gamma$ where the product is over a set of representatives of $\Gamma_1 \backslash \Gamma$. Then $F$ is a modular form of weight $k d$ where $d = [\Gamma_1: \Gamma]$ and vanishes at infinity to degree at least $n$. So if $n > r_{kd}$ then $F=0$ meaning the $f=0$.
 \end{proof}
 
 % the following theorem:
@@ -535,7 +528,7 @@ Also, it is easy to see that the space of quasimodular forms is closed under the
 In the Lean formalization, we do not use the above definition of quasimodular forms directly.
 Instead, we only use $E_2$ (defined in \Cref{def:E2}) and define the normalized derivative operator $D$ (\Cref{def:derivative}) and the Serre derivative $\partial_k$ (\Cref{def:serre-der}) as the main tools to work with quasimodular forms.
 
-\begin{definition}\label{def:derivative} \lean{D} \leanok
+\begin{definition}\label{def:derivative} \lean{Derivative.normalizedDerivOfComplex} \leanok
 Let $F$ be a quasimodular form.
 We define the (normalized) derivative of $F$ as
 \begin{equation}\label{eqn:derivative}
@@ -544,7 +537,7 @@ We define the (normalized) derivative of $F$ as
 \end{definition}
 
 Normalizing the derivative by $1/(2 \pi i)$ as in \eqref{eqn:derivative} is standard in the theory of modular forms, since it makes the $q$-expansion coefficients nicer.
-\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\lean{D_qexp_tsum_pnat}\leanok
+\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\lean{D_qexp_tsum}\leanok
 We have an equality of operators $D = q \frac{\dd}{\dd q}$.
 In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
@@ -642,7 +635,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}\lean{serre_D_two_H₂,serre_D_two_H₃,serre_D_two_H₄}\leanok
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}\lean{serre_D_two_H₂,serre_D_two_H₄}\leanok
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\
