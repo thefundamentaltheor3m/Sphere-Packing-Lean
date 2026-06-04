@@ -23,12 +23,12 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancell
 public import SpherePacking.MainTheorem
 public import SpherePacking.ModularForms.CuspFormIsoModforms
 public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
 public import SpherePacking.ModularForms.Derivative.Basic
+public import SpherePacking.ModularForms.Derivative.Equivariance
+public import SpherePacking.ModularForms.Derivative.Ramanujan
 public import SpherePacking.ModularForms.Derivative.SerreD
 public import SpherePacking.ModularForms.Derivative.SlashFormula
-public import SpherePacking.ModularForms.Derivative.Equivariance
-public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
-public import SpherePacking.ModularForms.Derivative.Ramanujan
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein
@@ -42,9 +42,9 @@ public import SpherePacking.ModularForms.FG.L10OverAsymptotics
 public import SpherePacking.ModularForms.FG.Positivity
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.JacobiTheta.Basic
+public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 public import SpherePacking.ModularForms.JacobiTheta.Positivity
 public import SpherePacking.ModularForms.JacobiTheta.SlashActions
-public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.MultipliableLemmas
 public import SpherePacking.ModularForms.PhiTransform
