@@ -7,7 +7,7 @@ public import Mathlib.NumberTheory.ModularForms.SlashActions
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 
 
 /-!
@@ -22,7 +22,7 @@ This file studies the restriction of functions `F : ℍ → ℂ` to the positive
 
 ## Main statements
 * `tendsto_rpow_mul_resToImagAxis_of_isBigO_exp`
-* `cuspForm_rpow_mul_resToImagAxis_tendsto_zero`
+* `tendsto_rpow_mul_resToImagAxis_of_fourier_shift`
 -/
 
 
@@ -57,14 +57,11 @@ If `F` is continuous on `ℍ`, then its restriction to the imaginary axis is con
 public lemma continuousOn_resToImagAxis_Ioi_of {F : ℍ → ℂ} (hF : Continuous F) :
     ContinuousOn F.resToImagAxis (Set.Ioi (0 : ℝ)) := by
   rw [continuousOn_iff_continuous_restrict]
-  let z : Set.Ioi (0 : ℝ) → UpperHalfPlane :=
-    fun t =>
-      ⟨(Complex.I : ℂ) * (t : ℝ), by
-        have ht : (0 : ℝ) < (t : ℝ) := t.property
-        simpa [Complex.mul_im] using ht⟩
-  have hz : Continuous z := by
-    fun_prop
-  refine (hF.comp hz).congr fun t => ?_
+  let z : Set.Ioi (0 : ℝ) → UpperHalfPlane := fun t =>
+    ⟨(Complex.I : ℂ) * (t : ℝ), by
+      have ht : (0 : ℝ) < (t : ℝ) := t.property
+      simpa [Complex.mul_im] using ht⟩
+  refine (hF.comp (by fun_prop : Continuous z)).congr fun t => ?_
   have ht : (0 : ℝ) < (t : ℝ) := t.property
   simp [Set.restrict, ResToImagAxis, z, ht]
 
@@ -133,8 +130,7 @@ positive, i.e. there exists $t_0 > 0$ such that for all $t \ge t_0$, $F(it)$ is 
 If `F` is complex-differentiable on `ℍ`, then `t ↦ F (I * t)` is real-differentiable for `t > 0`.
 -/
 public theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (t : ℝ)
-    (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
+    (t : ℝ) (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
   rw [Function.resToImagAxis_eq_resToImagAxis]
   have h_diff : DifferentiableAt ℝ (fun t : ℝ => F (ofComplex (Complex.I * t))) t := by
     let g : ℝ → ℂ := fun s => Complex.I * (s : ℂ)
@@ -234,8 +230,8 @@ public theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToIm
 
 /-- The property `ResToImagAxis.Real` is closed under negation. -/
 public theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
-    ResToImagAxis.Real (-F) := by
-  simpa using (ResToImagAxis.Real.smul (F := F) (c := (-1 : ℝ)) hF)
+    ResToImagAxis.Real (-F) := fun t ht => by
+  simpa [ResToImagAxis, ht] using hF t ht
 
 @[fun_prop]
 theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
@@ -296,7 +292,6 @@ public theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos
 /-- The property `ResToImagAxis.Pos` is closed under multiplication. -/
 public theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F * G) := by
-  rw [Pos]
   refine ⟨Real.mul hF.1 hG.1, fun t ht ↦ ?_⟩
   rw [Real.re_mul_eq hF.1 hG.1 t]
   exact mul_pos (hF.2 t ht) (hG.2 t ht)
@@ -304,13 +299,9 @@ public theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos
 /-- The property `ResToImagAxis.Pos` is closed under positive scalar multiplication. -/
 public theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
     (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
-  rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
-  have hF' : 0 < (ResToImagAxis F t).re := by
-    simpa [ResToImagAxis, ht] using hF.2 t ht
-  have hmul : (ResToImagAxis (c • F) t).re = c * (ResToImagAxis F t).re := by
-    simp [ResToImagAxis, ht]
-  simpa [hmul] using mul_pos hc hF'
+  have hF' : 0 < (ResToImagAxis F t).re := by simpa [ResToImagAxis, ht] using hF.2 t ht
+  simpa [ResToImagAxis, ht] using mul_pos hc hF'
 
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
@@ -467,15 +458,19 @@ theorem cuspForm_rpow_mul_resToImagAxis_tendsto_zero {n : ℕ} {k : ℤ} {F : Ty
     convert CuspFormClass.exp_decay_atImInfty hn_pos hmem (f := f) using 2 with τ; field_simp
   exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (div_pos (by positivity) hn_pos) hdecay' s
 
-/-!
-## Fourier expansion approach for polynomial decay
+/-- Real part of `2π i (m + n₀) z` is `-2π (m + n₀) im z`. -/
+private lemma fourier_shift_re (m n₀ : ℕ) (z : ℍ) :
+    (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+  simp only [Nat.cast_add, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re,
+    add_im, natCast_im, coe_re, zero_add, coe_im, zero_sub, neg_mul]
 
-This section provides an alternative approach to polynomial decay that works directly from
-Fourier expansions. If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
-then `F = O(exp(-2π n₀ · im z))` at `atImInfty`, which gives `t^s * F(it) → 0`.
-
-This is useful for functions with q-expansions starting at a positive index (like `(E₂E₄ - E₆)²`).
--/
+/-- Exponential majorisation: for `im z ≥ c`, `exp(-2π m z.im) ≤ exp(-2π c m)`. -/
+private lemma fourier_shift_exp_le (m : ℕ) {z : ℍ} {c : ℝ} (hz : c ≤ z.im) :
+    rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π * c) * m) := by
+  rw [Real.exp_le_exp]
+  have : (m : ℝ) * z.im ≥ m * c := by nlinarith
+  nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m), z.im_pos]
 
 /--
 If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
@@ -492,56 +487,23 @@ public lemma isBigO_atImInfty_of_fourier_shift
     (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) :
     F =O[atImInfty] fun z : ℍ => rexp (-(2 * π * (n₀ : ℝ)) * z.im) := by
   rw [Asymptotics.isBigO_iff]
-  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π * c) * m), ?_⟩
-  rw [Filter.eventually_atImInfty]
-  refine ⟨c, fun z hz => ?_⟩
+  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π * c) * m),
+    Filter.eventually_atImInfty.2 ⟨c, fun z hz => ?_⟩⟩
   rw [hF z, Real.norm_of_nonneg (le_of_lt (Real.exp_pos _))]
-  -- Real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
-  have hexp_re m : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
-    simp only [Nat.cast_add, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-      Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re,
-      add_im, natCast_im, coe_re, zero_add, coe_im, zero_sub, neg_mul]
-  -- Key bound: for y ≥ c, exp(-(2π)(m+n₀)y) ≤ exp(-(2πc)m) * exp(-(2πc)n₀)
-  have hexp_bound (m : ℕ) :
-      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
-        rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by
-    rw [← Real.exp_add, Real.exp_le_exp]
-    have _ : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
-    nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m),
-      (Nat.cast_nonneg n₀ : (0 : ℝ) ≤ n₀), z.im_pos]
-  -- Summability of norms
-  have hsum_norms : Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
-    refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
-      (ha.mul_right (rexp (-(2 * π * c) * n₀)))
-    simp only [norm_mul, norm_exp, hexp_re]
-    calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
-        ≤ ‖a m‖ * (rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀)) :=
-          mul_le_mul_of_nonneg_left (hexp_bound m) (norm_nonneg _)
-      _ = ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by ring
-  have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
-    convert hsum_norms with m; rw [norm_mul, norm_exp, hexp_re]
-  -- Main calculation
+  have hterm (m : ℕ) : ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ ≤
+      ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+    simp only [norm_mul, norm_exp, fourier_shift_re m n₀ z]
+    rw [show rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
+        rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) from
+      by rw [← Real.exp_add]; ring_nf, ← mul_assoc]
+    exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+      (fourier_shift_exp_le m hz) (norm_nonneg _)) (le_of_lt (Real.exp_pos _))
+  have hsum_norms := Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hterm (ha.mul_right _)
   calc ‖∑' m, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖
       ≤ ∑' m, ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ :=
         norm_tsum_le_tsum_norm hsum_norms
-    _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
-        simp only [norm_mul, norm_exp, hexp_re]
-    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
-        refine Summable.tsum_le_tsum (fun m => ?_) hsum_norms'
-          (ha.mul_right (rexp (-(2 * π) * n₀ * z.im)))
-        have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
-            rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
-          rw [← Real.exp_add]; ring_nf
-        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π * c) * m) := by
-          rw [Real.exp_le_exp]
-          have key : (m : ℝ) * z.im ≥ m * c := by nlinarith
-          nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m), z.im_pos]
-        calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
-            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
-              rw [hsplit]; ring
-          _ ≤ ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
-              apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
-              exact mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _)
+    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) :=
+        Summable.tsum_le_tsum hterm hsum_norms (ha.mul_right _)
     _ = (∑' m, ‖a m‖ * rexp (-(2 * π * c) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
     _ = _ := by ring_nf
 

@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
 module
 
 public import Mathlib.Analysis.CStarAlgebra.Module.Defs
@@ -6,19 +11,14 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.Cusps
 
 public import SpherePacking.ForMathlib.Cusps
-
+public import SpherePacking.ModularForms.QExpansionLemmas
 
 /-!
-# Cusp forms as a submodule
+# Cusp forms
 
-This file treats cusp forms as a submodule of modular forms via the linear map
-`CuspForm_to_ModularForm`. It also defines the predicate `IsCuspForm` for modular forms and
-records a characterization for level one in terms of the constant `q`-coefficient.
-
-## Main declarations
-* `ModForm_mk`, `CuspForm_to_ModularForm`, `CuspFormSubmodule`
-* `IsCuspForm`, `IsCuspForm_to_CuspForm`
-* `IsCuspForm_iff_coeffZero_eq_zero`
+Aliases mathlib's `ModularForm.IsCuspForm` as `IsCuspForm`, and provides a `Γ(1)`-flavoured
+constructor `cuspFormOfSIFTendstoZero` together with the level-one characterisation
+`IsCuspForm_iff_coeffZero_eq_zero`.
 -/
 
 open scoped MatrixGroups CongruenceSubgroup Topology
@@ -28,7 +28,7 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section Definitions
 
-variable {α ι : Type*}
+variable {k : ℤ} {Γ : Subgroup SL(2, ℤ)}
 
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
 

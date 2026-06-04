@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
 module
 public import Mathlib.Data.Rat.Star
 public import Mathlib.LinearAlgebra.Dimension.Localization

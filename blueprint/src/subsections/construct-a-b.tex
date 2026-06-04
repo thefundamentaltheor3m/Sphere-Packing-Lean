@@ -271,8 +271,8 @@ Combining these, one can show that $a$ is a Schwartz function.
 $a(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}\leanok
-\uses{lem:bound-I1-I3-I5, lem:bound-I2-I4-I6, lem:integral-bound, thm:smooth-fast-decay-schwartz}
-By Theorem \ref{thm:smooth-fast-decay-schwartz}, it suffices to show that the function is smooth and decays faster than any polynomial.
+\uses{lem:bound-I1-I3-I5, lem:bound-I2-I4-I6, lem:integral-bound}
+It suffices to show that the function is smooth and decays faster than any polynomial.
 The smoothness follows from the ``differentiation under the integral'', which is already formalized in \texttt{mathlib}.
 The decay follows from Lemmas \ref{lem:bound-I1-I3-I5} and \ref{lem:bound-I2-I4-I6}, together with Lemma \ref{lem:integral-bound}.
 \end{proof}
@@ -566,13 +566,13 @@ There exist a constant $C > 0$ such that
 
 % \end{proof}
 
-Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and Theorem \ref{thm:smooth-fast-decay-schwartz}, we can prove that $b(x)$ is a Schwartz function.
+Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and the radial bridge above, we can prove that $b(x)$ is a Schwartz function.
 
 \begin{proposition}\label{prop:b-schwartz}\uses{lemma:psi-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
 $b(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}\leanok
-\uses{lemma:bound-J1-J3-J5, lemma:bound-J2-J4-J6, thm:smooth-fast-decay-schwartz}
+\uses{lemma:bound-J1-J3-J5, lemma:bound-J2-J4-J6}
 Similar to the proof of \ref{prop:a-schwartz}.
 \end{proof}
 

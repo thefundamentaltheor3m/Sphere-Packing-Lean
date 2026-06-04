@@ -57,8 +57,7 @@ public theorem φ₀_S_transform_mul_sq (z : ℍ) :
             (z : ℂ) ^ (2 : ℕ) =
           φ₀ z * (z : ℂ) ^ (2 : ℕ) - (12 * Complex.I) / π * (z : ℂ) * φ₂' z -
             36 / (π ^ 2) * φ₄' z := by
-    simp [pow_two, sub_eq_add_neg, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-    field_simp [hz, hπ]
+    field_simp
   simpa [hsimp] using
     congrArg (fun w : ℂ => w * (z : ℂ) ^ (2 : ℕ)) (φ₀_S_transform z)
 
