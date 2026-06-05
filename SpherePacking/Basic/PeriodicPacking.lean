@@ -16,8 +16,6 @@ public import SpherePacking.ForMathlib.ZLattice
 
 @[expose] public section
 
--- import Mathlib
-
 /- In this file, we establish results about density of periodic packings. This roughly corresponds
 to Section 2.2, "Bounds on Finite Density of Periodic Packing". -/
 
@@ -29,11 +27,11 @@ density within a fundamental domain w.r.t. any basis.
 -/
 
 open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
+open MeasureTheory Metric ZSpan Bornology Module EuclideanSpace
 
 section aux_lemmas
 
-variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+variable {d : ℕ} (S : EuclideanSpace.PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
 
 lemma aux1 (hD_isBounded : IsBounded D) :
     IsBounded (⋃ x ∈ S.centers ∩ D, ball x (S.separation / 2)) := by
@@ -53,7 +51,7 @@ lemma aux2 (D : Set (EuclideanSpace ℝ (Fin d))) :
   intro x hx y hy hxy
   apply ball_disjoint_ball
   rw [add_halves]
-  exact S.centers_dist' _ _ hx.left hy.left hxy
+  exact S.centers_dist' hx.left hy.left hxy
 
 theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
     [Fintype τ] [NoAtoms (volume : Measure (EuclideanSpace ℝ τ))]
@@ -106,7 +104,7 @@ lemma aux4 (hD_isBounded : IsBounded D) (hd : 0 < d) : Finite ↑(S.centers ∩ 
     simp [Measure.addHaar_ball_center]
   · intro x hx y hy hxy
     apply ball_disjoint_ball
-    simpa [add_halves] using S.centers_dist' _ _ hx.left hy.left hxy
+    simpa [add_halves] using S.centers_dist' hx.left hy.left hxy
   · apply measure_ball_pos
     linarith [S.separation_pos]
   · intros
@@ -125,11 +123,11 @@ lemma aux4''
 end aux_lemmas
 
 section instances
-variable {d : ℕ} (S : PeriodicSpherePacking d)
+variable {d : ℕ} (S : EuclideanSpace.PeriodicSpherePacking d)
 open scoped Pointwise
 
 -- TODO: rename + move
-theorem PeriodicSpherePacking.fract_centers
+theorem Metric.PeriodicSpherePacking.fract_centers
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (s : S.centers) :
     fract (b.ofZLatticeBasis ℝ _) s.val ∈ S.centers := by
   have := (floor (b.ofZLatticeBasis ℝ _) s).prop
@@ -138,7 +136,7 @@ theorem PeriodicSpherePacking.fract_centers
   apply S.lattice_action (neg_mem this) s.prop
 
 -- TODO: rename + move
-theorem PeriodicSpherePacking.orbitRel_fract
+theorem Metric.PeriodicSpherePacking.orbitRel_fract
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (a : S.centers) :
     (S.addAction.orbitRel).r ⟨fract (b.ofZLatticeBasis ℝ _) a, S.fract_centers _ _⟩ a := by
   rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range]
@@ -150,7 +148,7 @@ theorem PeriodicSpherePacking.orbitRel_fract
   · simp_rw [fract_apply, sub_eq_neg_add]
     rfl
 
-noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
+noncomputable def Metric.PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) where
   toFun := by
@@ -195,7 +193,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       set_option backward.isDefEq.respectTransparency false in
       simpa using hx.right
 
-noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
+noncomputable def Metric.PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   refine S.addActionOrbitRelEquiv _ ?_
@@ -213,7 +211,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]
     rfl
 
-noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
+noncomputable def Metric.PeriodicSpherePacking.addActionOrbitRelEquiv''
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     Quotient S.addAction.orbitRel ≃
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
@@ -261,10 +259,10 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
           simp
   }
 
-instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
-instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
+instance (S : EuclideanSpace.PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
+instance (S : EuclideanSpace.PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
-noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
+noncomputable instance Metric.PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) := by
   -- We choose an arbitrary ℤ-basis of S.lattice
   let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
@@ -287,16 +285,17 @@ section numReps
 open scoped Pointwise
 
 
-variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+variable {d : ℕ} (S : EuclideanSpace.PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
 
-noncomputable instance PeriodicSpherePacking.instCentersSetoid : Setoid S.centers :=
+noncomputable instance Metric.PeriodicSpherePacking.instCentersSetoid : Setoid S.centers :=
   S.addAction.orbitRel
 
 -- TODO: rename
-noncomputable def PeriodicSpherePacking.numReps : ℕ :=
+noncomputable def Metric.PeriodicSpherePacking.numReps : ℕ :=
   Fintype.card (Quotient S.addAction.orbitRel)
 
-theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) : S.numReps = 1 := by
+theorem Metric.PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) :
+    S.numReps = 1 := by
   rw [numReps]
   apply le_antisymm
   · rw [Fintype.card_le_one_iff_subsingleton, ← AddAction.pretransitive_iff_subsingleton_quotient]
@@ -309,7 +308,7 @@ theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) : S.nu
     let zero : S.centers := ⟨0, by rw [hS]; exact zero_mem _⟩
     use ⟦zero⟧, by simp [zero]
 
-theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
+theorem Metric.PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
     (hd : 0 < d) :
@@ -319,7 +318,7 @@ theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
   convert Finset.card_eq_of_equiv_fintype ?_
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv D hD_unique_covers).symm
 
-theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
+theorem Metric.PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
     (hd : 0 < d) :
@@ -327,7 +326,7 @@ theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
   convert Set.encard_eq_coe_toFinset_card _
 
-theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
+theorem Metric.PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     haveI := @Fintype.ofFinite _ <| aux4' S b hd
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
@@ -335,13 +334,13 @@ theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
   convert Finset.card_eq_of_equiv_fintype ?_
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv' b).symm
 
-theorem PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d)
+theorem Metric.PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
   rw [← S.card_centers_inter_fundamentalDomain hd b]
   convert Set.encard_eq_coe_toFinset_card _
 
-theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
+theorem Metric.PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| aux4'' S b hd v
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
@@ -350,7 +349,7 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
   convert Finset.card_eq_of_equiv_fintype ?_
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv'' b _).symm
 
-theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
+theorem Metric.PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
   have := Fintype.ofFinite ι
@@ -368,39 +367,42 @@ section numReps_aux
 
 variable {d : ℕ}
 
-noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
-  (S : PeriodicSpherePacking d) (hd : 0 < d)
+noncomputable instance Metric.PeriodicSpherePacking.instFintypeNumReps'
+  (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
   Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
 
-noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
+noncomputable def Metric.PeriodicSpherePacking.numReps'
+    (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d)
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
   letI := S.instFintypeNumReps' hd hD_isBounded
   Fintype.card ↑(S.centers ∩ D)
 
-theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
-  0 ≤ S.numReps' hd hD_isBounded := by
+theorem Metric.PeriodicSpherePacking.numReps'_nonneg
+    (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d)
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+    0 ≤ S.numReps' hd hD_isBounded := by
   letI := S.instFintypeNumReps' hd hD_isBounded
   rw [PeriodicSpherePacking.numReps']
   exact Nat.zero_le (Fintype.card ↑(S.centers ∩ D))
 
-theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
-  S.numReps = S.numReps' hd hD_isBounded := by
+theorem Metric.PeriodicSpherePacking.numReps_eq_numReps'
+    (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d)
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    S.numReps = S.numReps' hd hD_isBounded := by
   letI := S.instFintypeNumReps' hd hD_isBounded
   rw [PeriodicSpherePacking.numReps']
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
   exact Set.toFinset_card (S.centers ∩ D)
 
--- theorem PeriodicSpherePacking.numReps_ne_zero (S : PeriodicSpherePacking d)
+-- theorem PeriodicSpherePacking.numReps_ne_zero (S : EuclideanSpace.PeriodicSpherePacking d)
 
 end numReps_aux
 
 section theorem_2_3
 
-variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+variable {d : ℕ} (S : EuclideanSpace.PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
 
 open scoped Pointwise
 
@@ -422,7 +424,7 @@ private theorem aux
     _ = R := by ring
 
 -- Theorem 2.3, lower bound
-theorem PeriodicSpherePacking.aux_ge
+theorem Metric.PeriodicSpherePacking.aux_ge
     (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard ≥
@@ -486,7 +488,7 @@ private theorem aux'
     exact fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
 
 -- Theorem 2.3, upper bound - the proof is similar to lower bound
-theorem PeriodicSpherePacking.aux_le
+theorem Metric.PeriodicSpherePacking.aux_le
     (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
@@ -550,7 +552,7 @@ either :)
 -/
 
 open scoped Pointwise
-variable {d : ℕ} (S : PeriodicSpherePacking d)
+variable {d : ℕ} (S : EuclideanSpace.PeriodicSpherePacking d)
   {ι : Type*} [Finite ι]
   (D : Set (EuclideanSpace ℝ (Fin d))) {L : ℝ} (R : ℝ)
 
@@ -597,7 +599,7 @@ instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Mod
   inferInstanceAs <| VAddInvariantMeasure s.toAddSubgroup E μ
 
 -- Theorem 2.2, lower bound
-theorem PeriodicSpherePacking.aux2_ge
+theorem Metric.PeriodicSpherePacking.aux2_ge
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -643,7 +645,7 @@ theorem aux8 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
     _ < R + L := add_lt_add_of_lt_of_le hi_ball this
 
 -- Theorem 2.2, upper bound
-theorem PeriodicSpherePacking.aux2_le
+theorem Metric.PeriodicSpherePacking.aux2_le
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -681,7 +683,7 @@ open ZSpan
 variable (b : Basis ι ℤ S.lattice)
 
 -- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice
-theorem PeriodicSpherePacking.aux2_ge'
+theorem Metric.PeriodicSpherePacking.aux2_ge'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
@@ -698,7 +700,7 @@ theorem PeriodicSpherePacking.aux2_ge'
     exact hy
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
-theorem PeriodicSpherePacking.aux2_le'
+theorem Metric.PeriodicSpherePacking.aux2_le'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
@@ -721,7 +723,7 @@ section finiteDensity_limit
 open MeasureTheory Measure Metric ZSpan
 
 variable
-  {d : ℕ} {S : PeriodicSpherePacking d}
+  {d : ℕ} {S : EuclideanSpace.PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
 theorem aux_big_le
@@ -914,10 +916,10 @@ end VolumeBallRatio
 section DensityEqFdDensity
 
 variable
-  {d : ℕ} {S : PeriodicSpherePacking d}
+  {d : ℕ} {S : EuclideanSpace.PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
-private lemma PeriodicSpherePacking.tendsto_finiteDensity
+private lemma Metric.PeriodicSpherePacking.tendsto_finiteDensity
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     Tendsto S.finiteDensity atTop
       (𝓝 (S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
@@ -939,7 +941,7 @@ private lemma PeriodicSpherePacking.tendsto_finiteDensity
     · left
       exact one_ne_zero
 
-theorem PeriodicSpherePacking.density_eq
+theorem Metric.PeriodicSpherePacking.density_eq
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     S.density
       = S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
@@ -951,17 +953,18 @@ end DensityEqFdDensity
 section ConstantEqNormalizedConstant
 
 theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
-    PeriodicSpherePackingConstant d = ⨆ (S : PeriodicSpherePacking d) (_ : S.separation = 1),
-    S.density := by
+    PeriodicSpherePackingConstant d =
+      ⨆ (S : EuclideanSpace.PeriodicSpherePacking d) (_ : S.separation = 1), S.density := by
   -- Argument almost identical to `constant_eq_constant_normalized`, courtesy Gareth
   rw [iSup_subtype', PeriodicSpherePackingConstant]
   apply le_antisymm
   · apply iSup_le
     intro S
     have h := inv_mul_cancel₀ S.separation_pos.ne.symm
-    have := le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
+    have := le_iSup
+        (fun x : { x : EuclideanSpace.PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
         ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
-    rw [← scale_density hd]
+    rw [← Metric.SpherePacking.scale_density hd]
     · exact this
     · rw [inv_pos]
       exact S.separation_pos
@@ -974,11 +977,11 @@ end ConstantEqNormalizedConstant
 
 section Disjoint_Covering_of_Centers
 
-theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  :
-  ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
+theorem Metric.PeriodicSpherePacking.unique_covers_of_centers
+    (S : EuclideanSpace.PeriodicSpherePacking d)
+    {D : Set (EuclideanSpace ℝ (Fin d))}
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
   intro x
   obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
   use g
@@ -988,7 +991,8 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d)
+theorem Metric.PeriodicSpherePacking.centers_union_over_lattice
+    (S : EuclideanSpace.PeriodicSpherePacking d)
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
     S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
@@ -1025,7 +1029,8 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
 -- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
--- theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+-- theorem PeriodicSpherePacking.translates_disjoint
+-- (S : EuclideanSpace.PeriodicSpherePacking d) -- (hd : 0 < d)
 -- {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
 -- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
 -- : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
@@ -1050,7 +1055,7 @@ section Fundamental_Domains_in_terms_of_Basis
 
 open Submodule
 
-variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
+variable (S : EuclideanSpace.PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
 
 -- I include the following because some lemmas in `PeriodicPacking` have them as assumptions, and
 -- I'd like to replace all instances of `D` with `fundamentalDomain (b.ofZLatticeBasis ℝ _)` and
@@ -1058,13 +1063,13 @@ variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
 
 -- Note that we have `ZSpan.fundamentalDomain_isBounded`. We can use this to prove the following,
 -- which is necessary for `PeriodicSpherePacking.density_eq`.
-theorem PeriodicSpherePacking.exists_bound_on_fundamental_domain :
+theorem Metric.PeriodicSpherePacking.exists_bound_on_fundamental_domain :
   ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L :=
   isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b))
 
 -- Note that we have `ZSpan.exist_unique_vadd_mem_fundamentalDomain`. We can use this to prove the
 -- following.
-theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
+theorem Metric.PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
   have : S.lattice = span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) :=
     Eq.symm (Basis.ofZLatticeBasis_span ℝ S.lattice b)
@@ -1107,16 +1112,18 @@ noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace
       ZLattice.rank ℝ Λ,
       finrank_euclideanSpace, Fintype.card_fin]
 
-noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
-  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := ZLattice.basis_index_equiv P.lattice
+noncomputable def Metric.PeriodicSpherePacking.basis_index_equiv
+    (P : EuclideanSpace.PeriodicSpherePacking d) :
+    (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) :=
+  ZLattice.basis_index_equiv P.lattice
 
 /- Here's a version of `PeriodicSpherePacking.density_eq` that
 1. does not require the `hL` hypothesis that the original one does
 2. uses `ZLattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
 -/
 @[simp]
-theorem PeriodicSpherePacking.density_eq'
-  (S : PeriodicSpherePacking d) (hd : 0 < d) : S.density =
+theorem Metric.PeriodicSpherePacking.density_eq'
+  (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d) : S.density =
   (ENat.toENNReal (S.numReps : ENat)) *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) /
   Real.toNNReal (ZLattice.covolume S.lattice) := by
@@ -1140,8 +1147,9 @@ end Periodic_Density_Formula
 
 section Empty_Centers
 
-theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePacking d) (hd : 0 < d)
-  [instEmpty : IsEmpty S.centers] : S.density = 0 := by
+theorem Metric.PeriodicSpherePacking.density_of_centers_empty
+    (S : EuclideanSpace.PeriodicSpherePacking d) (hd : 0 < d)
+    [instEmpty : IsEmpty S.centers] : S.density = 0 := by
   -- Idea: Use formula
   -- (We are using `IsEmpty` in order to do cases on `isEmpty_or_nonempty` in proofs)
   rw [S.density_eq' hd]
@@ -1163,14 +1171,15 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
     exact Set.empty_inter D
   exact Set.isEmpty_coe_sort.mp instEmpty
 
-theorem SpherePacking.density_of_centers_empty (S : SpherePacking d) (hd : 0 < d)
-  [instEmpty : IsEmpty S.centers] : S.density = 0 := by
+theorem Metric.SpherePacking.density_of_centers_empty
+    (S : EuclideanSpace.SpherePacking d) (hd : 0 < d)
+    [instEmpty : IsEmpty S.centers] : S.density = 0 := by
   -- Idea: construct a periodic sphere packing with some lattice and the same set of centres
   -- Show that its toSpherePacking is the same as S
   -- Then use formula
   let b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis
   let Λ := Submodule.span ℤ (Set.range b)
-  let P : PeriodicSpherePacking d := {
+  let P : EuclideanSpace.PeriodicSpherePacking d := {
     centers := S.centers
     separation := S.separation
     separation_pos := S.separation_pos
