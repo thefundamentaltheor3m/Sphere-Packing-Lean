@@ -1,4 +1,5 @@
 module
+public import LeanModularForms.SpherePacking.ContourLimitAtCusp
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
@@ -480,6 +481,142 @@ private lemma laplacePsiI_rectRight {u : ℝ} (hu : 2 < u) :
           by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
       (by simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm]
         using laplacePsiI_intT_center hu) (laplacePsiI_tendstoT hu)
+
+/-- Parallel re-derivation of `laplacePsiI_rectLeft` using
+`LeanModularForms.cauchy_semi_infinite_rectangle_eq`. The left rectangle contour integral
+vanishes: the boundary integral of `bContourIntegrandT` on the rectangle with left side
+`x = -1`. -/
+public theorem laplacePsiI_rectLeft_via_cauchy {u : ℝ} (hu : 2 < u) :
+    (∫ (x : ℝ) in (0 : ℝ)..1,
+          bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1)) +
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
+      (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
+            bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) = 0 := by
+  have h_top : Tendsto (fun R : ℝ =>
+      ∫ x in (-1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + R * I)) atTop (𝓝 0) := by
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    rcases laplacePsiI_tendstoT (u := u) hu (ε / 2) (half_pos hε) with ⟨M, hM⟩
+    refine ⟨max M 1, fun R hR => ?_⟩
+    have hMR : M ≤ R := (le_max_left M 1).trans hR
+    have hbd : ∀ x ∈ Set.uIoc (-1 : ℝ) 0,
+        ‖bContourIntegrandT u ((x : ℂ) + R * I)‖ ≤ ε / 2 := fun x _ =>
+      (hM ((x : ℂ) + R * I) (by simpa using hMR)).le
+    have hint := intervalIntegral.norm_integral_le_of_norm_le_const (a := (-1 : ℝ)) (b := 0)
+      (f := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + R * I)) (C := ε / 2) hbd
+    simp only [dist_zero_right]
+    have : |(0 : ℝ) - -1| = 1 := by norm_num
+    rw [this, mul_one] at hint
+    exact lt_of_le_of_lt hint (half_lt_self hε)
+  have h_cauchy := LeanModularForms.cauchy_semi_infinite_rectangle_eq
+    (a := (-1 : ℝ)) (b := 0) (c := 1) (by norm_num)
+    (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
+    (convex_halfSpace_im_gt 0)
+    (fun x _ y hy => show 0 < ((x : ℂ) + (y : ℂ) * I).im by
+      simpa using lt_of_lt_of_le zero_lt_one hy)
+    (f := bContourIntegrandT u) (differentiableOn_bContourIntegrandT u)
+    h_top
+    (by simpa [mul_comm] using laplacePsiI_intT_center hu)
+    (by simpa [mul_comm] using laplacePsiI_intT_shift hu (-1 : ℂ) fun t ht0 =>
+      by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
+  -- Bridge cauchy's bottom integral to legacy form.
+  have hbottom : (∫ x in (0 : ℝ)..1,
+      bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1)) =
+      ∫ x in (-1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + ((1 : ℝ) : ℂ) * I) := by
+    have h := intervalIntegral.integral_comp_sub_right
+      (f := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + ((1 : ℝ) : ℂ) * I))
+      (a := (0 : ℝ)) (b := 1) (d := 1)
+    simp only [zero_sub, sub_self] at h
+    rw [← h]
+    refine intervalIntegral.integral_congr fun x _ => ?_
+    push_cast
+    ring_nf
+  -- Bridge cauchy's middle (`b = 0`) integral.
+  have hmid : (∫ y in Set.Ioi (1 : ℝ),
+      bContourIntegrandT u ((0 : ℂ) + (y : ℂ) * I)) =
+      ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ)) := by
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y _ => ?_
+    congr 1
+    ring
+  -- Bridge cauchy's left (`a = -1`) integral.
+  have hleft : (∫ y in Set.Ioi (1 : ℝ),
+      bContourIntegrandT u (((-1 : ℝ) : ℂ) + (y : ℂ) * I)) =
+      ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) := by
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y _ => ?_
+    congr 1
+    push_cast
+    ring
+  rw [hbottom, smul_eq_mul, smul_eq_mul]
+  rw [show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) =
+        ∫ y in Set.Ioi (1 : ℝ), bContourIntegrandT u ((0 : ℂ) + (y : ℂ) * I) from hmid.symm,
+      show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
+        ∫ y in Set.Ioi (1 : ℝ), bContourIntegrandT u (((-1 : ℝ) : ℂ) + (y : ℂ) * I) from hleft.symm]
+  linear_combination h_cauchy
+
+/-- Parallel re-derivation of `laplacePsiI_rectRight` using
+`LeanModularForms.cauchy_semi_infinite_rectangle_eq`. The right rectangle contour integral
+vanishes: the boundary integral of `bContourIntegrandT` on the rectangle with right side
+`x = 1`. -/
+public theorem laplacePsiI_rectRight_via_cauchy {u : ℝ} (hu : 2 < u) :
+    (∫ (x : ℝ) in (1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)) +
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
+          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
+            bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
+  have h_top : Tendsto (fun R : ℝ =>
+      ∫ x in (0 : ℝ)..1, bContourIntegrandT u ((x : ℂ) + R * I)) atTop (𝓝 0) := by
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    rcases laplacePsiI_tendstoT (u := u) hu (ε / 2) (half_pos hε) with ⟨M, hM⟩
+    refine ⟨max M 1, fun R hR => ?_⟩
+    have hMR : M ≤ R := (le_max_left M 1).trans hR
+    have hbd : ∀ x ∈ Set.uIoc (0 : ℝ) 1,
+        ‖bContourIntegrandT u ((x : ℂ) + R * I)‖ ≤ ε / 2 := fun x _ =>
+      (hM ((x : ℂ) + R * I) (by simpa using hMR)).le
+    have hint := intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := 1)
+      (f := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + R * I)) (C := ε / 2) hbd
+    simp only [dist_zero_right]
+    have : |(1 : ℝ) - 0| = 1 := by norm_num
+    rw [this, mul_one] at hint
+    exact lt_of_le_of_lt hint (half_lt_self hε)
+  have h_cauchy := LeanModularForms.cauchy_semi_infinite_rectangle_eq
+    (a := (0 : ℝ)) (b := 1) (c := 1) (by norm_num)
+    (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
+    (convex_halfSpace_im_gt 0)
+    (fun x _ y hy => show 0 < ((x : ℂ) + (y : ℂ) * I).im by
+      simpa using lt_of_lt_of_le zero_lt_one hy)
+    (f := bContourIntegrandT u) (differentiableOn_bContourIntegrandT u)
+    h_top
+    (by simpa [mul_comm] using laplacePsiI_intT_shift hu (1 : ℂ) fun t ht0 =>
+      by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
+    (by simpa [mul_comm] using laplacePsiI_intT_center hu)
+  -- Bridge cauchy's bottom integral (0..1 ↦ legacy 1..0 via integral_symm).
+  have hbottom : (∫ x in (1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)) =
+      -(∫ x in (0 : ℝ)..1, bContourIntegrandT u ((x : ℂ) + ((1 : ℝ) : ℂ) * I)) := by
+    rw [intervalIntegral.integral_symm]
+    refine congrArg Neg.neg (intervalIntegral.integral_congr fun x _ => ?_)
+    push_cast
+    ring_nf
+  -- Bridge cauchy's left (`a = 0`) integral.
+  have hleft : (∫ y in Set.Ioi (1 : ℝ),
+      bContourIntegrandT u ((0 : ℂ) + (y : ℂ) * I)) =
+      ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ)) := by
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y _ => ?_
+    congr 1
+    ring
+  -- Bridge cauchy's right (`b = 1`) integral.
+  have hright : (∫ y in Set.Ioi (1 : ℝ),
+      bContourIntegrandT u (((1 : ℝ) : ℂ) + (y : ℂ) * I)) =
+      ∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) := by
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y _ => ?_
+    congr 1
+    push_cast
+    ring
+  rw [hbottom, smul_eq_mul, smul_eq_mul]
+  rw [show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) =
+        ∫ y in Set.Ioi (1 : ℝ), bContourIntegrandT u ((0 : ℂ) + (y : ℂ) * I) from hleft.symm,
+      show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
+        ∫ y in Set.Ioi (1 : ℝ), bContourIntegrandT u (((1 : ℝ) : ℂ) + (y : ℂ) * I) from hright.symm]
+  linear_combination -h_cauchy
 
 /-- Pointwise identity `bContourIntegrandT + bContourIntegrandS = -bContourIntegrandI`
 on the open upper half-plane (from `ψI = ψT + ψS`). -/
