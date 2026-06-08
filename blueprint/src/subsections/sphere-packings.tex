@@ -2,15 +2,16 @@
 % results below are stated in greater generality than presented here: sphere
 % packings are defined over an arbitrary metric space (`Metric.SpherePacking`),
 % and periodic sphere packings over an arbitrary normed space over a normed
-% field (`Metric.PeriodicSpherePacking`). This blueprint, however, only contains
-% an exposition of the corresponding definitions and results in Euclidean
-% spaces, which in Lean are the abbreviations `EuclideanSpace.SpherePacking` and
-% `EuclideanSpace.PeriodicSpherePacking`. Accordingly, the `\lean{...}` links in
-% this section point to the Euclidean-space versions of the structures, while
-% operations and lemmas that are genuinely general resolve to their declarations
-% in the `Metric` namespace.
+% field (`Metric.PeriodicSpherePacking`). The Euclidean-space versions are the
+% abbreviations `EuclideanSpace.SpherePacking` and
+% `EuclideanSpace.PeriodicSpherePacking`. Where both a general (`Metric.*`) and a
+% Euclidean-space (`EuclideanSpace.*`) declaration match a blueprint statement,
+% the `\lean{...}` links point to both; operations and lemmas that exist only in
+% the general form resolve to their declarations in the `Metric` namespace. In
+% all cases, the informal exposition below describes only the Euclidean-space
+% versions.
 \begin{remark}
-  Whilst many of the definitions and results in this blueprint are stated, in the Lean formalisation, for general metric spaces (and, in the case of periodic packings, for normed spaces over normed fields), this blueprint only contains an exposition of the corresponding definitions and results in Euclidean spaces. The relevant Euclidean-space objects are \verb|EuclideanSpace.SpherePacking| and \verb|EuclideanSpace.PeriodicSpherePacking|, which are abbreviations for the general \verb|Metric.SpherePacking| and \verb|Metric.PeriodicSpherePacking|.
+  In the Lean formalisation, many of the definitions and results in this blueprint are stated for general metric spaces (and, in the case of periodic packings, for normed spaces over normed fields), as \verb|Metric.SpherePacking| and \verb|Metric.PeriodicSpherePacking|, with the Euclidean-space versions \verb|EuclideanSpace.SpherePacking| and \verb|EuclideanSpace.PeriodicSpherePacking| being abbreviations for the corresponding general declarations. Where both a general and a Euclidean-space declaration exist, we link to both; the remaining links point to the general declarations in the \verb|Metric| namespace, of which there is no separate Euclidean-space form. The informal exposition below, however, only describes the Euclidean-space versions.
 \end{remark}
 
 The Sphere Packing problem is a classic optimisation problem with widespread applications that go well beyond mathematics. The task is to determine the ``densest" possible arrangement of spheres in a given space. It remains unsolved in all but finitely many dimensions.
@@ -30,7 +31,7 @@ Arguably the most important definition in this subsection is that of \emph{packi
   \]
 \end{definition}
 
-\begin{remark}\label{SpherePacking}\lean{EuclideanSpace.SpherePacking}\leanok
+\begin{remark}\label{SpherePacking}\lean{Metric.SpherePacking,EuclideanSpace.SpherePacking}\leanok
   Note that a sphere packing is uniquely defined from a given set of centres (which, in order to be a valid set of centres, must admit a corresponding separation radius). Therefore, as a conscious choice during the formalisation process, we will define everything that depends on sphere packings in terms of \verb|SpherePacking|, a \verb|structure| that bundles all the identifying information of a packing, but not the actual balls themselves. For the purposes of this blueprint, however, we will refrain from making this distinction.
 \end{remark}
 
