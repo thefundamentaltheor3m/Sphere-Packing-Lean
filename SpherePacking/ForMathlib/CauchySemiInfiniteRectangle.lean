@@ -6,6 +6,8 @@ Authors: Chris Birkbeck
 module
 
 public import Mathlib.Analysis.Complex.CauchyIntegral
+public import Mathlib.Analysis.Complex.Convex
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
 /-!
@@ -142,6 +144,36 @@ public theorem cauchy_semi_infinite_rectangle_eq
   -- Rearrange `I • z = z * I`.
   simp only [smul_eq_mul, mul_comm Complex.I] at h_eq_lim
   linear_combination h_eq_lim
+
+/-- **Cauchy on a semi-infinite rectangle inside the upper half-plane.**
+Specialisation of `cauchy_semi_infinite_rectangle_eq` to `U = {z : ℂ | 0 < z.im}`.
+For a holomorphic function `f` on the open upper half-plane, integrable along the
+two vertical edges, with top-of-box vanishing as height → ∞, the boundary integral
+of `f` around the open-top rectangle `[a, b] × [c, ∞)` vanishes:
+
+  (∫ x in a..b, f (x + c·I)) + (∫ y in (c, ∞), f (b + y·I)) · I
+    - (∫ y in (c, ∞), f (a + y·I)) · I = 0
+
+The strip-in-UHP hypothesis is automatic because `c > 0` forces positive imaginary
+part on every point of the rectangle. -/
+public theorem cauchy_semi_infinite_rectangle_in_UHP_eq
+    {a b c : ℝ} (hab : a < b) (hc_pos : 0 < c)
+    {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f {z : ℂ | 0 < z.im})
+    (h_top_vanish : Filter.Tendsto
+      (fun R : ℝ => ∫ x in a..b, f ((x : ℂ) + R * Complex.I)) Filter.atTop (𝓝 0))
+    (h_int_b : MeasureTheory.IntegrableOn
+      (fun y : ℝ => f ((b : ℂ) + (y : ℂ) * Complex.I)) (Set.Ioi c))
+    (h_int_a : MeasureTheory.IntegrableOn
+      (fun y : ℝ => f ((a : ℂ) + (y : ℂ) * Complex.I)) (Set.Ioi c)) :
+    (∫ x in a..b, f ((x : ℂ) + c * Complex.I))
+      + (∫ y in Set.Ioi c, f ((b : ℂ) + (y : ℂ) * Complex.I)) * Complex.I
+      - (∫ y in Set.Ioi c, f ((a : ℂ) + (y : ℂ) * Complex.I)) * Complex.I = 0 :=
+  cauchy_semi_infinite_rectangle_eq (a := a) (b := b) (c := c) hab
+    (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
+    (convex_halfSpace_im_gt 0)
+    (fun x _ y hy => show 0 < ((x : ℂ) + (y : ℂ) * Complex.I).im by
+      simpa using lt_of_lt_of_le hc_pos hy)
+    hf h_top_vanish h_int_b h_int_a
 
 end
 

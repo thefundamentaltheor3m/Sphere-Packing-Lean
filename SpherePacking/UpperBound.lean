@@ -508,12 +508,8 @@ public theorem laplacePsiI_rectLeft_via_cauchy {u : ℝ} (hu : 2 < u) :
     have : |(0 : ℝ) - -1| = 1 := by norm_num
     rw [this, mul_one] at hint
     exact lt_of_le_of_lt hint (half_lt_self hε)
-  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq
-    (a := (-1 : ℝ)) (b := 0) (c := 1) (by norm_num)
-    (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
-    (convex_halfSpace_im_gt 0)
-    (fun x _ y hy => show 0 < ((x : ℂ) + (y : ℂ) * I).im by
-      simpa using lt_of_lt_of_le zero_lt_one hy)
+  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_in_UHP_eq
+    (a := (-1 : ℝ)) (b := 0) (c := 1) (by norm_num) zero_lt_one
     (f := bContourIntegrandT u) (differentiableOn_bContourIntegrandT u)
     h_top
     (by simpa [mul_comm] using laplacePsiI_intT_center hu)
@@ -578,12 +574,8 @@ public theorem laplacePsiI_rectRight_via_cauchy {u : ℝ} (hu : 2 < u) :
     have : |(1 : ℝ) - 0| = 1 := by norm_num
     rw [this, mul_one] at hint
     exact lt_of_le_of_lt hint (half_lt_self hε)
-  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq
-    (a := (0 : ℝ)) (b := 1) (c := 1) (by norm_num)
-    (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
-    (convex_halfSpace_im_gt 0)
-    (fun x _ y hy => show 0 < ((x : ℂ) + (y : ℂ) * I).im by
-      simpa using lt_of_lt_of_le zero_lt_one hy)
+  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_in_UHP_eq
+    (a := (0 : ℝ)) (b := 1) (c := 1) (by norm_num) zero_lt_one
     (f := bContourIntegrandT u) (differentiableOn_bContourIntegrandT u)
     h_top
     (by simpa [mul_comm] using laplacePsiI_intT_shift hu (1 : ℂ) fun t ht0 =>
