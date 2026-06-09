@@ -1,5 +1,5 @@
 module
-public import LeanModularForms.SpherePacking.ContourLimitAtCusp
+public import SpherePacking.ForMathlib.CauchySemiInfiniteRectangle
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.MagicFunction.b.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
@@ -483,7 +483,7 @@ private lemma laplacePsiI_rectRight {u : ℝ} (hu : 2 < u) :
         using laplacePsiI_intT_center hu) (laplacePsiI_tendstoT hu)
 
 /-- Parallel re-derivation of `laplacePsiI_rectLeft` using
-`LeanModularForms.cauchy_semi_infinite_rectangle_eq`. The left rectangle contour integral
+`SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq`. The left rectangle contour integral
 vanishes: the boundary integral of `bContourIntegrandT` on the rectangle with left side
 `x = -1`. -/
 public theorem laplacePsiI_rectLeft_via_cauchy {u : ℝ} (hu : 2 < u) :
@@ -508,7 +508,7 @@ public theorem laplacePsiI_rectLeft_via_cauchy {u : ℝ} (hu : 2 < u) :
     have : |(0 : ℝ) - -1| = 1 := by norm_num
     rw [this, mul_one] at hint
     exact lt_of_le_of_lt hint (half_lt_self hε)
-  have h_cauchy := LeanModularForms.cauchy_semi_infinite_rectangle_eq
+  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq
     (a := (-1 : ℝ)) (b := 0) (c := 1) (by norm_num)
     (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
     (convex_halfSpace_im_gt 0)
@@ -554,7 +554,7 @@ public theorem laplacePsiI_rectLeft_via_cauchy {u : ℝ} (hu : 2 < u) :
   linear_combination h_cauchy
 
 /-- Parallel re-derivation of `laplacePsiI_rectRight` using
-`LeanModularForms.cauchy_semi_infinite_rectangle_eq`. The right rectangle contour integral
+`SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq`. The right rectangle contour integral
 vanishes: the boundary integral of `bContourIntegrandT` on the rectangle with right side
 `x = 1`. -/
 public theorem laplacePsiI_rectRight_via_cauchy {u : ℝ} (hu : 2 < u) :
@@ -578,7 +578,7 @@ public theorem laplacePsiI_rectRight_via_cauchy {u : ℝ} (hu : 2 < u) :
     have : |(1 : ℝ) - 0| = 1 := by norm_num
     rw [this, mul_one] at hint
     exact lt_of_le_of_lt hint (half_lt_self hε)
-  have h_cauchy := LeanModularForms.cauchy_semi_infinite_rectangle_eq
+  have h_cauchy := SpherePacking.ForMathlib.cauchy_semi_infinite_rectangle_eq
     (a := (0 : ℝ)) (b := 1) (c := 1) (by norm_num)
     (U := {z : ℂ | 0 < z.im}) UpperHalfPlane.isOpen_upperHalfPlaneSet
     (convex_halfSpace_im_gt 0)

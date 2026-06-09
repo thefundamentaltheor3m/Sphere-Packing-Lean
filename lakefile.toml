@@ -9,12 +9,6 @@ weak.linter.mathlibStandardSet = true
 weak.linter.flexible = false
 
 [[require]]
-name = "LeanModularForms"
-scope = "CBirkbeck"
-git  = "https://github.com/CBirkbeck/LeanModularForms.git"
-rev  = "0fc82eb52d89548019d1447c960ff4d10706ab1e"
-
-[[require]]
 name = "checkdecls"
 git  = "https://github.com/PatrickMassot/checkdecls.git"
 
