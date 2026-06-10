@@ -1,15 +1,13 @@
 module
 
 public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 
 @[expose] public section
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+open UpperHalfPlane Metric Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
-
-open ArithmeticFunction
+open scoped Real
 
 
 /-this is being PRd-/

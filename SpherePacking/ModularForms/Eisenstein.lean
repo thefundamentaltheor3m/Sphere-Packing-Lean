@@ -3,6 +3,7 @@ module
 public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.Tactic.NormNum.Parity
 
 @[expose] public section
 

@@ -414,8 +414,8 @@ private lemma step_12 :
       rw [this]
       exact sq_nonneg ((1 - rexp (-(π * ↑↑n))) ^ 12)
     · intro n; simp
-      suffices : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im)
-      · apply le_of_lt
+      suffices this : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im) by
+        apply le_of_lt
         have h₁ : 0 ≤ 1 - rexp (-(π * ↑↑n)) := by norm_num; positivity
         have h₂ : 0 ≤ 1 - rexp (-2 * π * ↑↑n * z.im) := by linarith
         have h₃ : 24 ≠ 0 := by positivity

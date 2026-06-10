@@ -51,8 +51,6 @@ public import SpherePacking.MagicFunction.b.SpecialValues
 public import SpherePacking.MagicFunction.b.psi
 public import SpherePacking.MagicFunction.g.Basic
 public import SpherePacking.MainTheorem
-public import SpherePacking.ModularForms.BigO
-public import SpherePacking.ModularForms.Cauchylems
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
@@ -76,7 +74,6 @@ public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.csqrt
-public import SpherePacking.ModularForms.equivs
 public import SpherePacking.ModularForms.eta
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.iteratedderivs
