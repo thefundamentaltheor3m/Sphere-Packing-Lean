@@ -11,6 +11,10 @@ public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ResToImagAxis
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
+public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
+public import SpherePacking.ModularForms.tsumderivWithin
 
 @[expose] public section
 
@@ -208,11 +212,14 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
             _ = (n : ℝ)^(a + b + 1) := by ring
       _ = ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖ := by
           rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
-  · have ha33 := a33 (a + b + 1) 1 z
+  · apply summable_norm_iff.mpr
+    have ha33 := summable_pow_mul_cexp (a + b + 1) 1 z
     simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    refine summable_norm_iff.mpr ?_
-    convert ha33 using 2 with n
-    ring_nf
+    apply (ha33.comp_injective PNat.coe_injective).congr
+    intro n
+    simp only [Function.comp_apply]
+    rw [← Complex.exp_nat_mul]
+    congr 2 <;> ring
 
 /-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
 This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.
@@ -223,11 +230,11 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
   -- Use E₂_eq and tsum_eq_tsum_sigma to convert n*q^n/(1-q^n) → σ₁(n)*q^n
   rw [E₂_eq z]
   congr 2
-  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ3
-  have hl := tsum_pnat_eq_tsum_succ3
-    (fun n ↦ ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
-  have hr := tsum_pnat_eq_tsum_succ3
-    (fun n ↦ n * Complex.exp (2 * π * Complex.I * n * z) /
+  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ
+  have hl := tsum_pnat_eq_tsum_succ
+    (f := fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
+  have hr := tsum_pnat_eq_tsum_succ
+    (f := fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
       (1 - Complex.exp (2 * π * Complex.I * n * z)))
   rw [hl, hr]
   have ht := tsum_eq_tsum_sigma z
@@ -303,28 +310,67 @@ Uses hasSum_qExpansion to convert from PowerSeries to tsum form. -/
 lemma E₄_sigma_qexp (z : UpperHalfPlane) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  have hsum := ModularFormClass.hasSum_qExpansion (h := 1) E₄ (by norm_num) (by simp) z
-  have hsum_smul : Summable fun m => (ModularFormClass.qExpansion 1 E₄).coeff m *
+  -- Use hasSum_qExpansion to get E₄ z = ∑ (qExpansion 1 E₄).coeff m * q^m
+  have hsum := UpperHalfPlane.hasSum_qExpansion (f := (E₄ : ℍ → ℂ)) (by norm_num : (0 : ℝ) < 1)
+    (SlashInvariantFormClass.periodic_comp_ofComplex E₄
+      (by rw [CongruenceSubgroup.Gamma_one_coe_eq_SL]; exact one_mem_strictPeriods_SL))
+    (ModularFormClass.holo E₄) (ModularFormClass.bdd_at_infty E₄) z
+  -- Convert HasSum to tsum equation
+  have heq : E₄ z = ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
+      (Function.Periodic.qParam 1 z) ^ m := by
+    rw [← hsum.tsum_eq]
+    simp [smul_eq_mul]
+  rw [heq]
+  -- Split off the m=0 term
+  have hsum_smul : Summable fun m => (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m :=
     hsum.summable.congr (fun m => by simp [smul_eq_mul])
-  rw [show E₄ z = ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
-      (Function.Periodic.qParam 1 z) ^ m by rw [← hsum.tsum_eq]; simp [smul_eq_mul],
-    hsum_smul.tsum_eq_zero_add]
-  simp only [pow_zero, mul_one, E4_q_exp_zero]
-  congr 1
-  rw [← tsum_pnat_eq_tsum_succ3 (fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
-    (Function.Periodic.qParam 1 z) ^ n), ← tsum_mul_left]
-  refine tsum_congr fun n => ?_
-  have hcoeff : (ModularFormClass.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
+  have hsplit : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
+      (Function.Periodic.qParam 1 z) ^ m =
+      (UpperHalfPlane.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
+      ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
+        (Function.Periodic.qParam 1 z) ^ (m + 1) :=
+    hsum_smul.tsum_eq_zero_add
+  rw [hsplit]
+  simp only [pow_zero, mul_one]
+  -- Use E4_q_exp to substitute coefficients
+  have hcoeff0 : (UpperHalfPlane.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
+  have hcoeffn : ∀ n : ℕ, 0 < n → (UpperHalfPlane.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
+    intro n hn
     have h := congr_fun E4_q_exp n
-    simpa [n.pos.ne'] using h
-  have hq : Function.Periodic.qParam 1 z = Complex.exp (2 * π * Complex.I * z) := by
-    simp only [Function.Periodic.qParam]
-    congr 1
-    ring_nf
-    simp
-  rw [hcoeff, hq, ← Complex.exp_nat_mul]
-  ring_nf
+    simp only [hn.ne', ↓reduceIte] at h
+    exact h
+  rw [hcoeff0]
+  congr 1
+  -- Convert sum over ℕ to sum over ℕ+
+  have hconv : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
+      (Function.Periodic.qParam 1 z) ^ (m + 1) =
+      ∑' n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
+        (Function.Periodic.qParam 1 z) ^ (n : ℕ) := by
+    rw [← tsum_pnat_eq_tsum_succ (f := fun n => (UpperHalfPlane.qExpansion 1 E₄).coeff n *
+        (Function.Periodic.qParam 1 z) ^ n)]
+  rw [hconv]
+  -- Now substitute the coefficients for n ≥ 1
+  have hterm : ∀ n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
+      (Function.Periodic.qParam 1 z) ^ (n : ℕ) =
+      240 * ((σ 3 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)) := by
+    intro n
+    rw [hcoeffn n n.pos]
+    -- Function.Periodic.qParam 1 z = exp(2πiz)
+    have hq : Function.Periodic.qParam 1 z = Complex.exp (2 * π * Complex.I * z) := by
+      simp only [Function.Periodic.qParam]
+      congr 1
+      ring_nf
+      simp
+    rw [hq]
+    -- exp(2πiz)^n = exp(2πinz)
+    have hpow : Complex.exp (2 * π * Complex.I * z) ^ (n : ℕ) =
+        Complex.exp (2 * π * Complex.I * n * z) := by
+      rw [← Complex.exp_nat_mul]
+      congr 1; ring
+    rw [hpow]
+    ring
+  rw [tsum_congr hterm, tsum_mul_left]
 
 /-- D E₄ q-expansion via termwise differentiation.
 D E₄ = 240 * ∑ n * σ₃(n) * qⁿ from differentiating E₄ = 1 + 240 * ∑ σ₃(n) * qⁿ. -/
@@ -637,8 +683,8 @@ private lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
       cexp (2 * π * Complex.I * (n - 1) * z) =
     ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
       cexp (2 * π * Complex.I * m * z) := by
-  simpa [tsum_pnat_eq_tsum_succ3] using
-    (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+  simpa [tsum_pnat_eq_tsum_succ] using
+    (tsum_pnat_eq_tsum_succ (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
       cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
 
 /-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
@@ -1176,7 +1222,8 @@ lemma H₄_resToImagAxis_tendsto_one : Tendsto H₄.resToImagAxis atTop (nhds 1)
 
 /-- F₁ * E₄ is bounded at infinity (needed for the decay argument). -/
 lemma F₁_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (F₁ * E₄.toFun) :=
-  BoundedAtFilter.mul (E₂_mul_E₄_isBoundedAtImInfty.sub E₆_isBoundedAtImInfty) E₄_isBoundedAtImInfty
+  BoundedAtFilter.mul ((E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty).sub
+    E₆_isBoundedAtImInfty) E₄_isBoundedAtImInfty
 
 /-- F₁ has exponential decay at infinity (it's essentially D E₄ which decays). -/
 lemma F₁_isBigO_exp_atImInfty :
@@ -1184,15 +1231,21 @@ lemma F₁_isBigO_exp_atImInfty :
   have hE₄_val : valueAtInfty (⇑E₄) = 1 := E₄_tendsto_one_atImInfty.limUnder_eq
   have hE₆_val : valueAtInfty (⇑E₆) = 1 := E₆_tendsto_one_atImInfty.limUnder_eq
   have hE₄ : (fun z : ℍ => E₄ z - 1) =O[atImInfty] fun z ↦ Real.exp (-(2 * π) * z.im) := by
-    have h := ModularFormClass.exp_decay_sub_atImInfty E₄ (by norm_num : (0 : ℝ) < 1)
-      ModularFormClass.one_mem_strictPeriods_SL2Z
+    have h := UpperHalfPlane.exp_decay_sub_atImInfty (f := (E₄ : ℍ → ℂ))
+      (by norm_num : (0 : ℝ) < 1)
+      (SlashInvariantFormClass.periodic_comp_ofComplex E₄
+        (by rw [CongruenceSubgroup.Gamma_one_coe_eq_SL]; exact one_mem_strictPeriods_SL))
+      (ModularFormClass.holo E₄) (ModularFormClass.bdd_at_infty E₄)
     simp only [div_one] at h
     convert h using 2 with z
     · rw [hE₄_val]
     · congr 1; ring
   have hE₆ : (fun z : ℍ => E₆ z - 1) =O[atImInfty] fun z ↦ Real.exp (-(2 * π) * z.im) := by
-    have h := ModularFormClass.exp_decay_sub_atImInfty E₆ (by norm_num : (0 : ℝ) < 1)
-      ModularFormClass.one_mem_strictPeriods_SL2Z
+    have h := UpperHalfPlane.exp_decay_sub_atImInfty (f := (E₆ : ℍ → ℂ))
+      (by norm_num : (0 : ℝ) < 1)
+      (SlashInvariantFormClass.periodic_comp_ofComplex E₆
+        (by rw [CongruenceSubgroup.Gamma_one_coe_eq_SL]; exact one_mem_strictPeriods_SL))
+      (ModularFormClass.holo E₆) (ModularFormClass.bdd_at_infty E₆)
     simp only [div_one] at h
     convert h using 2 with z
     · rw [hE₆_val]

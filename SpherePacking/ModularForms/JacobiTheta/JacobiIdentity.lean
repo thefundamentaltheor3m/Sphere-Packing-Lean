@@ -194,12 +194,18 @@ private noncomputable def theta_prod_sq_CF : CuspForm (CongruenceSubgroup.Gamma 
 private lemma theta_prod_sq_CF_apply (z : ℍ) :
     theta_prod_sq_CF z = theta_prod_sq z := rfl
 
+/-- `Module.rank` of a `CuspForm` space is invariant under equality of the underlying subgroup,
+bridging the project's `Γ(1)`-indexed spaces to mathlib's `𝒮ℒ`-indexed level-one lemmas. -/
+private lemma rank_cuspForm_congr {k : ℤ} {G₁ G₂ : Subgroup (GL (Fin 2) ℝ)}
+    [G₁.HasDetOne] [G₂.HasDetOne] (h : G₁ = G₂) :
+    Module.rank ℂ (CuspForm G₁ k) = Module.rank ℂ (CuspForm G₂ k) := by
+  subst h; rfl
+
 private lemma finrank_cuspform_12 :
-    Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 := by
-  apply Module.finrank_eq_of_rank_eq
-  rw [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)]
-  simp
-  exact ModularForm.levelOne_weight_zero_rank_one
+    Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 :=
+  Module.finrank_eq_of_rank_eq
+    ((rank_cuspForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
+      CuspForm.rank_eq_one_of_weight_eq_twelve)
 
 private lemma theta_prod_sq_proportional :
     ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=
