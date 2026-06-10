@@ -73,8 +73,6 @@ public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.clog_arg_lems
-public import SpherePacking.ModularForms.csqrt
-public import SpherePacking.ModularForms.eta
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.iteratedderivs
 public import SpherePacking.ModularForms.limunder_lems
