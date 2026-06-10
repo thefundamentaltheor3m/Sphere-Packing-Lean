@@ -337,6 +337,17 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   simp_rw [h_deriv_simp, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
+/-- For `f 0 = 0`, the `ℕ+`- and `ℕ`-indexed sums of `f` agree. Unlike mathlib's
+`tsum_zero_pnat_eq_tsum_nat`, this needs no summability hypothesis (both sides are `0` in the
+non-summable case). -/
+private theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAddGroup α]
+    [T2Space α] [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n := by
+  by_cases hf2 : Summable f
+  · rw [hf2.tsum_eq_zero_add, hf, zero_add]
+    exact tsum_pnat_eq_tsum_succ
+  rw [tsum_eq_zero_of_not_summable hf2,
+    tsum_eq_zero_of_not_summable (summable_pnat_iff_summable_nat.not.mpr hf2)]
+
 /--
 Simplified version of `D_qexp_tsum` for ℕ+-indexed series (starting from n=1).
 This is the form most commonly used for Eisenstein series q-expansions.

@@ -12,7 +12,8 @@ public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
+public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 public import SpherePacking.ModularForms.tsumderivWithin
 
 @[expose] public section
@@ -215,13 +216,14 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
             _ = (n : ℝ)^(a + b + 1) := by ring
       _ = ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖ := by
           rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
-  · have ha33 := a33 (a + b + 1) 1 z
+  · apply summable_norm_iff.mpr
+    have ha33 := summable_pow_mul_cexp (a + b + 1) 1 z
     simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    have heq : (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖) =
-        (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * z * n)‖) := by
-      ext n; ring_nf
-    rw [heq]
-    exact summable_norm_iff.mpr ha33
+    apply (ha33.comp_injective PNat.coe_injective).congr
+    intro n
+    simp only [Function.comp_apply]
+    rw [← Complex.exp_nat_mul]
+    congr 2 <;> ring
 
 /-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
 This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.

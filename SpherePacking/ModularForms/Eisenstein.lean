@@ -2,7 +2,7 @@ module
 
 public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
 @[expose] public section
@@ -454,9 +454,14 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
             exact_mod_cast hbound
           · exact norm_nonneg _
         _ = ‖(↑n : ℂ) ^ k * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := (norm_mul _ _).symm
-    · have := a33 k 1 z
-      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
-      exact summable_norm_iff.mpr this
+    · apply summable_norm_iff.mpr
+      have h := summable_pow_mul_cexp k 1 z
+      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at h
+      apply (h.comp_injective PNat.coe_injective).congr
+      intro n
+      simp only [Function.comp_apply]
+      rw [← Complex.exp_nat_mul]
+      congr 2 <;> ring
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
@@ -546,6 +551,14 @@ lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
     simp [Complex.I_re, Complex.I_im, mul_comm]
   rw [Complex.norm_exp, h, Real.exp_le_exp]
   nlinarith [Real.pi_pos]
+
+/-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
+private lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
+    (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+  have hs : Summable fun n : ℕ => (n : ℝ) * r ^ n := by
+    simpa using summable_pow_mul_geometric_of_norm_lt_one (k := 1) (r := r) hr
+  rw [← tsum_coe_mul_geometric_of_norm_lt_one hr, ← tsum_zero_pnat_eq_tsum_nat hs]
+  simp
 
 /-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
 

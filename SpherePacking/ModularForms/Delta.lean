@@ -4,7 +4,7 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.E2
 public import Mathlib.NumberTheory.ModularForms.Discriminant
-public import SpherePacking.ModularForms.summable_lems
+public import SpherePacking.ModularForms.exp_lems
 public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.ResToImagAxis
 public import Mathlib.NumberTheory.ModularForms.QExpansion
@@ -30,13 +30,13 @@ theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 - cexp (2 * ↑π * Complex.I * (�
 
 lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z))) := by
-  have := Complex.multipliable_one_add_of_summable
-    (f := fun (n : ℕ) => (-cexp (2 * π * Complex.I * (n + 1) * z))) ?_
-  · apply this.congr
-    intro n
-    ring
-  rw [← summable_norm_iff]
-  simpa using summable_exp_pow z
+  apply (ModularForm.multipliable_one_sub_pow
+    (UpperHalfPlane.norm_exp_two_pi_I_lt_one z)).congr
+  intro n
+  congr 1
+  rw [← Complex.exp_nat_mul]
+  push_cast
+  ring_nf
 
 lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
     Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by

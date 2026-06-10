@@ -77,7 +77,6 @@ public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.limunder_lems
 public import SpherePacking.ModularForms.qExpansion_lems
 public import SpherePacking.ModularForms.riemannZetalems
-public import SpherePacking.ModularForms.summable_lems
 public import SpherePacking.ModularForms.tendstolems
 public import SpherePacking.ModularForms.tsumderivWithin
 public import SpherePacking.ModularForms.uniformcts
