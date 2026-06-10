@@ -1,9 +1,22 @@
+/-
+Copyright (c) 2025 Heather Macbeth. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
+-/
 module
 
 public import SpherePacking.Tactic.NormNumI
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Data.ZMod.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+/-!
+# Tests for the `norm_num1` (`NormNumI`) tactic
+
+The `#guard_msgs` tests in this file are sensitive to any other diagnostics emitted at the
+guarded commands, so this file must keep a style-conformant header (otherwise
+`linter.style.header` warnings can leak into the `#guard_msgs` output and fail CI).
+-/
 
 @[expose] public section
 

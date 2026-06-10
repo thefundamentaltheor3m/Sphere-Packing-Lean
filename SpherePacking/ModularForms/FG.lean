@@ -12,7 +12,9 @@ public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
+public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
+public import SpherePacking.ModularForms.tsumderivWithin
 
 @[expose] public section
 
@@ -214,13 +216,14 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
             _ = (n : ℝ)^(a + b + 1) := by ring
       _ = ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖ := by
           rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
-  · have ha33 := a33 (a + b + 1) 1 z
+  · apply summable_norm_iff.mpr
+    have ha33 := summable_pow_mul_cexp (a + b + 1) 1 z
     simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    have heq : (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖) =
-        (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * z * n)‖) := by
-      ext n; ring_nf
-    rw [heq]
-    exact summable_norm_iff.mpr ha33
+    apply (ha33.comp_injective PNat.coe_injective).congr
+    intro n
+    simp only [Function.comp_apply]
+    rw [← Complex.exp_nat_mul]
+    congr 2 <;> ring
 
 /-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
 This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.
@@ -231,11 +234,11 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
   -- Use E₂_eq and tsum_eq_tsum_sigma to convert n*q^n/(1-q^n) → σ₁(n)*q^n
   rw [E₂_eq z]
   congr 2
-  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ3
-  have hl := tsum_pnat_eq_tsum_succ3
-    (fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
-  have hr := tsum_pnat_eq_tsum_succ3
-    (fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
+  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ
+  have hl := tsum_pnat_eq_tsum_succ
+    (f := fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
+  have hr := tsum_pnat_eq_tsum_succ
+    (f := fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
       (1 - Complex.exp (2 * π * Complex.I * n * z)))
   rw [hl, hr]
   have ht := tsum_eq_tsum_sigma z
@@ -313,28 +316,31 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
   -- Use hasSum_qExpansion to get E₄ z = ∑ (qExpansion 1 E₄).coeff m * q^m
-  have hsum := ModularFormClass.hasSum_qExpansion (h := 1) E₄ (by norm_num) (by simp) z
+  have hsum := UpperHalfPlane.hasSum_qExpansion (f := (E₄ : ℍ → ℂ)) (by norm_num : (0 : ℝ) < 1)
+    (SlashInvariantFormClass.periodic_comp_ofComplex E₄
+      (by rw [CongruenceSubgroup.Gamma_one_coe_eq_SL]; exact one_mem_strictPeriods_SL))
+    (ModularFormClass.holo E₄) (ModularFormClass.bdd_at_infty E₄) z
   -- Convert HasSum to tsum equation
-  have heq : E₄ z = ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have heq : E₄ z = ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m := by
     rw [← hsum.tsum_eq]
     simp [smul_eq_mul]
   rw [heq]
   -- Split off the m=0 term
-  have hsum_smul : Summable fun m => (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have hsum_smul : Summable fun m => (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m :=
     hsum.summable.congr (fun m => by simp [smul_eq_mul])
-  have hsplit : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+  have hsplit : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff m *
       (Function.Periodic.qParam 1 z) ^ m =
-      (ModularFormClass.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
-      ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+      (UpperHalfPlane.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
+      ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
         (Function.Periodic.qParam 1 z) ^ (m + 1) :=
     hsum_smul.tsum_eq_zero_add
   rw [hsplit]
   simp only [pow_zero, mul_one]
   -- Use E4_q_exp to substitute coefficients
-  have hcoeff0 : (ModularFormClass.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
-  have hcoeffn : ∀ n : ℕ, 0 < n → (ModularFormClass.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
+  have hcoeff0 : (UpperHalfPlane.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
+  have hcoeffn : ∀ n : ℕ, 0 < n → (UpperHalfPlane.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
     intro n hn
     have h := congr_fun E4_q_exp n
     simp only [hn.ne', ↓reduceIte] at h
@@ -342,15 +348,15 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
   rw [hcoeff0]
   congr 1
   -- Convert sum over ℕ to sum over ℕ+
-  have hconv : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+  have hconv : ∑' m : ℕ, (UpperHalfPlane.qExpansion 1 E₄).coeff (m + 1) *
       (Function.Periodic.qParam 1 z) ^ (m + 1) =
-      ∑' n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+      ∑' n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ (n : ℕ) := by
-    rw [← tsum_pnat_eq_tsum_succ3 (fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
+    rw [← tsum_pnat_eq_tsum_succ (f := fun n => (UpperHalfPlane.qExpansion 1 E₄).coeff n *
         (Function.Periodic.qParam 1 z) ^ n)]
   rw [hconv]
   -- Now substitute the coefficients for n ≥ 1
-  have hterm : ∀ n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+  have hterm : ∀ n : ℕ+, (UpperHalfPlane.qExpansion 1 E₄).coeff n *
       (Function.Periodic.qParam 1 z) ^ (n : ℕ) =
       240 * ((σ 3 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)) := by
     intro n
@@ -672,8 +678,8 @@ private lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
       cexp (2 * π * Complex.I * (n - 1) * z) =
     ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
       cexp (2 * π * Complex.I * m * z) := by
-  simpa [tsum_pnat_eq_tsum_succ3] using
-    (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+  simpa [tsum_pnat_eq_tsum_succ] using
+    (tsum_pnat_eq_tsum_succ (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
       cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
 
 /-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
