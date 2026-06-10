@@ -82,11 +82,11 @@ theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
   have h3 : (((DirectSum.of (fun k : ℤ => ModularForm Γ(1) k) 4 E₄) ^ 3) 12) z = E₄ z ^ 3 := by
     rw [show (12 : ℤ) = 4 + (4 + 4) by norm_num, pow_three, DirectSum.of_mul_of,
       DirectSum.of_mul_of, DirectSum.of_eq_same]
-    show E₄ z * (E₄ z * E₄ z) = E₄ z ^ 3
+    change E₄ z * (E₄ z * E₄ z) = E₄ z ^ 3
     ring
   have h2 : (((DirectSum.of (fun k : ℤ => ModularForm Γ(1) k) 6 E₆) ^ 2) 12) z = E₆ z ^ 2 := by
     rw [show (12 : ℤ) = 6 + 6 by norm_num, pow_two, DirectSum.of_mul_of, DirectSum.of_eq_same]
-    show E₆ z * E₆ z = E₆ z ^ 2
+    change E₆ z * E₆ z = E₆ z ^ 2
     ring
   rw [hl, hr]
   simp only [IsGLPos.smul_apply, DirectSum.sub_apply, ModularForm.sub_apply, h3, h2, smul_eq_mul]
