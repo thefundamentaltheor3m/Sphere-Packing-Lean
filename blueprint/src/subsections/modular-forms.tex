@@ -187,7 +187,7 @@ This is exercise 1.2.8 of \cite{first course}.
 \end{proof}
 
 More generally, we have
-\begin{lemma}\label{lemma:E2-transform-general}\leanok\lean{G₂_transform}\uses{lemma:E2-transform-S, def:E2}
+\begin{lemma}\label{lemma:E2-transform-general}\leanok\lean{E₂_slash_transform}\uses{lemma:E2-transform-S, def:E2}
 \begin{equation}\label{eqn:E2-transform-general}
 (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
@@ -206,7 +206,7 @@ $$
 where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}\uses{def:dedekind_eta}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}
 The Dedekind eta function transforms as
 $$
     \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
