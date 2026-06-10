@@ -704,8 +704,7 @@ private theorem H₂_div_exp_tendsto :
     congr 2
     ring
   simp_rw [h_eq]
-  convert Θ₂_div_exp_tendsto.pow 4
-  norm_num
+  tendsto_cont [Θ₂_div_exp_tendsto]
 
 private lemma H₂_eventually_ne_zero : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 :=
   eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
@@ -878,8 +877,7 @@ theorem G_vanishing_order :
     push_cast
     field_simp [Complex.exp_ne_zero]
   simp_rw [h_eq]
-  convert (H₂_div_exp_tendsto.pow 3).mul H_poly_tendsto_atImInfty
-  norm_num
+  tendsto_cont [H₂_div_exp_tendsto, H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 /-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
 theorem D_cexp_div (c : ℂ) (z : ℍ) :
