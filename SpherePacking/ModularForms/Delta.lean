@@ -3,7 +3,8 @@ module
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.eta
-public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.summable_lems
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.ResToImagAxis
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.Tactic.NormNumI
@@ -18,6 +19,44 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureThe
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat ModularForm
 
 open ArithmeticFunction
+
+theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z) ≠ 0 := by
+  rw [sub_ne_zero]
+  intro h
+  have := exp_upperHalfPlane_lt_one_nat z n
+  rw [← h] at this
+  simp only [norm_one, lt_self_iff_false] at *
+
+lemma MultipliableEtaProductExpansion (z : ℍ) :
+    Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z))) := by
+  have := Complex.multipliable_one_add_of_summable
+    (f := fun (n : ℕ) => (-cexp (2 * π * Complex.I * (n + 1) * z))) ?_
+  · apply this.congr
+    intro n
+    ring
+  rw [← summable_norm_iff]
+  simpa using summable_exp_pow z
+
+lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
+    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by
+  conv =>
+    enter [1]
+    ext n
+    rw [sub_eq_add_neg]
+  let g := (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * n * z)) )
+  have := MultipliableEtaProductExpansion z
+  conv at this =>
+    enter [1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
+  rw [← multipliable_pnat_iff_multipliable_succ (f := g)] at this
+  apply this.congr
+  intro b
+  rfl
+
+lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
+    Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))^24) :=
+  (MultipliableEtaProductExpansion_pnat z).pow 24
 
 noncomputable section Definitions
 
@@ -41,8 +80,7 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
     refine (MultipliableEtaProductExpansion z).congr ?_
     intro n
     simp [ModularForm.eta_q_eq_cexp]
-  rw [ModularForm.eta, Δ, mul_pow, tprod_pow (f := fun n : ℕ => 1 - ModularForm.eta_q n z)
-    hm 24]
+  rw [ModularForm.eta, Δ, mul_pow, ← hm.tprod_pow 24]
   congr
   · rw [Periodic.qParam]
     rw [← Complex.exp_nat_mul]
@@ -536,7 +574,7 @@ lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
   have hmul : Multipliable g := by
     have hz : (z : ℂ) = Complex.I * t := rfl
     simpa [g, hz] using
-      (Multipliable_pow _ (by simpa using MultipliableEtaProductExpansion z) 24)
+      (Multipliable.pow (by simpa using MultipliableEtaProductExpansion z) 24)
   have htprod_im : (∏' n : ℕ, g n).im = 0 :=
     Complex.im_tprod_eq_zero_of_im_eq_zero g hmul him_g
   have him_pref : (cexp (2 * π * Complex.I * (Complex.I * t))).im = 0 := by

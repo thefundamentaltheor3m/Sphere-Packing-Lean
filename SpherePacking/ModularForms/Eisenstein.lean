@@ -285,8 +285,8 @@ theorem diffwithinat_prod_1 :
     / 2)) 0 by
     apply this.congr
     · intro x hx
-      rw [← tprod_pow _ (by apply multipliable_lt_one x (by simp at *; apply lt_trans hx; exact
-        two_inv_lt_one))]
+      rw [Multipliable.tprod_pow (ModularForm.multipliable_one_sub_pow
+        ((mem_ball_zero_iff.mp hx).trans (by norm_num))) 24]
     simp
   apply DifferentiableWithinAt.pow
   have hu := asdf.differentiableOn ?_ ?_

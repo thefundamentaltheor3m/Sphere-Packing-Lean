@@ -78,7 +78,6 @@ public import SpherePacking.ModularForms.eta
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.iteratedderivs
 public import SpherePacking.ModularForms.limunder_lems
-public import SpherePacking.ModularForms.multipliable_lems
 public import SpherePacking.ModularForms.qExpansion_lems
 public import SpherePacking.ModularForms.riemannZetalems
 public import SpherePacking.ModularForms.summable_lems
