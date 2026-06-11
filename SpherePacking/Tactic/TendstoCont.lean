@@ -240,13 +240,8 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
 -- ══════════════════════════════════════════════════════════════
 
 /-- Chain of `prodMk_nhds` applications from atom hypotheses. -/
-private meta def buildProdMkNhds (atoms : Array Atom) :
-    MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.hyp
-  let mut proof := atoms.back!.hyp
-  for i in List.range (atoms.size - 1) |>.reverse do
-    proof ← mkAppM ``Filter.Tendsto.prodMk_nhds #[atoms[i]!.hyp, proof]
-  return proof
+private meta def buildProdMkNhds (atoms : Array Atom) : MetaM Expr :=
+  AtomEngine.foldrAtoms atoms (·.hyp) ``Filter.Tendsto.prodMk_nhds
 
 -- ══════════════════════════════════════════════════════════════
 -- Limit reconciliation

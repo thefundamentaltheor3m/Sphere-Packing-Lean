@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2025 Cameron Freer. All rights reserved.
+Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
@@ -131,21 +131,25 @@ def checkAmbiguity (atoms : Array Atom) (allCandidates : Array Atom)
 -- Product type / value / projection builders
 -- ══════════════════════════════════════════════════════════════
 
-/-- Right-associated product type from atom codomain types. -/
-def buildProdType (atoms : Array Atom) : MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.codTy
-  let mut ty := atoms.back!.codTy
+/-- Right-associated fold over a nonempty atom array:
+    `combine (proj a₀) (combine (proj a₁) (... (proj aₙ₋₁)))`,
+    with `combine` applied via `mkAppM`. For a single atom this is just
+    `proj a₀` with no `combine` application — matching the right-associated
+    product shape used by `buildProdType`/`buildValuePoint` and clients. -/
+def foldrAtoms (atoms : Array Atom) (proj : Atom → Expr)
+    (combine : Name) : MetaM Expr := do
+  let mut acc := proj atoms.back!
   for i in List.range (atoms.size - 1) |>.reverse do
-    ty ← mkAppM ``Prod #[atoms[i]!.codTy, ty]
-  return ty
+    acc ← mkAppM combine #[proj atoms[i]!, acc]
+  return acc
+
+/-- Right-associated product type from atom codomain types. -/
+def buildProdType (atoms : Array Atom) : MetaM Expr :=
+  foldrAtoms atoms (·.codTy) ``Prod
 
 /-- Right-associated value point from atom values. -/
-def buildValuePoint (atoms : Array Atom) : MetaM Expr := do
-  if atoms.size = 1 then return atoms[0]!.value
-  let mut pt := atoms.back!.value
-  for i in List.range (atoms.size - 1) |>.reverse do
-    pt ← mkAppM ``Prod.mk #[atoms[i]!.value, pt]
-  return pt
+def buildValuePoint (atoms : Array Atom) : MetaM Expr :=
+  foldrAtoms atoms (·.value) ``Prod.mk
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
 def buildProjection (p : Expr) (n i : Nat) : MetaM Expr := do
@@ -161,59 +165,39 @@ def buildProjection (p : Expr) (n i : Nat) : MetaM Expr := do
 -- Body abstraction
 -- ══════════════════════════════════════════════════════════════
 
-/-- Replace `fᵢ(bvar)` with `projᵢ(pVar)` in the body.
-    `pVar` is a free variable of the product type. -/
-partial def abstractBody (body : Expr) (bvar : FVarId)
-    (pVar : Expr) (atoms : Array Atom) : MetaM Expr := do
+/-- Generic traversal: replace each matched atom application `fᵢ(bvar)`
+    in the body with `repl i atomᵢ`. Traverses the same expression
+    constructors as `exprChildren`, so discovery and replacement stay
+    in sync. -/
+partial def replaceAtoms (body : Expr) (bvar : FVarId)
+    (atoms : Array Atom) (repl : Nat → Atom → MetaM Expr) : MetaM Expr := do
   if !body.containsFVar bvar then return body
   let bvarExpr := Expr.fvar bvar
   for i in [:atoms.size] do
     let candApplied := mkApp atoms[i]!.fn bvarExpr
     if ← withNewMCtxDepth (isDefEq body candApplied) then
-      return ← buildProjection pVar atoms.size i
+      return ← repl i atoms[i]!
+  let go (e : Expr) : MetaM Expr := replaceAtoms e bvar atoms repl
   match body with
-  | .app f a =>
-    return .app (← abstractBody f bvar pVar atoms)
-                (← abstractBody a bvar pVar atoms)
-  | .lam n t b bi =>
-    return .lam n (← abstractBody t bvar pVar atoms)
-                  (← abstractBody b bvar pVar atoms) bi
-  | .letE n t v b nd =>
-    return .letE n (← abstractBody t bvar pVar atoms)
-                   (← abstractBody v bvar pVar atoms)
-                   (← abstractBody b bvar pVar atoms) nd
-  | .mdata m e =>
-    return .mdata m (← abstractBody e bvar pVar atoms)
-  | .proj s i e =>
-    return .proj s i (← abstractBody e bvar pVar atoms)
+  | .app f a => return .app (← go f) (← go a)
+  | .lam n t b bi => return .lam n (← go t) (← go b) bi
+  | .forallE n t b bi => return .forallE n (← go t) (← go b) bi
+  | .letE n t v b nd => return .letE n (← go t) (← go v) (← go b) nd
+  | .mdata m e => return .mdata m (← go e)
+  | .proj s i e => return .proj s i (← go e)
   | _ => return body
+
+/-- Replace `fᵢ(bvar)` with `projᵢ(pVar)` in the body.
+    `pVar` is a free variable of the product type. -/
+def abstractBody (body : Expr) (bvar : FVarId)
+    (pVar : Expr) (atoms : Array Atom) : MetaM Expr :=
+  replaceAtoms body bvar atoms fun i _ => buildProjection pVar atoms.size i
 
 /-- Replace `fᵢ(bvar)` with `atoms[i].value` in the body.
     Used for computing the limit of the body given atom values,
     without going through product abstraction. -/
-partial def substituteAtomValues (body : Expr) (bvar : FVarId)
-    (atoms : Array Atom) : MetaM Expr := do
-  if !body.containsFVar bvar then return body
-  let bvarExpr := Expr.fvar bvar
-  for i in [:atoms.size] do
-    let candApplied := mkApp atoms[i]!.fn bvarExpr
-    if ← withNewMCtxDepth (isDefEq body candApplied) then
-      return atoms[i]!.value
-  match body with
-  | .app f a =>
-    return .app (← substituteAtomValues f bvar atoms)
-                (← substituteAtomValues a bvar atoms)
-  | .lam n t b bi =>
-    return .lam n (← substituteAtomValues t bvar atoms)
-                  (← substituteAtomValues b bvar atoms) bi
-  | .letE n t v b nd =>
-    return .letE n (← substituteAtomValues t bvar atoms)
-                   (← substituteAtomValues v bvar atoms)
-                   (← substituteAtomValues b bvar atoms) nd
-  | .mdata m e =>
-    return .mdata m (← substituteAtomValues e bvar atoms)
-  | .proj s i e =>
-    return .proj s i (← substituteAtomValues e bvar atoms)
-  | _ => return body
+def substituteAtomValues (body : Expr) (bvar : FVarId)
+    (atoms : Array Atom) : MetaM Expr :=
+  replaceAtoms body bvar atoms fun _ atom => pure atom.value
 
 end AtomEngine
