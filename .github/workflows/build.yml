@@ -39,7 +39,7 @@ jobs:
           swap-storage: false
 
       - name: Checkout project
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
@@ -50,7 +50,7 @@ jobs:
           ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^#check' {} +)
 
       - name: Build the project
-        uses: leanprover/lean-action@c544e89643240c6b398f14a431bcdc6309e36b3e # v1.4.0
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1.5.0
         with:
           use-github-cache: false
       - name: "lake exe mk_all --check --module"
@@ -59,7 +59,8 @@ jobs:
           lake exe mk_all --check --module
 
       - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+        # workaround for https://github.com/leanprover-community/docgen-action/issues/28
+        uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
           blueprint: true
           homepage: home_page

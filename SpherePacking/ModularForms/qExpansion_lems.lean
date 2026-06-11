@@ -22,28 +22,12 @@ theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F Γ(n) k
     Tendsto (fun x ↦ (⇑f ∘ ↑ofComplex) (Periodic.invQParam (↑n) x)) (𝓝[≠] 0)
     (𝓝 (cuspFunction n f 0)) := by
   simp only [comp_apply]
-  have hi : IsCusp OnePoint.infty Γ(n) := by
-    apply Γ(n).isCusp_of_mem_strictPeriods (h := n)
-    · have h := inst.1
-      positivity
-    · simp
-  have h1 := Function.Periodic.boundedAtFilter_cuspFunction (h := n)
-    (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n)
-    (bounded_at_infty_comp_ofComplex f hi)
-  have h2 : Tendsto (cuspFunction n f) (𝓝[≠] 0) (𝓝 (cuspFunction n f 0)) := by
-    apply tendsto_nhdsWithin_of_tendsto_nhds
-    apply (Function.Periodic.differentiableAt_cuspFunction_zero (h := n)
-      (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) ?_ ?_ ?_).continuousAt.tendsto
-    · apply SlashInvariantFormClass.periodic_comp_ofComplex
-      simp
-    · simp only [eventually_comap, eventually_atTop, ge_iff_le]
-      use 1
-      intro b hb a ha
-      apply ModularFormClass.differentiableAt_comp_ofComplex (z := a)
-      rw [ha]
-      linarith
-    apply ModularFormClass.bounded_at_infty_comp_ofComplex
-    exact hi
+  have hn : (0 : ℝ) < (n : ℝ) := by simpa using Nat.pos_of_neZero n
+  -- The cusp function is analytic (hence continuous) at `0` — now provided directly by mathlib's
+  -- `ModularFormClass.analyticAt_cuspFunction_zero`, so the bespoke derivation is no longer needed.
+  have h2 : Tendsto (cuspFunction n f) (𝓝[≠] 0) (𝓝 (cuspFunction n f 0)) :=
+    tendsto_nhdsWithin_of_tendsto_nhds
+      (ModularFormClass.analyticAt_cuspFunction_zero f hn (by simp)).continuousAt.tendsto
   apply h2.congr'
   rw [@eventuallyEq_nhdsWithin_iff, eventually_iff_exists_mem]
   use ball 0 1
@@ -138,7 +122,7 @@ lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
 
 lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
     (a • qExpansion n f) = (qExpansion n (a • f)) :=
-  (qExpansion_smul (Γ := Γ(n)) (h := n) (hh := Nat.cast_pos.mpr (Nat.pos_of_neZero n))
+  (ModularForm.qExpansion_smul (Γ := Γ(n)) (h := n) (hh := Nat.cast_pos.mpr (Nat.pos_of_neZero n))
       (hΓ := by simp) a f).symm
 
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
@@ -180,10 +164,5 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
       (hh := by positivity) (hΓ := by simp) (f := f) (n := n))
 
 lemma qExpansion_injective [hn : NeZero n] (f : ModularForm Γ(n) k) :
-    qExpansion n f = 0 ↔ f = 0 := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · ext z
-    have n_pos : 0 < n := Nat.zero_lt_of_ne_zero hn.1
-    simp [← (hasSum_qExpansion (h := n) f (by positivity) (by simp) z).tsum_eq, h]
-  · subst h
-    simpa using (qExpansion_zero (h := n))
+    qExpansion n f = 0 ↔ f = 0 :=
+  ModularForm.qExpansion_eq_zero_iff (Nat.cast_pos.mpr (Nat.pos_of_neZero n)) (by simp) f

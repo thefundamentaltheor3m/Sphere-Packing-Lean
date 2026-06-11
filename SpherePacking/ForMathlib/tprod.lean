@@ -5,37 +5,25 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ModularForms.multipliable_lems
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+public import Mathlib.Topology.Algebra.InfiniteSum.Order
+public import Mathlib.Topology.Instances.Real.Lemmas
 
 @[expose] public section
 
 /-! The contents of this file should go to Topology.Algebra.InfiniteSum, either
  into Basic or into another file. -/
 
-variable {β : Type*} {f g : β → ℝ} (hg : Multipliable g)
+variable {β : Type*} {f g : β → ℝ}
 
--- *THIS LEMMA IS WRONG! Eg. constant function ℕ → ℝ : n ↦ 1 / 2*
--- -- This has nothing to do with the fact that the product exists because if it's not
--- -- multipliable, the product is 1. So, we just need to show that all the terms are positive.
--- lemma tprod_pos_of_pos (hf : ∀ b, 0 < f b) : 0 < ∏' b, f b := by
--- if hmul : Multipliable f then
--- · unfold Multipliable at hmul
--- obtain ⟨a, ha⟩ := hmul
--- -- rw [HasProd_iff]
--- sorry
--- else
--- · rw [tprod_eq_one_of_not_multipliable hmul]
--- exact zero_lt_one
-
+/-- `HasProd` is monotone for nonnegative real-valued functions. This does not follow from
+`hasProd_le` since multiplication on `ℝ` is not covariant. -/
+theorem hasProd_le_nonneg {a₁ a₂ : ℝ} (h : ∀ i, f i ≤ g i) (h0 : ∀ i, 0 ≤ f i)
+    (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
+  apply le_of_tendsto_of_tendsto' hf hg
+  intro s
+  exact Finset.prod_le_prod (fun i _ => h0 i) (fun i _ => h i)
 
 lemma tprod_le_of_nonneg_of_multipliable (hfnn : 0 ≤ f) (hfg : f ≤ g) (hf : Multipliable f)
-  (hg : Multipliable g) : ∏' b, f b ≤ ∏' b, g b := by
-  have := hasProd_le_nonneg f g (a₁ := ∏' b, f b) (a₂ := ∏' b, g b) hfg hfnn
-  apply this
-  · exact hf.hasProd
-  · exact hg.hasProd
-
-/- # State:
-* Tprod le tprod under nonnegativity assumption, without OrderedCommMonoid
-* Tprod positive: make a specific aux lemma for the one we want
--/
+    (hg : Multipliable g) : ∏' b, f b ≤ ∏' b, g b :=
+  hasProd_le_nonneg hfg hfnn hf.hasProd hg.hasProd

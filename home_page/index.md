@@ -35,3 +35,7 @@ A `sorry`-free result is not the end of the story. The [Gauss PR for dimension $
 For more on getting started with Lean, visit the [course repository](https://github.com/b-mehta/formalising-mathematics-notes) for MATH60040/70040, Formalising Mathematics, taught by Bhavik Mehta at Imperial College London in Spring 2025.
 
 Prospective contributors are also invited to join the [packathons](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions/topic/Weekly.20Packathons.20.40.20CMU/with/576019507) that take place every Tuesday at 10:30 am Eastern Time (15:30 UTC). These are informal meetings where we discuss project progress and avenues to contribute. In light of the autoformalisation, we are using the packathons to work together on reviewing the Gauss code and getting it ready to merge.
+
+## Acknowledgements
+
+We are grateful to all contributors for their effort. We would also like to thank the Mathlib maintainers and the Lean community for their support. We are indebted to the Institute for Computer-Aided Reasoning in Mathematics for their help on matters of AI policy. Finally, we would like to thank G-Research for their generosity in partially supporting this research.

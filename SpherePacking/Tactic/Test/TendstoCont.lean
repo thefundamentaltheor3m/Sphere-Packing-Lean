@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2025 Cameron Freer. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Cameron Freer
+-/
 module
 
 public import SpherePacking.Tactic.TendstoCont
@@ -7,6 +12,14 @@ public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+
+/-!
+# Tests for the `tendsto_cont` tactic
+
+The `#guard_msgs` tests in this file are sensitive to any other diagnostics emitted at the
+guarded commands, so this file must keep a style-conformant header (otherwise
+`linter.style.header` warnings can leak into the `#guard_msgs` output and fail CI).
+-/
 
 @[expose] public section
 

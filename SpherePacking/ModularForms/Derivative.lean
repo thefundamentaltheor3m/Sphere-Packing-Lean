@@ -3,7 +3,9 @@ module
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.tsumderivWithin
 public import Mathlib.Analysis.Calculus.DiffContOnCl
+public import Mathlib.Analysis.Complex.Liouville
 
 @[expose] public section
 
@@ -78,15 +80,15 @@ theorem E₂_holo' : MDiff E₂ := by
   have hη : DifferentiableOn ℂ η {z : ℂ | 0 < z.im} := by
     intro z hz
     have hz' : DifferentiableAt ℂ η z := by
-      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz)
+      simpa using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz)
     exact hz'.differentiableWithinAt
   have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
     (hη.deriv isOpen_upperHalfPlaneSet).div hη fun z hz => by
-      simpa [η] using (ModularForm.eta_ne_zero (z := z) hz)
+      simpa using (ModularForm.eta_ne_zero (z := z) hz)
   exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
       show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by
-        simpa [η, E₂] using (ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩)]
+        simpa [E₂] using (ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩)]
     field_simp [Real.pi_ne_zero]
 
 /--
@@ -335,12 +337,23 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   simp_rw [h_deriv_simp, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
+/-- For `f 0 = 0`, the `ℕ+`- and `ℕ`-indexed sums of `f` agree. Unlike mathlib's
+`tsum_zero_pnat_eq_tsum_nat`, this needs no summability hypothesis (both sides are `0` in the
+non-summable case). -/
+private theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAddGroup α]
+    [T2Space α] [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n := by
+  by_cases hf2 : Summable f
+  · rw [hf2.tsum_eq_zero_add, hf, zero_add]
+    exact tsum_pnat_eq_tsum_succ
+  rw [tsum_eq_zero_of_not_summable hf2,
+    tsum_eq_zero_of_not_summable (summable_pnat_iff_summable_nat.not.mpr hf2)]
+
 /--
 Simplified version of `D_qexp_tsum` for ℕ+-indexed series (starting from n=1).
 This is the form most commonly used for Eisenstein series q-expansions.
 
 **Thin layer implementation:** Extends `a : ℕ+ → ℂ` to `ℕ → ℂ` with `a' 0 = 0`,
-uses `tsum_pNat` and `nat_pos_tsum2` to convert between sums,
+uses `tsum_pNat` and `summable_pnat_iff_summable_nat` to convert between sums,
 then applies `D_qexp_tsum`.
 -/
 theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
@@ -353,20 +366,20 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
   -- Extend a to ℕ with a' 0 = 0
   let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
   have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
-  -- Derivative bounds: extend u using nat_pos_tsum2
+  -- Derivative bounds: extend u using summable_pnat_iff_summable_nat
   have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
         cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
     have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
-    refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']),
+    refine ⟨u', summable_pnat_iff_summable_nat.mp (hu_sum.congr fun n => by rw [hu']),
       fun n k => ?_⟩
     by_cases hn : 0 < n
     · simp only [a', u', dif_pos hn]; exact hu_bound _ k
     · simp only [Nat.not_lt, Nat.le_zero] at hn; simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
-  have hD := D_qexp_tsum a' z ((nat_pos_tsum2 _ (by simp [a'])).mp
+  have hD := D_qexp_tsum a' z (summable_pnat_iff_summable_nat.mp
     (hsum.congr fun n => by rw [ha'])) hsum_deriv'
   calc D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z
       = D (fun w : ℍ => ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ))) z := by
@@ -721,12 +734,13 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
     have him : 0 < (g s).im := by simp [g, hs]
     simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
       ofComplex_apply_of_im_pos him]
-  rw [h_eq.deriv_eq]
-  have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
-  have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
-  rw [(hF'.scomp t hg).deriv]
+  rw [show deriv F.resToImagAxis t = deriv (((F ∘ ofComplex) ∘ g)) t from h_eq.deriv_eq]
+  rw [show deriv (((F ∘ ofComplex) ∘ g)) t = deriv (F ∘ ofComplex) z * I by
+    have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
+    simpa [g, z] using
+      (hF'.comp (t : ℂ) (by simpa using (hasDerivAt_id (t : ℂ)).const_mul I)).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
-  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
   ring_nf; simp only [I_sq]; ring
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
@@ -737,6 +751,7 @@ lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
 
 /-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
 on the imaginary axis. -/
+@[fun_prop]
 theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
     (hF_diff : MDiff F) : ResToImagAxis.Real (D F) := fun t ht => by
   have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
@@ -749,6 +764,19 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
     simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
   exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
     (mul_ne_zero (by norm_num) Real.pi_ne_zero)
+
+/-- If F is real on the imaginary axis and MDifferentiable, then the Serre derivative
+(of real weight) is also real on the imaginary axis. -/
+@[fun_prop]
+theorem serre_D_real_of_real {F : ℍ → ℂ} {k : ℝ} (hF_real : ResToImagAxis.Real F)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (serre_D k F) := by
+  unfold serre_D
+  have h : ResToImagAxis.Real (D F - ((k * 12⁻¹ : ℝ) • (E₂ * F))) := by fun_prop
+  convert h using 1
+  ext z
+  simp only [Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, real_smul, ofReal_mul, ofReal_inv,
+    ofReal_ofNat, sub_right_inj]
+  ring
 
 /-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
 lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDiff F)
@@ -808,14 +836,108 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDiff F)
       (by simpa [interior_Ioi] using hn)) ht₀_pos hF_pos t ht
   exact ⟨hF_real, gpos⟩
 
+/-- If `g(t₀) = 0` and `deriv g t₀ < 0`, then `g` is negative shortly after `t₀`. -/
+lemma neg_after_zero_of_deriv_neg {g : ℝ → ℝ} {t₀ : ℝ}
+    (hg0 : g t₀ = 0) (hd : deriv g t₀ < 0) :
+    ∃ δ > 0, ∀ s, t₀ < s → s < t₀ + δ → g s < 0 := by
+  have hdiff : DifferentiableAt ℝ g t₀ := by
+    by_contra h; simp [deriv_zero_of_not_differentiableAt h] at hd
+  have hda : HasDerivAt g (deriv g t₀) t₀ := hdiff.hasDerivAt
+  rw [hasDerivAt_iff_isLittleO_nhds_zero] at hda
+  have hε : (0 : ℝ) < -deriv g t₀ / 2 := by linarith
+  have hio := hda.def hε
+  rw [Filter.Eventually, Metric.mem_nhds_iff] at hio
+  obtain ⟨δ, hδ, hball⟩ := hio
+  refine ⟨δ, hδ, fun s hs1 hs2 => ?_⟩
+  have hh_pos : 0 < s - t₀ := sub_pos.mpr hs1
+  have hmem : s - t₀ ∈ Metric.ball (0 : ℝ) δ := by
+    simpa [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs,
+           abs_of_pos hh_pos] using sub_left_lt_of_lt_add hs2
+  have hest := hball hmem
+  simp only [Set.mem_setOf_eq, hg0, sub_zero, smul_eq_mul, norm_eq_abs, abs_of_pos hh_pos] at hest
+  have := (abs_le.mp hest).2
+  rw [show s = t₀ + (s - t₀) by ring]
+  linarith [div_neg_of_neg_of_pos (mul_neg_of_pos_of_neg hh_pos hd) (by norm_num : (0 : ℝ) < 2)]
+
+/-- If `g` is continuous on `(0, ∞)`, positive for `t ≥ t₀`, and has strictly negative
+derivative at any zero in `(0, t₀)`, then `g` is positive on all of `(0, ∞)`. -/
+lemma pos_of_deriv_neg_at_zeros {g : ℝ → ℝ}
+    (hcont : ContinuousOn g (Set.Ioi 0))
+    {t₀ : ℝ} (_ht₀ : 0 < t₀)
+    (hpos : ∀ t, t₀ ≤ t → 0 < g t)
+    (hderiv : ∀ t, 0 < t → t < t₀ → g t = 0 → deriv g t < 0) :
+    ∀ t, 0 < t → 0 < g t := by
+  intro t ht
+  by_cases htge : t₀ ≤ t
+  · exact hpos t htge
+  by_contra hle
+  push Not at hle
+  let S := Set.Icc t t₀ ∩ g ⁻¹' Set.Iic 0
+  have hIcc_sub : Set.Icc t t₀ ⊆ Set.Ioi 0 := fun s hs => lt_of_lt_of_le ht hs.1
+  have hS_closed : IsClosed S :=
+    (hcont.mono hIcc_sub).preimage_isClosed_of_isClosed isClosed_Icc isClosed_Iic
+  have hS_bdd : BddAbove S := ⟨t₀, fun s hs => hs.1.2⟩
+  have hS_ne : S.Nonempty := ⟨t, ⟨⟨le_refl _, le_of_lt (not_le.mp htge)⟩, hle⟩⟩
+  let T := sSup S
+  obtain ⟨⟨hT_ge_t, h_sSup⟩, hT_le⟩ := hS_closed.csSup_mem hS_ne hS_bdd
+  have hT_lt : T < t₀ := by
+    rcases eq_or_lt_of_le h_sSup with h | h
+    · exact absurd (h ▸ hT_le) (not_le.mpr (hpos t₀ le_rfl))
+    · exact h
+  have hT_pos : 0 < T := lt_of_lt_of_le ht hT_ge_t
+  have hgT_eq : g T = 0 := by
+    by_contra hne
+    have hlt' : g T < 0 := lt_of_le_of_ne hT_le hne
+    have hcT : ContinuousAt g T :=
+      (hcont T (Set.mem_Ioi.mpr hT_pos)).continuousAt (isOpen_Ioi.mem_nhds hT_pos)
+    obtain ⟨ε, hε, hball_neg⟩ := show ∃ ε > 0, ball T ε ⊆ {x | g x < 0} by
+      simpa [← Metric.mem_nhds_iff, Filter.Eventually] using Tendsto.eventually_lt_const hlt' hcT
+    have hd : 0 < min ε (t₀ - T) / 2 := half_pos (lt_min hε (sub_pos.mpr hT_lt))
+    have : T + min ε (t₀ - T) / 2 ∈ S :=
+      ⟨⟨by linarith, by linarith [min_le_right ε (t₀ - T)]⟩,
+       Set.mem_preimage.mpr (Set.mem_Iic.mpr (le_of_lt (hball_neg (by
+        rw [Metric.mem_ball, Real.dist_eq]
+        have : T + min ε (t₀ - T) / 2 - T = min ε (t₀ - T) / 2 := by ring
+        rw [this, abs_of_pos hd]; linarith [min_le_left ε (t₀ - T)]))))⟩
+    linarith [le_csSup hS_bdd this]
+  obtain ⟨δ, hδ, hneg⟩ := neg_after_zero_of_deriv_neg hgT_eq (hderiv T hT_pos hT_lt hgT_eq)
+  have hmin_pos : 0 < min δ (t₀ - T) := lt_min hδ (sub_pos.mpr hT_lt)
+  have : T + min δ (t₀ - T) / 2 ∈ S :=
+    ⟨⟨by linarith, by linarith [min_le_right δ (t₀ - T)]⟩,
+     Set.mem_preimage.mpr (Set.mem_Iic.mpr (le_of_lt (hneg _ (by linarith)
+       (by linarith [min_le_left δ (t₀ - T)]))))⟩
+  linarith [le_csSup hS_bdd this]
+
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
 Assume that Serre derivative $\partial_k F$ is positive on the imaginary axis.
 If $F(it)$ is positive for sufficiently large $t$, then $F(it)$ is positive for all $t > 0$.
 -/
-theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hSDF : ResToImagAxis.Pos (serre_D k F))
+theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hMD : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hSDF : ResToImagAxis.Pos (serre_D k F))
     (hF : ResToImagAxis.EventuallyPos F) : ResToImagAxis.Pos F := by
-  sorry
+  obtain ⟨_, hSDF_pos⟩ := hSDF
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hF
+  refine ⟨hF_real, fun t ht => ?_⟩
+  have key : ∀ s, 0 < s → 0 < (F.resToImagAxis s).re := by
+    refine  pos_of_deriv_neg_at_zeros ?_ ht₀_pos hF_pos ?_
+    · intro s hs
+      exact (continuous_re.continuousAt.comp
+        (ResToImagAxis.Differentiable F hMD s hs).continuousAt).continuousWithinAt
+    · intro s hs _ hgs
+      have hda := hasDerivAt_resToImagAxis_re hMD hs
+      rw [hda.deriv]
+      have h_ria : F.resToImagAxis s = F ⟨I * s, by simp [hs]⟩ := by
+        simp [resToImagAxis, ResToImagAxis, dif_pos hs]
+      have hz : F (⟨I * s, by simp [hs]⟩ : ℍ) = 0 := by
+        apply Complex.ext
+        · rw [zero_re, ← h_ria]; exact hgs
+        · rw [zero_im, ← h_ria]; exact (hF_real s hs)
+      have : 0 < ((D F).resToImagAxis s).re := by
+        simpa [resToImagAxis, ResToImagAxis, dif_pos hs,
+          serre_D_apply, hz, mul_zero, sub_zero] using hSDF_pos s hs
+      nlinarith [pi_pos]
+  exact key t ht
 
 /-! ## Cauchy Estimates for D-derivative
 

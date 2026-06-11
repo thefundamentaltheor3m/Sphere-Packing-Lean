@@ -48,7 +48,7 @@ protected theorem tsum_le_tsum (h : f ≤ g) : ∑' a, f a ≤ ∑' a, g a :=
   Summable.tsum_le_tsum h ENat.summable ENat.summable
 
 protected theorem sum_le_tsum {f : α → ℕ∞} (s : Finset α) : ∑ x ∈ s, f x ≤ ∑' x, f x :=
-  Summable.sum_le_tsum s (fun _ _ ↦ zero_le _) ENat.summable
+  Summable.sum_le_tsum s (fun _ _ ↦ zero_le') ENat.summable
 
 protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
   Summable.le_tsum' ENat.summable a
@@ -88,7 +88,7 @@ protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
 
 protected theorem tsum_sub (hfin : ∑' a, g a ≠ ⊤) (h : g ≤ f) :
     ∑' a, (f a - g a) = ∑' a, f a - ∑' a, g a := by
-  rw [← WithTop.add_right_inj hfin, ← ENat.tsum_add,
+  rw [← add_left_inj_of_ne_top hfin, ← ENat.tsum_add,
     tsum_congr (fun i ↦ tsub_add_cancel_of_le (h i)), tsub_add_cancel_of_le (ENat.tsum_le_tsum h)]
 
 protected theorem mul_tsum (c : ℕ∞) : c * ∑' a, f a = ∑' a, c * f a := by
@@ -102,6 +102,9 @@ theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b 
   obtain ⟨t, hts, hcard⟩ := hs.exists_subset_card_eq (b + 1)
   exact ⟨t, by simpa, by simp [encard_coe_eq_coe_finsetCard, hcard, Nat.cast_lt, - Nat.cast_add]⟩
 
+-- These forward to mathlib's `WithTop.add_eq_top` / `WithTop.add_ne_top`, but are kept as `ℕ∞`
+-- specialisations: the `@[simp]` form is needed for `simp` automation below (the general
+-- `WithTop` lemma does not fire on the `ℕ∞` addition syntactically).
 @[simp]
 theorem add_eq_top {x y : ℕ∞} : x + y = ⊤ ↔ x = ⊤ ∨ y = ⊤ :=
   WithTop.add_eq_top
@@ -162,7 +165,7 @@ protected theorem tsum_subtype_const_eq_top_of_ne_zero {s : Set α} (hs : s.Infi
 
 protected theorem tsum_comp_le_tsum_of_injective {f : α → β} (hf : Injective f) (g : β → ℕ∞) :
     ∑' x, g (f x) ≤ ∑' y, g y :=
-  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le _) (fun _ ↦ le_rfl)
+  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le') (fun _ ↦ le_rfl)
     ENat.summable ENat.summable
 
 protected theorem tsum_le_tsum_comp_of_surjective {f : α → β} (hf : Surjective f) (g : β → ℕ∞) :

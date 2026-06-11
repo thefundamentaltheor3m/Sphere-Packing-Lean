@@ -33,7 +33,8 @@ The scalar is determined by comparing limits as z → i∞.
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
-open ModularForm EisensteinSeries TopologicalSpace Set MeasureTheory
+open ModularForm hiding E₄ E₆
+open EisensteinSeries TopologicalSpace Set MeasureTheory
 open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
 open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
