@@ -505,59 +505,51 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
 -- Syntax
 -- ══════════════════════════════════════════════════════════════
 
--- Explicit syntax rules for all combinations.
--- Option order is flexible: disch and within_disch can appear in either order.
-syntax "tendsto_cont" ("[" term,* "]")? : tactic
-syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax "tendsto_cont" "(" &"within_disch" ":=" tacticSeq ")"
-  ("[" term,* "]")? : tactic
-syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")"
-  "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax "tendsto_cont" "(" &"within_disch" ":=" tacticSeq ")"
-  "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax "tendsto_cont?" ("[" term,* "]")? : tactic
-syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax "tendsto_cont?" "(" &"within_disch" ":=" tacticSeq ")"
-  ("[" term,* "]")? : tactic
-syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")"
-  "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax "tendsto_cont?" "(" &"within_disch" ":=" tacticSeq ")"
-  "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+/-- A `tendsto_cont` configuration option: `(disch := tac)` or
+    `(within_disch := tac)`. Options may appear in any order; duplicates
+    are rejected during elaboration. -/
+syntax tendstoContOption :=
+  "(" (&"disch" <|> &"within_disch") ":=" tacticSeq ")"
+
+syntax "tendsto_cont" (tendstoContOption)* ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" (tendstoContOption)* ("[" term,* "]")? : tactic
 
 private meta def elabExtras (extras : Syntax.TSepArray `term ",") :
     TacticM (Array Expr) :=
   withMainContext <| extras.getElems.mapM fun h => Term.elabTerm h none
 
+/-- Split parsed `tendstoContOption`s into `(disch?, within_disch?)`,
+    rejecting duplicates. -/
+private meta def parseOptions (opts : Array (TSyntax ``tendstoContOption)) :
+    TacticM (Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) ×
+      Option (TSyntax ``Lean.Parser.Tactic.tacticSeq)) := do
+  let mut d? := none
+  let mut wd? := none
+  for opt in opts do
+    match opt with
+    | `(tendstoContOption| (disch := $tac)) =>
+      if d?.isSome then
+        throwErrorAt opt "tendsto_cont: duplicate `disch` option"
+      d? := some tac
+    | `(tendstoContOption| (within_disch := $tac)) =>
+      if wd?.isSome then
+        throwErrorAt opt "tendsto_cont: duplicate `within_disch` option"
+      wd? := some tac
+    | _ => throwErrorAt opt "tendsto_cont: unknown option"
+  return (d?, wd?)
+
 -- Shared handler abbreviation
-private meta def tc (extras? : Option (Syntax.TSepArray `term ",") := none)
-    (d? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none)
-    (wd? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none)
+private meta def tc (opts : Array (TSyntax ``tendstoContOption))
+    (extras? : Option (Syntax.TSepArray `term ",") := none)
     (trace : Bool := false) : TacticM Unit := do
+  let (d?, wd?) ← parseOptions opts
   let hyps ← match extras? with
     | some e => elabExtras e | none => pure #[]
   tendstoCont hyps d? wd? trace
 
 elab_rules : tactic
-  | `(tactic| tendsto_cont $[[ $e,* ]]?) => tc (extras? := e)
-  | `(tactic| tendsto_cont ( disch := $d ) $[[ $e,* ]]?) =>
-    tc (extras? := e) (d? := d)
-  | `(tactic| tendsto_cont ( within_disch := $wd ) $[[ $e,* ]]?) =>
-    tc (extras? := e) (wd? := wd)
-  | `(tactic| tendsto_cont ( disch := $d ) ( within_disch := $wd )
-      $[[ $e,* ]]?) => tc (extras? := e) (d? := d) (wd? := wd)
-  | `(tactic| tendsto_cont ( within_disch := $wd ) ( disch := $d )
-      $[[ $e,* ]]?) => tc (extras? := e) (d? := d) (wd? := wd)
-
-elab_rules : tactic
-  | `(tactic| tendsto_cont? $[[ $e,* ]]?) =>
-    tc (extras? := e) (trace := true)
-  | `(tactic| tendsto_cont? ( disch := $d ) $[[ $e,* ]]?) =>
-    tc (extras? := e) (d? := d) (trace := true)
-  | `(tactic| tendsto_cont? ( within_disch := $wd ) $[[ $e,* ]]?) =>
-    tc (extras? := e) (wd? := wd) (trace := true)
-  | `(tactic| tendsto_cont? ( disch := $d ) ( within_disch := $wd )
-      $[[ $e,* ]]?) => tc (extras? := e) (d? := d) (wd? := wd) (trace := true)
-  | `(tactic| tendsto_cont? ( within_disch := $wd ) ( disch := $d )
-      $[[ $e,* ]]?) => tc (extras? := e) (d? := d) (wd? := wd) (trace := true)
+  | `(tactic| tendsto_cont $opts* $[[ $e,* ]]?) => tc opts (extras? := e)
+  | `(tactic| tendsto_cont? $opts* $[[ $e,* ]]?) =>
+    tc opts (extras? := e) (trace := true)
 
 end TendstoCont

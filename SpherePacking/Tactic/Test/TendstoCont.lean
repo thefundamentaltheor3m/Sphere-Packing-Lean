@@ -704,6 +704,19 @@ example (h : Tendsto f atTop (nhds 3))
     exact Set.mem_Ioi.mpr (inv_pos.mpr (hpos _)))
     (disch := positivity)
 
+-- Duplicate options are rejected
+/-- error: tendsto_cont: duplicate `disch` option -/
+#guard_msgs in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z) atTop (nhds 3) := by
+  tendsto_cont (disch := norm_num) (disch := positivity)
+
+/-- error: tendsto_cont: duplicate `within_disch` option -/
+#guard_msgs in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont (within_disch := assumption) (within_disch := assumption)
+
 -- within_disch with a direct ∀ᶠ-level tactic (no pointwise lift needed)
 -- Uses filter_upwards which assumption can't match
 example (h : Tendsto f atTop (nhds 3))
