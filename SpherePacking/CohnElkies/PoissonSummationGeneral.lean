@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Auguste Poiroux. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Auguste Poiroux
+-/
 module
 public import Mathlib.Algebra.Module.Submodule.Equiv
 public import Mathlib.Algebra.Module.Submodule.Map

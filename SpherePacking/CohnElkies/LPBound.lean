@@ -4,34 +4,32 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
+public import Mathlib.Algebra.Module.Submodule.Basic
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Algebra.Module.ZLattice.Summable
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Complex.Trigonometric
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.RCLike.Inner
+public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 public import Mathlib.Logic.Function.Basic
 public import Mathlib.Logic.Relator
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.Analysis.Complex.Basic
-public import Mathlib.Analysis.Complex.Trigonometric
-
-public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Algebra.Module.ZLattice.Summable
-public import Mathlib.Algebra.Module.Submodule.Basic
-public import Mathlib.Analysis.CStarAlgebra.Classes
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-public import Mathlib.Analysis.RCLike.Inner
-public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 public import Mathlib.Order.CompletePartialOrder
 public import Mathlib.Order.Filter.Cofinite
 public import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 public import Mathlib.Topology.Algebra.InfiniteSum.Real
-public import Mathlib.Topology.Metrizable.Basic
 public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Metrizable.Basic
 public import Mathlib.Topology.Separation.CompletelyRegular
-
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
-public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 import Mathlib.Combinatorics.Pigeonhole
 
 /-!
@@ -51,22 +49,16 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module Fi
 variable {d : ℕ}
 
 /-- Any coordinate of a vector is bounded in absolute value by the Euclidean norm. -/
-public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ := by
-  rw [EuclideanSpace.norm_eq, ← Real.sqrt_sq_eq_abs]
-  exact Real.sqrt_le_sqrt (by
-    have hsq : (x.ofLp i) ^ 2 = ‖x.ofLp i‖ ^ 2 := by rw [Real.norm_eq_abs, sq_abs]
-    rw [hsq]
-    exact Finset.single_le_sum (f := fun j : Fin d => ‖x.ofLp j‖ ^ 2)
-      (fun _ _ => sq_nonneg _) (Finset.mem_univ i))
+public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ :=
+  PiLp.norm_apply_le x i
 
 /-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
 public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
     {A B : Set (EuclideanSpace ℝ (Fin d))}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) : 2 * r ≤ dist x y := by
-  by_contra hlt
-  refine Set.disjoint_left.1 hAB (hx (a := midpoint ℝ x y) ?_) (hy (a := midpoint ℝ x y) ?_) <;>
-    simpa [Metric.mem_ball, dist_comm] using
-      (by nlinarith [lt_of_not_ge hlt] : (1 / 2 : ℝ) * dist x y < r)
+  obtain hr | hr := le_or_gt r 0
+  · linarith [dist_nonneg (x := x) (y := y)]
+  · simpa [two_mul] using (disjoint_ball_ball_iff hr hr).1 (hAB.mono hx hy)
 
 /-- The union of all lattice translates of a set `F` of representatives. -/
 @[expose] public noncomputable def periodizedCenters (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
@@ -83,17 +75,15 @@ public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpac
     {F : Set (EuclideanSpace ℝ (Fin d))} {x y : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ Λ) (hy : y ∈ periodizedCenters (d := d) Λ F) :
     x + y ∈ periodizedCenters (d := d) Λ F := by
-  rcases mem_periodizedCenters_iff.1 hy with ⟨g, f, hf, rfl⟩
-  exact mem_periodizedCenters_iff.2
-    ⟨⟨x, hx⟩ + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
+  obtain ⟨g, f, hf, rfl⟩ := mem_periodizedCenters_iff.1 hy
+  exact mem_periodizedCenters_iff.2 ⟨⟨x, hx⟩ + g, f, hf, (add_assoc x g f).symm⟩
 
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
 public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} {r : ℝ} {g : Λ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : ball x r ⊆ D) : ball (g +ᵥ x) r ⊆ g +ᵥ D := fun y hy =>
-  ⟨(- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y, hx <| by
-    simpa [Metric.mem_ball, dist_eq_norm, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
-      add_assoc, add_comm, add_left_comm] using hy, by simp [vadd_eq_add]⟩
+    (hx : ball x r ⊆ D) : ball (g +ᵥ x) r ⊆ g +ᵥ D := by
+  rw [Submodule.vadd_def, ← vadd_ball]
+  exact Set.vadd_set_mono hx
 
 /-- Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
 along a lattice `Λ`. -/
@@ -135,8 +125,7 @@ along a lattice `Λ`. -/
 /-- A scaled basis used to realize `coordCube L` as a fundamental domain. -/
 @[expose] public noncomputable def cubeBasis (d : ℕ) (L : ℝ) (hL : 0 < L) :
     Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) :=
-  ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).isUnitSMul
-    (fun _ : Fin d ↦ IsUnit.mk0 L (ne_of_gt hL))
+  (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
 
 /-- The lattice generated by `cubeBasis L hL`. -/
 @[expose] public noncomputable def cubeLattice (d : ℕ) (L : ℝ) (hL : 0 < L) :
@@ -144,89 +133,87 @@ along a lattice `Λ`. -/
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
 
 instance instDiscreteTopology_cubeLattice (L : ℝ) (hL : 0 < L) :
-    DiscreteTopology (cubeLattice d L hL) := by
-  change DiscreteTopology (Submodule.span ℤ (Set.range (cubeBasis d L hL)))
-  infer_instance
+    DiscreteTopology (cubeLattice d L hL) :=
+  inferInstanceAs (DiscreteTopology (Submodule.span ℤ (Set.range (cubeBasis d L hL))))
 
 instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
-    IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+    IsZLattice ℝ (cubeLattice d L hL) :=
+  inferInstanceAs (IsZLattice ℝ (Submodule.span ℤ (Set.range (cubeBasis d L hL))))
 
+/-- The fundamental domain of the scaled basis `cubeBasis d L hL` is the cube `[0, L)^d`. -/
 public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
     fundamentalDomain (cubeBasis d L hL) = coordCube d L := by
   ext x
   simp only [ZSpan.mem_fundamentalDomain, coordCube, cubeBasis, Module.Basis.repr_isUnitSMul,
-    Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
-  refine ⟨fun hx i => ?_, fun hx i => ?_⟩ <;> specialize hx i
-  · exact ⟨by simpa [mul_inv_cancel₀ hL.ne'] using
-        (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i),
-      by simpa [mul_inv_cancel₀ hL.ne'] using
-        (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
-          (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
-  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
-      simpa [mul_assoc, inv_mul_cancel₀ hL.ne'] using
-        mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
+    Units.smul_def, Units.val_inv_eq_inv_val, IsUnit.unit_spec, smul_eq_mul,
+    OrthonormalBasis.coe_toBasis_repr_apply, EuclideanSpace.basisFun_repr, Set.mem_setOf_eq,
+    Set.mem_Ico]
+  exact forall_congr' fun i =>
+    and_congr (mul_nonneg_iff_of_pos_left (inv_pos.2 hL)) (inv_mul_lt_one₀ hL)
 
+/-- A ball of radius `r` centred in the inner cube `[r, L-r]^d` is contained in `[0, L)^d`. -/
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
-  have hsub := abs_lt.mp <| lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i :
-    |y i - x i| ≤ ‖y - x‖)
-    (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy : ‖y - x‖ < r)
-  refine ⟨?_, ?_⟩ <;> linarith [(hx i).1, (hx i).2, hsub.1, hsub.2]
+  have h₁ : |y i - x i| ≤ ‖y - x‖ := by simpa using abs_coord_le_norm (y - x) i
+  have h₂ : ‖y - x‖ < r := by simpa [dist_eq_norm] using hy
+  obtain ⟨hlo, hhi⟩ := abs_lt.mp (h₁.trans_lt h₂)
+  obtain ⟨hxl, hxr⟩ := hx i
+  exact ⟨by linarith, by linarith⟩
 
+/-- If `F ⊆ D` and every point has a unique lattice translate landing in `D`, then intersecting
+the periodization of `F` with `D` recovers exactly `F`. -/
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
     (hF_sub : F ⊆ D) (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) :
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
-  have zvadd : ∀ y : EuclideanSpace ℝ (Fin d), (0 : ↥Λ) +ᵥ y = y := fun y => zero_vadd _ _
-  refine ⟨?_, fun hxF => ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, (zvadd x).symm⟩, hF_sub hxF⟩⟩
-  rintro ⟨⟨_, ⟨g, rfl⟩, ⟨f, hfF, rfl⟩⟩, hxD⟩
-  obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
-  have hg0g : g = 0 := by
-    have h1 : (fun g ↦ g +ᵥ f ∈ D) g := hxD
-    have h2 : (fun g ↦ g +ᵥ f ∈ D) (0 : ↥Λ) := by
-      change (0 : ↥Λ) +ᵥ f ∈ D
-      rw [zvadd]; exact hF_sub hfF
-    exact (hg0uniq g h1).trans (hg0uniq 0 h2).symm
-  rw [hg0g]
-  change (0 : ↥Λ) +ᵥ f ∈ F
-  rw [zvadd]
-  exact hfF
+  refine ⟨?_, fun hxF ↦
+    ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, (zero_vadd _ x).symm⟩, hF_sub hxF⟩⟩
+  rintro ⟨hxP, hxD⟩
+  obtain ⟨g, f, hfF, rfl⟩ := mem_periodizedCenters_iff.1 hxP
+  obtain ⟨g₀, -, huniq⟩ := hD_unique_covers f
+  have hg : g = 0 := (huniq g hxD).trans (huniq 0 (by simpa using hF_sub hfF)).symm
+  simpa [hg] using hfF
 
 namespace PeriodicConstant
 
 private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet s) :
-    volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s := by
-  simpa using (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
+    volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s :=
+  (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
 
+/-- Every point has a unique `cubeLattice` translate lying in the cube `coordCube d L`. -/
 public lemma coordCube_unique_covers (L : ℝ) (hL : 0 < L) :
     ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ coordCube d L := fun x => by
   simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
 
+/-- The cube `coordCube d L` is a bounded set. -/
 public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d L) := by
   simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
     fundamentalDomain_isBounded (cubeBasis d L hL)
 
+/-- The volume of the cube `[0, L)^d` is `L ^ d`. -/
 public lemma volume_coordCube (L : ℝ) : volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
-  rw [show coordCube d L = (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-        (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) from
-      Set.ext fun x => by simp [coordCube, Set.mem_pi],
-    volume_preimage_ofLp _
-      (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
+  have hcube : coordCube d L = (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
+      (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
+    ext x; simp [coordCube, Set.mem_pi]
+  rw [hcube, volume_preimage_ofLp _ (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico),
+    volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
 
+/-- `coordCubeInner d L r` is the `ofLp`-preimage of the product set `[r, L - r]^d`. -/
 public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
     coordCubeInner d L r =
       (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
         (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) := by
   ext x; simp [coordCubeInner, Pi.le_def, forall_and]
 
+/-- The volume of the closed inner cube `[r, L - r]^d` is `(L - 2r) ^ d`. -/
 public lemma volume_coordCubeInner (L r : ℝ) :
     volume (coordCubeInner d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
   rw [coordCubeInner_eq_preimage_ofLp, volume_preimage_ofLp _
     (.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc), volume_pi, Measure.pi_pi]
-  simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
+  simp [Real.volume_Icc, show L - r - r = L - 2 * r by ring]
 
 end PeriodicConstant
 
