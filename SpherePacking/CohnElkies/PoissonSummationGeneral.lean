@@ -166,10 +166,9 @@ public lemma dualSubmodule_standardLattice_eq :
   constructor
   · intro hx
     have hcoord : ∀ i : Fin d, ∃ n : ℤ, (n : ℝ) = x i := fun i ↦ by
-      have hmem : x i ∈ (1 : Submodule ℤ ℝ) := by
+      obtain ⟨n, hn⟩ := Submodule.mem_one.mp (show x i ∈ (1 : Submodule ℤ ℝ) by
         simpa [innerₗ_apply_apply, EuclideanSpace.inner_single_right] using
-          hx (EuclideanSpace.basisFun (Fin d) ℝ i) (Submodule.subset_span ⟨i, by simp⟩)
-      obtain ⟨n, hn⟩ := Submodule.mem_one.mp hmem
+          hx (EuclideanSpace.basisFun (Fin d) ℝ i) (Submodule.subset_span ⟨i, by simp⟩))
       exact ⟨n, by simpa using hn⟩
     choose n hn using hcoord
     have hx_eq : x = intVec (d := d) n := by ext i; simp [hn i]
@@ -531,41 +530,48 @@ private lemma mFourierCoeff_descended_eq_iocCube_integral (n : Fin d → ℤ) :
             fun _ _ => by simp [descended_comp (d := d) (f := f),
               periodization_apply (d := d) (f := f), smul_eq_mul]
 
+/-- The integrand `mFourier(-n)(coeFunE x) * f x` is integrable over `E`: it is `f` (integrable,
+being Schwartz) scaled by the factor `mFourier(-n) ∘ coeFunE`, which has norm `≤ 1`. -/
+lemma integrable_mFourier_mul (n : Fin d → ℤ) :
+    Integrable (fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x)
+      (volume : Measure E) := by
+  simpa using Integrable.bdd_mul (μ := (volume : Measure E))
+    (SchwartzMap.integrable (μ := (volume : Measure E)) f)
+    (((UnitAddTorus.mFourier (-n)).continuous.comp
+      (continuous_coeFunE (d := d))).aestronglyMeasurable)
+    (ae_of_all _ fun x => by
+      simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+        (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)))
+
+/-- Interchange of the cube-integral and the lattice sum: the cube-integral of
+`mFourier(-n)(coeFunE ·)` against the periodization is the lattice sum of the cube-integrals of the
+individual translates (`integral_tsum_of_summable_integral_norm`). -/
+lemma integral_iocCube_periodization_eq_tsum (n : Fin d → ℤ) :
+    (∫ x in iocCube (d := d),
+        UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
+          (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E)) =
+      ∑' ℓ : Λ, ∫ x in iocCube (d := d),
+        UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f (x + (ℓ : E))
+          ∂(volume : Measure E) := by
+  simpa [tsum_mul_left, mul_assoc] using
+    (MeasureTheory.integral_tsum_of_summable_integral_norm
+        (μ := (volume : Measure E).restrict (iocCube (d := d)))
+        (F := fun ℓ : Λ => fun x : E =>
+          UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f (x + (ℓ : E)))
+        (fun ℓ => by
+          simpa [IntegrableOn] using
+            (integrableOn_mFourier_mul_translate_iocCube (d := d) (f := f) n ℓ))
+        (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n)).symm
+
 /-- The integral over the unit cube of `mFourier(-n)(coeFunE x)` times the periodization of `f`
 equals the integral of `mFourier(-n)(coeFunE x) * f x` over the whole space, by swapping the
-integral with the lattice sum and applying the fundamental-domain property of `iocCube`. -/
+integral with the lattice sum (`integral_iocCube_periodization_eq_tsum`) and applying the
+fundamental-domain property of `iocCube`. -/
 private lemma integral_iocCube_mFourier_periodization_eq_integral (n : Fin d → ℤ) :
     (∫ x in iocCube (d := d),
         UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
           (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E)) =
       ∫ x : E, UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x ∂(volume : Measure E) := by
-  have hint : Integrable
-      (fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x)
-      (volume : Measure E) := by
-    simpa using Integrable.bdd_mul (μ := (volume : Measure E))
-      (SchwartzMap.integrable (μ := (volume : Measure E)) f)
-      (((UnitAddTorus.mFourier (-n)).continuous.comp
-        (continuous_coeFunE (d := d))).aestronglyMeasurable)
-      (ae_of_all _ fun x => by
-        simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-          (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)))
-  have hsum_int :
-      (∫ x in iocCube (d := d),
-            UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-              (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E)) =
-        ∑' ℓ : Λ,
-          ∫ x in iocCube (d := d),
-            UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) *
-              f (x + (ℓ : E)) ∂(volume : Measure E) := by
-    simpa [tsum_mul_left, mul_assoc] using
-      (MeasureTheory.integral_tsum_of_summable_integral_norm
-          (μ := (volume : Measure E).restrict (iocCube (d := d)))
-          (F := fun ℓ : Λ => fun x : E =>
-            UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f (x + (ℓ : E)))
-          (fun ℓ => by
-            simpa [IntegrableOn] using
-              (integrableOn_mFourier_mul_translate_iocCube (d := d) (f := f) n ℓ))
-          (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n)).symm
   -- `g` is the full integrand, abbreviated for the fundamental-domain unfolding below.
   let g : E → ℂ := fun x : E => UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) * f x
   have hterm : ∀ ℓ : Λ,
@@ -576,9 +582,10 @@ private lemma integral_iocCube_mFourier_periodization_eq_integral (n : Fin d →
     integral_congr_ae <| ae_restrict_of_forall_mem (measurableSet_iocCube (d := d)) fun x _ => by
       simp [g, Submodule.vadd_def, vadd_eq_add, add_comm,
         mFourier_neg_apply_coeFunE_add_standardLattice (d := d) (n := n) (ℓ := ℓ) (x := x)]
-  rw [hsum_int]
+  rw [integral_iocCube_periodization_eq_tsum (d := d) (f := f) n]
   simpa [g, hterm] using
-    ((isAddFundamentalDomain_iocCube (d := d)).integral_eq_tsum'' g hint).symm
+    ((isAddFundamentalDomain_iocCube (d := d)).integral_eq_tsum'' g
+      (integrable_mFourier_mul (d := d) (f := f) n)).symm
 
 lemma mFourierCoeff_descended (n : Fin d → ℤ) :
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
@@ -588,29 +595,36 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
   simp [Real.fourier_eq, Circle.smul_def, smul_eq_mul,
     mFourier_neg_apply_coeFunE (d := d) (n := n)]
 
+/-- Schwartz–Fourier decay over the lattice: `𝓕 f` is summable in norm over `Λ = ℤ^d`. The decay
+order `d + 1` exceeds the lattice rank, so `‖·‖⁻¹ ^ (d + 1)` is summable and dominates `𝓕 f`. -/
+lemma summable_norm_fourier_lattice :
+    Summable (fun ℓ : Λ => ‖𝓕 (fun y : E => f y) (ℓ : E)‖) := by
+  have hrank : Module.finrank ℤ Λ = d := by
+    simpa using (ZLattice.rank (K := ℝ) (L := Λ)).trans (by simp)
+  have hk : Module.finrank ℤ Λ < d + 1 := by omega
+  obtain ⟨C, _, hC⟩ := (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).decay (d + 1) 0
+  have hC' : ∀ x : E, ‖x‖ ^ (d + 1) * ‖𝓕 (fun y : E => f y) x‖ ≤ C := by
+    simpa [FourierTransform.fourierCLE_apply, fourier_coe, norm_iteratedFDeriv_zero] using hC
+  refine Summable.of_norm_bounded_eventually
+    ((by simpa using ZLattice.summable_norm_pow_inv (L := Λ) (n := d + 1) hk :
+      Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ (d + 1) : ℝ))).mul_left C) ?_
+  filter_upwards [(finite_norm_le_lattice (d := d) 1).compl_mem_cofinite] with ℓ hℓ
+  simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
+    (le_div_iff₀' (pow_pos (lt_trans (by positivity)
+      (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)) _)).2 (hC' (ℓ : E))
+
+/-- The Fourier-decay summability of `summable_norm_fourier_lattice`, reindexed over `ℤ^d` along
+`equivIntVec`. -/
+lemma summable_norm_fourier_intVec :
+    Summable (fun n : Fin d → ℤ => ‖𝓕 (fun x : E => f x) (intVec (d := d) n)‖) := by
+  simpa [equivIntVec] using (summable_norm_fourier_lattice (d := d) (f := f)).comp_injective
+    (equivIntVec (d := d)).injective
+
 lemma summable_mFourierCoeff_descended :
-    Summable (UnitAddTorus.mFourierCoeff (descended (d := d) f)) := by
-  have hsum_norm : Summable (fun n : Fin d → ℤ =>
-      ‖𝓕 (fun x : E => f x) (intVec (d := d) n)‖) := by
-    -- `k` is a decay order exceeding the lattice rank, so that `‖·‖⁻¹ ^ k` is summable.
-    let k : ℕ := d + 1
-    have hrank : Module.finrank ℤ Λ = d := by
-      simpa using (ZLattice.rank (K := ℝ) (L := Λ)).trans (by simp)
-    have hk : Module.finrank ℤ Λ < k := by simp [hrank, k]
-    obtain ⟨C, _, hC⟩ := (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).decay k 0
-    have hC' : ∀ x : E, ‖x‖ ^ k * ‖𝓕 (fun y : E => f y) x‖ ≤ C := by
-      simpa [FourierTransform.fourierCLE_apply, fourier_coe, norm_iteratedFDeriv_zero] using hC
-    have hsum_lattice : Summable (fun ℓ : Λ => ‖𝓕 (fun y : E => f y) (ℓ : E)‖) := by
-      refine Summable.of_norm_bounded_eventually
-        ((by simpa [k] using ZLattice.summable_norm_pow_inv (L := Λ) (n := k) hk :
-          Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ k : ℝ))).mul_left C) ?_
-      filter_upwards [(finite_norm_le_lattice (d := d) 1).compl_mem_cofinite] with ℓ hℓ
-      simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
-        (le_div_iff₀' (pow_pos (lt_trans (by positivity)
-          (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)) _)).2 (hC' (ℓ : E))
-    simpa [equivIntVec] using
-      hsum_lattice.comp_injective (equivIntVec (d := d)).injective
-  exact Summable.of_norm (by simpa [mFourierCoeff_descended (d := d) (f := f)] using hsum_norm)
+    Summable (UnitAddTorus.mFourierCoeff (descended (d := d) f)) :=
+  Summable.of_norm <| by
+    simpa [mFourierCoeff_descended (d := d) (f := f)] using
+      summable_norm_fourier_intVec (d := d) (f := f)
 
 /-- Poisson summation for Schwartz functions over the standard lattice `ℤ^d`. -/
 public theorem poissonSummation_standard (v : E) :
