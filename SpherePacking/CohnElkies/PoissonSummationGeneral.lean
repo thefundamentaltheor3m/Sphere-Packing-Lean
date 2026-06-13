@@ -486,6 +486,24 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
     _ = μ.real Set.univ * ‖(translate (d := d) f ℓ).restrict (sqrtdBall (d := d))‖ := by
         rw [integral_const, smul_eq_mul]
 
+/-- The ambient `volume` on `UnitAddCircle` is the probability measure `haarAddCircle` baked into
+`UnitAddTorus.mFourierCoeff`: both come from `AddCircle 1`, whose total measure is `1`. -/
+private lemma volume_unitAddCircle_eq_haar :
+    (volume : Measure UnitAddCircle) = AddCircle.haarAddCircle (T := 1) := by
+  simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle]
+
+/-- `UnitAddTorus.mFourierCoeff g n` as an integral against the file's ambient `volume` on the
+torus. `mFourierCoeff` is defined using `haarAddCircle`; this bridges the resulting measure-space
+diamond to the ambient `volume`, which agrees by `volume_unitAddCircle_eq_haar`. -/
+private lemma mFourierCoeff_eq_integral_volume (n : Fin d → ℤ) (g : UnitAddTorus (Fin d) → ℂ) :
+    UnitAddTorus.mFourierCoeff g n =
+      ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • g y := by
+  have hvol : (@volume (UnitAddTorus (Fin d))
+        (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
+          (fun _ => instMeasureSpaceUnitAddCircle))) = volume :=
+    congrArg Measure.pi (funext fun _ => volume_unitAddCircle_eq_haar.symm)
+  simp [UnitAddTorus.mFourierCoeff, smul_eq_mul, hvol]
+
 /-- The `n`-th torus Fourier coefficient of `descended f` is the integral over the unit cube
 of `mFourier(-n)(coeFunE x)` times the periodization `∑' ℓ, f (x + ℓ)`. -/
 private lemma mFourierCoeff_descended_eq_iocCube_integral (n : Fin d → ℤ) :
@@ -502,18 +520,8 @@ private lemma mFourierCoeff_descended_eq_iocCube_integral (n : Fin d → ℤ) :
         (descended (d := d) f).continuous).aestronglyMeasurable
   calc
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n
-        = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
-            have hvol : (@volume (UnitAddTorus (Fin d))
-                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
-                    (fun _ => instMeasureSpaceUnitAddCircle))) =
-                @volume (UnitAddTorus (Fin d))
-                  (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
-                    (fun _ => AddCircle.measureSpace (1 : ℝ))) :=
-              congrArg Measure.pi (funext fun _ => by
-                change (AddCircle.haarAddCircle (T := (1 : ℝ)) : Measure UnitAddCircle) =
-                  @volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ))
-                simp [UnitAddCircle, AddCircle.volume_eq_smul_haarAddCircle])
-            simp [UnitAddTorus.mFourierCoeff, smul_eq_mul, hvol]
+        = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y :=
+          mFourierCoeff_eq_integral_volume (d := d) n (descended (d := d) f)
     _ = ∫ x in iocCube (d := d),
           UnitAddTorus.mFourier (-n) (coeFunE (d := d) x) •
             descended (d := d) f (coeFunE (d := d) x)
