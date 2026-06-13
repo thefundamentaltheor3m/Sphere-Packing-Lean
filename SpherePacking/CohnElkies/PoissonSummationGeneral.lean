@@ -717,13 +717,26 @@ section PoissonSummationLattices
 
 variable (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L] [IsZLattice ℝ L]
 
-/-- The adjoint of `(latticeEquiv L)⁻¹`; it carries the standard lattice onto the dual lattice
-`L*`, and is the engine of the change of variables on the spectral side of Poisson summation. -/
-noncomputable def Bₗ : E →ₗ[ℝ] E := (latticeEquiv L).symm.toLinearMap.adjoint
+/-- The **dual change of variables**: the inverse-adjoint `((latticeEquiv L).symm).adjoint` of
+`latticeEquiv L`, packaged as a linear automorphism of `E` with inverse `(latticeEquiv L).adjoint`.
+It carries the standard lattice `ℤ^d` onto the dual lattice `L*`
+(`map_standardLattice_dualEquiv_eq`), so its `tsum_eq` reindexes the spectral side of Poisson
+summation. Kept as a named definition: it is the spectral-side counterpart of `latticeEquiv`. -/
+noncomputable def dualEquiv : E ≃ₗ[ℝ] E :=
+  LinearEquiv.ofLinear ((latticeEquiv L).symm.toLinearMap.adjoint)
+    ((latticeEquiv L).toLinearMap.adjoint)
+    (by simp [← LinearMap.adjoint_comp,
+      show (latticeEquiv L).toLinearMap ∘ₗ (latticeEquiv L).symm.toLinearMap = LinearMap.id from by
+        ext x; simp])
+    (by simp [← LinearMap.adjoint_comp,
+      show (latticeEquiv L).symm.toLinearMap ∘ₗ (latticeEquiv L).toLinearMap = LinearMap.id from by
+        ext x; simp])
 
-/-- The adjoint of `latticeEquiv L`. Kept as a named definition: it is the two-sided inverse of
-`Bₗ L`, supplying `adjointSymmEquiv` with its inverse map. -/
-noncomputable def Aadjₗ : E →ₗ[ℝ] E := (latticeEquiv L).toLinearMap.adjoint
+lemma dualEquiv_apply (x : E) :
+    dualEquiv L x = (latticeEquiv L).symm.toLinearMap.adjoint x := rfl
+
+lemma dualEquiv_symm_apply (x : E) :
+    (dualEquiv L).symm x = (latticeEquiv L).toLinearMap.adjoint x := rfl
 
 /-- `latticeEquiv L` restricted to a `ℤ`-linear equivalence from the standard lattice `ℤ^d` onto
 `L`. Kept as a named definition: it transports lattice sums between `ℤ^d` and `L`. -/
@@ -735,44 +748,29 @@ noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[�
     ((equivStandardLattice (d := d) L x : L) : E) = (latticeEquiv L) x := by
   simp [equivStandardLattice]
 
-lemma Bₗ_comp_Aadjₗ : Bₗ L ∘ₗ Aadjₗ L = (LinearMap.id : E →ₗ[ℝ] E) := by
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-    show (latticeEquiv L).toLinearMap ∘ₗ (latticeEquiv L).symm.toLinearMap = LinearMap.id from by
-      ext x; simp]
-
-lemma Aadjₗ_comp_Bₗ : Aadjₗ L ∘ₗ Bₗ L = (LinearMap.id : E →ₗ[ℝ] E) := by
-  simp [Bₗ, Aadjₗ, ← LinearMap.adjoint_comp,
-    show (latticeEquiv L).symm.toLinearMap ∘ₗ (latticeEquiv L).toLinearMap = LinearMap.id from by
-      ext x; simp]
-
-/-- `Bₗ L` as a linear automorphism of `E`, with inverse `Aadjₗ L`. Kept as a named definition: it
-realizes the standard-lattice-to-dual-lattice transport as an equivalence, so its `tsum_eq`
-reindexes the spectral sum. -/
-noncomputable def adjointSymmEquiv : E ≃ₗ[ℝ] E where
-  toLinearMap := Bₗ L
-  invFun := Aadjₗ L
-  left_inv x := by simpa using DFunLike.congr_fun (Aadjₗ_comp_Bₗ L) x
-  right_inv x := by simpa using DFunLike.congr_fun (Bₗ_comp_Aadjₗ L) x
-
-lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
-    Submodule.map ((Bₗ L).restrictScalars ℤ) (standardLattice d) = dualLattice (d := d) L := by
+/-- The dual change of variables `dualEquiv L` carries the standard lattice `ℤ^d` onto the dual
+lattice `L*`. This is what lets `dualEquiv L` reindex the spectral sum over `L*`. -/
+lemma map_standardLattice_dualEquiv_eq :
+    Submodule.map ((dualEquiv L).toLinearMap.restrictScalars ℤ) (standardLattice d) =
+      dualLattice (d := d) L := by
   have hmapL : Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
       (standardLattice d) = L := map_standardLattice_eq (d := d) L
   have hdualStd : dualLattice (d := d) (standardLattice d) = standardLattice d := by
     simpa [dualLattice] using PoissonSummation.Standard.dualSubmodule_standardLattice_eq (d := d)
-  have hBA (y w : E) : inner ℝ ((Bₗ L) y) ((latticeEquiv L) w) = inner ℝ y w := by
-    simpa [Bₗ] using LinearMap.adjoint_inner_left ((latticeEquiv L).symm.toLinearMap)
+  have hBA (y w : E) : inner ℝ (dualEquiv L y) ((latticeEquiv L) w) = inner ℝ y w := by
+    simpa [dualEquiv_apply] using LinearMap.adjoint_inner_left ((latticeEquiv L).symm.toLinearMap)
       ((latticeEquiv L) w) y
-  have hAadj (p w : E) : inner ℝ ((Aadjₗ L) p) w = inner ℝ p ((latticeEquiv L) w) := by
-    simpa [Aadjₗ] using LinearMap.adjoint_inner_left ((latticeEquiv L).toLinearMap) w p
+  have hAadj (p w : E) : inner ℝ ((dualEquiv L).symm p) w = inner ℝ p ((latticeEquiv L) w) := by
+    simpa [dualEquiv_symm_apply] using
+      LinearMap.adjoint_inner_left ((latticeEquiv L).toLinearMap) w p
   ext x
-  refine ⟨?_, fun hx => ⟨(Aadjₗ L) x, ?_, ?_⟩⟩
+  refine ⟨?_, fun hx => ⟨(dualEquiv L).symm x, ?_, ?_⟩⟩
   · rintro ⟨y, hy, rfl⟩ z hz
     obtain ⟨w, hw, rfl⟩ : (z : E) ∈ Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
         (standardLattice d) := by rw [hmapL]; exact hz
     simpa [dualLattice, innerₗ_apply_apply, hBA] using
       (by simpa [hdualStd] using hy : y ∈ dualLattice (d := d) (standardLattice d)) w hw
-  · suffices hydual : (Aadjₗ L) x ∈ dualLattice (d := d) (standardLattice d) by
+  · suffices hydual : (dualEquiv L).symm x ∈ dualLattice (d := d) (standardLattice d) by
       simpa [hdualStd] using hydual
     intro w hw
     have hwL : (latticeEquiv L) w ∈ L := by
@@ -780,7 +778,7 @@ lemma map_standardLattice_adjointSymm_eq_dualSubmodule :
         ((latticeEquiv L).toLinearMap.restrictScalars ℤ) (standardLattice d) := ⟨w, hw, rfl⟩
       rwa [hmapL] at hmem
     simpa [dualLattice, innerₗ_apply_apply, hAadj] using hx ((latticeEquiv L) w) hwL
-  · simpa using DFunLike.congr_fun (Bₗ_comp_Aadjₗ L) x
+  · simp
 
 /-- LHS rewrite for `poissonSummation_lattice`: pull back the lattice sum along `latticeEquiv`. -/
 private lemma poissonSummation_lattice_lhs (f : SchwartzMap E ℂ) (v : E) :
@@ -789,14 +787,15 @@ private lemma poissonSummation_lattice_lhs (f : SchwartzMap E ℂ) (v : E) :
   simpa [equivStandardLattice_apply] using
     (equivStandardLattice (d := d) L).toEquiv.tsum_eq (f := fun ℓ : L => f (v + (ℓ : E)))
 
-/-- Inner-product rewrite for exponentials: `⟪(latticeEquiv L).symm v, w⟫ = ⟪v, Bₗ L w⟫`. -/
+/-- Inner-product rewrite for exponentials: `⟪(latticeEquiv L).symm v, w⟫ = ⟪v, dualEquiv L w⟫`. -/
 private lemma poissonSummation_lattice_inner_swap (v w : E) :
-    ⟪(latticeEquiv L).symm v, w⟫_[ℝ] = ⟪v, (Bₗ L) w⟫_[ℝ] := by
+    ⟪(latticeEquiv L).symm v, w⟫_[ℝ] = ⟪v, dualEquiv L w⟫_[ℝ] := by
   simp only [← RCLike.inner_eq_wInner_one]
-  simpa [Bₗ] using (LinearMap.adjoint_inner_right ((latticeEquiv L).symm.toLinearMap) v w).symm
+  simpa [dualEquiv_apply] using
+    (LinearMap.adjoint_inner_right ((latticeEquiv L).symm.toLinearMap) v w).symm
 
 /-- RHS rewrite for `poissonSummation_lattice`: descend the standard-lattice dual sum
-to the dual lattice `L*` along `Bₗ = (latticeEquiv L).symm.adjoint`. -/
+to the dual lattice `L*` along `dualEquiv = (latticeEquiv L).symm.adjoint`. -/
 private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
     (∑' n : Fin d → ℤ,
         (𝓕 (fun x : E => f ((latticeEquiv L) x))
@@ -814,21 +813,21 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
   let cC : ℂ := ((abs detA)⁻¹ : ℝ)
   let iv : (Fin d → ℤ) → E := intVec (d := d)
   have hfourier (w : E) : 𝓕 (fun x : E => f ((latticeEquiv L) x)) w =
-      cC * 𝓕 (fun x : E => f x) ((Bₗ L) w) := by
-    simpa [Bₗ, detA, cC, Complex.real_smul] using
+      cC * 𝓕 (fun x : E => f x) (dualEquiv L w) := by
+    simpa [dualEquiv_apply, detA, cC, Complex.real_smul] using
       SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
         (A := latticeEquiv L) (f := fun x : E => f x) w
   have hreindex : (∑' n : Fin d → ℤ, (𝓕 (fun x : E => f ((latticeEquiv L) x)) (iv n)) *
         Complex.exp (2 * π * Complex.I * ⟪(latticeEquiv L).symm v, iv n⟫_[ℝ])) =
       cC * ∑' m : dualLattice (d := d) L, F m := by
     rw [← (PoissonSummation.Standard.equivIntVec.trans
-      ((LinearEquiv.restrictScalars ℤ (adjointSymmEquiv L)).ofSubmodules _ _ <| by
+      ((LinearEquiv.restrictScalars ℤ (dualEquiv L)).ofSubmodules _ _ <| by
           simpa [LinearEquiv.restrictScalars_apply] using
-            map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)).toEquiv).tsum_eq
+            map_standardLattice_dualEquiv_eq (d := d) (L := L)).toEquiv).tsum_eq
       (f := F), ← tsum_mul_left]
     exact tsum_congr fun n ↦ by
       simpa [F, mul_assoc, poissonSummation_lattice_inner_swap (L := L) v (w := iv n)] using
-        congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ L) (iv n)⟫_[ℝ]))
+        congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, dualEquiv L (iv n)⟫_[ℝ]))
           (hfourier (w := iv n))
   rw [hreindex]
   simp [F, cC, show ZLattice.covolume L = abs detA from by
