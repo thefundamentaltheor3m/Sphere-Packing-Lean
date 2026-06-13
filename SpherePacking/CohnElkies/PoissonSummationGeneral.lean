@@ -636,44 +636,50 @@ public noncomputable abbrev dualLattice (L : Submodule ℤ E) : Submodule ℤ E 
 
 /-- A `Fin d`-indexed integral basis of the `ℤ`-lattice `L` (Mathlib's `chooseBasis` reindexed
 along `finrank ℤ L = d`). Kept as a named definition: a fixed integral frame for `L` whose
-determinant against `stdBasis` computes the covolume. -/
+determinant against the standard basis computes the covolume. -/
 noncomputable def zBasis (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     Basis (Fin d) ℤ L :=
   (Module.Free.chooseBasis ℤ L).reindex <| Fintype.equivOfCardEq <| by
     simpa [(ZLattice.rank (K := ℝ) (L := L)).trans (by simp : _ = d)] using
       (Module.finrank_eq_card_chooseBasisIndex (R := ℤ) (M := L)).symm
 
-/-- The `ℝ`-basis of `E` spanned by `zBasis L` (Mathlib's `Basis.ofZLatticeBasis`). Kept as a named
-definition: the real frame realizing `L`, namely the image of `stdBasis` under `latticeEquiv L`. -/
+/-- The `ℝ`-basis of `E` realizing the `ℤ`-lattice `L`, i.e. `zBasis L` viewed over `ℝ` via
+Mathlib's `Basis.ofZLatticeBasis`. Kept as a named definition: it is the image of the standard
+basis under `latticeEquiv L`, and computing against it gives the covolume. -/
 noncomputable def rBasis (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     Basis (Fin d) ℝ E := (zBasis (d := d) L).ofZLatticeBasis ℝ L
 
-/-- The standard basis of `E = ℝ^d` as an `ℝ`-basis, i.e. `(EuclideanSpace.basisFun _ _).toBasis`.
-Kept as a named definition: the orthonormal reference frame (and `ℤ`-basis of the standard lattice)
-against which the lattice determinant and covolume are measured. -/
-noncomputable def stdBasis : Basis (Fin d) ℝ E := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis
-
-/-- The `ℝ`-linear automorphism of `E` sending the standard basis to `rBasis L`, hence the standard
-lattice `ℤ^d` onto `L`. Kept as a named definition: it is the change-of-variables map underlying
-the reduction of lattice Poisson summation to the standard-lattice case, used throughout this
-section and reused via its adjoints `Bₗ`/`Aadjₗ`. -/
+/-- The `ℝ`-linear automorphism of `E` sending the standard basis `(EuclideanSpace.basisFun _ _)`
+to `rBasis L`, hence the standard lattice `ℤ^d` onto `L`. Kept as a named definition: it is the
+change-of-variables map underlying the reduction of lattice Poisson summation to the
+standard-lattice case, used throughout this section (and, via its inverse-adjoint, on the
+dual side). -/
 noncomputable def latticeEquiv (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
-    E ≃ₗ[ℝ] E := (stdBasis (d := d)).equiv (rBasis (d := d) L) (Equiv.refl (Fin d))
+    E ≃ₗ[ℝ] E :=
+  ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).equiv (rBasis (d := d) L) (Equiv.refl (Fin d))
 
-@[simp] lemma latticeEquiv_apply_stdBasis (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (i : Fin d) : latticeEquiv (d := d) L ((stdBasis (d := d)) i) = (rBasis (d := d) L) i :=
-  Basis.equiv_apply (b := stdBasis (d := d)) (b' := rBasis (d := d) L) (e := Equiv.refl _) (i := i)
+/-- `latticeEquiv L` sends the `i`-th standard basis vector to the `i`-th vector of `rBasis L`.
+(Not a `simp` lemma: `(basisFun _ _).toBasis i` is itself simp-normalised to `EuclideanSpace.single
+i 1`, so this would never fire.) -/
+lemma latticeEquiv_apply_basisFun (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+    (i : Fin d) :
+    latticeEquiv (d := d) L ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis i) =
+      rBasis (d := d) L i :=
+  Basis.equiv_apply (b := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) (b' := rBasis (d := d) L)
+    (e := Equiv.refl _) (i := i)
 
 lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     Submodule.map ((latticeEquiv (d := d) L).toLinearMap.restrictScalars ℤ)
         (SchwartzMap.standardLattice d) = L := by
-  have hrange : (fun a : E => latticeEquiv (d := d) L a) '' Set.range (stdBasis (d := d)) =
+  have hrange : (fun a : E => latticeEquiv (d := d) L a) ''
+        Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) =
       Set.range (rBasis (d := d) L) := by
-    rw [← Set.range_comp]; simp [Function.comp_def]
+    rw [← Set.range_comp]; simp only [Function.comp_def, latticeEquiv_apply_basisFun]
   calc Submodule.map ((latticeEquiv (d := d) L).toLinearMap.restrictScalars ℤ)
           (SchwartzMap.standardLattice d)
-      = Submodule.span ℤ ((fun a : E => latticeEquiv (d := d) L a) '' Set.range (stdBasis (d := d)))
-        := by simp [SchwartzMap.standardLattice, stdBasis, Submodule.map_span]
+      = Submodule.span ℤ ((fun a : E => latticeEquiv (d := d) L a) ''
+            Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) := by
+        simp [SchwartzMap.standardLattice, Submodule.map_span]
     _ = Submodule.span ℤ (Set.range (rBasis (d := d) L)) := by rw [hrange]
     _ = L := by
         simpa [rBasis] using Module.Basis.ofZLatticeBasis_span (K := ℝ) (L := L) (b := zBasis L)
@@ -698,11 +704,12 @@ lemma covolume_eq_abs_det_latticeEquiv :
   have hr : rBasis (d := d) L = fun i : Fin d => (zBasis (d := d) L i : E) :=
     funext fun i => by simp [rBasis]
   have hcovol : ZLattice.covolume L =
-      |(stdBasis (d := d)).det (fun i : Fin d => (zBasis (d := d) L i : E))| := by
-    simpa [stdBasis, volume_real_fundamentalDomain_basisFun] using
+      |((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).det
+        (fun i : Fin d => (zBasis (d := d) L i : E))| := by
+    simpa [volume_real_fundamentalDomain_basisFun] using
       ZLattice.covolume_eq_det_mul_measureReal (L := L) (b := zBasis (d := d) L)
-        (b₀ := stdBasis (d := d)) (μ := (volume : Measure E))
-  rw [hcovol, ← hr]; simp [latticeEquiv, stdBasis]
+        (b₀ := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis) (μ := (volume : Measure E))
+  rw [hcovol, ← hr]; simp [latticeEquiv]
 
 end CovolumeDet
 
