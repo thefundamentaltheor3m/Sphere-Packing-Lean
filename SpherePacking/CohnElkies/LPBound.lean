@@ -925,7 +925,7 @@ private lemma lattice_translate_eq_zero (hD_unique_covers : ∀ x, ∃! g : P.la
   simpa using neg_eq_zero.mp ((hg0_unique (-ℓ) hyℓ).trans (hg0_unique 0 hy0).symm)
 
 /-- If `x + ℓ ≠ y` as centers in `P`, then `f` evaluated on the shifted difference is `≤ 0`. -/
-private lemma re_f_shifted_nonpos (hP : P.separation = 1)
+private lemma re_f_sub_add_lattice_nonpos (hP : P.separation = 1)
     (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
     {x y : EuclideanSpace ℝ (Fin d)} (hx : x ∈ P.centers) (hy : y ∈ P.centers) (ℓ : P.lattice)
     (hxℓy : x + (ℓ : EuclideanSpace ℝ (Fin d)) ≠ y) :
@@ -957,7 +957,7 @@ private lemma lattice_sum_re_le_ite_diag (hP : P.separation = 1)
         (x : EuclideanSpace ℝ (Fin d)) :=
       fun h => hℓ (lattice_translate_eq_zero hD_unique_covers h)
     simpa [hℓ, sub_self, zero_add] using
-      re_f_shifted_nonpos hP hCohnElkies₁ x.property.1 x.property.1 ℓ hxℓ
+      re_f_sub_add_lattice_nonpos hP hCohnElkies₁ x.property.1 x.property.1 ℓ hxℓ
   simpa [hs.tsum_eq_add_tsum_ite (0 : P.lattice)] using add_le_add_left htail (f 0).re
 
 public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
@@ -973,7 +973,7 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
     simpa [sub_self, zero_add] using
       lattice_sum_re_le_ite_diag (P := P) hP hD_unique_covers hCohnElkies₁ x
   · rw [if_neg hxy]
-    refine tsum_nonpos fun ℓ => re_f_shifted_nonpos hP hCohnElkies₁
+    refine tsum_nonpos fun ℓ => re_f_sub_add_lattice_nonpos hP hCohnElkies₁
       x.property.1 y.property.1 ℓ (fun h => ?_)
     -- From `↑x + ↑ℓ = ↑y` we get `ℓ = 0`, hence `↑x = ↑y`, contradicting `x ≠ y`.
     have hℓ : ℓ = 0 := lattice_translate_eq_zero hD_unique_covers h
@@ -1104,7 +1104,7 @@ private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
 
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
-theorem calc_steps_part1 (hd : 0 < d) :
+theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
       (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
@@ -1163,7 +1163,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
         re_mul_conj_eq_norm_sq_step P f
 
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
-theorem calc_steps_part2 (hd : 0 < d) :
+theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
     (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
           (𝓕 ⇑f m).re *
@@ -1275,7 +1275,7 @@ include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_
   hD_unique_covers
 
 /-- Linear programming bound for a single periodic packing of separation `1`. -/
-public theorem LinearProgrammingBound' (hd : 0 < d) :
+public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
     P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   haveI : Fact (0 < d) := ⟨hd⟩
@@ -1292,8 +1292,10 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       (nonempty_quotient_iff _).2 ‹_›
     exact density_le_of_hCalc_of_ne_zero (P := P) hRealFourier hCohnElkies₂
       (ZLattice.covolume_pos P.lattice volume) h𝓕f hCalc
-  exact ge_trans (calc_steps_part1 (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
-    hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+  exact ge_trans
+    (numReps_mul_re_f_zero_ge (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
+      hD_unique_covers hd)
+    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
       hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
@@ -1309,7 +1311,7 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   refine iSup_le fun P => iSup_le fun hP => ?_
   rcases isEmpty_or_nonempty ↑P.centers with _ | _
   · simp [P.density_of_centers_empty hd]
-  exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+  exact LinearProgrammingBound_periodic hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
       (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
         (PeriodicSpherePacking.basis_index_equiv P))) hd
