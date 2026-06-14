@@ -21,9 +21,38 @@ For `d : ℕ` and `L : ℝ`, this file packages:
 
 Everything is placed in the `EuclideanSpace` namespace, its natural home.
 
+## Why a cube, and not an arbitrary lattice basis?
+
+The cube `L • ℤ^d` enters the Cohn–Elkies density argument (`LPBound.lean`) only through its
+*boundary geometry*. The lattice/fundamental-domain *counting* layer is already basis-generic and
+delegates to Mathlib's `ZSpan`: a translate of a fundamental domain is again a fundamental domain
+(`vadd_unique_covers`), the cell-assignment map exists for any basis
+(`fundamentalDomainCover`), the domain is bounded (`ZSpan.fundamentalDomain_isBounded`), meets a
+ball finitely (`ZSpan.setFinite_inter`), tiles space
+(`ZSpan.exist_unique_vadd_mem_fundamentalDomain`), and has covolume `volume (fundamentalDomain b)`
+(`ZLattice.covolume_eq_measure_fundamentalDomain`).
+
+What genuinely needs the cube — and is *not* available for a general `ZSpan.fundamentalDomain b` —
+is the boundary control of the LP bound, which rests on two facts with no current Mathlib analogue:
+
+* an **inradius / boundary-safe inner core**: a ball of radius `r` about a point of the inner cube
+  `cubeIcc d L r` stays inside `cubeIco d L` (`ball_subset_cubeIco_of_mem_inner`). For a sheared
+  parallelepiped the safe inner region is not a coordinate-box shrink; it depends on the dual-basis
+  norms / the parallelepiped inradius.  *Upstream TODO:*
+  `ZSpan.ball_subset_fundamentalDomain_of_mem_inner`.
+* a **boundary-shell volume asymptotic** under homothety: the relative volume of the
+  `r`-neighbourhood of the cell boundary vanishes as the lattice is scaled (here the explicit
+  `((L+1)^d - (L-2)^d)/L^d → 0`, `tendsto_volume_cubeShell_div_volume_cubeIco_zero`). For a general
+  fundamental domain this is a Minkowski-content statement.  *Upstream TODO:*
+  `ZSpan.tendsto_volume_boundaryThickening_div_volume_fundamentalDomain_zero`.
+
+So the answer to "why so much for `L • ℤ^d`?" is: the counting is generic (and is written that
+way), while the cube is the one fundamental domain whose inradius and boundary-shell volume are
+elementary.
+
 Upstream target: `Mathlib/Algebra/Module/ZLattice/` (scaled integer lattice) together with the
-measure-theoretic facts. Imports here are left as `public import Mathlib`; they are narrowed at
-upstreaming time.
+measure-theoretic facts and the two general boundary lemmas above. Imports here are left as
+`public import Mathlib`; they are narrowed at upstreaming time.
 -/
 
 open MeasureTheory Metric ZSpan Module Bornology
