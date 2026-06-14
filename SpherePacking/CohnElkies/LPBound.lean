@@ -145,37 +145,64 @@ public lemma ball_subset_vadd_cubeIco_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
   change dist z ((v : EuclideanSpace ℝ (Fin d)) + y) < r at hz
   simpa [mem_ball, dist_eq_norm, sub_sub] using hz
 
-section CoordCubeCover
+section FundamentalDomainCover
+
+variable (b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)))
+
+/-- The unique lattice vector translating `x` into `fundamentalDomain b`, for an arbitrary basis
+`b` (see `fundamentalDomainCover_spec`). The cell-assignment map underlying the pigeonhole argument;
+generic over the basis — no cube or coordinate structure is used. -/
+noncomputable def fundamentalDomainCover (x : EuclideanSpace ℝ (Fin d)) :
+    Submodule.span ℤ (Set.range b) :=
+  Classical.choose (ZSpan.exist_unique_vadd_mem_fundamentalDomain b x)
+
+lemma fundamentalDomainCover_spec (x : EuclideanSpace ℝ (Fin d)) :
+    fundamentalDomainCover b x +ᵥ x ∈ fundamentalDomain b :=
+  (Classical.choose_spec (ZSpan.exist_unique_vadd_mem_fundamentalDomain b x)).1
+
+lemma neg_fundamentalDomainCover_mem_ball {C R : ℝ}
+    (hC : fundamentalDomain b ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+    {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
+    ((-fundamentalDomainCover b x : Submodule.span ℤ (Set.range b)) :
+        EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
+  -- `g` is the (coerced) covering translate; the goal is `‖-g‖ = ‖g‖ < R + C`.
+  set g := (fundamentalDomainCover b x : EuclideanSpace ℝ (Fin d))
+  rw [mem_ball_zero_iff, show ((-fundamentalDomainCover b x : Submodule.span ℤ (Set.range b)) :
+    EuclideanSpace ℝ (Fin d)) = -g from rfl, norm_neg]
+  have hx' : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
+  have hgx : ‖g + x‖ < C := by
+    simpa [mem_ball_zero_iff] using hC (by
+      simpa [Submodule.vadd_def, vadd_eq_add] using fundamentalDomainCover_spec b x)
+  have htri : ‖g‖ ≤ ‖g + x‖ + ‖x‖ := by
+    simpa [add_sub_cancel_right] using norm_sub_le (g + x) x
+  linarith
+
+end FundamentalDomainCover
+
+section CubeCover
 
 variable (L : ℝ) (hL : 0 < L)
 
-/-- The unique lattice vector translating `x` into `cubeIco d L` (see `cubeIcoCover_spec`).
-The cell-assignment map underlying the pigeonhole argument; named to pair with its spec lemma. -/
+/-- The cube cell-assignment map: `fundamentalDomainCover` specialised to the scaled-cube basis.
+A thin wrapper so the pigeonhole argument reads in cube terms (`fundamentalDomain (cubeBasis …) =
+cubeIco`). -/
 noncomputable def cubeIcoCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice d L hL :=
-  Classical.choose (cubeIco_unique_covers L hL x)
+  fundamentalDomainCover (cubeBasis d L hL) x
 
 lemma cubeIcoCover_spec (x : EuclideanSpace ℝ (Fin d)) :
-    cubeIcoCover L hL x +ᵥ x ∈ cubeIco d L :=
-  (Classical.choose_spec (cubeIco_unique_covers L hL x)).1
+    cubeIcoCover L hL x +ᵥ x ∈ cubeIco d L := by
+  rw [← fundamentalDomain_cubeBasis_eq_cubeIco L hL]
+  exact fundamentalDomainCover_spec (cubeBasis d L hL) x
 
 lemma neg_cubeIcoCover_mem_ball {C R : ℝ}
     (hC : cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
     ((-cubeIcoCover L hL x : cubeLattice d L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
-  -- `g` is the (coerced) covering translate; the goal is `‖-g‖ = ‖g‖ < R + C`.
-  set g := (cubeIcoCover L hL x : EuclideanSpace ℝ (Fin d))
-  rw [mem_ball_zero_iff, show ((-cubeIcoCover L hL x : cubeLattice d L hL) :
-    EuclideanSpace ℝ (Fin d)) = -g from rfl, norm_neg]
-  have hx' : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
-  have hgx : ‖g + x‖ < C := by
-    simpa [mem_ball_zero_iff] using hC (by
-      simpa [Submodule.vadd_def, vadd_eq_add] using cubeIcoCover_spec L hL x)
-  have htri : ‖g‖ ≤ ‖g + x‖ + ‖x‖ := by
-    simpa [add_sub_cancel_right] using norm_sub_le (g + x) x
-  linarith
+  refine neg_fundamentalDomainCover_mem_ball (cubeBasis d L hL) ?_ hx
+  rwa [fundamentalDomain_cubeBasis_eq_cubeIco]
 
-end CoordCubeCover
+end CubeCover
 
 lemma card_finite_lattice_in_ball_mul_volume_cubeIco_le_volume_ball {L : ℝ} (hL : 0 < L)
     {R C : ℝ} (hC : cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
