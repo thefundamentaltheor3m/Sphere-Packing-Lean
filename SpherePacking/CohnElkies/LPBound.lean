@@ -119,17 +119,20 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
   have hg : g = 0 := (huniq g hxD).trans (huniq 0 (by simpa using hF_sub hfF)).symm
   simpa [hg] using hfF
 
-namespace PeriodicConstantApprox
-
-public lemma cubeIco_unique_covers_vadd (L : ℝ) (hL : 0 < L) (v : cubeLattice d L hL) :
-    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ v +ᵥ cubeIco d L := fun x => by
-  have hvadd (a : cubeLattice d L hL) :
-      a +ᵥ x ∈ v +ᵥ cubeIco d L ↔ (a - v) +ᵥ x ∈ cubeIco d L := by
+/-- A translate `v +ᵥ D` of a fundamental domain is again a fundamental domain: if every point has a
+unique lattice translate landing in `D`, the same holds for `v +ᵥ D`. Fully lattice-generic — no
+cube, basis, or `EuclideanSpace` structure is used. -/
+public lemma vadd_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) (v : Λ) :
+    ∀ x, ∃! g : Λ, g +ᵥ x ∈ v +ᵥ D := fun x => by
+  have hvadd (a : Λ) : a +ᵥ x ∈ v +ᵥ D ↔ (a - v) +ᵥ x ∈ D := by
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
-  obtain ⟨g, hg, hguniq⟩ := cubeIco_unique_covers (d := d) L hL x
+  obtain ⟨g, hg, hguniq⟩ := hD x
   exact ⟨g + v, (hvadd _).2 (by simpa),
     fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ <| (hvadd _).1 ha)⟩
+
+namespace PeriodicConstantApprox
 
 public lemma ball_subset_vadd_cubeIco_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
@@ -318,7 +321,7 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
   -- Assemble the periodic packing `P` from the cube cell `D` and the representatives `Fset`.
   let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ cubeIco d L
   let Fset : Set (EuclideanSpace ℝ (Fin d)) := (F : Set (EuclideanSpace ℝ (Fin d)))
-  have hD_unique := PeriodicConstantApprox.cubeIco_unique_covers_vadd L hL g
+  have hD_unique := vadd_unique_covers (cubeIco_unique_covers L hL) g
   let P : PeriodicSpherePacking d :=
     periodize_to_periodicSpherePacking (d := d) S (Λ := cubeLattice d L hL) D Fset
       (hD_unique_covers := hD_unique) (hF_centers := by assumption)
