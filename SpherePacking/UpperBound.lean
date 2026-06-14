@@ -12,6 +12,9 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+-- The `CStarMatrix` `@[default_instance]` for `HMul` is consulted during numeric-literal `*`
+-- defaulting; it must be publicly visible here or it surfaces as an "unknown constant".
+public import Mathlib.Analysis.CStarAlgebra.CStarMatrix
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ForMathlib.DerivHelpers
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral

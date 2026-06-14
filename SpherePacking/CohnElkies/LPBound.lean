@@ -4,9 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
-public import Mathlib.Algebra.Ring.IsFormallyReal
-public import Mathlib.Dynamics.Ergodic.Action.Regular
-public import Mathlib.Order.CompletePartialOrder
+public import Mathlib
+
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 

@@ -43,6 +43,9 @@ public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
 
 /-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
 @[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
+  -- Short-circuit a `ContinuousSMul ℝ ℝ⁸` synthesis loop on `EuclideanSpace`'s `PiLp` structure
+  -- inside `toContinuousLinearEquiv`.
+  have : ContinuousSMul ℝ ℝ⁸ := inferInstance
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
     ((LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸)
       (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv) g
