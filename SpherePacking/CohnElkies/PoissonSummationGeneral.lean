@@ -6,6 +6,7 @@ Authors: Auguste Poiroux
 module
 public import Mathlib
 public import SpherePacking.ForMathlib.FourierComp
+public import SpherePacking.ForMathlib.UnitAddTorusQuotient
 
 /-! # Poisson summation for Schwartz functions
 
@@ -19,49 +20,6 @@ Three layers:
 
 open scoped BigOperators FourierTransform Real
 open MeasureTheory
-
-namespace SchwartzMap.UnitAddTorus
-
-/-- The coordinatewise quotient map `(Fin n → ℝ) → (ℝ/ℤ)^n`. Kept as a named definition: it is the
-fundamental projection presenting the torus as a quotient of `ℝ^n`, with its own continuity, open-
-quotient, and integral-pullback API. -/
-public def coeFun (n : ℕ) : (Fin n → ℝ) → UnitAddTorus (Fin n) :=
-  fun x i => (x i : UnitAddCircle)
-
-/-- The coordinatewise quotient map `coeFun` is continuous. -/
-@[continuity, fun_prop]
-public theorem continuous_coeFun {n : ℕ} : Continuous (coeFun n) :=
-  continuous_pi fun i => (AddCircle.continuous_mk' 1).comp (continuous_apply i)
-
-/-- `coeFun` is an open quotient map, so it presents `(ℝ/ℤ)^n` as a quotient of `ℝ^n`. -/
-public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n) :=
-  .piMap fun _ ↦ QuotientAddGroup.isOpenQuotientMap_mk
-
-/-- Evaluate the additive character `mFourier k` on a point `x : ℝ^n` viewed in the torus
-via `coeFun`. -/
-public theorem mFourier_apply_coeFun_ofLp (n : ℕ) (k : Fin n → ℤ) (x : EuclideanSpace ℝ (Fin n)) :
-    UnitAddTorus.mFourier k (coeFun n (WithLp.ofLp x)) =
-      Complex.exp (2 * π * Complex.I * (∑ i : Fin n, (k i : ℝ) * x i)) := by
-  simp [UnitAddTorus.mFourier, coeFun, ← Complex.exp_sum, Finset.mul_sum, mul_assoc]
-
-/-- Pull back Haar integration on `(ℝ/ℤ)^n` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^n`. -/
-public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : UnitAddTorus (Fin n) → ℂ)
-    (hg : AEStronglyMeasurable g (volume : Measure (UnitAddTorus (Fin n)))) :
-    (∫ y : UnitAddTorus (Fin n), g y) =
-      ∫ x, g (coeFun n x) ∂(volume : Measure (Fin n → ℝ)).restrict
-        (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) := by
-  have hmp : MeasurePreserving (coeFun n)
-      (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
-      (volume : Measure (UnitAddTorus (Fin n))) :=
-    measurePreserving_pi _ _ fun _ => UnitAddCircle.measurePreserving_mk t
-  have hrestrict : (volume : Measure (Fin n → ℝ)).restrict
-        (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) =
-      Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)) :=
-    Measure.restrict_pi_pi _ _
-  rw [hrestrict, ← hmp.map_eq]
-  exact integral_map hmp.aemeasurable (hmp.map_eq.symm ▸ hg)
-
-end SchwartzMap.UnitAddTorus
 
 namespace SchwartzMap
 
@@ -153,7 +111,7 @@ public lemma dualSubmodule_standardLattice_eq :
 a named definition: it is the quotient map through which the periodization descends to the torus,
 with its own continuity and open-quotient API. -/
 @[expose] public def coeFunE : E → UnitAddTorus (Fin d) :=
-  fun x ↦ UnitAddTorus.coeFun d (WithLp.ofLp x)
+  fun x ↦ UnitAddTorus.coeFun (Fin d) (WithLp.ofLp x)
 
 /-- Continuity of the quotient map `coeFunE`. -/
 @[continuity] public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) :=
@@ -162,7 +120,7 @@ with its own continuity and open-quotient API. -/
 /-- `coeFunE` is invariant under translation by integer vectors. -/
 @[simp] public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
     coeFunE (x + intVec n) = coeFunE x := by
-  ext i; simp [coeFunE, UnitAddTorus.coeFun]
+  ext i; simp [coeFunE]
 
 /-- If two points map to the same torus point, their difference is an integer vector. -/
 public theorem exists_intVec_eq_sub_of_coeFunE_eq {x y : E}
@@ -170,7 +128,7 @@ public theorem exists_intVec_eq_sub_of_coeFunE_eq {x y : E}
     ∃ n : Fin d → ℤ, x - y = intVec n := by
   have key (i : Fin d) : ∃ n : ℤ, (n : ℝ) = x i - y i := by
     have h0 : ((x i - y i : ℝ) : UnitAddCircle) = 0 := by
-      simpa [UnitAddCircle, AddCircle.coe_sub, coeFunE, UnitAddTorus.coeFun] using
+      simpa [UnitAddCircle, AddCircle.coe_sub, coeFunE] using
         sub_eq_zero.2 (congrFun h i)
     obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (p := (1 : ℝ))).1 h0
     exact ⟨n, by simpa using hn⟩
@@ -210,13 +168,13 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) �
     ext x; simp [f, iocCube]
   calc
     (∫ y : UnitAddTorus (Fin d), g y)
-        = ∫ x, g (UnitAddTorus.coeFun d x) ∂(volume : Measure (Fin d → ℝ)).restrict
+        = ∫ x, g (UnitAddTorus.coeFun (Fin d) x) ∂(volume : Measure (Fin d → ℝ)).restrict
             (Set.univ.pi fun _ : Fin d ↦ Set.Ioc (0 : ℝ) 1) := by
-          simpa using UnitAddTorus.integral_eq_integral_preimage_coeFun d 0 g hg
+          simpa using UnitAddTorus.integral_eq_integral_preimage_coeFun (ι := Fin d) 0 g hg
     _ = ∫ y, g (coeFunE y) ∂(volume : Measure E).restrict (iocCube) := by
           simpa [hpre, coeFunE] using
             (hmp.restrict_preimage (measurableSet_iocCube)).integral_comp'
-              (g := fun y : E ↦ g (UnitAddTorus.coeFun d (WithLp.ofLp y)))
+              (g := fun y : E ↦ g (UnitAddTorus.coeFun (Fin d) (WithLp.ofLp y)))
 
 end SchwartzMap.PoissonSummation.Standard
 
@@ -346,7 +304,7 @@ end Periodization
 
 /-- The quotient map `coeFunE : E → (ℝ/ℤ)^d` presents the torus as an open quotient of `E`. -/
 public theorem isOpenQuotientMap_coeFunE : IsOpenQuotientMap (coeFunE (d := d)) := by
-  simpa [coeFunE] using (UnitAddTorus.isOpenQuotientMap_coeFun d).comp
+  simpa [coeFunE] using (UnitAddTorus.isOpenQuotientMap_coeFun (Fin d)).comp
     (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap
 
 /-- Descend the periodization to a continuous function on the torus `(ℝ/ℤ)^d`. This bridges to the
