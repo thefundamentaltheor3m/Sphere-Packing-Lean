@@ -59,52 +59,14 @@ public theorem ZLattice.finite_norm_le (L : Submodule ℤ E) [DiscreteTopology L
 
 namespace SchwartzMap
 
-/-- A Schwartz function has summable norms over any translate of a discrete `ℤ`-submodule of a
-finite-dimensional real normed space. -/
-public theorem summable_norm_comp_add (f : 𝓢(E, F)) (L : Submodule ℤ E) [DiscreteTopology L]
-    (a : E) : Summable (fun ℓ : L => ‖f (a + (ℓ : E))‖) := by
-  -- `k` is a decay order exceeding the rank, so the comparison series `‖· - b‖⁻¹ ^ k` converges.
-  let k : ℕ := Module.finrank ℤ L + 1
-  obtain ⟨C, _, hC⟩ := f.decay k 0
-  -- `b = -a` is the shift, so that `a + ℓ = ℓ - b`.
-  set b : E := -a
-  refine Summable.of_norm_bounded_eventually
-    (g := fun ℓ : L => (C + 1) * ‖(ℓ : E) - b‖⁻¹ ^ k) ?_ ?_
-  · simpa [mul_assoc] using
-      (ZLattice.summable_norm_sub_inv_pow (L := L) (n := k) (by simp [k]) b).mul_left (C + 1)
-  · -- The bound fails only on the finite set where `‖ℓ - b‖ ≤ 1`.
-    have hfin : ({ℓ : L | ‖(ℓ : E) - b‖ ≤ (1 : ℝ)} : Set L).Finite :=
-      (ZLattice.finite_norm_le (L := L) (1 + ‖b‖)).subset fun ℓ hℓ => by
-        simp only [Set.mem_setOf_eq] at hℓ ⊢
-        calc ‖(ℓ : E)‖ = ‖((ℓ : E) - b) + b‖ := by rw [sub_add_cancel]
-          _ ≤ ‖(ℓ : E) - b‖ + ‖b‖ := norm_add_le _ _
-          _ ≤ 1 + ‖b‖ := by linarith
-    refine hfin.subset fun ℓ hfail => ?_
-    by_contra hlarge
-    have hpos : 0 < ‖(ℓ : E) - b‖ ^ k :=
-      pow_pos (lt_of_lt_of_le one_pos (lt_of_not_ge hlarge).le) _
-    have hab : ‖a + (ℓ : E)‖ = ‖(ℓ : E) - b‖ := by simp [b, sub_eq_add_neg, add_comm]
-    have hdec : ‖(ℓ : E) - b‖ ^ k * ‖f (a + (ℓ : E))‖ ≤ C := by
-      simpa [hab, norm_iteratedFDeriv_zero] using hC (a + (ℓ : E))
-    have h1 : ‖f (a + (ℓ : E))‖ ≤ C / ‖(ℓ : E) - b‖ ^ k := (le_div_iff₀' hpos).2 hdec
-    have h2 : C / ‖(ℓ : E) - b‖ ^ k ≤ (C + 1) * ‖(ℓ : E) - b‖⁻¹ ^ k := by
-      simpa [div_eq_mul_inv, inv_pow] using
-        mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1)
-          (by positivity : 0 ≤ (‖(ℓ : E) - b‖ ^ k)⁻¹)
-    exact hfail (by simpa using h1.trans h2)
-
-/-- A Schwartz function is summable over any translate of a discrete `ℤ`-submodule. -/
-public theorem summable_comp_add [CompleteSpace F] (f : 𝓢(E, F)) (L : Submodule ℤ E)
-    [DiscreteTopology L] (a : E) : Summable (fun ℓ : L => f (a + (ℓ : E))) :=
-  Summable.of_norm (f.summable_norm_comp_add L a)
-
 private lemma half_norm_le_norm_add {G : Type*} [SeminormedAddCommGroup G] {x ℓ : G} {r : ℝ}
     (hx : ‖x‖ ≤ r) (hℓ : 2 * r < ‖ℓ‖) : 1 / 2 * ‖ℓ‖ ≤ ‖x + ℓ‖ := by
   have h : ‖ℓ‖ - ‖x‖ ≤ ‖x + ℓ‖ := by simpa [add_comm] using norm_sub_norm_le ℓ (-x)
   linarith
 
 /-- Schwartz decay is locally uniform over a `ℤ`-lattice: the sup-norms over a fixed compact `K`
-of the lattice translates of `f` are summable. -/
+of the lattice translates of `f` are summable. This is the engine from which the pointwise
+summability `summable_norm_comp_add` follows, by taking `K` a singleton. -/
 public theorem summable_norm_translateCM_restrict (f : 𝓢(E, F)) (L : Submodule ℤ E)
     [DiscreteTopology L] (K : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : L => ‖(f.translateCM (ℓ : E)).restrict K‖) := by
@@ -135,5 +97,21 @@ public theorem summable_norm_translateCM_restrict (f : 𝓢(E, F)) (L : Submodul
     _ = C * ‖x + (ℓ : E)‖⁻¹ ^ k := by rw [div_eq_mul_inv, inv_pow]
     _ ≤ C * (2 * ‖(ℓ : E)‖⁻¹) ^ k := by gcongr
     _ = C * 2 ^ k * ‖(ℓ : E)‖⁻¹ ^ k := by rw [mul_pow, mul_assoc]
+
+/-- A Schwartz function has summable norms over any translate of a discrete `ℤ`-submodule of a
+finite-dimensional real normed space: the singleton-compact case of
+`summable_norm_translateCM_restrict`, since the sup-norm over `{a}` is the value at `a`. -/
+public theorem summable_norm_comp_add (f : 𝓢(E, F)) (L : Submodule ℤ E) [DiscreteTopology L]
+    (a : E) : Summable (fun ℓ : L => ‖f (a + (ℓ : E))‖) := by
+  refine (f.summable_norm_translateCM_restrict L ⟨{a}, isCompact_singleton⟩).congr fun ℓ => ?_
+  refine le_antisymm ((ContinuousMap.norm_le _ (norm_nonneg _)).2 ?_)
+    (((f.translateCM (ℓ : E)).restrict {a}).norm_coe_le_norm ⟨a, rfl⟩)
+  rintro ⟨x, rfl⟩
+  exact le_rfl
+
+/-- A Schwartz function is summable over any translate of a discrete `ℤ`-submodule. -/
+public theorem summable_comp_add [CompleteSpace F] (f : 𝓢(E, F)) (L : Submodule ℤ E)
+    [DiscreteTopology L] (a : E) : Summable (fun ℓ : L => f (a + (ℓ : E))) :=
+  Summable.of_norm (f.summable_norm_comp_add L a)
 
 end SchwartzMap
