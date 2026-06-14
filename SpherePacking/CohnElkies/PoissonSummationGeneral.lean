@@ -828,19 +828,18 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
         ∑' m : dualLattice L,
           (𝓕 (fun x : E => f x) m) * Complex.exp (2 * π * Complex.I * ⟪v, m⟫_[ℝ]) := by
   -- Abbreviations: the dual-lattice summand `F`, the determinant `detA` of the change of
-  -- variables and its reciprocal `cC = |detA|⁻¹`, and the integer-vector embedding `iv`.
+  -- variables, and its reciprocal `cC = |detA|⁻¹`.
   let F : dualLattice L → ℂ :=
     fun m => (𝓕 (fun x : E => f x) m) * Complex.exp (2 * π * Complex.I * ⟪v, m⟫_[ℝ])
   let detA : ℝ := (LinearMap.det : (E →ₗ[ℝ] E) →* ℝ) ((latticeEquiv L) : E →ₗ[ℝ] E)
   let cC : ℂ := ((abs detA)⁻¹ : ℝ)
-  let iv : (Fin d → ℤ) → E := intVec
   have hfourier (w : E) : 𝓕 (fun x : E => f ((latticeEquiv L) x)) w =
       cC * 𝓕 (fun x : E => f x) (dualEquiv L w) := by
     simpa [dualEquiv_apply, detA, cC, Complex.real_smul] using
       SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
         (A := latticeEquiv L) (f := fun x : E => f x) w
-  have hreindex : (∑' n : Fin d → ℤ, (𝓕 (fun x : E => f ((latticeEquiv L) x)) (iv n)) *
-        Complex.exp (2 * π * Complex.I * ⟪(latticeEquiv L).symm v, iv n⟫_[ℝ])) =
+  have hreindex : (∑' n : Fin d → ℤ, (𝓕 (fun x : E => f ((latticeEquiv L) x)) (intVec n)) *
+        Complex.exp (2 * π * Complex.I * ⟪(latticeEquiv L).symm v, intVec n⟫_[ℝ])) =
       cC * ∑' m : dualLattice L, F m := by
     rw [← (PoissonSummation.Standard.equivIntVec.trans
       ((LinearEquiv.restrictScalars ℤ (dualEquiv L)).ofSubmodules _ _ <| by
@@ -848,9 +847,9 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
             map_standardLattice_dualEquiv_eq (L := L)).toEquiv).tsum_eq
       (f := F), ← tsum_mul_left]
     exact tsum_congr fun n ↦ by
-      simpa [F, mul_assoc, poissonSummation_lattice_inner_swap (L := L) v (w := iv n)] using
-        congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, dualEquiv L (iv n)⟫_[ℝ]))
-          (hfourier (w := iv n))
+      simpa [F, mul_assoc, poissonSummation_lattice_inner_swap (L := L) v (w := intVec n)] using
+        congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, dualEquiv L (intVec n)⟫_[ℝ]))
+          (hfourier (w := intVec n))
   rw [hreindex]
   simp [F, cC, show ZLattice.covolume L = abs detA from by
     simpa [latticeEquiv, detA] using covolume_eq_abs_det_latticeEquiv (L := L), one_div]
