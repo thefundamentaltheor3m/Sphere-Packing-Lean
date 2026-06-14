@@ -5,6 +5,7 @@ Authors: Auguste Poiroux
 -/
 module
 public import Mathlib
+public import SpherePacking.ForMathlib.FourierComp
 
 /-! # Poisson summation for Schwartz functions
 
@@ -18,37 +19,6 @@ Three layers:
 
 open scoped BigOperators FourierTransform Real
 open MeasureTheory
-
-namespace SpherePacking.ForMathlib.Fourier
-
-variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-  [MeasurableSpace V] [BorelSpace V]
-
-/-- Change-of-variables for the Fourier transform under an invertible linear map. For
-`A : V ≃ₗ[ℝ] V`, `𝓕 (f ∘ A) w = |det A|⁻¹ • 𝓕 f ((A.symm).adjoint w)`. -/
-public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w : V) :
-    𝓕 (fun x ↦ f (A x)) w =
-      (abs (LinearMap.det (A : V →ₗ[ℝ] V)))⁻¹ •
-        𝓕 f (((A.symm : V ≃ₗ[ℝ] V).toLinearMap).adjoint w) := by
-  have hmap : Measure.map (⇑A) (volume : Measure V) =
-      ENNReal.ofReal |(LinearMap.det (A : V →ₗ[ℝ] V))⁻¹| • (volume : Measure V) :=
-    Measure.map_linearMap_addHaar_eq_smul_addHaar volume (LinearEquiv.isUnit_det' A).ne_zero
-  have hinner (y : V) :
-      inner ℝ (A.symm y) w = inner ℝ y (((A.symm : V ≃ₗ[ℝ] V).toLinearMap).adjoint w) :=
-    (LinearMap.adjoint_inner_right _ y w).symm
-  calc 𝓕 (fun x ↦ f (A x)) w
-      = ∫ y, Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y
-          ∂Measure.map (⇑A) (volume : Measure V) := by
-        simpa [Real.fourier_eq] using
-          (integral_map_equiv (μ := (volume : Measure V))
-            A.toContinuousLinearEquiv.toHomeomorph.toMeasurableEquiv
-            fun y ↦ Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y).symm
-    _ = |LinearMap.det (A : V →ₗ[ℝ] V)|⁻¹ •
-          ∫ y, Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y := by
-        rw [hmap, integral_smul_measure, ENNReal.toReal_ofReal (abs_nonneg _), abs_inv]
-    _ = _ := by simp only [Real.fourier_eq, hinner]
-
-end SpherePacking.ForMathlib.Fourier
 
 namespace SchwartzMap.UnitAddTorus
 
