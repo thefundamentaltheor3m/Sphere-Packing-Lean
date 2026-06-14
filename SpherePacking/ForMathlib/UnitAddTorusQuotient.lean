@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Auguste Poiroux
 -/
 module
-public import Mathlib
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Fourier.AddCircleMulti
 
 /-! # The quotient map `(ι → ℝ) → (ℝ/ℤ)^ι` presenting the unit torus
 

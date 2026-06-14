@@ -4,8 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Auguste Poiroux
 -/
 module
-public import Mathlib
-public import SpherePacking.ForMathlib.DualLattice
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.RCLike.Inner
+public import Mathlib.Data.Real.Hom
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+public import Mathlib.Topology.Separation.CompletelyRegular
+
 public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.SchwartzLatticeSummable
 public import SpherePacking.ForMathlib.UnitAddTorusQuotient

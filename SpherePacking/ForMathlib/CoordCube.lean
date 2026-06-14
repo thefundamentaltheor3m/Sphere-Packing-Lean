@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
-public import Mathlib
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 /-! # The scaled integer lattice `L • ℤ^d` and its coordinate cube
 

@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Auguste Poiroux
 -/
 module
-public import Mathlib
+public import Mathlib.Algebra.Module.ZLattice.Summable
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
 
 /-! # Summability of a Schwartz function over a `ℤ`-lattice
 

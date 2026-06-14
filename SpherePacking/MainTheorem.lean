@@ -4,13 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Gareth Ma
 -/
 module
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+
 public import SpherePacking.E8.Packing
 public import SpherePacking.UpperBound
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.MagicFunction.a.Eigenfunction
 public import SpherePacking.MagicFunction.b.Eigenfunction
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-!
 # Main theorem: optimal sphere packing in dimension 8

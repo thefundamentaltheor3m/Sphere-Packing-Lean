@@ -4,7 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
-public import Mathlib
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.Algebra.Ring.IsFormallyReal
+public import Mathlib.Data.Real.Hom
+public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 
 /-! # The dual of a `ℤ`-lattice is a discrete `ℤ`-lattice
 
