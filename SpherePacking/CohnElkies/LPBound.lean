@@ -29,9 +29,10 @@ variable {d : ℕ}
 public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ :=
   PiLp.norm_apply_le x i
 
-/-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
-public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
-    {A B : Set (EuclideanSpace ℝ (Fin d))}
+/-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. Holds
+in any real normed space. -/
+public lemma dist_le_of_disjoint_ball_subsets {V : Type*} [SeminormedAddCommGroup V]
+    [NormedSpace ℝ V] {x y : V} {r : ℝ} {A B : Set V}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) : 2 * r ≤ dist x y := by
   by_cases hr : 0 < r
   · simpa [two_mul] using (disjoint_ball_ball_iff hr hr).1 (hAB.mono hx hy)
@@ -729,20 +730,15 @@ section Integration
 
 open MeasureTheory Filter
 
-variable {E : Type*} [TopologicalSpace E] [AddGroup E] [IsTopologicalAddGroup E]
-  [MeasureSpace E] [BorelSpace E]
-variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
-  [NeZero (volume : Measure E)]
-
-instance : (volume : Measure E).IsOpenPosMeasure := isOpenPosMeasure_of_addLeftInvariant_of_regular
-
 /-- If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` iff `f = 0`.
-This uses that an additive-invariant regular measure is positive on nonempty open sets. -/
-public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
-    (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
+The only requirement on the measure is that it is positive on nonempty open sets
+(`IsOpenPosMeasure`); no group or invariance structure is needed. -/
+public theorem Continuous.integral_zero_iff_zero_of_nonneg {E : Type*} [TopologicalSpace E]
+    [MeasurableSpace E] {μ : Measure E} [μ.IsOpenPosMeasure] {f : E → ℝ} (hf₁ : Continuous f)
+    (hf₂ : Integrable f μ) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v ∂μ = 0 ↔ f = 0 := by
   refine ⟨fun hintf => funext fun x => ?_, fun hf => by simp [hf]⟩
   by_contra hx
-  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume
+  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds μ
       ((isOpen_lt continuous_const hf₁).mem_nhds (lt_of_le_of_ne (hnn x) (Ne.symm hx)))).ne'
     (measure_mono_null (fun (y : E) (hy : 0 < f y) => hy.ne')
       ((integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf))
