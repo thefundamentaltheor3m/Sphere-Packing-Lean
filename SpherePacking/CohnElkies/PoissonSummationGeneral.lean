@@ -6,6 +6,7 @@ Authors: Auguste Poiroux
 module
 public import Mathlib
 public import SpherePacking.ForMathlib.FourierComp
+public import SpherePacking.ForMathlib.SchwartzLatticeSummable
 public import SpherePacking.ForMathlib.UnitAddTorusQuotient
 
 /-! # Poisson summation for Schwartz functions
@@ -209,61 +210,18 @@ public instance instVAddInvariantMeasure_standardLattice :
   measure_preimage_vadd _ _ _ := by
     simp [Submodule.vadd_def, vadd_eq_add, MeasureTheory.measure_preimage_add]
 
-/-- Translate the Schwartz function `f` by a lattice vector, as a continuous map. Kept as a named
-map: it carries the `ContinuousMap` structure used to take sup-norms over compacts and to assemble
-`periodization` as a `tsum` of continuous maps. -/
-@[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) :=
-  (f : C(E, ℂ)).comp (ContinuousMap.addRight (ℓ : E))
+/-- Translate the Schwartz function `f` by a lattice vector, as a continuous map. This `Λ`-indexed
+specialization of `SchwartzMap.translateCM` is what assembles `periodization` as a `tsum` of
+continuous maps. -/
+@[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) := f.translateCM (ℓ : E)
 
 @[simp] public lemma translate_apply (ℓ : Λ) (x : E) :
     translate f ℓ x = f (x + (ℓ : E)) := rfl
 
-/-- Only finitely many standard lattice points lie in a closed ball of radius `r`. -/
-public lemma finite_norm_le_lattice (r : ℝ) :
-    ({ℓ : Λ | ‖(ℓ : E)‖ ≤ r} : Set _).Finite := by
-  have : DiscreteTopology (Λ).toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
-  have hfin : (Metric.closedBall (0 : E) r ∩ ((Λ).toAddSubgroup : Set E)).Finite :=
-    Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
-      Metric.isBounded_closedBall AddSubgroup.isClosed_of_discrete
-  refine .of_finite_image (hfin.subset ?_) Subtype.coe_injective.injOn
-  rintro _ ⟨ℓ, hℓ, rfl⟩
-  exact ⟨by simpa [Metric.mem_closedBall, dist_eq_norm] using hℓ, ℓ.2⟩
-
-private lemma half_norm_le_norm_add {G : Type*} [SeminormedAddCommGroup G] {x ℓ : G} {r : ℝ}
-    (hx : ‖x‖ ≤ r) (hℓ : 2 * r < ‖ℓ‖) : 1 / 2 * ‖ℓ‖ ≤ ‖x + ℓ‖ := by
-  have h : ‖ℓ‖ - ‖x‖ ≤ ‖x + ℓ‖ := by simpa [add_comm] using norm_sub_norm_le ℓ (-x)
-  linarith
-
 /-- Schwartz decay: sup norms of translates restricted to a compact `K` are summable. -/
 public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) :
-    Summable (fun ℓ : Λ => ‖(translate f ℓ).restrict K‖) := by
-  -- `k` is a decay order exceeding the lattice rank, so that `‖·‖⁻¹ ^ k` is summable over `Λ`.
-  let k : ℕ := Module.finrank ℤ Λ + 1
-  obtain ⟨C, hCpos, hC⟩ := f.decay k 0
-  simp_rw [norm_iteratedFDeriv_zero] at hC
-  obtain ⟨r, hrK⟩ := K.isCompact.isBounded.subset_closedBall (0 : E)
-  have hsum : Summable fun ℓ : Λ => ‖(ℓ : E)‖⁻¹ ^ k := by
-    simpa [k] using ZLattice.summable_norm_pow_inv (L := Λ) k (Nat.lt_succ_self _)
-  refine (hsum.mul_left (C * 2 ^ k)).of_norm_bounded_eventually ?_
-  filter_upwards [(finite_norm_le_lattice (max (2 * r) 1)).eventually_cofinite_notMem]
-    with ℓ hℓ
-  have hRlt : max (2 * r) 1 < ‖(ℓ : E)‖ := lt_of_not_ge (by simpa using hℓ)
-  have hnorm_pos : 0 < ‖(ℓ : E)‖ := one_pos.trans_le ((le_max_right _ _).trans hRlt.le)
-  rw [norm_norm]
-  refine (ContinuousMap.norm_le _ (by positivity)).2 fun ⟨x, hxK⟩ => ?_
-  have hxr : ‖x‖ ≤ r := by simpa using hrK hxK
-  have hge : 1 / 2 * ‖(ℓ : E)‖ ≤ ‖x + (ℓ : E)‖ :=
-    half_norm_le_norm_add hxr ((le_max_left _ _).trans_lt hRlt)
-  have hpos : 0 < ‖x + (ℓ : E)‖ := (by positivity : (0 : ℝ) < 1 / 2 * ‖(ℓ : E)‖).trans_le hge
-  have hinv : ‖x + (ℓ : E)‖⁻¹ ≤ 2 * ‖(ℓ : E)‖⁻¹ := by
-    have h := inv_anti₀ (by positivity) hge
-    rwa [mul_inv, one_div, inv_inv] at h
-  calc ‖(translate f ℓ) (⟨x, hxK⟩ : K)‖
-      = ‖f (x + (ℓ : E))‖ := rfl
-    _ ≤ C / ‖x + (ℓ : E)‖ ^ k := (le_div_iff₀' (pow_pos hpos k)).2 (hC _)
-    _ = C * ‖x + (ℓ : E)‖⁻¹ ^ k := by rw [div_eq_mul_inv, inv_pow]
-    _ ≤ C * (2 * ‖(ℓ : E)‖⁻¹) ^ k := by gcongr
-    _ = C * 2 ^ k * ‖(ℓ : E)‖⁻¹ ^ k := by rw [mul_pow, mul_assoc]
+    Summable (fun ℓ : Λ => ‖(translate f ℓ).restrict K‖) :=
+  f.summable_norm_translateCM_restrict (SchwartzMap.standardLattice d) K
 
 /-- The quotient map `coeFunE`, bundled as a continuous map. This packaging is what the
 `IsQuotientMap.lift`/`FactorsThrough` API consumes when descending periodic maps to the torus. -/
@@ -523,23 +481,13 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
   simp [Real.fourier_eq, Circle.smul_def, smul_eq_mul,
     mFourier_neg_apply_coeFunE (n := n)]
 
-/-- Schwartz–Fourier decay over the lattice: `𝓕 f` is summable in norm over `Λ = ℤ^d`. The decay
-order `d + 1` exceeds the lattice rank, so `‖·‖⁻¹ ^ (d + 1)` is summable and dominates `𝓕 f`. -/
+/-- Schwartz–Fourier decay over the lattice: `𝓕 f` is summable in norm over `Λ = ℤ^d`, since `𝓕 f`
+is again a Schwartz function (`SchwartzMap.summable_norm_comp_add`). -/
 lemma summable_norm_fourier_lattice :
     Summable (fun ℓ : Λ => ‖𝓕 (fun y : E => f y) (ℓ : E)‖) := by
-  have hrank : Module.finrank ℤ Λ = d := by
-    simpa using (ZLattice.rank (K := ℝ) (L := Λ)).trans (by simp)
-  have hk : Module.finrank ℤ Λ < d + 1 := by omega
-  obtain ⟨C, _, hC⟩ := (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).decay (d + 1) 0
-  have hC' : ∀ x : E, ‖x‖ ^ (d + 1) * ‖𝓕 (fun y : E => f y) x‖ ≤ C := by
-    simpa [FourierTransform.fourierCLE_apply, fourier_coe, norm_iteratedFDeriv_zero] using hC
-  refine Summable.of_norm_bounded_eventually
-    ((by simpa using ZLattice.summable_norm_pow_inv (L := Λ) (n := d + 1) hk :
-      Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ (d + 1) : ℝ))).mul_left C) ?_
-  filter_upwards [(finite_norm_le_lattice 1).compl_mem_cofinite] with ℓ hℓ
-  simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
-    (le_div_iff₀' (pow_pos (lt_trans (by positivity)
-      (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)) _)).2 (hC' (ℓ : E))
+  simpa [FourierTransform.fourierCLE_apply, fourier_coe] using
+    (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).summable_norm_comp_add
+      (SchwartzMap.standardLattice d) 0
 
 /-- The Fourier-decay summability of `summable_norm_fourier_lattice`, reindexed over `ℤ^d` along
 `equivIntVec`. -/
