@@ -9,6 +9,7 @@ public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
+public import SpherePacking.ForMathlib.DualLattice
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.ModularFormsHelpers

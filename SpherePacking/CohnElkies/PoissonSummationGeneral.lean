@@ -5,6 +5,7 @@ Authors: Auguste Poiroux
 -/
 module
 public import Mathlib
+public import SpherePacking.ForMathlib.DualLattice
 public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.SchwartzLatticeSummable
 public import SpherePacking.ForMathlib.UnitAddTorusQuotient
