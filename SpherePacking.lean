@@ -7,6 +7,7 @@ public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
+public import SpherePacking.ForMathlib.CoordCube
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.ForMathlib.DualLattice
