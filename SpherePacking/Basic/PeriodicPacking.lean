@@ -623,7 +623,6 @@ theorem PeriodicSpherePacking.aux2_ge
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
   · convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-    exact inferInstanceAs <| VAddInvariantMeasure S.lattice.toAddSubgroup _ volume
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
@@ -670,7 +669,6 @@ theorem PeriodicSpherePacking.aux2_le
       exact MeasurableSet.const_vadd hD_measurable i.val
   · left
     convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-    exact inferInstanceAs <| VAddInvariantMeasure S.lattice.toAddSubgroup _ volume
   · left
     have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]

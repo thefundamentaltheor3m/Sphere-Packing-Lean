@@ -413,15 +413,15 @@ private noncomputable def H_sum_sq_MF : ModularForm (Γ 1) 4 := {
 }
 
 /-- `E₄ = H₂² + H₂H₄ + H₄²` by weight-4 cusp form dimension vanishing -/
-theorem E₄_eq_H_sum_sq : E₄.toFun = H_sum_sq := by
-  have h_toFun : (E₄ - H_sum_sq_MF).toFun = E₄.toFun - H_sum_sq := by
+theorem E₄_eq_H_sum_sq : _root_.E₄.toFun = H_sum_sq := by
+  have h_toFun : (_root_.E₄ - H_sum_sq_MF).toFun = _root_.E₄.toFun - H_sum_sq := by
     ext z; simp [H_sum_sq_MF, H_sum_sq_SIF]; rfl
-  have h_diff_tendsto : Tendsto (E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
+  have h_diff_tendsto : Tendsto (_root_.E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
     rw [h_toFun]; simpa using E₄_tendsto_one_atImInfty.sub H_sum_sq_tendsto
-  have h_cusp : IsCuspForm (Γ 1) 4 (E₄ - H_sum_sq_MF) := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
+  have h_cusp : IsCuspForm (Γ 1) 4 (_root_.E₄ - H_sum_sq_MF) := by
+    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff]; simp
     exact IsZeroAtImInfty.cuspFunction_apply_zero h_diff_tendsto (by norm_num : (0 : ℝ) < 1)
-  have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (E₄ - H_sum_sq_MF) h_cusp
+  have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (_root_.E₄ - H_sum_sq_MF) h_cusp
   funext z; simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
 
 /-- From `Af₂ + Bf₄ = 0`: `f₄² · 3H_sum_sq = A² · theta_h` -/
