@@ -246,7 +246,7 @@ lemma qexp_eq_fouterm (b : ℕ → ℂ) (x : ℍ) :
   rw [show (↑π * Complex.I * ((2 * j : ℕ) : ℤ) * ↑x : ℂ) = 2 * ↑π * Complex.I * ↑j * ↑x by
     push_cast; ring]
 
-/-! ## Linear factor q-coefficients and fouterm identities (Design B)
+/-! ## Linear factor q-coefficients and fouterm identities
 
 `E₄` and `E₂E₄−E₆` are the *linear* factors of the φ-numerators. Their genuine `q`-coefficients
 are simple (no Cauchy convolution), so via the keystone they have clean `fouterm` expansions. -/
@@ -360,7 +360,58 @@ lemma bE₄_isBigO : bE₄ =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
     Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
   nlinarith [hσ, hm1, pow_nonneg (by linarith : (0:ℝ) ≤ (m:ℝ)) 4]
 
-/-! ## Linear quotient bounds (Design B #3)
+/-! ## Factor norm bounds
+
+Explicit norm bounds on the linear factors, via a `q`-series norm-decay estimate
+(`exp(-2πm·im) ≤ exp(-πm)` for `im ≥ 1/2`), patterned on `isBigO_atImInfty_of_fourier_shift`. -/
+
+/-- A shifted `q`-series `∑ a(m)·q^(m+n₀)` has norm `≤ (∑‖a m‖·exp(-πm))·exp(-2π·n₀·im)`
+    for `im ≥ 1/2`. -/
+lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
+    (ha : Summable fun m : ℕ => ‖a m‖ * rexp (-π * (m : ℝ))) (z : ℍ) (hz : 1 / 2 ≤ z.im) :
+    ‖∑' m : ℕ, a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ))‖
+      ≤ (∑' m, ‖a m‖ * rexp (-π * (m : ℝ))) * rexp (-(2 * π) * n₀ * z.im) := by
+  have hexp_re (m : ℕ) : (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+    simp only [Nat.cast_add, Complex.mul_re, Complex.re_ofNat, Complex.ofReal_re, Complex.im_ofNat,
+      Complex.ofReal_im, mul_zero, sub_zero, Complex.I_re, Complex.mul_im, zero_mul, add_zero,
+      Complex.I_im, mul_one, sub_self, Complex.add_re, Complex.natCast_re, Complex.add_im,
+      Complex.natCast_im, UpperHalfPlane.coe_re, zero_add, UpperHalfPlane.coe_im, zero_sub, neg_mul]
+  have hexp_bound (m : ℕ) :
+      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤ rexp (-π * (m : ℝ)) * rexp (-π * (n₀ : ℝ)) := by
+    rw [← Real.exp_add, Real.exp_le_exp]
+    have hprod : (0:ℝ) ≤ ((m : ℝ) + n₀) * (2 * z.im - 1) :=
+      mul_nonneg (by positivity) (by linarith [hz])
+    nlinarith [Real.pi_pos, hprod]
+  have hsum_norms : Summable fun m => ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
+    refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_) (ha.mul_right (rexp (-π * n₀)))
+    simp only [norm_mul, Complex.norm_exp, hexp_re]
+    calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
+        ≤ ‖a m‖ * (rexp (-π * (m : ℝ)) * rexp (-π * (n₀ : ℝ))) :=
+          mul_le_mul_of_nonneg_left (hexp_bound m) (norm_nonneg _)
+      _ = ‖a m‖ * rexp (-π * (m : ℝ)) * rexp (-π * (n₀ : ℝ)) := by ring
+  have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im) := by
+    convert hsum_norms using 2 with m; rw [norm_mul, Complex.norm_exp, hexp_re]
+  calc ‖∑' m, a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖
+      ≤ ∑' m, ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ := norm_tsum_le_tsum_norm hsum_norms
+    _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im) := by
+        simp only [norm_mul, Complex.norm_exp, hexp_re]
+    _ ≤ ∑' m, ‖a m‖ * rexp (-π * (m : ℝ)) * rexp (-(2 * π) * n₀ * z.im) := by
+        refine Summable.tsum_le_tsum (fun m => ?_) hsum_norms' (ha.mul_right _)
+        have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
+            rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+          rw [← Real.exp_add]; ring_nf
+        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-π * (m : ℝ)) := by
+          rw [Real.exp_le_exp]
+          have hprod : (0:ℝ) ≤ (m : ℝ) * (2 * z.im - 1) := mul_nonneg (by positivity) (by linarith [hz])
+          nlinarith [Real.pi_pos, hprod]
+        calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
+            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by rw [hsplit]; ring
+          _ ≤ ‖a m‖ * rexp (-π * (m : ℝ)) * rexp (-(2 * π) * n₀ * z.im) :=
+              mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _))
+                (le_of_lt (Real.exp_pos _))
+    _ = (∑' m, ‖a m‖ * rexp (-π * (m : ℝ))) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
+
+/-! ## Linear quotient bounds
 
 Direct `DivDiscBoundOfPolyFourierCoeff` applications using the linear `fouterm` identities. -/
 
