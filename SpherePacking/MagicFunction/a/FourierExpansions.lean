@@ -212,6 +212,40 @@ lemma summable_E₄_sq (z : ℍ) :
     Summable fun (i : ℕ) ↦ fouterm c_E₄_sq z (i + 0) :=
   summable_fouterm_of_poly c_E₄_sq_poly z 0
 
+/-! ## Keystone: q-series → fouterm reindex
+
+A `q`-series `∑ₘ b m · qᵐ` (with `q = cexp (2π i z)`, the standard convention) becomes a
+`fouterm` sum (with `r = cexp (π i z)`, the half-`q` convention used by `DivDiscBound`) by placing
+the `m`-th coefficient at the even index `2m` and `0` on odd indices. -/
+
+/-- The even-support `fouterm` coefficient carrying `b` at index `2m`. -/
+def evenCoeff (b : ℕ → ℂ) : ℤ → ℂ := fun k => if Even k then b (k / 2).toNat else 0
+
+/-- **Keystone reindex** (built via `Function.Injective.tsum_eq` along `m ↦ 2m`). -/
+lemma qexp_eq_fouterm (b : ℕ → ℂ) (x : ℍ) :
+    (∑' m : ℕ, b m * cexp (2 * ↑π * Complex.I * ↑m * ↑x))
+      = ∑' n : ℕ, fouterm (evenCoeff b) x (↑n + 0) := by
+  have hg : Function.Injective (fun j : ℕ => 2 * j) := fun a b h => by
+    have : 2 * a = 2 * b := h; omega
+  have hsupp : Function.support (fun n : ℕ => fouterm (evenCoeff b) x (↑n + 0)) ⊆
+      Set.range (fun j : ℕ => 2 * j) := by
+    intro n hn
+    rw [Function.mem_support] at hn
+    have hcn : evenCoeff b (↑n) ≠ 0 := by
+      intro h; exact hn (by simp only [fouterm, add_zero, h, zero_mul])
+    have heven : Even (n : ℤ) := by
+      by_contra hodd
+      exact hcn (by simp only [evenCoeff, if_neg hodd])
+    obtain ⟨j, hj⟩ := (Int.even_coe_nat n).mp heven
+    exact ⟨j, by show 2 * j = n; omega⟩
+  rw [← hg.tsum_eq hsupp]
+  refine tsum_congr (fun j => ?_)
+  have h2j : Even ((2 * j : ℕ) : ℤ) := by exact_mod_cast even_two_mul j
+  simp only [fouterm, add_zero, evenCoeff, if_pos h2j]
+  rw [show (((2 * j : ℕ) : ℤ) / 2).toNat = j by push_cast; omega]
+  rw [show (↑π * Complex.I * ((2 * j : ℕ) : ℤ) * ↑x : ℂ) = 2 * ↑π * Complex.I * ↑j * ↑x by
+    push_cast; ring]
+
 /-! ## Fourier Expansion Identities
 
 These connect the Eisenstein series products to fouterm sums.
