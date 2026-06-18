@@ -8,26 +8,24 @@ import SpherePacking.ForMathlib.SpecificLimits
 import SpherePacking.ModularForms.FG
 
 /-!
-# Fourier Expansion Identities for Phi Bounds
+# Fourier expansions and norm bounds for the linear factors of φ₀, φ₂', φ₄'
 
-States the Fourier expansion identities needed to connect the phi functions
-(φ₀, φ₂', φ₄') to the DivDiscBound machinery in PolyFourierCoeffBound.
+Connects the *linear* Eisenstein factors `E₄` and `E₂E₄ − E₆` to the `DivDiscBound` machinery in
+`PolyFourierCoeffBound`, and bounds their norms. The φ-numerators are products/squares of these
+factors, so bounding each factor and its quotient by `Δ` avoids any Cauchy-product coefficients.
 
 ## Convention
 
-The standard q-expansion uses q = exp(2πiz), while `fouterm` uses exp(πinz).
-Since q = exp(2πiz) and setting r = exp(πiz), we have q = r².
+The standard q-expansion uses `q = exp(2πiz)`, while `fouterm` uses `exp(πinz)`. Setting
+`r = exp(πiz)` gives `q = r²`, so a `q`-coefficient at power `m` sits at the even `fouterm` index
+`2m` (and odd indices carry `0`); this is the `evenCoeff`/`qexp_eq_fouterm` reindex.
 
-This means:
-- A q-expansion ∑ aₙ qⁿ becomes ∑ aₙ r^{2n} in the fouterm convention
-- The starting index n₀ in fouterm corresponds to n₀/2 in q-space
+## Main results
 
-## Main Results
-
-- `summable_fouterm_of_poly`: Summability from polynomial growth + exponential decay
-- `E₂E₄E₆_sq_fourier`: (E₂E₄ - E₆)² in fouterm form (n₀ = 4)
-- `E₄_E₂E₄E₆_fourier`: E₄(E₂E₄ - E₆) in fouterm form (n₀ = 2)
-- `E₄_sq_fourier`: E₄² in fouterm form (n₀ = 0)
+- `qexp_eq_fouterm`: rewrite a `q`-series into `fouterm` form (even-support reindex)
+- `E₄_eq_fouterm`, `g_eq_fouterm`: the linear factors `E₄` (`n₀=0`) and `E₂E₄ − E₆` (`n₀=2`)
+- `g_div_Δ_bound`, `E₄_div_Δ_bound`: bounds on `‖factor / Δ‖` via `DivDiscBoundOfPolyFourierCoeff`
+- `norm_E₄_le`, `norm_g_le`: explicit norm bounds on the factors (`‖E₄‖ ≤ B_E₄`, decay for `E₂E₄−E₆`)
 
 ## References
 
@@ -42,68 +40,6 @@ open MagicFunction.PolyFourierCoeffBound
 noncomputable section
 
 namespace MagicFunction.a.FourierExpansions
-
-/-! ## Coefficient Functions
-
-These match the coefficient growth patterns needed for DivDiscBound. -/
-
-/-- Coefficient function with growth O(n^5), used for E₂E₄-E₆ related expansions. -/
-def c_E₂E₄E₆ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
-
-/-- Coefficient function for E₄(E₂E₄ - E₆), the product (not square).
-    Note: Uses same simplified bound as c_E₂E₄E₆ for this branch. -/
-def c_E₄_E₂E₄E₆ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
-
-/-- Coefficient function for E₄², with constant term 1. -/
-def c_E₄_sq : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
-
-/-- c_E₂E₄E₆ has polynomial growth O(n^5). -/
-lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  -- Coefficients n·σ₃(n) grow as O(n) × O(n^4) = O(n^5)
-  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
-  have hcd (n : ℕ) : c_E₂E₄E₆ n = d n := by simp [c_E₂E₄E₆, d]
-  have hdpoly : d =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
-    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := Nat.pow_succ'
-    norm_cast
-    simp only [h₁]
-    push_cast
-    refine Asymptotics.IsBigO.mul (Asymptotics.isBigO_refl _ Filter.atTop) ?_
-    have h := ArithmeticFunction.sigma_asymptotic' 3
-    simp only [Nat.reduceAdd] at h
-    norm_cast at h ⊢
-  simp only [Asymptotics.isBigO_iff, norm_pow, Complex.norm_natCast, Filter.eventually_atTop,
-    ge_iff_le] at hdpoly ⊢
-  obtain ⟨R, m, hR⟩ := hdpoly
-  use R, m
-  intro n hn
-  have hnnonneg : 0 ≤ n := calc 0 ≤ (m : ℤ) := by positivity
-    _ ≤ ↑n := hn
-  have hnnat : n.toNat = n := by simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
-  have hmnnat : m ≤ n.toNat := by zify; rw [hnnat]; exact hn
-  specialize hR n.toNat hmnnat
-  rw [← hcd, hnnat] at hR
-  calc norm (c_E₂E₄E₆ n)
-  _ ≤ R * n.toNat ^ 5 := hR
-  _ = R * |↑n| ^ 5 := by
-    simp only [mul_eq_mul_left_iff]; norm_cast; left
-    rw [Nat.cast_pow, hnnat]; simp [hnnonneg, abs_of_nonneg]
-
-/-- c_E₄_E₂E₄E₆ has polynomial growth O(n^5).
-    Note: Same growth as c_E₂E₄E₆ since they have the same simplified definition. -/
-lemma c_E₄_E₂E₄E₆_poly : c_E₄_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  -- c_E₄_E₂E₄E₆ = c_E₂E₄E₆ definitionally
-  exact c_E₂E₄E₆_poly
-
-/-- c_E₄_sq has polynomial growth O(n^5). -/
-lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  have heq : c_E₄_sq =ᶠ[Filter.atTop] c_E₂E₄E₆ := by
-    simp only [Filter.EventuallyEq, Filter.eventually_atTop, ge_iff_le]
-    use 1
-    intro n hn
-    simp only [c_E₄_sq, c_E₂E₄E₆]
-    have h : ¬n ≤ 0 := by omega
-    simp only [h, ↓reduceIte]
-  exact c_E₂E₄E₆_poly.congr' heq.symm Filter.EventuallyEq.rfl
 
 /-! ## Auxiliary lemmas for summability -/
 
@@ -195,22 +131,6 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
   -- Apply summability theorem
   simp_rw [h_factor]
   exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hu)
-
-/-- Summability for (E₂E₄ - E₆)² expansion (n₀ = 4). -/
-lemma summable_E₂E₄E₆_sq (z : ℍ) :
-    Summable fun (i : ℕ) ↦ fouterm c_E₂E₄E₆ z (i + 4) :=
-  summable_fouterm_of_poly c_E₂E₄E₆_poly z 4
-
-/-- Summability for E₄(E₂E₄ - E₆) expansion (n₀ = 2).
-    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
-lemma summable_E₄_E₂E₄E₆ (z : ℍ) :
-    Summable fun (i : ℕ) ↦ fouterm c_E₄_E₂E₄E₆ z (i + 2) :=
-  summable_fouterm_of_poly c_E₄_E₂E₄E₆_poly z 2
-
-/-- Summability for E₄² expansion (n₀ = 0). -/
-lemma summable_E₄_sq (z : ℍ) :
-    Summable fun (i : ℕ) ↦ fouterm c_E₄_sq z (i + 0) :=
-  summable_fouterm_of_poly c_E₄_sq_poly z 0
 
 /-! ## Keystone: q-series → fouterm reindex
 
@@ -452,6 +372,17 @@ def B_E₄ : ℝ := ∑' m : ℕ, ‖bE₄ m‖ * rexp (-π * (m : ℝ))
 /-- Explicit constant for the `exp(-2π·im)` decay of `‖E₂E₄ − E₆‖`. -/
 def B_g : ℝ := ∑' m : ℕ, ‖bg (m + 1)‖ * rexp (-π * (m : ℝ))
 
+lemma B_E₄_pos : 0 < B_E₄ := by
+  refine lt_of_lt_of_le ?_
+    ((summable_norm_mul_exp bE₄_isBigO).le_tsum 0 (fun j _ => by positivity))
+  simp [bE₄]
+
+lemma B_g_pos : 0 < B_g := by
+  refine lt_of_lt_of_le ?_
+    ((summable_norm_mul_exp bg_shift_isBigO).le_tsum 0 (fun j _ => by positivity))
+  have hσ : (σ 3 1 : ℂ) = 1 := by simp [ArithmeticFunction.sigma_apply, Nat.divisors_one]
+  simp [bg, hσ]
+
 /-- `E₄` is bounded by `B_E₄` on `im ≥ 1/2`. -/
 lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := by
   rw [E₄_qexp_nat z]
@@ -487,38 +418,6 @@ lemma E₄_div_Δ_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     (fun x => E₄ x) E₄_eq_fouterm
   convert h using 2
   push_cast; ring
-
-/-! ## Fourier Expansion Identities
-
-These connect the Eisenstein series products to fouterm sums.
-The proofs use `E₂_mul_E₄_sub_E₆` and `E₄_sigma_qexp` from `FG.lean`. -/
-
-/-- Fourier expansion of (E₂E₄ - E₆)².
-    In q = exp(2πiz) convention: (E₂E₄ - E₆) = 720·∑_{n≥1} n·σ₃(n)·qⁿ
-    The square starts at q², which is r⁴ in r = exp(πiz) convention. -/
-lemma E₂E₄E₆_sq_fourier (x : ℍ) :
-    ((E₂ x) * (E₄ x) - (E₆ x)) ^ 2 = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 4) := by
-  -- From E₂_mul_E₄_sub_E₆ and Cauchy product of q-series
-  -- (720 * ∑ n·σ₃(n)·q^n)² = 720² * (∑ n·σ₃(n)·q^n)²
-  -- Cauchy product: (∑ aₙq^n)² = ∑ (∑_{j+k=n} aⱼaₖ) q^n
-  -- Starting at n=1, square starts at n=2 in q-space = index 4 in r-space
-  sorry
-
-/-- Fourier expansion of E₄(E₂E₄ - E₆).
-    Product starts at q¹, which is r² in fouterm convention.
-    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
-lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
-    E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₄_E₂E₄E₆ x (n + 2) := by
-  -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
-  -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
-  sorry
-
-/-- Fourier expansion of E₄².
-    E₄ = 1 + 240·∑_{n≥1} σ₃(n)·qⁿ, so E₄² starts at constant term 1. -/
-lemma E₄_sq_fourier (x : ℍ) :
-    E₄ x ^ 2 = ∑' (n : ℕ), fouterm c_E₄_sq x (n + 0) := by
-  -- From E₄_sigma_qexp: E₄² = (1 + 240·∑...)² starts at q⁰ = r⁰
-  sorry
 
 end MagicFunction.a.FourierExpansions
 
