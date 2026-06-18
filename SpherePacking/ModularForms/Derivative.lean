@@ -642,7 +642,7 @@ theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) :
   have hLHS : (serre_D (↑k) F ∣[k + 2] γ) z =
       (D F ∣[k + 2] γ) z - ↑k * 12⁻¹ * ((E₂ ∣[(2 : ℤ)] γ) z * (F ∣[k] γ) z) := by
     have h := congrFun hmul z
-    simp only [Pi.mul_apply, show (2 : ℤ) + k = k + 2 from by omega] at h
+    simp only [Pi.mul_apply, show (2 : ℤ) + k = k + 2 by omega] at h
     simp only [ModularForm.SL_slash_apply, serre_D_apply, Pi.mul_apply] at h ⊢
     rw [← h]; ring
   rw [hLHS]

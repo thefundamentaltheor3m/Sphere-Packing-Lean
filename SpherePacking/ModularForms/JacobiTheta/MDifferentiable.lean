@@ -25,14 +25,14 @@ section H_MDifferentiable
 @[fun_prop]
 lemma H₃_MDifferentiable : MDiff H₃ := by
   rw [UpperHalfPlane.mdifferentiable_iff]
-  have hθ : DifferentiableOn ℂ (fun z => jacobiTheta₂ (0 : ℂ) z) {z | 0 < z.im} := by
+  have hθ : DifferentiableOn ℂ (fun z ↦ jacobiTheta₂ (0 : ℂ) z) {z | 0 < z.im} := by
     intro x hx
     exact (differentiableAt_jacobiTheta₂_snd 0 (by simpa using hx)).differentiableWithinAt
-  have hθ4 : DifferentiableOn ℂ (fun z => (jacobiTheta₂ (0 : ℂ) z) ^ 4) {z | 0 < z.im} := by
+  have hθ4 : DifferentiableOn ℂ (fun z ↦ (jacobiTheta₂ (0 : ℂ) z) ^ 4) {z | 0 < z.im} := by
     apply DifferentiableOn.pow
     intro x hx
     exact hθ x hx
-  exact hθ4.congr fun _ hz => by
+  exact hθ4.congr fun _ hz ↦ by
     simp [Function.comp, H₃, Θ₃_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
 
 @[fun_prop]

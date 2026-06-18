@@ -74,13 +74,13 @@ variable (γ : SL(2, ℤ))
 
 /-- Differentiability of `denom`. -/
 lemma differentiableAt_denom (z : ℂ) :
-    DifferentiableAt ℂ (fun w => denom γ w) z := by
+    DifferentiableAt ℂ (fun w ↦ denom γ w) z := by
   simp only [denom]
   fun_prop
 
 /-- Differentiability of `num`. -/
 lemma differentiableAt_num (z : ℂ) :
-    DifferentiableAt ℂ (fun w => num γ w) z := by
+    DifferentiableAt ℂ (fun w ↦ num γ w) z := by
   simp only [num]
   fun_prop
 
