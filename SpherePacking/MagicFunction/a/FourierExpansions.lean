@@ -265,7 +265,7 @@ lemma E₄_qexp_nat (z : ℍ) :
     refine ((sigma3_qexp_summable z).mul_left 240).congr (fun n => ?_)
     have hn : (n : ℕ) ≠ 0 := n.ne_zero
     simp only [bE₄, hn, if_false]
-    push_cast; ring
+    ring
   rw [hsummable.tsum_eq_zero_add, E₄_sigma_qexp]
   congr 1
   · simp [bE₄]
@@ -279,6 +279,38 @@ lemma E₄_qexp_nat (z : ℍ) :
 /-- `E₄` in `fouterm` form (`n₀ = 0`). -/
 lemma E₄_eq_fouterm (z : ℍ) : E₄ z = ∑' n : ℕ, fouterm (evenCoeff bE₄) z (↑n + 0) :=
   (E₄_qexp_nat z).trans (qexp_eq_fouterm bE₄ z)
+
+/-- `E₂E₄ − E₆` as an ℕ-indexed `q`-series with coefficients `bg` (vanishing at `0`). -/
+lemma g_qexp_nat (z : ℍ) :
+    E₂ z * E₄ z - E₆ z = ∑' m : ℕ, bg m * cexp (2 * ↑π * Complex.I * ↑m * ↑z) := by
+  have hsupp : Function.support (fun m : ℕ => bg m * cexp (2 * ↑π * Complex.I * ↑m * ↑z)) ⊆
+      Set.range ((↑·) : ℕ+ → ℕ) := by
+    intro m hm
+    rw [Function.mem_support] at hm
+    have hm0 : m ≠ 0 := by rintro rfl; simp [bg] at hm
+    exact ⟨⟨m, Nat.pos_of_ne_zero hm0⟩, rfl⟩
+  rw [E₂_mul_E₄_sub_E₆, ← tsum_mul_left, ← PNat.coe_injective.tsum_eq
+    (f := fun m : ℕ => bg m * cexp (2 * ↑π * Complex.I * ↑m * ↑z)) hsupp]
+  refine tsum_congr (fun n => ?_)
+  simp only [bg]
+  ring
+
+/-- `E₂E₄ − E₆` in `fouterm` form (`n₀ = 2`; the index-`0,1` terms vanish). -/
+lemma g_eq_fouterm (z : ℍ) :
+    E₂ z * E₄ z - E₆ z = ∑' n : ℕ, fouterm (evenCoeff bg) z (↑n + 2) := by
+  rw [g_qexp_nat z, qexp_eq_fouterm bg z]
+  have hinj : Function.Injective (fun n : ℕ => n + 2) := fun a b h => by
+    have : a + 2 = b + 2 := h; omega
+  have hsupp : Function.support (fun n : ℕ => fouterm (evenCoeff bg) z (↑n + 0)) ⊆
+      Set.range (fun n : ℕ => n + 2) := by
+    intro n hn
+    rw [Function.mem_support] at hn
+    have h0 : n ≠ 0 := by rintro rfl; simp [fouterm, evenCoeff, bg] at hn
+    have h1 : n ≠ 1 := by rintro rfl; simp [fouterm, evenCoeff, bg] at hn
+    exact ⟨n - 2, by show n - 2 + 2 = n; omega⟩
+  rw [← hinj.tsum_eq hsupp]
+  refine tsum_congr (fun n => ?_)
+  congr 1
 
 /-! ## Fourier Expansion Identities
 
