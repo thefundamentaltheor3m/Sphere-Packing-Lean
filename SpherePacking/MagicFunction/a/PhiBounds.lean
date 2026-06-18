@@ -33,6 +33,7 @@ Corollary 7.5-7.7 bounds on the phi functions, stated both with explicit constan
 -/
 
 open Real UpperHalfPlane Asymptotics
+open scoped ArithmeticFunction.sigma
 open MagicFunction.PolyFourierCoeffBound
 open MagicFunction.a.FourierExpansions
 
@@ -42,64 +43,67 @@ namespace MagicFunction.a
 
 /-! ## Explicit Constants
 
-The constants are defined using `DivDiscBound` from the Fourier coefficient machinery. -/
+Each constant factors as `(factor-norm bound) · DivDiscBound (linear coefficient)`, reflecting the
+`‖φ‖ = ‖factor‖ · ‖linear/Δ‖` decomposition. -/
 
 /-- Explicit constant for φ₀ bound (Corollary 7.5). -/
-def C_φ₀ : ℝ := DivDiscBound c_E₂E₄E₆ 4
+def C_φ₀ : ℝ := B_g * DivDiscBound (evenCoeff bg) 2
 
-/-- Explicit constant for φ₂' bound (Corollary 7.6).
-    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
-def C_φ₂' : ℝ := DivDiscBound c_E₄_E₂E₄E₆ 2
+/-- Explicit constant for φ₂' bound (Corollary 7.6). -/
+def C_φ₂' : ℝ := B_E₄ * DivDiscBound (evenCoeff bg) 2
 
 /-- Explicit constant for φ₄' bound (Corollary 7.7). -/
-def C_φ₄' : ℝ := DivDiscBound c_E₄_sq 0
+def C_φ₄' : ℝ := B_E₄ * DivDiscBound (evenCoeff bE₄) 0
 
 /-! ## Positivity of Constants -/
 
-lemma C_φ₀_pos : 0 < C_φ₀ := by
-  refine DivDiscBound_pos c_E₂E₄E₆ 4 ?_ 5 c_E₂E₄E₆_poly
-  simp only [c_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]; norm_cast
+lemma divDiscBound_bg_pos : 0 < DivDiscBound (evenCoeff bg) 2 := by
+  refine DivDiscBound_pos (evenCoeff bg) 2 ?_ 5 (evenCoeff_isBigO bg_isBigO)
+  have hσ : (σ 3 1 : ℂ) = 1 := by simp [ArithmeticFunction.sigma_apply, Nat.divisors_one]
+  simp [evenCoeff, bg, hσ]
 
-lemma C_φ₂'_pos : 0 < C_φ₂' := by
-  refine DivDiscBound_pos c_E₄_E₂E₄E₆ 2 ?_ 5 c_E₄_E₂E₄E₆_poly
-  simp only [c_E₄_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]
-  norm_cast
+lemma divDiscBound_bE₄_pos : 0 < DivDiscBound (evenCoeff bE₄) 0 := by
+  refine DivDiscBound_pos (evenCoeff bE₄) 0 ?_ 5 (evenCoeff_isBigO bE₄_isBigO)
+  simp [evenCoeff, bE₄]
 
-lemma C_φ₄'_pos : 0 < C_φ₄' := by
-  refine DivDiscBound_pos c_E₄_sq 0 ?_ 5 c_E₄_sq_poly
-  simp only [c_E₄_sq, le_refl, ↓reduceIte, ne_eq, one_ne_zero, not_false_eq_true]
+lemma C_φ₀_pos : 0 < C_φ₀ := mul_pos B_g_pos divDiscBound_bg_pos
+
+lemma C_φ₂'_pos : 0 < C_φ₂' := mul_pos B_E₄_pos divDiscBound_bg_pos
+
+lemma C_φ₄'_pos : 0 < C_φ₄' := mul_pos B_E₄_pos divDiscBound_bE₄_pos
 
 /-! ## Explicit Constant Bounds
 
-These are the direct bounds from Corollaries 7.5-7.7. -/
+Each is `‖φ‖ = ‖factor‖ · ‖linear/Δ‖`, combining a factor-norm bound with a quotient bound. -/
 
 /-- Corollary 7.5: φ₀ decays like exp(-2πt) for Im(z) > 1/2. -/
 theorem φ₀_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₀ z‖ ≤ C_φ₀ * Real.exp (-2 * π * z.im) := by
-  have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₂E₄E₆ 4 (summable_E₂E₄E₆_sq z)
-      5 c_E₂E₄E₆_poly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) E₂E₄E₆_sq_fourier
-  simp only [φ₀, C_φ₀]
-  convert h using 2
-  ring_nf
+  have hfact : φ₀ z = (E₂ z * E₄ z - E₆ z) * ((E₂ z * E₄ z - E₆ z) / Δ z) := by
+    simp only [φ₀]; ring
+  rw [hfact, norm_mul, C_φ₀, show (-2 * π * z.im : ℝ) = -(2 * π) * z.im by ring]
+  calc ‖E₂ z * E₄ z - E₆ z‖ * ‖(E₂ z * E₄ z - E₆ z) / Δ z‖
+      ≤ B_g * rexp (-(2 * π) * z.im) * DivDiscBound (evenCoeff bg) 2 :=
+        mul_le_mul (norm_g_le z hz.le) (g_div_Δ_bound z hz) (norm_nonneg _)
+          (mul_nonneg B_g_pos.le (Real.exp_pos _).le)
+    _ = B_g * DivDiscBound (evenCoeff bg) 2 * rexp (-(2 * π) * z.im) := by ring
 
 /-- Corollary 7.6: φ₂' is bounded for Im(z) > 1/2. -/
 theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₂' z‖ ≤ C_φ₂' := by
-  -- Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient)
-  have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
-      5 c_E₄_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
-  simp only [φ₂', C_φ₂']
-  convert h using 2
-  norm_num
+  have hfact : φ₂' z = E₄ z * ((E₂ z * E₄ z - E₆ z) / Δ z) := by simp only [φ₂']; ring
+  rw [hfact, norm_mul, C_φ₂']
+  exact mul_le_mul (norm_E₄_le z hz.le) (g_div_Δ_bound z hz) (norm_nonneg _) B_E₄_pos.le
 
 /-- Corollary 7.7: φ₄' grows at most like exp(2πt) for Im(z) > 1/2. -/
 theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₄' z‖ ≤ C_φ₄' * Real.exp (2 * π * z.im) := by
-  have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_sq 0 (summable_E₄_sq z)
-      5 c_E₄_sq_poly (fun z ↦ E₄ z ^ 2) E₄_sq_fourier
-  simp only [φ₄', C_φ₄']
-  convert h using 2
-  ring_nf
+  have hfact : φ₄' z = E₄ z * (E₄ z / Δ z) := by simp only [φ₄']; ring
+  rw [hfact, norm_mul, C_φ₄']
+  calc ‖E₄ z‖ * ‖E₄ z / Δ z‖
+      ≤ B_E₄ * (DivDiscBound (evenCoeff bE₄) 0 * Real.exp (2 * π * z.im)) :=
+        mul_le_mul (norm_E₄_le z hz.le) (E₄_div_Δ_bound z hz) (norm_nonneg _) B_E₄_pos.le
+    _ = B_E₄ * DivDiscBound (evenCoeff bE₄) 0 * Real.exp (2 * π * z.im) := by ring
 
 /-! ## Big O Bounds
 
