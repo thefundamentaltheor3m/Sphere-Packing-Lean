@@ -246,6 +246,40 @@ lemma qexp_eq_fouterm (b : ℕ → ℂ) (x : ℍ) :
   rw [show (↑π * Complex.I * ((2 * j : ℕ) : ℤ) * ↑x : ℂ) = 2 * ↑π * Complex.I * ↑j * ↑x by
     push_cast; ring]
 
+/-! ## Linear factor q-coefficients and fouterm identities (Design B)
+
+`E₄` and `E₂E₄−E₆` are the *linear* factors of the φ-numerators. Their genuine `q`-coefficients
+are simple (no Cauchy convolution), so via the keystone they have clean `fouterm` expansions. -/
+
+/-- ℕ-indexed `q`-coefficients of `E₄`: `1` at `0`, `240·σ₃(m)` for `m ≥ 1`. -/
+def bE₄ : ℕ → ℂ := fun m => if m = 0 then 1 else 240 * (σ 3 m : ℂ)
+
+/-- ℕ-indexed `q`-coefficients of `E₂E₄ − E₆`: `720·m·σ₃(m)` (vanishes at `0`). -/
+def bg : ℕ → ℂ := fun m => 720 * (m : ℂ) * (σ 3 m : ℂ)
+
+/-- `E₄` as an ℕ-indexed `q`-series with coefficients `bE₄`. -/
+lemma E₄_qexp_nat (z : ℍ) :
+    E₄ z = ∑' m : ℕ, bE₄ m * cexp (2 * ↑π * Complex.I * ↑m * ↑z) := by
+  have hsummable : Summable (fun m : ℕ => bE₄ m * cexp (2 * ↑π * Complex.I * ↑m * ↑z)) := by
+    rw [← summable_pnat_iff_summable_nat]
+    refine ((sigma3_qexp_summable z).mul_left 240).congr (fun n => ?_)
+    have hn : (n : ℕ) ≠ 0 := n.ne_zero
+    simp only [bE₄, hn, if_false]
+    push_cast; ring
+  rw [hsummable.tsum_eq_zero_add, E₄_sigma_qexp]
+  congr 1
+  · simp [bE₄]
+  · rw [tsum_pnat_eq_tsum_succ (f := fun k : ℕ => (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)),
+      ← tsum_mul_left]
+    refine tsum_congr (fun m => ?_)
+    have hm : m + 1 ≠ 0 := Nat.succ_ne_zero m
+    simp only [bE₄, hm, if_false]
+    push_cast; ring
+
+/-- `E₄` in `fouterm` form (`n₀ = 0`). -/
+lemma E₄_eq_fouterm (z : ℍ) : E₄ z = ∑' n : ℕ, fouterm (evenCoeff bE₄) z (↑n + 0) :=
+  (E₄_qexp_nat z).trans (qexp_eq_fouterm bE₄ z)
+
 /-! ## Fourier Expansion Identities
 
 These connect the Eisenstein series products to fouterm sums.
