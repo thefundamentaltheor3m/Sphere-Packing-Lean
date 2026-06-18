@@ -78,7 +78,9 @@ theorem φ₀_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₀ z‖ ≤ C_φ₀ * Real.exp (-2 * π * z.im) := by
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₂E₄E₆ 4 (summable_E₂E₄E₆_sq z)
       5 c_E₂E₄E₆_poly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) E₂E₄E₆_sq_fourier
-  simp only [φ₀, C_φ₀]; convert h using 2; ring_nf
+  simp only [φ₀, C_φ₀]
+  convert h using 2
+  ring_nf
 
 /-- Corollary 7.6: φ₂' is bounded for Im(z) > 1/2. -/
 theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
@@ -86,14 +88,18 @@ theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
   -- Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient)
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
       5 c_E₄_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
-  simp only [φ₂', C_φ₂']; convert h using 2; norm_num
+  simp only [φ₂', C_φ₂']
+  convert h using 2
+  norm_num
 
 /-- Corollary 7.7: φ₄' grows at most like exp(2πt) for Im(z) > 1/2. -/
 theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₄' z‖ ≤ C_φ₄' * Real.exp (2 * π * z.im) := by
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_sq 0 (summable_E₄_sq z)
       5 c_E₄_sq_poly (fun z ↦ E₄ z ^ 2) E₄_sq_fourier
-  simp only [φ₄', C_φ₄']; convert h using 2; ring_nf
+  simp only [φ₄', C_φ₄']
+  convert h using 2
+  ring_nf
 
 /-! ## Big O Bounds
 
