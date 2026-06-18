@@ -411,6 +411,61 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
                 (le_of_lt (Real.exp_pos _))
     _ = (∑' m, ‖a m‖ * rexp (-π * (m : ℝ))) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
 
+/-- The constant `∑ ‖b m‖·exp(-πm)` converges for any polynomially-bounded `b`. -/
+lemma summable_norm_mul_exp {b : ℕ → ℂ} {k : ℕ}
+    (hb : b =O[Filter.atTop] (fun n : ℕ => (n ^ k : ℝ))) :
+    Summable fun m : ℕ => ‖b m‖ * rexp (-π * (m : ℝ)) := by
+  have hr : ‖(↑(rexp (-π)) : ℂ)‖ < 1 := by
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+    exact Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos])
+  have hu : b =O[Filter.atTop] (fun n : ℕ => (↑(n ^ k) : ℝ)) := by simpa [Nat.cast_pow] using hb
+  refine (summable_real_norm_mul_geometric_of_norm_lt_one hr hu).congr (fun m => ?_)
+  rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _),
+    ← Real.exp_nat_mul]
+  ring_nf
+
+/-- Shifting the argument preserves `O(n⁵)` growth of `bg`. -/
+lemma bg_shift_isBigO : (fun m : ℕ => bg (m + 1)) =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
+  refine (bg_isBigO.comp_tendsto (Filter.tendsto_add_atTop_nat 1)).trans ?_
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨2 ^ 5, Filter.eventually_atTop.mpr ⟨1, fun m hm => ?_⟩⟩
+  have hm1 : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
+  simp only [Function.comp_apply, Real.norm_eq_abs]
+  rw [abs_of_nonneg (by positivity), abs_of_nonneg (by positivity)]
+  calc ((m + 1 : ℕ) : ℝ) ^ 5 = ((m : ℝ) + 1) ^ 5 := by push_cast; ring
+    _ ≤ (2 * (m : ℝ)) ^ 5 := by gcongr; linarith
+    _ = 2 ^ 5 * (m : ℝ) ^ 5 := by ring
+
+/-- `E₂E₄ − E₆` with the constant (zero) term peeled, indexed from `q¹`. -/
+lemma g_qexp_succ (z : ℍ) :
+    E₂ z * E₄ z - E₆ z = ∑' m : ℕ, bg (m + 1) * cexp (2 * ↑π * Complex.I * ↑(m + 1) * ↑z) := by
+  rw [E₂_mul_E₄_sub_E₆,
+    tsum_pnat_eq_tsum_succ (f := fun k : ℕ => (k : ℂ) * (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)),
+    ← tsum_mul_left]
+  refine tsum_congr (fun m => ?_)
+  simp only [bg]
+  push_cast; ring
+
+/-- Explicit constant bounding `‖E₄‖` on `im ≥ 1/2`. -/
+def B_E₄ : ℝ := ∑' m : ℕ, ‖bE₄ m‖ * rexp (-π * (m : ℝ))
+
+/-- Explicit constant for the `exp(-2π·im)` decay of `‖E₂E₄ − E₆‖`. -/
+def B_g : ℝ := ∑' m : ℕ, ‖bg (m + 1)‖ * rexp (-π * (m : ℝ))
+
+/-- `E₄` is bounded by `B_E₄` on `im ≥ 1/2`. -/
+lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := by
+  rw [E₄_qexp_nat z]
+  have h := norm_qseries_shift_le (a := bE₄) 0 (summable_norm_mul_exp bE₄_isBigO) z hz
+  simpa [B_E₄] using h
+
+/-- `E₂E₄ − E₆` decays like `exp(-2π·im)` on `im ≥ 1/2`, with constant `B_g`. -/
+lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
+    ‖E₂ z * E₄ z - E₆ z‖ ≤ B_g * rexp (-(2 * π) * z.im) := by
+  rw [g_qexp_succ z]
+  have h := norm_qseries_shift_le (a := fun m => bg (m + 1)) 1
+    (summable_norm_mul_exp bg_shift_isBigO) z hz
+  simpa [B_g] using h
+
 /-! ## Linear quotient bounds
 
 Direct `DivDiscBoundOfPolyFourierCoeff` applications using the linear `fouterm` identities. -/
