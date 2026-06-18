@@ -312,6 +312,54 @@ lemma g_eq_fouterm (z : ℍ) :
   refine tsum_congr (fun n => ?_)
   congr 1
 
+/-! ## Polynomial growth of the linear-factor coefficients
+
+The genuine linear coefficients have the same `O(n⁵)` growth as the old placeholders — no Cauchy
+convolution — so the existing `DivDiscBound` machinery applies directly. -/
+
+/-- General: even-support preserves `O(nᵏ)` growth (the value at `2m` is `b m`). -/
+lemma evenCoeff_isBigO {b : ℕ → ℂ} {k : ℕ}
+    (hb : b =O[Filter.atTop] (fun n : ℕ => (n ^ k : ℝ))) :
+    evenCoeff b =O[Filter.atTop] (fun n : ℤ => (n ^ k : ℝ)) := by
+  have hdom : evenCoeff b =O[Filter.atTop] fun j : ℤ => b (j / 2).toNat := by
+    refine Asymptotics.isBigO_of_le _ (fun j => ?_)
+    simp only [evenCoeff]
+    split
+    · rfl
+    · simp
+  have htend : Filter.Tendsto (fun j : ℤ => (j / 2).toNat) Filter.atTop Filter.atTop := by
+    rw [Filter.tendsto_atTop_atTop]
+    exact fun N => ⟨2 * N, fun j hj => by omega⟩
+  refine (hdom.trans (hb.comp_tendsto htend)).trans ?_
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨1, Filter.eventually_atTop.mpr ⟨0, fun j hj => ?_⟩⟩
+  have hjr : (0:ℝ) ≤ (j:ℝ) := by exact_mod_cast hj
+  simp only [Function.comp_apply, one_mul, Real.norm_eq_abs]
+  rw [abs_of_nonneg (pow_nonneg (Nat.cast_nonneg (j / 2).toNat) k),
+      abs_of_nonneg (pow_nonneg hjr k)]
+  gcongr
+  exact_mod_cast (show ((j / 2).toNat : ℤ) ≤ j by omega)
+
+/-- `bg m = 720·m·σ₃(m)` has growth `O(n⁵)`. -/
+lemma bg_isBigO : bg =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨720, Filter.Eventually.of_forall fun m => ?_⟩
+  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
+  simp only [bg, norm_mul, Complex.norm_ofNat, Complex.norm_natCast, Real.norm_eq_abs,
+    abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
+  nlinarith [hσ, Nat.cast_nonneg (α := ℝ) m, pow_nonneg (Nat.cast_nonneg (α := ℝ) m) 4]
+
+/-- `bE₄ m` (`1` at `0`, else `240·σ₃(m)`) has growth `O(n⁵)`. -/
+lemma bE₄_isBigO : bE₄ =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨240, Filter.eventually_atTop.mpr ⟨1, fun m hm => ?_⟩⟩
+  have hm0 : m ≠ 0 := by omega
+  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
+  have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
+  simp only [bE₄, hm0, if_false, norm_mul, Complex.norm_ofNat, Complex.norm_natCast,
+    Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
+  nlinarith [hσ, hm1, pow_nonneg (by linarith : (0:ℝ) ≤ (m:ℝ)) 4]
+
 /-! ## Fourier Expansion Identities
 
 These connect the Eisenstein series products to fouterm sums.
