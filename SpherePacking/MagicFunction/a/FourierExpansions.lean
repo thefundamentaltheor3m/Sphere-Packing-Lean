@@ -187,7 +187,7 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     simp only [fouterm, u, r, const, ← Complex.exp_nat_mul, Int.cast_add, Int.cast_natCast]
     rw [show (↑π * Complex.I * (↑i + ↑n₀) * ↑z : ℂ) =
         ↑π * Complex.I * ↑n₀ * ↑z + ↑π * Complex.I * ↑i * ↑z by ring, Complex.exp_add]
-    ring
+    ring_nf
   -- u has polynomial growth: ‖u n‖ = ‖c(n+n₀)‖ * ‖const‖ is O(n^k)
   have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
     simp only [u, show ∀ i, c (↑i + n₀) * const = const * c (↑i + n₀) from fun _ => mul_comm _ _]

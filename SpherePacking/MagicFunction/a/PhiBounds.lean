@@ -86,11 +86,7 @@ theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
   -- Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient)
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
       5 c_E₄_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
-  simp only [φ₂', C_φ₂']
-  calc ‖(E₄ z * (E₂ z * E₄ z - E₆ z)) / Δ z‖
-      ≤ DivDiscBound c_E₄_E₂E₄E₆ 2 * Real.exp (-π * (2 - 2) * z.im) := h
-    _ = DivDiscBound c_E₄_E₂E₄E₆ 2 * Real.exp 0 := by ring_nf
-    _ = DivDiscBound c_E₄_E₂E₄E₆ 2 := by simp
+  simp only [φ₂', C_φ₂']; convert h using 2; norm_num
 
 /-- Corollary 7.7: φ₄' grows at most like exp(2πt) for Im(z) > 1/2. -/
 theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
