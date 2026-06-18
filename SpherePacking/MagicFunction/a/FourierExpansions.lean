@@ -360,6 +360,28 @@ lemma bE₄_isBigO : bE₄ =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
     Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
   nlinarith [hσ, hm1, pow_nonneg (by linarith : (0:ℝ) ≤ (m:ℝ)) 4]
 
+/-! ## Linear quotient bounds (Design B #3)
+
+Direct `DivDiscBoundOfPolyFourierCoeff` applications using the linear `fouterm` identities. -/
+
+/-- `‖(E₂E₄−E₆)/Δ‖ ≤ DivDiscBound (evenCoeff bg) 2` (constant: `n₀=2 ⇒ exp 0 = 1`). -/
+lemma g_div_Δ_bound (z : ℍ) (hz : 1 / 2 < z.im) :
+    ‖(E₂ z * E₄ z - E₆ z) / Δ z‖ ≤ DivDiscBound (evenCoeff bg) 2 := by
+  have h := DivDiscBoundOfPolyFourierCoeff z hz (evenCoeff bg) 2
+    (summable_fouterm_of_poly (evenCoeff_isBigO bg_isBigO) z 2) 5 (evenCoeff_isBigO bg_isBigO)
+    (fun x => E₂ x * E₄ x - E₆ x) g_eq_fouterm
+  convert h using 2
+  norm_num
+
+/-- `‖E₄/Δ‖ ≤ DivDiscBound (evenCoeff bE₄) 0 · exp(2π·im)` (from `n₀=0`). -/
+lemma E₄_div_Δ_bound (z : ℍ) (hz : 1 / 2 < z.im) :
+    ‖E₄ z / Δ z‖ ≤ DivDiscBound (evenCoeff bE₄) 0 * Real.exp (2 * π * z.im) := by
+  have h := DivDiscBoundOfPolyFourierCoeff z hz (evenCoeff bE₄) 0
+    (summable_fouterm_of_poly (evenCoeff_isBigO bE₄_isBigO) z 0) 5 (evenCoeff_isBigO bE₄_isBigO)
+    (fun x => E₄ x) E₄_eq_fouterm
+  convert h using 2
+  push_cast; ring
+
 /-! ## Fourier Expansion Identities
 
 These connect the Eisenstein series products to fouterm sums.
