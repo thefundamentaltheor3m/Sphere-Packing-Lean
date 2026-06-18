@@ -453,10 +453,8 @@ Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f�
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
     H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
-  have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
-    have := H₂_tendsto_atImInfty
-    have := H₄_tendsto_atImInfty
-    tendsto_cont
+  have h_prod : Tendsto (fun z ↦ H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
+    tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
   simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
@@ -469,32 +467,25 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
       H₄_tendsto_atImInfty using 2
     norm_num
-  have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
+  have h_scaled : Tendsto (fun z ↦ (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
       atImInfty (𝓝 (1/6 : ℂ)) := by
-    have := H₂_tendsto_atImInfty
-    have := H₄_tendsto_atImInfty
-    tendsto_cont
+    tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
   simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
 Since 2H₂ + H₄ → 1, H₂ + 2H₄ → 2, and f₂, f₄ → 0, we get theta_g → 0. -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
-  have := H₂_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  have := f₂_tendsto_atImInfty
-  have := f₄_tendsto_atImInfty
-  change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
+  change Tendsto (fun z ↦ (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
     atImInfty (𝓝 0)
-  tendsto_cont
+  tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty, f₂_tendsto_atImInfty,
+    f₄_tendsto_atImInfty]
 
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  have := f₂_tendsto_atImInfty
-  have := f₄_tendsto_atImInfty
-  change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
-  tendsto_cont
+  change Tendsto (fun z ↦ f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
+  tendsto_cont [f₂_tendsto_atImInfty, f₄_tendsto_atImInfty]
 
 private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
   cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
@@ -521,7 +512,7 @@ lemma theta_h_eq_zero : theta_h = 0 :=
 -/
 
 /-- H₂² + H₂H₄ + H₄² -/
-noncomputable def H_sum_sq : ℍ → ℂ := fun z => H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2
+noncomputable def H_sum_sq : ℍ → ℂ := fun z ↦ H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2
 
 /-- H_sum_sq is MDifferentiable -/
 lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
@@ -531,22 +522,20 @@ lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have := H₂_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
   unfold H_sum_sq
-  tendsto_cont
+  tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=
   ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
 
 /-- 3 * H_sum_sq ≠ 0 -/
-lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
-  fun h => H_sum_sq_ne_zero
-    (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
+lemma three_H_sum_sq_ne_zero : (fun z ↦ 3 * H_sum_sq z) ≠ 0 :=
+  fun h ↦ H_sum_sq_ne_zero
+    (funext fun z ↦ (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
-lemma three_H_sum_sq_MDifferentiable : MDiff (fun z => 3 * H_sum_sq z) :=
+lemma three_H_sum_sq_MDifferentiable : MDiff (fun z ↦ 3 * H_sum_sq z) :=
   mdifferentiable_const.mul H_sum_sq_MDifferentiable
 
 /-!
@@ -590,7 +579,7 @@ private noncomputable def H_sum_sq_SIF : SlashInvariantForm (Γ 1) 4 where
 private noncomputable def H_sum_sq_MF : ModularForm (Γ 1) 4 := {
   H_sum_sq_SIF with
   holo' := H_sum_sq_MDifferentiable
-  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA⟩ => by
+  bdd_at_cusps' := fun hc ↦ bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA⟩ ↦ by
     rw [← hA]; simpa [SL_slash] using H_sum_sq_SL2Z_invariant A' ▸ isBoundedAtImInfty_H_sum_sq
 }
 
@@ -663,7 +652,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
     simp only [Pi.add_apply, Pi.pow_apply, Pi.mul_apply, Pi.zero_apply, hf₄] at hz
     simpa [sq_eq_zero_iff] using hz
   -- From f₄_sq_mul_eq and theta_h = 0: f₄² * (3 * H_sum_sq) = 0
-  have h_f₄_sq_3H : f₄ ^ 2 * (fun z => 3 * H_sum_sq z) = 0 := by
+  have h_f₄_sq_3H : f₄ ^ 2 * (fun z ↦ 3 * H_sum_sq z) = 0 := by
     ext z
     simp only [Pi.mul_apply, Pi.pow_apply, Pi.zero_apply]
     have hh_z : theta_h z = 0 := congrFun hh z
@@ -695,14 +684,14 @@ lemma f₃_eq_zero : f₃ = 0 := by
 
 /-- Serre derivative of H₂: ∂₂H₂ = (1/6)(H₂² + 2H₂H₄) -/
 theorem serre_D_H₂ :
-    serre_D 2 H₂ = fun z => (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
+    serre_D 2 H₂ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
   funext z; have := congrFun f₂_eq_zero z
   simp only [f₂, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply, smul_eq_mul,
     Pi.zero_apply, sub_eq_zero] at this
   convert this using 1; ring
 
 /-- Serre derivative of H₃: ∂₂H₃ = (1/6)(H₂² - H₄²) -/
-theorem serre_D_H₃ : serre_D 2 H₃ = fun z => (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
+theorem serre_D_H₃ : serre_D 2 H₃ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
   funext z; have := congrFun f₃_eq_zero z
   simp only [f₃, Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul, Pi.zero_apply,
     sub_eq_zero] at this
@@ -710,7 +699,7 @@ theorem serre_D_H₃ : serre_D 2 H₃ = fun z => (1/6 : ℂ) * (H₂ z ^ 2 - H�
 
 /-- Serre derivative of H₄: ∂₂H₄ = -(1/6)(2H₂H₄ + H₄²) -/
 theorem serre_D_H₄ :
-    serre_D 2 H₄ = fun z => -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
+    serre_D 2 H₄ = fun z ↦ -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
   funext z; have := congrFun f₄_eq_zero z
   simp only [f₄, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, Pi.zero_apply,
     add_eq_zero_iff_eq_neg] at this

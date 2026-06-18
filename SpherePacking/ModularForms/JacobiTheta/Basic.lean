@@ -633,7 +633,7 @@ lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
     (Θ₂ ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₂
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₂_term n z := by
     simp_rw [Θ₂_term_as_jacobiTheta₂_term]
     apply Summable.mul_left
     rw [summable_jacobiTheta₂_term_iff]
@@ -670,7 +670,7 @@ lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
     (Θ₄ ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₄
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hsum : Summable fun n : ℤ => Θ₄_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₄_term n z := by
     simp_rw [Θ₄_term_as_jacobiTheta₂_term]
     rw [summable_jacobiTheta₂_term_iff]
     exact z.im_pos
@@ -725,7 +725,7 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   -- The sum of positive terms (at least one nonzero) is positive
   let z : ℍ := ⟨I * t, by simp [ht]⟩
   -- Summability of the complex series
-  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₂_term n z := by
     simp_rw [Θ₂_term_as_jacobiTheta₂_term]
     apply Summable.mul_left
     rw [summable_jacobiTheta₂_term_iff]
@@ -734,13 +734,13 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   unfold Θ₂
   rw [Complex.re_tsum hsum]
   -- Summability of the real series
-  have hsum_re : Summable fun n : ℤ => (Θ₂_term n z).re := by
+  have hsum_re : Summable fun n : ℤ ↦ (Θ₂_term n z).re := by
     obtain ⟨x, hx⟩ := hsum
     exact ⟨x.re, Complex.hasSum_re hx⟩
   -- Each term is positive
-  have hpos : ∀ n : ℤ, 0 < (Θ₂_term n z).re := fun n => Θ₂_term_imag_axis_re_pos n t ht
+  have hpos : ∀ n : ℤ, 0 < (Θ₂_term n z).re := fun n ↦ Θ₂_term_imag_axis_re_pos n t ht
   -- Use that sum of positive terms is positive
-  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 0 (hpos 0)
+  exact Summable.tsum_pos hsum_re (fun n ↦ le_of_lt (hpos n)) 0 (hpos 0)
 
 /--
 `H₂(it) > 0` for all `t > 0`.
