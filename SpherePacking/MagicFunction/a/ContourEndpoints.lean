@@ -298,9 +298,7 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
     tendsto_const_mul_pow_mul_exp_neg_atTop C_φ₀ (2 * π + π * r) 2 h1
   have t2 : Tendsto (fun s => (12 * C_φ₂' / π) * s * Real.exp (-π * r * s))
       atTop (𝓝 0) := by
-    have := (_root_.tendsto_mul_exp_neg_atTop (π * r) h2).const_mul (12 * C_φ₂' / π)
-    simp only [mul_zero] at this
-    convert this using 1; funext s; ring
+    simpa [neg_mul] using tendsto_const_mul_pow_mul_exp_neg_atTop (12 * C_φ₂' / π) (π * r) 1 h2
   have t3 : Tendsto (fun s => (36 * C_φ₄' / π^2) * Real.exp (-(π * r - 2 * π) * s))
       atTop (𝓝 0) := by
     simpa using tendsto_const_mul_pow_mul_exp_neg_atTop (36 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
