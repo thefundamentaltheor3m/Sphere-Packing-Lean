@@ -219,16 +219,66 @@ lemma im_neg_inv_pos (a t : ℝ) (ht : 0 < t) :
   ring_nf
   exact div_pos ht h_denom
 
+/-- Pointwise norm bound for the shifted-Möbius integrand: for `t ≥ 1` it is dominated by
+`(a²+1)·verticalBound r t`. This is the analytic core reused by the integrability goals. -/
+lemma norm_shiftedMobiusIntegrand_le (a b r t : ℝ) (ht : 1 ≤ t) :
+    ‖φ₀'' (-1 / ((a : ℂ) + Complex.I * t)) * ((a : ℂ) + Complex.I * t) ^ 2 *
+        Complex.exp (Complex.I * π * r * ((b : ℂ) + Complex.I * t))‖ ≤
+      (a ^ 2 + 1) * ContourEndpoints.verticalBound r t := by
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos ht
+  let z : ℂ := a + Complex.I * t
+  have hz_im : z.im = t := by simp [z]
+  have hz_im_pos : 0 < z.im := by rw [hz_im]; exact ht_pos
+  let w : UpperHalfPlane := ⟨z, hz_im_pos⟩
+  have hw_im : w.im = t := hz_im
+  have hw_im_ge : 1 ≤ w.im := by rw [hw_im]; exact ht
+  have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) :=
+    ContourEndpoints.φ₀''_neg_inv_eq_φ₀_S_smul a t ht_pos
+  have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le w hw_im_ge
+  have hz_sq_bound : ‖z ^ 2‖ ≤ (a ^ 2 + 1) * t ^ 2 := by
+    simp only [z, norm_pow, ← Complex.normSq_eq_norm_sq, mul_comm Complex.I,
+      Complex.normSq_add_mul_I]
+    nlinarith [sq_nonneg a, sq_nonneg (t - 1), sq_nonneg (a * (t - 1))]
+  have hexp_norm : ‖Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖ =
+      Real.exp (-π * r * t) := ContourEndpoints.norm_cexp_verticalPhase b r t
+  calc ‖φ₀'' (-1 / z) * z ^ 2 * Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖
+      = ‖φ₀'' (-1 / z)‖ * ‖z ^ 2‖ * Real.exp (-π * r * t) := by
+        rw [norm_mul, norm_mul, hexp_norm]
+    _ ≤ ‖φ₀'' (-1 / z)‖ * ((a ^ 2 + 1) * t ^ 2) * Real.exp (-π * r * t) := by
+        apply mul_le_mul_of_nonneg_right
+        · apply mul_le_mul_of_nonneg_left hz_sq_bound (norm_nonneg _)
+        · exact (Real.exp_pos _).le
+    _ = (a ^ 2 + 1) * (‖φ₀'' (-1 / z)‖ * t ^ 2 * Real.exp (-π * r * t)) := by ring
+    _ = (a ^ 2 + 1) * (‖φ₀ (ModularGroup.S • w)‖ * t ^ 2 * Real.exp (-π * r * t)) := by
+        rw [hφ₀_eq]
+    _ ≤ (a ^ 2 + 1) * ContourEndpoints.verticalBound r t := by
+        apply mul_le_mul_of_nonneg_left _ (by nlinarith)
+        have hw_norm_ge : t ≤ ‖(w : ℂ)‖ := by
+          simpa [hw_im, abs_of_pos ht_pos] using abs_im_le_norm (w : ℂ)
+        have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
+            C_φ₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * C_φ₂'
+            + (36 / (π ^ 2 * t ^ 2)) * C_φ₄' * Real.exp (2 * π * t) := by
+          rw [hw_im] at hS_bound
+          refine hS_bound.trans ?_
+          gcongr <;> [exact C_φ₂'_pos.le; exact C_φ₄'_pos.le]
+        calc ‖φ₀ (ModularGroup.S • w)‖ * t ^ 2 * Real.exp (-π * r * t)
+            ≤ (C_φ₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * C_φ₂'
+                + (36 / (π ^ 2 * t ^ 2)) * C_φ₄' * Real.exp (2 * π * t))
+              * t ^ 2 * Real.exp (-π * r * t) := by gcongr
+          _ = C_φ₀ * t ^ 2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
+              + (12 * C_φ₂' / π) * t * Real.exp (-π * r * t)
+              + (36 * C_φ₄' / π ^ 2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
+                field_simp
+          _ = ContourEndpoints.verticalBound r t := by
+                simp only [ContourEndpoints.verticalBound, ← Real.exp_add]; ring_nf
+
 /-- General integrability for φ₀''(-1/(a + I*t)) * (a + I*t)² * cexp(I*π*r*(b + I*t)) on Ioi 1.
 
     This unified lemma covers all six integrability goals from Proposition 4.4.6:
     - Goals 1, 2, 4, 6: Use a = 0 (Category A, reduces to verticalIntegrandX)
     - Goals 3, 5: Use a = ±1 (Category B, shifted Möbius)
 
-    The proof uses:
-    1. φ₀''_neg_inv_eq_φ₀_S_smul: φ₀''(-1/z) = φ₀(S•w) for suitable w ∈ ℍ
-    2. norm_φ₀_S_smul_le: |φ₀(S•z)| ≤ C₀ exp(-2π·im(S•z)) for im(z) ≥ 1
-    3. Exponential decay for r > 2 dominates polynomial growth -/
+    The proof reduces to `norm_shiftedMobiusIntegrand_le` for the dominating bound. -/
 lemma integrableOn_φ₀_shifted_Möbius (a b r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / ((a : ℂ) + Complex.I * t)) *
       ((a : ℂ) + Complex.I * t)^2 *
@@ -285,68 +335,11 @@ lemma integrableOn_φ₀_shifted_Möbius (a b r : ℝ) (hr : 2 < r) :
           (continuousOn_const.add
             (continuousOn_const.mul Complex.continuous_ofReal.continuousOn))
     exact h_cont.aestronglyMeasurable measurableSet_Ioi
-  · -- Norm bound: ‖integrand‖ ≤ (a² + 1) * verticalBound hb r t a.e.
+  · -- Norm bound: dominated by `(a²+1)·verticalBound` (see `norm_shiftedMobiusIntegrand_le`)
     rw [ae_restrict_iff' measurableSet_Ioi]
-    apply ae_of_all
-    intro t ht
+    refine ae_of_all _ fun t ht => ?_
     simp only [mem_Ioi] at ht
-    have ht_ge_1 : 1 ≤ t := le_of_lt ht
-    have ht_pos : 0 < t := lt_of_lt_of_le one_pos ht_ge_1
-    -- Use the S-transform bound
-    let z : ℂ := a + Complex.I * t
-    have hz_im : z.im = t := by simp [z]
-    have hz_im_pos : 0 < z.im := by rw [hz_im]; exact ht_pos
-    let w : UpperHalfPlane := ⟨z, hz_im_pos⟩
-    have hw_im : w.im = t := hz_im
-    have hw_im_ge : 1 ≤ w.im := by rw [hw_im]; exact ht_ge_1
-    -- Step 1: φ₀''(-1/z) = φ₀(S•w)
-    have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) :=
-      ContourEndpoints.φ₀''_neg_inv_eq_φ₀_S_smul a t ht_pos
-    -- Step 2: Get the S-transform bound
-    have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le w hw_im_ge
-    -- Step 3: Bound ‖z²‖ ≤ (a² + 1) * t² for t ≥ 1
-    have hz_sq_bound : ‖z^2‖ ≤ (a^2 + 1) * t^2 := by
-      simp only [z, norm_pow, ← Complex.normSq_eq_norm_sq, mul_comm Complex.I,
-        Complex.normSq_add_mul_I]
-      nlinarith [sq_nonneg a, sq_nonneg (t - 1), sq_nonneg (a * (t - 1))]
-    -- Step 4: Exponential norm
-    have hexp_norm : ‖Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖ =
-        Real.exp (-π * r * t) := ContourEndpoints.norm_cexp_verticalPhase b r t
-    -- Step 5: Combine bounds
-    calc ‖φ₀'' (-1 / z) * z^2 * Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖
-        = ‖φ₀'' (-1 / z)‖ * ‖z^2‖ * Real.exp (-π * r * t) := by
-          rw [norm_mul, norm_mul, hexp_norm]
-      _ ≤ ‖φ₀'' (-1 / z)‖ * ((a^2 + 1) * t^2) * Real.exp (-π * r * t) := by
-          apply mul_le_mul_of_nonneg_right
-          · apply mul_le_mul_of_nonneg_left hz_sq_bound (norm_nonneg _)
-          · exact (Real.exp_pos _).le
-      _ = (a^2 + 1) * (‖φ₀'' (-1 / z)‖ * t^2 * Real.exp (-π * r * t)) := by ring
-      _ = (a^2 + 1) * (‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)) := by
-          rw [hφ₀_eq]
-      _ ≤ (a^2 + 1) * (ContourEndpoints.verticalBound r t) := by
-          apply mul_le_mul_of_nonneg_left _ (by nlinarith)
-          -- Show ‖φ₀(S•w)‖ * t² * exp(-πrt) ≤ verticalBound using ‖w‖ ≥ t
-          -- Strategy: Use hS_bound with ‖w‖ ≥ t to replace 1/‖w‖ terms with 1/t
-          have hw_norm_ge : t ≤ ‖(w : ℂ)‖ := by
-            simpa [hw_im, abs_of_pos ht_pos] using abs_im_le_norm (w : ℂ)
-          -- Strengthen hS_bound using ‖w‖ ≥ t
-          have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
-              C_φ₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * C_φ₂'
-              + (36 / (π^2 * t^2)) * C_φ₄' * Real.exp (2 * π * t) := by
-            rw [hw_im] at hS_bound
-            refine hS_bound.trans ?_
-            gcongr <;> [exact C_φ₂'_pos.le; exact C_φ₄'_pos.le]
-          -- Multiply by t² * exp(-πrt) and simplify to verticalBound
-          calc ‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)
-              ≤ (C_φ₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * C_φ₂'
-                  + (36 / (π^2 * t^2)) * C_φ₄' * Real.exp (2 * π * t))
-                * t^2 * Real.exp (-π * r * t) := by gcongr
-            _ = C_φ₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
-                + (12 * C_φ₂' / π) * t * Real.exp (-π * r * t)
-                + (36 * C_φ₄' / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
-                  field_simp
-            _ = ContourEndpoints.verticalBound r t := by
-                  simp only [ContourEndpoints.verticalBound, ← Real.exp_add]; ring_nf
+    exact norm_shiftedMobiusIntegrand_le a b r t ht.le
 
 /-! ## Relationship to verticalIntegrandX
 
