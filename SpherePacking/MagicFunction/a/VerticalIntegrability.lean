@@ -46,6 +46,19 @@ namespace MagicFunction.VerticalIntegrability
 lemma φ₀''_eq (z : ℂ) (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
   simp only [φ₀'', hz, dite_true]
 
+/-- `-1/(I·z) = I/z`. Marked `@[simp]` so the φ₀'' arguments of the goal integrands
+normalize to the `verticalIntegrandX` form automatically. -/
+@[simp]
+lemma neg_one_div_I_mul (z : ℂ) : (-1 : ℂ) / (Complex.I * z) = Complex.I / z := by
+  rw [div_mul_eq_div_div, Complex.div_I]
+  ring
+
+/-- `-1/(z·I) = I/z` (other multiplication order). -/
+@[simp]
+lemma neg_one_div_mul_I (z : ℂ) : (-1 : ℂ) / (z * Complex.I) = Complex.I / z := by
+  rw [mul_comm, div_mul_eq_div_div, Complex.div_I]
+  ring
+
 /-! ## Thesis Bounds (Lemmas 4.4.3, 4.4.4)
 
 These bounds are the key to proving convergence of the integral in Definition 4.4.2.
@@ -357,8 +370,7 @@ lemma goal1_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
       Complex.exp (Complex.I * π * r * (Complex.I * t)) =
     ContourEndpoints.verticalIntegrandX 0 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [(show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
-  simp only [Complex.ofReal_zero, zero_add]
+  simp only [neg_one_div_I_mul, Complex.ofReal_zero, zero_add]
 
 /-- Goal 2 integrand equals -I * verticalIntegrandX (-1) r t.
 
@@ -369,9 +381,7 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I,
-    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
-  simp only [mul_pow, Complex.ofReal_neg, Complex.ofReal_one, neg_mul]
+  simp only [neg_one_div_mul_I, mul_pow, Complex.ofReal_neg, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
   ring_nf
 
@@ -383,9 +393,7 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I,
-    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
-  simp only [mul_pow, Complex.ofReal_one, neg_mul]
+  simp only [neg_one_div_mul_I, mul_pow, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
   ring_nf
 
@@ -398,8 +406,7 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I,
-    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
+  simp only [neg_one_div_mul_I]
   ring_nf
   simp [pow_two]
 
@@ -412,8 +419,7 @@ lemma goal7_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX 1 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I,
-    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
+  simp only [neg_one_div_mul_I]
   ring_nf
   simp [pow_two]
 
@@ -436,8 +442,7 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
     have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ioi 0) := by
       have h1 := continuousOn_φ₀''_cusp_path
       refine h1.congr fun t ht =>
-        congrArg φ₀'' (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by
-          simp [div_mul_eq_div_div, Complex.div_I]).symm
+        congrArg φ₀'' (neg_one_div_I_mul (t : ℂ)).symm
     refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
     · exact (continuousOn_const.mul Complex.continuous_ofReal.continuousOn).pow _
     · refine Complex.continuous_exp.comp_continuousOn ?_
