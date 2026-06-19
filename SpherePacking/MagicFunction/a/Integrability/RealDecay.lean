@@ -70,6 +70,12 @@ lemma tendsto_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => exp (-a * t)) atTop (nhds 0) := by
   simpa [rpow_zero] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 a ha
 
+/-- `C · tⁿ · exp(-a·t) → 0` as `t → ∞` for `a > 0` (covers the `n = 0, 1, 2` decay terms). -/
+lemma tendsto_const_mul_pow_mul_exp_neg_atTop (C a : ℝ) (n : ℕ) (ha : 0 < a) :
+    Tendsto (fun t => C * t ^ n * exp (-a * t)) atTop (nhds 0) := by
+  simpa [mul_assoc, Real.rpow_natCast] using
+    (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (n : ℝ) a ha).const_mul C
+
 /-- t * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t * exp (-a * t)) (Ici 1) volume := by
