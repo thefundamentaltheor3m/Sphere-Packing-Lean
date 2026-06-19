@@ -9,6 +9,7 @@ public import SpherePacking.ModularForms.PhiTransform
 public import SpherePacking.MagicFunction.a.Integrability.RealDecay
 public import SpherePacking.MagicFunction.a.Integrability.CuspPath
 public import SpherePacking.MagicFunction.a.PhiBounds
+public import SpherePacking.Tactic.TendstoCont
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
@@ -298,7 +299,7 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
     have := (_root_.tendsto_sq_mul_exp_neg_atTop (2 * π + π * r) h1).const_mul C_φ₀
     simp only [mul_zero] at this
     convert this using 1; funext s; ring
-  have t2 : Tendsto (fun s => (12 * C_φ₂' / π) * s * Real.exp (-(π * r) * s))
+  have t2 : Tendsto (fun s => (12 * C_φ₂' / π) * s * Real.exp (-π * r * s))
       atTop (𝓝 0) := by
     have := (_root_.tendsto_mul_exp_neg_atTop (π * r) h2).const_mul (12 * C_φ₂' / π)
     simp only [mul_zero] at this
@@ -307,12 +308,8 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
       atTop (𝓝 0) := by
     simpa [mul_zero] using
       (_root_.tendsto_exp_neg_atTop (π * r - 2 * π) h3).const_mul (36 * C_φ₄' / π^2)
-  have hsum := (t1.add t2).add t3
-  simp only [add_zero] at hsum
-  convert hsum using 1
-  funext s
-  simp only [verticalBound]
-  ring_nf
+  unfold verticalBound
+  tendsto_cont
 
 /-- The vertical bound is nonnegative for t ≥ 1. -/
 lemma verticalBound_nonneg (r t : ℝ) (ht : 1 ≤ t) : 0 ≤ verticalBound r t := by
