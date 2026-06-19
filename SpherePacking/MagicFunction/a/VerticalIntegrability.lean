@@ -34,13 +34,17 @@ integrability results needed for Proposition 4.4.6 (the double zeros proof).
 @[expose] public section
 
 open MeasureTheory Set Filter Real Complex TopologicalSpace
-open MagicFunction.a
+open MagicFunction.a MagicFunction.a.ComplexIntegrands
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators
 
 noncomputable section
 
 namespace MagicFunction.VerticalIntegrability
+
+/-- Unfold φ₀'' to φ₀ when the imaginary part is positive. -/
+lemma φ₀''_eq (z : ℂ) (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
+  simp only [φ₀'', hz, dite_true]
 
 /-! ## Thesis Bounds (Lemmas 4.4.3, 4.4.4)
 
@@ -85,7 +89,7 @@ lemma sq_le_exp_4pi_t (t : ℝ) (ht : 2 ≤ t) : t^2 ≤ Real.exp (4 * π * t) :
   · -- Case t > 4π: exp(4πt) is astronomically larger than t²
     -- Use Taylor: exp(x) ≥ x²/2 for x > 0, proven via exp(x) ≥ 1 + x + x²/2
     -- This gives exp(4πt) ≥ (4πt)²/2 = 8π²t² > t²
-    push_neg at ht4π
+    rw [not_le] at ht4π
     have h4πt_pos : 0 ≤ 4 * π * t := by positivity
     have hquad := Real.quadratic_le_exp_of_nonneg h4πt_pos
     -- exp(4πt) ≥ 1 + 4πt + (4πt)²/2 ≥ (4πt)²/2 = 8π²t²
@@ -251,7 +255,8 @@ lemma integrableOn_φ₀_shifted_Möbius (a b r : ℝ) (hr : 2 < r) :
     let path : {s : ℝ // 0 < s} → UpperHalfPlane := fun s =>
       ⟨-1 / (a + Complex.I * s), h_im_pos s s.2⟩
     have h_path_cont : Continuous path := by
-      refine Continuous.subtype_mk ?_ _
+      simp only [path]
+      refine Continuous.upperHalfPlaneMk ?_ _
       apply Continuous.div continuous_const
       · exact continuous_const.add
           (continuous_const.mul (Complex.continuous_ofReal.comp continuous_subtype_val))
@@ -354,24 +359,25 @@ lemma I_mul_t_sq (t : ℝ) : (Complex.I * t : ℂ)^2 = -(t^2) := by
   simp [mul_pow, Complex.I_sq, ← Complex.ofReal_neg, ← Complex.ofReal_pow]
 
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
-lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+lemma goal1_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
     Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
       Complex.exp (Complex.I * π * r * (Complex.I * t)) =
     ContourEndpoints.verticalIntegrandX 0 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [neg_one_div_I_mul t ht]
+  rw [(show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
   simp only [Complex.ofReal_zero, zero_add]
 
 /-- Goal 2 integrand equals -I * verticalIntegrandX (-1) r t.
 
 Proof sketch: Both sides reduce to φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
 after using -1/(I*t) = I/t and (I*t)² = -t². -/
-lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  rw [mul_comm (t : ℂ) Complex.I,
+    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
   simp only [mul_pow, Complex.ofReal_neg, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
   ring_nf
@@ -379,12 +385,13 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
 
 Proof sketch: Same as Goal 2 but with +1 in the exponential phase. -/
-lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  rw [mul_comm (t : ℂ) Complex.I,
+    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
   simp only [mul_pow, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
   ring_nf
@@ -393,12 +400,13 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
 
 Proof sketch: Goal 6 = I * Goal 2 = I * (-I) * verticalIntegrandX (-1) r t
 = verticalIntegrandX (-1) r t since I * (-I) = 1. -/
-lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+lemma goal6_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  rw [mul_comm (t : ℂ) Complex.I,
+    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
   ring_nf
   simp [pow_two]
 
@@ -406,12 +414,13 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
 
 Proof sketch: Goal 7 = I * Goal 4 = I * (-I) * verticalIntegrandX 1 r t
 = verticalIntegrandX 1 r t since I * (-I) = 1. -/
-lemma goal7_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+lemma goal7_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX 1 r t := by
   unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  rw [mul_comm (t : ℂ) Complex.I,
+    (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by simp [div_mul_eq_div_div, Complex.div_I])]
   ring_nf
   simp [pow_two]
 
@@ -434,7 +443,8 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
     have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ioi 0) := by
       have h1 := continuousOn_φ₀''_cusp_path
       refine h1.congr fun t ht =>
-        congrArg φ₀'' (neg_one_div_I_mul t (ne_of_gt (mem_Ioi.mp ht))).symm
+        congrArg φ₀'' (show (-1 : ℂ) / (I * (t : ℂ)) = I / (t : ℂ) by
+          simp [div_mul_eq_div_div, Complex.div_I]).symm
     refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
     · exact (continuousOn_const.mul Complex.continuous_ofReal.continuousOn).pow _
     · refine Complex.continuous_exp.comp_continuousOn ?_
