@@ -11,8 +11,6 @@ public import SpherePacking.MagicFunction.a.Integrability.CuspPath
 public import SpherePacking.MagicFunction.a.PhiBounds
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 
-@[expose] public section
-
 /-!
 # Contour Endpoint Bounds for Vertical Rays
 
@@ -37,6 +35,8 @@ as needed for the Cauchy-Goursat applications in the double zeroes proof (#229).
 We use `Im(z) ≥ 1` (stronger than the blueprint's `Im(z) > 1/2`) as a convenient
 safe strip that covers all rectangle contour points.
 -/
+
+@[expose] public section
 
 open MeasureTheory Set Filter Real UpperHalfPlane TopologicalSpace
 open MagicFunction.a
