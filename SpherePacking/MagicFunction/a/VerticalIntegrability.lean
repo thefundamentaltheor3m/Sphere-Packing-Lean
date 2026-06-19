@@ -365,7 +365,7 @@ lemma I_mul_t_sq (t : ℝ) : (Complex.I * t : ℂ)^2 = -(t^2) := by
   simp [mul_pow, Complex.I_sq, ← Complex.ofReal_neg, ← Complex.ofReal_pow]
 
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
-lemma goal1_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
+lemma goal1_eq_verticalIntegrandX (r t : ℝ) :
     Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
       Complex.exp (Complex.I * π * r * (Complex.I * t)) =
     ContourEndpoints.verticalIntegrandX 0 r t := by
@@ -376,7 +376,7 @@ lemma goal1_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
 
 Proof sketch: Both sides reduce to φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
 after using -1/(I*t) = I/t and (I*t)² = -t². -/
-lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
+lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
@@ -388,7 +388,7 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
 
 Proof sketch: Same as Goal 2 but with +1 in the exponential phase. -/
-lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
+lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
@@ -401,7 +401,7 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
 
 Proof sketch: Goal 6 = I * Goal 2 = I * (-I) * verticalIntegrandX (-1) r t
 = verticalIntegrandX (-1) r t since I * (-I) = 1. -/
-lemma goal6_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
+lemma goal6_eq_verticalIntegrandX (r t : ℝ) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
@@ -414,7 +414,7 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
 
 Proof sketch: Goal 7 = I * Goal 4 = I * (-I) * verticalIntegrandX 1 r t
 = verticalIntegrandX 1 r t since I * (-I) = 1. -/
-lemma goal7_eq_verticalIntegrandX (r t : ℝ) (_ht : t ≠ 0) :
+lemma goal7_eq_verticalIntegrandX (r t : ℝ) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX 1 r t := by
@@ -573,8 +573,8 @@ lemma integrableOn_goal1 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                           Complex.exp (Complex.I * π * r * (Complex.I * t)))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX 0 r hr fun t ht =>
-    goal1_eq_verticalIntegrandX r t (ne_of_gt ht)
+  integrableOn_Ici_of_eqOn_verticalIntegrandX 0 r hr fun t _ =>
+    goal1_eq_verticalIntegrandX r t
 
 /-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞).
     By goal2_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX (-1) r t. -/
@@ -582,8 +582,8 @@ lemma integrableOn_goal2 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume :=
-  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (-1) r hr fun {t} ht =>
-    goal2_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))
+  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (-1) r hr fun {t} _ =>
+    goal2_eq_neg_I_verticalIntegrandX r t
 
 /-- Goal 3: Integrability of φ₀''(-1/(t*I + 1)) * (t*I+1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at +1. Derived from integrableOn_shiftedMöbius. -/
@@ -599,8 +599,8 @@ lemma integrableOn_goal4 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume :=
-  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX 1 r hr fun {t} ht =>
-    goal4_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))
+  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX 1 r hr fun {t} _ =>
+    goal4_eq_neg_I_verticalIntegrandX r t
 
 /-- Goal 5: Integrability of φ₀''(-1/(t*I - 1)) * (t*I-1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at -1. Derived from integrableOn_shiftedMöbius. -/
@@ -617,8 +617,8 @@ lemma integrableOn_goal6 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX (-1) r hr fun t ht =>
-    goal6_eq_verticalIntegrandX r t (ne_of_gt ht)
+  integrableOn_Ici_of_eqOn_verticalIntegrandX (-1) r hr fun t _ =>
+    goal6_eq_verticalIntegrandX r t
 
 /-- Goal 7: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I))) on [0,∞).
     By goal7_eq_verticalIntegrandX, this is verticalIntegrandX 1 r t. -/
@@ -626,8 +626,8 @@ lemma integrableOn_goal7 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I))))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX 1 r hr fun t ht =>
-    goal7_eq_verticalIntegrandX r t (ne_of_gt ht)
+  integrableOn_Ici_of_eqOn_verticalIntegrandX 1 r hr fun t _ =>
+    goal7_eq_verticalIntegrandX r t
 
 
 end MagicFunction.VerticalIntegrability
