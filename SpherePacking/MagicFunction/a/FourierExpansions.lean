@@ -51,17 +51,8 @@ namespace MagicFunction.a.FourierExpansions
 /-- The norm of exp(πiz) for z : ℍ is less than 1.
     Proof: |exp(πiz)| = exp(Re(πiz)) = exp(-π·z.im) < 1 since z.im > 0. -/
 lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ < 1 := by
-  rw [Complex.norm_exp]
-  -- (π * I * z).re = -π * z.im because I.re = 0, I.im = 1
-  have him : (π * Complex.I * (z : ℂ)).re = -π * z.im := by
-    have h1 : (π * Complex.I : ℂ).re = 0 := by simp [Complex.I_re]
-    have h2 : (π * Complex.I : ℂ).im = π := by simp [Complex.I_im]
-    simp only [mul_re, h1, zero_mul, h2]
-    simp only [UpperHalfPlane.coe_im]
-    ring
-  rw [him]
-  have hneg : -π * z.im < 0 := by nlinarith [Real.pi_pos, z.im_pos]
-  exact Real.exp_lt_one_iff.mpr hneg
+  simpa [Complex.norm_exp, Real.exp_lt_one_iff, Complex.mul_re, UpperHalfPlane.coe_im] using
+    (show -π * z.im < 0 by nlinarith [Real.pi_pos, z.im_pos])
 
 /-! ## Summability Lemmas
 
@@ -114,8 +105,8 @@ def evenCoeff (b : ℕ → ℂ) : ℤ → ℂ := fun k => if Even k then b (k / 
 lemma qexp_eq_fouterm (b : ℕ → ℂ) (x : ℍ) :
     (∑' m : ℕ, b m * cexp (2 * ↑π * Complex.I * ↑m * ↑x))
       = ∑' n : ℕ, fouterm (evenCoeff b) x (↑n + 0) := by
-  have hg : Function.Injective (fun j : ℕ => 2 * j) := fun a b h => by
-    have : 2 * a = 2 * b := h; omega
+  have hg : Function.Injective (fun j : ℕ => 2 * j) :=
+    fun a b h => Nat.mul_left_cancel (n := 2) (m := a) (k := b) (by norm_num) h
   have hsupp : Function.support (fun n : ℕ => fouterm (evenCoeff b) x (↑n + 0)) ⊆
       Set.range (fun j : ℕ => 2 * j) := by
     intro n hn
@@ -188,8 +179,8 @@ lemma g_qexp_nat (z : ℍ) :
 lemma g_eq_fouterm (z : ℍ) :
     E₂ z * E₄ z - E₆ z = ∑' n : ℕ, fouterm (evenCoeff bg) z (↑n + 2) := by
   rw [g_qexp_nat z, qexp_eq_fouterm bg z]
-  have hinj : Function.Injective (fun n : ℕ => n + 2) := fun a b h => by
-    have : a + 2 = b + 2 := h; omega
+  have hinj : Function.Injective (fun n : ℕ => n + 2) :=
+    fun a b h => Nat.add_right_cancel (n := a) (k := b) (m := 2) h
   have hsupp : Function.support (fun n : ℕ => fouterm (evenCoeff bg) z (↑n + 0)) ⊆
       Set.range (fun n : ℕ => n + 2) := by
     intro n hn
@@ -216,9 +207,8 @@ lemma evenCoeff_isBigO {b : ℕ → ℂ} {k : ℕ}
     split
     · rfl
     · simp
-  have htend : Filter.Tendsto (fun j : ℤ => (j / 2).toNat) Filter.atTop Filter.atTop := by
-    rw [Filter.tendsto_atTop_atTop]
-    exact fun N => ⟨2 * N, fun j hj => by omega⟩
+  have htend : Filter.Tendsto (fun j : ℤ => (j / 2).toNat) Filter.atTop Filter.atTop :=
+    Filter.tendsto_atTop_atTop.mpr (fun N => ⟨2 * N, fun j hj => by omega⟩)
   refine (hdom.trans (hb.comp_tendsto htend)).trans ?_
   rw [Asymptotics.isBigO_iff]
   refine ⟨1, Filter.eventually_atTop.mpr ⟨0, fun j hj => ?_⟩⟩
@@ -362,16 +352,14 @@ lemma B_g_pos : 0 < B_g := by
 /-- `E₄` is bounded by `B_E₄` on `im ≥ 1/2`. -/
 lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := by
   rw [E₄_qexp_nat z]
-  have h := norm_qseries_shift_le (a := bE₄) 0 (summable_norm_mul_exp bE₄_isBigO) z hz
-  simpa [B_E₄] using h
+  simpa [B_E₄] using norm_qseries_shift_le (a := bE₄) 0 (summable_norm_mul_exp bE₄_isBigO) z hz
 
 /-- `E₂E₄ − E₆` decays like `exp(-2π·im)` on `im ≥ 1/2`, with constant `B_g`. -/
 lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
     ‖E₂ z * E₄ z - E₆ z‖ ≤ B_g * rexp (-(2 * π) * z.im) := by
   rw [g_qexp_succ z]
-  have h := norm_qseries_shift_le (a := fun m => bg (m + 1)) 1
-    (summable_norm_mul_exp bg_shift_isBigO) z hz
-  simpa [B_g] using h
+  simpa [B_g] using
+    norm_qseries_shift_le (a := fun m => bg (m + 1)) 1 (summable_norm_mul_exp bg_shift_isBigO) z hz
 
 /-! ## Linear quotient bounds
 
