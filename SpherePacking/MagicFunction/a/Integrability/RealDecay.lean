@@ -70,6 +70,29 @@ lemma tendsto_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => exp (-a * t)) atTop (nhds 0) := by
   simpa [rpow_zero] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 a ha
 
+/-- C * exp(-a*t) → 0 as t → ∞ for a > 0. -/
+lemma tendsto_const_mul_exp_neg_atTop (C a : ℝ) (ha : 0 < a) :
+    Tendsto (fun t => C * exp (-a * t)) atTop (nhds 0) := by
+  simpa using (tendsto_exp_neg_atTop a ha).const_mul C
+
+/-- C * t * exp(-a*t) → 0 as t → ∞ for a > 0. -/
+lemma tendsto_const_mul_mul_exp_neg_atTop (C a : ℝ) (ha : 0 < a) :
+    Tendsto (fun t => C * t * exp (-a * t)) atTop (nhds 0) := by
+  have h := (tendsto_mul_exp_neg_atTop a ha).const_mul C
+  simp only [mul_zero] at h
+  convert h using 1
+  funext t
+  ring
+
+/-- C * t² * exp(-a*t) → 0 as t → ∞ for a > 0. -/
+lemma tendsto_const_mul_sq_mul_exp_neg_atTop (C a : ℝ) (ha : 0 < a) :
+    Tendsto (fun t => C * t^2 * exp (-a * t)) atTop (nhds 0) := by
+  have h := (tendsto_sq_mul_exp_neg_atTop a ha).const_mul C
+  simp only [mul_zero] at h
+  convert h using 1
+  funext t
+  ring
+
 /-- t * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t * exp (-a * t)) (Ici 1) volume := by
