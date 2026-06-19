@@ -9,8 +9,6 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ModularForms.FG
 
-@[expose] public section
-
 /-!
 # Fourier expansions and norm bounds for the linear factors of φ₀, φ₂', φ₄'
 
@@ -29,13 +27,16 @@ The standard q-expansion uses `q = exp(2πiz)`, while `fouterm` uses `exp(πinz)
 - `qexp_eq_fouterm`: rewrite a `q`-series into `fouterm` form (even-support reindex)
 - `E₄_eq_fouterm`, `g_eq_fouterm`: the linear factors `E₄` (`n₀=0`) and `E₂E₄ − E₆` (`n₀=2`)
 - `g_div_Δ_bound`, `E₄_div_Δ_bound`: bounds on `‖factor / Δ‖` via `DivDiscBoundOfPolyFourierCoeff`
-- `norm_E₄_le`, `norm_g_le`: explicit norm bounds on the factors (`‖E₄‖ ≤ B_E₄`, decay for `E₂E₄−E₆`)
+- `norm_E₄_le`, `norm_g_le`: explicit factor-norm bounds (`‖E₄‖ ≤ B_E₄`; decay for
+  `E₂E₄ − E₆`)
 
 ## References
 
 - Blueprint Corollaries 7.5-7.7
 - `SpherePacking.ModularForms.FG`: q-expansion identities (`E₂_mul_E₄_sub_E₆`, `E₄_sigma_qexp`)
 -/
+
+@[expose] public section
 
 open Real Complex UpperHalfPlane
 open scoped ArithmeticFunction.sigma
@@ -91,7 +92,7 @@ lemma isBigO_shift {c : ℤ → ℂ} {k : ℕ} (n₀ : ℤ)
     simp only [← Int.cast_natCast (R := ℂ), ← Int.cast_add, Complex.norm_intCast]
     norm_cast
     cases abs_cases (n + n₀ : ℤ) <;> omega
-  calc ‖(n : ℂ) + n₀‖ ^ k ≤ (2 * n) ^ k := by exact pow_le_pow_left₀ (norm_nonneg _) h_bound k
+  calc ‖(n : ℂ) + n₀‖ ^ k ≤ (2 * n) ^ k := pow_le_pow_left₀ (norm_nonneg _) h_bound k
     _ = 2 ^ k * n ^ k := by ring
     _ = 2 ^ k * (n ^ k : ℕ) := by norm_cast
 
@@ -161,7 +162,7 @@ lemma qexp_eq_fouterm (b : ℕ → ℂ) (x : ℍ) :
       by_contra hodd
       exact hcn (by simp only [evenCoeff, if_neg hodd])
     obtain ⟨j, hj⟩ := (Int.even_coe_nat n).mp heven
-    exact ⟨j, by show 2 * j = n; omega⟩
+    exact ⟨j, (two_mul j).trans hj.symm⟩
   rw [← hg.tsum_eq hsupp]
   refine tsum_congr (fun j => ?_)
   have h2j : Even ((2 * j : ℕ) : ℤ) := by exact_mod_cast even_two_mul j
@@ -193,8 +194,8 @@ lemma E₄_qexp_nat (z : ℍ) :
   rw [hsummable.tsum_eq_zero_add, E₄_sigma_qexp]
   congr 1
   · simp [bE₄]
-  · rw [tsum_pnat_eq_tsum_succ (f := fun k : ℕ => (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)),
-      ← tsum_mul_left]
+  · rw [tsum_pnat_eq_tsum_succ
+      (f := fun k : ℕ => (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)), ← tsum_mul_left]
     refine tsum_congr (fun m => ?_)
     have hm : m + 1 ≠ 0 := Nat.succ_ne_zero m
     simp only [bE₄, hm, if_false]
@@ -230,8 +231,8 @@ lemma g_eq_fouterm (z : ℍ) :
     intro n hn
     rw [Function.mem_support] at hn
     have h0 : n ≠ 0 := by rintro rfl; simp [fouterm, evenCoeff, bg] at hn
-    have h1 : n ≠ 1 := by rintro rfl; simp [fouterm, evenCoeff, bg] at hn
-    exact ⟨n - 2, by show n - 2 + 2 = n; omega⟩
+    have h1 : n ≠ 1 := by rintro rfl; simp [fouterm, evenCoeff] at hn
+    exact ⟨n - 2, Nat.sub_add_cancel (by omega)⟩
   rw [← hinj.tsum_eq hsupp]
   refine tsum_congr (fun n => ?_)
   congr 1
@@ -268,7 +269,8 @@ lemma evenCoeff_isBigO {b : ℕ → ℂ} {k : ℕ}
 lemma bg_isBigO : bg =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
   rw [Asymptotics.isBigO_iff]
   refine ⟨720, Filter.Eventually.of_forall fun m => ?_⟩
-  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
+  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by
+    exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
   simp only [bg, norm_mul, Complex.norm_ofNat, Complex.norm_natCast, Real.norm_eq_abs,
     abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
   nlinarith [hσ, Nat.cast_nonneg (α := ℝ) m, pow_nonneg (Nat.cast_nonneg (α := ℝ) m) 4]
@@ -278,7 +280,8 @@ lemma bE₄_isBigO : bE₄ =O[Filter.atTop] (fun n : ℕ => (n ^ 5 : ℝ)) := by
   rw [Asymptotics.isBigO_iff]
   refine ⟨240, Filter.eventually_atTop.mpr ⟨1, fun m hm => ?_⟩⟩
   have hm0 : m ≠ 0 := by omega
-  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
+  have hσ : ((σ 3 m : ℕ) : ℝ) ≤ (m : ℝ) ^ 4 := by
+    exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 m
   have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
   simp only [bE₄, hm0, if_false, norm_mul, Complex.norm_ofNat, Complex.norm_natCast,
     Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ (m:ℝ) ^ 5)]
@@ -295,7 +298,8 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
     (ha : Summable fun m : ℕ => ‖a m‖ * rexp (-π * (m : ℝ))) (z : ℍ) (hz : 1 / 2 ≤ z.im) :
     ‖∑' m : ℕ, a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ))‖
       ≤ (∑' m, ‖a m‖ * rexp (-π * (m : ℝ))) * rexp (-(2 * π) * n₀ * z.im) := by
-  have hexp_re (m : ℕ) : (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+  have hexp_re (m : ℕ) :
+      (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
     simp only [Nat.cast_add, Complex.mul_re, Complex.re_ofNat, Complex.ofReal_re, Complex.im_ofNat,
       Complex.ofReal_im, mul_zero, sub_zero, Complex.I_re, Complex.mul_im, zero_mul, add_zero,
       Complex.I_im, mul_one, sub_self, Complex.add_re, Complex.natCast_re, Complex.add_im,
@@ -306,7 +310,8 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
     have hprod : (0:ℝ) ≤ ((m : ℝ) + n₀) * (2 * z.im - 1) :=
       mul_nonneg (by positivity) (by linarith [hz])
     nlinarith [Real.pi_pos, hprod]
-  have hsum_norms : Summable fun m => ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
+  have hsum_norms : Summable fun m =>
+      ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
     refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_) (ha.mul_right (rexp (-π * n₀)))
     simp only [norm_mul, Complex.norm_exp, hexp_re]
     calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
@@ -316,7 +321,8 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
   have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im) := by
     convert hsum_norms using 2 with m; rw [norm_mul, Complex.norm_exp, hexp_re]
   calc ‖∑' m, a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖
-      ≤ ∑' m, ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ := norm_tsum_le_tsum_norm hsum_norms
+      ≤ ∑' m, ‖a m * cexp (2 * ↑π * Complex.I * ((m + n₀ : ℕ) : ℂ) * z)‖ :=
+        norm_tsum_le_tsum_norm hsum_norms
     _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im) := by
         simp only [norm_mul, Complex.norm_exp, hexp_re]
     _ ≤ ∑' m, ‖a m‖ * rexp (-π * (m : ℝ)) * rexp (-(2 * π) * n₀ * z.im) := by
@@ -326,10 +332,12 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ)
           rw [← Real.exp_add]; ring_nf
         have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-π * (m : ℝ)) := by
           rw [Real.exp_le_exp]
-          have hprod : (0:ℝ) ≤ (m : ℝ) * (2 * z.im - 1) := mul_nonneg (by positivity) (by linarith [hz])
+          have hprod : (0:ℝ) ≤ (m : ℝ) * (2 * z.im - 1) :=
+            mul_nonneg (by positivity) (by linarith [hz])
           nlinarith [Real.pi_pos, hprod]
         calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
-            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by rw [hsplit]; ring
+            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+              rw [hsplit]; ring
           _ ≤ ‖a m‖ * rexp (-π * (m : ℝ)) * rexp (-(2 * π) * n₀ * z.im) :=
               mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _))
                 (le_of_lt (Real.exp_pos _))
@@ -364,7 +372,8 @@ lemma bg_shift_isBigO : (fun m : ℕ => bg (m + 1)) =O[Filter.atTop] (fun n : �
 lemma g_qexp_succ (z : ℍ) :
     E₂ z * E₄ z - E₆ z = ∑' m : ℕ, bg (m + 1) * cexp (2 * ↑π * Complex.I * ↑(m + 1) * ↑z) := by
   rw [E₂_mul_E₄_sub_E₆,
-    tsum_pnat_eq_tsum_succ (f := fun k : ℕ => (k : ℂ) * (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)),
+    tsum_pnat_eq_tsum_succ
+      (f := fun k : ℕ => (k : ℂ) * (σ 3 k : ℂ) * cexp (2 * ↑π * Complex.I * ↑k * ↑z)),
     ← tsum_mul_left]
   refine tsum_congr (fun m => ?_)
   simp only [bg]
@@ -384,8 +393,7 @@ lemma B_E₄_pos : 0 < B_E₄ := by
 lemma B_g_pos : 0 < B_g := by
   refine lt_of_lt_of_le ?_
     ((summable_norm_mul_exp bg_shift_isBigO).le_tsum 0 (fun j _ => by positivity))
-  have hσ : (σ 3 1 : ℂ) = 1 := by simp [ArithmeticFunction.sigma_apply, Nat.divisors_one]
-  simp [bg, hσ]
+  simp [bg]
 
 /-- `E₄` is bounded by `B_E₄` on `im ≥ 1/2`. -/
 lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := by
@@ -421,7 +429,7 @@ lemma E₄_div_Δ_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     (summable_fouterm_of_poly (evenCoeff_isBigO bE₄_isBigO) z 0) 5 (evenCoeff_isBigO bE₄_isBigO)
     (fun x => E₄ x) E₄_eq_fouterm
   convert h using 2
-  push_cast; ring
+  ring_nf
 
 end MagicFunction.a.FourierExpansions
 

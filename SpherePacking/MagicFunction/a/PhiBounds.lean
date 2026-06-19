@@ -7,8 +7,6 @@ module
 
 public import SpherePacking.MagicFunction.a.FourierExpansions
 
-@[expose] public section
-
 /-!
 # Bounds on φ₀, φ₂', φ₄'
 
@@ -35,6 +33,8 @@ Corollary 7.5-7.7 bounds on the phi functions, stated both with explicit constan
 - **Corollary 7.6**: φ₂' bounded (constant)
 - **Corollary 7.7**: φ₄' bound with exp(2πt) growth
 -/
+
+@[expose] public section
 
 open Real UpperHalfPlane Asymptotics
 open scoped ArithmeticFunction.sigma
@@ -63,8 +63,7 @@ def C_φ₄' : ℝ := B_E₄ * DivDiscBound (evenCoeff bE₄) 0
 
 lemma divDiscBound_bg_pos : 0 < DivDiscBound (evenCoeff bg) 2 := by
   refine DivDiscBound_pos (evenCoeff bg) 2 ?_ 5 (evenCoeff_isBigO bg_isBigO)
-  have hσ : (σ 3 1 : ℂ) = 1 := by simp [ArithmeticFunction.sigma_apply, Nat.divisors_one]
-  simp [evenCoeff, bg, hσ]
+  simp [evenCoeff, bg]
 
 lemma divDiscBound_bE₄_pos : 0 < DivDiscBound (evenCoeff bE₄) 0 := by
   refine DivDiscBound_pos (evenCoeff bE₄) 0 ?_ 5 (evenCoeff_isBigO bE₄_isBigO)
