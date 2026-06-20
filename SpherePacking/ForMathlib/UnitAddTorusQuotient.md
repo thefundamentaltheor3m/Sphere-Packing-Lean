@@ -15,10 +15,14 @@ harmonic-analysis user needs:
 - `continuous_coeFun` (tagged `@[continuity, fun_prop]`);
 - `isOpenQuotientMap_coeFun` — `coeFun` is an open quotient map (via `IsOpenQuotientMap.piMap` and
   `QuotientAddGroup.isOpenQuotientMap_mk`);
-- `mFourier_apply_coeFun_ofLp` — the value of the torus Fourier monomial `mFourier k` on the image
-  of a Euclidean point;
+- `mFourier_apply_coeFun (k) (x : ι → ℝ)` — the value of the torus Fourier monomial `mFourier k` on
+  the image of a point (during cleanup this was restated on `ι → ℝ`, dropping the spurious
+  `EuclideanSpace`/`WithLp.ofLp` wrapper of the former `mFourier_apply_coeFun_ofLp`);
 - `integral_eq_integral_preimage_coeFun` — the pull-back of Haar integration on `(ℝ/ℤ)^ι` to a
-  fundamental cube `∏ i, (t, t+1] ⊆ ℝ^ι`.
+  fundamental cube `∏ i, (t, t+1] ⊆ ℝ^ι`. Mathlib has this more generally as
+  `UnitAddTorus.integral_preimage`, but that lemma is stated under a file-`local` measure-space
+  instance `⟨AddCircle.haarAddCircle⟩` that differs (by a defeq-trivial `1 •`) from the global
+  `AddCircle.measureSpace 1` the project uses, so it is not a drop-in and we keep our version.
 
 It is a companion to `Mathlib/Analysis/Fourier/AddCircleMulti.lean`, which already defines
 `UnitAddTorus`, `mFourier`, and `mFourierCoeff`. The first two declarations are stated for an

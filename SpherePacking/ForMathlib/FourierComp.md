@@ -9,15 +9,17 @@ the build environment.*
 change of variables**:
 
 ```
-theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w : V) :
-    𝓕 (fun x ↦ f (A x)) w = |det A|⁻¹ • 𝓕 f ((A.symm).adjoint w)
+theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → E) (w : V) :
+    𝓕 (fun x ↦ f (A x)) w = |det A|⁻¹ • 𝓕 f (LinearMap.adjoint A.symm w)
 ```
 
-over any `[NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]`. The scalar
-`|det A|⁻¹` is the Jacobian factor (from `Measure.map_linearMap_addHaar_eq_smul_addHaar`) and the
-adjoint of `A⁻¹` appears because the Fourier pairing `⟪A x, w⟫ = ⟪x, A^* w⟫` moves `A` across the
-inner product. PSG uses it as the spectral-side change of variables that reduces lattice Poisson
-summation to the standard lattice.
+over any `[NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]`, for any codomain
+`E` with `[NormedSpace ℂ E]`. (During cleanup the codomain was generalised from `ℂ` to `E`, matching
+mathlib's vector-valued `𝓕`, and the inverse-transform companion `fourierInv_comp_linearEquiv` was
+added — see avenues 1–2 below.) The scalar `|det A|⁻¹` is the Jacobian factor (from
+`Measure.map_linearMap_addHaar_eq_smul_addHaar`) and the adjoint of `A⁻¹` appears because the Fourier
+pairing `⟪A x, w⟫ = ⟪x, A^* w⟫` moves `A` across the inner product. PSG uses the forward lemma as the
+spectral-side change of variables that reduces lattice Poisson summation to the standard lattice.
 
 ## Overlap with existing Mathlib
 

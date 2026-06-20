@@ -13,16 +13,16 @@ public import Mathlib.Analysis.InnerProductSpace.Adjoint
 For a linear automorphism `A` of a finite-dimensional real inner product space `V`, the Fourier
 transform of the precomposition `f ∘ A` is the Fourier transform of `f`, rescaled by `|det A|⁻¹`
 and reparametrised by the adjoint of `A⁻¹`:
-`𝓕 (f ∘ A) w = |det A|⁻¹ • 𝓕 f ((A⁻¹)^* w)`.
-
-This is the multidimensional change-of-variables formula for the Fourier transform; the scalar
-`|det A|⁻¹` is the Jacobian factor and the adjoint appears because the Fourier pairing
-`⟪A x, w⟫ = ⟪x, A^* w⟫` moves `A` across the inner product. It is fully general over any
+`𝓕 (f ∘ A) w = |det A|⁻¹ • 𝓕 f ((A⁻¹)^* w)`,
+together with its inverse-transform companion. The scalar `|det A|⁻¹` is the Jacobian factor and the
+adjoint appears because the Fourier pairing `⟪A x, w⟫ = ⟪x, A^* w⟫` moves `A` across the inner
+product. This is the full-Jacobian generalisation of mathlib's isometry lemma
+`Real.fourier_comp_linearIsometry`, valid for any codomain `E` with `[NormedSpace ℂ E]` over any
 `[NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]`.
 
-Upstream target: `Mathlib/Analysis/Fourier/FourierTransform.lean` (or a dedicated
-`Mathlib/Analysis/Fourier/FourierTransformChangeOfVariables.lean`). Imports here are left as
-`public import Mathlib`; they are narrowed at upstreaming time.
+Upstream target: `Mathlib/Analysis/Fourier/FourierTransform.lean`, beside
+`Real.fourier_comp_linearIsometry`. Imports here are left as `public import Mathlib`; they are
+narrowed at upstreaming time.
 -/
 
 open scoped FourierTransform Real
@@ -30,20 +30,19 @@ open MeasureTheory
 
 namespace SpherePacking.ForMathlib.Fourier
 
-variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-  [MeasurableSpace V] [BorelSpace V]
+variable {V E : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+  [MeasurableSpace V] [BorelSpace V] [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 /-- Change-of-variables for the Fourier transform under an invertible linear map. For
-`A : V ≃ₗ[ℝ] V`, `𝓕 (f ∘ A) w = |det A|⁻¹ • 𝓕 f ((A.symm).adjoint w)`. -/
-public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w : V) :
+`A : V ≃ₗ[ℝ] V`, `𝓕 (f ∘ A) w = |det A|⁻¹ • 𝓕 f ((A.symm)^* w)`. -/
+public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → E) (w : V) :
     𝓕 (fun x ↦ f (A x)) w =
-      (abs (LinearMap.det (A : V →ₗ[ℝ] V)))⁻¹ •
-        𝓕 f (((A.symm : V ≃ₗ[ℝ] V).toLinearMap).adjoint w) := by
+      |LinearMap.det (A : V →ₗ[ℝ] V)|⁻¹ • 𝓕 f (LinearMap.adjoint (A.symm : V →ₗ[ℝ] V) w) := by
   have hmap : Measure.map (⇑A) (volume : Measure V) =
       ENNReal.ofReal |(LinearMap.det (A : V →ₗ[ℝ] V))⁻¹| • (volume : Measure V) :=
     Measure.map_linearMap_addHaar_eq_smul_addHaar volume (LinearEquiv.isUnit_det' A).ne_zero
   have hinner (y : V) :
-      inner ℝ (A.symm y) w = inner ℝ y (((A.symm : V ≃ₗ[ℝ] V).toLinearMap).adjoint w) :=
+      inner ℝ (A.symm y) w = inner ℝ y (LinearMap.adjoint (A.symm : V →ₗ[ℝ] V) w) :=
     (LinearMap.adjoint_inner_right _ y w).symm
   calc 𝓕 (fun x ↦ f (A x)) w
       = ∫ y, Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y
@@ -56,5 +55,13 @@ public theorem fourier_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → ℂ) (w
           ∫ y, Real.fourierChar (-(inner ℝ (A.symm y) w)) • f y := by
         rw [hmap, integral_smul_measure, ENNReal.toReal_ofReal (abs_nonneg _), abs_inv]
     _ = _ := by simp only [Real.fourier_eq, hinner]
+
+/-- Change-of-variables for the inverse Fourier transform under an invertible linear map; the
+inverse-transform companion of `fourier_comp_linearEquiv`. -/
+public theorem fourierInv_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → E) (w : V) :
+    𝓕⁻ (fun x ↦ f (A x)) w =
+      |LinearMap.det (A : V →ₗ[ℝ] V)|⁻¹ • 𝓕⁻ f (LinearMap.adjoint (A.symm : V →ₗ[ℝ] V) w) := by
+  rw [Real.fourierInv_eq_fourier_neg, fourier_comp_linearEquiv, map_neg,
+    ← Real.fourierInv_eq_fourier_neg]
 
 end SpherePacking.ForMathlib.Fourier

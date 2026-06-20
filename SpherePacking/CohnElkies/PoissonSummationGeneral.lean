@@ -217,10 +217,11 @@ public instance instVAddInvariantMeasure_standardLattice :
   measure_preimage_vadd _ _ _ := by
     simp [Submodule.vadd_def, vadd_eq_add, MeasureTheory.measure_preimage_add]
 
-/-- Translate the Schwartz function `f` by a lattice vector, as a continuous map. This `Λ`-indexed
-specialization of `SchwartzMap.translateCM` is what assembles `periodization` as a `tsum` of
+/-- Translate the Schwartz function `f` by a lattice vector, as the continuous map
+`x ↦ f (x + ℓ)`. This `Λ`-indexed family is what assembles `periodization` as a `tsum` of
 continuous maps. -/
-@[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) := f.translateCM (ℓ : E)
+@[expose] public noncomputable def translate (ℓ : Λ) : C(E, ℂ) :=
+  (f : C(E, ℂ)).comp (ContinuousMap.addRight (ℓ : E))
 
 @[simp] public lemma translate_apply (ℓ : Λ) (x : E) :
     translate f ℓ x = f (x + (ℓ : E)) := rfl
@@ -228,7 +229,7 @@ continuous maps. -/
 /-- Schwartz decay: sup norms of translates restricted to a compact `K` are summable. -/
 public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : Λ => ‖(translate f ℓ).restrict K‖) :=
-  f.summable_norm_translateCM_restrict (SchwartzMap.standardLattice d) K
+  f.summable_norm_restrict_comp_addRight (SchwartzMap.standardLattice d) K
 
 /-- The quotient map `coeFunE`, bundled as a continuous map. This packaging is what the
 `IsQuotientMap.lift`/`FactorsThrough` API consumes when descending periodic maps to the torus. -/
@@ -293,7 +294,7 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
   have hinner : inner ℝ x (intVec n) = ∑ i, (n i : ℝ) * (x.ofLp i : ℝ) := by
     simp [intVec, PiLp.inner_apply]
   rw [hinner]
-  simp [coeFunE, UnitAddTorus.mFourier_apply_coeFun_ofLp, Real.fourierChar_apply,
+  simp [coeFunE, UnitAddTorus.mFourier_apply_coeFun, Real.fourierChar_apply,
     Finset.sum_neg_distrib, mul_assoc, mul_comm]
 
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :

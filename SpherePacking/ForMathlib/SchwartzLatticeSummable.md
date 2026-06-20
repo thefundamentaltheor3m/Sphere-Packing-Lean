@@ -9,14 +9,19 @@ the build environment.*
 in norm, over the translates of any discrete `ℤ`-submodule of a finite-dimensional real normed
 space — the basic input to (general) Poisson summation and to the Cohn–Elkies bound:
 
-- `SchwartzMap.translateCM (f) (ℓ) : C(E, F)` — the translate `x ↦ f (x + ℓ)` as a continuous map
-  (with `@[simp] translateCM_apply`);
-- `ZLattice.finite_norm_le (L) (r) : {ℓ : L | ‖(ℓ:E)‖ ≤ r}.Finite` — a discrete `ℤ`-submodule meets
-  any closed ball finitely;
-- `SchwartzMap.summable_norm_comp_add (f) (L) (a) : Summable (fun ℓ : L ↦ ‖f (a + ℓ)‖)` and its
-  unnormed companion `summable_comp_add`;
-- `SchwartzMap.summable_norm_translateCM_restrict (f) (L) (K) : Summable (fun ℓ : L ↦
-  ‖(f.translateCM ℓ).restrict K‖)` — the locally-uniform (sup-norm over a compact) version.
+- `ZLattice.finite_norm_le (L) (r) : {ℓ : L | ‖(ℓ:E)‖ ≤ r}.Finite` — a discrete `ℤ`-submodule of a
+  `[ProperSpace E]` meets any closed ball finitely (generalised from `[FiniteDimensional ℝ E]` to its
+  actual hypothesis during cleanup);
+- `SchwartzMap.summable_norm_comp_add (f) (L) (a) : Summable (fun ℓ : L ↦ ‖f (a + ℓ)‖)` — the
+  user-facing pointwise form;
+- `SchwartzMap.summable_norm_restrict_comp_addRight (f) (L) (K) : Summable (fun ℓ : L ↦
+  ‖((f : C(E,F)).comp (.addRight ℓ)).restrict K‖)` — the locally-uniform (sup-norm over a compact)
+  engine.
+
+The translate `x ↦ f (x + ℓ)` is written inline as `(f : C(E, F)).comp (ContinuousMap.addRight ℓ)`
+(following mathlib's `Real.fourierCoeff_tsum_comp_add`); the former named `translateCM` /
+`translateCM_apply` helpers and the unnormed `summable_comp_add` (a one-call `Summable.of_norm`
+wrapper, with no call sites) were dropped during cleanup.
 
 The engine is Schwartz decay (`SchwartzMap.decay`) dominated by the convergent series
 `ZLattice.summable_norm_sub_inv_pow` / `summable_norm_pow_inv`. Crucially it needs **neither** an

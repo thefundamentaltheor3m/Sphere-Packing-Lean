@@ -19,12 +19,14 @@ For a nondegenerate bilinear form `B` on a finite-dimensional real vector space 
 This closes part of the TODO in `Mathlib/LinearAlgebra/BilinearForm/DualLattice.lean`
 ("Properly develop the material in the context of lattices"). For the Euclidean inner product the
 nondegeneracy hypothesis is automatic, so we additionally register the discreteness as an instance
-(`innerₗ_nondegenerate` + the `instance` below); this is what the Cohn–Elkies linear-programming
+(`instDiscreteTopology_dualSubmodule_innerₗ` below); this is what the Cohn–Elkies linear-programming
 bound consumes when summing over the dual lattice.
 
 Upstream target: `Mathlib/LinearAlgebra/BilinearForm/DualLattice.lean` (plus the inner-product
-instance near `Mathlib/Analysis/InnerProductSpace/`). Imports here are left as `public import
-Mathlib`; they are narrowed at upstreaming time.
+instance near `Mathlib/Analysis/InnerProductSpace/`). At upstreaming time one would also add the
+companion `IsZLattice ℝ (B.dualSubmodule Λ)` (not needed here — the LP bound consumes only
+discreteness). Imports here are left as `public import Mathlib`; they are narrowed at upstreaming
+time.
 -/
 
 open scoped RealInnerProductSpace
@@ -53,14 +55,13 @@ section InnerProduct
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
-/-- The Euclidean inner product, viewed as a bilinear form, is nondegenerate. -/
-public theorem innerₗ_nondegenerate : (innerₗ E : LinearMap.BilinForm ℝ E).Nondegenerate := by
-  constructor <;> intro x hx <;>
-    exact inner_self_eq_zero.1 (by simpa [innerₗ_apply_apply] using hx x : ⟪x, x⟫ = (0 : ℝ))
-
-/-- The dual of a full `ℤ`-lattice for the Euclidean inner product is discrete. -/
-public instance [FiniteDimensional ℝ E] (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+/-- The dual of a full `ℤ`-lattice for the Euclidean inner product is discrete. The nondegeneracy
+of `innerₗ E` is automatic (`⟪x, x⟫ = 0 ↔ x = 0`), so this is an instance. -/
+public instance instDiscreteTopology_dualSubmodule_innerₗ [FiniteDimensional ℝ E]
+    (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
     DiscreteTopology (LinearMap.BilinForm.dualSubmodule (innerₗ E) Λ) :=
-  LinearMap.BilinForm.discreteTopology_dualSubmodule innerₗ_nondegenerate Λ
+  LinearMap.BilinForm.discreteTopology_dualSubmodule
+    (by constructor <;> intro x hx <;>
+      exact inner_self_eq_zero.1 (by simpa [innerₗ_apply_apply] using hx x : ⟪x, x⟫ = (0 : ℝ))) Λ
 
 end InnerProduct
