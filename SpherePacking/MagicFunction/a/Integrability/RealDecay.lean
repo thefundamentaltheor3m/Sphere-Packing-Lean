@@ -27,7 +27,7 @@ These lemmas are designed to be reusable for contour integral analysis where:
 ## Main results
 
 ### Asymptotic behavior
-- `tendsto_const_mul_pow_mul_exp_neg_atTop`: C · tⁿ · exp(-a·t) → 0 as t → ∞ for a > 0
+- `tendsto_const_mul_rpow_mul_exp_neg_atTop`: C · t^n · exp(-a·t) → 0 as t → ∞ for a > 0
 
 ### Integrability
 - `integrableOn_exp_mul_Ici`: exp(c*t) is integrable on [1,∞) for c < 0
@@ -50,25 +50,24 @@ section Integrability
 
 /-- exp(c*t) is integrable on [1,∞) for c < 0. -/
 lemma integrableOn_exp_mul_Ici (c : ℝ) (hc : c < 0) :
-    IntegrableOn (fun t => exp (c * t)) (Ici 1) volume :=
+    IntegrableOn (fun t ↦ exp (c * t)) (Ici 1) volume :=
   (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi hc 1)
 
-/-- `C · tⁿ · exp(-a·t) → 0` as `t → ∞` for `a > 0` (covers the `n = 0, 1, 2` decay terms). -/
-lemma tendsto_const_mul_pow_mul_exp_neg_atTop (C a : ℝ) (n : ℕ) (ha : 0 < a) :
-    Tendsto (fun t => C * t ^ n * exp (-a * t)) atTop (nhds 0) := by
-  simpa [mul_assoc, Real.rpow_natCast] using
-    (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (n : ℝ) a ha).const_mul C
+/-- `C · t^n · exp(-a·t) → 0` as `t → ∞` for `a > 0` and any real power `n`. -/
+lemma tendsto_const_mul_rpow_mul_exp_neg_atTop (C a n : ℝ) (ha : 0 < a) :
+    Tendsto (fun t ↦ C * t ^ n * exp (-a * t)) atTop (nhds 0) := by
+  simpa [mul_assoc] using (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero n a ha).const_mul C
 
 /-- t * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
-    IntegrableOn (fun t => t * exp (-a * t)) (Ici 1) volume := by
+    IntegrableOn (fun t ↦ t * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
   simpa [rpow_one] using (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1)
     (by norm_num) le_rfl ha).mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 /-- t² * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
-    IntegrableOn (fun t => t^2 * exp (-a * t)) (Ici 1) volume := by
+    IntegrableOn (fun t ↦ t^2 * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
   simpa [rpow_one, rpow_two] using (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 2) (p := 1)
     (by norm_num) le_rfl ha).mono_set (Set.Ioi_subset_Ioi zero_le_one)
