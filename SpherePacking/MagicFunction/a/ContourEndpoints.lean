@@ -294,14 +294,15 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
   have h2 : 0 < π * r := by nlinarith [Real.pi_pos]
   have h3 : 0 < π * r - 2 * π := by nlinarith [Real.pi_pos]
   -- Each term tends to 0
-  have t1 : Tendsto (fun s => C_φ₀ * s^2 * Real.exp (-(2 * π + π * r) * s)) atTop (𝓝 0) :=
-    tendsto_const_mul_pow_mul_exp_neg_atTop C_φ₀ (2 * π + π * r) 2 h1
+  have t1 : Tendsto (fun s => C_φ₀ * s^2 * Real.exp (-(2 * π + π * r) * s)) atTop (𝓝 0) := by
+    simpa [Real.rpow_two] using
+      tendsto_const_mul_rpow_mul_exp_neg_atTop C_φ₀ (2 * π + π * r) 2 h1
   have t2 : Tendsto (fun s => (12 * C_φ₂' / π) * s * Real.exp (-π * r * s))
       atTop (𝓝 0) := by
-    simpa [neg_mul] using tendsto_const_mul_pow_mul_exp_neg_atTop (12 * C_φ₂' / π) (π * r) 1 h2
+    simpa [neg_mul] using tendsto_const_mul_rpow_mul_exp_neg_atTop (12 * C_φ₂' / π) (π * r) 1 h2
   have t3 : Tendsto (fun s => (36 * C_φ₄' / π^2) * Real.exp (-(π * r - 2 * π) * s))
       atTop (𝓝 0) := by
-    simpa using tendsto_const_mul_pow_mul_exp_neg_atTop (36 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
+    simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (36 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
   unfold verticalBound
   tendsto_cont
 
@@ -414,11 +415,12 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
       atTop (𝓝 0) := by
     -- Expand: (1+T)² = 1 + 2T + T²
     have t1a : Tendsto (fun T => C_φ₀ * Real.exp (-(π * r + 2 * π) * T)) atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_pow_mul_exp_neg_atTop C_φ₀ (π * r + 2 * π) 0 h1
+      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop C_φ₀ (π * r + 2 * π) 0 h1
     have t1b : Tendsto (fun T => 2 * C_φ₀ * T * Real.exp (-(π * r + 2 * π) * T)) atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_pow_mul_exp_neg_atTop (2 * C_φ₀) (π * r + 2 * π) 1 h1
-    have t1c : Tendsto (fun T => C_φ₀ * T^2 * Real.exp (-(π * r + 2 * π) * T)) atTop (𝓝 0) :=
-      tendsto_const_mul_pow_mul_exp_neg_atTop C_φ₀ (π * r + 2 * π) 2 h1
+      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (2 * C_φ₀) (π * r + 2 * π) 1 h1
+    have t1c : Tendsto (fun T => C_φ₀ * T^2 * Real.exp (-(π * r + 2 * π) * T)) atTop (𝓝 0) := by
+      simpa [Real.rpow_two] using
+        tendsto_const_mul_rpow_mul_exp_neg_atTop C_φ₀ (π * r + 2 * π) 2 h1
     have hsum := (t1a.add t1b).add t1c
     simp only [add_zero] at hsum
     convert hsum using 1
@@ -429,7 +431,7 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
       atTop (𝓝 0) := by
     have hbound : Tendsto (fun T => (48 * C_φ₂' / π) * T * Real.exp (-(π * r) * T))
         atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_pow_mul_exp_neg_atTop (48 * C_φ₂' / π) (π * r) 1 h2
+      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (48 * C_φ₂' / π) (π * r) 1 h2
     apply squeeze_zero'
     · filter_upwards [eventually_ge_atTop 1] with T hT
       have hT_pos : 0 < T := by linarith
@@ -459,7 +461,7 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
       Real.exp (2 * π * T) * Real.exp (-π * r * T)) atTop (𝓝 0) := by
     have hbound : Tendsto (fun T => (144 * C_φ₄' / π^2) * Real.exp (-(π * r - 2 * π) * T))
         atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_pow_mul_exp_neg_atTop (144 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
+      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (144 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
     apply squeeze_zero'
     · filter_upwards [eventually_ge_atTop 1] with T hT
       have hT_pos : 0 < T := by linarith
