@@ -393,18 +393,8 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
       C_φ₀ * Real.exp (-2 * π) := by
     intro t ⟨ht_pos, ht_le⟩
     rw [ContourEndpoints.norm_verticalIntegrandX x r t ht_pos]
-    have hI_div_im : (Complex.I / t).im = 1/t := by simp [Complex.div_ofReal_im]
-    have hI_div_pos : 0 < (Complex.I / t).im := by rw [hI_div_im]; positivity
-    have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ C_φ₀ * Real.exp (-2 * π / t) := by
-      rw [φ₀''_eq _ hI_div_pos]
-      have hz : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by simp [UpperHalfPlane.im]
-      have hz_gt : 1/2 < 1/t := by
-        have h1 : 1 ≤ 1/t := one_le_one_div ht_pos ht_le
-        linarith
-      calc ‖φ₀ ⟨Complex.I / ↑t, hI_div_pos⟩‖
-        ≤ C_φ₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
-            φ₀_bound _ (by rw [hz]; exact hz_gt)
-        _ = C_φ₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
+    have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ C_φ₀ * Real.exp (-2 * π / t) :=
+      norm_φ₀_I_div_t_small C_φ₀ C_φ₀_pos φ₀_bound t ⟨ht_pos, by linarith⟩
     have hr_pos : 0 < r := lt_trans (by norm_num : (0:ℝ) < 2) hr
     have ht2_le : t^2 ≤ 1 := by nlinarith [sq_nonneg t, sq_nonneg (t - 1)]
     have hexp_neg : Real.exp (-π * r * t) ≤ 1 := by
