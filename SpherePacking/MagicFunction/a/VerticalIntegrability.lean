@@ -192,19 +192,10 @@ Uses φ₀''_neg_inv_eq_φ₀_S_smul + norm_φ₀_S_smul_le infrastructure from 
     This ensures the Möbius-transformed argument stays in the upper half-plane. -/
 lemma im_neg_inv_pos (a t : ℝ) (ht : 0 < t) :
     0 < ((-1 : ℂ) / (a + Complex.I * t)).im := by
-  -- Im(-1/(a + I*t)) = t/(a² + t²) > 0 since t > 0 and a² + t² > 0
-  have h_denom : a^2 + t^2 > 0 := by positivity
-  have h_normSq : Complex.normSq (↑a + Complex.I * ↑t) = a^2 + t^2 := by
-    rw [mul_comm]; exact Complex.normSq_add_mul_I a t
-  -- Use div_im: (z / w).im = z.im * w.re / normSq w - z.re * w.im / normSq w
-  rw [Complex.div_im, h_normSq]
-  -- For z = -1: z.re = -1, z.im = 0; For w = a + I*t: w.re = a, w.im = t
-  simp only [Complex.neg_im, Complex.one_im, neg_zero, Complex.neg_re, Complex.one_re,
-    Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, Complex.ofReal_im,
-    mul_zero, Complex.I_im, sub_zero, Complex.add_im, Complex.mul_im, zero_mul, add_zero]
-  -- Goal: 0 * a / (a² + t²) - (-1) * t / (a² + t²) = t / (a² + t²)
-  ring_nf
-  exact div_pos ht h_denom
+  -- -1/(a+I·t) = (-(a+I·t))⁻¹, and a+I·t ∈ ℍ, so apply `im_inv_neg_coe_pos`.
+  simpa [neg_div, one_div, neg_inv] using
+    UpperHalfPlane.im_inv_neg_coe_pos
+      (⟨a + Complex.I * t, by simp [Complex.add_im]; exact ht⟩ : UpperHalfPlane)
 
 /-- Pointwise norm bound for the shifted-Möbius integrand: for `t ≥ 1` it is dominated by
 `(a²+1)·verticalBound r t`. This is the analytic core reused by the integrability goals. -/
