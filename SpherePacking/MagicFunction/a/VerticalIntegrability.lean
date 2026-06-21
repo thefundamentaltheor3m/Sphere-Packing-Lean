@@ -432,30 +432,9 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
           simp only [one_mul, mul_one]
           exact mul_le_mul_of_nonneg_left hexp_bound C_φ₀_pos.le
   -- Construct IntegrableOn from AEStronglyMeasurable + bounded + finite measure
-  rw [IntegrableOn, Integrable]
-  refine ⟨hmeas, ?_⟩
-  rw [hasFiniteIntegral_def]
-  have h_bound_ae : ∀ᵐ t ∂(volume.restrict (Ioc 0 1)),
-      (‖ContourEndpoints.verticalIntegrandX x r t‖₊ : ℝ≥0∞) ≤
-      ↑(C_φ₀ * Real.exp (-2 * π)).toNNReal := by
+  exact IntegrableOn.of_bound measure_Ioc_lt_top hmeas (C_φ₀ * Real.exp (-2 * π)) <| by
     rw [ae_restrict_iff' measurableSet_Ioc]
-    apply ae_of_all
-    intro t ht
-    rw [ENNReal.coe_le_coe]
-    have hle := hbound t ht
-    have h1 : ‖ContourEndpoints.verticalIntegrandX x r t‖₊ =
-        ‖ContourEndpoints.verticalIntegrandX x r t‖.toNNReal := by simp
-    rw [h1]
-    exact Real.toNNReal_le_toNNReal hle
-  calc ∫⁻ t, ↑‖ContourEndpoints.verticalIntegrandX x r t‖₊ ∂(volume.restrict (Ioc 0 1))
-      ≤ ∫⁻ _t, ↑(C_φ₀ * Real.exp (-2 * π)).toNNReal ∂(volume.restrict (Ioc 0 1)) :=
-        lintegral_mono_ae h_bound_ae
-    _ = ↑(C_φ₀ * Real.exp (-2 * π)).toNNReal * volume (Ioc (0 : ℝ) 1) := by
-        rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter]
-    _ < ⊤ := by
-        rw [ENNReal.mul_lt_top_iff]
-        left
-        exact ⟨ENNReal.coe_lt_top, measure_Ioc_lt_top⟩
+    exact ae_of_all _ hbound
 
 /-- IntegrableOn is preserved by constant multiplication. -/
 lemma IntegrableOn.const_mul' {c : ℂ} {f : ℝ → ℂ} {s : Set ℝ}
