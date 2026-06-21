@@ -91,33 +91,12 @@ lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (_hC₀ : 0 < C₀)
     Proof: For t ≤ 4π, we have t² ≤ 4πt ≤ exp(4πt).
     For t > 4π, exp grows much faster than any polynomial. -/
 lemma sq_le_exp_4pi_t (t : ℝ) (ht : 2 ≤ t) : t^2 ≤ Real.exp (4 * π * t) := by
-  have hπ := Real.pi_pos
+  -- exp(4πt) ≥ 1 + 4πt + (4πt)²/2 = 1 + 4πt + 8π²t² ≥ t², uniformly (8π² > 1 since π > 3)
   have ht_pos : 0 < t := by linarith
-  have hx_le : 4 * π * t ≤ Real.exp (4 * π * t) := by
-    have h := Real.add_one_le_exp (4 * π * t); linarith
-  by_cases ht4π : t ≤ 4 * π
-  · -- Case t ≤ 4π: t² ≤ 4πt ≤ exp(4πt)
-    have ht2_le_4πt : t^2 ≤ 4 * π * t := by nlinarith
-    linarith
-  · -- Case t > 4π: exp(4πt) is astronomically larger than t²
-    -- Use Taylor: exp(x) ≥ x²/2 for x > 0, proven via exp(x) ≥ 1 + x + x²/2
-    -- This gives exp(4πt) ≥ (4πt)²/2 = 8π²t² > t²
-    rw [not_le] at ht4π
-    have h4πt_pos : 0 ≤ 4 * π * t := by positivity
-    have hquad := Real.quadratic_le_exp_of_nonneg h4πt_pos
-    -- exp(4πt) ≥ 1 + 4πt + (4πt)²/2 ≥ (4πt)²/2 = 8π²t²
-    -- 8π² > 8 * 9 = 72 > 1 since π > 3
-    have h8π2 : 8 * π^2 > 1 := by
-      have hπ3 : π > 3 := Real.pi_gt_three
-      nlinarith
-    have hcalc : t^2 < Real.exp (4 * π * t) := calc t^2
-        _ < 8 * π^2 * t^2 := by
-            have ht2_pos : 0 < t^2 := by positivity
-            nlinarith
-        _ = (4 * π * t)^2 / 2 := by ring
-        _ ≤ 1 + 4 * π * t + (4 * π * t)^2 / 2 := by linarith [h4πt_pos]
-        _ ≤ Real.exp (4 * π * t) := hquad
-    exact hcalc.le
+  have h4πt_pos : 0 ≤ 4 * π * t := by positivity
+  have hquad := Real.quadratic_le_exp_of_nonneg h4πt_pos
+  have h8π2 : 8 * π ^ 2 > 1 := by nlinarith [Real.pi_gt_three]
+  nlinarith [hquad, h8π2, sq_nonneg t, h4πt_pos]
 
 /-- Helper: exp(-2πt) ≤ (1/t²) * exp(2πt) for t ≥ 2. Used in Thesis Lemma 4.4.4. -/
 lemma exp_neg_le_inv_sq_exp (t : ℝ) (ht : 2 ≤ t) :
