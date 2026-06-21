@@ -420,11 +420,7 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
       have h1 := continuousOn_φ₀''_cusp_path
       refine h1.congr fun t ht =>
         congrArg φ₀'' (neg_one_div_I_mul (t : ℂ)).symm
-    refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
-    · exact (continuousOn_const.mul Complex.continuous_ofReal.continuousOn).pow _
-    · refine Complex.continuous_exp.comp_continuousOn ?_
-      refine (continuousOn_const.mul continuousOn_const).mul ?_
-      exact continuousOn_const.add (continuousOn_const.mul Complex.continuous_ofReal.continuousOn)
+    fun_prop
   have hmeas : AEStronglyMeasurable (fun t => ContourEndpoints.verticalIntegrandX x r t)
       (volume.restrict (Ioc 0 1)) := hcont.aestronglyMeasurable measurableSet_Ioc
   -- Pointwise bound: for t ∈ (0, 1], ‖verticalIntegrandX x r t‖ ≤ C₀ * exp(-2π)
