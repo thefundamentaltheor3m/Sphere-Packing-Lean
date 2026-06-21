@@ -132,12 +132,7 @@ lemma exp_neg_le_inv_sq_exp (t : ℝ) (ht : 2 ≤ t) :
 
 /-- Helper: t ≤ exp(2πt) for t ≥ 0. Used for 1/t ≤ (1/t²) * exp(2πt). -/
 lemma t_le_exp_two_pi_t (t : ℝ) (ht : 0 ≤ t) : t ≤ Real.exp (2 * π * t) := by
-  have hπ := Real.pi_pos
-  have h := Real.add_one_le_exp (2 * π * t)
-  have h2πminus1 : 1 ≤ 2 * π - 1 := by linarith [Real.pi_gt_three]
-  calc t ≤ t + 1 := le_add_of_nonneg_right (by linarith)
-    _ ≤ 2 * π * t + 1 := by nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ 2 * π - 1) ht]
-    _ ≤ Real.exp (2 * π * t) := h
+  nlinarith [Real.add_one_le_exp (2 * π * t), Real.pi_gt_three]
 
 /-- Thesis Lemma 4.4.4 (Blueprint Cor 7.13): For large t ≥ 2, φ₀(i/t) grows at most
     like t⁻² e^{2πt}. Uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7.
