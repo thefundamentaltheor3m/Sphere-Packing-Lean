@@ -452,21 +452,13 @@ lemma integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (x r : ℝ) (hr : 2 < r)
   (IntegrableOn.const_mul' (integrableOn_verticalIntegrandX_Ioi x r hr)).congr_fun
     (fun _ ht => (hEq ht).symm) measurableSet_Ioi
 
-/-- Helper simp lemma: t*I + 1 = 1 + I*t -/
-@[simp]
-lemma t_mul_I_add_one (t : ℝ) : (t : ℂ) * Complex.I + 1 = (1 : ℂ) + Complex.I * t := by ring
-
-/-- Helper simp lemma: t*I - 1 = -1 + I*t -/
-@[simp]
-lemma t_mul_I_sub_one (t : ℝ) : (t : ℂ) * Complex.I - 1 = (-1 : ℂ) + Complex.I * t := by ring
-
 /-- Integrability for shifted Möbius integrands with exponential phase t*I.
     Factors out the common proof pattern from Goals 3 and 5. -/
 lemma integrableOn_shiftedMöbius (a r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I + a)) * (t * Complex.I + a)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi 1) volume := by
-  simpa [t_mul_I_add_one, t_mul_I_sub_one, mul_comm, add_comm] using
+  simpa [mul_comm, add_comm, sub_eq_add_neg] using
     integrableOn_φ₀_shifted_Möbius a 0 r hr
 
 /-! ## Specific Instantiations
