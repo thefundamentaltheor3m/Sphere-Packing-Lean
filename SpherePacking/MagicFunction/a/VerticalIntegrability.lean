@@ -56,8 +56,8 @@ lemma neg_one_div_I_mul (z : ℂ) : (-1 : ℂ) / (Complex.I * z) = Complex.I / z
 /-- `-1/(z·I) = I/z` (other multiplication order). -/
 @[simp]
 lemma neg_one_div_mul_I (z : ℂ) : (-1 : ℂ) / (z * Complex.I) = Complex.I / z := by
-  rw [mul_comm, div_mul_eq_div_div, Complex.div_I]
-  ring
+  rw [mul_comm z Complex.I]
+  exact neg_one_div_I_mul z
 
 /-! ## Thesis Bounds (Lemmas 4.4.3, 4.4.4)
 
