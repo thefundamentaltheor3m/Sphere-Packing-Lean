@@ -507,8 +507,7 @@ lemma integrableOn_goal5 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I - 1)) * (t * Complex.I - 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  convert integrableOn_shiftedMöbius (-1) r hr using 2
-  simp [sub_eq_add_neg]
+  simpa [sub_eq_add_neg] using integrableOn_shiftedMöbius (-1) r hr
 
 /-- Goal 6: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I))) on [0,∞).
     By goal6_eq_verticalIntegrandX, this is verticalIntegrandX (-1) r t. -/
