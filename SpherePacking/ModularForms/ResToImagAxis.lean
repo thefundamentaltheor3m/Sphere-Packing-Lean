@@ -145,10 +145,6 @@ theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n 
   | zero => exact ResToImagAxis.Real.one
   | succ n hn => exact hn.mul hF
 
-/-- (Relocated from `FG.lean`.) `(a/b).re = a.re/b.re` when `b` is real-valued. -/
-private theorem div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) : (a / b).re = a.re / b.re := by
-  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
-
 @[fun_prop]
 theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real F⁻¹ := by
@@ -160,11 +156,11 @@ theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
 @[fun_prop]
 theorem ResToImagAxis.Real.div {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F / G) := by
-  intro t ht
-  have hFreal := hF t ht
-  have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, Pi.div_apply, Complex.div_im, hFreal, hGreal]
+  simpa [div_eq_mul_inv] using hF.mul hG.inv
+
+/-- `(a/b).re = a.re/b.re` when `b` is real-valued (building block for `re_div_eq`). -/
+private theorem div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) : (a / b).re = a.re / b.re := by
+  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
 
 /-- Real part of a quotient on the imaginary axis is the quotient of real parts, provided the
 denominator `G` is real-valued there (the numerator's realness is not needed). -/
@@ -177,20 +173,25 @@ theorem ResToImagAxis.Real.re_div_eq {F G : ℍ → ℂ} (hG : ResToImagAxis.Rea
     simpa only [Pi.div_apply] using div_re_of_im_eq_zero hGreal
   · simp
 
+/-- Real part of a product on the imaginary axis is the product of real parts, when both factors are
+real-valued there. -/
+theorem ResToImagAxis.Real.re_mul_eq {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
+    (hG : ResToImagAxis.Real G) (t : ℝ) :
+    ((F * G).resToImagAxis t).re = (F.resToImagAxis t).re * (G.resToImagAxis t).re := by
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  · have hFreal := hF t ht
+    have hGreal := hG t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
+    simp [Pi.mul_apply, Complex.mul_re, hFreal, hGreal]
+  · simp
+
 /-- Real part of `F / (G * H)` on the imaginary axis, with `G` and `H` real-valued there. -/
 theorem ResToImagAxis.Real.re_div_mul_eq {F G H : ℍ → ℂ} (hG : ResToImagAxis.Real G)
     (hH : ResToImagAxis.Real H) (t : ℝ) :
     ((F / (G * H)).resToImagAxis t).re =
       (F.resToImagAxis t).re / ((G.resToImagAxis t).re * (H.resToImagAxis t).re) := by
-  rw [ResToImagAxis.Real.re_div_eq (hG.mul hH) t]
-  congr 1
-  simp only [Function.resToImagAxis, ResToImagAxis]
-  split_ifs with ht
-  · have hGreal := hG t ht
-    have hHreal := hH t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hGreal hHreal
-    simp [Pi.mul_apply, Complex.mul_re, hGreal, hHreal]
-  · simp
+  rw [ResToImagAxis.Real.re_div_eq (hG.mul hH) t, ResToImagAxis.Real.re_mul_eq hG hH t]
 
 theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) :=
   ⟨ResToImagAxis.Real.const c, fun t ht ↦ by simp [ResToImagAxis, ht, hc]⟩
@@ -214,13 +215,8 @@ theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F * G) := by
   rw [Pos]
   refine ⟨Real.mul hF.1 hG.1, fun t ht ↦ ?_⟩
-  have hFreal := hF.1 t ht
-  have hGreal := hG.1 t ht
-  have hFpos := hF.2 t ht
-  have hGpos := hG.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos hGpos
-  simp [ResToImagAxis, ht, hFreal, hGreal, mul_pos hFpos hGpos]
+  rw [Real.re_mul_eq hF.1 hG.1 t]
+  exact mul_pos (hF.2 t ht) (hG.2 t ht)
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
@@ -287,23 +283,9 @@ theorem ResToImagAxis.EventuallyPos.mul {F G : ℍ → ℂ}
   refine ⟨ResToImagAxis.Real.mul hF.1 hG.1, ?_⟩
   obtain ⟨tF, hF0, hFpos⟩ := hF.2
   obtain ⟨tG, hG0, hGpos⟩ := hG.2
-  let t₀ := max tF tG
-  use t₀
-  refine ⟨by positivity, fun t ht ↦ ?_⟩
-  have htpos : 0 < t := by grind
-  have hFreal_t := hF.1 t htpos
-  have hGreal_t := hG.1 t htpos
-  have htF₀ : tF ≤ t₀ := by grind
-  have htG₀ : tG ≤ t₀ := by grind
-  have htF : tF ≤ t := htF₀.trans ht
-  have htG : tG ≤ t := htG₀.trans ht
-  have hFpos_t := hFpos t htF
-  have hGpos_t := hGpos t htG
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFpos_t hGpos_t
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t hGreal_t
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, Pi.mul_apply, mul_re,
-    hFreal_t, hGreal_t, mul_zero, sub_zero]
-  exact mul_pos hFpos_t hGpos_t
+  refine ⟨max tF tG, by positivity, fun t ht ↦ ?_⟩
+  rw [ResToImagAxis.Real.re_mul_eq hF.1 hG.1 t]
+  exact mul_pos (hFpos t ((le_max_left tF tG).trans ht)) (hGpos t ((le_max_right tF tG).trans ht))
 
 @[fun_prop]
 theorem ResToImagAxis.EventuallyPos.pow {F : ℍ → ℂ}

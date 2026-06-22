@@ -1051,7 +1051,7 @@ theorem L₁₀_div_FG_tendsto :
     (tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG)
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
   refine h_re.congr' ?_
-  filter_upwards [Filter.eventually_gt_atTop 0] with t _ht_pos
+  filter_upwards with t
   simp only [Function.comp_apply]
   exact ResToImagAxis.Real.re_div_mul_eq F_imag_axis_real G_imag_axis_real t
 
