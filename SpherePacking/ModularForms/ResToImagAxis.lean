@@ -145,6 +145,53 @@ theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n 
   | zero => exact ResToImagAxis.Real.one
   | succ n hn => exact hn.mul hF
 
+/-- (Relocated from `FG.lean`.) `(a/b).re = a.re/b.re` when `b` is real-valued. -/
+private theorem div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) : (a / b).re = a.re / b.re := by
+  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
+
+@[fun_prop]
+theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
+    ResToImagAxis.Real F⁻¹ := by
+  intro t ht
+  have hFreal := hF t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
+  simp [ResToImagAxis, ht, Pi.inv_apply, Complex.inv_im, hFreal]
+
+@[fun_prop]
+theorem ResToImagAxis.Real.div {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
+    (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F / G) := by
+  intro t ht
+  have hFreal := hF t ht
+  have hGreal := hG t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
+  simp [ResToImagAxis, ht, Pi.div_apply, Complex.div_im, hFreal, hGreal]
+
+/-- Real part of a quotient on the imaginary axis is the quotient of real parts, provided the
+denominator `G` is real-valued there (the numerator's realness is not needed). -/
+theorem ResToImagAxis.Real.re_div_eq {F G : ℍ → ℂ} (hG : ResToImagAxis.Real G) (t : ℝ) :
+    ((F / G).resToImagAxis t).re = (F.resToImagAxis t).re / (G.resToImagAxis t).re := by
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  · have hGreal := hG t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hGreal
+    simpa only [Pi.div_apply] using div_re_of_im_eq_zero hGreal
+  · simp
+
+/-- Real part of `F / (G * H)` on the imaginary axis, with `G` and `H` real-valued there. -/
+theorem ResToImagAxis.Real.re_div_mul_eq {F G H : ℍ → ℂ} (hG : ResToImagAxis.Real G)
+    (hH : ResToImagAxis.Real H) (t : ℝ) :
+    ((F / (G * H)).resToImagAxis t).re =
+      (F.resToImagAxis t).re / ((G.resToImagAxis t).re * (H.resToImagAxis t).re) := by
+  rw [ResToImagAxis.Real.re_div_eq (hG.mul hH) t]
+  congr 1
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  · have hGreal := hG t ht
+    have hHreal := hH t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hGreal hHreal
+    simp [Pi.mul_apply, Complex.mul_re, hGreal, hHreal]
+  · simp
+
 theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) :=
   ⟨ResToImagAxis.Real.const c, fun t ht ↦ by simp [ResToImagAxis, ht, hc]⟩
 
@@ -288,6 +335,16 @@ theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Re
   split_ifs with ht
   exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht]
     using (hF t ht)), rfl]
+
+/-- For real-valued `F`, `G`, the complex quotient on the imaginary axis equals the (coerced) real
+quotient of real parts. -/
+theorem ResToImagAxis.Real.div_eq_real_div {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
+    (hG : ResToImagAxis.Real G) (t : ℝ) :
+    F.resToImagAxis t / G.resToImagAxis t =
+      ((F.resToImagAxis t).re / (G.resToImagAxis t).re : ℝ) := by
+  rw [hF.eq_real_part t, hG.eq_real_part t]
+  push_cast
+  rw [Complex.ofReal_re, Complex.ofReal_re]
 
 /-!
 ## Polynomial decay of functions with exponential bounds
