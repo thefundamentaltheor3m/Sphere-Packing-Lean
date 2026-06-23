@@ -844,7 +844,7 @@ The log-derivative limit, following from F having vanishing order 2. -/
 theorem D_F_div_F_tendsto :
     Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
   have h := logderiv_tendsto_of_div_exp_tendsto F_holo (by norm_num) F_vanishing_order
-  rwa [show (2 * π * I * 2) / (2 * π * I) = 2 from by field_simp] at h
+  rwa [show (2 * π * I * 2) / (2 * π * I) = 2 by field_simp] at h
 
 /-!
 ### G-Side Asymptotic Analysis
@@ -878,13 +878,13 @@ theorem G_vanishing_order :
 private theorem D_H₂_div_H₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D H₂ z / H₂ z) atImInfty (nhds ((1 : ℂ) / 2)) := by
   have h := logderiv_tendsto_of_div_exp_tendsto H₂_MDifferentiable (by norm_num) H₂_div_exp_tendsto
-  rwa [show (π * I) / (2 * π * I) = (1 : ℂ) / 2 from by field_simp] at h
+  rwa [show (π * I) / (2 * π * I) = (1 : ℂ) / 2 by field_simp] at h
 
 /-- `(D G)/G → 3/2` as `im(z) → ∞`. -/
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
   have h := logderiv_tendsto_of_div_exp_tendsto G_holo (by norm_num) G_vanishing_order
-  rwa [show (2 * π * I * (3 / 2)) / (2 * π * I) = (3 : ℂ) / 2 from by field_simp] at h
+  rwa [show (2 * π * I * (3 / 2)) / (2 * π * I) = (3 : ℂ) / 2 by field_simp] at h
 
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
