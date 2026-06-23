@@ -742,11 +742,11 @@ private theorem H₂_div_exp_tendsto :
 
 /-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
 theorem D_cexp_div (c : ℂ) (z : ℍ) :
-    D (fun w => cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
+    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
   simp only [D]
-  have h_deriv : deriv ((fun w : ℍ => cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
+  have h_deriv : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
       c * cexp (c * z) :=
-    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp (fun w => cexp (c * w))).deriv_eq.trans
+    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp (fun w ↦ cexp (c * w))).deriv_eq.trans
       ((Complex.hasDerivAt_exp (c * (z : ℂ))).scomp (z : ℂ)
         (by simpa using (hasDerivAt_id (z : ℂ)).const_mul c)).deriv
   rw [h_deriv]; field_simp [Complex.exp_ne_zero]
@@ -755,30 +755,30 @@ theorem D_cexp_div (c : ℂ) (z : ℍ) :
 `a/(2πi)` and the bounded limit factor's log-derivative vanishes. Public so downstream files
 (e.g. #331's Θ₂ analysis) can reuse it. -/
 lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C : ℂ} (hC : C ≠ 0)
-    (hlim : Filter.Tendsto (fun z : ℍ => F z / cexp (a * z)) atImInfty (nhds C)) :
-    Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
-  set q : ℍ → ℂ := fun w => cexp (a * w) with hq
-  set g : ℍ → ℂ := fun w => F w / q w with hg
-  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w => Complex.exp_ne_zero _
+    (hlim : Filter.Tendsto (fun z : ℍ ↦ F z / cexp (a * z)) atImInfty (nhds C)) :
+    Filter.Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
+  set q : ℍ → ℂ := fun w ↦ cexp (a * w) with hq
+  set g : ℍ → ℂ := fun w ↦ F w / q w with hg
+  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
   have hq_md : MDiff q := by
     intro τ
-    have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (a * t)) (τ : ℂ) :=
+    have h_diff : DifferentiableAt ℂ (fun t : ℂ ↦ cexp (a * t)) (τ : ℂ) :=
       (differentiableAt_id.const_mul a).cexp
     simpa [hq, Function.comp] using
-      DifferentiableAt_MDifferentiableAt (G := fun t : ℂ => cexp (a * t)) (z := τ) h_diff
+      DifferentiableAt_MDifferentiableAt (G := fun t : ℂ ↦ cexp (a * t)) (z := τ) h_diff
   have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
   have hg_lim : Filter.Tendsto g atImInfty (nhds C) := hlim
   have hDg_tendsto : Filter.Tendsto (D g) atImInfty (nhds 0) :=
     D_tendsto_zero_of_isBoundedAtImInfty hg_md (hg_lim.isBigO_one ℝ)
-  have hDg_div_g : Filter.Tendsto (fun z => D g z / g z) atImInfty (nhds 0) := by
+  have hDg_div_g : Filter.Tendsto (fun z ↦ D g z / g z) atImInfty (nhds 0) := by
     tendsto_cont
   have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
   have hDq_div_q : ∀ z : ℍ, D q z / q z = a / (2 * π * I) :=
-    fun z => by rw [hq]; exact D_cexp_div a z
+    fun z ↦ by rw [hq]; exact D_cexp_div a z
   have h_logderiv : ∀ᶠ z : ℍ in atImInfty, D F z / F z = a / (2 * π * I) + D g z / g z := by
     filter_upwards [hlim.eventually_ne hC] with z hz
     rw [hF_eq, Pi.mul_apply, logderiv_mul_eq q g hq_md hg_md z (hq_ne z) hz, hDq_div_q z]
-  have hsum : Filter.Tendsto (fun z => a / (2 * π * I) + D g z / g z) atImInfty
+  have hsum : Filter.Tendsto (fun z ↦ a / (2 * π * I) + D g z / g z) atImInfty
       (nhds (a / (2 * π * I))) := by
     tendsto_cont
   exact hsum.congr' (by filter_upwards [h_logderiv] with z hz; exact hz.symm)
