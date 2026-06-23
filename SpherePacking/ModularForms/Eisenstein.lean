@@ -161,7 +161,9 @@ theorem E4E6_coeff_zero_eq_zero :
         (hh := by positivity) (hΓ := by simp)
         ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
         ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
-  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, hsub]
+  rw [← Nat.cast_one (R := ℝ),
+    ModularForm.qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
+      (hh := by positivity) (hΓ := by simp), hsub]
   simp only [_root_.map_smul, map_sub, smul_eq_mul,
     mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
@@ -293,7 +295,8 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
       intro n
       simp only [Function.comp_apply]
       rw [← Complex.exp_nat_mul]
-      congr 2 <;> ring
+      congr 2
+      ring
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
