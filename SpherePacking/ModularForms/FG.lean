@@ -767,17 +767,21 @@ lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C 
     simpa [hq, Function.comp] using
       DifferentiableAt_MDifferentiableAt (G := fun t : ℂ => cexp (a * t)) (z := τ) h_diff
   have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
+  have hg_lim : Filter.Tendsto g atImInfty (nhds C) := hlim
+  have hDg_tendsto : Filter.Tendsto (D g) atImInfty (nhds 0) :=
+    D_tendsto_zero_of_isBoundedAtImInfty hg_md (hg_lim.isBigO_one ℝ)
   have hDg_div_g : Filter.Tendsto (fun z => D g z / g z) atImInfty (nhds 0) := by
-    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
+    tendsto_cont
   have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
   have hDq_div_q : ∀ z : ℍ, D q z / q z = a / (2 * π * I) :=
     fun z => by rw [hq]; exact D_cexp_div a z
   have h_logderiv : ∀ᶠ z : ℍ in atImInfty, D F z / F z = a / (2 * π * I) + D g z / g z := by
     filter_upwards [hlim.eventually_ne hC] with z hz
     rw [hF_eq, Pi.mul_apply, logderiv_mul_eq q g hq_md hg_md z (hq_ne z) hz, hDq_div_q z]
-  rw [show a / (2 * π * I) = a / (2 * π * I) + 0 from (add_zero _).symm]
-  refine (tendsto_const_nhds.add hDg_div_g).congr' ?_
-  filter_upwards [h_logderiv] with z hz; exact hz.symm
+  have hsum : Filter.Tendsto (fun z => a / (2 * π * I) + D g z / g z) atImInfty
+      (nhds (a / (2 * π * I))) := by
+    tendsto_cont
+  exact hsum.congr' (by filter_upwards [h_logderiv] with z hz; exact hz.symm)
 
 /-- The vanishing order of F at infinity is 2.
 Blueprint: F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞. -/
