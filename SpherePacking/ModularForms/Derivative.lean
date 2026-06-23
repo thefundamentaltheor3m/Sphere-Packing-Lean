@@ -724,19 +724,26 @@ The key computation is:
 theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 0 < t) :
     deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  let g : ℝ → ℂ := fun s => Complex.mulAux 0 1 (s : ℂ)
-  have hg_apply (s : ℝ) : g s = I * (s : ℂ) := rfl
+  let h : ℂ → ℂ := fun y => Complex.mulAux (0 : ℝ) 1 y
+  let g : ℝ → ℂ := h ∘ fun s : ℝ => (s : ℂ)
   have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
     filter_upwards [lt_mem_nhds ht] with s hs
-    have him : 0 < (g s).im := by rw [hg_apply]; simp [hs]
-    simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, hg_apply s,
-      ofComplex_apply_of_im_pos him]
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte,
+      Function.comp_apply]
+    change F (⟨I * (s : ℂ), by simp [hs]⟩ : ℍ) = F (ofComplex (g s))
+    rw [show g s = I * (s : ℂ) by
+      change Complex.mulAux (0 : ℝ) 1 (s : ℂ) = Complex.mulAux (0 : ℝ) 1 (s : ℂ)
+      rfl]
+    rw [ofComplex_apply_of_im_pos (by simp [hs])]
   rw [show deriv F.resToImagAxis t = deriv (((F ∘ ofComplex) ∘ g)) t from h_eq.deriv_eq]
   rw [show deriv (((F ∘ ofComplex) ∘ g)) t = deriv (F ∘ ofComplex) z * I by
+    change deriv (fun y : ℝ => F (ofComplex (Complex.mulAux (0 : ℝ) 1 (y : ℂ)))) t =
+      deriv (F ∘ ofComplex) z * I
     have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
-    have hg : HasDerivAt (fun y : ℂ => I * y) I (t : ℂ) := by
+    have hh : HasDerivAt h I (t : ℂ) := by
+      change HasDerivAt (fun y : ℂ => I * y) I (t : ℂ)
       simpa [id, mul_one] using (hasDerivAt_id (t : ℂ)).const_mul I
-    simpa [Function.comp_def, g, z] using (hF'.comp (t : ℂ) hg).comp_ofReal.deriv]
+    simpa [h, Function.comp_def] using (hF'.comp (t : ℂ) hh).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
   ring_nf; simp only [I_sq]; ring
@@ -1064,10 +1071,13 @@ theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
-    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
-    ext x
-    change k * 12⁻¹ * E₂ x * f x = (k * 12⁻¹) * (E₂ x * f x)
-    ring
+    have hmul : IsBoundedAtImInfty (fun z => (k * 12⁻¹) * (E₂ z * f z)) :=
+      hconst.mul (E₂_isBoundedAtImInfty.mul hbdd)
+    rw [isBoundedAtImInfty_iff] at hmul ⊢
+    obtain ⟨M, A, hMA⟩ := hmul
+    refine ⟨M, A, ?_⟩
+    intro z hz
+    simpa [mul_assoc] using hMA z hz
   exact hD.sub hE₂f
 
 /-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
