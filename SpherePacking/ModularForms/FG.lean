@@ -879,7 +879,6 @@ theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   unfold L₁₀
   have hF := F_imag_axis_real
   have hG := G_imag_axis_real
-  have hGh := G_holo
   fun_prop
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
