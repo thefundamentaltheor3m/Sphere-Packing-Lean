@@ -867,11 +867,9 @@ theorem G_vanishing_order :
     push_cast
     field_simp [Complex.exp_ne_zero]
   simp_rw [h_eq]
-  have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+  have h_poly : Filter.Tendsto (fun z : ℍ ↦ 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have := H₂_tendsto_atImInfty
-    have := H₄_tendsto_atImInfty
-    tendsto_cont
+    tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
