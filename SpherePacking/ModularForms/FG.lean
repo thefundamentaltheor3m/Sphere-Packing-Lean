@@ -762,16 +762,11 @@ lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C 
   have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
   have hq_md : MDiff q := by
     intro τ
-    have h_diff : DifferentiableAt ℂ (fun t : ℂ ↦ cexp (a * t)) (τ : ℂ) :=
-      (differentiableAt_id.const_mul a).cexp
-    simpa [hq, Function.comp] using
-      DifferentiableAt_MDifferentiableAt (G := fun t : ℂ ↦ cexp (a * t)) (z := τ) h_diff
+    simpa [hq, Function.comp] using DifferentiableAt_MDifferentiableAt
+      (G := fun t : ℂ ↦ cexp (a * t)) (z := τ) ((differentiableAt_id.const_mul a).cexp)
   have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
-  have hg_lim : Filter.Tendsto g atImInfty (nhds C) := hlim
-  have hDg_tendsto : Filter.Tendsto (D g) atImInfty (nhds 0) :=
-    D_tendsto_zero_of_isBoundedAtImInfty hg_md (hg_lim.isBigO_one ℝ)
   have hDg_div_g : Filter.Tendsto (fun z ↦ D g z / g z) atImInfty (nhds 0) := by
-    tendsto_cont
+    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
   have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
   have hDq_div_q : ∀ z : ℍ, D q z / q z = a / (2 * π * I) :=
     fun z ↦ by rw [hq]; exact D_cexp_div a z
@@ -779,8 +774,7 @@ lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C 
     filter_upwards [hlim.eventually_ne hC] with z hz
     rw [hF_eq, Pi.mul_apply, logderiv_mul_eq q g hq_md hg_md z (hq_ne z) hz, hDq_div_q z]
   have hsum : Filter.Tendsto (fun z ↦ a / (2 * π * I) + D g z / g z) atImInfty
-      (nhds (a / (2 * π * I))) := by
-    tendsto_cont
+      (nhds (a / (2 * π * I))) := by tendsto_cont
   exact hsum.congr' (by filter_upwards [h_logderiv] with z hz; exact hz.symm)
 
 /-- The vanishing order of F at infinity is 2.
