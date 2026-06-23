@@ -118,7 +118,7 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
     simp at this
     convert this using 2
   have hc_val : c = -(1/2 : ℂ) := scalar_eq_of_tendsto hfun serre_DE₆_tendsto_atImInfty
-    (by have := E₄_tendsto_one_atImInfty; tendsto_cont)
+    (by tendsto_cont [E₄_tendsto_one_atImInfty])
   ext z
   simp only [hfun z, hc_val, Pi.mul_apply]
   ring_nf
