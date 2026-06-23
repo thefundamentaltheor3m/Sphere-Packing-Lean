@@ -580,7 +580,7 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
 /-- `FmodGReal t = F(it)/G(it)` on the imaginary axis. (Placed here, after `F`/`G_imag_axis_real`,
 since the proof needs both realness facts.) -/
-theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
+theorem FmodG_eq_FmodGReal {t : ℝ} :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by
   unfold FmodGReal FReal GReal
   exact (ResToImagAxis.Real.div_eq_real_div F_imag_axis_real G_imag_axis_real t).symm
