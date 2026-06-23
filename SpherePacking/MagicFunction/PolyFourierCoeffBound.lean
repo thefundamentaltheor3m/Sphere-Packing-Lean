@@ -273,7 +273,7 @@ private lemma step_9 :
   · exact aux_6 z
   · exact (aux_4 z c n₀ hcsum)
   · exact aux_10 z c n₀ hcsum
-  · next j =>
+  ·
     rw [Complex.norm_exp]
     simp
 
@@ -341,8 +341,8 @@ private lemma step_11 :
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-  · next j =>
-    have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
+  ·
+    have : -π * ↑n / 2 = -π * ↑n * (1 / 2) := by rw [mul_one_div]
     rw [this]
     simp only [neg_mul]
     gcongr

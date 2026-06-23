@@ -30,7 +30,7 @@ lemma H₂_SIF_MDifferentiable : MDiff H₂_SIF := by
     rw [← this]
     exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
   have hU : {z : ℂ | 0 < z.im} ∈ 𝓝 (τ : ℂ) := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-  let F : ℂ → ℂ := fun t => (cexp (((π : ℂ) * I / 4) * t) * jacobiTheta₂ (t / 2) t) ^ 4
+  let F : ℂ → ℂ := (fun t => cexp (((π : ℂ) * I / 4) * t) * jacobiTheta₂ (t / 2) t) ^ 4
   have hF : DifferentiableAt ℂ F (τ : ℂ) := by
     have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) (τ : ℂ) := by
       have : DifferentiableAt ℂ (fun t : ℂ => (π * I / 4) * t) (τ : ℂ) :=
@@ -46,7 +46,7 @@ lemma H₂_SIF_MDifferentiable : MDiff H₂_SIF := by
       simpa [f, g] using (DifferentiableAt.fun_comp' (τ : ℂ) hg hf)
     have h_prod : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t)
         (τ : ℂ) := h_exp.mul h_theta
-    simpa [F] using h_prod.pow 4
+    exact h_prod.pow 4
   have h_ev : F =ᶠ[𝓝 (τ : ℂ)] (↑ₕH₂) := by
     refine Filter.eventually_of_mem hU ?_
     intro z hz
@@ -54,7 +54,7 @@ lemma H₂_SIF_MDifferentiable : MDiff H₂_SIF := by
       have : ((π : ℂ) * I / 4) * z = (π * I * z) / 4 := by
         simp [div_eq_mul_inv, mul_comm, mul_assoc]
       simp [this]
-    simp [F, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz, h_arg]
+    simp [F, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz, h_arg, Pi.pow_apply]
   exact (DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm)
 
 lemma H₃_SIF_MDifferentiable : MDiff H₃_SIF := by
@@ -120,7 +120,8 @@ lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
     (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
   have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f ↑τ) := by
     simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
-  simpa [f] using (DifferentiableAt.comp (x := (τ : ℂ)) hg hf)
+  change DifferentiableAt ℂ (((fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) ∘ f)) ↑τ
+  exact DifferentiableAt.comp (x := (τ : ℂ)) hg hf
 
 lemma Θ₂_MDifferentiable : MDiff Θ₂ := by
   intro τ

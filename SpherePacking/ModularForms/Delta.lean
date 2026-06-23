@@ -116,7 +116,9 @@ def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
 
 /-- Δ is 1-periodic: Δ(z + 1) = Δ(z) -/
 lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
-  simpa using SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
+  change (Discriminant_SIF : ℍ → ℂ) ((1 : ℝ) +ᵥ z) = (Discriminant_SIF : ℍ → ℂ) z
+  simpa only [Int.cast_one, Nat.cast_one, one_mul, mul_one] using
+    SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
 
 /-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
 lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
@@ -264,7 +266,9 @@ lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
     simpa using
       (Function.LeftInverse.map_tprod (f := fR)
         (g := Complex.ofRealHom.toMonoidHom)
-        (hg := by simpa using Complex.continuous_ofReal)
+        (hg := by
+          change Continuous (fun x : ℝ => (x : ℂ))
+          exact Complex.continuous_ofReal)
         (hg' := Complex.continuous_re)
         (hgg' := by intro x; simp))
   simpa [ResToImagAxis, ht, Delta_apply, Δ, cexp_aux1, cexp_aux2, hMap', fR] using

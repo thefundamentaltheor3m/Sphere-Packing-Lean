@@ -40,10 +40,7 @@ TODO: Remove this or move this to somewhere more appropriate.
 lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
   (h : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) F z) :
   DifferentiableAt ℂ (F ∘ ofComplex) ↑z := by
-  have h₁ : DifferentiableWithinAt ℂ (F ∘ ofComplex) Set.univ ↑z :=
-    by simpa [writtenInExtChartAt, extChartAt, Set.range_id] using
-      MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
-  exact (differentiableWithinAt_univ.1 h₁)
+  exact UpperHalfPlane.mdifferentiableAt_iff.mp h
 
 /--
 The converse direction: `DifferentiableAt` on ℂ implies `MDifferentiableAt` on ℍ.
@@ -237,8 +234,7 @@ private lemma hasDerivAt_qexp (a c w : ℂ) :
   simp only [mul_one, id] at h
   have := ((Complex.hasDerivAt_exp _).scomp w h).const_mul a
   simp only [smul_eq_mul] at this ⊢
-  convert this using 1
-  ring
+  simpa [Function.comp_def, mul_assoc] using this
 
 /-- Helper: derivWithin for qexp term on upper half-plane. -/
 private lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
@@ -728,17 +724,26 @@ The key computation is:
 theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 0 < t) :
     deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  let g : ℝ → ℂ := (I * ·)
+  let h : ℂ → ℂ := fun y => Complex.mulAux (0 : ℝ) 1 y
+  let g : ℝ → ℂ := h ∘ fun s : ℝ => (s : ℂ)
   have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
     filter_upwards [lt_mem_nhds ht] with s hs
-    have him : 0 < (g s).im := by simp [g, hs]
-    simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
-      ofComplex_apply_of_im_pos him]
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte,
+      Function.comp_apply]
+    change F (⟨I * (s : ℂ), by simp [hs]⟩ : ℍ) = F (ofComplex (g s))
+    rw [show g s = I * (s : ℂ) by
+      change Complex.mulAux (0 : ℝ) 1 (s : ℂ) = Complex.mulAux (0 : ℝ) 1 (s : ℂ)
+      rfl]
+    rw [ofComplex_apply_of_im_pos (by simp [hs])]
   rw [show deriv F.resToImagAxis t = deriv (((F ∘ ofComplex) ∘ g)) t from h_eq.deriv_eq]
   rw [show deriv (((F ∘ ofComplex) ∘ g)) t = deriv (F ∘ ofComplex) z * I by
+    change deriv (fun y : ℝ => F (ofComplex (Complex.mulAux (0 : ℝ) 1 (y : ℂ)))) t =
+      deriv (F ∘ ofComplex) z * I
     have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
-    simpa [g, z] using
-      (hF'.comp (t : ℂ) (by simpa using (hasDerivAt_id (t : ℂ)).const_mul I)).comp_ofReal.deriv]
+    have hh : HasDerivAt h I (t : ℂ) := by
+      change HasDerivAt (fun y : ℂ => I * y) I (t : ℂ)
+      simpa [id, mul_one] using (hasDerivAt_id (t : ℂ)).const_mul I
+    simpa [h, Function.comp_def] using (hF'.comp (t : ℂ) hh).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
   ring_nf; simp only [I_sq]; ring
@@ -1066,17 +1071,21 @@ theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
-    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
-    ext z
-    simp only [Pi.mul_apply]
-    ring
+    have hmul : IsBoundedAtImInfty (fun z => (k * 12⁻¹) * (E₂ z * f z)) :=
+      hconst.mul (E₂_isBoundedAtImInfty.mul hbdd)
+    rw [isBoundedAtImInfty_iff] at hmul ⊢
+    obtain ⟨M, A, hMA⟩ := hmul
+    refine ⟨M, A, ?_⟩
+    intro z hz
+    simpa [mul_assoc] using hMA z hz
   exact hD.sub hE₂f
 
 /-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
 @[simp]
 lemma ModularForm.slash_eq_self {k : ℤ} (f : ModularForm (Gamma 1) k) (γ : SL(2, ℤ)) :
     (f : ℍ → ℂ) ∣[k] γ = f := by
-  simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+  change (f : ℍ → ℂ) ∣[k] (Matrix.SpecialLinearGroup.mapGL ℝ) γ = f
+  exact f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
 
 /-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
 noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
@@ -1085,10 +1094,15 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
     toFun := serre_D k f
     slash_action_eq' := fun _ hγ => by
       obtain ⟨γ', -, rfl⟩ := Subgroup.mem_map.mp hγ
-      simpa using serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
+      change serre_D k f ∣[k + 2] γ' = serre_D k f
+      exact serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
   }
   holo' := serre_D_differentiable f.holo'
   bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
     obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
-    exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
+    have hslash : serre_D k f ∣[k + 2] (Matrix.SpecialLinearGroup.mapGL ℝ) A' =
+        serre_D k f := by
+      change serre_D k f ∣[k + 2] A' = serre_D k f
+      exact serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')
+    exact hslash.symm ▸
       serre_D_isBoundedAtImInfty_of_bounded k f.holo' (ModularFormClass.bdd_at_infty f)

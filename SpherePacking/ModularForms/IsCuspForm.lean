@@ -2,8 +2,8 @@ module
 
 public import Mathlib.Analysis.CStarAlgebra.Module.Defs
 public import Mathlib.Geometry.Manifold.Notation
+public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.Cusps
-public import SpherePacking.ModularForms.qExpansion_lems
 
 @[expose] public section
 
@@ -68,16 +68,18 @@ lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularFor
   rw [CuspFormSubmodule, LinearMap.mem_range] at hf
   aesop
 
-instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
+instance (priority := 100) CuspFormSubmodule.funLike :
+    FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
   coe f := f.1.toFun
-  coe_injective' f g h := by cases f; cases g; congr; exact DFunLike.ext' h
+  coe_injective f g h := by cases f; cases g; congr; exact DFunLike.ext' h
 
 instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
   zero_at_cusps := by
     rintro ⟨_, ⟨g, rfl⟩⟩ c hc
-    simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
+    change c.IsZeroAt (⇑g) k
+    exact g.zero_at_cusps' hc
 
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
@@ -129,9 +131,17 @@ private lemma isZeroAtImInfty_of_coeffZero {k : ℤ}
     IsZeroAtImInfty f := by
   rw [qExpansion_coeff] at h
   simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
-  have := modform_tendto_ndhs_zero f 1
-  simp only [Nat.cast_one, h] at this
-  have := (this.comp (Function.Periodic.qParam_tendsto (h := 1) Real.zero_lt_one)).comp
+  change Function.Periodic.cuspFunction (1 : ℝ) (⇑f ∘ ↑ofComplex) 0 = 0
+    at h
+  have ht := Function.Periodic.tendsto_nhds_zero
+    (h := (1 : ℝ))
+    (f := ⇑f ∘ ↑ofComplex)
+    (ModularFormClass.analyticAt_cuspFunction_zero f Real.zero_lt_one (by simp)).continuousAt
+  have ht0 : Tendsto
+      (fun x ↦ (⇑f ∘ ↑ofComplex) (Function.Periodic.invQParam (1 : ℝ) x))
+      (𝓝[≠] 0) (𝓝 0) := by
+    simpa [h] using ht
+  have := (ht0.comp (Function.Periodic.qParam_tendsto (h := 1) Real.zero_lt_one)).comp
     tendsto_coe_atImInfty
   rw [IsZeroAtImInfty, ZeroAtFilter]
   apply this.congr'
@@ -176,4 +186,3 @@ lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
-
