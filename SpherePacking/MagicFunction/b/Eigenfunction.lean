@@ -18,25 +18,6 @@ namespace MagicFunction.b.Fourier
 
 section Integral_Permutations
 
-lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
-    (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = fun x => f (-x) :=
-by
-  ext x; change 𝓕 (𝓕 ⇑f) x = f (-x)
-  simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using
-    congrArg (fun g : V → E => g (-x))
-      (f.continuous.fourierInv_fourier_eq
-        f.integrable ((FourierTransform.fourierCLE ℂ _) f).integrable)
-
-lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E))
-    (hf : Function.Even f) :
-    (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = f :=
-by
-  ext x; simpa [hf x] using congrArg (fun g => g x) (fourier_involution (V:=V) (E:=E) f)
-
 theorem perm_J₁_J₂ : (FourierTransform.fourierCLE ℂ _) (J₁ + J₂) = -(J₃ + J₄) := by sorry
 
 theorem perm_J₅ : (FourierTransform.fourierCLE ℂ _) (J₅) = -J₆ := by sorry
@@ -44,12 +25,22 @@ theorem perm_J₅ : (FourierTransform.fourierCLE ℂ _) (J₅) = -J₆ := by sor
 -- Should use results from `RadialSchwartz.Radial` and linearity to prove the reverse.
 
 theorem perm_₃_J₄ : (FourierTransform.fourierCLE ℂ _) (J₃ + J₄) = -(J₁ + J₂) := by
-  have h₁ : (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₁) = J₁ := by
-    exact radial_inversion J₁ (fun _ => by
-      simp [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
-  have h₂ : (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₂) = J₂ := by
-    exact radial_inversion J₂ (fun _ => by
-      simp [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
+  have h₁ :
+      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₁) = J₁ := by
+    ext x
+    change 𝓕 (𝓕 ⇑J₁) x = J₁ x
+    simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierInv_eq_fourier_neg, neg_neg] using
+        congrArg (· (-x)) (J₁.continuous.fourierInv_fourier_eq J₁.integrable
+          ((FourierTransform.fourierCLE ℂ _) J₁).integrable)
+  have h₂ :
+      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₂) = J₂ := by
+    ext x
+    change 𝓕 (𝓕 ⇑J₂) x = J₂ x
+    simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierInv_eq_fourier_neg, neg_neg] using
+        congrArg (· (-x)) (J₂.continuous.fourierInv_fourier_eq J₂.integrable
+          ((FourierTransform.fourierCLE ℂ _) J₂).integrable)
   simpa only [neg_add_rev, add_comm, map_add, map_neg, neg_neg, h₁, h₂] using
     congrArg (-(FourierTransform.fourierCLE ℂ _) ·) perm_J₁_J₂ |>.symm
 

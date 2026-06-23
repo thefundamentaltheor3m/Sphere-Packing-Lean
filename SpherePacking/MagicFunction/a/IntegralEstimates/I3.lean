@@ -186,18 +186,9 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
     have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
       Real.continuous_exp.comp_continuousOn
         (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
-    have h1' : ContinuousOn (fun s : ℝ ↦ rexp (-(2 * π * s))) (Ici 1) :=
-      h1.congr fun s _ => by congr 1; ring
-    have h2' : ContinuousOn (fun s : ℝ ↦ rexp (-π * r / s)) (Ici 1) := by
-      simpa [div_eq_mul_inv] using h2
-    have h2'' : ContinuousOn (fun s : ℝ ↦ rexp (-(π * r) / s)) (Ici 1) :=
-      h2'.congr fun s _ => by congr 1; ring
-    have hconst : ContinuousOn (fun _ : ℝ => C₀) (Ici 1) := continuousOn_const
-    have hcont' : ContinuousOn (((fun _ : ℝ => C₀) *
-        (fun s : ℝ => rexp (-(2 * π * s))) *
-        fun s : ℝ => rexp (-(π * r) / s))) (Ici 1) :=
-      (hconst.mul h1').mul h2''
-    exact hcont'.congr fun s _ => by simp [f]
+    exact (continuousOn_const.mul (h1.mul h2)).congr fun s _ => by
+      simp [f, div_eq_mul_inv]
+      ring
   have hO : f =O[atTop] fun s ↦ rexp (-(2 * π) * s) := .of_bound (c := |C₀| * rexp (π * |r|)) <| by
     filter_upwards [Filter.Ici_mem_atTop 1] with s hs
     have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=

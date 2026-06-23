@@ -297,22 +297,22 @@ lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
     simp only [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
     ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
   -- Product transforms using mul_slash_SL2
-  have h_term1 : ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] S) = ((2 : ℂ) • H₄ + H₂) * f₄ := by
+  have h_term1 :
+      ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] S) =
+        ((2 : ℂ) • H₄ + H₂) * f₄ := by
     have hmul := mul_slash_SL2 2 4 S ((2 : ℂ) • H₂ + H₄) f₂
     simp only [h_2H₂_H₄, f₂_S_action] at hmul
-    convert hmul using 1
-    · rfl
-    · ext z
-      simp only [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-      ring
-  have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) = (H₄ + (2 : ℂ) • H₂) * f₂ := by
+    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
+    refine hmul.trans ?_
+    ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]; ring
+  have h_term2 :
+      (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) =
+        (H₄ + (2 : ℂ) • H₂) * f₂ := by
     have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
     simp only [h_H₂_2H₄, f₄_S_action] at hmul
-    convert hmul using 1
-    · rfl
-    · ext z
-      simp only [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-      ring
+    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
+    refine hmul.trans ?_
+    ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]; ring
   -- g|S = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂ = g
   simp only [theta_g, add_slash, h_term1, h_term2]
   ext z; simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply]; ring
@@ -369,11 +369,7 @@ lemma theta_h_S_action : (theta_h ∣[(8 : ℤ)] S) = theta_h := by
   have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] S) = f₂ * f₄ := by
     have hmul := mul_slash_SL2 4 4 S f₂ f₄
     simp only [f₂_S_action, f₄_S_action] at hmul
-    convert hmul using 1
-    · rfl
-    · ext z
-      simp only [Pi.mul_apply, Pi.neg_apply]
-      ring
+    simpa [show (4 : ℤ) + 4 = 8 by norm_num, mul_comm] using hmul
   -- h|S = f₄² + f₂f₄ + f₂² = h
   simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
@@ -403,11 +399,7 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
   have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] T) = (-f₂) * (f₂ + f₄) := by
     have hmul := mul_slash_SL2 4 4 T f₂ f₄
     simp only [f₂_T_action, f₄_T_action] at hmul
-    convert hmul using 1
-    · rfl
-    · ext z
-      simp only [Pi.mul_apply, Pi.neg_apply, Pi.add_apply]
-      rw [(congrFun f₂_add_f₄_eq_f₃ z).symm, Pi.add_apply]
+    simpa [show (4 : ℤ) + 4 = 8 by norm_num, ← f₂_add_f₄_eq_f₃] using hmul
   -- h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
   simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
