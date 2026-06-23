@@ -75,11 +75,11 @@ theorem φ₀''_holo : Holo(φ₀'') := by
 /-- For a real shift `c`, `z ↦ φ₀''(-1/(z+c))` is holomorphic on `ℍ₀`: `φ₀''` is holomorphic on
     `ℍ₀` and `z ↦ -1/(z+c)` maps `ℍ₀` into `ℍ₀` (`neg_inv_add_mapsto`). -/
 theorem φ₀''_neg_inv_add_holo {c : ℂ} (hc : c.im = 0) :
-    DifferentiableOn ℂ (fun z => φ₀'' (-1 / (z + c))) ℍ₀ := by
-  have hmem : ∀ z ∈ ℍ₀, z + c ∈ ℍ₀ := fun z hz => by
+    DifferentiableOn ℂ (fun z ↦ φ₀'' (-1 / (z + c))) ℍ₀ := by
+  have hmem : ∀ z ∈ ℍ₀, z + c ∈ ℍ₀ := fun z hz ↦ by
     rw [mem_setOf_eq, add_im, hc, add_zero]; exact hz
   refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.add_const c)
-    (fun z hz => ne_of_mem_of_not_mem (hmem z hz) zero_not_mem_upperHalfPlaneSet)) ?_
+    (fun z hz ↦ ne_of_mem_of_not_mem (hmem z hz) zero_not_mem_upperHalfPlaneSet)) ?_
   exact neg_inv_add_mapsto hc
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
