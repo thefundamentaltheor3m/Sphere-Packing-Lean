@@ -103,7 +103,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
     simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
-      zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
+      _root_.zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
     left
     congr 3
@@ -169,13 +169,13 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
   have h := congrFun H₂_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+  simp only [SL_slash_apply, denom_S, _root_.zpow_neg, Pi.neg_apply] at h
   field_simp [ne_zero] at h ⊢
   exact h
 
 lemma H₄_S_action' (z : ℍ) : H₄ (S • z) = - z ^ 2 * H₂ z := by
   have h := congrFun H₄_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+  simp only [SL_slash_apply, denom_S, _root_.zpow_neg, Pi.neg_apply] at h
   field_simp [ne_zero z] at h ⊢
   exact h
 
@@ -512,7 +512,6 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
       ← ofReal_pow, ofReal_re] at this
     exact this
   · intro k
-    simp only
     split_ifs with hk
     · subst hk
       simp
@@ -522,7 +521,6 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
       simpa using tendsto_im_atImInfty.const_mul_atTop (by positivity)
   · rw [eventually_atImInfty]
     use 1, fun z hz k ↦ ?_
-    simp only
     simp_rw [mul_right_comm _ I, norm_exp_mul_I]
     simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
 
@@ -547,7 +545,6 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
       ← ofReal_pow, ofReal_re] at this
     exact this
   · intro k
-    simp only
     split_ifs with hk
     · subst hk
       simp
@@ -587,16 +584,16 @@ theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
   simpa [funext Θ₄_as_jacobiTheta₂] using jacobiTheta₂_half_apply_tendsto_atImInfty
 
 theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
-  convert Θ₂_tendsto_atImInfty.pow 4
-  norm_num
+  change Tendsto (fun x : ℍ => Θ₂ x ^ 4) atImInfty (𝓝 0)
+  simpa using Θ₂_tendsto_atImInfty.pow 4
 
 theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
-  convert Θ₃_tendsto_atImInfty.pow 4
-  norm_num
+  change Tendsto (fun x : ℍ => Θ₃ x ^ 4) atImInfty (𝓝 1)
+  simpa using Θ₃_tendsto_atImInfty.pow 4
 
 theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
-  convert Θ₄_tendsto_atImInfty.pow 4
-  norm_num
+  change Tendsto (fun x : ℍ => Θ₄ x ^ 4) atImInfty (𝓝 1)
+  simpa using Θ₄_tendsto_atImInfty.pow 4
 
 /-!
 ## Imaginary Axis Properties
@@ -813,7 +810,7 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
     -- Simplify: (1/t)^(-2) = t^2
     have h1t_neg2 : ((1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
       have ht_ne : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr (ne_of_gt ht)
-      simp only [one_div, ofReal_inv, zpow_neg]
+      simp only [one_div, ofReal_inv, _root_.zpow_neg]
       -- Goal: ((↑t)⁻¹ ^ 2)⁻¹ = ↑t ^ 2
       field_simp
     -- Simplify 1/(1/t) = t

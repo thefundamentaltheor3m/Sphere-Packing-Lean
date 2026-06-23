@@ -68,16 +68,18 @@ lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularFor
   rw [CuspFormSubmodule, LinearMap.mem_range] at hf
   aesop
 
-instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
+instance (priority := 100) CuspFormSubmodule.funLike :
+    FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
   coe f := f.1.toFun
-  coe_injective' f g h := by cases f; cases g; congr; exact DFunLike.ext' h
+  coe_injective f g h := by cases f; cases g; congr; exact DFunLike.ext' h
 
 instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
   zero_at_cusps := by
     rintro ⟨_, ⟨g, rfl⟩⟩ c hc
-    simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
+    change c.IsZeroAt (⇑g) k
+    exact g.zero_at_cusps' hc
 
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
@@ -176,4 +178,3 @@ lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
-

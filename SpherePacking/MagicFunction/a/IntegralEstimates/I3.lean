@@ -186,7 +186,9 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
     have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
       Real.continuous_exp.comp_continuousOn
         (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
-    simpa [f, mul_comm, mul_left_comm, div_eq_mul_inv] using continuousOn_const.mul (h1.mul h2)
+    convert continuousOn_const.mul (h1.mul h2) using 1
+    ext s
+    simp [f, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
   have hO : f =O[atTop] fun s ↦ rexp (-(2 * π) * s) := .of_bound (c := |C₀| * rexp (π * |r|)) <| by
     filter_upwards [Filter.Ici_mem_atTop 1] with s hs
     have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=

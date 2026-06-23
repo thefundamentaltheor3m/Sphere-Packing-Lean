@@ -205,8 +205,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
   · apply Set.mem_of_subset_of_mem ?_ v.prop
     rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]
     rfl
-  · simp only at hv' ⊢
-    convert hv using 1
+  · simpa [Submodule.vadd_def] using hv
   · intro s hs
     rw [← hv' ⟨s, ?_⟩ hs]
     apply Set.mem_of_subset_of_mem _ s.prop
@@ -315,9 +314,11 @@ theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hd : 0 < d) :
     haveI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
+  letI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
-  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv D hD_unique_covers).symm
+  exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
+    (S.addActionOrbitRelEquiv D hD_unique_covers).symm
 
 theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
@@ -331,9 +332,11 @@ theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     haveI := @Fintype.ofFinite _ <| aux4' S b hd
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
+  letI := @Fintype.ofFinite _ <| aux4' S b hd
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
-  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv' b).symm
+  exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
+    (S.addActionOrbitRelEquiv' b).symm
 
 theorem PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -346,9 +349,11 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
     haveI := @Fintype.ofFinite _ <| aux4'' S b hd v
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
   letI := Fintype.ofFinite ι
+  letI := @Fintype.ofFinite _ <| aux4'' S b hd v
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
-  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv'' b _).symm
+  exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
+    (S.addActionOrbitRelEquiv'' b _).symm
 
 theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -368,7 +373,8 @@ section numReps_aux
 
 variable {d : ℕ}
 
-noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
+@[reducible]
+noncomputable def PeriodicSpherePacking.instFintypeNumReps'
   (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
   Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
@@ -433,8 +439,7 @@ theorem PeriodicSpherePacking.aux_ge
   have := Set.encard_mono this
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-    · convert this.ge
-      rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+    · simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using this
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -497,8 +502,7 @@ theorem PeriodicSpherePacking.aux_le
   have := Set.encard_mono this
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-    · convert this
-      rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+    · simpa [nsmul_eq_mul, ENat.tsum_set_const, mul_comm] using this
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -603,25 +607,32 @@ theorem PeriodicSpherePacking.aux2_ge
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)) / volume D := by
   rw [ge_iff_le, ENNReal.div_le_iff]
-  · convert volume.mono <| aux7 S D R hD_unique_covers hL
-    rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑S.lattice := inferInstance
-    have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) this
-    rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
-    · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
-      replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
-      simp_rw [Set.disjoint_iff]
-      intro v ⟨hxv, hyv⟩
-      obtain ⟨⟨z, hz⟩, _, hz_unique⟩ := hD_unique_covers v
-      have hx' := hz_unique ⟨-x, neg_mem hx.left⟩ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hxv)
-      have hy' := hz_unique ⟨-y, neg_mem hy.left⟩ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hyv)
-      replace hx' : x = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hx'
-      replace hy' : y = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hy'
-      exact hxy (hx'.trans hy'.symm)
-    · intro i
-      exact MeasurableSet.const_vadd hD_measurable i.val
+  · calc
+      volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
+          ≤ volume (⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, x +ᵥ D) :=
+        volume.mono <| aux7 S D R hD_unique_covers hL
+      _ = (↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard : ℝ≥0∞)
+          * volume D := by
+        rw [Set.biUnion_eq_iUnion]
+        have : Countable ↑S.lattice := inferInstance
+        have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+          Set.Countable.mono (Set.inter_subset_left) this
+        rw [measure_iUnion]
+        · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
+        · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
+          replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
+          simp_rw [Set.disjoint_iff]
+          intro v ⟨hxv, hyv⟩
+          obtain ⟨⟨z, hz⟩, _, hz_unique⟩ := hD_unique_covers v
+          have hx' := hz_unique ⟨-x, neg_mem hx.left⟩
+            (Set.mem_vadd_set_iff_neg_vadd_mem.mp hxv)
+          have hy' := hz_unique ⟨-y, neg_mem hy.left⟩
+            (Set.mem_vadd_set_iff_neg_vadd_mem.mp hyv)
+          replace hx' : x = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hx'
+          replace hy' : y = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hy'
+          exact hxy (hx'.trans hy'.symm)
+        · intro i
+          exact MeasurableSet.const_vadd hD_measurable i.val
   · convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
@@ -648,25 +659,31 @@ theorem PeriodicSpherePacking.aux2_le
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
   rw [ENNReal.le_div_iff_mul_le]
-  · convert volume.mono <| aux8 S D R hD_unique_covers hL
-    rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑S.lattice := inferInstance
-    have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) this
-    rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
-    · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
-      replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
-      simp_rw [Set.disjoint_iff]
-      intro v ⟨hxv, hyv⟩
-      obtain ⟨⟨z, hz⟩, _, hz_unique⟩ := hD_unique_covers v
-      have hx' := hz_unique ⟨-x, neg_mem hx.left⟩ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hxv)
-      have hy' := hz_unique ⟨-y, neg_mem hy.left⟩ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hyv)
-      replace hx' : x = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hx'
-      replace hy' : y = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hy'
-      exact hxy (hx'.trans hy'.symm)
-    · intro i
-      exact MeasurableSet.const_vadd hD_measurable i.val
+  · calc
+      (↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard : ℝ≥0∞) * volume D
+          = volume (⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, x +ᵥ D) := by
+        rw [Set.biUnion_eq_iUnion]
+        have : Countable ↑S.lattice := inferInstance
+        have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+          Set.Countable.mono (Set.inter_subset_left) this
+        rw [measure_iUnion]
+        · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
+        · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
+          replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
+          simp_rw [Set.disjoint_iff]
+          intro v ⟨hxv, hyv⟩
+          obtain ⟨⟨z, hz⟩, _, hz_unique⟩ := hD_unique_covers v
+          have hx' := hz_unique ⟨-x, neg_mem hx.left⟩
+            (Set.mem_vadd_set_iff_neg_vadd_mem.mp hxv)
+          have hy' := hz_unique ⟨-y, neg_mem hy.left⟩
+            (Set.mem_vadd_set_iff_neg_vadd_mem.mp hyv)
+          replace hx' : x = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hx'
+          replace hy' : y = -z := neg_eq_iff_eq_neg.mp <| Subtype.ext_iff.mp hy'
+          exact hxy (hx'.trans hy'.symm)
+        · intro i
+          exact MeasurableSet.const_vadd hD_measurable i.val
+      _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) :=
+        volume.mono <| aux8 S D R hD_unique_covers hL
   · left
     convert (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · left
@@ -722,6 +739,11 @@ variable
   {d : ℕ} {S : PeriodicSpherePacking d}
   {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
+private theorem ENat_toENNReal_nsmul (n : ℕ) (m : ℕ∞) :
+    ((n • m : ℕ∞) : ℝ≥0∞) = n • (m : ℝ≥0∞) := by
+  change ENat.toENNRealRingHom (n • m) = n • ENat.toENNRealRingHom m
+  rw [map_nsmul]
+
 theorem aux_big_le
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     S.finiteDensity R ≤
@@ -739,8 +761,8 @@ theorem aux_big_le
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
             / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
     gcongr
-    convert ENat.toENNReal_le.mpr (S.aux_le hd b hL _)
-    simp
+    simpa only [ENat_toENNReal_nsmul] using
+      ENat.toENNReal_le.mpr (S.aux_le hd b hL (R + S.separation / 2))
   _ ≤ S.numReps
         * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L + L))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)))
@@ -776,8 +798,8 @@ theorem aux_big_ge
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
             / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
     gcongr
-    convert ENat.toENNReal_le.mpr (S.aux_ge hd b hL _)
-    simp
+    simpa only [ENat_toENNReal_nsmul] using
+      ENat.toENNReal_le.mpr (S.aux_ge hd b hL (R - S.separation / 2))
   _ ≥ S.numReps
         * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L - L))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)))

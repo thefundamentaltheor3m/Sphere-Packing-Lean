@@ -23,7 +23,7 @@ lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace �
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
     (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = fun x => f (-x) :=
 by
-  ext x; change 𝓕 (𝓕 f) x = f (-x)
+  ext x; change 𝓕 (𝓕 ⇑f) x = f (-x)
   simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using
     congrArg (fun g : V → E => g (-x))
       (f.continuous.fourierInv_fourier_eq

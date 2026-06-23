@@ -183,7 +183,12 @@ theorem E4E6_coeff_zero_eq_zero :
     rw [show PowerSeries.constantCoeff (qExpansion 1 ⇑E₆) = 1 by
       simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E6_q_exp_zero]
     norm_num
-  simpa [PowerSeries.coeff_zero_eq_constantCoeff] using sub_eq_zero.mpr (hq4.trans hq6.symm)
+  have hcoeff4 :
+      (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq4
+  have hcoeff6 : (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
+  exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
   let F := DirectSum.of _ 4 E₄
@@ -201,7 +206,14 @@ lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
   rw [DFunLike.ne_iff] at h ⊢
   obtain ⟨z, hz⟩ := h
-  exact ⟨z, by simpa [_root_.E, ModularForm.E, standardcongruencecondition] using hz⟩
+  refine ⟨z, ?_⟩
+  rw [_root_.E]
+  let F : ℍ → ℂ :=
+    (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition : ℍ → ℂ)
+  change F z ≠ 0
+  rw [ModularForm.E] at hz
+  change F z ≠ 0 at hz
+  exact hz
 
 /-This is in the mod forms repo-/
 lemma E4_ne_zero : E₄ ≠ 0 := by
@@ -245,7 +257,6 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E k hk z).im = 0
   have hq := E_k_q_expansion k hk hk2 z
-  simp only at hq ⊢
   rw [hq]
   simp only [add_im, one_im, zero_add]
   -- Step 1: Show each term in the sum is real on the imaginary axis
@@ -396,6 +407,7 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
+    change Summable (fun n : {n : ℕ // 0 < n} => (n : ℝ) * r ^ (n : ℕ) / (1 - r))
     simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * r ^ (n : ℕ) / (1 - r) := fun n => by
@@ -469,4 +481,3 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
 /-- E₄ is bounded at infinity (as a modular form). -/
 lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
   ModularFormClass.bdd_at_infty E₄
-

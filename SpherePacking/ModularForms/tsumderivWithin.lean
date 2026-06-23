@@ -134,7 +134,7 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ {z : ℂ | 0 < z.im}) 
       BoundedContinuousFunction.norm_coe_le_norm
         (BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)) t
     rw [norm_norm]
-    simpa using this
+    simpa [cts_exp_two_pi_n] using this
   apply mul_le_mul
   · simp
   · simp at ineqe

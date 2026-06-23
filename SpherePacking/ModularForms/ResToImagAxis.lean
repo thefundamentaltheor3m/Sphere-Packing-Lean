@@ -62,11 +62,14 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDiff F) (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
   rw [Function.resToImagAxis_eq_resToImagAxis]
   have h_diff : DifferentiableAt ℝ (fun t : ℝ => F (ofComplex (Complex.I * t))) t := by
-    simpa using HasDerivAt.differentiableAt
-      ((HasDerivAt.comp (t : ℂ)
-        ((UpperHalfPlane.mdifferentiableAt_iff.mp
-          (hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩)).hasDerivAt)
-        (by simpa using (hasDerivAt_id (t : ℂ)).const_mul Complex.I)).comp_ofReal)
+    let g : ℝ → ℂ := fun s => Complex.I * (s : ℂ)
+    have hF_diff : DifferentiableAt ℂ (F ∘ ofComplex) (g t) := by
+      simpa [g] using UpperHalfPlane.mdifferentiableAt_iff.mp
+        (hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩)
+    have hg : DifferentiableAt ℝ g t := by
+      simpa [g] using
+        (Complex.ofRealCLM.hasFDerivAt (x := t)).differentiableAt.const_mul Complex.I
+    simpa [Function.comp_def, g] using (hF_diff.restrictScalars ℝ).comp t hg
   apply h_diff.congr_of_eventuallyEq
   filter_upwards [lt_mem_nhds ht] with t ht
   simp_all only [ResToImagAxis, ↓reduceDIte]

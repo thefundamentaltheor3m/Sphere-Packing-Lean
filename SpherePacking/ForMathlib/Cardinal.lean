@@ -10,4 +10,4 @@ open scoped Cardinal
 -- `Cardinal.aux` (`toENat #s = s.encard`) is now mathlib's `Set.toENat_cardinalMk` (a `rfl`-lemma).
 
 example {α : Type*} (s t : Set α) (h : #s ≤ #t) : s.encard ≤ t.encard := by
-  convert Cardinal.toENat.monotone' h
+  convert Cardinal.toENat.monotone' h using 1 <;> rfl

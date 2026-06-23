@@ -125,7 +125,9 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
   (ModularForm.qExpansion_smul (Γ := Γ(n)) (h := n) (hh := Nat.cast_pos.mpr (Nat.pos_of_neZero n))
       (hΓ := by simp) a f).symm
 
-instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
+instance : FunLike (ℍ → ℂ) ℍ ℂ where
+  coe := fun ⦃a₁⦄ ↦ a₁
+  coe_injective := fun ⦃_ _⦄ a ↦ a
 
 lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
     qExpansion 1 g := by
