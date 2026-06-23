@@ -726,10 +726,7 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
 private theorem Θ₂_div_exp_tendsto :
     Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
       atImInfty (nhds (2 : ℂ)) := by
-  convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty using 1
-  ext z
-  rw [Θ₂_as_jacobiTheta₂]
-  field_simp [Complex.exp_ne_zero]
+  simpa [Θ₂_as_jacobiTheta₂] using jacobiTheta₂_half_mul_apply_tendsto_atImInfty
 
 /-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
 private theorem H₂_div_exp_tendsto :
