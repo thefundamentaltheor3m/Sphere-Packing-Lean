@@ -68,7 +68,7 @@ The Fourier series terms are summable because:
     Proof sketch:
     1. Rewrite fouterm c z (i + n₀) = u(i) * r^i where r = exp(πiz), u(i) = c(i+n₀) * const
     2. ‖r‖ = exp(-π·z.im) < 1 (by norm_exp_pi_I_z_lt_one)
-    3. u has O(n^k) growth (isBigO_shift + multiplication by constant)
+    3. u has O(n^k) growth (hpoly' handles the n₀-shift, const_mul_left the constant factor)
     4. Apply summable_real_norm_mul_geometric_of_norm_lt_one -/
 lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     (hpoly : c =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
