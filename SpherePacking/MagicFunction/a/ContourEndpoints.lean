@@ -429,69 +429,36 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
   -- Use squeeze: (1+T)²/T ≤ 4T for T ≥ 1
   have t2 : Tendsto (fun T => (12 * C_φ₂' / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T))
       atTop (𝓝 0) := by
-    have hbound : Tendsto (fun T => (48 * C_φ₂' / π) * T * Real.exp (-(π * r) * T))
-        atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (48 * C_φ₂' / π) (π * r) 1 h2
-    apply squeeze_zero'
-    · filter_upwards [eventually_ge_atTop 1] with T hT
-      have hT_pos : 0 < T := by linarith
-      apply mul_nonneg (mul_nonneg _ (sq_nonneg _)) (le_of_lt (Real.exp_pos _))
-      exact div_nonneg (by linarith [C_φ₂'_pos]) (by positivity)
-    · filter_upwards [eventually_ge_atTop 1] with T hT
-      have hT_pos : 0 < T := by linarith
-      have hπT_pos : 0 < π * T := by positivity
-      have h1 : (12 * C_φ₂' / (π * T)) * (1 + T)^2 =
-          (12 * C_φ₂' / π) * ((1 + T)^2 / T) := by
-        field_simp
-      have h2 : (1 + T)^2 / T = 1 / T + 2 + T := by field_simp; ring
-      have h3 : 1 / T + 2 + T ≤ 4 * T := by
-        have : 1 / T ≤ 1 := (div_le_one hT_pos).mpr hT
-        linarith
-      calc (12 * C_φ₂' / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
-          = (12 * C_φ₂' / π) * (1 / T + 2 + T) * Real.exp (-π * r * T) := by
-              rw [h1, h2]
-        _ ≤ (12 * C_φ₂' / π) * (4 * T) * Real.exp (-π * r * T) := by
-            exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h3
-              (div_nonneg (by linarith [C_φ₂'_pos]) hπ.le)) (Real.exp_pos _).le
-        _ = (48 * C_φ₂' / π) * T * Real.exp (-(π * r) * T) := by ring
-    · exact hbound
+    -- (1+T)²/T = T⁻¹ + 2 + T, so the term is a sum of T^{-1}, T^0, T^1 decay terms
+    have e1 := tendsto_const_mul_rpow_mul_exp_neg_atTop (12 * C_φ₂' / π) (π * r) (-1) h2
+    have e2 := tendsto_const_mul_rpow_mul_exp_neg_atTop (24 * C_φ₂' / π) (π * r) 0 h2
+    have e3 := tendsto_const_mul_rpow_mul_exp_neg_atTop (12 * C_φ₂' / π) (π * r) 1 h2
+    have hsum := (e1.add e2).add e3
+    simp only [add_zero] at hsum
+    refine hsum.congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with T hT
+    rw [Real.rpow_neg_one, Real.rpow_zero, Real.rpow_one,
+      show (-(π * r) * T : ℝ) = -π * r * T from by ring]
+    field_simp
+    ring
   -- Term 3: (36C₄/(π²T²)) * (1+T)² * exp(2πT-πrT) → 0
   -- Use squeeze: (1+T)²/T² ≤ 4 for T ≥ 1
   have t3 : Tendsto (fun T => (36 * C_φ₄' / (π^2 * T^2)) * (1 + T)^2 *
       Real.exp (2 * π * T) * Real.exp (-π * r * T)) atTop (𝓝 0) := by
-    have hbound : Tendsto (fun T => (144 * C_φ₄' / π^2) * Real.exp (-(π * r - 2 * π) * T))
-        atTop (𝓝 0) := by
-      simpa using tendsto_const_mul_rpow_mul_exp_neg_atTop (144 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
-    apply squeeze_zero'
-    · filter_upwards [eventually_ge_atTop 1] with T hT
-      have hT_pos : 0 < T := by linarith
-      apply mul_nonneg (mul_nonneg (mul_nonneg _ (sq_nonneg _)) (le_of_lt (Real.exp_pos _)))
-          (le_of_lt (Real.exp_pos _))
-      exact div_nonneg (by linarith [C_φ₄'_pos]) (by positivity)
-    · filter_upwards [eventually_ge_atTop 1] with T hT
-      have hT_pos : 0 < T := by linarith
-      have hexp_comb : Real.exp (2 * π * T) * Real.exp (-π * r * T) =
-          Real.exp (-(π * r - 2 * π) * T) := by rw [← Real.exp_add]; ring_nf
-      have h1 : (1 + T)^2 / T^2 = (1 / T + 1)^2 := by field_simp
-      have hle2 : 1 / T + 1 ≤ 2 := by
-        have : 1 / T ≤ 1 := (div_le_one hT_pos).mpr hT
-        linarith
-      have h2 : (1 / T + 1)^2 ≤ 4 := by
-        have h0 : 0 ≤ 1 / T + 1 := by positivity
-        calc (1 / T + 1)^2 ≤ 2^2 := sq_le_sq' (by linarith) hle2
-          _ = 4 := by norm_num
-      -- Combine the exponentials and rearrange
-      calc (36 * C_φ₄' / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
-               Real.exp (-π * r * T)
-          = (36 * C_φ₄' / π^2) * ((1 + T)^2 / T^2) *
-              (Real.exp (2 * π * T) * Real.exp (-π * r * T)) := by field_simp
-        _ = (36 * C_φ₄' / π^2) * (1 / T + 1)^2 * Real.exp (-(π * r - 2 * π) * T) := by
-              rw [h1, hexp_comb]
-        _ ≤ (36 * C_φ₄' / π^2) * 4 * Real.exp (-(π * r - 2 * π) * T) := by
-            exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h2
-              (div_nonneg (by linarith [C_φ₄'_pos]) (sq_nonneg π))) (Real.exp_pos _).le
-        _ = (144 * C_φ₄' / π^2) * Real.exp (-(π * r - 2 * π) * T) := by ring
-    · exact hbound
+    -- exp(2πT)·exp(-πrT) = exp(-(πr-2π)T); (1+T)²/T² = T⁻² + 2T⁻¹ + 1
+    have e1 := tendsto_const_mul_rpow_mul_exp_neg_atTop (36 * C_φ₄' / π^2) (π * r - 2 * π) (-2) h3
+    have e2 := tendsto_const_mul_rpow_mul_exp_neg_atTop (72 * C_φ₄' / π^2) (π * r - 2 * π) (-1) h3
+    have e3 := tendsto_const_mul_rpow_mul_exp_neg_atTop (36 * C_φ₄' / π^2) (π * r - 2 * π) 0 h3
+    have hsum := (e1.add e2).add e3
+    simp only [add_zero] at hsum
+    refine hsum.congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with T hT
+    rw [Real.rpow_neg_one, Real.rpow_zero, show (-2 : ℝ) = -(2 : ℕ) by norm_num,
+      Real.rpow_neg hT.le, Real.rpow_natCast,
+      show Real.exp (-(π * r - 2 * π) * T) = Real.exp (2 * π * T) * Real.exp (-π * r * T) from by
+        rw [← Real.exp_add]; congr 1; ring]
+    field_simp
+    ring
   simpa [pow_two, topEdgeBound, mul_add, add_mul, left_distrib, right_distrib,
     mul_assoc, mul_left_comm, mul_comm, Real.exp_add] using (t1.add t2).add t3
 
