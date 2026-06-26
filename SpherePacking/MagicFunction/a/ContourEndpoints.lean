@@ -409,7 +409,8 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
   have h1 : 0 < π * r + 2 * π := by nlinarith
   have h2 : 0 < π * r := by nlinarith
   have h3 : 0 < π * r - 2 * π := by nlinarith
-  -- Strategy: Expand (1+T)² = 1 + 2T + T² and use individual tendsto lemmas
+  -- Strategy: expand each polynomial/rational factor into Tⁿ terms and apply the rpow
+  -- exponential-decay lemma termwise (n may be negative, from the (1+T)²/Tᵏ factors).
   -- Term 1: C₀ * (1+T)² * exp(-(πr+2π)T) → 0
   have t1 : Tendsto (fun T => C_φ₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T))
       atTop (𝓝 0) := by
@@ -426,7 +427,6 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
     convert hsum using 1
     funext T; ring
   -- Term 2: (12C₂/(πT)) * (1+T)² * exp(-πrT) → 0
-  -- Use squeeze: (1+T)²/T ≤ 4T for T ≥ 1
   have t2 : Tendsto (fun T => (12 * C_φ₂' / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T))
       atTop (𝓝 0) := by
     -- (1+T)²/T = T⁻¹ + 2 + T, so the term is a sum of T^{-1}, T^0, T^1 decay terms
@@ -442,7 +442,6 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
     field_simp
     ring
   -- Term 3: (36C₄/(π²T²)) * (1+T)² * exp(2πT-πrT) → 0
-  -- Use squeeze: (1+T)²/T² ≤ 4 for T ≥ 1
   have t3 : Tendsto (fun T => (36 * C_φ₄' / (π^2 * T^2)) * (1 + T)^2 *
       Real.exp (2 * π * T) * Real.exp (-π * r * T)) atTop (𝓝 0) := by
     -- exp(2πT)·exp(-πrT) = exp(-(πr-2π)T); (1+T)²/T² = T⁻² + 2T⁻¹ + 1
