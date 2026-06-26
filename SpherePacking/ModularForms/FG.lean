@@ -561,6 +561,7 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch :=
 `G(it)` is real for all `t > 0`.
 Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
 -/
+@[fun_prop]
 theorem G_imag_axis_real : ResToImagAxis.Real G := G_imag_axis_pos.1
 
 /--
@@ -576,6 +577,7 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
 `F(it)` is real for all `t > 0`.
 Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
 -/
+@[fun_prop]
 theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
 /-- `FmodGReal t = F(it)/G(it)` on the imaginary axis. (Placed here, after `F`/`G_imag_axis_real`,
@@ -1024,8 +1026,6 @@ theorem D_G_div_G_tendsto :
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   unfold L₁₀
-  have hF := F_imag_axis_real
-  have hG := G_imag_axis_real
   fun_prop
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
