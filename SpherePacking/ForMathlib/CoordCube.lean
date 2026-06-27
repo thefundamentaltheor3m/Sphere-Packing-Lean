@@ -13,8 +13,9 @@ For `d : ℕ` and `L : ℝ`, this file packages:
 
 * `cubeIco d L = [0, L)^d` and the closed inner cube `cubeIcc d L r = [r, L-r]^d` in
   `EuclideanSpace ℝ (Fin d)`, with their membership API;
-* the scaled standard basis `cubeBasis d L hL` and the cubic lattice `cubeLattice d L hL = L • ℤ^d`
-  it spans, with `DiscreteTopology`/`IsZLattice` instances;
+* the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev`, not a standalone def) and the
+  cubic lattice `cubeLattice d L hL = L • ℤ^d` it spans, with `DiscreteTopology`/`IsZLattice`
+  instances;
 * the basic geometry and measure of these objects: `cubeIco` is the fundamental domain of
   `cubeBasis` (`fundamentalDomain_cubeBasis_eq_cubeIco`), every point has a unique lattice
   translate in it (`cubeIco_unique_covers`), it is bounded, and the volumes are `L^d` and
@@ -79,8 +80,14 @@ variable {d : ℕ}
     x ∈ cubeIcc d L r ↔ ∀ i, x i ∈ Set.Icc r (L - r) := Iff.rfl
 
 /-- The standard basis of `EuclideanSpace ℝ (Fin d)` scaled by `L`; its span is `cubeLattice` and
-its fundamental domain is `cubeIco d L` (`fundamentalDomain_cubeBasis_eq_cubeIco`). -/
-@[expose] public noncomputable def cubeBasis (d : ℕ) (L : ℝ) (hL : 0 < L) :
+its fundamental domain is `cubeIco d L` (`fundamentalDomain_cubeBasis_eq_cubeIco`).
+
+This is a reducible *abbreviation*, not a standalone definition: it is a one-line shorthand for
+`Basis.isUnitSMul`, carries no API of its own, and is only ever passed straight to Mathlib's `ZSpan`
+basis lemmas. Keeping it `abbrev` (rather than `def`) means it unfolds definitionally — no unfolding
+lemmas, no `cubeBasis_apply`-style API — so it behaves like notation while still accepting the
+positivity proof `hL` that a syntactic `notation` could not supply to `IsUnit.mk0`. -/
+@[expose] public noncomputable abbrev cubeBasis (d : ℕ) (L : ℝ) (hL : 0 < L) :
     Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) :=
   (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
 
