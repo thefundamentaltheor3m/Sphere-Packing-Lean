@@ -222,15 +222,43 @@ open ZLattice ZSpan
 
 section Sets_Acted_Upon_By_Lattice
 
+private lemma basis_box_neg_one_one_isBounded {d : ℕ}
+    (b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))) :
+    Bornology.IsBounded {m | ∀ i, b.repr m i ∈ Set.Ico (-1 : ℝ) 1} := by
+  classical
+  refine isBounded_iff_forall_norm_le.2 ⟨∑ i, ‖b i‖, fun x hx ↦ ?_⟩
+  calc
+    ‖x‖ = ‖∑ i, b.repr x i • b i‖ := by rw [b.sum_repr]
+    _ ≤ ∑ i, ‖b.repr x i • b i‖ := norm_sum_le _ _
+    _ = ∑ i, ‖b.repr x i‖ * ‖b i‖ := by simp_rw [norm_smul]
+    _ ≤ ∑ i, ‖b i‖ := by
+      refine Finset.sum_le_sum fun i _ ↦ ?_
+      have hi := hx i
+      rw [Set.mem_Ico] at hi
+      have hcoord : ‖b.repr x i‖ ≤ 1 := by
+        rw [Real.norm_eq_abs]
+        exact abs_le.mpr ⟨by linarith, le_of_lt hi.2⟩
+      calc
+        ‖b.repr x i‖ * ‖b i‖ ≤ 1 * ‖b i‖ :=
+          mul_le_mul_of_nonneg_right hcoord (norm_nonneg _)
+        _ = ‖b i‖ := one_mul _
+
+-- Issue #218: the unrestricted statement is false for arbitrary `X`; callers must place `X`
+-- inside the lattice before taking this finite intersection.
 theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
-  {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ] :
+  {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ]
+  (hX : X ⊆ Λ) :
   let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
   let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
-  Finite ↑(X ∩ D) :=
-  -- Consider function from this thing to set of orbits. Show preimage of any singleton in
-  -- `Quotient` consists of 2^d elements. Then card is card of 2^d
-  sorry
+  Finite ↑(X ∩ D) := by
+  classical
+  intro bℤ bℝ D
+  have hDΛ : (D ∩ Λ).Finite := by
+    have hD_bounded : Bornology.IsBounded D := basis_box_neg_one_one_isBounded bℝ
+    have hspan : Submodule.span ℤ (Set.range bℝ) = Λ := bℤ.ofZLatticeBasis_span ℝ
+    simpa [hspan] using ZSpan.setFinite_inter bℝ hD_bounded
+  exact Set.finite_coe_iff.mpr (hDΛ.subset fun x hx ↦ ⟨hx.2, hX hx.1⟩)
 
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
