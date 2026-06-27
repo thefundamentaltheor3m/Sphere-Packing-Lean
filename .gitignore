@@ -1,0 +1,18 @@
+.lake/
+
+# Mac stuff
+.DS_Store
+
+# LaTeX Local
+blueprint/TeX_Outputs/
+blueprint/print/*
+blueprint/web/
+blueprint/src/web.paux
+blueprint/lean_decls
+
+blueprint/src/print.aux
+blueprint/src/print.log
+blueprint/src/print.out
+blueprint/src/print.toc
+blueprint/src/print.pdf
+blueprint/src/print.synctex.gz

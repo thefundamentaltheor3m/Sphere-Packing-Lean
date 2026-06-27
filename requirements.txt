@@ -1,0 +1,3 @@
+# https://github.com/pyinvoke/invoke/issues/891
+invoke==2.2.0
+leanblueprint @ git+https://github.com/PatrickMassot/leanblueprint.git
