@@ -11,8 +11,11 @@ public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 For `d : ℕ` and `L : ℝ`, this file packages:
 
-* `cubeIco d L = [0, L)^d` and the closed inner cube `cubeIcc d L r = [r, L-r]^d` in
-  `EuclideanSpace ℝ (Fin d)`, with their membership API;
+* the coordinate box `cubeBox d I = {x | ∀ i, x i ∈ I}` in `EuclideanSpace ℝ (Fin d)` with its
+  shared membership/preimage/measure API (`mem_cubeBox`, `cubeBox_eq_preimage_ofLp`,
+  `volume_cubeBox`), and its two specialisations `cubeIco d L = cubeBox d [0, L) = [0, L)^d` and the
+  closed inner cube `cubeIcc d L r = cubeBox d [r, L-r] = [r, L-r]^d`, whose membership/volume facts
+  are one-line corollaries of the `cubeBox` API rather than re-derived per cube;
 * the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev`, not a standalone def) and the
   cubic lattice `cubeLattice d L hL = L • ℤ^d` it spans, with `DiscreteTopology`/`IsZLattice`
   instances;
@@ -63,18 +66,28 @@ namespace EuclideanSpace
 
 variable {d : ℕ}
 
-/-- The half-open coordinate cube `[0, L)^d`. Used pervasively as the fundamental domain of
-`cubeLattice`; its membership API is `mem_cubeIco`. -/
+/-- The coordinate box `{x | ∀ i, x i ∈ I}` in `EuclideanSpace ℝ (Fin d)`: the points all of whose
+coordinates lie in `I ⊆ ℝ`. Both cubes below (`cubeIco`, `cubeIcc`) are special cases, and the
+measure/preimage API (`mem_cubeBox`, `cubeBox_eq_preimage_ofLp`, `volume_cubeBox`) is proved once
+here rather than re-derived per cube. -/
+@[expose] public def cubeBox (d : ℕ) (I : Set ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
+  {x | ∀ i : Fin d, x i ∈ I}
+
+@[simp] public lemma mem_cubeBox {I : Set ℝ} {x : EuclideanSpace ℝ (Fin d)} :
+    x ∈ cubeBox d I ↔ ∀ i, x i ∈ I := Iff.rfl
+
+/-- The half-open coordinate cube `[0, L)^d`, the coordinate box `cubeBox d [0, L)`. Used pervasively
+as the fundamental domain of `cubeLattice`; its membership API is `mem_cubeIco`. -/
 @[expose] public def cubeIco (d : ℕ) (L : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
-  {x | ∀ i : Fin d, x i ∈ Set.Ico (0 : ℝ) L}
+  cubeBox d (Set.Ico (0 : ℝ) L)
 
 @[simp] public lemma mem_cubeIco {L : ℝ} {x : EuclideanSpace ℝ (Fin d)} :
     x ∈ cubeIco d L ↔ ∀ i, x i ∈ Set.Ico (0 : ℝ) L := Iff.rfl
 
-/-- The closed inner cube `[r, L-r]^d`, the locus where a radius-`r` ball stays inside
-`cubeIco L`. Membership API: `mem_cubeIcc`. -/
+/-- The closed inner cube `[r, L-r]^d`, the coordinate box `cubeBox d [r, L - r]`; the locus where a
+radius-`r` ball stays inside `cubeIco L`. Membership API: `mem_cubeIcc`. -/
 @[expose] public def cubeIcc (d : ℕ) (L r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
-  {x | ∀ i : Fin d, x i ∈ Set.Icc r (L - r)}
+  cubeBox d (Set.Icc r (L - r))
 
 @[simp] public lemma mem_cubeIcc {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)} :
     x ∈ cubeIcc d L r ↔ ∀ i, x i ∈ Set.Icc r (L - r) := Iff.rfl
@@ -109,7 +122,7 @@ public instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
 public lemma fundamentalDomain_cubeBasis_eq_cubeIco (L : ℝ) (hL : 0 < L) :
     fundamentalDomain (cubeBasis d L hL) = cubeIco d L := by
   ext x
-  simp only [ZSpan.mem_fundamentalDomain, cubeIco, cubeBasis, Module.Basis.repr_isUnitSMul,
+  simp only [ZSpan.mem_fundamentalDomain, mem_cubeIco, cubeBasis, Module.Basis.repr_isUnitSMul,
     Units.smul_def, Units.val_inv_eq_inv_val, IsUnit.unit_spec, smul_eq_mul,
     OrthonormalBasis.coe_toBasis_repr_apply, EuclideanSpace.basisFun_repr, Set.mem_setOf_eq,
     Set.mem_Ico]
@@ -131,28 +144,37 @@ private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet
     volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s :=
   (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
 
+/-- A coordinate box is the `ofLp`-preimage of the product box `∏ i, I`. This is the single
+preimage identity from which both cubes' preimage/measure facts are read off. -/
+public lemma cubeBox_eq_preimage_ofLp (I : Set ℝ) :
+    cubeBox d I =
+      (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' (Set.pi Set.univ fun _ : Fin d ↦ I) := by
+  ext x; simp [mem_cubeBox, Set.mem_pi]
+
+/-- The volume of a coordinate box `cubeBox d I` is `volume I ^ d`. -/
+public lemma volume_cubeBox (I : Set ℝ) (hI : MeasurableSet I) :
+    volume (cubeBox d I) = volume I ^ d := by
+  rw [cubeBox_eq_preimage_ofLp, volume_preimage_ofLp _ (.pi Set.countable_univ fun _ _ ↦ hI),
+    volume_pi, Measure.pi_pi]
+  simp
+
 /-- The volume of the cube `[0, L)^d` is `L ^ d`. -/
 public lemma volume_cubeIco (L : ℝ) : volume (cubeIco d L) = (ENNReal.ofReal L) ^ d := by
-  have hcube : cubeIco d L = (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-      (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
-    ext x; simp [mem_cubeIco, Set.mem_pi]
-  rw [hcube, volume_preimage_ofLp _ (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico),
-    volume_pi, Measure.pi_pi]
-  simp [Real.volume_Ico, sub_zero]
+  rw [show cubeIco d L = cubeBox d (Set.Ico (0 : ℝ) L) from rfl,
+    volume_cubeBox _ measurableSet_Ico, Real.volume_Ico, sub_zero]
 
 /-- `cubeIcc d L r` is the `ofLp`-preimage of the product set `[r, L - r]^d`. -/
 public lemma cubeIcc_eq_preimage_ofLp (L r : ℝ) :
     cubeIcc d L r =
       (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-        (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) := by
-  ext x; simp [mem_cubeIcc, Pi.le_def, forall_and]
+        (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) :=
+  cubeBox_eq_preimage_ofLp (Set.Icc r (L - r))
 
 /-- The volume of the closed inner cube `[r, L - r]^d` is `(L - 2r) ^ d`. -/
 public lemma volume_cubeIcc (L r : ℝ) :
     volume (cubeIcc d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
-  rw [cubeIcc_eq_preimage_ofLp, volume_preimage_ofLp _
-    (.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc), volume_pi, Measure.pi_pi]
-  simp [Real.volume_Icc, show L - r - r = L - 2 * r by ring]
+  rw [show cubeIcc d L r = cubeBox d (Set.Icc r (L - r)) from rfl,
+    volume_cubeBox _ measurableSet_Icc, Real.volume_Icc, show L - r - r = L - 2 * r by ring]
 
 /-- Only finitely many `cubeLattice` points lie in a ball of radius `R`. -/
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
