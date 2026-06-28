@@ -73,9 +73,6 @@ theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by so
 
 theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
 
-theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
-    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
-
 /--
 `F = 9 * (D E₄)²` by Ramanujan's formula.
 From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
@@ -176,11 +173,6 @@ private lemma logderiv_mul_eq (f h : ℍ → ℂ)
     D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
   simp only [congrFun (D_mul f h hf_md hh_md) z, Pi.mul_apply, Pi.add_apply]
   field_simp [hf_ne, hh_ne]
-
-/-- `(a / b).re = a.re / b.re` when `b` is a real-valued complex number. -/
-private lemma div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) :
-    (a / b).re = a.re / b.re := by
-  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
@@ -586,6 +578,13 @@ Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axi
 -/
 theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
+/-- `FmodGReal t = F(it)/G(it)` on the imaginary axis. (Placed here, after `F`/`G_imag_axis_real`,
+since the proof needs both realness facts.) -/
+theorem FmodG_eq_FmodGReal {t : ℝ} :
+    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by
+  unfold FmodGReal FReal GReal
+  exact (ResToImagAxis.Real.div_eq_real_div F_imag_axis_real G_imag_axis_real t).symm
+
 end ImagAxisProperties
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
@@ -876,10 +875,9 @@ theorem D_G_div_G_tendsto :
 
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
-  unfold L₁₀
   have hF := F_imag_axis_real
   have hG := G_imag_axis_real
-  fun_prop
+  fun_prop [L₁₀]
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
 theorem L₁₀_div_FG_tendsto :
@@ -902,17 +900,9 @@ theorem L₁₀_div_FG_tendsto :
     (tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG)
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
   refine h_re.congr' ?_
-  filter_upwards [Filter.eventually_gt_atTop 0] with t ht_pos
-  simp only [Function.comp_apply, Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
-  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩ with hz
-  have hL := L₁₀_imag_axis_real t ht_pos
-  have hF := F_imag_axis_real t ht_pos
-  have hG := G_imag_axis_real t ht_pos
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hL hF hG
-  rw [← hz] at hL hF hG
-  have hFG_im : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
-  have hFG_re : (F z * G z).re = (F z).re * (G z).re := by rw [Complex.mul_re, hF, hG]; ring
-  rw [div_re_of_im_eq_zero hFG_im, hFG_re]
+  filter_upwards with t
+  simp only [Function.comp_apply]
+  exact ResToImagAxis.Real.re_div_mul_eq F_imag_axis_real G_imag_axis_real t
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real, ?_⟩
