@@ -4,7 +4,7 @@ Note that some of the proofs in this section have only been sketched. The finer 
 
 Observe that the finite density evaluated at some $R > 0$ measures the density of sphere packings within a bounded, open ball of radius $R$. As one might expect, there is a relationship between the finite density and the number of centers in the ball of radius $R$.
 
-\begin{lemma}\label{lemma:sp-finite-density-bound}\lean{SpherePacking.finiteDensity_le,SpherePacking.finiteDensity_ge}\uses{SpherePacking.finiteDensity}\leanok
+\begin{lemma}\label{lemma:sp-finite-density-bound}\lean{Metric.SpherePacking.finiteDensity_le,Metric.SpherePacking.finiteDensity_ge}\uses{SpherePacking.finiteDensity}\leanok
   For any $R > 0$,
   \[
     \left|X \cap \mathcal{B}_d\left(R - \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
@@ -18,7 +18,7 @@ Observe that the finite density evaluated at some $R > 0$ measures the density o
 
 Suppose further that $X$ is a periodic packing w.r.t. the lattice $\Lambda \subseteq \R^d$. Let $\mathcal{D}$ be a (bounded) fundamental region of $\Lambda$, say the parallelopiped $[0, 1]^n\Lambda$, and let $L$ be the bound on the norm of vectors in $\mathcal{D}$, i.e. a number satisfying $\forall x \in \mathcal{D}, \|x\| \leq L$.
 
-\begin{lemma}\label{lemma:lattice-points-bound}\lean{PeriodicSpherePacking.aux2_ge',PeriodicSpherePacking.aux2_le'}\leanok
+\begin{lemma}\label{lemma:lattice-points-bound}\lean{Metric.PeriodicSpherePacking.aux2_ge',Metric.PeriodicSpherePacking.aux2_le'}\leanok
   For all $R$, we have the following inequality relating the number of lattice points from $\Lambda$ in a ball with the volume of the ball and the fundamental region $\mathcal{D}$:
 
   \[
@@ -35,7 +35,7 @@ For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B
 
 To link \cref{lemma:sp-finite-density-bound} and \cref{lemma:lattice-points-bound}, we need a lemma relating $|\Lambda \cap \mathcal{B}|$ with $|X \cap \mathcal{B}|$, which is what the following lemma does:
 
-\begin{lemma}\label{lemma:periodic-points-bounds}\lean{PeriodicSpherePacking.aux_ge,PeriodicSpherePacking.aux_le}\leanok
+\begin{lemma}\label{lemma:periodic-points-bounds}\lean{Metric.PeriodicSpherePacking.aux_ge,Metric.PeriodicSpherePacking.aux_le}\leanok
   For all $R$, we have the following inequality relating the number of points from $X$ (periodic w.r.t. $\Lambda$) in a ball with the number of points from $\Lambda$:
   \[
     \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda\right|
@@ -72,7 +72,7 @@ When we combine the inequalities above, we need one additional computational lem
 
 Finally, we can relate the density of a periodic sphere packing to the natural definition of density given by any of its fundamental domain:
 
-\begin{theorem}\label{theorem:psp-density}\uses{SpherePacking.density}\lean{PeriodicSpherePacking.density_eq}\leanok
+\begin{theorem}\label{theorem:psp-density}\uses{SpherePacking.density}\lean{Metric.PeriodicSpherePacking.density_eq}\leanok
   For a periodic sphere packing $\mathcal{P} = \mathcal{P}(X)$ with centers $X$ periodic to the lattice $\Lambda$ and separation $r$,
 
   \[
