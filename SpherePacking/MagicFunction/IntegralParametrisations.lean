@@ -195,6 +195,19 @@ lemma neg_inv_eq_S (z : ℍ) :
   apply UpperHalfPlane.ext
   rw [← neg_inv_eq_S_coe]
 
+/-- The Möbius map `w ↦ -1/w` sends the upper-half-plane set `ℍ₀ ⊆ ℂ` to itself.
+    (Set-level analogue of `neg_inv_mem`, which is stated for the subtype `ℍ`.) -/
+theorem neg_inv_mem_of_mem {w : ℂ} (hw : w ∈ ℍ₀) : -1 / w ∈ ℍ₀ := by
+  simpa [neg_div, one_div] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w, hw⟩
+
+/-- `w ↦ -1/w` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_mapsto : MapsTo (fun w : ℂ ↦ -1 / w) ℍ₀ ℍ₀ := fun _ hw ↦ neg_inv_mem_of_mem hw
+
+/-- For a real shift `c` (`c.im = 0`), `z ↦ -1/(z + c)` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_add_mapsto {c : ℂ} (hc : c.im = 0) :
+    MapsTo (fun z : ℂ ↦ -1 / (z + c)) ℍ₀ ℍ₀ := fun z hz ↦
+  neg_inv_mem_of_mem (show z + c ∈ ℍ₀ by rw [mem_setOf_eq, add_im, hc, add_zero]; exact hz)
+
 end transforms_mem
 
 end MagicFunction.Parametrisations

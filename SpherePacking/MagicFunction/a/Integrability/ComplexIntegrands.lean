@@ -7,6 +7,7 @@ module
 
 
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.ModularForms.FG
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
@@ -71,27 +72,21 @@ theorem φ₀''_holo : Holo(φ₀'') := by
   exact hF.div hΔ fun z hz => by
     simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
 
+/-- For a real shift `c`, `z ↦ φ₀''(-1/(z+c))` is holomorphic on `ℍ₀`: `φ₀''` is holomorphic on
+    `ℍ₀` and `z ↦ -1/(z+c)` maps `ℍ₀` into `ℍ₀` (`neg_inv_add_mapsto`). -/
+theorem φ₀''_neg_inv_add_holo {c : ℂ} (hc : c.im = 0) :
+    DifferentiableOn ℂ (fun z ↦ φ₀'' (-1 / (z + c))) ℍ₀ := by
+  have hmem : ∀ z ∈ ℍ₀, z + c ∈ ℍ₀ := fun z hz ↦ by
+    rw [mem_setOf_eq, add_im, hc, add_zero]; exact hz
+  refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.add_const c)
+    (fun z hz ↦ ne_of_mem_of_not_mem (hmem z hz) zero_not_mem_upperHalfPlaneSet)) ?_
+  exact neg_inv_add_mapsto hc
+
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
-  refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.add_const 1).pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div
-    · rw [differentiableOn_add_const_iff]
-      exact differentiableOn_id
-    · intro z hz hcontra
-      obtain ⟨hre, him⟩ := Complex.ext_iff.mp hcontra
-      simp only [add_im, one_im, add_zero, zero_im] at him
-      have : z.im > 0 := hz
-      linarith
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 1]) (!![1, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / (z + 1) := fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ]
-    refine MapsTo.congr ?_ this
-    intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
-    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
+  exact (φ₀''_neg_inv_add_holo (c := 1) (by simp)).mul
+    ((differentiable_fun_id.differentiableOn.add_const 1).pow 2)
 
 theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
@@ -102,24 +97,9 @@ theorem Φ₂'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₂' r) ℍ₀ := Φ₁'_c
 theorem Φ₃'_holo : Holo(Φ₃' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
-  refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.sub_const 1).pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div
-    · simp only [sub_eq_add_neg, differentiableOn_add_const_iff]
-      exact differentiableOn_id
-    · intro z hz hcontra
-      obtain ⟨hre, him⟩ := Complex.ext_iff.mp hcontra
-      simp only [sub_im, one_im, sub_zero, zero_im] at him
-      have : z.im > 0 := hz
-      linarith
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, -1]) (!![-1, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / (z - 1) := fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
-    refine MapsTo.congr ?_ this
-    intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
-    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
+  simpa only [sub_eq_add_neg] using
+    (φ₀''_neg_inv_add_holo (c := -1) (by simp)).mul
+      ((differentiable_fun_id.differentiableOn.add_const _).pow 2)
 
 theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
@@ -130,19 +110,8 @@ theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' r) ℍ₀ := Φ₃'_c
 theorem Φ₅'_holo : Holo(Φ₅' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
-  refine DifferentiableOn.mul ?_ <| differentiableOn_pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div differentiableOn_id
-    intro _ hz
-    exact ne_of_mem_of_not_mem hz <| zero_not_mem_upperHalfPlaneSet
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 0]) (!![0, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
-    refine MapsTo.congr ?_ this
-    intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
-    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
+  simpa only [add_zero] using
+    (φ₀''_neg_inv_add_holo (c := 0) (by simp)).mul (differentiableOn_pow 2)
 
 theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
