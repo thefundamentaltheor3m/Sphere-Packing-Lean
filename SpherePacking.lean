@@ -81,6 +81,7 @@ public import SpherePacking.ModularForms.tendstolems
 public import SpherePacking.ModularForms.tsumderivWithin
 public import SpherePacking.ModularForms.uniformcts
 public import SpherePacking.ModularForms.upperhalfplane
+public import SpherePacking.Tactic.AtomEngine
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.NormNumI_Scratch
 public import SpherePacking.Tactic.TendstoCont
