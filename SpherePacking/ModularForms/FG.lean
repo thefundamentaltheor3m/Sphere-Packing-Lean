@@ -71,9 +71,6 @@ theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by so
 
 theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
 
-theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
-    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
-
 /--
 `F = 9 * (D E₄)²` by Ramanujan's formula.
 From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
@@ -172,11 +169,6 @@ private lemma logderiv_mul_eq (f h : ℍ → ℂ)
     D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
   simp only [congrFun (D_mul f h hf_md hh_md) z, Pi.mul_apply, Pi.add_apply]
   field_simp [hf_ne, hh_ne]
-
-/-- `(a / b).re = a.re / b.re` when `b` is a real-valued complex number. -/
-private lemma div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) :
-    (a / b).re = a.re / b.re := by
-  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
@@ -588,6 +580,13 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
 theorem F₁_imag_axis_real : ResToImagAxis.Real F₁ := by unfold F₁; fun_prop
 
+/-- `FmodGReal t = F(it)/G(it)` on the imaginary axis. (Placed here, after `F`/`G_imag_axis_real`,
+since the proof needs both realness facts.) -/
+theorem FmodG_eq_FmodGReal {t : ℝ} :
+    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by
+  unfold FmodGReal FReal GReal
+  exact (ResToImagAxis.Real.div_eq_real_div F_imag_axis_real G_imag_axis_real t).symm
+
 end ImagAxisProperties
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
@@ -734,11 +733,9 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
 
 /-- `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`. -/
 private theorem Θ₂_div_exp_tendsto :
-    Tendsto (fun z : ℍ ↦ Θ₂ z / cexp (π * Complex.I * z / 4)) atImInfty (nhds 2) := by
-  convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty using 1
-  ext z
-  rw [Θ₂_as_jacobiTheta₂]
-  field_simp [Complex.exp_ne_zero]
+    Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
+      atImInfty (nhds (2 : ℂ)) := by
+  simpa [Θ₂_as_jacobiTheta₂] using jacobiTheta₂_half_mul_apply_tendsto_atImInfty
 
 /-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
 private theorem H₂_div_exp_tendsto :
@@ -752,8 +749,42 @@ private theorem H₂_div_exp_tendsto :
   simp_rw [h_eq]
   tendsto_cont [Θ₂_div_exp_tendsto]
 
-private lemma H₂_eventually_ne_zero : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 :=
-  eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
+/-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
+theorem D_cexp_div (c : ℂ) (z : ℍ) :
+    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
+  simp only [D]
+  have h_deriv : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
+      c * cexp (c * z) :=
+    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp (fun w ↦ cexp (c * w))).deriv_eq.trans
+      ((Complex.hasDerivAt_exp (c * (z : ℂ))).scomp (z : ℂ)
+        (by simpa using (hasDerivAt_id (z : ℂ)).const_mul c)).deriv
+  rw [h_deriv]; field_simp [Complex.exp_ne_zero]
+
+/-- If `F z / exp(a·z) → C ≠ 0` at `i∞`, then `D F / F → a/(2πi)`: the exponential contributes
+`a/(2πi)` and the bounded limit factor's log-derivative vanishes. Public so downstream files
+(e.g. #331's Θ₂ analysis) can reuse it. -/
+lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C : ℂ} (hC : C ≠ 0)
+    (hlim : Filter.Tendsto (fun z : ℍ ↦ F z / cexp (a * z)) atImInfty (nhds C)) :
+    Filter.Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
+  set q : ℍ → ℂ := fun w ↦ cexp (a * w) with hq
+  set g : ℍ → ℂ := fun w ↦ F w / q w with hg
+  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
+  have hq_md : MDiff q := by
+    intro τ
+    simpa [hq, Function.comp] using DifferentiableAt_MDifferentiableAt
+      (G := fun t : ℂ ↦ cexp (a * t)) (z := τ) ((differentiableAt_id.const_mul a).cexp)
+  have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
+  have hDg_div_g : Filter.Tendsto (fun z ↦ D g z / g z) atImInfty (nhds 0) := by
+    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
+  have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
+  have hDq_div_q : ∀ z : ℍ, D q z / q z = a / (2 * π * I) :=
+    fun z ↦ by rw [hq]; exact D_cexp_div a z
+  have h_logderiv : ∀ᶠ z : ℍ in atImInfty, D F z / F z = a / (2 * π * I) + D g z / g z := by
+    filter_upwards [hlim.eventually_ne hC] with z hz
+    rw [hF_eq, Pi.mul_apply, logderiv_mul_eq q g hq_md hg_md z (hq_ne z) hz, hDq_div_q z]
+  have hsum : Filter.Tendsto (fun z ↦ a / (2 * π * I) + D g z / g z) atImInfty
+      (nhds (a / (2 * π * I))) := by tendsto_cont
+  exact hsum.congr' (by filter_upwards [h_logderiv] with z hz; exact hz.symm)
 
 /-- The vanishing order of F at infinity is 2.
 Blueprint: F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞. -/
@@ -823,78 +854,12 @@ theorem D_diff_qexp (z : ℍ) :
         funext n
         ring
 
-/-- D(E₂E₄ - E₆) / q → 720. -/
-private theorem D_diff_div_q_tendsto :
-    Tendsto (fun z : ℍ ↦ D (E₂ * E₄ - E₆) z / cexp (2 * π * Complex.I * z))
-      atImInfty (nhds 720) := by
-  simp_rw [D_diff_qexp]
-  have h_eq : ∀ z : ℍ,
-      (720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
-        cexp (2 * ↑Real.pi * Complex.I * ↑n * z)) / cexp (2 * π * I * z) =
-      720 * (∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
-        cexp (2 * π * I * (↑n - 1) * z)) := by
-    intro z
-    rw [mul_div_assoc, ← tsum_div_const]
-    congr 1
-    apply tsum_congr
-    intro n
-    rw [mul_div_assoc, ← Complex.exp_sub]
-    congr 2; ring
-  simp_rw [h_eq]
-  have h_reindex : ∀ z : ℍ,
-      ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
-        cexp (2 * π * I * (↑n - 1) * z) =
-      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
-        cexp (2 * π * I * m * z) := by
-    intro z
-    rw [← Equiv.tsum_eq (Equiv.pnatEquivNat)]
-    apply tsum_congr; intro m
-    simp only [Equiv.pnatEquivNat_apply, PNat.natPred_add_one]
-    congr 2
-    simp only [← PNat.natPred_add_one m, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
-  simp_rw [h_reindex]
-  set a : ℕ → ℂ := fun m =>
-    (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
-  have ha0 : a 0 = 1 := by simp [ha_def, ArithmeticFunction.sigma_one]
-  have hbound : ∀ m, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 6 := fun m => by
-    simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
-    calc (↑(m + 1) : ℝ) ^ 2 * ↑(ArithmeticFunction.sigma 3 (m + 1))
-        ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
-          mul_le_mul_of_nonneg_left (mod_cast ArithmeticFunction.sigma_le_pow_succ 3 (m + 1))
-            (pow_nonneg (Nat.cast_nonneg _) _)
-      _ = _ := by ring
-  have h_eq2 : ∀ z : ℍ,
-      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
-        cexp (2 * π * I * m * z) =
-      ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := fun z => by
-    simpa [ha_def] using tsum_congr (fun m => by ring_nf)
-  simp_rw [h_eq2]
-  simpa [ha0] using (qexp_tendsto_of_poly_bound hbound).const_mul (720 : ℂ)
-
 /-- `(D F)/F → 2` as `im(z) → ∞`.
 The log-derivative limit, following from F having vanishing order 2. -/
-theorem D_F_div_F_tendsto : Tendsto (D F / F) atImInfty (nhds 2) := by
-  set f : ℍ → ℂ := E₂ * E₄.toFun - E₆.toFun with hf_def
-  have hF_eq : ∀ z, F z = (f z) ^ 2 := fun _ => rfl
-  have hf_holo : MDiff f :=
-    (E₂_holo'.mul E₄.holo').sub E₆.holo'
-  have hDF_eq : ∀ z, D F z = 2 * f z * D f z := fun z =>
-    congr_fun (D_sq f hf_holo) z
-  have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := fun z hFz => by
-    have hfz : f z ≠ 0 := fun h => hFz (by simp [hF_eq, h])
-    rw [hDF_eq z, hF_eq z, sq]; field_simp [hfz]
-  have hf_div_q : Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
-      atImInfty (nhds 720) :=
-    E₂E₄_sub_E₆_div_q_tendsto.congr fun z => by
-      simp only [hf_def, Pi.sub_apply, Pi.mul_apply, ModularForm.toFun_eq_coe]
-  have hDf_div_f : Tendsto (fun z : ℍ => D f z / f z) atImInfty (nhds 1) := by
-    have h_eq : ∀ z : ℍ, D f z / f z = (D f z / cexp (2 * π * Complex.I * z)) /
-        (f z / cexp (2 * π * Complex.I * z)) := fun z => by field_simp [Complex.exp_ne_zero]
-    simp_rw [h_eq, show (1 : ℂ) = 720 / 720 by norm_num]
-    exact D_diff_div_q_tendsto.div hf_div_q (by norm_num)
-  have h_F_ne := eventually_ne_zero_of_tendsto_div (by norm_num) F_vanishing_order
-  simpa using (hDf_div_f.const_mul (2 : ℂ)).congr' (by
-    filter_upwards [h_F_ne] with z hFz; exact (hDF_div_eq z hFz).symm)
+theorem D_F_div_F_tendsto :
+    Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
+  simpa [show (2 * π * I * 2) / (2 * π * I) = (2 : ℂ) by field_simp] using
+    logderiv_tendsto_of_div_exp_tendsto F_holo (by norm_num) F_vanishing_order
 
 /-!
 ### G-Side Asymptotic Analysis
@@ -923,95 +888,27 @@ theorem G_vanishing_order :
     push_cast
     field_simp [Complex.exp_ne_zero]
   simp_rw [h_eq]
-  tendsto_cont [H₂_div_exp_tendsto, H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
-
-/-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
-theorem D_cexp_div (c : ℂ) (z : ℍ) :
-    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
-  simp only [D]
-  have h_deriv : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
-      c * cexp (c * z) :=
-    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp (fun w ↦ cexp (c * w))).deriv_eq.trans
-      ((Complex.hasDerivAt_exp (c * (z : ℂ))).scomp (z : ℂ)
-        (by simpa using (hasDerivAt_id (z : ℂ)).const_mul c)).deriv
-  rw [h_deriv]; field_simp [Complex.exp_ne_zero]
+  have h_poly : Filter.Tendsto (fun z : ℍ ↦ 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+      atImInfty (nhds 5) := by
+    tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
+  convert (H₂_div_exp_tendsto.pow 3).mul h_poly <;> norm_num
 
 private theorem D_H₂_div_H₂_tendsto :
-    Tendsto (D H₂ / H₂) atImInfty (nhds (1 / 2)) := by
-  let f : ℍ → ℂ := fun w ↦ cexp (π * I * w)
-  let h : ℍ → ℂ := H₂ / f
-  have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun _ => Complex.exp_ne_zero _
-  have hf_md : MDiff f := fun τ => by
-    simpa [f, Function.comp] using DifferentiableAt_MDifferentiableAt
-      (G := fun t : ℂ ↦ cexp (π * I * t)) (z := τ) (differentiableAt_id.const_mul (π * I)).cexp
-  have hh_md : MDiff h := MDifferentiable_div H₂_SIF_MDifferentiable hf_md hf_ne
-  have hDh_div_h : Tendsto (fun z ↦ D h z / h z) atImInfty (nhds 0) := by
-    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hh_md
-      (H₂_div_exp_tendsto.isBigO_one ℝ)).div H₂_div_exp_tendsto (by norm_num : (16 : ℂ) ≠ 0)
-  have h_H₂_eq : H₂ = f * h := by
-    ext w; simp only [h, Pi.mul_apply, Pi.div_apply, mul_div_cancel₀ _ (hf_ne w)]
-  have h_logderiv_eq : ∀ᶠ z : ℍ in atImInfty, D H₂ z / H₂ z = D f z / f z + D h z / h z := by
-    filter_upwards [H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)] with z hz
-    rw [h_H₂_eq]; exact logderiv_mul_eq f h hf_md hh_md z (hf_ne z) hz
-  have hf_const : Tendsto (fun z => D f z / f z) atImInfty (nhds (1 / 2)) := by
-    have hf_eq : ∀ z : ℍ, D f z / f z = 1 / 2 := fun z => by
-      simpa [show π * I / (2 * π * I) = (1 : ℂ) / 2 by field_simp] using D_cexp_div (π * I) z
-    simp_rw [hf_eq]
-    exact tendsto_const_nhds
-  refine ((by simpa using hf_const.add hDh_div_h :
-    Tendsto (fun z ↦ D f z / f z + D h z / h z) atImInfty (nhds (1 / 2))).congr' ?_)
-  filter_upwards [h_logderiv_eq] with z hz using hz.symm
-
-private theorem D_H₂_tendsto_zero : Tendsto (D H₂) atImInfty (nhds 0) :=
-  D_tendsto_zero_of_isBoundedAtImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
-
-private theorem D_H₄_tendsto_zero : Tendsto (D H₄) atImInfty (nhds 0) :=
-  D_tendsto_zero_of_isBoundedAtImInfty H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
-
-/-- `D(2H₂² + 5H₂H₄ + 5H₄²) → 0` as `im(z) → ∞`, by the Cauchy estimate. -/
-private theorem D_B_tendsto_zero :
-    Tendsto (D ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2))
-      atImInfty (nhds 0) := by
-  apply D_tendsto_zero_of_isBoundedAtImInfty (by fun_prop)
-  refine (H_poly_tendsto_atImInfty.congr' ?_).isBigO_one ℝ
-  filter_upwards with z
-  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-  ring
+    Filter.Tendsto (fun z : ℍ => D H₂ z / H₂ z) atImInfty (nhds ((1 : ℂ) / 2)) := by
+  simpa [show (π * I) / (2 * π * I) = (1 : ℂ) / 2 by field_simp] using
+    logderiv_tendsto_of_div_exp_tendsto H₂_MDifferentiable (by norm_num) H₂_div_exp_tendsto
 
 /-- `(D G)/G → 3/2` as `im(z) → ∞`. -/
-theorem D_G_div_G_tendsto : Tendsto (D G / G) atImInfty (nhds (3 / 2)) := by
-  let A := H₂ ^ 3
-  let B := (2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2
-  have hA : MDiff A := by fun_prop
-  have hB : MDiff B := by fun_prop
-  have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := fun z hH₂_ne => by
-    change D (H₂ ^ 3) z / (H₂ z ^ 3) = 3 * (D H₂ z / H₂ z)
-    rw [show D (H₂ ^ 3) z = 3 * H₂ z ^ 2 * D H₂ z by
-      simpa [Pi.mul_apply, Pi.pow_apply] using congrFun (D_cube H₂ H₂_MDifferentiable) z]
-    field_simp [pow_ne_zero 3 hH₂_ne, pow_ne_zero 2 hH₂_ne]
-  have h_DA_A_tendsto : Tendsto (D A / A) atImInfty (nhds (3 / 2)) := by
-    rw [show (3 : ℂ) / 2 = 3 * (1 / 2) by norm_num]
-    refine (D_H₂_div_H₂_tendsto.const_mul 3).congr' ?_
-    filter_upwards [H₂_eventually_ne_zero] with z hz using (h_DA_A z hz).symm
-  have h_DB_B_tendsto : Tendsto (D B / B) atImInfty (nhds 0) := by
-    have h := D_B_tendsto_zero.div H_poly_tendsto_atImInfty (by norm_num : (5 : ℂ) ≠ 0)
-    simp only [zero_div] at h; exact h
-  have hA_ne : ∀ᶠ z in atImInfty, A z ≠ 0 := by
-    filter_upwards [H₂_eventually_ne_zero] with z hz using pow_ne_zero 3 hz
-  have hB_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
-    H_poly_tendsto_atImInfty.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
-  rw [show (3 : ℂ) / 2 = 3 / 2 + 0 by norm_num]
-  refine (h_DA_A_tendsto.add h_DB_B_tendsto).congr' ?_
-  filter_upwards [hA_ne, hB_ne] with z hA_ne hB_ne
-  rw [show G = A * B from G_eq]; exact (logderiv_mul_eq A B hA hB z hA_ne hB_ne).symm
+theorem D_G_div_G_tendsto :
+    Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
+  simpa [show (2 * π * I * (3 / 2)) / (2 * π * I) = (3 : ℂ) / 2 by field_simp] using
+    logderiv_tendsto_of_div_exp_tendsto G_holo (by norm_num) G_vanishing_order
 
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
-  unfold L₁₀
   have hF := F_imag_axis_real
   have hG := G_imag_axis_real
-  have hGh := G_holo
-  fun_prop
+  fun_prop [L₁₀]
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
 theorem L₁₀_div_FG_tendsto :
@@ -1031,17 +928,9 @@ theorem L₁₀_div_FG_tendsto :
     (tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG)
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
   refine h_re.congr' ?_
-  filter_upwards [Filter.eventually_gt_atTop 0] with t ht_pos
-  simp only [Function.comp_apply, Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
-  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩ with hz
-  have hF := F_imag_axis_real t ht_pos
-  have hG := G_imag_axis_real t ht_pos
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hF hG
-  rw [← hz] at hF hG
-  have hFG_im : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
-  have hFG_re : (F z * G z).re = (F z).re * (G z).re := by rw [Complex.mul_re, hF, hG]; ring
-  simp only [Pi.div_apply, Pi.mul_apply]
-  rw [div_re_of_im_eq_zero hFG_im, hFG_re]
+  filter_upwards with t
+  simp only [Function.comp_apply]
+  exact ResToImagAxis.Real.re_div_mul_eq F_imag_axis_real G_imag_axis_real t
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real, ?_⟩
