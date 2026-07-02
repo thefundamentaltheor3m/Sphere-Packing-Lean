@@ -411,6 +411,18 @@ theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ}
   tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hc hF)
 
 /--
+If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
+`t^n * re (F(it)) → 0` as `t → ∞` for any natural power `n`.
+-/
+theorem tendsto_pow_mul_resToImagAxis_re_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+    (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (n : ℕ) :
+    Tendsto (fun t : ℝ => t ^ n * (F.resToImagAxis t).re) atTop (𝓝 0) := by
+  simpa only [Function.comp_def, Complex.ofReal_natCast, Complex.cpow_natCast,
+    ← Complex.ofReal_pow, Complex.re_ofReal_mul, Complex.zero_re] using
+    (Complex.continuous_re.tendsto 0).comp
+      (tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hF n)
+
+/--
 For a cusp form `f` of level `Γ(n)`, we have `t^s * f(it) → 0` as `t → ∞` for any real power `s`.
 
 This follows from the exponential decay of cusp forms at infinity: `f = O(exp(-2π τ.im / n))`.
