@@ -4,42 +4,20 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
-public import Mathlib.Logic.Function.Basic
-public import Mathlib.Logic.Relator
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.Analysis.Complex.Basic
-public import Mathlib.Analysis.Complex.Trigonometric
-
-public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Algebra.Module.ZLattice.Summable
-public import Mathlib.Algebra.Module.Submodule.Basic
-public import Mathlib.Analysis.CStarAlgebra.Classes
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-public import Mathlib.Analysis.RCLike.Inner
-public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+public import Mathlib.Dynamics.Ergodic.Action.Regular
 public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Order.Filter.Cofinite
-public import Mathlib.Topology.Algebra.InfiniteSum.Constructions
-public import Mathlib.Topology.Algebra.InfiniteSum.Real
-public import Mathlib.Topology.Metrizable.Basic
-public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
-public import Mathlib.Topology.Separation.CompletelyRegular
 
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
-public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
-import Mathlib.Combinatorics.Pigeonhole
+public import SpherePacking.ForMathlib.CoordCube
+public import SpherePacking.ForMathlib.DualLattice
 
 /-!
 # Cohn-Elkies linear programming bound
 
 Cohn-Elkies upper bound on `SpherePackingConstant d` via `LinearProgrammingBound`. Also contains
 the periodizing constructions and boundary-control machinery (merged from `BoundaryControl`):
-`periodizedCenters`, `periodize_to_periodicSpherePacking`, `coordCube`/`coordCubeInner`, the cube
+`periodizedCenters`, `periodize_to_periodicSpherePacking`, `cubeIco`/`cubeIcc`, the cube
 lattice `cubeLattice`, and the main result `periodic_constant_eq_constant`.
 -/
 
@@ -51,24 +29,20 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module Fi
 variable {d : ℕ}
 
 /-- Any coordinate of a vector is bounded in absolute value by the Euclidean norm. -/
-public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ := by
-  rw [EuclideanSpace.norm_eq, ← Real.sqrt_sq_eq_abs]
-  exact Real.sqrt_le_sqrt (by
-    have hsq : (x.ofLp i) ^ 2 = ‖x.ofLp i‖ ^ 2 := by rw [Real.norm_eq_abs, sq_abs]
-    rw [hsq]
-    exact Finset.single_le_sum (f := fun j : Fin d => ‖x.ofLp j‖ ^ 2)
-      (fun _ _ => sq_nonneg _) (Finset.mem_univ i))
+public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ :=
+  PiLp.norm_apply_le x i
 
-/-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. -/
-public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)} {r : ℝ}
-    {A B : Set (EuclideanSpace ℝ (Fin d))}
+/-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. Holds
+in any real normed space. -/
+public lemma dist_le_of_disjoint_ball_subsets {V : Type*} [SeminormedAddCommGroup V]
+    [NormedSpace ℝ V] {x y : V} {r : ℝ} {A B : Set V}
     (hx : ball x r ⊆ A) (hy : ball y r ⊆ B) (hAB : Disjoint A B) : 2 * r ≤ dist x y := by
-  by_contra hlt
-  refine Set.disjoint_left.1 hAB (hx (a := midpoint ℝ x y) ?_) (hy (a := midpoint ℝ x y) ?_) <;>
-    simpa [Metric.mem_ball, dist_comm] using
-      (by nlinarith [lt_of_not_ge hlt] : (1 / 2 : ℝ) * dist x y < r)
+  by_cases hr : 0 < r
+  · simpa [two_mul] using (disjoint_ball_ball_iff hr hr).1 (hAB.mono hx hy)
+  · linarith [dist_nonneg (x := x) (y := y)]
 
-/-- The union of all lattice translates of a set `F` of representatives. -/
+/-- The union of all lattice translates `⋃ g : Λ, g +ᵥ F` of representatives `F`. Standalone as
+the centre set of `periodize_to_periodicSpherePacking`, with its own membership/closure API. -/
 @[expose] public noncomputable def periodizedCenters (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
     (F : Set (EuclideanSpace ℝ (Fin d))) : Set (EuclideanSpace ℝ (Fin d)) := ⋃ g : Λ, g +ᵥ F
 
@@ -83,20 +57,18 @@ public lemma periodizedCenters_lattice_action {Λ : Submodule ℤ (EuclideanSpac
     {F : Set (EuclideanSpace ℝ (Fin d))} {x y : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ Λ) (hy : y ∈ periodizedCenters (d := d) Λ F) :
     x + y ∈ periodizedCenters (d := d) Λ F := by
-  rcases mem_periodizedCenters_iff.1 hy with ⟨g, f, hf, rfl⟩
-  exact mem_periodizedCenters_iff.2
-    ⟨⟨x, hx⟩ + g, f, hf, by simp [Submodule.vadd_def, vadd_eq_add, add_assoc]⟩
+  obtain ⟨g, f, hf, rfl⟩ := mem_periodizedCenters_iff.1 hy
+  exact mem_periodizedCenters_iff.2 ⟨⟨x, hx⟩ + g, f, hf, (add_assoc x g f).symm⟩
 
 /-- Translating a ball by a lattice vector stays inside the translate of the ambient set. -/
 public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D : Set (EuclideanSpace ℝ (Fin d))} {r : ℝ} {g : Λ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : ball x r ⊆ D) : ball (g +ᵥ x) r ⊆ g +ᵥ D := fun y hy =>
-  ⟨(- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y, hx <| by
-    simpa [Metric.mem_ball, dist_eq_norm, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
-      add_assoc, add_comm, add_left_comm] using hy, by simp [vadd_eq_add]⟩
+    (hx : ball x r ⊆ D) : ball (g +ᵥ x) r ⊆ g +ᵥ D := by
+  rw [Submodule.vadd_def, ← vadd_ball]
+  exact Set.vadd_set_mono hx
 
-/-- Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
-along a lattice `Λ`. -/
+/-- The periodic packing obtained by translating representatives `F ⊆ S.centers` along a lattice
+`Λ`. The core construction turning a finite cell into a `PeriodicSpherePacking`. -/
 @[expose] public noncomputable def periodize_to_periodicSpherePacking
     (S : SpherePacking d)
     (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
@@ -107,247 +79,190 @@ along a lattice `Λ`. -/
   separation := S.separation
   separation_pos := S.separation_pos
   centers_dist := fun a b hab => by
-    change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
-    rcases mem_periodizedCenters_iff.1 a.property with ⟨ga, fa, hfa, ha⟩
-    rcases mem_periodizedCenters_iff.1 b.property with ⟨gb, fb, hfb, hb⟩
+    obtain ⟨ga, fa, hfa, ha⟩ := mem_periodizedCenters_iff.1 a.property
+    obtain ⟨gb, fb, hfb, hb⟩ := mem_periodizedCenters_iff.1 b.property
+    change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) b
+    rw [ha, hb]
     by_cases hgg : ga = gb
     · subst hgg
-      simpa [ha, hb] using (dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb).symm ▸
-        S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb)
-          (fun h => hab <| Subtype.ext <| by simp [ha, hb, h])
-    · simpa [ha, hb, two_mul, add_halves] using dist_le_of_disjoint_ball_subsets
+      simp only [Submodule.vadd_def, dist_vadd_cancel_left]
+      exact S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb)
+        fun h => hab <| Subtype.ext <| by rw [ha, hb, h]
+    · have hdist := dist_le_of_disjoint_ball_subsets
         (ball_vadd_subset_vadd (hF_ball fa hfa)) (ball_vadd_subset_vadd (hF_ball fb hfb))
         (disjoint_vadd_of_unique_covers (D := D) hD_unique_covers hgg)
+      linarith [add_halves S.separation]
   lattice := Λ
   lattice_action := fun _ _ ↦ periodizedCenters_lattice_action
   lattice_discrete := inferInstance
   lattice_isZLattice := inferInstance
 
-/-- The coordinate cube `[0,L)^d` as a set in `EuclideanSpace`. -/
-@[expose] public def coordCube (d : ℕ) (L : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
-  {x | ∀ i : Fin d, x i ∈ Set.Ico (0 : ℝ) L}
+/-- A ball of radius `r` centred in the inner cube `[r, L-r]^d` is contained in `[0, L)^d`. -/
+lemma ball_subset_cubeIco_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
+    (hx : x ∈ cubeIcc d L r) : ball x r ⊆ cubeIco d L := fun y hy i => by
+  have h₁ : |y i - x i| ≤ ‖y - x‖ := by simpa using abs_coord_le_norm (y - x) i
+  have h₂ : ‖y - x‖ < r := by simpa [dist_eq_norm] using hy
+  obtain ⟨hlo, hhi⟩ := abs_lt.mp (h₁.trans_lt h₂)
+  obtain ⟨hxl, hxr⟩ := hx i
+  exact ⟨by linarith, by linarith⟩
 
-/-- The "inner cube" `[r, L-r]^d` (closed intervals) used to keep radius-`r` balls inside
-`coordCube L`. -/
-@[expose] public def coordCubeInner (d : ℕ) (L r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
-  {x | ∀ i : Fin d, x i ∈ Set.Icc r (L - r)}
-
-/-- A scaled basis used to realize `coordCube L` as a fundamental domain. -/
-@[expose] public noncomputable def cubeBasis (d : ℕ) (L : ℝ) (hL : 0 < L) :
-    Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) :=
-  ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).isUnitSMul
-    (fun _ : Fin d ↦ IsUnit.mk0 L (ne_of_gt hL))
-
-/-- The lattice generated by `cubeBasis L hL`. -/
-@[expose] public noncomputable def cubeLattice (d : ℕ) (L : ℝ) (hL : 0 < L) :
-    Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
-  Submodule.span ℤ (Set.range (cubeBasis d L hL))
-
-instance instDiscreteTopology_cubeLattice (L : ℝ) (hL : 0 < L) :
-    DiscreteTopology (cubeLattice d L hL) := by
-  change DiscreteTopology (Submodule.span ℤ (Set.range (cubeBasis d L hL)))
-  infer_instance
-
-instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
-    IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
-
-public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
-    fundamentalDomain (cubeBasis d L hL) = coordCube d L := by
-  ext x
-  simp only [ZSpan.mem_fundamentalDomain, coordCube, cubeBasis, Module.Basis.repr_isUnitSMul,
-    Units.smul_def, Units.val_inv_eq_inv_val, Set.mem_setOf_eq, Set.mem_Ico]
-  refine ⟨fun hx i => ?_, fun hx i => ?_⟩ <;> specialize hx i
-  · exact ⟨by simpa [mul_inv_cancel₀ hL.ne'] using
-        (by simpa [mul_assoc] using mul_nonneg hL.le hx.1 : 0 ≤ (L * L⁻¹) * x.ofLp i),
-      by simpa [mul_inv_cancel₀ hL.ne'] using
-        (by simpa [mul_assoc] using mul_lt_mul_of_pos_left hx.2 hL :
-          (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1)⟩
-  · exact ⟨mul_nonneg (inv_pos.mpr hL).le hx.1, by
-      simpa [mul_assoc, inv_mul_cancel₀ hL.ne'] using
-        mul_lt_mul_of_pos_left hx.2 (inv_pos.mpr hL)⟩
-
-lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : x ∈ coordCubeInner d L r) : ball x r ⊆ coordCube d L := fun y hy i => by
-  have hsub := abs_lt.mp <| lt_of_le_of_lt (by simpa using abs_coord_le_norm (d := d) (y - x) i :
-    |y i - x i| ≤ ‖y - x‖)
-    (by simpa [Metric.mem_ball, dist_eq_norm, dist_comm] using hy : ‖y - x‖ < r)
-  refine ⟨?_, ?_⟩ <;> linarith [(hx i).1, (hx i).2, hsub.1, hsub.2]
-
+/-- If `F ⊆ D` and every point has a unique lattice translate landing in `D`, then intersecting
+the periodization of `F` with `D` recovers exactly `F`. -/
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
     (hF_sub : F ⊆ D) (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) :
     periodizedCenters (d := d) Λ F ∩ D = F := by
   ext x
-  have zvadd : ∀ y : EuclideanSpace ℝ (Fin d), (0 : ↥Λ) +ᵥ y = y := fun y => zero_vadd _ _
-  refine ⟨?_, fun hxF => ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, (zvadd x).symm⟩, hF_sub hxF⟩⟩
-  rintro ⟨⟨_, ⟨g, rfl⟩, ⟨f, hfF, rfl⟩⟩, hxD⟩
-  obtain ⟨_, _, hg0uniq⟩ := hD_unique_covers f
-  have hg0g : g = 0 := by
-    have h1 : (fun g ↦ g +ᵥ f ∈ D) g := hxD
-    have h2 : (fun g ↦ g +ᵥ f ∈ D) (0 : ↥Λ) := by
-      change (0 : ↥Λ) +ᵥ f ∈ D
-      rw [zvadd]; exact hF_sub hfF
-    exact (hg0uniq g h1).trans (hg0uniq 0 h2).symm
-  rw [hg0g]
-  change (0 : ↥Λ) +ᵥ f ∈ F
-  rw [zvadd]
-  exact hfF
+  refine ⟨?_, fun hxF ↦
+    ⟨mem_periodizedCenters_iff.2 ⟨0, x, hxF, (zero_vadd _ x).symm⟩, hF_sub hxF⟩⟩
+  rintro ⟨hxP, hxD⟩
+  obtain ⟨g, f, hfF, rfl⟩ := mem_periodizedCenters_iff.1 hxP
+  obtain ⟨g₀, -, huniq⟩ := hD_unique_covers f
+  have hg : g = 0 := (huniq g hxD).trans (huniq 0 (by simpa using hF_sub hfF)).symm
+  simpa [hg] using hfF
 
-namespace PeriodicConstant
-
-private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet s) :
-    volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s := by
-  simpa using (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
-
-public lemma coordCube_unique_covers (L : ℝ) (hL : 0 < L) :
-    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ coordCube d L := fun x => by
-  simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-    exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
-
-public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube d L) := by
-  simpa [fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-    fundamentalDomain_isBounded (cubeBasis d L hL)
-
-public lemma volume_coordCube (L : ℝ) : volume (coordCube d L) = (ENNReal.ofReal L) ^ d := by
-  rw [show coordCube d L = (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-        (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) from
-      Set.ext fun x => by simp [coordCube, Set.mem_pi],
-    volume_preimage_ofLp _
-      (.pi Set.countable_univ fun _ _ ↦ measurableSet_Ico), volume_pi, Measure.pi_pi]
-  simp [Real.volume_Ico, sub_zero]
-
-public lemma coordCubeInner_eq_preimage_ofLp (L r : ℝ) :
-    coordCubeInner d L r =
-      (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹'
-        (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc r (L - r)) := by
-  ext x; simp [coordCubeInner, Pi.le_def, forall_and]
-
-public lemma volume_coordCubeInner (L r : ℝ) :
-    volume (coordCubeInner d L r) = (ENNReal.ofReal (L - 2 * r)) ^ d := by
-  rw [coordCubeInner_eq_preimage_ofLp, volume_preimage_ofLp _
-    (.pi Set.countable_univ fun _ _ ↦ measurableSet_Icc), volume_pi, Measure.pi_pi]
-  simp [Real.volume_Icc, sub_eq_add_neg, add_left_comm, add_comm, two_mul]
-
-end PeriodicConstant
-
-namespace PeriodicConstantApprox
-
-public lemma coordCube_unique_covers_vadd (L : ℝ) (hL : 0 < L) (v : cubeLattice d L hL) :
-    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ v +ᵥ coordCube d L := fun x => by
-  have hvadd (a : cubeLattice d L hL) :
-      a +ᵥ x ∈ v +ᵥ coordCube d L ↔ (a - v) +ᵥ x ∈ coordCube d L := by
+/-- A translate `v +ᵥ D` of a fundamental domain is again a fundamental domain: if every point has a
+unique lattice translate landing in `D`, the same holds for `v +ᵥ D`. Fully lattice-generic — no
+cube, basis, or `EuclideanSpace` structure is used. -/
+public lemma vadd_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) (v : Λ) :
+    ∀ x, ∃! g : Λ, g +ᵥ x ∈ v +ᵥ D := fun x => by
+  have hvadd (a : Λ) : a +ᵥ x ∈ v +ᵥ D ↔ (a - v) +ᵥ x ∈ D := by
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
-  obtain ⟨g, hg, hguniq⟩ := PeriodicConstant.coordCube_unique_covers (d := d) L hL x
+  obtain ⟨g, hg, hguniq⟩ := hD x
   exact ⟨g + v, (hvadd _).2 (by simpa),
     fun _ ha => sub_eq_iff_eq_add.1 (hguniq _ <| (hvadd _).1 ha)⟩
 
-public lemma ball_subset_vadd_coordCube_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
+namespace PeriodicConstantApprox
+
+public lemma ball_subset_vadd_cubeIco_of_mem_vadd_inner {L r : ℝ} (hL : 0 < L)
     {v : cubeLattice d L hL} {x : EuclideanSpace ℝ (Fin d)}
-    (hx : x ∈ v +ᵥ coordCubeInner d L r) :
-    ball x r ⊆ v +ᵥ coordCube d L := by
+    (hx : x ∈ v +ᵥ cubeIcc d L r) :
+    ball x r ⊆ v +ᵥ cubeIco d L := by
   obtain ⟨y, hy, rfl⟩ := hx
-  have hball : ball y r ⊆ coordCube d L := ball_subset_coordCube_of_mem_inner hy
+  have hball : ball y r ⊆ cubeIco d L := ball_subset_cubeIco_of_mem_inner hy
   intro z hz
   refine ⟨z - v, hball ?_, by simp [vadd_eq_add]⟩
   change dist z ((v : EuclideanSpace ℝ (Fin d)) + y) < r at hz
-  rw [mem_ball, dist_eq_norm, show z - ↑v - y = z - (↑v + y) by abel, ← dist_eq_norm]
-  exact hz
+  simpa [mem_ball, dist_eq_norm, sub_sub] using hz
 
-public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
-    Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
-  refine (Set.Finite.preimage_embedding (f := ⟨fun g : cubeLattice d L hL =>
-    (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩) (by
-      simpa [cubeLattice] using ZSpan.setFinite_inter (b := cubeBasis d L hL)
-        (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset fun g hg => ?_
-  exact ⟨hg, g.property⟩
+section FundamentalDomainCover
 
-section CoordCubeCover
+variable (b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)))
+
+/-- The unique lattice vector translating `x` into `fundamentalDomain b`, for an arbitrary basis
+`b` (see `fundamentalDomainCover_spec`). The cell-assignment map underlying the pigeonhole argument;
+generic over the basis — no cube or coordinate structure is used. -/
+noncomputable def fundamentalDomainCover (x : EuclideanSpace ℝ (Fin d)) :
+    Submodule.span ℤ (Set.range b) :=
+  Classical.choose (ZSpan.exist_unique_vadd_mem_fundamentalDomain b x)
+
+lemma fundamentalDomainCover_spec (x : EuclideanSpace ℝ (Fin d)) :
+    fundamentalDomainCover b x +ᵥ x ∈ fundamentalDomain b :=
+  (Classical.choose_spec (ZSpan.exist_unique_vadd_mem_fundamentalDomain b x)).1
+
+lemma neg_fundamentalDomainCover_mem_ball {C R : ℝ}
+    (hC : fundamentalDomain b ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+    {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
+    ((-fundamentalDomainCover b x : Submodule.span ℤ (Set.range b)) :
+        EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
+  -- `g` is the (coerced) covering translate; the goal is `‖-g‖ = ‖g‖ < R + C`.
+  set g := (fundamentalDomainCover b x : EuclideanSpace ℝ (Fin d))
+  rw [mem_ball_zero_iff, show ((-fundamentalDomainCover b x : Submodule.span ℤ (Set.range b)) :
+    EuclideanSpace ℝ (Fin d)) = -g from rfl, norm_neg]
+  have hx' : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
+  have hgx : ‖g + x‖ < C := by
+    simpa [mem_ball_zero_iff] using hC (by
+      simpa [Submodule.vadd_def, vadd_eq_add] using fundamentalDomainCover_spec b x)
+  have htri : ‖g‖ ≤ ‖g + x‖ + ‖x‖ := by
+    simpa [add_sub_cancel_right] using norm_sub_le (g + x) x
+  linarith
+
+end FundamentalDomainCover
+
+section CubeCover
 
 variable (L : ℝ) (hL : 0 < L)
 
-noncomputable def coordCubeCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice d L hL :=
-  Classical.choose (PeriodicConstant.coordCube_unique_covers L hL x)
+/-- The cube cell-assignment map: `fundamentalDomainCover` specialised to the scaled-cube basis.
+A thin wrapper so the pigeonhole argument reads in cube terms (`fundamentalDomain (cubeBasis …) =
+cubeIco`). -/
+noncomputable def cubeIcoCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice d L hL :=
+  fundamentalDomainCover (cubeBasis d L hL) x
 
-lemma coordCubeCover_spec (x : EuclideanSpace ℝ (Fin d)) :
-    coordCubeCover L hL x +ᵥ x ∈ coordCube d L :=
-  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).1
+lemma cubeIcoCover_spec (x : EuclideanSpace ℝ (Fin d)) :
+    cubeIcoCover L hL x +ᵥ x ∈ cubeIco d L := by
+  rw [← fundamentalDomain_cubeBasis_eq_cubeIco L hL]
+  exact fundamentalDomainCover_spec (cubeBasis d L hL) x
 
-lemma neg_coordCubeCover_mem_ball {C R : ℝ}
-    (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+lemma neg_cubeIcoCover_mem_ball {C R : ℝ}
+    (hC : cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
-    ((-coordCubeCover L hL x : cubeLattice d L hL) :
+    ((-cubeIcoCover L hL x : cubeLattice d L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
-  set g := (coordCubeCover L hL x : EuclideanSpace ℝ (Fin d))
-  rw [mem_ball_zero_iff, show ((-coordCubeCover L hL x : cubeLattice d L hL) :
-    EuclideanSpace ℝ (Fin d)) = -g from rfl, norm_neg]
-  linarith [show ‖x‖ < R by simpa [mem_ball_zero_iff] using hx,
-    show ‖g + x‖ < C by simpa [mem_ball_zero_iff] using hC (by
-      simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec L hL x),
-    show ‖g‖ ≤ ‖g + x‖ + ‖x‖ by simpa [add_sub_cancel_right] using norm_sub_le (g + x) x]
+  refine neg_fundamentalDomainCover_mem_ball (cubeBasis d L hL) ?_ hx
+  rwa [fundamentalDomain_cubeBasis_eq_cubeIco]
 
-end CoordCubeCover
+end CubeCover
 
-lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} (hL : 0 < L)
-    {R C : ℝ} (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
-    let htSet :=
-      PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
-    let t : Finset (cubeLattice d L hL) := htSet.toFinset
-    (t.card : ℝ≥0∞) * volume (coordCube d L) ≤
+lemma card_finite_lattice_in_ball_mul_volume_cubeIco_le_volume_ball {L : ℝ} (hL : 0 < L)
+    {R C : ℝ} (hC : cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
+    ((finite_lattice_in_ball (d := d) L hL (R + C)).toFinset.card :
+        ℝ≥0∞) * volume (cubeIco d L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := by
-  intro htSet t
-  haveI hvi : VAddInvariantMeasure (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d))
-      (MeasureTheory.volume) :=
-    inferInstanceAs (VAddInvariantMeasure (cubeLattice d L hL).toAddSubgroup _ _)
-  haveI hmcv : MeasurableConstVAdd (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d)) :=
-    ⟨fun _ => measurable_const_vadd _⟩
+  -- `htSet` abbreviates the finiteness fact whose `toFinset` indexes the cells.
+  set htSet := finite_lattice_in_ball (d := d) L hL (R + C)
   have hvadd : ∀ g : ↥(cubeLattice d L hL),
-      volume (g +ᵥ coordCube d L) = volume (coordCube d L) :=
-    fun g => @measure_vadd _ _ _ _ _ MeasureTheory.volume hvi g (coordCube d L)
-  have hms : MeasurableSet (coordCube d L) := by
-    rw [show coordCube d L = fundamentalDomain (cubeBasis d L hL) from
-      (fundamentalDomain_cubeBasis_eq_coordCube L hL).symm]
-    exact fundamentalDomain_measurableSet _
-  calc (↑t.card : ℝ≥0∞) * volume (coordCube d L)
-      = ∑ g ∈ t, volume (g +ᵥ coordCube d L) := by
-        simp_rw [hvadd, Finset.sum_const]
-        rw [nsmul_eq_mul]
-    _ = volume (⋃ g ∈ t, g +ᵥ coordCube d L) := (measure_biUnion_finset
+      volume (g +ᵥ cubeIco d L) = volume (cubeIco d L) :=
+    fun g => measure_vadd volume g _
+  have hms : MeasurableSet (cubeIco d L) :=
+    fundamentalDomain_cubeBasis_eq_cubeIco L hL ▸ fundamentalDomain_measurableSet _
+  calc (↑htSet.toFinset.card : ℝ≥0∞) * volume (cubeIco d L)
+      = ∑ g ∈ htSet.toFinset, volume (g +ᵥ cubeIco d L) := by
+        simp_rw [hvadd, Finset.sum_const, nsmul_eq_mul]
+    _ = volume (⋃ g ∈ htSet.toFinset, g +ᵥ cubeIco d L) := (measure_biUnion_finset
         (fun _ _ _ _ hgh => disjoint_vadd_of_unique_covers (d := d)
-          (PeriodicConstant.coordCube_unique_covers L hL) hgh)
-        (fun g _ => @MeasurableSet.const_vadd _ _ _ _ _ hmcv _ hms g)).symm
+          (cubeIco_unique_covers L hL) hgh)
+        (fun g _ => hms.const_vadd g)).symm
     _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := volume.mono <| by
         rintro y hy
         obtain ⟨g, hgT, x, hx, rfl⟩ := Set.mem_iUnion₂.1 hy
         have hg : (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) :=
-          htSet.mem_toFinset.1 (by simpa [t] using hgT)
+          htSet.mem_toFinset.1 hgT
         simp only [vadd_eq_add, mem_ball_zero_iff]
         linarith [norm_add_le (g : EuclideanSpace ℝ (Fin d)) x,
           mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
 
 section BoundaryControl
 
+/-- The constant vector `(c, …, c)`. Used only to recentre the outer cube in the shell estimate;
+kept (with `constVec_apply`) to avoid repeating the `WithLp.toLp` spelling at its many sites. -/
 def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) := WithLp.toLp 2 (fun _ : Fin d => c)
 
-lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
-    ((coordCube d L \ coordCubeInner d L (1 / 2)) +
+@[simp] lemma constVec_apply {c : ℝ} (i : Fin d) : constVec d c i = c := rfl
+
+lemma cubeIco_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
+    ((cubeIco d L \ cubeIcc d L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
-      ⊆ ((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-        coordCubeInner d L 1 := by
+      ⊆ ((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+        cubeIcc d L 1 := by
   rintro z ⟨x, hx, y, hy, rfl⟩
   have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i =>
     (abs_coord_le_norm y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
+  rw [Set.mem_diff, mem_cubeIco] at hx
   refine ⟨Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => ?_, fun hz_inner => ?_⟩
-  · simp only [coordCubeInner, coordCube, constVec, vadd_eq_add] at hx ⊢
-    refine ⟨by simpa [add_assoc, add_left_comm, add_comm] using
-      (by linarith [(hx.1 i).1, abs_lt.mp (hyi i)] : (0:ℝ) ≤ x i + y i + (1/2:ℝ)),
-      by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (by linarith [(hx.1 i).2.le, abs_lt.mp (hyi i)] : x i + y i + (1/2:ℝ) ≤ L + 1)⟩
+  · -- Each coordinate of `x + y`, shifted by `+ 1/2`, lands in `[0, L + 1]`.
+    simp only [vadd_eq_add, neg_neg, constVec_apply, PiLp.add_apply, PiLp.neg_apply,
+      Set.mem_Icc]
+    refine ⟨?_, ?_⟩  -- lower bound `0`, upper bound `L + 1`
+    · linarith [(hx.1 i).1, abs_lt.mp (hyi i)]
+    · linarith [(hx.1 i).2.le, abs_lt.mp (hyi i)]
   · obtain ⟨i, hi⟩ : ∃ i : Fin d, ¬ x i ∈ Set.Icc (1 / 2 : ℝ) (L - 1 / 2) := by
-      simpa [coordCubeInner, Set.mem_setOf_eq] using not_forall.mp hx.2
+      simpa [mem_cubeIcc] using not_forall.mp hx.2
     rw [Set.mem_Icc, not_and_or] at hi
     have hz_i : (x i + y i) ∈ Set.Icc (1 : ℝ) (L - 1) := by
-      simpa [coordCubeInner, Set.mem_setOf_eq] using hz_inner i
+      simpa [mem_cubeIcc] using hz_inner i
     obtain hi | hi := hi <;> linarith [hz_i.1, hz_i.2, abs_lt.mp (hyi i)]
 
 variable (S : SpherePacking d)
@@ -357,116 +272,122 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     {g : cubeLattice d L hL} {s : Finset (EuclideanSpace ℝ (Fin d))}
     (hs_centers : ∀ x ∈ s, x ∈ S.centers)
     (hs_boundary : ∀ x ∈ s,
-      x ∈ (g +ᵥ coordCube d L) \ (g +ᵥ coordCubeInner d L (1 / 2))) :
+      x ∈ (g +ᵥ cubeIco d L) \ (g +ᵥ cubeIcc d L (1 / 2))) :
     (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) ≤
-      volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-        coordCubeInner d L 1) := by
-  let r : ℝ := (1 / 2 : ℝ)
+      volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+        cubeIcc d L 1) := by
+  -- `r` abbreviates the common ball radius, matching the statement's `2⁻¹`.
+  let r : ℝ := (2⁻¹ : ℝ)
   have hdisj : (s : Set (EuclideanSpace ℝ (Fin d))).PairwiseDisjoint fun x => ball x r :=
     fun x hx y hy hxy => ball_disjoint_ball (by
       dsimp [r]; linarith [show (1 : ℝ) ≤ dist x y by
         simpa [hSsep] using S.centers_dist' x y (hs_centers x hx) (hs_centers y hy) hxy])
   have hsub : (⋃ x ∈ s, ball x r) ⊆
-      g +ᵥ (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-            coordCubeInner d L 1) := fun y hy => by
-    obtain ⟨x, hxS, hyBall⟩ : ∃ x ∈ s, y ∈ ball x r := by simpa using hy
+      g +ᵥ (((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+            cubeIcc d L 1) := fun y hy => by
+    obtain ⟨x, hxS, hyBall⟩ : ∃ x ∈ s, y ∈ ball x r := by aesop
     have hxB := hs_boundary x hxS
+    -- `x0`, `y0`: pull `x`, `y` back by `-g` to the base cube (referenced repeatedly below).
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
     set y0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ y
-    have hvadd_eq : ∀ (v w : EuclideanSpace ℝ (Fin d)) (S : Set (EuclideanSpace ℝ (Fin d))),
-        v ∈ ((g : EuclideanSpace ℝ (Fin d)) +ᵥ S) ↔ -(g : EuclideanSpace ℝ (Fin d)) +ᵥ v ∈ S :=
-      fun v w S => Set.mem_vadd_set_iff_neg_vadd_mem
-    have hxB1' : x0 ∈ coordCube d L := Set.mem_vadd_set_iff_neg_vadd_mem.mp hxB.1
-    have hxB2' : x0 ∉ coordCubeInner d L (1/2) := fun h => hxB.2
-      (Set.mem_vadd_set_iff_neg_vadd_mem.mpr h)
-    have hy0 : y0 ∈ ((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-        coordCubeInner d L 1 := by
-      apply coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
+    have hxB1' : x0 ∈ cubeIco d L := Set.mem_vadd_set_iff_neg_vadd_mem.mp hxB.1
+    have hxB2' : x0 ∉ cubeIcc d L (1 / 2) :=
+      fun h => hxB.2 (Set.mem_vadd_set_iff_neg_vadd_mem.mpr h)
+    have hy0 : y0 ∈ ((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+        cubeIcc d L 1 := by
+      apply cubeIco_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
       refine ⟨x0, ⟨hxB1', hxB2'⟩, y0 - x0, ?_, by simp [sub_eq_add_neg, add_left_comm]⟩
       have : ‖y - x‖ < r := by simpa [Metric.mem_ball, dist_eq_norm] using hyBall
       simpa [Metric.mem_ball, dist_eq_norm, x0, y0, r] using this
     exact Set.mem_vadd_set_iff_neg_vadd_mem.mpr hy0
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
       = volume (⋃ x ∈ s, ball x r) := by
-        rw [show (2⁻¹ : ℝ) = r by norm_num]
         simpa [Measure.addHaar_ball_center, mul_comm, mul_assoc] using
           (measure_biUnion_finset (μ := volume) hdisj (fun _ _ => measurableSet_ball)).symm
-    _ ≤ volume (g +ᵥ (((constVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-          coordCubeInner d L 1)) := volume.mono hsub
-    _ = _ := by
-      haveI inst_vim : VAddInvariantMeasure (↥(cubeLattice d L hL)) (EuclideanSpace ℝ (Fin d))
-          (MeasureTheory.volume) :=
-        inferInstanceAs (VAddInvariantMeasure (cubeLattice d L hL).toAddSubgroup _ _)
-      exact @measure_vadd _ _ _ _ _ MeasureTheory.volume inst_vim g _
+    _ ≤ volume (g +ᵥ (((constVec d (-(1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+          cubeIcc d L 1)) := volume.mono hsub
+    _ = _ := measure_vadd volume g _
 
 end BoundaryControl
 
 lemma volume_cubeShell_eq_pow (L : ℝ) :
-    volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-        coordCubeInner d L 1) =
+    volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+        cubeIcc d L 1) =
       (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-  simpa [measure_vadd, constVec, PeriodicConstant.volume_coordCubeInner] using
-    measure_diff (μ := volume) (fun x hx => Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => by
-      simp only [coordCubeInner, Set.mem_setOf_eq, constVec, vadd_eq_add, one_div,
+  have hsub : cubeIcc d L 1 ⊆
+      (constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0 := fun x hx =>
+    Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => by
+      simp only [mem_cubeIcc, constVec, vadd_eq_add, one_div,
         WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
-      exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩ :
-    coordCubeInner d L 1 ⊆ (constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0)
-      (show MeasurableSet (coordCubeInner d L 1) by
-        simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
-          (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
-            (PiLp.volume_preserving_ofLp (ι := Fin d)).measurable).nullMeasurableSet
-      (by simp [PeriodicConstant.volume_coordCubeInner])
+      exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
+  have hmeas : MeasurableSet (cubeIcc d L 1) := by
+    simpa [cubeIcc_eq_preimage_ofLp] using
+      (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
+        (PiLp.volume_preserving_ofLp (ι := Fin d)).measurable
+  simpa [measure_vadd, constVec, volume_cubeIcc] using
+    measure_diff (μ := volume) hsub hmeas.nullMeasurableSet
+      (by simp [volume_cubeIcc])
 
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
-      (volume (coordCube d L)).toNNReal := by
-  simp [show ZLattice.covolume (cubeLattice d L hL) volume = (volume (coordCube d L)).toReal by
-    simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
+      (volume (cubeIco d L)).toNNReal := by
+  have hcov : ZLattice.covolume (cubeLattice d L hL) volume = (volume (cubeIco d L)).toReal := by
+    simpa [Measure.real, fundamentalDomain_cubeBasis_eq_cubeIco L hL] using
       ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice d L hL) (μ := volume)
         (by simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume :
           IsAddFundamentalDomain (cubeLattice d L hL)
-            (fundamentalDomain (cubeBasis d L hL)) volume)]
+            (fundamentalDomain (cubeBasis d L hL)) volume)
+  simp [hcov]
 
 lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.separation = 1)
     {L : ℝ} (hL : 0 < L) {g : cubeLattice d L hL}
     (F : Finset (EuclideanSpace ℝ (Fin d)))
     (hF_centers : ∀ x ∈ F, x ∈ S.centers)
-    (hF_inner : ∀ x ∈ F, x ∈ g +ᵥ coordCubeInner d L (2⁻¹ : ℝ)) :
+    (hF_inner : ∀ x ∈ F, x ∈ g +ᵥ cubeIcc d L (2⁻¹ : ℝ)) :
     ∃ P : PeriodicSpherePacking d, P.separation = 1 ∧ P.density =
         (F.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) /
           Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) := by
-  let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ coordCube d L
+  -- Assemble the periodic packing `P` from the cube cell `D` and the representatives `Fset`.
+  let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ cubeIco d L
   let Fset : Set (EuclideanSpace ℝ (Fin d)) := (F : Set (EuclideanSpace ℝ (Fin d)))
-  have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g
+  have hD_unique := vadd_unique_covers (cubeIco_unique_covers L hL) g
   let P : PeriodicSpherePacking d :=
     periodize_to_periodicSpherePacking (d := d) S (Λ := cubeLattice d L hL) D Fset
       (hD_unique_covers := hD_unique) (hF_centers := by assumption)
-      (hF_ball := fun x hx => ball_subset_vadd_coordCube_of_mem_vadd_inner hL <| by
+      (hF_ball := fun x hx => ball_subset_vadd_cubeIco_of_mem_vadd_inner hL <| by
         simpa [hSsep] using hF_inner x (by simpa [Fset] using hx))
   have hPsep : P.separation = 1 := by simpa [P, hSsep]
+  -- The translated inner cube `Fset` sits inside the translated full cube `D`.
+  have hFsubD : Fset ⊆ D := fun x hx => by
+    rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
+    exact ⟨a, fun i => ⟨(by norm_num : (0 : ℝ) < _).le.trans (ha i).1,
+      (ha i).2.trans_lt (sub_lt_self _ (by norm_num))⟩, rfl⟩
+  -- The periodized centers meet `D` in exactly `Fset` (`P.centers = periodizedCenters Λ Fset`).
+  have hPcD : P.centers ∩ D = Fset := by
+    simpa [P, periodize_to_periodicSpherePacking, Fset] using
+      periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
+        (F := Fset) hFsubD hD_unique
+  -- `D` is bounded, being a translate of the cube.
+  have hD_bounded : IsBounded D := by
+    simpa [D, Submodule.vadd_def, vadd_eq_add] using
+      (isBounded_cubeIco L hL).vadd (g : EuclideanSpace ℝ (Fin d))
   have hnumReps : P.numReps = F.card := by
     exact_mod_cast show (P.numReps : ENat) = (F.card : ENat) by
-      simpa [show P.centers ∩ D = Fset by
-        simpa [P, periodize_to_periodicSpherePacking, Fset] using
-          periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
-            (F := Fset) (fun x hx => by
-              rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
-              exact ⟨a, fun i => ⟨(by norm_num : (0:ℝ) < _).le.trans (ha i).1,
-                (ha i).2.trans_lt (sub_lt_self _ (by norm_num))⟩, rfl⟩)
-            hD_unique, Fset, Set.encard_coe_eq_coe_finsetCard] using
+      simpa [hPcD, Fset, Set.encard_coe_eq_coe_finsetCard] using
         (P.encard_centers_inter_isFundamentalDomain (d := d) (D := D)
-          (by simpa [D, Submodule.vadd_def, vadd_eq_add] using
-            (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d)) :
-            IsBounded D) hD_unique hd).symm
+          hD_bounded hD_unique hd).symm
   exact ⟨P, hPsep, by simpa [hnumReps, hPsep] using P.density_eq' (d := d) hd⟩
 
-lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
+/-- The cube-shell error ratio `volume(shell) / volume(cubeIco d L)` tends to `0` as `L → ∞`:
+the shell volume grows like `(L + 1) ^ d - (L - 2) ^ d` while the cube volume grows like `L ^ d`. -/
+lemma tendsto_volume_cubeShell_div_volume_cubeIco_zero :
     Tendsto
         (fun L : ℝ =>
-          volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-              coordCubeInner d L 1) /
-            volume (coordCube d L))
+          volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+              cubeIcc d L 1) /
+            volume (cubeIco d L))
         atTop (𝓝 (0 : ℝ≥0∞)) := by
+  -- `f` is the real shell/cube volume ratio, whose `→ 0` limit we transfer to `ℝ≥0∞`.
   let f : ℝ → ℝ := fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
   have hf : Tendsto f atTop (𝓝 (0 : ℝ)) := by
     have h1 : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
@@ -483,27 +404,28 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
   filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
   have hL2' : 0 ≤ L - 2 := by linarith
-  rw [volume_cubeShell_eq_pow L, show volume (coordCube d L) = (ENNReal.ofReal L) ^ d by
-      simpa using PeriodicConstant.volume_coordCube L,
+  have hvol : volume (cubeIco d L) = (ENNReal.ofReal L) ^ d := by
+    simpa using volume_cubeIco L
+  rw [volume_cubeShell_eq_pow L, hvol,
     ← ENNReal.ofReal_pow (by linarith : (0:ℝ) ≤ L + 1), ← ENNReal.ofReal_pow hL2',
     ← ENNReal.ofReal_pow (by linarith : (0:ℝ) ≤ L), ← ENNReal.ofReal_sub _ (pow_nonneg hL2' d)]
   simpa [f] using ENNReal.ofReal_div_of_pos (x := (L + 1)^d - (L - 2)^d) (pow_pos (by linarith) d)
 
-/-- Pick `L > 0` and `C > 0` with `coordCube d L ⊆ ball 0 C` and the cube-shell error
-`volume(shell) / volume(coordCube)` smaller than the headroom `c - b`. -/
+/-- Pick `L > 0` and `C > 0` with `cubeIco d L ⊆ ball 0 C` and the cube-shell error
+`volume(shell) / volume(cubeIco)` smaller than the headroom `c - b`. -/
 private lemma exists_L_and_C_for_cubeShellErr_lt {b c : ℝ≥0∞} (hbc : b < c) :
     ∃ L : ℝ, 0 < L ∧ ∃ C : ℝ, 0 < C ∧
-      coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C ∧
-      volume (((constVec (d := d) (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-          coordCubeInner d L 1) / volume (coordCube d L) < c - b := by
+      cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C ∧
+      volume (((constVec (d := d) (-(1 / 2 : ℝ))) +ᵥ cubeIcc d (L + 1) 0) \
+          cubeIcc d L 1) / volume (cubeIco d L) < c - b := by
   obtain ⟨L, hLpos, hLerr⟩ := ((eventually_gt_atTop (0 : ℝ)).and
-    (tendsto_volume_cubeShell_div_volume_coordCube_zero.eventually
+    (tendsto_volume_cubeShell_div_volume_cubeIco_zero.eventually
       (Iio_mem_nhds (tsub_pos_of_lt hbc)))).exists
-  obtain ⟨C, hC⟩ : ∃ C : ℝ, coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
-    simpa using (PeriodicConstant.isBounded_coordCube L hLpos).subset_ball 0
+  obtain ⟨C, hC⟩ : ∃ C : ℝ, cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C := by
+    simpa using (isBounded_cubeIco L hLpos).subset_ball 0
   have hCpos : 0 < C := by
     simpa [Metric.mem_ball, dist_eq_norm] using
-      hC (by simp [coordCube, hLpos] : (0 : EuclideanSpace ℝ (Fin d)) ∈ coordCube d L)
+      hC (by simp [cubeIco, hLpos] : (0 : EuclideanSpace ℝ (Fin d)) ∈ cubeIco d L)
   exact ⟨L, hLpos, C, hCpos, hC, hLerr⟩
 
 /-- Given `c < S.density` and headroom `δ < c`, find `R > 0` with `c < S.finiteDensity R` and the
@@ -513,65 +435,74 @@ private lemma exists_R_finiteDensity_gt_and_ratio_gt (hd : 0 < d)
     ∃ R : ℝ, c < S.finiteDensity R ∧ 0 < R ∧
       δ < c * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) /
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) := by
+  -- `ratio R` is the ball-volume ratio `vol(ball R) / vol(ball (R + Cshift))`, tending to `1`.
   let ratio : ℝ → ℝ≥0∞ := fun R : ℝ =>
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) /
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
-  exact ((frequently_lt_of_lt_limsup (h := by simpa [SpherePacking.density] using hcS) :
-    ∃ᶠ R in (atTop : Filter ℝ), c < S.finiteDensity R).and_eventually
-    ((eventually_gt_atTop (0 : ℝ)).and
-      ((show Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) by
-        simpa [mul_one] using ENNReal.Tendsto.const_mul (a := c)
-          (by simpa [ratio, add_zero] using
-            volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd :
-            Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)))).eventually
-        (Ioi_mem_nhds hδc)))).exists
+  -- `c < S.finiteDensity R` for arbitrarily large `R`, since `c < S.density = limsup`.
+  have hfreq : ∃ᶠ R in (atTop : Filter ℝ), c < S.finiteDensity R :=
+    frequently_lt_of_lt_limsup (h := by simpa [SpherePacking.density] using hcS)
+  -- The ball-volume ratio tends to `1`, so `c * ratio R → c`.
+  have hratio : Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)) := by
+    simpa [ratio, add_zero] using
+      volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd
+  have hmul : Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) := by
+    simpa [mul_one] using ENNReal.Tendsto.const_mul (a := c) hratio (Or.inl one_ne_zero)
+  -- Eventually `c * ratio R > δ` (limit `c > δ`); combine with the frequent and positivity facts.
+  exact (hfreq.and_eventually ((eventually_gt_atTop (0 : ℝ)).and
+    (hmul.eventually (Ioi_mem_nhds hδc)))).exists
 
-/-- Pigeonhole step: among the finitely many lattice translates of `coordCube d L` meeting
+/-- Pigeonhole step: among the finitely many lattice translates of `cubeIco d L` meeting
 `ball 0 (R₁ + C)`, some translate `g0` contains at least `s.card / t.card` of the centers in
 `s = S.centers ∩ ball 0 R₁`. The resulting cell `sg ⊆ s` satisfies the volume comparison
-`s.encard * volume(coordCube) ≤ sg.card * volume(ball (R₁ + 2 * C))`. -/
+`s.encard * volume(cubeIco) ≤ sg.card * volume(ball (R₁ + 2 * C))`. -/
 private lemma exists_pigeonhole_lattice_cell {L : ℝ} (hL : 0 < L) {C : ℝ}
-    (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+    (hC : cubeIco d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     (S : SpherePacking d) {R₁ : ℝ} (hR₁ : 0 < R₁ + C) :
     ∃ g0 : cubeLattice d L hL, ∃ sg : Finset (EuclideanSpace ℝ (Fin d)),
-      (∀ x ∈ sg, x ∈ S.centers) ∧ (∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L) ∧
+      (∀ x ∈ sg, x ∈ S.centers) ∧ (∀ x ∈ sg, x ∈ g0 +ᵥ cubeIco d L) ∧
         ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).encard : ℝ≥0∞) *
-            volume (coordCube d L) ≤
+            volume (cubeIco d L) ≤
           (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
   have hX : (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).Finite :=
     SpherePacking.finite_centers_inter_ball S R₁
+  -- Pigeonhole: `s` = centres in `ball 0 R₁`, `t` = lattice translates meeting `ball 0 (R₁+C)`,
+  -- `f` sends each centre to its covering translate; `sg` (below) is the fullest fibre.
   let s : Finset (EuclideanSpace ℝ (Fin d)) := hX.toFinset
   let htSet := finite_lattice_in_ball (d := d) L hL (R₁ + C)
   let t : Finset (cubeLattice d L hL) := htSet.toFinset
-  let f : EuclideanSpace ℝ (Fin d) → cubeLattice d L hL := fun x => -coordCubeCover L hL x
+  let f : EuclideanSpace ℝ (Fin d) → cubeLattice d L hL := fun x => -cubeIcoCover L hL x
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := fun _ hx =>
-    htSet.mem_toFinset.2 <| neg_coordCubeCover_mem_ball L hL hC (hX.mem_toFinset.1 hx).2
+    htSet.mem_toFinset.2 <| neg_cubeIcoCover_mem_ball L hL hC (hX.mem_toFinset.1 hx).2
   obtain ⟨g0, _, hg0max⟩ := Finset.exists_max_image t (fun g => (s.filter fun x => f x = g).card)
-    ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; linarith)⟩
+    ⟨0, htSet.mem_toFinset.2 (by simpa only [Set.mem_setOf_eq, Metric.mem_ball,
+      ZeroMemClass.coe_zero, dist_self] using hR₁)⟩
   let sg : Finset (EuclideanSpace ℝ (Fin d)) := s.filter fun x => f x = g0
   refine ⟨g0, sg, fun x hx => (hX.mem_toFinset.1 (Finset.mem_filter.1 hx).1).1,
     fun x hx => ?_, ?_⟩
-  · have h : g0 = -coordCubeCover L hL x := (Finset.mem_filter.1 hx).2.symm
+  · have h : g0 = -cubeIcoCover L hL x := (Finset.mem_filter.1 hx).2.symm
     refine h ▸ Set.mem_vadd_set_iff_neg_vadd_mem.mpr ?_
-    simpa [neg_neg] using coordCubeCover_spec L hL x
+    simpa [neg_neg] using cubeIcoCover_spec L hL x
   · have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
-      exact_mod_cast by simpa [Finset.card_eq_sum_card_fiberwise hf_maps, Finset.sum_const] using
-        Finset.sum_le_sum hg0max
-    have ht_vol : ((t.card : ℝ≥0∞) * volume (coordCube d L)) ≤
+      have hcard : s.card ≤ t.card * sg.card := by
+        simpa [Finset.card_eq_sum_card_fiberwise hf_maps, Finset.sum_const] using
+          Finset.sum_le_sum hg0max
+      exact_mod_cast hcard
+    have ht_vol : ((t.card : ℝ≥0∞) * volume (cubeIco d L)) ≤
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) :=
-      card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball hL hC
+      card_finite_lattice_in_ball_mul_volume_cubeIco_le_volume_ball hL hC
     have hs_enc : ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).encard : ℝ≥0∞) = s.card :=
       congrArg ((↑) : ENat → ℝ≥0∞) hX.encard_eq_coe_toFinset_card
-    calc ((S.centers ∩ ball _ R₁).encard : ℝ≥0∞) * volume (coordCube d L)
-        = (s.card : ℝ≥0∞) * volume (coordCube d L) := by rw [hs_enc]
-      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volume (coordCube d L) :=
+    calc ((S.centers ∩ ball _ R₁).encard : ℝ≥0∞) * volume (cubeIco d L)
+        = (s.card : ℝ≥0∞) * volume (cubeIco d L) := by rw [hs_enc]
+      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volume (cubeIco d L) :=
           mul_le_mul_left hs_le _
-      _ = (sg.card : ℝ≥0∞) * ((t.card : ℝ≥0∞) * volume (coordCube d L)) := by ac_rfl
+      _ = (sg.card : ℝ≥0∞) * ((t.card : ℝ≥0∞) * volume (cubeIco d L)) := by ac_rfl
       _ ≤ _ := mul_le_mul_right ht_vol _
 
 /-- From the pigeonhole volume comparison, a density-ratio lower bound, and a finite-density bound,
 derive that `δ < sg.card * volBall / volCube` where `volBall = volume(ball 0 (2⁻¹))` and
-`volCube = volume(coordCube d L)`. -/
+`volCube = volume(cubeIco d L)`. -/
 private lemma sg_card_mul_volBall_div_volCube_gt (hd : 0 < d)
     (S : SpherePacking d) (hSsep : S.separation = 1) {L : ℝ} (hL : 0 < L) {R Cshift : ℝ}
     (hRC : 0 < R + Cshift) {c δ : ℝ≥0∞} (hcR : c < S.finiteDensity R)
@@ -579,58 +510,64 @@ private lemma sg_card_mul_volBall_div_volCube_gt (hd : 0 < d)
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))))
     {sg : Finset (EuclideanSpace ℝ (Fin d))}
     (hs_mul : ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + 2⁻¹)).encard : ℝ≥0∞) *
-        volume (coordCube d L) ≤
+        volume (cubeIco d L) ≤
           (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) :
     δ < (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) /
-      volume (coordCube d L) := by
-  set volCube := volume (coordCube d L)
+      volume (cubeIco d L) := by
+  -- Abbreviations for the three volumes appearing in the inequality chase.
+  set volCube := volume (cubeIco d L)
   set volBall := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
   set V := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
   have hvolCube_ne0 : volCube ≠ 0 := by
-    simpa [volCube, PeriodicConstant.volume_coordCube L] using
+    simpa [volCube, volume_cubeIco L] using
       pow_ne_zero d (ENNReal.ofReal_pos.mpr hL).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
-    (PeriodicConstant.isBounded_coordCube L hL).measure_lt_top.ne
+    (isBounded_cubeIco L hL).measure_lt_top.ne
+  -- Cancelling a common factor of `volCube` from the numerator and an outer division.
+  have hcancel : ∀ a c : ℝ≥0∞, a * volCube / c / volCube = a / c := fun a c => by
+    simp only [div_eq_mul_inv,
+      show a * volCube * c⁻¹ * volCube⁻¹ = a * c⁻¹ * (volCube * volCube⁻¹) by ring,
+      ENNReal.mul_inv_cancel hvolCube_ne0 hvolCube_ne_top, mul_one]
+  -- The numerator inequality, from the finite-density bound on `S`.
+  have hnum : c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
+      ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + 2⁻¹)).encard : ℝ≥0∞) * volBall :=
+    ENNReal.mul_lt_of_lt_div <| hcR.trans_le <| by
+      simpa [hSsep, volBall, add_assoc, add_left_comm, add_comm] using S.finiteDensity_le hd R
   have hc_ratio : c * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) / V) <
-      ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + 2⁻¹)).encard : ℝ≥0∞) * volBall / V :=
-      by
+      ((S.centers ∩ ball 0 (R + 2⁻¹)).encard : ℝ≥0∞) * volBall / V := by
     simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-      ENNReal.div_lt_div_right
-        ((Metric.measure_ball_pos volume _ hRC).ne.symm : V ≠ 0)
-        (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-        (ENNReal.mul_lt_of_lt_div <| hcR.trans_le <| by
-          simpa [hSsep, volBall, add_assoc, add_left_comm, add_comm] using S.finiteDensity_le hd R :
-        c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + 2⁻¹)).encard : ℝ≥0∞) * volBall)
+      ENNReal.div_lt_div_right ((Metric.measure_ball_pos volume _ hRC).ne.symm : V ≠ 0)
+        (MeasureTheory.measure_ball_lt_top (μ := volume)).ne hnum
   refine (hRratio.trans hc_ratio).trans_le ?_
-  have := mul_le_mul_left (show ((S.centers ∩ ball 0 (R + 2⁻¹)).encard : ℝ≥0∞) / V ≤
-      (sg.card : ℝ≥0∞) / volCube by
+  have hratio_le : ((S.centers ∩ ball 0 (R + 2⁻¹)).encard : ℝ≥0∞) / V ≤
+      (sg.card : ℝ≥0∞) / volCube := by
     have h := ENNReal.div_le_div_right (ENNReal.div_le_of_le_mul hs_mul) volCube
-    rwa [show ∀ a c : ℝ≥0∞, ((a * volCube) / c) / volCube = a / c from fun a c => by
-      simp only [div_eq_mul_inv,
-        show a * volCube * c⁻¹ * volCube⁻¹ = a * c⁻¹ * (volCube * volCube⁻¹) by ring,
-        ENNReal.mul_inv_cancel hvolCube_ne0 hvolCube_ne_top, mul_one]] at h) volBall
-  simp only [div_eq_mul_inv] at this ⊢; convert this using 1 <;> ring
+    rwa [hcancel] at h
+  have := mul_le_mul_left hratio_le volBall
+  simp only [div_eq_mul_inv] at this ⊢
+  convert this using 1 <;> ring
 
-/-- From a finset `sg` of centers in `g0 +ᵥ coordCube d L` satisfying `sg.card * volBall / volCube`
+/-- From a finset `sg` of centers in `g0 +ᵥ cubeIco d L` satisfying `sg.card * volBall / volCube`
 exceeding some bound `δ + shellVol / volCube`, construct a periodic packing `P` with separation `1`
 and density `> δ`. The inner-cube filtering bounds the boundary contribution by `shellVol`. -/
 private lemma exists_periodicSpherePacking_density_gt_aux (hd : 0 < d)
     (S : SpherePacking d) (hSsep : S.separation = 1) {L : ℝ} (hL : 0 < L)
     {g0 : cubeLattice d L hL} {sg : Finset (EuclideanSpace ℝ (Fin d))} {δ : ℝ≥0∞}
-    (hsg_centers : ∀ x ∈ sg, x ∈ S.centers) (hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L)
+    (hsg_centers : ∀ x ∈ sg, x ∈ S.centers) (hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ cubeIco d L)
     (hsg_density : δ + volume (((constVec (d := d) (-(1 / 2 : ℝ))) +ᵥ
-            coordCubeInner d (L + 1) 0) \ coordCubeInner d L 1) / volume (coordCube d L) <
+            cubeIcc d (L + 1) 0) \ cubeIcc d L 1) / volume (cubeIco d L) <
         (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) /
-          volume (coordCube d L)) :
+          volume (cubeIco d L)) :
     ∃ P : PeriodicSpherePacking d, P.separation = 1 ∧ δ < P.density := by
+  -- Abbreviations for the shell, cube, and unit-ball volumes used in the density bound.
   set shellVol : ℝ≥0∞ := volume (((constVec (d := d) (-(1 / 2 : ℝ))) +ᵥ
-      coordCubeInner d (L + 1) 0) \ coordCubeInner d L 1)
-  set volCube : ℝ≥0∞ := volume (coordCube d L)
+      cubeIcc d (L + 1) 0) \ cubeIcc d L 1)
+  set volCube : ℝ≥0∞ := volume (cubeIco d L)
   set volBall : ℝ≥0∞ := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
   have hvolCube_ne_top : volCube ≠ ∞ :=
-    (PeriodicConstant.isBounded_coordCube L hL).measure_lt_top.ne
-  let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ coordCubeInner d L (1 / 2 : ℝ)
+    (isBounded_cubeIco L hL).measure_lt_top.ne
+  -- Split `sg` by the inner cube: `F` (kept representatives) and `sb` (boundary, bounded by shell).
+  let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ cubeIcc d L (1 / 2 : ℝ)
   letI : DecidablePred (fun x : EuclideanSpace ℝ (Fin d) => x ∈ innerSet) := Classical.decPred _
   let F : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∈ innerSet
   let sb : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∉ innerSet
@@ -643,16 +580,20 @@ private lemma exists_periodicSpherePacking_density_gt_aux (hd : 0 < d)
   obtain ⟨P, hPsep, hPdens⟩ := periodize_cube_density_eq hd S hSsep hL F
     (fun x hx => hsg_centers x (Finset.mem_filter.1 hx).1)
     (fun x hx => by simpa [innerSet] using (Finset.mem_filter.1 hx).2)
+  have hcov_eq : (Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) : ℝ≥0∞) =
+      volCube := by
+    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) = volCube.toNNReal by
+        simpa [volCube] using toNNReal_covolume_cubeLattice (d := d) L hL,
+      ENNReal.coe_toNNReal hvolCube_ne_top]
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
-    simpa [volBall, show (Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) : ℝ≥0∞) =
-        volCube by rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
-          volCube.toNNReal by simpa [volCube] using toNNReal_covolume_cubeLattice (d := d) L hL,
-        ENNReal.coe_toNNReal hvolCube_ne_top]] using hPdens
+    simpa [volBall, hcov_eq] using hPdens
   refine ⟨P, hPsep, (lt_tsub_iff_right.mpr hsg_density).trans_le (tsub_le_iff_right.2 ?_)⟩
+  have hcard : (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) := by
+    exact_mod_cast
+      (Finset.card_filter_add_card_filter_not (s := sg) (p := fun x => x ∈ innerSet)).symm
   have hsplit : (sg.card : ℝ≥0∞) * volBall =
       (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
-    rw [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by exact_mod_cast
-      (Finset.card_filter_add_card_filter_not (s := sg) (p := fun x => x ∈ innerSet)).symm, add_mul]
+    rw [hcard, add_mul]
   simpa [hPdens', div_eq_mul_inv, mul_add, add_mul, mul_assoc, shellVol] using
     ENNReal.div_le_div_right (hsplit ▸ add_le_add_right hsb_vol _ :
       (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol) volCube
@@ -686,10 +627,9 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   rw [periodic_constant_eq_periodic_constant_normalized,
     SpherePacking.constant_eq_constant_normalized]
-  refine le_antisymm (iSup₂_le fun P hPsep =>
-    (le_iSup (fun _ : (P.toSpherePacking).separation = 1 ↦ (P.toSpherePacking).density) hPsep).trans
-      <| le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density)
-        P.toSpherePacking) (iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_)
+  refine le_antisymm
+    (iSup₂_le fun P hPsep => le_iSup₂_of_le P.toSpherePacking hPsep le_rfl)
+    (iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_)
   obtain ⟨b, hab, hbS⟩ := exists_between ha
   obtain ⟨P, hPsep, hbP⟩ :=
     SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density hd S hSsep hbS
@@ -719,27 +659,22 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E
 
 /-- Fourier inversion for Schwartz functions. -/
 @[simp]
-public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by rw [← fourier_coe, ← fourierInv_coe]; simp
+public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by simp [← fourier_coe, ← fourierInv_coe]
 
 end SchwartzMap
 section Integration
 
 open MeasureTheory Filter
 
-variable {E : Type*} [TopologicalSpace E] [AddGroup E] [IsTopologicalAddGroup E]
-  [MeasureSpace E] [BorelSpace E]
-variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
-  [NeZero (volume : Measure E)]
-
-instance : (volume : Measure E).IsOpenPosMeasure := isOpenPosMeasure_of_addLeftInvariant_of_regular
-
 /-- If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` iff `f = 0`.
-This uses that an additive-invariant regular measure is positive on nonempty open sets. -/
-public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
-    (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
+The only requirement on the measure is that it is positive on nonempty open sets
+(`IsOpenPosMeasure`); no group or invariance structure is needed. -/
+public theorem Continuous.integral_zero_iff_zero_of_nonneg {E : Type*} [TopologicalSpace E]
+    [MeasurableSpace E] {μ : Measure E} [μ.IsOpenPosMeasure] {f : E → ℝ} (hf₁ : Continuous f)
+    (hf₂ : Integrable f μ) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v ∂μ = 0 ↔ f = 0 := by
   refine ⟨fun hintf => funext fun x => ?_, fun hf => by simp [hf]⟩
   by_contra hx
-  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume
+  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds μ
       ((isOpen_lt continuous_const hf₁).mem_nhds (lt_of_le_of_ne (hnn x) (Ne.symm hx)))).ne'
     (measure_mono_null (fun (y : E) (hy : 0 < f y) => hy.ne')
       ((integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf))
@@ -758,42 +693,13 @@ namespace LPBoundAux
 
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 
-/-- A Schwartz function has summable norms on any translate of a `ℤ`-lattice. -/
+/-- A Schwartz function has summable norms on any translate of a `ℤ`-lattice. The
+`EuclideanSpace`-specialised name kept for use throughout this file; the content is
+`SchwartzMap.summable_norm_comp_add`. -/
 public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
     (a : EuclideanSpace ℝ (Fin d)) :
-    Summable (fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖) := by
-  let k : ℕ := Module.finrank ℤ Λ + 2
-  obtain ⟨C, _hCpos, hC⟩ := f.decay k 0
-  set b : EuclideanSpace ℝ (Fin d) := -a
-  refine Summable.of_norm_bounded_eventually
-    (f := fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖)
-    (g := fun ℓ : Λ => (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k) ?_ ?_
-  · simpa [mul_assoc] using
-      (ZLattice.summable_norm_sub_inv_pow (L := Λ) (n := k) (by simp [k]) b).mul_left (C + 1)
-  · letI : DiscreteTopology Λ.toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
-    refine (show ({ℓ : Λ | ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ≤ (1 : ℝ)} : Set Λ).Finite by
-      simpa [Set.preimage, Metric.mem_closedBall, dist_eq_norm, and_true] using
-        (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
-          Metric.isBounded_closedBall (by simpa [Submodule.coe_toAddSubgroup] using
-            AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup) :
-            IsClosed (X := EuclideanSpace ℝ (Fin d))
-              (Λ : Set (EuclideanSpace ℝ (Fin d))))).preimage_embedding
-          (f := (⟨Subtype.val, Subtype.coe_injective⟩ : Λ ↪ EuclideanSpace ℝ (Fin d)))).subset
-            fun ℓ hfail => ?_
-    by_contra hlarge
-    have hpos : 0 < ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k :=
-      pow_pos (lt_of_lt_of_le one_pos (lt_of_not_ge hlarge).le) _
-    have hdec :
-        ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k *
-          ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤ C := by
-      simpa [show ‖a + (ℓ : EuclideanSpace ℝ (Fin d))‖ =
-          ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ by simp [b, sub_eq_add_neg, add_comm],
-        norm_iteratedFDeriv_zero] using hC (a + (ℓ : EuclideanSpace ℝ (Fin d)))
-    refine hfail (by simpa [div_eq_mul_inv, inv_pow] using
-      ((le_div_iff₀' hpos).2 hdec).trans (by
-        simpa [div_eq_mul_inv, mul_assoc] using
-          mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1)
-            (by positivity : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹)))
+    Summable (fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖) :=
+  f.summable_norm_comp_add Λ a
 
 end LPBoundAux
 
@@ -816,28 +722,10 @@ public theorem summable_lattice_translate_re :
 
 end LPBoundSummability
 
-/-- A discrete `ℤ`-lattice has a discrete dual submodule (for the Euclidean inner product). -/
-public instance (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
-    [IsZLattice ℝ Λ] :
-    DiscreteTopology
-      (LinearMap.BilinForm.dualSubmodule (B := innerₗ (EuclideanSpace ℝ (Fin d))) Λ) := by
-  let bZ : Basis (Module.Free.ChooseBasisIndex ℤ Λ) ℤ Λ := Module.Free.chooseBasis ℤ Λ
-  have hB : LinearMap.BilinForm.Nondegenerate (innerₗ (EuclideanSpace ℝ (Fin d)) :
-      LinearMap.BilinForm ℝ (EuclideanSpace ℝ (Fin d))) := by
-    constructor <;> intro x hx <;>
-      exact inner_self_eq_zero.1 (by simpa [innerₗ_apply_apply] using hx x : ⟪x, x⟫ = (0 : ℝ))
-  exact (show LinearMap.BilinForm.dualSubmodule (B := innerₗ (EuclideanSpace ℝ (Fin d))) Λ =
-      Submodule.span ℤ (Set.range
-        (LinearMap.BilinForm.dualBasis (B := innerₗ (EuclideanSpace ℝ (Fin d)))
-          hB (bZ.ofZLatticeBasis ℝ Λ))) by
-    simpa [bZ.ofZLatticeBasis_span (K := ℝ) (L := Λ)] using
-      LinearMap.BilinForm.dualSubmodule_span_of_basis (B := innerₗ (EuclideanSpace ℝ (Fin d)))
-        (R := ℤ) (S := ℝ) (M := EuclideanSpace ℝ (Fin d)) hB (bZ.ofZLatticeBasis ℝ Λ)) ▸
-    inferInstance
-
 noncomputable section
 
-/-- Equivalence `((P.centers ∩ D) × P.lattice) ≃ P.centers` from a unique-covering assumption. -/
+/-- The equivalence `(P.centers ∩ D) × P.lattice ≃ P.centers` from a unique-covering hypothesis,
+realising the orbit decomposition of the centres; API: `centersInterProdEquiv_sub`. -/
 @[expose] public def centersInterProdEquiv (P : PeriodicSpherePacking d) [Nonempty P.centers]
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
@@ -847,6 +735,8 @@ noncomputable section
     fun x =>
       let ⟨g, hg, hguniq⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
       ⟨g, ⟨P.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
+  -- `toCenter`/`toPair` are the two directions of the equivalence; `cover x` is `x`'s covering
+  -- translate and `repr x` its representative in `P.centers ∩ D`.
   let cover : P.centers → P.lattice := fun x => Classical.choose (hcover x)
   let repr : P.centers → ↑(P.centers ∩ D) := fun x =>
     ⟨cover x +ᵥ (x : EuclideanSpace ℝ (Fin d)), (Classical.choose_spec (hcover x)).1⟩
@@ -859,13 +749,12 @@ noncomputable section
       ((Classical.choose_spec (hcover (toCenter p))).2 (-p.2)
         (by
           simp only [toCenter]
-          rw [show -p.2 +ᵥ (p.2 +ᵥ (p.1 : EuclideanSpace ℝ (Fin d))) =
-            (p.1 : EuclideanSpace ℝ (Fin d)) from neg_vadd_vadd p.2 _]
+          rw [neg_vadd_vadd]
           exact p.1.property)).symm
     refine Prod.ext (Subtype.ext ?_) ?_
     · simp only [toPair, repr, toCenter, hcov]
       exact neg_vadd_vadd _ _
-    · simp [toPair, hcov]
+    · simp only [toPair, hcov, neg_neg]
   · exact fun x => Subtype.ext (by
       simp only [toPair, repr, toCenter]
       exact neg_vadd_vadd _ _)
@@ -899,7 +788,7 @@ private lemma summable_prod_schwartz_re (f : 𝓢(EuclideanSpace ℝ (Fin d), �
         (p.2 : EuclideanSpace ℝ (Fin d)))‖) ?_ ?_
   · refine (summable_prod_of_nonneg fun _ => norm_nonneg _).2
       ⟨fun x => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
+        (LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
           ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))), Summable.of_finite⟩
   · rintro ⟨x, ℓ⟩
     simpa [centersInterProdEquiv_sub P hD_unique_covers x y ℓ, Real.norm_eq_abs] using
@@ -921,11 +810,10 @@ private lemma tsum_lattice_tsum_centersInter_swap (f : 𝓢(EuclideanSpace ℝ (
           EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re := by
   letI : Fintype ↑(P.centers ∩ D) := Fintype.ofFinite _
   simpa [tsum_fintype] using
-    (Summable.tsum_finsetSum (s := (Finset.univ : Finset ↑(P.centers ∩ D))) (fun y _ =>
+    (Summable.tsum_finsetSum (s := Finset.univ) (fun y _ =>
       (summable_congr fun b => congrArg Complex.re (congrArg (⇑f)
           (centersInterProdEquiv_sub P hD_unique_covers x y b))).mpr
-        (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate_re
-          (Λ := P.lattice) (f := f)
+        (LPBoundSummability.summable_lattice_translate_re (Λ := P.lattice) (f := f)
           ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))))
 
 /-- Reindex the `x : P.centers` sum as a `x₀ : P.centers ∩ D` sum over lattice translates,
@@ -942,15 +830,19 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
         (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
           (ℓ : EuclideanSpace ℝ (Fin d)))).re := by
   haveI : Finite (↑(P.centers ∩ D)) := finite_centers_inter_of_isBounded P D hD_isBounded hd
+  -- `e` is the orbit-decomposition equivalence used to reindex the centre sum.
   let e : (↑(P.centers ∩ D) × P.lattice) ≃ P.centers :=
     centersInterProdEquiv (P := P) (D := D) hD_unique_covers
   have he_sub := centersInterProdEquiv_sub P hD_unique_covers
-  rw [show (∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re)
+  -- Reindex the `x : P.centers` sum along the equiv `e` as a sum over `(x₀, ℓ)`.
+  have hreindex :
+      (∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re)
         = ∑' (x : ↑(P.centers ∩ D)) (ℓ : P.lattice), ∑' y : ↑(P.centers ∩ D),
-            (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re from by
-      rw [← (summable_prod_schwartz_re f P hD_unique_covers).tsum_prod]
-      simpa [e] using (e.tsum_eq (f := fun x : P.centers =>
-        ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re)).symm]
+            (f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re := by
+    rw [← (summable_prod_schwartz_re f P hD_unique_covers).tsum_prod]
+    simpa [e] using (e.tsum_eq (f := fun x : P.centers =>
+      ∑' y : ↑(P.centers ∩ D), (f (x - (y : EuclideanSpace ℝ (Fin d)))).re)).symm
+  rw [hreindex]
   refine tsum_congr fun x => ?_
   rw [tsum_lattice_tsum_centersInter_swap f P hD_unique_covers x]
   exact tsum_congr₂ fun b c => congrArg Complex.re (congrArg (⇑f) (he_sub x b c))
@@ -967,17 +859,18 @@ private lemma tsum_finset_finset_const_mul_swap {ι κ μ : Type*} [Finite ι] [
       = c * ∑' m : μ, a m * (∑' x : ι, ∑' y : κ, e x y m) := by
   letI : Fintype ι := Fintype.ofFinite ι
   letI : Fintype κ := Fintype.ofFinite κ
+  -- Commute the finite `y`-sum past the `m`-sum for each fixed `x`.
+  have hswap_y : ∀ x : ι, (∑ y : κ, ∑' m : μ, c * (a m * e x y m))
+      = ∑' m : μ, ∑ y : κ, c * (a m * e x y m) := fun x =>
+    (Summable.tsum_finsetSum fun y _ => by simpa [mul_assoc] using hSummable x y).symm
+  -- Commute the finite `x`-sum past the `m`-sum.
+  have hswap_x : (∑ x : ι, ∑' m : μ, ∑ y : κ, c * (a m * e x y m))
+      = ∑' m : μ, ∑ x : ι, ∑ y : κ, c * (a m * e x y m) :=
+    (Summable.tsum_finsetSum fun x _ =>
+      summable_sum fun y _ => by simpa [mul_assoc] using hSummable x y).symm
   simp only [tsum_fintype]
-  simp_rw [← tsum_mul_left]
-  simp_rw [show ∀ x : ι, (∑ y : κ, ∑' m : μ, c * (a m * e x y m))
-        = ∑' m : μ, ∑ y : κ, c * (a m * e x y m) from fun x =>
-    (Summable.tsum_finsetSum (fun y _ => by
-      simpa [mul_assoc] using hSummable x y)).symm]
-  rw [show (∑ x : ι, ∑' m : μ, ∑ y : κ, c * (a m * e x y m))
-        = ∑' m : μ, ∑ x : ι, ∑ y : κ, c * (a m * e x y m) from
-    (Summable.tsum_finsetSum (fun x _ =>
-      summable_sum (f := fun (y : κ) (m : μ) => c * (a m * e x y m)) fun y _ => by
-        simpa [mul_assoc] using hSummable x y)).symm]
+  simp_rw [← tsum_mul_left, hswap_y]
+  rw [hswap_x]
   exact tsum_congr fun m => by simp_rw [← Finset.mul_sum]
 
 /-- Summability on the dual lattice of `c * (𝓕 f m).re * exp(2πi⟪x - y, m⟫)`. -/
@@ -1027,17 +920,18 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
                     ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
                       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
   have : Finite (↑(P.centers ∩ D)) := finite_centers_inter_of_isBounded P D hD_isBounded hd
-  letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite (↑(P.centers ∩ D))
   refine congrArg Complex.re ?_
+  -- Package the covolume scalar `c`, Fourier coefficients `a`, and exponentials `e` for
+  -- `tsum_finset_finset_const_mul_swap`.
   let c : ℂ := (1 / ZLattice.covolume P.lattice volume : ℂ)
   let a : SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun m => ((𝓕 f m).re : ℂ)
   let e : ↑(P.centers ∩ D) → ↑(P.centers ∩ D) →
       SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun x y m =>
     exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  have hFourierReal : ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) = a m := fun m => by
-    simpa [a] using (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  simpa (config := { zeta := false }) [c, e, hFourierReal] using
+  have hFourierReal : ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) = a m :=
+    fun m => by simpa [a] using (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
+  simpa [c, e, hFourierReal] using
     tsum_finset_finset_const_mul_swap c a e fun x y =>
       summable_const_mul_re_fourier_mul_exp f P c x y
 
@@ -1053,27 +947,26 @@ private lemma lattice_translate_eq_zero (hD_unique_covers : ∀ x, ∃! g : P.la
   have hy0 : (0 : P.lattice) +ᵥ (y : EuclideanSpace ℝ (Fin d)) ∈ D := by
     simpa [Submodule.vadd_def] using y.property.2
   have hyℓ : (-ℓ : P.lattice) +ᵥ (y : EuclideanSpace ℝ (Fin d)) ∈ D := by
+    -- `(-ℓ) +ᵥ y = -ℓ + y = x`, and `x ∈ D` by `x.property.2`.
     have hEq : ((-ℓ : P.lattice) : EuclideanSpace ℝ (Fin d)) + (y : EuclideanSpace ℝ (Fin d)) =
         (x : EuclideanSpace ℝ (Fin d)) := by
       simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
         (eq_sub_of_add_eq hxy).symm
-    simpa [Submodule.vadd_def] using (hEq ▸ x.property.2 :
-      ((-ℓ : P.lattice) : EuclideanSpace ℝ (Fin d)) + _ ∈ D)
+    simp only [Submodule.vadd_def, vadd_eq_add, hEq]
+    exact x.property.2
   simpa using neg_eq_zero.mp ((hg0_unique (-ℓ) hyℓ).trans (hg0_unique 0 hy0).symm)
 
 /-- If `x + ℓ ≠ y` as centers in `P`, then `f` evaluated on the shifted difference is `≤ 0`. -/
-private lemma re_f_shifted_nonpos (hP : P.separation = 1)
+private lemma re_f_sub_add_lattice_nonpos (hP : P.separation = 1)
     (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
     {x y : EuclideanSpace ℝ (Fin d)} (hx : x ∈ P.centers) (hy : y ∈ P.centers) (ℓ : P.lattice)
     (hxℓy : x + (ℓ : EuclideanSpace ℝ (Fin d)) ≠ y) :
     (f (x - y + (ℓ : EuclideanSpace ℝ (Fin d)))).re ≤ 0 := by
   have hxℓ : x + (ℓ : EuclideanSpace ℝ (Fin d)) ∈ P.centers := by
     simpa [add_comm] using P.lattice_action ℓ.property hx
-  have hdist : (1 : ℝ) ≤ dist (x + (ℓ : EuclideanSpace ℝ (Fin d))) y := by
-    simpa [hP] using P.centers_dist' _ _ hxℓ hy hxℓy
   have hnorm : (1 : ℝ) ≤ ‖x + (ℓ : EuclideanSpace ℝ (Fin d)) - y‖ := by
-    simpa [dist_eq_norm] using hdist
-  have hle := hCohnElkies₁ _ (by simpa [ge_iff_le] using hnorm)
+    simpa [hP, dist_eq_norm] using P.centers_dist' _ _ hxℓ hy hxℓy
+  have hle := hCohnElkies₁ _ hnorm
   simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hle
 
 /-- Diagonal case `x = y` of `lattice_sum_re_le_ite`: the lattice sum at the origin equals
@@ -1096,7 +989,7 @@ private lemma lattice_sum_re_le_ite_diag (hP : P.separation = 1)
         (x : EuclideanSpace ℝ (Fin d)) :=
       fun h => hℓ (lattice_translate_eq_zero hD_unique_covers h)
     simpa [hℓ, sub_self, zero_add] using
-      re_f_shifted_nonpos hP hCohnElkies₁ x.property.1 x.property.1 ℓ hxℓ
+      re_f_sub_add_lattice_nonpos hP hCohnElkies₁ x.property.1 x.property.1 ℓ hxℓ
   simpa [hs.tsum_eq_add_tsum_ite (0 : P.lattice)] using add_le_add_left htail (f 0).re
 
 public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
@@ -1112,9 +1005,11 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
     simpa [sub_self, zero_add] using
       lattice_sum_re_le_ite_diag (P := P) hP hD_unique_covers hCohnElkies₁ x
   · rw [if_neg hxy]
-    refine tsum_nonpos fun ℓ => re_f_shifted_nonpos hP hCohnElkies₁
+    refine tsum_nonpos fun ℓ => re_f_sub_add_lattice_nonpos hP hCohnElkies₁
       x.property.1 y.property.1 ℓ (fun h => ?_)
-    exact hxy (Subtype.ext (by simpa [lattice_translate_eq_zero hD_unique_covers h] using h))
+    -- From `↑x + ↑ℓ = ↑y` we get `ℓ = 0`, hence `↑x = ↑y`, contradicting `x ≠ y`.
+    have hℓ : ℓ = 0 := lattice_translate_eq_zero hD_unique_covers h
+    exact hxy (Subtype.ext (by simpa [hℓ] using h))
 
 end SpherePacking.CohnElkies
 
@@ -1127,26 +1022,33 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 
 local notation "conj" => starRingEnd ℂ
 
-theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
+/-- The Fourier transform of a Schwartz function is integrable. -/
+theorem integrable_fourier : MeasureTheory.Integrable (𝓕 ⇑f) :=
   (FourierTransform.fourierCLE ℂ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  refine lt_of_le_of_ne (show 0 ≤ (f 0).re by
+  -- `f 0` is the integral of `𝓕 f`, which is nonnegative by `hCohnElkies₂`.
+  have hnonneg : 0 ≤ (f 0).re := by
     rw [← f.fourierInversion, fourierInv_eq]
     simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re]
     rw [show RCLike.re (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v) =
         ∫ v : EuclideanSpace ℝ (Fin d), RCLike.re ((𝓕 f) v) from
-      (integral_re hIntegrable).symm]
-    exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v) fun hf0re => hne_zero <|
+      (integral_re integrable_fourier).symm]
+    exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v
+  -- If `(f 0).re = 0`, then `∫ 𝓕 f = 0`, hence `𝓕 f = 0`, hence `f = 0`, contradicting `hne_zero`.
+  refine lt_of_le_of_ne hnonneg fun hf0re => hne_zero <|
     (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℂ _)).1 ?_
-  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
-    (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1 (by
+  have hintegral_zero : ∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v = 0 := by
     rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
         (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
-      simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
+      simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v)
+        integrable_fourier]
     simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
-      congrArg Complex.re (congrArg (· 0) f.fourierInversion))
+      congrArg Complex.re (congrArg (· 0) f.fourierInversion)
+  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
+    (Complex.continuous_re.comp (𝓕 f).continuous) integrable_fourier.re hCohnElkies₂).1
+    hintegral_zero
   ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 section Fundamental_Domain_Dependent
@@ -1165,7 +1067,7 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   refine Summable.of_norm_bounded (g := fun m => ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ *
     ((Fintype.card (↑(P.centers ∩ D)) : ℝ) ^ 2)) ?_ fun m => ?_
   · simpa [SchwartzMap.fourier_coe] using
-      (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
+      (CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right _
   simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]; gcongr
@@ -1180,8 +1082,7 @@ private lemma numReps_mul_f_zero_ge_double_tsum (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
       ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
   letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
-  classical
-  simp_rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
+  simp_rw [CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
     (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd, tsum_fintype]
   exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
     CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
@@ -1199,20 +1100,17 @@ private lemma re_tsum_triple_centers_inter_lattice (hd : 0 < d) :
   exact tsum_congr fun x => by
     rw [re_tsum Summable.of_finite]; exact tsum_congr fun y => by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
+        (re_tsum (CohnElkies.LPBoundSummability.summable_lattice_translate
           (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
 /-- `exp(-(2πi⟪x, m⟫)) = conj (exp(2πi⟪x, m⟫))`. -/
 private lemma exp_neg_two_pi_I_inner_eq_conj {d : ℕ} (x m : EuclideanSpace ℝ (Fin d)) :
     Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
       = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
-  calc Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
-      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by
-        rw [Circle.coe_exp]; push_cast; ring_nf
-    _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ])) := by
-        rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-    _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
-        rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
+  rw [← Complex.exp_conj]
+  congr 1
+  simp only [map_mul, map_ofNat, Complex.conj_I, Complex.conj_ofReal]
+  ring
 
 /-- Reduce `((c * ∑' m, a m * (z * conj z)).re : ℂ) = ↑((c * ∑' m, a m * ‖z‖^2).re)`,
 the final normSq-identity step in the LP-bound calculation. -/
@@ -1238,7 +1136,7 @@ private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
 
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
-theorem calc_steps_part1 (hd : 0 < d) :
+theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
       (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
@@ -1249,7 +1147,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
   calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
         numReps_mul_f_zero_ge_double_tsum hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
-  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
+  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
+      (f (↑x - ↑y + ↑ℓ)).re :=
         CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
           hD_isBounded hD_unique_covers hd
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
@@ -1263,7 +1162,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-        simpa using SpherePacking.CohnElkies.calc_steps_swap_sums (f := f)
+        simpa using CohnElkies.calc_steps_swap_sums (f := f)
           (hRealFourier := hRealFourier) (P := P) (D := D) hD_isBounded hd
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re * (
@@ -1296,7 +1195,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
         re_mul_conj_eq_norm_sq_step P f
 
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
-theorem calc_steps_part2 (hd : 0 < d) :
+theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
     (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
           (𝓕 ⇑f m).re *
@@ -1353,9 +1252,9 @@ private lemma density_le_of_𝓕_zero (h𝓕f : 𝓕 f 0 = 0) :
         volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
     (Metric.measure_ball_pos (μ := volume) _ one_half_pos).ne'
+  have hf0_pos : 0 < (f 0).re := f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂
   rw [h𝓕f, zero_re, toNNReal_zero, ENNReal.coe_zero,
-    ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
-      (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂)).ne'),
+    ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr hf0_pos).ne'),
     ENNReal.top_mul vol_ne_zero]
   exact le_top
 
@@ -1379,6 +1278,18 @@ private lemma density_le_of_hCalc_of_ne_zero
     rw [ne_eq, Real.toNNReal_eq_zero, not_le]
     exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f <|
       Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
+  -- Pull the casts of the two products out of the `ENNReal` arithmetic into `Real.toNNReal`.
+  have hcast_num : (P.numReps : ENNReal) * ↑(f 0).re.toNNReal =
+      ↑(P.numReps * (f 0).re).toNNReal := by
+    simp [Real.toNNReal_mul (Nat.cast_nonneg _)]
+  have hcast_sq : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
+      ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) =
+      ↑((P.numReps : ℝ) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
+    simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
+      Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
+        (inv_nonneg.mpr hcov_pos.le))]
+    norm_cast
+    rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl
   rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
     ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero measure_ball_lt_top.ne,
     ← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
@@ -1388,17 +1299,7 @@ private lemma density_le_of_hCalc_of_ne_zero
       (by simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
         ENat.toENNReal (P.numReps : ENat) ≠ 0)
       (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
-    ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc,
-    show (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal by
-      simp [Real.toNNReal_mul (Nat.cast_nonneg _)],
-    show (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
-        ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) =
-        ((P.numReps) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal by
-      simp only [div_eq_mul_inv, ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
-        Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
-          (inv_nonneg.mpr hcov_pos.le))]
-      norm_cast
-      rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl,
+    ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc, hcast_num, hcast_sq,
     ENNReal.coe_le_coe]
   exact Real.toNNReal_le_toNNReal hCalc
 
@@ -1406,15 +1307,16 @@ include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_
   hD_unique_covers
 
 /-- Linear programming bound for a single periodic packing of separation `1`. -/
-public theorem LinearProgrammingBound' (hd : 0 < d) :
+public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
     P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   haveI : Fact (0 < d) := ⟨hd⟩
   rw [P.density_eq' hd]
   suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
     (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
-    rw [hP]; rw [ge_iff_le] at hCalc
-    rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
+    rw [hP]
+    rw [ge_iff_le] at hCalc
+    by_cases h𝓕f : 𝓕 f 0 = 0
     · exact density_le_of_𝓕_zero (P := P) hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f
     rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
       hD_unique_covers] at hCalc
@@ -1422,8 +1324,10 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       (nonempty_quotient_iff _).2 ‹_›
     exact density_le_of_hCalc_of_ne_zero (P := P) hRealFourier hCohnElkies₂
       (ZLattice.covolume_pos P.lattice volume) h𝓕f hCalc
-  exact ge_trans (calc_steps_part1 (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
-    hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+  exact ge_trans
+    (numReps_mul_re_f_zero_ge (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
+      hD_unique_covers hd)
+    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
       hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
@@ -1439,7 +1343,7 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   refine iSup_le fun P => iSup_le fun hP => ?_
   rcases isEmpty_or_nonempty ↑P.centers with _ | _
   · simp [P.density_of_centers_empty hd]
-  exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+  exact LinearProgrammingBound_periodic hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
       (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
         (PeriodicSpherePacking.basis_index_equiv P))) hd

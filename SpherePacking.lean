@@ -7,10 +7,14 @@ public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.Contour.MobiusInv.WedgeSetContour
 public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
+public import SpherePacking.ForMathlib.CoordCube
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
+public import SpherePacking.ForMathlib.DualLattice
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
+public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.ModularFormsHelpers
+public import SpherePacking.ForMathlib.UnitAddTorusQuotient
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.a.Eigenfunction

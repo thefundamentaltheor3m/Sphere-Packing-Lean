@@ -4,13 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Gareth Ma
 -/
 module
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+
 public import SpherePacking.E8.Packing
 public import SpherePacking.UpperBound
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.MagicFunction.a.Eigenfunction
 public import SpherePacking.MagicFunction.b.Eigenfunction
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-!
 # Main theorem: optimal sphere packing in dimension 8
@@ -43,6 +44,9 @@ public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
 
 /-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
 @[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
+  -- Short-circuit a `ContinuousSMul ℝ ℝ⁸` synthesis loop on `EuclideanSpace`'s `PiLp` structure
+  -- inside `toContinuousLinearEquiv`.
+  have : ContinuousSMul ℝ ℝ⁸ := inferInstance
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
     ((LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸)
       (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv) g

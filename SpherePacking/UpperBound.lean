@@ -1,33 +1,37 @@
 module
-public import SpherePacking.Basic.PeriodicPacking
-public import SpherePacking.MagicFunction.b.Schwartz.Basic
-public import SpherePacking.MagicFunction.a.Schwartz.Basic
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
-public import SpherePacking.ModularForms.FG.Basic
-public import SpherePacking.ModularForms.EisensteinBase
 public import Mathlib.Analysis.Analytic.Basic
 public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ForMathlib.DerivHelpers
+-- The `CStarMatrix` `@[default_instance]` for `HMul` is consulted during numeric-literal `*`
+-- defaulting; it must be publicly visible here or it surfaces as an "unknown constant".
+public import Mathlib.Analysis.CStarAlgebra.CStarMatrix
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.MeasureTheory.Integral.ExpDecay
+
+public import SpherePacking.Basic.PeriodicPacking
+public import SpherePacking.MagicFunction.b.Schwartz.Basic
+public import SpherePacking.MagicFunction.a.Schwartz.Basic
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.IntegralLemmas
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
+public import SpherePacking.ModularForms.FG.Basic
+public import SpherePacking.ModularForms.EisensteinBase
 import SpherePacking.CohnElkies.LPBound
+import SpherePacking.ForMathlib.DerivHelpers
+import SpherePacking.Integration.Measure
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.b.Eigenfunction
-import SpherePacking.Integration.Measure
-import SpherePacking.ModularForms.Delta
 import SpherePacking.MagicFunction.b.PsiBounds
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Cancellation
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.MeasureTheory.Integral.ExpDecay
+import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.FG.Inequalities
-import Mathlib.Analysis.SpecificLimits.Basic
+import SpherePacking.ModularForms.SlashActionAuxil
 
 /-!
 # Cohn-Elkies sign conditions for the magic function `g`
