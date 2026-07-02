@@ -213,7 +213,7 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
     intro n
     simp only [Function.comp_apply]
     rw [← Complex.exp_nat_mul]
-    congr 2 <;> ring
+    (congr 2; ring)
 
 /-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
 This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.
