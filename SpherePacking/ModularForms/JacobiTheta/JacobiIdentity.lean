@@ -102,17 +102,13 @@ identity.
 
 /-- The function `g := H₂ + H₄ - H₃` tends to `0` at `i∞`. -/
 theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  have := H₂_tendsto_atImInfty
-  have := H₃_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
-  tendsto_cont
+  change Tendsto (fun z ↦ H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
+  tendsto_cont [H₂_tendsto_atImInfty, H₃_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 /-- The function `f := g²` tends to `0` at `i∞`. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  have := jacobi_g_tendsto_atImInfty
-  change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
-  tendsto_cont
+  change Tendsto (fun z ↦ jacobi_g z ^ 2) atImInfty (𝓝 0)
+  tendsto_cont [jacobi_g_tendsto_atImInfty]
 
 private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
   cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
@@ -151,7 +147,7 @@ private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod 
   simp [Pi.mul_apply, Pi.neg_apply]
   ring
 
-private noncomputable def theta_prod_sq : ℍ → ℂ := fun z => (H₂ z * H₃ z * H₄ z) ^ 2
+private noncomputable def theta_prod_sq : ℍ → ℂ := fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2
 
 private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := by
   ext z
@@ -171,15 +167,12 @@ private lemma theta_prod_sq_SL2Z_invariant :
     theta_prod_sq_S_action theta_prod_sq_T_action
 
 private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
-  change MDiff (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
+  change MDiff (fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2)
   exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
-  change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
-  have := H₂_tendsto_atImInfty
-  have := H₃_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  tendsto_cont
+  change Tendsto (fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
+  tendsto_cont [H₂_tendsto_atImInfty, H₃_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 private noncomputable def theta_prod_sq_SIF :
     SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
