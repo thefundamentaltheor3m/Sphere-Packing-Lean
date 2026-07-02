@@ -1051,9 +1051,7 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
           + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
     rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
     simp only [z, I_mul_t_pow_nat]
-    ring_nf
-    simp only [I_sq]
-    ring
+    linear_combination 12 * (π : ℂ) ^ (-1 : ℤ) * (t : ℂ) ^ 11 * (F₁ * E₄.toFun) z * I_sq
   have hFz : F z = F.resToImagAxis t := by simpa [z] using ResToImagAxis.I_mul_t_eq F t ht
   have hF₁E₄z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
     simpa [z] using ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht
