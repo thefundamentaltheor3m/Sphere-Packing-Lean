@@ -85,6 +85,34 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
+theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by
+  have hS := ResToImagAxis.SlashActionS F k ht
+  calc F.resToImagAxis (1 / t)
+      = I ^ k * I ^ (-k) * (t ^ k * t ^ (-k)) * F.resToImagAxis (1 / t) := by
+          simp only [zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
+                     mul_inv_cancel₀ (zpow_ne_zero k (ofReal_ne_zero.mpr ht.ne')), one_mul]
+    _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
+    _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
+
+/-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
+theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    let z : ℍ := ⟨I * t, by simp [ht]⟩
+    F.resToImagAxis (1 / t) = F (S • z) := by
+  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+    apply UpperHalfPlane.ext
+    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+    field_simp [hne, I_sq]
+    ring_nf
+    simp only [I_sq, mul_neg, mul_one]
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+  congr 1; apply UpperHalfPlane.ext
+  simp only [div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
@@ -310,6 +338,10 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
+theorem ResToImagAxis.I_mul_t_eq (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) :
+    F ⟨I * t, by simp [ht]⟩ = F.resToImagAxis t := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+
 /-- If `F` is real-valued, then `F` is equal to the real part of itself on imaginary axis. -/
 theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
     F.resToImagAxis t = (F.resToImagAxis t).re := by
@@ -377,6 +409,18 @@ theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ}
     (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (s : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hc hF)
+
+/--
+If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
+`t^n * re (F(it)) → 0` as `t → ∞` for any natural power `n`.
+-/
+theorem tendsto_pow_mul_resToImagAxis_re_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+    (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (n : ℕ) :
+    Tendsto (fun t : ℝ => t ^ n * (F.resToImagAxis t).re) atTop (𝓝 0) := by
+  simpa only [Function.comp_def, Complex.ofReal_natCast, Complex.cpow_natCast,
+    ← Complex.ofReal_pow, Complex.re_ofReal_mul, Complex.zero_re] using
+    (Complex.continuous_re.tendsto 0).comp
+      (tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hF n)
 
 /--
 For a cusp form `f` of level `Γ(n)`, we have `t^s * f(it) → 0` as `t → ∞` for any real power `s`.
