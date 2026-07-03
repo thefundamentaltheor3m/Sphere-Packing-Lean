@@ -645,7 +645,7 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
   cases isEmpty_or_nonempty ↑P.centers
   · case inl instEmpty =>
     rw [P.density_of_centers_empty hd]
-    exact zero_le _
+    exact zero_le'
   · case inr instNonempty =>
     let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (P.basis_index_equiv)

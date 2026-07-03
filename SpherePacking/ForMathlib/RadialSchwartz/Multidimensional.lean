@@ -17,18 +17,8 @@ open SchwartzMap Function RCLike
 
 section SchwartzMap_multidimensional_of_schwartzMap_real
 
--- Credit to Heather for helping me golf these
-
-variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
-
-lemma hasFDerivAt_norm_sq {x : F} :
-  HasFDerivAt (fun x ↦ ‖x‖ ^ 2) (2 • ((innerSL ℝ) x)) x := (hasFDerivAt_id x).norm_sq
-
-lemma differentiableAt_norm_sq {x : F} :
-  DifferentiableAt ℝ (fun x ↦ ‖x‖ ^ 2) x := hasFDerivAt_norm_sq.differentiableAt
-
-lemma differentiable_norm_sq :
-  Differentiable ℝ (fun (x : F) ↦ ‖x‖ ^ 2) := fun _ => differentiableAt_norm_sq
+-- The `‖·‖²` differentiability helpers formerly here are now mathlib's
+-- `hasStrictFDerivAt_norm_sq` / `DifferentiableAt.norm_sq` / `Differentiable.norm_sq`.
 
 variable (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F] (f : 𝓢(ℝ, ℂ))
 

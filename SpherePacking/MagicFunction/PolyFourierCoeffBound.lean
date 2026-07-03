@@ -414,8 +414,8 @@ private lemma step_12 :
       rw [this]
       exact sq_nonneg ((1 - rexp (-(π * ↑↑n))) ^ 12)
     · intro n; simp
-      suffices : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im)
-      · apply le_of_lt
+      suffices this : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im) by
+        apply le_of_lt
         have h₁ : 0 ≤ 1 - rexp (-(π * ↑↑n)) := by norm_num; positivity
         have h₂ : 0 ≤ 1 - rexp (-2 * π * ↑↑n * z.im) := by linarith
         have h₃ : 24 ≠ 0 := by positivity
@@ -505,7 +505,6 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
           (fun (n : ℕ) ↦ (n ^ k) * rexp (-π * ↑n / 2)) := by
         refine IsBigO.mul (hpoly' c n₀ k hpoly) ?_
         norm_cast
-        exact isBigO_refl _ atTop
       refine summable_of_isBigO_nat ?_ h₂
       have h₃ (n : ℕ) : rexp (-π * ↑n / 2) = (rexp (-π / 2)) ^ n := by
         symm; calc (rexp (-π / 2)) ^ n
