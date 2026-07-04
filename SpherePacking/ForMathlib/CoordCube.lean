@@ -7,24 +7,22 @@ module
 public import Mathlib.Algebra.Module.ZLattice.Basic
 public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
-/-! # The scaled integer lattice `L • ℤ^d` and its coordinate boxes
+/-! # The scaled integer lattice `L • ℤ^d` and its coordinate cubes
 
 For `d : ℕ` and `L : ℝ`, this file packages:
 
-* the coordinate box `cubeBox d I = {x | ∀ i, x i ∈ I}` in `EuclideanSpace ℝ (Fin d)`. This is a
-  reducible `abbrev`, not a standalone definition: membership is definitionally `∀ i, x i ∈ I`
-  (`hx i` and `fun i => …` work with no unfolding lemma), so it behaves like notation for the
-  set-builder while keeping call sites readable. Its real API is the cross-structure content:
-  `cubeBox_eq_preimage_ofLp`, `measurableSet_cubeBox`, and `volume_cubeBox`
-  (`volume (cubeBox d I) = volume I ^ d`). The cubes of the LP bound are written inline as
-  `cubeBox d (Set.Ico 0 L) = [0, L)^d` and `cubeBox d (Set.Icc r (L - r)) = [r, L-r]^d` — there are
-  deliberately no named specialisations (and hence no per-cube API to maintain);
-* the scaled standard basis `cubeBasis d L hL` (also a reducible `abbrev`) and the cubic lattice
+* the measure theory of coordinate cubes `{x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ I}`.
+  There is deliberately **no definition** for this set: the set-builder is written inline
+  (membership is judgementally `∀ i, x i ∈ I`, so no membership or unfolding API exists at all).
+  The lemmas record the genuine content: such a cube is the `ofLp`-preimage of a product box
+  (`cube_eq_preimage_ofLp`), is measurable (`measurableSet_cube`), and has volume `volume I ^ d`
+  (`volume_cube`, with endpoint corollaries `volume_cube_Ico`/`volume_cube_Icc`);
+* the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev`) and the cubic lattice
   `cubeLattice d L hL = L • ℤ^d` it spans, with `DiscreteTopology`/`IsZLattice` instances.
   `cubeLattice` is the one standalone definition, kept so it can carry those instances;
-* the basic geometry: `cubeBox d (Set.Ico 0 L)` is the fundamental domain of `cubeBasis`
+* the basic geometry: `[0, L)^d` is the fundamental domain of `cubeBasis`
   (`fundamentalDomain_cubeBasis`), every point has a unique lattice translate in it
-  (`cubeLattice_unique_covers`), it is bounded (`isBounded_cubeBox_Ico`), and only finitely many
+  (`cubeLattice_unique_covers`), it is bounded (`isBounded_cube_Ico`), and only finitely many
   lattice points lie in a ball (`finite_lattice_in_ball`).
 
 Everything is placed in the `EuclideanSpace` namespace, its natural home.
@@ -44,15 +42,15 @@ What genuinely needs the cube — and is *not* available for a general `ZSpan.fu
 is the boundary control of the LP bound, which rests on two facts with no current Mathlib analogue:
 
 * an **inradius / boundary-safe inner core**: a ball of radius `r` about a point of the inner cube
-  `cubeBox d (Set.Icc r (L - r))` stays inside `cubeBox d (Set.Ico 0 L)`
-  (`ball_subset_cubeBox_of_mem_inner`). For a sheared parallelepiped the safe inner region is not a
-  coordinate-box shrink; it depends on the dual-basis norms / the parallelepiped inradius.
+  `[r, L-r]^d` stays inside `[0, L)^d` (`ball_subset_cube_of_mem_inner` in `LPBound.lean`). For a
+  sheared parallelepiped the safe inner region is not a coordinate-box shrink; it depends on the
+  dual-basis norms / the parallelepiped inradius.
   *Upstream TODO:* `ZSpan.ball_subset_fundamentalDomain_of_mem_inner`.
 * a **boundary-shell volume asymptotic** under homothety: the relative volume of the
   `r`-neighbourhood of the cell boundary vanishes as the lattice is scaled (here the explicit
-  `((L+1)^d - (L-2)^d)/L^d → 0`, `tendsto_volume_cubeShell_div_volume_cubeBox_zero`). For a general
-  fundamental domain this is a Minkowski-content statement.  *Upstream TODO:*
-  `ZSpan.tendsto_volume_boundaryThickening_div_volume_fundamentalDomain_zero`.
+  `((L+1)^d - (L-2)^d)/L^d → 0`, `tendsto_volume_cubeShell_div_volume_cube_zero` in
+  `LPBound.lean`). For a general fundamental domain this is a Minkowski-content statement.
+  *Upstream TODO:* `ZSpan.tendsto_volume_boundaryThickening_div_volume_fundamentalDomain_zero`.
 
 So the answer to "why so much for `L • ℤ^d`?" is: the counting is generic (and is written that
 way), while the cube is the one fundamental domain whose inradius and boundary-shell volume are
@@ -69,15 +67,8 @@ namespace EuclideanSpace
 
 variable {d : ℕ}
 
-/-- The coordinate box `{x | ∀ i, x i ∈ I}` in `EuclideanSpace ℝ (Fin d)`: the points all of whose
-coordinates lie in `I ⊆ ℝ`. A reducible `abbrev`, so membership is definitionally `∀ i, x i ∈ I`
-and no membership/unfolding API is needed; the substantive API is `cubeBox_eq_preimage_ofLp`,
-`measurableSet_cubeBox`, and `volume_cubeBox`. -/
-@[expose] public abbrev cubeBox (d : ℕ) (I : Set ℝ) : Set (EuclideanSpace ℝ (Fin d)) :=
-  {x | ∀ i : Fin d, x i ∈ I}
-
 /-- The standard basis of `EuclideanSpace ℝ (Fin d)` scaled by `L`; its span is `cubeLattice` and
-its fundamental domain is `cubeBox d (Set.Ico 0 L)` (`fundamentalDomain_cubeBasis`).
+its fundamental domain is the cube `[0, L)^d` (`fundamentalDomain_cubeBasis`).
 
 This is a reducible *abbreviation*, not a standalone definition: it is a one-line shorthand for
 `Basis.isUnitSMul`, carries no API of its own, and is only ever passed straight to Mathlib's `ZSpan`
@@ -104,7 +95,8 @@ public instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
 
 /-- The fundamental domain of the scaled basis `cubeBasis d L hL` is the cube `[0, L)^d`. -/
 public lemma fundamentalDomain_cubeBasis (L : ℝ) (hL : 0 < L) :
-    fundamentalDomain (cubeBasis d L hL) = cubeBox d (Set.Ico 0 L) := by
+    fundamentalDomain (cubeBasis d L hL) =
+      {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Ico 0 L} := by
   ext x
   simp only [ZSpan.mem_fundamentalDomain, cubeBasis, Module.Basis.repr_isUnitSMul,
     Units.smul_def, Units.val_inv_eq_inv_val, IsUnit.unit_spec, smul_eq_mul,
@@ -115,38 +107,51 @@ public lemma fundamentalDomain_cubeBasis (L : ℝ) (hL : 0 < L) :
 
 /-- Every point has a unique `cubeLattice` translate lying in the cube `[0, L)^d`. -/
 public lemma cubeLattice_unique_covers (L : ℝ) (hL : 0 < L) :
-    ∀ x, ∃! g : cubeLattice d L hL, g +ᵥ x ∈ cubeBox d (Set.Ico 0 L) := fun x => by
+    ∀ x, ∃! g : cubeLattice d L hL,
+      g +ᵥ x ∈ {y : EuclideanSpace ℝ (Fin d) | ∀ i, y i ∈ Set.Ico 0 L} := fun x => by
   simpa [cubeLattice, fundamentalDomain_cubeBasis L hL] using
     exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
 
 /-- The cube `[0, L)^d` is a bounded set. -/
-public lemma isBounded_cubeBox_Ico (L : ℝ) (hL : 0 < L) :
-    IsBounded (cubeBox d (Set.Ico 0 L)) := by
+public lemma isBounded_cube_Ico (L : ℝ) (hL : 0 < L) :
+    IsBounded {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Ico 0 L} := by
   simpa [fundamentalDomain_cubeBasis L hL] using
     fundamentalDomain_isBounded (cubeBasis d L hL)
 
-/-- A coordinate box is the `ofLp`-preimage of the product box `∏ i, I`. This is the single
-preimage identity from which the boxes' measurability and volume are read off. -/
-public lemma cubeBox_eq_preimage_ofLp (I : Set ℝ) :
-    cubeBox d I =
+/-- A coordinate cube is the `ofLp`-preimage of the product box `∏ i, I`. This is the single
+preimage identity from which the cubes' measurability and volume are read off. -/
+public lemma cube_eq_preimage_ofLp (I : Set ℝ) :
+    {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ I} =
       (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' (Set.pi Set.univ fun _ : Fin d ↦ I) := by
   ext x; simp [Set.mem_pi]
 
-/-- A coordinate box over a measurable interval is measurable. -/
-public lemma measurableSet_cubeBox {I : Set ℝ} (hI : MeasurableSet I) :
-    MeasurableSet (cubeBox d I) := by
-  rw [cubeBox_eq_preimage_ofLp]
+/-- A coordinate cube over a measurable set of reals is measurable. -/
+public lemma measurableSet_cube {I : Set ℝ} (hI : MeasurableSet I) :
+    MeasurableSet {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ I} := by
+  rw [cube_eq_preimage_ofLp]
   exact (MeasurableSet.pi Set.countable_univ fun _ _ => hI).preimage
     (PiLp.volume_preserving_ofLp (ι := Fin d)).measurable
 
-/-- The volume of a coordinate box `cubeBox d I` is `volume I ^ d`. -/
-public lemma volume_cubeBox (I : Set ℝ) (hI : MeasurableSet I) :
-    volume (cubeBox d I) = volume I ^ d := by
-  rw [cubeBox_eq_preimage_ofLp,
+/-- The volume of a coordinate cube is `volume I ^ d`. -/
+public lemma volume_cube (I : Set ℝ) (hI : MeasurableSet I) :
+    volume {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ I} = volume I ^ d := by
+  rw [cube_eq_preimage_ofLp,
     (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage
       (MeasurableSet.pi Set.countable_univ fun _ _ ↦ hI).nullMeasurableSet,
     volume_pi, Measure.pi_pi]
   simp
+
+/-- The volume of the half-open cube `[a, b)^d` is `(b - a) ^ d`. -/
+public lemma volume_cube_Ico (a b : ℝ) :
+    volume {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Ico a b} =
+      ENNReal.ofReal (b - a) ^ d := by
+  rw [volume_cube _ measurableSet_Ico, Real.volume_Ico]
+
+/-- The volume of the closed cube `[a, b]^d` is `(b - a) ^ d`. -/
+public lemma volume_cube_Icc (a b : ℝ) :
+    volume {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Icc a b} =
+      ENNReal.ofReal (b - a) ^ d := by
+  rw [volume_cube _ measurableSet_Icc, Real.volume_Icc]
 
 /-- Only finitely many `cubeLattice` points lie in a ball of radius `R`. -/
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
