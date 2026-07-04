@@ -14,6 +14,7 @@ public import SpherePacking.ForMathlib.DualLattice
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.ModularFormsHelpers
+public import SpherePacking.ForMathlib.SchwartzLatticeSummable
 public import SpherePacking.ForMathlib.UnitAddTorusQuotient
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
