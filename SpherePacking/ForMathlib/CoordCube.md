@@ -6,16 +6,21 @@ the build environment.*
 ## What this file contributes
 
 `SpherePacking/ForMathlib/CoordCube.lean` packages the scaled integer lattice `L·ℤ^d` and its
-coordinate cube in `EuclideanSpace ℝ (Fin d)`:
+coordinate boxes in `EuclideanSpace ℝ (Fin d)`:
 
-- `cubeIco d L = [0,L)^d` (the fundamental domain) and `cubeIcc d L r = [r,L−r]^d` (the
-  boundary-safe core), with membership/preimage API;
-- the scaled standard basis `cubeBasis d L hL` (via `Basis.isUnitSMul`) and the lattice
-  `cubeLattice d L hL = span ℤ (range (cubeBasis …))`, with `DiscreteTopology`/`IsZLattice`
-  instances;
-- the geometry/measure: `cubeIco` is the fundamental domain of `cubeBasis`
-  (`fundamentalDomain_cubeBasis_eq_cubeIco`), unique covering, boundedness, volumes `L^d` and
-  `(L−2r)^d`, and finiteness of lattice points in a ball.
+- the coordinate box `cubeBox d I = {x | ∀ i, x i ∈ I}`, a reducible `abbrev` (membership is
+  definitional, so there is no membership/unfolding API), with the cross-structure content
+  `cubeBox_eq_preimage_ofLp`, `measurableSet_cubeBox`, and `volume_cubeBox`
+  (`volume (cubeBox d I) = volume I ^ d`). The LP bound's cubes are written inline as
+  `cubeBox d (Set.Ico 0 L) = [0,L)^d` and `cubeBox d (Set.Icc r (L−r)) = [r,L−r]^d`; there are
+  deliberately no named per-cube specialisations;
+- the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev` over `Basis.isUnitSMul`) and
+  the lattice `cubeLattice d L hL = span ℤ (range (cubeBasis …))` — the one standalone definition,
+  kept to carry the `DiscreteTopology`/`IsZLattice` instances;
+- the geometry: `cubeBox d (Set.Ico 0 L)` is the fundamental domain of `cubeBasis`
+  (`fundamentalDomain_cubeBasis`), unique covering (`cubeLattice_unique_covers`), boundedness
+  (`isBounded_cubeBox_Ico`), and finiteness of lattice points in a ball
+  (`finite_lattice_in_ball`).
 
 It is the period-lattice/fundamental-domain machinery of the cube sphere packing used by the
 Cohn–Elkies density approximation in `LPBound.lean`.
@@ -26,7 +31,8 @@ The generic lattice facts here are **thin specialisations of Mathlib's `ZSpan` A
 basis (`Mathlib/Algebra/Module/ZLattice/Basic.lean`): `fundamentalDomain` (line 92),
 `fundamentalDomain_isBounded` (248), `exist_unique_vadd_mem_fundamentalDomain` (261),
 `setFinite_inter` (331), `measure_fundamentalDomain`/`volume_fundamentalDomain` (372/388),
-`isAddFundamentalDomain` (353). Indeed `cubeIco d L` *is* `ZSpan.fundamentalDomain (cubeBasis d L hL)`
+`isAddFundamentalDomain` (353). Indeed `cubeBox d (Set.Ico 0 L)` *is*
+`ZSpan.fundamentalDomain (cubeBasis d L hL)`
 (proved here), and our unique-covering / boundedness / finiteness lemmas are already one-line
 delegations to the corresponding `ZSpan` lemmas.
 
@@ -84,7 +90,7 @@ These are recorded as TODOs in the module docstring of `CoordCube.lean`.
    lemmas above belong in the same Voronoi/fundamental-domain development; offering them as additions
    to (or a follow-up of) #10345 avoids fragmenting the lattice-geometry API.
 2. **Upstream only the genuinely cube-specific content** — the scaled basis `cubeBasis`, the
-   identification `cubeIco = fundamentalDomain (cubeBasis …)`, and the explicit volumes — into
+   identification `cubeBox d (Set.Ico 0 L) = fundamentalDomain (cubeBasis …)`, and the box volume — into
    `Mathlib/Algebra/Module/ZLattice/`, consuming `ZSpan` for everything generic rather than
    re-deriving it.
 3. **Track #33746** for the `ZSpan.floor`/`fract` naming so the upstreamed cube lemmas match.
