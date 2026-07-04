@@ -290,10 +290,13 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
   have hsub : {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Icc 1 (L - 1)} ⊆
       {x | ∀ i, x i ∈ Set.Icc (-(2⁻¹ : ℝ)) (L + 2⁻¹)} :=
     fun x hx i => ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
-  simpa [volume_cube_Icc, show L + 2⁻¹ - -(2⁻¹ : ℝ) = L + 1 by ring,
-    show L - 1 - 1 = L - 2 by ring] using
-    measure_diff (μ := volume) hsub (measurableSet_cube measurableSet_Icc).nullMeasurableSet
-      (by simp [volume_cube_Icc])
+  have hfin : volume {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Icc 1 (L - 1)} ≠ ∞ := by
+    rw [volume_cube_Icc]
+    exact ENNReal.pow_ne_top ENNReal.ofReal_ne_top
+  rw [measure_diff (μ := volume) hsub
+      (measurableSet_cube measurableSet_Icc).nullMeasurableSet hfin,
+    volume_cube_Icc, volume_cube_Icc,
+    show L + 2⁻¹ - -(2⁻¹ : ℝ) = L + 1 by ring, show L - 1 - 1 = L - 2 by ring]
 
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
@@ -458,11 +461,16 @@ private lemma exists_pigeonhole_lattice_cell {L : ℝ} (hL : 0 < L) {C : ℝ}
   refine ⟨g0, sg, fun x hx => (hX.mem_toFinset.1 (Finset.mem_filter.1 hx).1).1,
     fun x hx => ?_, ?_⟩
   · -- `x` lies in the `g0`-translate of the cube: the witness is the covering translate of `x`,
-    -- since `g0` is its negation on the fibre.
+    -- whose negation is `g0` on the fibre; the identity is checked in the ambient space.
     refine ⟨_, fundamentalDomain_cubeBasis L hL ▸
       fundamentalDomainCover_spec (cubeBasis d L hL) x, ?_⟩
-    rw [show g0 = -fundamentalDomainCover (cubeBasis d L hL) x from
-      (Finset.mem_filter.1 hx).2.symm, vadd_vadd, neg_add_cancel, zero_vadd]
+    have hg0 : (g0 : EuclideanSpace ℝ (Fin d)) =
+        -(fundamentalDomainCover (cubeBasis d L hL) x : EuclideanSpace ℝ (Fin d)) := by
+      rw [← (Finset.mem_filter.1 hx).2]
+      exact map_neg (cubeLattice d L hL).subtype _
+    show (g0 : EuclideanSpace ℝ (Fin d)) +ᵥ
+        ((fundamentalDomainCover (cubeBasis d L hL) x : EuclideanSpace ℝ (Fin d)) +ᵥ x) = x
+    rw [hg0, vadd_vadd, neg_add_cancel, zero_vadd]
   · have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
       have hcard : s.card ≤ t.card * sg.card := by
         simpa [Finset.card_eq_sum_card_fiberwise hf_maps, Finset.sum_const] using
