@@ -34,7 +34,8 @@ definitions (declared locally here and in `ForMathlib/CoordCube.lean`, following
 pattern for cross-file notation, cf. `ℝ⁸`): they elaborate literally to `Basis.isUnitSMul` and
 `Submodule.span`, so Mathlib's `ZSpan`/`ZLattice` lemmas and instances apply directly. -/
 local notation:max "cubeBasis " d:max L:max hL:max =>
-  (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
+  Module.Basis.isUnitSMul (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ))
+    fun _ : Fin d ↦ IsUnit.mk0 L (LT.lt.ne' hL)
 local notation:max "cubeLattice " d:max L:max hL:max =>
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
 

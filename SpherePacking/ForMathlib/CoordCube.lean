@@ -78,9 +78,11 @@ variable {d : ℕ}
 
 /-- The standard basis of `EuclideanSpace ℝ (Fin d)` scaled by `L`, given `hL : 0 < L`. This is
 *notation*, not a definition: it elaborates literally to `Basis.isUnitSMul` on the standard basis,
-so Mathlib's `ZSpan` lemmas apply to it directly and there is nothing to unfold. -/
+so Mathlib's `ZSpan` lemmas apply to it directly and there is nothing to unfold. (The right-hand
+side is written projection-free because the notation precheck does not support `.foo` syntax.) -/
 local notation:max "cubeBasis " d:max L:max hL:max =>
-  (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
+  Module.Basis.isUnitSMul (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ))
+    fun _ : Fin d ↦ IsUnit.mk0 L (LT.lt.ne' hL)
 
 /-- The cubic lattice `L • ℤ^d`, the span of `cubeBasis d L hL`. This is *notation*, not a
 definition: it elaborates literally to `Submodule.span ℤ (Set.range …)`, so Mathlib's
