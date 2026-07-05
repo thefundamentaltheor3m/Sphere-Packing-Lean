@@ -17,13 +17,22 @@ For `d : ℕ` and `L : ℝ`, this file packages:
   The lemmas record the genuine content: such a cube is the `ofLp`-preimage of a product box
   (`cube_eq_preimage_ofLp`), is measurable (`measurableSet_cube`), and has volume `volume I ^ d`
   (`volume_cube`, with endpoint corollaries `volume_cube_Ico`/`volume_cube_Icc`);
-* the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev`) and the cubic lattice
-  `cubeLattice d L hL = L • ℤ^d` it spans, with `DiscreteTopology`/`IsZLattice` instances.
-  `cubeLattice` is the one standalone definition, kept so it can carry those instances;
-* the basic geometry: `[0, L)^d` is the fundamental domain of `cubeBasis`
-  (`fundamentalDomain_cubeBasis`), every point has a unique lattice translate in it
-  (`cubeLattice_unique_covers`), it is bounded (`isBounded_cube_Ico`), and only finitely many
-  lattice points lie in a ball (`finite_lattice_in_ball`).
+* the basic geometry of the scaled standard lattice: `[0, L)^d` is the fundamental domain of the
+  scaled standard basis (`fundamentalDomain_cubeBasis`), every point has a unique lattice
+  translate in it (`cubeLattice_unique_covers`), it is bounded (`isBounded_cube_Ico`), and only
+  finitely many lattice points lie in a ball (`finite_lattice_in_ball`).
+
+This file contains **no definitions at all** — only lemmas. The scaled standard basis and the
+cubic lattice `L • ℤ^d` it spans are *notation* (`cubeBasis d L hL`, `cubeLattice d L hL`),
+expanding literally to `Basis.isUnitSMul` on the standard basis and to
+`Submodule.span ℤ (Set.range …)` of it. Consequently:
+
+* there is no API and nothing to unfold — Mathlib's `ZSpan`/`ZLattice` lemmas apply directly to
+  the expansions, and the `DiscreteTopology`/`IsZLattice` instances are found by Mathlib's own
+  instance synthesis on the span spelling (no local instances needed);
+* the notations are declared `local`ly here and re-declared at their point of use in
+  `LPBound.lean`, following this project's existing pattern for cross-file notation (cf. `ℝ⁸`).
+  Exported lemma *types* contain only the expanded Mathlib terms.
 
 Everything is placed in the `EuclideanSpace` namespace, its natural home.
 
@@ -67,49 +76,36 @@ namespace EuclideanSpace
 
 variable {d : ℕ}
 
-/-- The standard basis of `EuclideanSpace ℝ (Fin d)` scaled by `L`; its span is `cubeLattice` and
-its fundamental domain is the cube `[0, L)^d` (`fundamentalDomain_cubeBasis`).
-
-This is a reducible *abbreviation*, not a standalone definition: it is a one-line shorthand for
-`Basis.isUnitSMul`, carries no API of its own, and is only ever passed straight to Mathlib's `ZSpan`
-basis lemmas. Keeping it `abbrev` (rather than `def`) means it unfolds definitionally — no unfolding
-lemmas, no `cubeBasis_apply`-style API — so it behaves like notation while still accepting the
-positivity proof `hL` that a syntactic `notation` could not supply to `IsUnit.mk0`. -/
-@[expose] public noncomputable abbrev cubeBasis (d : ℕ) (L : ℝ) (hL : 0 < L) :
-    Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) :=
+/-- The standard basis of `EuclideanSpace ℝ (Fin d)` scaled by `L`, given `hL : 0 < L`. This is
+*notation*, not a definition: it elaborates literally to `Basis.isUnitSMul` on the standard basis,
+so Mathlib's `ZSpan` lemmas apply to it directly and there is nothing to unfold. -/
+local notation:max "cubeBasis " d:max L:max hL:max =>
   (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
 
-/-- The cubic lattice `L • ℤ^d`, spanned by `cubeBasis d L hL`. Standalone so it can carry
-`ZLattice`/`DiscreteTopology` instances and act as the period lattice of the cube packing. -/
-@[expose] public noncomputable def cubeLattice (d : ℕ) (L : ℝ) (hL : 0 < L) :
-    Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
+/-- The cubic lattice `L • ℤ^d`, the span of `cubeBasis d L hL`. This is *notation*, not a
+definition: it elaborates literally to `Submodule.span ℤ (Set.range …)`, so Mathlib's
+`DiscreteTopology`/`IsZLattice` instances for spans of basis ranges apply to it directly. -/
+local notation:max "cubeLattice " d:max L:max hL:max =>
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
 
-public instance instDiscreteTopology_cubeLattice (L : ℝ) (hL : 0 < L) :
-    DiscreteTopology (cubeLattice d L hL) :=
-  inferInstanceAs (DiscreteTopology (Submodule.span ℤ (Set.range (cubeBasis d L hL))))
-
-public instance instIsZLattice_cubeLattice (L : ℝ) (hL : 0 < L) :
-    IsZLattice ℝ (cubeLattice d L hL) :=
-  inferInstanceAs (IsZLattice ℝ (Submodule.span ℤ (Set.range (cubeBasis d L hL))))
-
-/-- The fundamental domain of the scaled basis `cubeBasis d L hL` is the cube `[0, L)^d`. -/
+/-- The fundamental domain of the scaled standard basis is the cube `[0, L)^d`. -/
 public lemma fundamentalDomain_cubeBasis (L : ℝ) (hL : 0 < L) :
     fundamentalDomain (cubeBasis d L hL) =
       {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Ico 0 L} := by
   ext x
-  simp only [ZSpan.mem_fundamentalDomain, cubeBasis, Module.Basis.repr_isUnitSMul,
+  simp only [ZSpan.mem_fundamentalDomain, Module.Basis.repr_isUnitSMul,
     Units.smul_def, Units.val_inv_eq_inv_val, IsUnit.unit_spec, smul_eq_mul,
     OrthonormalBasis.coe_toBasis_repr_apply, EuclideanSpace.basisFun_repr, Set.mem_setOf_eq,
     Set.mem_Ico]
   exact forall_congr' fun i =>
     and_congr (mul_nonneg_iff_of_pos_left (inv_pos.2 hL)) (inv_mul_lt_one₀ hL)
 
-/-- Every point has a unique `cubeLattice` translate lying in the cube `[0, L)^d`. -/
+/-- Every point has a unique translate along the lattice `L • ℤ^d` lying in the cube
+`[0, L)^d`. -/
 public lemma cubeLattice_unique_covers (L : ℝ) (hL : 0 < L) :
     ∀ x, ∃! g : cubeLattice d L hL,
       g +ᵥ x ∈ {y : EuclideanSpace ℝ (Fin d) | ∀ i, y i ∈ Set.Ico 0 L} := fun x => by
-  simpa [cubeLattice, fundamentalDomain_cubeBasis L hL] using
+  simpa [fundamentalDomain_cubeBasis L hL] using
     exist_unique_vadd_mem_fundamentalDomain (cubeBasis d L hL) x
 
 /-- The cube `[0, L)^d` is a bounded set. -/
@@ -153,13 +149,13 @@ public lemma volume_cube_Icc (a b : ℝ) :
       ENNReal.ofReal (b - a) ^ d := by
   rw [volume_cube _ measurableSet_Icc, Real.volume_Icc]
 
-/-- Only finitely many `cubeLattice` points lie in a ball of radius `R`. -/
+/-- Only finitely many points of the lattice `L • ℤ^d` lie in a ball of radius `R`. -/
 public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     Set.Finite {g : cubeLattice d L hL | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R} := by
   refine (Set.Finite.preimage_embedding (f := ⟨fun g : cubeLattice d L hL =>
-    (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩) (by
-      simpa [cubeLattice] using ZSpan.setFinite_inter (b := cubeBasis d L hL)
-        (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset fun g hg => ?_
+    (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩)
+    (ZSpan.setFinite_inter (b := cubeBasis d L hL)
+      (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)).subset fun g hg => ?_
   exact ⟨hg, g.property⟩
 
 end EuclideanSpace

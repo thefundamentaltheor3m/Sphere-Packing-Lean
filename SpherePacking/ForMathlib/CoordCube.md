@@ -13,9 +13,11 @@ coordinate boxes in `EuclideanSpace ℝ (Fin d)`:
   judgemental and no membership/unfolding API exists. The lemmas carry the genuine content:
   `cube_eq_preimage_ofLp`, `measurableSet_cube`, and `volume_cube` (`= volume I ^ d`, with endpoint
   corollaries `volume_cube_Ico`/`volume_cube_Icc`);
-- the scaled standard basis `cubeBasis d L hL` (a reducible `abbrev` over `Basis.isUnitSMul`) and
-  the lattice `cubeLattice d L hL = span ℤ (range (cubeBasis …))` — the one standalone definition,
-  kept to carry the `DiscreteTopology`/`IsZLattice` instances;
+- the scaled standard basis `cubeBasis d L hL` and the lattice
+  `cubeLattice d L hL = span ℤ (range (cubeBasis …))` — both are *local notation*, not
+  definitions: they expand literally to `Basis.isUnitSMul` and `Submodule.span`, so Mathlib's
+  `ZSpan`/`ZLattice` lemmas and the `DiscreteTopology`/`IsZLattice` instances apply directly to
+  the expansions (the file contains no definitions and no instances at all, only lemmas);
 - the geometry: `[0, L)^d` is the fundamental domain of `cubeBasis`
   (`fundamentalDomain_cubeBasis`), unique covering (`cubeLattice_unique_covers`), boundedness
   (`isBounded_cube_Ico`), and finiteness of lattice points in a ball

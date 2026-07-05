@@ -29,6 +29,15 @@ open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module Fi
 
 variable {d : ℕ}
 
+/- The scaled standard basis and the cubic lattice `L • ℤ^d` it spans are *notation*, not
+definitions (declared locally here and in `ForMathlib/CoordCube.lean`, following this project's
+pattern for cross-file notation, cf. `ℝ⁸`): they elaborate literally to `Basis.isUnitSMul` and
+`Submodule.span`, so Mathlib's `ZSpan`/`ZLattice` lemmas and instances apply directly. -/
+local notation:max "cubeBasis " d:max L:max hL:max =>
+  (EuclideanSpace.basisFun (Fin d) ℝ).toBasis.isUnitSMul fun _ : Fin d ↦ IsUnit.mk0 L hL.ne'
+local notation:max "cubeLattice " d:max L:max hL:max =>
+  Submodule.span ℤ (Set.range (cubeBasis d L hL))
+
 /-- Any coordinate of a vector is bounded in absolute value by the Euclidean norm. -/
 public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ :=
   PiLp.norm_apply_le x i
@@ -305,7 +314,7 @@ lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
       (volume {x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ Set.Ico 0 L}).toReal := by
     simpa [Measure.real, fundamentalDomain_cubeBasis L hL] using
       ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice d L hL) (μ := volume)
-        (by simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume :
+        (ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume :
           IsAddFundamentalDomain (cubeLattice d L hL)
             (fundamentalDomain (cubeBasis d L hL)) volume)
   simp [hcov]
