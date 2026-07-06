@@ -605,6 +605,7 @@ lemma E8_ℤBasis_ofZLatticeBasis_apply (i : Fin 8) :
 section Packing
 
 open scoped Real
+open EuclideanSpace
 
 noncomputable def E8Packing : PeriodicSpherePacking 8 where
   separation := √2
@@ -629,7 +630,7 @@ lemma E8Packing_separation : E8Packing.separation = √2 := rfl
 lemma E8Packing_lattice : E8Packing.lattice = E8Lattice := rfl
 
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=
-  PeriodicSpherePacking.numReps_eq_one _ rfl
+  Metric.PeriodicSpherePacking.numReps_eq_one _ rfl
 
 lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
   have : √2 ≤ 2 := by
@@ -669,8 +670,8 @@ lemma E8_ℤBasis_ofZLatticeBasis_volume :
 
 open MeasureTheory ZSpan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
-  rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
-  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, finrank_euclideanSpace,
+  rw [Metric.PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
+  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball,
       Fintype.card_fin, Nat.cast_ofNat]
     simp only [E8Packing]
     have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := calc

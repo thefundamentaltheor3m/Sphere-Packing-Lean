@@ -18,7 +18,7 @@ public import SpherePacking.Basic.PeriodicPacking
 @[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
+open EuclideanSpace Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
   Bornology Summable Module
 
 variable {d : ℕ}
