@@ -1,0 +1,79 @@
+This section collects the integration infrastructure used to prove that the radial profiles of
+the magic functions are smooth and rapidly decaying: a change-of-variables formula exchanging the
+regions $(0,1]$ and $[1,\infty)$, and differentiation under the integral sign for the parametric
+integrals appearing in the definitions of $a$ and $b$.
+
+In the formalization these results are stated for restrictions of the Lebesgue measure to the
+standard intervals $(0,1]$, $(0,1)$, $[1,\infty)$ and $(0,\infty)$ (the measures
+\texttt{muIoc01}, \texttt{muIoo01}, \texttt{muIciOne}, \texttt{muIoi0} in
+\texttt{SpherePacking/Integration/Measure.lean}).
+
+\begin{lemma}[Inversion change of variables]\label{lemma:inv-change-of-variables}\lean{SpherePacking.Integration.InvChangeOfVariables.integral_Ici_one_eq_integral_abs_deriv_smul}\leanok
+  The map $t \mapsto 1/t$ carries $(0, 1]$ bijectively onto $[1, \infty)$, and for every
+  integrable $g : \R \to \C$,
+  \[
+    \int_1^{\infty} g(s) \,\dd s
+      = \int_0^1 \left| \frac{-1}{t^2} \right| g\!\left(\frac{1}{t}\right) \dd t.
+  \]
+\end{lemma}
+\begin{proof}\leanok
+  The one-dimensional change-of-variables formula for the injective differentiable map
+  $t \mapsto 1/t$ on $(0,1]$, whose image is $[1,\infty)$.
+\end{proof}
+
+\begin{lemma}[Differentiation under the integral sign on $(0,1)$]\label{lemma:hasDerivAt-integral-Ioo01}\lean{SpherePacking.Integration.DifferentiationUnderIntegral.hasDerivAt_integral_gN_Ioo}\leanok
+  Let $c, h : \R \to \C$ with $h$ continuous and bounded on $(0,1)$ and $c$ continuous with
+  $\|c(t)\| \le 2\pi$ for all $t$. For $n \in \N$ set
+  \[
+    g_n(x, t) := c(t)^n\, h(t)\, e^{x\, c(t)}, \qquad x \in \R,\ t \in (0,1).
+  \]
+  Then for every $n$ and every $x_0 \in \R$, the function
+  $x \mapsto \int_0^1 g_n(x,t) \,\dd t$ is differentiable at $x_0$ with derivative
+  $\int_0^1 g_{n+1}(x_0,t) \,\dd t$.
+\end{lemma}
+\begin{proof}\leanok
+  Dominated differentiation: on the ball $|x - x_0| < 1$ the integrand and its $x$-derivative are
+  uniformly bounded by
+  $(2\pi)^{n+1} M \exp\bigl((|x_0|+1) \cdot 2\pi\bigr)$, where $M$ bounds $\|h\|$; the bound is
+  integrable on the finite interval $(0,1)$.
+\end{proof}
+
+\begin{theorem}[Smoothness of parametric integrals on $(0,1)$]\label{thm:contDiff-integral-Ioo01}\uses{lemma:hasDerivAt-integral-Ioo01}\lean{SpherePacking.Integration.DifferentiationUnderIntegral.contDiff_integral_g_Ioo}\leanok
+  Under the hypotheses of Lemma~\ref{lemma:hasDerivAt-integral-Ioo01}, the function
+  \[
+    x \mapsto \int_0^1 h(t)\, e^{x\, c(t)} \,\dd t
+  \]
+  is $C^\infty$ on $\R$, with $n$-th derivative $\int_0^1 g_n(x,t)\,\dd t$.
+\end{theorem}
+\begin{proof}\leanok
+  Iterate Lemma~\ref{lemma:hasDerivAt-integral-Ioo01}: the family
+  $F_n(x) = \int_0^1 g_n(x,t)\,\dd t$ satisfies $F_n' = F_{n+1}$, and a family with this property
+  consists of smooth functions (Theorem~\ref{thm:contDiffOn-family-hasDerivAt}).
+\end{proof}
+
+\begin{lemma}[Differentiation under the integral sign on the ray {$t \ge 1$}]\label{lemma:hasDerivAt-integral-IciOne}\lean{SpherePacking.Integration.SmoothIntegralIciOne.hasDerivAt_integral_gN}\leanok
+  Let $h : \R \to \C$ and $\sigma \in \R$ be such that
+  $\|h(t)\| \le C e^{-\pi \sigma t}$ for all $t \ge 1$. With $c(t) := -\pi t$, set
+  \[
+    g_n(x, t) := c(t)^n \cdot i\, h(t)\, e^{x\, c(t)}
+               = (-\pi t)^n \cdot i\, h(t)\, e^{-\pi x t}.
+  \]
+  Then for every $n$ and every $x > -\sigma$ (so that the total exponential rate
+  $x + \sigma$ is positive), the function $y \mapsto \int_1^\infty g_n(y,t)\,\dd t$ is
+  differentiable at $x$ with derivative $\int_1^\infty g_{n+1}(x,t)\,\dd t$.
+\end{lemma}
+\begin{proof}\leanok
+  Dominated differentiation on the ball of radius $\varepsilon = (x + \sigma)/2$ around $x$: the
+  integrand is dominated by $\pi^{n+1} C\, t^{n+1} e^{-\pi \varepsilon t}$, which is integrable
+  on $[1, \infty)$.
+\end{proof}
+
+\begin{theorem}[Smoothness from a derivative family]\label{thm:contDiffOn-family-hasDerivAt}\lean{SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt}\leanok
+  Let $s \subseteq \R$ be open and let $F_n : \R \to E$ ($n \in \N$) be a family of functions
+  such that for every $n$ and every $x \in s$, $F_n$ is differentiable at $x$ with derivative
+  $F_{n+1}(x)$. Then every $F_n$ is $C^\infty$ on $s$.
+\end{theorem}
+\begin{proof}\leanok
+  By induction on the smoothness order $m$: each $F_n$ is differentiable, hence continuous, and
+  its derivative $F_{n+1}$ is $C^m$ by the inductive hypothesis, so $F_n$ is $C^{m+1}$.
+\end{proof}

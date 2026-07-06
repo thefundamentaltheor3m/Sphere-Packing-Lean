@@ -1,0 +1,300 @@
+In this section we collect the general results on contour integration that are used to deform the
+contours of integration appearing in the construction of the magic functions $a$ and $b$. There are
+two kinds of results: deformation of \emph{rectangular} contours (used for integrands defined on
+vertical strips), and homotopy invariance of curve integrals of \emph{closed one-forms} (used to
+move integrals along segments through the M\"obius inversion $z \mapsto -1/z$).
+
+\subsection{Deformation of rectangular contours}
+
+The starting point is the classical statement that the integral of a holomorphic function over the
+boundary of a rectangle vanishes.
+
+\begin{lemma}\label{lemma:rect-boundary-zero}\lean{Complex.hzero}\leanok
+  Let $x_1, x_2, y \in \R$ and let $f : \C \to E$ be continuous on the closed half-strip
+  $[x_1, x_2] \times [y, \infty)$ and complex differentiable on its interior, off a countable set.
+  Then for every $m \geq y$,
+  \[
+    \int_{x_1}^{x_2} f(x + iy) \,\dd x - \int_{x_1}^{x_2} f(x + im) \,\dd x
+      + i\int_{y}^{m} f(x_2 + it) \,\dd t - i\int_{y}^{m} f(x_1 + it) \,\dd t = 0,
+  \]
+  i.e.\ the integral of $f$ over the boundary of the rectangle with corners $x_1 + iy$ and
+  $x_2 + im$ vanishes.
+\end{lemma}
+\begin{proof}\leanok
+  This is a reformulation of the Cauchy--Goursat theorem for rectangles, which is available in
+  Mathlib as \texttt{Complex.integral\_boundary\_rect\_eq\_zero\_of\_differentiable\_on\_off\_countable}.
+\end{proof}
+
+Letting the height of the rectangle tend to infinity, we obtain a deformation result for
+``open rectangles'': the integral over a horizontal edge can be traded for the two vertical
+half-lines above its endpoints.
+
+\begin{theorem}\label{thm:open-rect-deform}\uses{lemma:rect-boundary-zero}\lean{Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on}\leanok
+  Let $x_1, x_2, y \in \R$ and let $f : \C \to E$ be continuous on
+  $[x_1, x_2] \times [y, \infty)$ and complex differentiable on its interior, off a countable set.
+  Assume that
+  \begin{enumerate}
+    \item $t \mapsto f(x_1 + it)$ and $t \mapsto f(x_2 + it)$ are integrable on $(y, \infty)$;
+    \item $f(z) \to 0$ uniformly as $\Im z \to \infty$.
+  \end{enumerate}
+  Then
+  \[
+    \int_{x_1}^{x_2} f(x + iy) \,\dd x
+      + i\int_{y}^{\infty} f(x_2 + it) \,\dd t - i\int_{y}^{\infty} f(x_1 + it) \,\dd t = 0.
+  \]
+\end{theorem}
+\begin{proof}\leanok
+  Apply Lemma~\ref{lemma:rect-boundary-zero} to the rectangle of height $m$ and let
+  $m \to \infty$. The uniform decay of $f$ makes the top edge vanish in the limit, and the
+  integrability hypotheses ensure that the truncated vertical integrals converge to the integrals
+  over the half-lines.
+\end{proof}
+
+\begin{theorem}\label{thm:rect-deform-tendsto-top}\uses{lemma:rect-boundary-zero}\lean{Complex.rect_deform_of_tendsto_top}\leanok
+  The conclusion of Theorem~\ref{thm:open-rect-deform} continues to hold if the uniform decay
+  hypothesis is replaced by the weaker assumption that the top-edge integrals tend to zero:
+  \[
+    \lim_{m \to \infty} \int_{x_1}^{x_2} f(x + im) \,\dd x = 0.
+  \]
+\end{theorem}
+\begin{proof}\leanok
+  Same argument as Theorem~\ref{thm:open-rect-deform}, using the hypothesis directly to dispose of
+  the top edge.
+\end{proof}
+
+\subsection{Curve integrals of scalar one-forms}
+
+To deform contours that are not parallel to the axes, we work with curve integrals of one-forms.
+Every scalar function gives rise to a ($\C$-linear) one-form, and integrating this one-form along a
+path recovers the usual complex contour integral.
+
+\begin{definition}\label{def:one-form}\lean{curveIntegral}\leanok
+  A \emph{one-form} on $\C$ (with values in $\C$) is a map
+  \[
+    \omega : \C \to \C \to_{L[\C]} \C
+  \]
+  assigning to every point $z \in \C$ a continuous $\C$-linear map $\omega(z) : \C \to \C$. Given a
+  path $\gamma : [0,1] \to \C$, the \emph{curve integral} of $\omega$ along $\gamma$ is
+  \[
+    \int_{\gamma} \omega := \int_0^1 \omega(\gamma(t))\bigl(\gamma'(t)\bigr) \,\dd t,
+  \]
+  whenever the derivative $\gamma'$ exists almost everywhere and the integrand is integrable.
+\end{definition}
+
+\begin{definition}\label{def:scalarOneForm}\uses{def:one-form}\lean{MagicFunction.scalarOneForm}\leanok
+  For a function $F : \C \to \C$, the associated \emph{scalar one-form} is
+  \[
+    \omega_F(z) : v \mapsto v \cdot F(z), \qquad z, v \in \C,
+  \]
+  regarded as a map $\C \to \C \to_{L[\C]} \C$ into the continuous $\C$-linear endomorphisms of
+  $\C$.
+\end{definition}
+
+\begin{definition}\label{def:ClosedOneFormOn}\uses{def:one-form}\lean{SpherePacking.Contour.ClosedOneFormOn}\leanok
+  A one-form $\omega : \C \to \C \to_{L[\C]} \C$ is a \emph{closed one-form on} a set
+  $s \subseteq \C$ if
+  \begin{enumerate}
+    \item $\omega$ is differentiable on $s$ and continuous on the closure of $s$
+      (\texttt{DiffContOnCl}); and
+    \item its derivative within $s$ is symmetric: for all $x \in s$ and all $u, v$ in the tangent
+      cone of $s$ at $x$,
+      \[
+        \bigl(D_u \omega(x)\bigr)(v) = \bigl(D_v \omega(x)\bigr)(u).
+      \]
+  \end{enumerate}
+\end{definition}
+
+\begin{remark}\label{rem:closed-one-form-comparison}
+  Definition~\ref{def:ClosedOneFormOn} is the standard notion of a closed differential one-form,
+  stated in coordinate-free language. For a $C^1$ one-form $\omega$ on an \emph{open} set
+  $s$, the exterior derivative is given by
+  \[
+    d\omega(x)(u, v) = \bigl(D_u \omega(x)\bigr)(v) - \bigl(D_v \omega(x)\bigr)(u),
+  \]
+  so the symmetry condition~(2) is exactly $d\omega = 0$; moreover, on an open set the tangent
+  cone at every point is all of $\C$ and the within-derivative agrees with the full derivative, so
+  the two definitions coincide. The formalized version differs in two technical respects: it makes
+  sense on an arbitrary set $s$ (via within-derivatives and tangent cones), and it demands
+  continuity of $\omega$ up to the closure $\overline{s}$ (\texttt{DiffContOnCl}), because the
+  deformation homotopies used later touch the boundary of the wedge region (e.g.\ the corner
+  $1 \in \partial W$). The bundling of these two hypotheses into a single structure is specific to
+  this project; the Poincar\'e lemma in Mathlib
+  (Theorem~\ref{thm:poincare-curveIntegral}) takes them as separate hypotheses.
+
+  For the scalar one-forms of Definition~\ref{def:scalarOneForm} closedness reduces to
+  holomorphy: for $\omega_F = F \, \dd z$ one has
+  $\bigl(D_u \omega_F(z)\bigr)(v) = v \cdot D_u F(z)$, and the symmetry condition with $u = 1$,
+  $v = i$ reads $D_i F(z) = i \cdot D_1 F(z)$, which is precisely the Cauchy--Riemann equations.
+  Hence $\omega_F$ is closed on an open set $s$ if and only if $F$ is holomorphic on $s$ --- the
+  classical fact underlying Cauchy's theorem, and the way the closedness hypothesis is discharged
+  in applications.
+\end{remark}
+
+The fundamental deformation principle is the Poincar\'e lemma for curve integrals, available in
+Mathlib: curve integrals of a closed one-form along homotopic paths agree, up to the integrals
+along the two transversal boundary paths of the homotopy.
+
+\begin{theorem}[Poincar\'e lemma for curve integrals]\label{thm:poincare-curveIntegral}\uses{def:one-form, def:ClosedOneFormOn}\lean{ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl}\leanok
+  Let $s \subseteq \C$, let $\gamma_1, \gamma_2 : [0,1] \to \C$ be paths, and let
+  $\varphi : [0,1] \times [0,1] \to \C$ be a homotopy from $\gamma_1$ to $\gamma_2$ such that
+  \begin{enumerate}
+    \item $\varphi$ maps the open square $(0,1)^2$ into $s$;
+    \item $\varphi$ is $C^2$ on the closed square; and
+    \item $\omega$ is a closed one-form on $s$.
+  \end{enumerate}
+  Denote by $\sigma_0 := \varphi(0, \cdot)$ and $\sigma_1 := \varphi(1, \cdot)$ the transversal
+  paths connecting the start points and the end points of $\gamma_1$ and $\gamma_2$ respectively.
+  Then
+  \[
+    \int_{\gamma_1} \omega + \int_{\sigma_1} \omega
+      = \int_{\gamma_2} \omega + \int_{\sigma_0} \omega.
+  \]
+  In particular, if the homotopy fixes both endpoints, the curve integrals of $\omega$ along
+  $\gamma_1$ and $\gamma_2$ coincide.
+\end{theorem}
+\begin{proof}\leanok
+  This is Mathlib's
+  \texttt{ContinuousMap.Homotopy.curveIntegral\_add\_curveIntegral\_eq\_of\_diffContOnCl}.
+\end{proof}
+
+\begin{lemma}\label{lemma:curveIntegral-segment}\uses{def:scalarOneForm}\lean{SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment}\leanok
+  Let $F : \C \to \C$ and let $a, b \in \C$. Parametrizing the straight segment from $a$ to $b$ by
+  $z(t) = (1-t)a + tb$ for $t \in (0,1]$, we have
+  \[
+    \int_0^1 (b - a)\, F(z(t)) \,\dd t = \int_{[a,b]} \omega_F,
+  \]
+  where the right-hand side is the curve integral of the one-form $\omega_F$ along the segment.
+\end{lemma}
+\begin{proof}\leanok
+  Immediate from the definition of the curve integral along a segment.
+\end{proof}
+
+\begin{lemma}[Change of variables on a segment]\label{lemma:curveIntegral-change-of-variables}\uses{def:scalarOneForm, lemma:curveIntegral-segment}\lean{SpherePacking.Contour.curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of}\leanok
+  Let $a, b \in \C$, let $f : \C \to \C$ be continuous on the segment $[a,b]$ and differentiable
+  along its interior (i.e.\ $t \mapsto f(z(t))$ is differentiable for $t \in (0,1)$, where
+  $z(t) = (1-t)a + tb$), and let
+  $\Psi_r, \Psi'_r : \C \to \C$ be families of functions indexed by $r \in \R$. Suppose that for
+  all $t \in (0,1)$,
+  \[
+    (b - a)\, \Psi_r(z(t))
+      = -\frac{\dd}{\dd t}\bigl(f(z(t))\bigr) \cdot \Psi'_r\bigl(f(z(t))\bigr).
+  \]
+  Then
+  \[
+    \int_{[a,b]} \omega_{\Psi_r} = -\int_{f \circ [a,b]} \omega_{\Psi'_r},
+  \]
+  where $f \circ [a,b]$ denotes the image path of the segment under $f$.
+
+  (In the formalization only continuity of $f$ is assumed: Lean's derivative operator
+  \texttt{deriv} is total, taking the junk value $0$ at points of non-differentiability, so the
+  displayed identity is meaningful as stated and implicitly carries the differentiability
+  requirement.)
+\end{lemma}
+\begin{proof}\leanok
+  Both sides are interval integrals over $t \in [0,1]$; the hypothesis identifies the integrands
+  pointwise almost everywhere.
+\end{proof}
+
+\begin{definition}\label{def:mobiusInv}\lean{SpherePacking.mobiusInv}\leanok
+  The \emph{M\"obius inversion} is the map
+  \[
+    \sigma : \C \to \C, \qquad \sigma(z) := -\frac{1}{z}.
+  \]
+  It is holomorphic away from $0$, with derivative $\sigma'(z) = 1/z^2$, and maps the upper
+  half-plane $\h$ to itself.
+\end{definition}
+
+\begin{lemma}\label{lemma:curveIntegral-mobiusInv}\uses{def:mobiusInv, lemma:curveIntegral-change-of-variables}\lean{SpherePacking.MobiusInv.curveIntegral_segment_neg_inv}\leanok
+  Let $a, b \in \C$ be such that the open segment $(a, b)$ lies in the upper half-plane and
+  $\sigma$ is continuous on $[a,b]$. If two families $\Psi_r, \Psi'_r$ satisfy
+  \[
+    \Psi_r(z) = -\sigma'(z)\, \Psi'_r(\sigma(z)) \qquad \text{for all } z \in \h,
+  \]
+  then
+  \[
+    \int_{[a,b]} \omega_{\Psi_r} = -\int_{\sigma \circ [a,b]} \omega_{\Psi'_r}.
+  \]
+  The analogous statement with $\Psi_r(z) = \sigma'(z)\, \Psi'_r(\sigma(z))$ and no sign change on
+  the right-hand side also holds (\texttt{curveIntegral\_segment\_pos\_inv}).
+\end{lemma}
+\begin{proof}\leanok
+  Apply Lemma~\ref{lemma:curveIntegral-change-of-variables} with $f = \sigma$, computing
+  $\frac{\dd}{\dd t} \sigma(z(t)) = (b - a)\,\sigma'(z(t))$ by the chain rule.
+\end{proof}
+
+\subsection{Homotopy invariance in the wedge region}
+
+The key geometric object is a wedge-shaped open subset of the upper half-plane in which our
+contours can be deformed into one another.
+
+\begin{definition}\label{def:wedgeSet}\lean{SpherePacking.wedgeSet}\leanok
+  The \emph{wedge set} is
+  \[
+    W := \setof{z \in \C}{0 < \Im z, \; \Re z - 1 < \Im z, \; 1 - \Re z < \Im z}.
+  \]
+  It is an open, convex subset of the upper half-plane, and its closure meets the real axis only
+  at the point $1$.
+\end{definition}
+
+\begin{lemma}\label{lemma:wedge-contour-deform}\uses{def:wedgeSet, def:ClosedOneFormOn, def:mobiusInv, thm:poincare-curveIntegral}\lean{SpherePacking.Contour.perm_J12_contour_h1, SpherePacking.Contour.perm_J12_contour_h2}\leanok
+  Let $\Psi'_r : \C \to \C$ be a family of functions such that $\omega_{\Psi'_r}$ is a closed
+  one-form on $W$ for every $r \in \R$. Then
+  \begin{align}
+    \int_{\sigma \circ [-1,\, -1+i]} \omega_{\Psi'_r}
+      + \int_{[\sigma(-1+i),\, 1+i]} \omega_{\Psi'_r}
+      &= \int_{[1,\, 1+i]} \omega_{\Psi'_r},
+      \label{eqn:wedge-deform-h1} \\
+    \int_{\sigma \circ [-1+i,\, i]} \omega_{\Psi'_r}
+      &= \int_{[1+i,\, i]} \omega_{\Psi'_r}
+      + \int_{[\sigma(-1+i),\, 1+i]} \omega_{\Psi'_r}.
+      \label{eqn:wedge-deform-h2}
+  \end{align}
+\end{lemma}
+\begin{proof}\leanok
+  The image of the segment $[-1, -1+i]$ under $\sigma$ and the segment $[1, 1+i]$ are homotopic
+  inside $W$: the affine homotopy between them stays in $W$ by convexity of $W$
+  (Definition~\ref{def:wedgeSet}) together with the fact that $\sigma$ maps both segments into
+  $W$. Since $\sigma(-1) = 1$, both paths also share the endpoint $1$. The Poincar\'e lemma for
+  curve integrals (Theorem~\ref{thm:poincare-curveIntegral})
+  then yields~\eqref{eqn:wedge-deform-h1}. The identity~\eqref{eqn:wedge-deform-h2} follows by
+  the same argument applied to the segments $[-1+i, i]$ and $[1+i, i]$, using $\sigma(i) = i$.
+\end{proof}
+
+Combining the change of variables with the homotopy invariance gives the two contour permutation
+identities used in the study of the functions $a$ and $b$: the integrals over the two left
+segments of the contour (from $-1$ to $-1+i$ to $i$) can be replaced by integrals over the two
+right segments (from $1$ to $1+i$ to $i$).
+
+\begin{theorem}\label{thm:perm-contour-neg}\uses{lemma:curveIntegral-mobiusInv, lemma:wedge-contour-deform}\lean{SpherePacking.perm_J12_contour_mobiusInv_wedgeSet}\leanok
+  Let $\Psi_r, \Psi'_r : \C \to \C$ be families of functions such that
+  \[
+    \Psi_r(z) = -\sigma'(z)\, \Psi'_r(\sigma(z)) \qquad \text{for all } z \in \h,
+  \]
+  and such that $\omega_{\Psi'_r}$ is a closed one-form on $W$ for every $r$. Then
+  \[
+    \int_{[-1,\, -1+i]} \omega_{\Psi_r} + \int_{[-1+i,\, i]} \omega_{\Psi_r}
+      = -\left( \int_{[1,\, 1+i]} \omega_{\Psi'_r} + \int_{[1+i,\, i]} \omega_{\Psi'_r} \right).
+  \]
+\end{theorem}
+\begin{proof}\leanok
+  By Lemma~\ref{lemma:curveIntegral-mobiusInv}, the integrals of $\omega_{\Psi_r}$ over the left
+  segments equal minus the integrals of $\omega_{\Psi'_r}$ over their images under $\sigma$.
+  Adding the two identities of Lemma~\ref{lemma:wedge-contour-deform}, the auxiliary integral
+  along $[\sigma(-1+i), 1+i]$ cancels, giving the claim.
+\end{proof}
+
+\begin{theorem}\label{thm:perm-contour-pos}\uses{lemma:curveIntegral-mobiusInv, lemma:wedge-contour-deform}\lean{SpherePacking.perm_I12_contour_mobiusInv_wedgeSet}\leanok
+  Under the hypotheses of Theorem~\ref{thm:perm-contour-neg}, but with the transformation law
+  \[
+    \Psi_r(z) = \sigma'(z)\, \Psi'_r(\sigma(z)) \qquad \text{for all } z \in \h,
+  \]
+  we have
+  \[
+    \int_{[-1,\, -1+i]} \omega_{\Psi_r} + \int_{[-1+i,\, i]} \omega_{\Psi_r}
+      = \int_{[1,\, 1+i]} \omega_{\Psi'_r} + \int_{[1+i,\, i]} \omega_{\Psi'_r}.
+  \]
+\end{theorem}
+\begin{proof}\leanok
+  Identical to the proof of Theorem~\ref{thm:perm-contour-neg}, using the positive-sign variant of
+  Lemma~\ref{lemma:curveIntegral-mobiusInv}.
+\end{proof}

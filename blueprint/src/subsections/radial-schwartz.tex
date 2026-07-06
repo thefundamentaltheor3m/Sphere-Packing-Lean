@@ -1,0 +1,64 @@
+The magic functions $a, b : \R^8 \to \C$ are radial: they are built from profiles
+$f : \R \to \C$ via $x \mapsto f(\|x\|^2)$. This section describes the bridge that converts
+smoothness and one-sided decay estimates of a profile $f$ on $[0, \infty)$ into the statement
+that $x \mapsto f(\|x\|^2)$ is a Schwartz function on $\R^8$.
+
+The profiles arising from the contour integrals are only controlled for $r \geq 0$ (which
+suffices, since $\|x\|^2 \geq 0$); to obtain a Schwartz function on all of $\R$ we first multiply
+by a smooth cutoff supported near $[0, \infty)$.
+
+\begin{definition}[Smooth cutoff]\label{def:radial-cutoff}\lean{RadialSchwartz.cutoffC}\leanok
+  Let $\chi : \R \to \R$ be the smooth transition function with
+  \[
+    \chi(r) = 0 \text{ for } r \le -\tfrac12, \qquad
+    \chi(r) = 1 \text{ for } r \ge 0,
+  \]
+  (in the formalization, $\chi(r) = \operatorname{smoothTransition}(2r + 1)$), regarded as a
+  complex-valued function. It is $C^\infty$ on $\R$.
+\end{definition}
+
+\begin{lemma}[Cutoff profiles are globally Schwartz]\label{lemma:cutoff-mul-decay}\uses{def:radial-cutoff}\lean{RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff, RadialSchwartz.contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1}\leanok
+  Let $f : \R \to \C$.
+  \begin{enumerate}
+    \item If $f$ is $C^\infty$ on $(-1, \infty)$, then $\chi f$ is $C^\infty$ on $\R$.
+    \item If moreover $\chi f$ is smooth and $f$ satisfies the one-sided Schwartz bounds
+      \[
+        \forall k, n \in \N, \ \exists C, \ \forall x \ge 0, \quad
+          |x|^k \, \bigl\| (f)^{(n)}(x) \bigr\| \le C,
+      \]
+      then $\chi f$ satisfies the same bounds for \emph{all} $x \in \R$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}\leanok
+  For (1): near any $x < -\tfrac12$ the product vanishes identically; elsewhere both factors are
+  smooth. For (2): for $x \le -1$ all iterated derivatives vanish; on the compact interval
+  $[-1, 0]$ the continuous function $|x|^k \|(\chi f)^{(n)}(x)\|$ is bounded; for $x > 0$ the
+  product agrees with $f$ near $x$ and the one-sided bounds apply.
+\end{proof}
+
+\begin{definition}[Schwartz packaging of a profile]\label{def:fCutSchwartz}\uses{def:radial-cutoff, lemma:cutoff-mul-decay, def:Schwartz-Space}\lean{RadialSchwartz.Bridge.fCutSchwartz}\leanok
+  Given $f : \R \to \C$ smooth with one-sided Schwartz bounds on $[0, \infty)$, the function
+  $\chi f$ is a Schwartz function on $\R$ by Lemma~\ref{lemma:cutoff-mul-decay}; we denote the
+  resulting element of $\mathcal{S}(\R, \C)$ by $f^{\mathrm{cut}}$. It agrees with $f$ on
+  $[0, \infty)$.
+\end{definition}
+
+\begin{theorem}[Radial lift to $\R^d$]\label{thm:schwartz-multidimensional}\uses{def:Schwartz-Space}\lean{schwartzMap_multidimensional_of_schwartzMap_real}\leanok
+  Let $F$ be a real inner product space (for us, $F = \R^8$) and let
+  $g \in \mathcal{S}(\R, \C)$. Then
+  \[
+    x \mapsto g(\|x\|^2)
+  \]
+  is a Schwartz function on $F$.
+\end{theorem}
+\begin{proof}\leanok
+  The map $x \mapsto \|x\|^2$ has temperate growth, and composition of a Schwartz function with a
+  temperate map along a suitable polynomial bound preserves the Schwartz property (Mathlib's
+  \texttt{SchwartzMap.compCLM}).
+\end{proof}
+
+Combining Definition~\ref{def:fCutSchwartz} with Theorem~\ref{thm:schwartz-multidimensional}: if
+a radial profile $f : \R \to \C$ is smooth and satisfies Schwartz-type bounds for all iterated
+derivatives on $r \ge 0$, then $x \mapsto f(\|x\|^2)$ is a Schwartz function on $\R^8$. This is
+how the functions $a$ and $b$ are assembled from the profiles $I_1', \dots, I_6'$ and
+$J_1', \dots, J_6'$ in the next section.
