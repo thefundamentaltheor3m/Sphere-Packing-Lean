@@ -142,7 +142,7 @@ The denominator also converges, which is simply $e^{\pi} \cdot \Delta(i/2)$.
 
 As corollaries, we have the following bound for $\phi_0$, $\phi_{-2}$, and $\phi_{-4}$.
 
-\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier}\lean{MagicFunction.PolyFourierCoeffBound.norm_φ₀_le}\leanok
+\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier, prop:A_E-tsum}\lean{MagicFunction.PolyFourierCoeffBound.norm_φ₀_le}\leanok
 There exists a constant $C_0 > 0$ such that
 \begin{equation}\label{eqn:phi0-bound}
 |\phi_0(z)| \le C_0 e^{-2 \pi \Im z}
