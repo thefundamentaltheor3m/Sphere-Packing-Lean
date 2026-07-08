@@ -7,17 +7,23 @@ The profiles arising from the contour integrals are only controlled for $r \geq 
 suffices, since $\|x\|^2 \geq 0$); to obtain a Schwartz function on all of $\R$ we first multiply
 by a smooth cutoff supported near $[0, \infty)$.
 
-\begin{definition}[Smooth cutoff]\label{def:radial-cutoff}\lean{RadialSchwartz.cutoffC}\leanok
-  Let $\chi : \R \to \R$ be the smooth transition function with
+\begin{definition}[Smooth transition function]\label{def:smooth-transition}\leanok
+  A \emph{smooth transition function} is a $C^\infty$ function $\chi : \R \to \R$ such that
   \[
     \chi(r) = 0 \text{ for } r \le -\tfrac12, \qquad
     \chi(r) = 1 \text{ for } r \ge 0,
   \]
-  (in the formalization, $\chi(r) = \operatorname{smoothTransition}(2r + 1)$), regarded as a
-  complex-valued function. It is $C^\infty$ on $\R$.
+  and $0 \le \chi(r) \le 1$ for all $r \in \R$.
 \end{definition}
 
-\begin{lemma}[Cutoff profiles are globally Schwartz]\label{lemma:cutoff-mul-decay}\uses{def:radial-cutoff}\lean{RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff, RadialSchwartz.contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1}\leanok
+\begin{remark}[Mathlib realization]\label{def:radial-cutoff}
+  In Mathlib, the function $\chi$ is explicitly constructed as $\chi(r) := \operatorname{smoothTransition}(2r + 1)$,
+  where $\operatorname{smoothTransition}$ is the standard $C^\infty$ transition function on $\R$.
+  We denote by $\chi_\C : \R \to \C$ the complex-valued version $\chi_\C(r) := \chi(r)$ (viewed as a
+  complex number). This is the definition \lean{RadialSchwartz.cutoffC}\leanok in the formalization.
+\end{remark}
+
+\begin{lemma}[Cutoff profiles are globally Schwartz]\label{lemma:cutoff-mul-decay}\uses{def:smooth-transition}\lean{RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff, RadialSchwartz.contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1}\leanok
   Let $f : \R \to \C$.
   \begin{enumerate}
     \item If $f$ is $C^\infty$ on $(-1, \infty)$, then $\chi f$ is $C^\infty$ on $\R$.
@@ -36,7 +42,7 @@ by a smooth cutoff supported near $[0, \infty)$.
   product agrees with $f$ near $x$ and the one-sided bounds apply.
 \end{proof}
 
-\begin{definition}[Schwartz packaging of a profile]\label{def:fCutSchwartz}\uses{def:radial-cutoff, lemma:cutoff-mul-decay, def:Schwartz-Space}\lean{RadialSchwartz.Bridge.fCutSchwartz}\leanok
+\begin{definition}[Schwartz packaging of a profile]\label{def:fCutSchwartz}\uses{def:smooth-transition, lemma:cutoff-mul-decay, def:Schwartz-Space}\lean{RadialSchwartz.Bridge.fCutSchwartz}\leanok
   Given $f : \R \to \C$ smooth with one-sided Schwartz bounds on $[0, \infty)$, the function
   $\chi f$ is a Schwartz function on $\R$ by Lemma~\ref{lemma:cutoff-mul-decay}; we denote the
   resulting element of $\mathcal{S}(\R, \C)$ by $f^{\mathrm{cut}}$. It agrees with $f$ on
