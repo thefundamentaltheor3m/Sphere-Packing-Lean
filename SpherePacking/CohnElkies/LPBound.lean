@@ -648,13 +648,6 @@ section LPPrereqs
 variable {d : ℕ} [Fact (0 < d)]
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
-/- The dual `ℤ`-lattice for the Euclidean inner product is *notation*, not a definition (declared
-locally here and in `PoissonSummationGeneral.lean`): it elaborates literally to
-`LinearMap.BilinForm.dualSubmodule`, so the discreteness instance
-`instDiscreteTopology_dualSubmodule_innerₗ` from `ForMathlib/DualLattice.lean` applies directly. -/
-local notation:max "dualLattice " L:max =>
-  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
-
 /-- Convenience: `Fin d` is nonempty when `0 < d`. -/
 public instance instNonemptyFin : Nonempty (Fin d) := ⟨0, Fact.out⟩
 
@@ -695,6 +688,15 @@ end
 
 end LPPrereqs
 
+/- The dual `ℤ`-lattice for the Euclidean inner product is *notation*, not a definition (declared
+locally here and in `PoissonSummationGeneral.lean`): it elaborates literally to
+`LinearMap.BilinForm.dualSubmodule`, so the discreteness instance
+`instDiscreteTopology_dualSubmodule_innerₗ` from `ForMathlib/DualLattice.lean` applies directly.
+Declared at file level so it scopes over the remaining sections (cf. `conj` below); the dimension
+`d` in the expansion resolves at each use site, hence the disabled precheck. -/
+set_option quotPrecheck false in
+local notation:max "dualLattice " L:max =>
+  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
 
 namespace SpherePacking.CohnElkies
 variable {d : ℕ}
