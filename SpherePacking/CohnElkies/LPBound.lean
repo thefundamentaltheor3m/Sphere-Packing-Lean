@@ -692,11 +692,12 @@ end LPPrereqs
 locally here and in `PoissonSummationGeneral.lean`): it elaborates literally to
 `LinearMap.BilinForm.dualSubmodule`, so the discreteness instance
 `instDiscreteTopology_dualSubmodule_innerₗ` from `ForMathlib/DualLattice.lean` applies directly.
-Declared at file level so it scopes over the remaining sections (cf. `conj` below); the dimension
-`d` in the expansion resolves at each use site, hence the disabled precheck. -/
+Declared at file level so it scopes over the remaining sections (cf. `conj` below); the ambient
+space is a hole, pinned by unification with `L`'s type at each use site (notation hygiene forbids
+capturing a use-site `d`). -/
 set_option quotPrecheck false in
 local notation:max "dualLattice " L:max =>
-  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
+  LinearMap.BilinForm.dualSubmodule (innerₗ _) L
 
 namespace SpherePacking.CohnElkies
 variable {d : ℕ}
