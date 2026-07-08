@@ -32,28 +32,25 @@ open MeasureTheory
 namespace SchwartzMap
 
 variable {d : ℕ}
-variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
 
-section StandardLattice
-
-/-- The standard `ℤ`-lattice in `E = ℝ^d`, i.e. the span of the standard basis over `ℤ`. Kept as a
-named definition: it is the base lattice to which every full-rank lattice is reduced, and the
-domain of all the periodization/descent machinery. -/
-@[expose] public def standardLattice (d : ℕ) :
-    Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
-  Submodule.span ℤ (Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))
-
-namespace standardLattice
-
-public instance instDiscreteTopology : DiscreteTopology (standardLattice d) :=
-  inferInstanceAs <| DiscreteTopology (Submodule.span ℤ (Set.range _))
-
-public instance instIsZLattice : IsZLattice ℝ (standardLattice d) :=
-  inferInstanceAs <| IsZLattice ℝ (Submodule.span ℤ (Set.range _))
-
-end StandardLattice.standardLattice
+/- The standard `ℤ`-lattice `ℤ^d ⊆ ℝ^d`, its dual for the Euclidean inner product, the
+fundamental cube `(0,1]^d`, and the `√d`-ball are *notation*, not definitions (following this
+project's pattern for such spellings, cf. `ℝ⁸` and the cube machinery in
+`ForMathlib/CoordCube.lean`): they elaborate literally to `Submodule.span`/`dualSubmodule`/
+set-builder/`Compacts.mk` terms, so Mathlib's lemmas and instances (`ZSpan`,
+`instDiscreteTopology_dualSubmodule_innerₗ`, …) apply to them directly and there is nothing to
+unfold. The right-hand sides are written projection-free for the notation precheck. -/
+local notation:max "standardLattice " d:max =>
+  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+local notation "iocCube" =>
+  {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
+local notation "sqrtdBall" =>
+  TopologicalSpace.Compacts.mk (Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
+    (isCompact_closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
+local notation:max "dualLattice " L:max =>
+  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
 
 namespace PoissonSummation
 
@@ -74,30 +71,25 @@ sums and Fourier coefficients. -/
 
 /-- Every integer vector lies in the standard lattice. -/
 public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
-    intVec k ∈ SchwartzMap.standardLattice d :=
+    intVec k ∈ standardLattice d :=
   (Module.Basis.mem_span_iff_repr_mem ℤ _ _).2 fun i ↦ ⟨k i, rfl⟩
 
 open TopologicalSpace UnitAddTorus
 
-/-- The half-open cube `(0,1]^d`. Kept as a named definition: it is the explicit fundamental domain
-for `ℤ^d` (`isAddFundamentalDomain_iocCube`) over which every torus integral is unfolded. -/
-public def iocCube : Set E := {x | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
-
 /-- The half-open cube `(0,1]^d` is measurable. -/
-public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
-  unfold iocCube
+public lemma measurableSet_iocCube : MeasurableSet (iocCube) := by
   measurability
 
 /-- Every element of the standard lattice comes from an integer vector via `intVec`. -/
 public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
-    (hx : x ∈ SchwartzMap.standardLattice d) : ∃ n : Fin d → ℤ, x = intVec n := by
+    (hx : x ∈ standardLattice d) : ∃ n : Fin d → ℤ, x = intVec n := by
   choose n hn using ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis.mem_span_iff_repr_mem ℤ x).1 hx
   exact ⟨n, PiLp.ext fun i => (hn i).symm⟩
 
 /-- The dual of the standard lattice (for the Euclidean inner product) is the standard lattice. -/
 public lemma dualSubmodule_standardLattice_eq :
     LinearMap.BilinForm.dualSubmodule (B := (innerₗ E : LinearMap.BilinForm ℝ E))
-        (SchwartzMap.standardLattice d) = SchwartzMap.standardLattice d := by
+        (standardLattice d) = standardLattice d := by
   ext x
   constructor
   · intro hx
@@ -145,7 +137,7 @@ public theorem exists_intVec_eq_sub_of_coeFunE_eq {x y : E}
 
 /-- The cube `iocCube` is a fundamental domain for translation by the standard lattice. -/
 public theorem isAddFundamentalDomain_iocCube :
-    MeasureTheory.IsAddFundamentalDomain (SchwartzMap.standardLattice d)
+    MeasureTheory.IsAddFundamentalDomain (standardLattice d)
       (iocCube) (volume : Measure E) := by
   refine MeasureTheory.IsAddFundamentalDomain.mk'
     (measurableSet_iocCube).nullMeasurableSet fun x ↦ ?_
@@ -173,7 +165,7 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) �
   have hmp : MeasurePreserving (⇑f) (volume : Measure (Fin d → ℝ)) (volume : Measure E) := by
     simpa [f] using PiLp.volume_preserving_toLp (ι := Fin d)
   have hpre : f ⁻¹' iocCube = Set.univ.pi fun _ : Fin d ↦ Set.Ioc (0 : ℝ) 1 := by
-    ext x; simp [f, iocCube]
+    ext x; simp [f]
   calc
     (∫ y : UnitAddTorus (Fin d), g y)
         = ∫ x, g (UnitAddTorus.coeFun (Fin d) x) ∂(volume : Measure (Fin d → ℝ)).restrict
@@ -193,7 +185,16 @@ namespace SchwartzMap.PoissonSummation.Standard
 variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
-local notation "Λ" => SchwartzMap.standardLattice d
+-- Re-declarations of the block-local notations from the top of the file (`local` scope ends with
+-- each namespace block).
+local notation:max "standardLattice " d:max =>
+  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+local notation "iocCube" =>
+  {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
+local notation "sqrtdBall" =>
+  TopologicalSpace.Compacts.mk (Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
+    (isCompact_closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
+local notation "Λ" => standardLattice d
 
 /-- The canonical equivalence between integer vectors `Fin d → ℤ` and the standard lattice
 `Λ = ℤ^d ⊆ ℝ^d`. Kept as a named definition: it reindexes sums over the lattice as sums over
@@ -229,12 +230,7 @@ continuous maps. -/
 /-- Schwartz decay: sup norms of translates restricted to a compact `K` are summable. -/
 public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : Λ => ‖(translate f ℓ).restrict K‖) :=
-  f.summable_norm_restrict_comp_addRight (SchwartzMap.standardLattice d) K
-
-/-- The quotient map `coeFunE`, bundled as a continuous map. This packaging is what the
-`IsQuotientMap.lift`/`FactorsThrough` API consumes when descending periodic maps to the torus. -/
-@[expose] public noncomputable def coeFunEC : C(E, UnitAddTorus (Fin d)) :=
-  ⟨coeFunE, continuous_coeFunE⟩
+  f.summable_norm_restrict_comp_addRight (standardLattice d) K
 
 section Periodization
 
@@ -259,9 +255,9 @@ public lemma periodization_add_lattice (x : E) (ℓ : Λ) :
 
 /-- The periodization factors through the quotient `(ℝ/ℤ)^d`. -/
 public lemma periodization_factorsThrough :
-    Function.FactorsThrough (periodization f) (coeFunEC) := by
+    Function.FactorsThrough (periodization f) (coeFunE) := by
   intro x y hxy
-  obtain ⟨n, hn⟩ := exists_intVec_eq_sub_of_coeFunE_eq (by simpa [coeFunEC] using hxy)
+  obtain ⟨n, hn⟩ := exists_intVec_eq_sub_of_coeFunE_eq hxy
   have hx : x = y + intVec n := by rw [← hn]; abel
   rw [hx]
   exact periodization_add_lattice f y ⟨_, intVec_mem_standardLattice n⟩
@@ -286,7 +282,7 @@ public lemma descended_comp (x : E) :
     descended f (coeFunE x) = periodization f x :=
   congrArg (fun g : C(E, ℂ) => g x)
     (by simp [descended] :
-      (descended f).comp (coeFunEC) = periodization f)
+      (descended f).comp ⟨coeFunE, continuous_coeFunE⟩ = periodization f)
 
 public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier (-n) (coeFunE x) =
@@ -324,18 +320,12 @@ public lemma volume_iocCube_lt_top : (volume : Measure E) (iocCube) < ⊤ :=
   ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
     (iocCube_subset_closedBall)).measure_lt_top
 
-/-- The closed ball of radius `√d`, packaged as `Compacts E`; it contains the fundamental cube
-`iocCube`. Kept as a named definition: it is the single compact on which the Schwartz-decay
-summability `summable_norm_translate_restrict` is instantiated to bound the cube integrals. -/
-def sqrtdBall : TopologicalSpace.Compacts E :=
-  ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
-
 /-- On `iocCube`, the integrand `mFourier (-n) (coeFunE ·) * f (· + ℓ)` is bounded by the sup norm
 of the translate `f (· + ℓ)` restricted to `sqrtdBall`. -/
 lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ) {x : E}
     (hx : x ∈ iocCube) :
     ‖UnitAddTorus.mFourier (-n) (coeFunE x) * f (x + (ℓ : E))‖ ≤
-      ‖(translate f ℓ).restrict (sqrtdBall (d := d))‖ := by
+      ‖(translate f ℓ).restrict (sqrtdBall)‖ := by
   rw [norm_mul]
   calc ‖UnitAddTorus.mFourier (-n) (coeFunE x)‖ * ‖f (x + (ℓ : E))‖
       ≤ 1 * ‖f (x + (ℓ : E))‖ := by
@@ -343,9 +333,9 @@ lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ) {x : E}
         simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
           ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) _
     _ = ‖f (x + (ℓ : E))‖ := one_mul _
-    _ ≤ ‖(translate f ℓ).restrict (sqrtdBall (d := d))‖ := by
+    _ ≤ ‖(translate f ℓ).restrict (sqrtdBall)‖ := by
         simpa [translate_apply, ContinuousMap.restrict_apply] using
-          ContinuousMap.norm_coe_le_norm ((translate f ℓ).restrict (sqrtdBall (d := d)))
+          ContinuousMap.norm_coe_le_norm ((translate f ℓ).restrict (sqrtdBall))
             ⟨x, iocCube_subset_closedBall hx⟩
 
 public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (ℓ : Λ) :
@@ -372,11 +362,11 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
   refine ((summable_norm_translate_restrict f (sqrtdBall)).mul_left
     (μ.real Set.univ)).of_nonneg_of_le (fun _ => by positivity) fun ℓ => ?_
   calc ∫ x, ‖UnitAddTorus.mFourier (-n) (coeFunE x) * f (x + (ℓ : E))‖ ∂μ
-      ≤ ∫ _, ‖(translate f ℓ).restrict (sqrtdBall (d := d))‖ ∂μ :=
+      ≤ ∫ _, ‖(translate f ℓ).restrict (sqrtdBall)‖ ∂μ :=
         integral_mono_of_nonneg (ae_of_all _ fun _ => norm_nonneg _) (integrable_const _)
           (ae_restrict_of_forall_mem (measurableSet_iocCube) fun x hx =>
             norm_mFourier_mul_translate_le f n ℓ hx)
-    _ = μ.real Set.univ * ‖(translate f ℓ).restrict (sqrtdBall (d := d))‖ := by
+    _ = μ.real Set.univ * ‖(translate f ℓ).restrict (sqrtdBall)‖ := by
         rw [integral_const, smul_eq_mul]
 
 /-- The ambient `volume` on `UnitAddCircle` is the probability measure `haarAddCircle` baked into
@@ -495,7 +485,7 @@ lemma summable_norm_fourier_lattice :
     Summable (fun ℓ : Λ => ‖𝓕 (fun y : E => f y) (ℓ : E)‖) := by
   simpa [FourierTransform.fourierCLE_apply, fourier_coe] using
     (FourierTransform.fourierCLE ℂ (SchwartzMap E ℂ) f).summable_norm_comp_add
-      (SchwartzMap.standardLattice d) 0
+      (standardLattice d) 0
 
 /-- The Fourier-decay summability of `summable_norm_fourier_lattice`, reindexed over `ℤ^d` along
 `equivIntVec`. -/
@@ -533,12 +523,13 @@ open SchwartzMap.PoissonSummation.Standard
 variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
-
-/-- The dual `ℤ`-lattice with respect to the Euclidean inner product. Kept as a named abbreviation:
-it is the index set of the spectral side of Poisson summation and is part of this file's public
-API (used downstream in the linear-programming bound). -/
-public noncomputable abbrev dualLattice (L : Submodule ℤ E) : Submodule ℤ E :=
-  LinearMap.BilinForm.dualSubmodule (B := (innerₗ E : LinearMap.BilinForm ℝ E)) L
+-- Re-declarations of the block-local notations from the top of the file (`local` scope ends with
+-- each namespace block). `dualLattice L` is the dual `ℤ`-lattice for the Euclidean inner product:
+-- the index set of the spectral side of Poisson summation.
+local notation:max "standardLattice " d:max =>
+  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+local notation:max "dualLattice " L:max =>
+  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
 
 /-- A `Fin d`-indexed integral basis of the `ℤ`-lattice `L` (Mathlib's `chooseBasis` reindexed
 along `finrank ℤ L = d`). Kept as a named definition: a fixed integral frame for `L` whose
@@ -576,16 +567,16 @@ lemma latticeEquiv_apply_basisFun (L : Submodule ℤ E) [DiscreteTopology L] [Is
 
 lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
-        (SchwartzMap.standardLattice d) = L := by
+        (standardLattice d) = L := by
   have hrange : (fun a : E => latticeEquiv L a) ''
         Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) =
       Set.range (rBasis L) := by
     rw [← Set.range_comp]; simp only [Function.comp_def, latticeEquiv_apply_basisFun]
   calc Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
-          (SchwartzMap.standardLattice d)
+          (standardLattice d)
       = Submodule.span ℤ ((fun a : E => latticeEquiv L a) ''
             Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) := by
-        simp [SchwartzMap.standardLattice, Submodule.map_span]
+        simp [Submodule.map_span]
     _ = Submodule.span ℤ (Set.range (rBasis L)) := by rw [hrange]
     _ = L := by
         simpa [rBasis] using Module.Basis.ofZLatticeBasis_span (K := ℝ) (L := L) (b := zBasis L)
@@ -646,11 +637,11 @@ lemma dualEquiv_symm_apply (x : E) :
 
 /-- `latticeEquiv L` restricted to a `ℤ`-linear equivalence from the standard lattice `ℤ^d` onto
 `L`. Kept as a named definition: it transports lattice sums between `ℤ^d` and `L`. -/
-noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[ℤ] L :=
-  (LinearEquiv.restrictScalars ℤ (latticeEquiv L)).ofSubmodules (SchwartzMap.standardLattice d) L
+noncomputable def equivStandardLattice : standardLattice d ≃ₗ[ℤ] L :=
+  (LinearEquiv.restrictScalars ℤ (latticeEquiv L)).ofSubmodules (standardLattice d) L
     (by simpa [LinearEquiv.restrictScalars_apply] using map_standardLattice_eq L)
 
-@[simp] lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
+@[simp] lemma equivStandardLattice_apply (x : standardLattice d) :
     ((equivStandardLattice L x : L) : E) = (latticeEquiv L) x := by
   simp [equivStandardLattice]
 
@@ -661,8 +652,8 @@ lemma map_standardLattice_dualEquiv_eq :
       dualLattice L := by
   have hmapL : Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
       (standardLattice d) = L := map_standardLattice_eq L
-  have hdualStd : dualLattice (standardLattice d) = standardLattice d := by
-    simpa [dualLattice] using PoissonSummation.Standard.dualSubmodule_standardLattice_eq
+  have hdualStd : dualLattice (standardLattice d) = standardLattice d :=
+    PoissonSummation.Standard.dualSubmodule_standardLattice_eq
   have hBA (y w : E) : inner ℝ (dualEquiv L y) ((latticeEquiv L) w) = inner ℝ y w := by
     simpa [dualEquiv_apply] using LinearMap.adjoint_inner_left ((latticeEquiv L).symm.toLinearMap)
       ((latticeEquiv L) w) y
@@ -674,7 +665,7 @@ lemma map_standardLattice_dualEquiv_eq :
   · rintro ⟨y, hy, rfl⟩ z hz
     obtain ⟨w, hw, rfl⟩ : (z : E) ∈ Submodule.map ((latticeEquiv L).toLinearMap.restrictScalars ℤ)
         (standardLattice d) := by rw [hmapL]; exact hz
-    simpa [dualLattice, innerₗ_apply_apply, hBA] using
+    simpa [innerₗ_apply_apply, hBA] using
       (by simpa [hdualStd] using hy : y ∈ dualLattice (standardLattice d)) w hw
   · suffices hydual : (dualEquiv L).symm x ∈ dualLattice (standardLattice d) by
       simpa [hdualStd] using hydual
@@ -683,12 +674,12 @@ lemma map_standardLattice_dualEquiv_eq :
       have hmem : (latticeEquiv L) w ∈ Submodule.map
         ((latticeEquiv L).toLinearMap.restrictScalars ℤ) (standardLattice d) := ⟨w, hw, rfl⟩
       rwa [hmapL] at hmem
-    simpa [dualLattice, innerₗ_apply_apply, hAadj] using hx ((latticeEquiv L) w) hwL
+    simpa [innerₗ_apply_apply, hAadj] using hx ((latticeEquiv L) w) hwL
   · simp
 
 /-- LHS rewrite for `poissonSummation_lattice`: pull back the lattice sum along `latticeEquiv`. -/
 private lemma poissonSummation_lattice_lhs (f : SchwartzMap E ℂ) (v : E) :
-    (∑' ℓ : SchwartzMap.standardLattice d, f (v + (latticeEquiv L) (ℓ : E))) =
+    (∑' ℓ : standardLattice d, f (v + (latticeEquiv L) (ℓ : E))) =
       ∑' ℓ : L, f (v + (ℓ : E)) := by
   simpa [equivStandardLattice_apply] using
     (equivStandardLattice L).toEquiv.tsum_eq (f := fun ℓ : L => f (v + (ℓ : E)))
@@ -751,9 +742,9 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
   let A : E ≃ₗ[ℝ] E := latticeEquiv L
   let g : SchwartzMap E ℂ :=
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A.toContinuousLinearEquiv f
-  have hlhs : (∑' ℓ : SchwartzMap.standardLattice d, g (A.symm v + (ℓ : E))) =
+  have hlhs : (∑' ℓ : standardLattice d, g (A.symm v + (ℓ : E))) =
       ∑' ℓ : L, f (v + (ℓ : E)) := by
-    have hg : ∀ ℓ : SchwartzMap.standardLattice d,
+    have hg : ∀ ℓ : standardLattice d,
         g (A.symm v + (ℓ : E)) = f (v + A (ℓ : E)) := fun ℓ => by simp [g, map_add]
     rw [tsum_congr hg]
     exact poissonSummation_lattice_lhs (L := L) f v

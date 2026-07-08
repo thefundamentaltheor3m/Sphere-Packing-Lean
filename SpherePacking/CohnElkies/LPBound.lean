@@ -648,6 +648,13 @@ section LPPrereqs
 variable {d : ℕ} [Fact (0 < d)]
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
+/- The dual `ℤ`-lattice for the Euclidean inner product is *notation*, not a definition (declared
+locally here and in `PoissonSummationGeneral.lean`): it elaborates literally to
+`LinearMap.BilinForm.dualSubmodule`, so the discreteness instance
+`instDiscreteTopology_dualSubmodule_innerₗ` from `ForMathlib/DualLattice.lean` applies directly. -/
+local notation:max "dualLattice " L:max =>
+  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
+
 /-- Convenience: `Fin d` is nonempty when `0 < d`. -/
 public instance instNonemptyFin : Nonempty (Fin d) := ⟨0, Fact.out⟩
 
@@ -880,13 +887,13 @@ private lemma tsum_finset_finset_const_mul_swap {ι κ μ : Type*} [Finite ι] [
 private lemma summable_const_mul_re_fourier_mul_exp {d : ℕ}
     (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (P : PeriodicSpherePacking d) (c : ℂ)
     (x y : EuclideanSpace ℝ (Fin d)) :
-    Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
+    Summable fun m : dualLattice P.lattice =>
       c * (((𝓕 f m).re : ℂ)) *
         exp (2 * π * I * ⟪x - y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) := by
-  have hFNorm : Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
+  have hFNorm : Summable fun m : dualLattice P.lattice =>
       ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ := by
     simpa using SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
-      (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
+      (Λ := dualLattice P.lattice) (f := 𝓕 f)
       (a := (0 : EuclideanSpace ℝ (Fin d)))
   refine Summable.of_norm_bounded
     (g := fun m => ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖)
@@ -908,14 +915,14 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
     (∑' x : ↑(P.centers ∩ D),
         ∑' y : ↑(P.centers ∩ D),
           (1 / ZLattice.covolume P.lattice volume) *
-            ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+            ∑' m : dualLattice P.lattice,
               (𝓕 f m) *
                 exp (2 * π * I *
                   ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
                     (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
       =
       ((1 / ZLattice.covolume P.lattice volume) *
-          ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+          ∑' m : dualLattice P.lattice,
             (𝓕 f m).re *
               (∑' x : ↑(P.centers ∩ D),
                 ∑' y : ↑(P.centers ∩ D),
@@ -927,12 +934,12 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
   -- Package the covolume scalar `c`, Fourier coefficients `a`, and exponentials `e` for
   -- `tsum_finset_finset_const_mul_swap`.
   let c : ℂ := (1 / ZLattice.covolume P.lattice volume : ℂ)
-  let a : SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun m => ((𝓕 f m).re : ℂ)
+  let a : dualLattice P.lattice → ℂ := fun m => ((𝓕 f m).re : ℂ)
   let e : ↑(P.centers ∩ D) → ↑(P.centers ∩ D) →
-      SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun x y m =>
+      dualLattice P.lattice → ℂ := fun x y m =>
     exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
-  have hFourierReal : ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) = a m :=
+  have hFourierReal : ∀ m : dualLattice P.lattice, (𝓕 f m) = a m :=
     fun m => by simpa [a] using (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
   simpa [c, e, hFourierReal] using
     tsum_finset_finset_const_mul_swap c a e fun x y =>
@@ -1062,7 +1069,7 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
 omit [Nonempty ↑P.centers] in include hD_isBounded in
 private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
-    Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
+    Summable (fun m : ↥(dualLattice P.lattice) =>
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
   letI : Fintype (↑(P.centers ∩ D)) :=
@@ -1071,7 +1078,7 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     ((Fintype.card (↑(P.centers ∩ D)) : ℝ) ^ 2)) ?_ fun m => ?_
   · simpa [SchwartzMap.fourier_coe] using
       (CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
-        (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
+        (Λ := dualLattice P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))).mul_right _
   simp only [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]; gcongr
   · simpa [Real.norm_eq_abs] using abs_re_le_norm _
@@ -1121,13 +1128,13 @@ private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
     (P : PeriodicSpherePacking d) {D : Set (EuclideanSpace ℝ (Fin d))}
     (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) :
     ((1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re *
+        ∑' m : dualLattice P.lattice, (𝓕 f m).re *
           (∑' x : ↑(P.centers ∩ D),
             exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
           conj (∑' x : ↑(P.centers ∩ D),
             exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re =
       (1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+        ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
             exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
   rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
@@ -1142,7 +1149,7 @@ include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
 theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
       (1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+        ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
@@ -1158,17 +1165,17 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
       f (↑x - ↑y + ↑ℓ)).re := re_tsum_triple_centers_inter_lattice hD_isBounded hd
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) *
+      ∑' m : dualLattice P.lattice, (𝓕 f m) *
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re := by
         congr! 5 with x y; exact SchwartzMap.poissonSummation_lattice P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+      ∑' m : dualLattice P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
         simpa using CohnElkies.calc_steps_swap_sums (f := f)
           (hRealFourier := hRealFourier) (P := P) (D := D) hD_isBounded hd
   _ = ((1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re * (
+      ∑' m : dualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
@@ -1176,7 +1183,7 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
         simp [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg,
           mul_comm, RCLike.wInner_add_left, ofReal_add, mul_add, Complex.exp_add]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+      ∑' m : dualLattice P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
@@ -1184,7 +1191,7 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
         simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
         congr! 9 with m x y; simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re *
+      ∑' m : dualLattice P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -1192,7 +1199,7 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
         simp_rw [conj_tsum]; congr! 7 with m x
         exact exp_neg_two_pi_I_inner_eq_conj _ _
   _ = (1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+      ∑' m : dualLattice P.lattice,
         (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) :=
         re_mul_conj_eq_norm_sq_step P f
@@ -1200,7 +1207,7 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
 theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
     (1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+        ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
@@ -1208,14 +1215,14 @@ theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
       ≥
       ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
   calc (1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+        ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
     _ = (1 / ZLattice.covolume P.lattice volume) * (
-        (∑' (m : SchwartzMap.dualLattice (d := d) P.lattice),
-          if m = (0 : ↥(SchwartzMap.dualLattice (d := d) P.lattice)) then 0
+        (∑' (m : dualLattice P.lattice),
+          if m = (0 : ↥(dualLattice P.lattice)) then 0
           else (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) +
         (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
@@ -1230,7 +1237,7 @@ theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
         rw [ge_iff_le, ← tsub_nonpos, mul_assoc, ← mul_sub (1 / _) _ _]
         simpa using mul_nonneg (one_div_nonneg.mpr (ZLattice.covolume_pos P.lattice volume).le)
           (tsum_nonneg fun m => by
-            by_cases hm : m = (0 : ↥(SchwartzMap.dualLattice (d := d) P.lattice))
+            by_cases hm : m = (0 : ↥(dualLattice P.lattice))
             · simp [hm]
             · simpa [hm] using mul_nonneg
                 (by simpa using hCohnElkies₂ (m : EuclideanSpace ℝ (Fin d)))
