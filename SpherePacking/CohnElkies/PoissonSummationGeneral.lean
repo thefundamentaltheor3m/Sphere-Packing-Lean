@@ -35,22 +35,32 @@ variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
 
-/- The standard `ℤ`-lattice `ℤ^d ⊆ ℝ^d`, its dual for the Euclidean inner product, the
-fundamental cube `(0,1]^d`, and the `√d`-ball are *notation*, not definitions (following this
-project's pattern for such spellings, cf. `ℝ⁸` and the cube machinery in
-`ForMathlib/CoordCube.lean`): they elaborate literally to `Submodule.span`/`dualSubmodule`/
-set-builder/`Compacts.mk` terms, so Mathlib's lemmas and instances (`ZSpan`,
-`instDiscreteTopology_dualSubmodule_innerₗ`, …) apply to them directly and there is nothing to
-unfold. The right-hand sides are written projection-free for the notation precheck. -/
-local notation:max "standardLattice " d:max =>
-  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+/-- The standard `ℤ`-lattice in `E = ℝ^d`, the span of the standard basis over `ℤ`. Deliberately a
+definition rather than notation: its body's head is `(basisFun _ _).toBasis`, which the simp lemma
+`OrthonormalBasis.coe_toBasis` would otherwise normalize away inside goals, detaching them from
+statement spellings and from the `ZSpan` instance keys. The constant shields that spelling (and
+carries the two instances below). -/
+@[expose] public def standardLattice (d : ℕ) :
+    Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
+  Submodule.span ℤ (Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))
+
+namespace standardLattice
+
+public instance instDiscreteTopology : DiscreteTopology (standardLattice d) :=
+  inferInstanceAs <| DiscreteTopology (Submodule.span ℤ (Set.range _))
+
+public instance instIsZLattice : IsZLattice ℝ (standardLattice d) :=
+  inferInstanceAs <| IsZLattice ℝ (Submodule.span ℤ (Set.range _))
+
+end standardLattice
+
+/- The fundamental cube `(0,1]^d` is *notation*, not a definition (cf. the cube machinery in
+`ForMathlib/CoordCube.lean`): it elaborates literally to the set-builder, so membership is
+judgemental and there is nothing to unfold. The precheck is disabled because Mathlib's set-builder
+syntax has no `quot_precheck` support. -/
+set_option quotPrecheck false in
 local notation "iocCube" =>
   {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
-local notation "sqrtdBall" =>
-  TopologicalSpace.Compacts.mk (Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
-    (isCompact_closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
-local notation:max "dualLattice " L:max =>
-  LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
 
 namespace PoissonSummation
 
@@ -186,15 +196,14 @@ variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
 -- Re-declarations of the block-local notations from the top of the file (`local` scope ends with
--- each namespace block).
-local notation:max "standardLattice " d:max =>
-  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+-- each namespace block), plus the `√d`-ball as a `Compacts.mk` spelling.
+set_option quotPrecheck false in
 local notation "iocCube" =>
   {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
 local notation "sqrtdBall" =>
   TopologicalSpace.Compacts.mk (Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
     (isCompact_closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
-local notation "Λ" => standardLattice d
+local notation "Λ" => SchwartzMap.standardLattice d
 
 /-- The canonical equivalence between integer vectors `Fin d → ℤ` and the standard lattice
 `Λ = ℤ^d ⊆ ℝ^d`. Kept as a named definition: it reindexes sums over the lattice as sums over
@@ -255,7 +264,8 @@ public lemma periodization_add_lattice (x : E) (ℓ : Λ) :
 
 /-- The periodization factors through the quotient `(ℝ/ℤ)^d`. -/
 public lemma periodization_factorsThrough :
-    Function.FactorsThrough (periodization f) (coeFunE) := by
+    Function.FactorsThrough (periodization f)
+      (⟨coeFunE, continuous_coeFunE⟩ : C(E, UnitAddTorus (Fin d))) := by
   intro x y hxy
   obtain ⟨n, hn⟩ := exists_intVec_eq_sub_of_coeFunE_eq hxy
   have hx : x = y + intVec n := by rw [← hn]; abel
@@ -523,11 +533,10 @@ open SchwartzMap.PoissonSummation.Standard
 variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
--- Re-declarations of the block-local notations from the top of the file (`local` scope ends with
--- each namespace block). `dualLattice L` is the dual `ℤ`-lattice for the Euclidean inner product:
--- the index set of the spectral side of Poisson summation.
-local notation:max "standardLattice " d:max =>
-  Submodule.span ℤ (Set.range (OrthonormalBasis.toBasis (EuclideanSpace.basisFun (Fin d) ℝ)))
+/- The dual `ℤ`-lattice for the Euclidean inner product is *notation*, not a definition (declared
+locally here and in `LPBound.lean`): it elaborates literally to `dualSubmodule`, so the
+discreteness instance from `ForMathlib/DualLattice.lean` applies to it directly. It is the index
+set of the spectral side of Poisson summation. -/
 local notation:max "dualLattice " L:max =>
   LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) L
 
