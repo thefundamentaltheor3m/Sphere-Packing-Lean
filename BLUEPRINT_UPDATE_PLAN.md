@@ -128,7 +128,7 @@ the dimension consequences.
 
 - **Fits into:** `modular-forms.tex` as a new subsection after the q-expansion material.
 
-## 6. Restriction to the imaginary axis — ❌ NOT IMPLEMENTED
+## 6. Restriction to the imaginary axis — ✅ DONE
 
 The `ResToImagAxis` framework (`SpherePacking/ModularForms/ResToImagAxis.lean`) — reduction of
 modular-form estimates to `t ↦ f(it)`, with growth/decay transfer lemmas like
@@ -137,7 +137,18 @@ modular-form estimates to `t ↦ f(it)`, with growth/decay transfer lemmas like
 
 - **Fits into:** `modular-forms.tex` or `modform-ineq.tex`.
 
-## 7. Laplace-transform integral representations (proof detail) — ❌ NOT IMPLEMENTED
+**Implementation remarks**: Added a new subsection "Restriction to the imaginary axis" in
+`modular-forms.tex` containing:
+- `def:resToImagAxis` (`\lean{ResToImagAxis, resToImagAxis}`) — the restriction `t ↦ f(it)`;
+- `lemma:resToImagAxis-props` (`ResToImagAxis.Real/Pos/Differentiable/SlashActionS`) — basic
+  transfer properties;
+- `lemma:resToImagAxis-decay-transfer` (`isBigO_resToImagAxis_of_isBigO_atImInfty`,
+  `tendsto_rpow_mul_resToImagAxis_of_isBigO_exp`,
+  `tendsto_rpow_mul_resToImagAxis_of_fourier_shift`) — the growth/decay transfer lemmas.
+Downstream wiring: `lemma:F-G-pos` (`modform-ineq.tex`) and `lemma:psi-bound`
+(`construct-a-b.tex`) now include `\uses{def:resToImagAxis}`.
+
+## 7. Laplace-transform integral representations (proof detail) — ✅ DONE
 
 `prop:a-another-integral` / `prop:b-another-integral` link the final theorems, but the
 substantial intermediate layer in
@@ -150,6 +161,21 @@ blueprint counterpart.
   `bRadial_eq_laplace_psiI_main`, `bRadial_eq_another_integral_main` (linked), plus their
   supporting lemmas (unlinked).
 - **Fits into:** `construct-a-b.tex`.
+
+**Implementation remarks**: Added four intermediate lemmas in `construct-a-b.tex`:
+- `lemma:a-vertical-rewrites` — vertical-line rewrites of the `Φₖ'` integrals
+  (`Φ₁'_shift_left`, `Φ₃'_shift_right`, `Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand`,
+  `Φ_finite_difference_imag_axis`);
+- `lemma:a-laplace-integrable` — integrability of the subtracted-singularity integrands for `a`
+  (`exists_inv_Delta_bound_exp`, `exists_phi2'_phi4'_bound_exp`, `integrableOn_Φ₅'_imag_axis`,
+  `aLaplaceIntegral_convergent`);
+- `lemma:b-theta-axis-bounds` — theta-axis bounds for `b`
+  (`exists_bound_norm_H2/H3+H4/H4_resToImagAxis_..._Ici_one`), wired to `def:H2-H3-H4`,
+  `def:resToImagAxis`, and the three Fourier propositions;
+- `lemma:b-psiI-cancellation` — the `ψI` cancellation layer
+  (`psiI'_mul_I_eq_resToImagAxis`, `exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one`,
+  `bAnotherBase_integrable_exp`).
+`prop:a-another-integral` and `prop:b-another-integral` now `\uses{}` these lemmas.
 
 ## 8. Add H₂/H₃/H₄ dependency chain to the blueprint — ✅ DONE
 
@@ -335,7 +361,7 @@ After reviewing the first updated version of the blueprint I have noticed the fo
    - `SpherePacking.perm_I12_contour_mobiusInv_wedgeSet`
 
    **Suggestion**: State these results for a single pair of functions `Ψ, Ψ' : ℂ → ℂ` instead of families depending on `r`. The family versions would then follow trivially by instantiation. This would make the theorems more abstract and reusable.
-3. **Disconnected lemma** — 🔄 ANALYSIS COMPLETE, OPTIONS PENDING
+3. **Disconnected lemma** — ✅ RESOLVED (kept + linked)
 
    Theorem `SpherePacking.Integration.InvChangeOfVariables.integral_Ici_one_eq_integral_abs_deriv_smul` ([integration-infrastructure.tex](blueprint/src/subsections/integration-infrastructure.tex#L11), labeled `lemma:inv-change-of-variables`) is not referenced by any other blueprint item (no blueprint theorem has `\uses{lemma:inv-change-of-variables}`).
 
@@ -348,6 +374,12 @@ After reviewing the first updated version of the blueprint I have noticed the fo
    - Remove from blueprint (if it's only scaffolding)
    - Keep but add a `\uses{}` directive from a dependent blueprint item once that item is added
    - Inline the proof at usage sites
+
+   **Resolution**: Chose the "keep + link" option. The change-of-variables step is used in the
+   Fourier eigenfunction proofs (`Complete_Change_of_Variables` in the `Eigenfunction.lean`
+   files), so `prop:a-fourier` and `prop:b-fourier` in `construct-a-b.tex` now include
+   `\uses{lemma:inv-change-of-variables}`. The lemma is no longer a disconnected node in the
+   dependency graph.
 
 4. The blueprint statement of definition RadialSchwartz.cutoffC should be corrected. It is not mathematically correct. Instead of "the cut-off function" we should say that a function chi is a smooth transition function if it satisfies the conditions listed in the definition. In Mathlib, an explicit example of the smooth transition function is constructed. I suggest giving an abstract definition of a smooth transition function and then separately giving an explicit example from Mathlib. This will be mathematically consistent.
 
@@ -372,10 +404,67 @@ After reviewing the first updated version of the blueprint I have noticed the fo
    - Updated all `\uses{}` directives to reference the correct definition labels
    - See [radial-schwartz.tex](blueprint/src/subsections/radial-schwartz.tex#L10) for the updated blueprint section
 
-## Future directions — ❌ NOT STARTED
+## Future directions — ✅ DONE
 
 5. Include proof of theorem periodic_constant_eq_constant to the blueprint. Include it as a new subsection in the section "Density of packings".
+
+   **Status**: ✅ DONE. Added a proof sketch to `thm:periodic-packing-optimal` in
+   `lattice-periodic-packings.tex`: reduction to separation-1 packings by scaling, the easy
+   inequality (periodic ≤ general), and the truncate-and-periodize construction for the reverse
+   inequality (repeat the centers in a large cube `[-R, R)^d` over the lattice `(2R)ℤ^d`).
+
 6. Include proof of the Poisson summation formula. It can be included in the section "Facts from Fourier Analysis"
+
+   **Status**: ✅ DONE. Added a proof to `thm:Poisson-summation-formula` in
+   `fourier-analysis.tex` via the periodization argument: the lattice sum defines a continuous
+   `Λ`-periodic function whose torus Fourier coefficients are `f̂(m)/Vol(ℝ^d/Λ)`, and absolute
+   convergence of both sides gives the identity (formalized as
+   `SchwartzMap.poissonSummation_lattice` on top of Mathlib's Poisson summation).
+
+---
+
+## Updates Stage 2 — ✅ IMPLEMENTED
+
+Recommendations from a fresh Lean-codebase↔blueprint comparison (audit: 0 broken `\uses`,
+0 isolated dependency-graph vertices, 0 `\lean{}`-without-`\leanok` items; the gaps below are
+coverage gaps).
+
+1. **Integral parametrisations layer** — ✅ DONE
+   `SpherePacking/MagicFunction/IntegralParametrisations.lean` (42 declarations,
+   `MagicFunction.Parametrisations` namespace) defines the contour parametrisations
+   `z₁, …, z₆` / `z₁', …, z₆'` underlying the definitions of `a` and `b`, but had no
+   blueprint counterpart.
+   **Implementation**: added `def:contour-parametrisations` to `construct-a-b.tex`,
+   `\uses`-wired into `def:a-definition` and `def:b-definition`.
+
+2. **q-expansion infrastructure** — ✅ DONE
+   `QExpansionLemmas.lean`, `MultipliableLemmas.lean`, `TsumDerivWithin.lean` were described in
+   Item 4 as "supporting theory" but none of their declarations were linked.
+   **Implementation**: added `lemma:qexp-infrastructure` (termwise differentiation of tsums,
+   `qExpansion` algebra lemmas, eta/Delta multipliability) to the q-expansion subsection of
+   `modular-forms.tex`; `prop:A_E-tsum` now uses it.
+
+3. **F/G asymptotics tools** — ✅ DONE
+   `FG/AsymptoticsTools.lean` and `FG/L10OverAsymptotics.lean` provide the eventual-positivity
+   step for `\mathcal{L}_{1,0}` used in the monotonicity of `Q(t)` but were invisible.
+   **Implementation**: added `lemma:L10-eventually-pos` to `modform-ineq.tex`
+   (`\lean{L₁₀_eventuallyPos}`), used by `prop:Qdec`.
+
+4. **Derivative slash formula** — ✅ DONE
+   `Derivative/SlashFormula.lean` supports the Serre-derivative equivariance but was
+   unreferenced. **Implementation**: added `D_slash` to the `\lean{}` list of
+   `thm:serre-der-equiv-action`.
+
+5. **Minor cleanups** — 🔄 DEFERRED (intentional)
+   - `def:smooth-transition` is the only live item without `\lean{}`: intentional, since it is
+     the abstract definition; the Mathlib realization lives in the companion remark
+     `def:radial-cutoff`.
+   - Commented-out relics (`thm:dual-lattice-is-lattice`, `theorem-Mk-finite-dimensional`, old
+     `lemma:psiS-new` / duplicate `lemma:psiI-bound` blocks) left in place; delete or restore
+     when those sections are next revised. Note the duplicate `lemma:psiI-bound` label would
+     clash if both blocks were ever uncommented.
+   - `ForMathlib/*` and `Tactic/*` files are correctly excluded from the blueprint
+     (infrastructure and tactics).
 
 ---
 
@@ -392,15 +481,15 @@ After reviewing the first updated version of the blueprint I have noticed the fo
 | 5. Cusp form theory | ✅ DONE | Added the cusp-form subsection and the low-weight dimension consequences to the modular-forms blueprint |
 | Maryna 4: Smooth transition | ✅ FIXED | Split into abstract def + Mathlib remark |
 | 8. H₂/H₃/H₄ dependency chain | ✅ DONE | Added explicit `\uses{}` edges in `modular-forms.tex` and `modform-ineq.tex`; path to upper-bound statements is now explicit |
-| 6. ResToImagAxis | ❌ NOT IMPLEMENTED | Priority 2: introduce restriction-to-imaginary-axis framework in modular forms / inequalities blueprint |
-| Maryna 3: Disconnected lemma | 🔄 ANALYSIS DONE | Priority 3: decide remove vs keep-with-link vs inline after ResToImagAxis integration |
-| 7. Laplace-transform | ❌ NOT IMPLEMENTED | Priority 4: add missing intermediate AnotherIntegral proof layer in `construct-a-b.tex` |
-| Maryna 2: Contour theorems | ❌ NOT IMPLEMENTED | Priority 5: Lean-level abstraction refactor to single `Ψ, Ψ'` statements |
-| Future 5: periodic_constant | ❌ NOT STARTED | Priority 6: add proof subsection in density-of-packings chapter |
-| Future 6: Poisson summation | ❌ NOT STARTED | Priority 7: add proof subsection in Fourier-analysis chapter |
-| Maryna 1: contDiffOn_family | 🔄 PENDING | Priority 8: awaiting colleague review; keep theorem as-is for now |
+| 6. ResToImagAxis | ✅ DONE | Added "Restriction to the imaginary axis" subsection (`def:resToImagAxis` + transfer lemmas) in `modular-forms.tex`; wired into `lemma:F-G-pos` and `lemma:psi-bound` |
+| Maryna 3: Disconnected lemma | ✅ RESOLVED | Kept + linked: `prop:a-fourier` / `prop:b-fourier` now `\uses{lemma:inv-change-of-variables}` |
+| 7. Laplace-transform | ✅ DONE | Added `lemma:a-vertical-rewrites`, `lemma:a-laplace-integrable`, `lemma:b-theta-axis-bounds`, `lemma:b-psiI-cancellation` in `construct-a-b.tex`, wired into the another-integral propositions |
+| Future 5: periodic_constant | ✅ DONE | Added proof sketch to `thm:periodic-packing-optimal` in `lattice-periodic-packings.tex` (truncate-and-periodize argument) |
+| Future 6: Poisson summation | ✅ DONE | Added periodization proof to `thm:Poisson-summation-formula` in `fourier-analysis.tex` |
+| Maryna 2: Contour theorems | ❌ NOT IMPLEMENTED | Lean-level abstraction refactor to single `Ψ, Ψ'` statements (next open task) |
+| Maryna 1: contDiffOn_family | 🔄 PENDING | Awaiting colleague review; keep theorem as-is for now |
 
-## Suggested changes to the Lean files
+## Suggested changes to the Lean codebase
 
 1. **Generalization of contour-integration theorems** — ❌ NOT IMPLEMENTED
 

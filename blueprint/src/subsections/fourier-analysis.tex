@@ -52,6 +52,29 @@ We end with a crucial result on Schwartz functions, the statement of which only 
   \]
 \end{theorem}
 \begin{proof}\leanok
+Consider the periodization
+\[
+    F(v) := \sum_{\ell \in \Lambda} f(\ell + v).
+\]
+Since $f$ is Schwartz, the sum converges absolutely and locally uniformly, so $F$ is a
+continuous $\Lambda$-periodic function on $\R^d$. Its Fourier coefficients with respect to the
+torus $\R^d / \Lambda$ are, for $m \in \Lambda^*$,
+\[
+    c_m = \frac{1}{\Vol{\R^d/\Lambda}} \int_{\R^d/\Lambda} F(v)\, e^{-2\pi i \ang{v, m}}\, dv
+        = \frac{1}{\Vol{\R^d/\Lambda}} \int_{\R^d} f(v)\, e^{-2\pi i \ang{v, m}}\, dv
+        = \frac{\widehat{f}(m)}{\Vol{\R^d/\Lambda}},
+\]
+where the middle equality follows by unfolding the sum over $\Lambda$ (Fubini, justified by
+absolute convergence). Since $\widehat{f}$ is again Schwartz, the coefficients $c_m$ are
+absolutely summable over $\Lambda^*$, so the Fourier series of $F$ converges absolutely and
+uniformly to $F$ itself:
+\[
+    \sum_{\ell\in\Lambda}f(\ell + v) = F(v)
+    = \sum_{m\in\Lambda^*} c_m\, e^{2\pi i \ang{v, m}}
+    = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m)\, e^{2\pi i \ang{v, m}}.
+\]
+In the formalization this is \texttt{SchwartzMap.poissonSummation\_lattice}, built on Mathlib's
+Poisson summation formula.
 \end{proof}
 
 While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes.

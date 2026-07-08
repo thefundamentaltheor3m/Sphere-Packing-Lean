@@ -66,8 +66,22 @@ For \eqref{eqn:phi0-trans-S},
 %     +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.
 % \end{align}
 For our formalization, we choose rectangular contours for the first and the second integral, and write it as follows.
+
+The contours themselves are encoded once and for all by explicit parametrisations.
+\begin{definition}\label{def:contour-parametrisations}\lean{MagicFunction.Parametrisations.z₁', MagicFunction.Parametrisations.z₂', MagicFunction.Parametrisations.z₃', MagicFunction.Parametrisations.z₄', MagicFunction.Parametrisations.z₅', MagicFunction.Parametrisations.z₆'}\leanok
+Define the six contour parametrisations
+\begin{align}
+    z_1(t) &:= -1 + it, & z_2(t) &:= -1 + t + i, & z_3(t) &:= 1 + it, \notag\\
+    z_4(t) &:= 1 - t + i, & z_5(t) &:= it \quad (t \in [0,1]), & z_6(t) &:= it \quad (t \in [1,\infty)), \notag
+\end{align}
+extended to all of $\R$ by clamping to the endpoint values (\texttt{IccExtend} / \texttt{IciExtend}).
+All integrals defining $a$ and $b$ below are stated over these parametrisations, and their basic
+bounds ($\Im z_2 = \Im z_4 = 1$, $\|z_5\| \le 1$, $\|z_k\| \le 2$) are recorded once in the
+formalization and reused throughout.
+\end{definition}
+
 \begin{definition}\label{def:a-definition}\lean{MagicFunction.a.RealIntegrals.a',MagicFunction.a.RadialFunctions.a}\leanok
-\uses{def:phi4-phi2-phi0}
+\uses{def:phi4-phi2-phi0, def:contour-parametrisations}
 Define $a_{\rad} : \R \to \C$ by
 \begin{align}\label{eqn:a-rad-definition}
     a_\rad(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r)
@@ -267,7 +281,7 @@ For the integrals $I_2$, $I_4$, and $I_6$, it is easier to see this since the co
 
 Combining these, one can show that $a$ is a Schwartz function.
 
-\begin{lemma}[Smoothness of the radial profiles of $a$]\label{lemma:I-smooth}\uses{def:a-definition, thm:contDiff-integral-Ioo01, lemma:hasDerivAt-integral-IciOne}\lean{MagicFunction.a.SchwartzProperties.I₁'_smooth', MagicFunction.a.SchwartzProperties.I₂'_smooth', MagicFunction.a.SchwartzProperties.I₃'_smooth', MagicFunction.a.SchwartzProperties.I₄'_smooth', MagicFunction.a.SchwartzProperties.I₅'_smooth', MagicFunction.a.SchwartzProperties.I₆'_smooth'}\leanok
+\begin{lemma}[Smoothness of the radial profiles of $a$]\label{lemma:I-smooth}\uses{def:a-definition, thm:contDiff-integral-Ioo01, lemma:hasDerivAt-integral-IciOne, thm:contDiffOn-family-hasDerivAt}\lean{MagicFunction.a.SchwartzProperties.I₁'_smooth', MagicFunction.a.SchwartzProperties.I₂'_smooth', MagicFunction.a.SchwartzProperties.I₃'_smooth', MagicFunction.a.SchwartzProperties.I₄'_smooth', MagicFunction.a.SchwartzProperties.I₅'_smooth', MagicFunction.a.SchwartzProperties.I₆'_smooth'}\leanok
   The radial profiles $I_1', \dots, I_5' : \R \to \C$ are $C^\infty$ on $\R$, and $I_6'$
   multiplied by the cutoff of Definition~\ref{def:radial-cutoff} is $C^\infty$ on $\R$.
 \end{lemma}
@@ -297,7 +311,7 @@ Definition~\ref{def:fCutSchwartz} and lifted to $\R^8$ by
 Theorem~\ref{thm:schwartz-multidimensional}.
 \end{proof}
 
-\begin{proposition}\label{prop:a-fourier}\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz, thm:perm-contour-pos}\lean{MagicFunction.a.Fourier.eig_a}\leanok
+\begin{proposition}\label{prop:a-fourier}\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz, thm:perm-contour-pos, lemma:inv-change-of-variables}\lean{MagicFunction.a.Fourier.eig_a}\leanok
 $a(x)$ satisfies \eqref{eqn:a-fourier}.
 \end{proposition}
 \begin{proof}\leanok
@@ -394,8 +408,37 @@ This finishes the proof.
 \end{proof}
 
 Finally, we find another convenient integral representation for $a$ and compute values of $a(r)$ at $r=0$ and $r=\sqrt{2}$.
+The passage from the Laplace-type representation of Proposition~\ref{prop:a-double-zeros} to this
+formula is carried out in two steps in the formalization: the contour integrands are first
+rewritten on shifted vertical lines and on the imaginary axis, and the resulting Laplace
+integrals are then evaluated term by term after subtracting the singular parts.
 
-\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition, thm:rect-deform-tendsto-top}\lean{MagicFunction.g.CohnElkies.IntegralReps.aRadial_eq_another_integral_main}\leanok
+\begin{lemma}\label{lemma:a-vertical-rewrites}\uses{prop:a-double-zeros, def:phi4-phi2-phi0}\lean{MagicFunction.g.CohnElkies.IntegralReps.Φ₁'_shift_left, MagicFunction.g.CohnElkies.IntegralReps.Φ₃'_shift_right, MagicFunction.g.CohnElkies.IntegralReps.Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand, MagicFunction.g.CohnElkies.IntegralReps.Φ_finite_difference_imag_axis}\leanok
+The contour integrands appearing in the Laplace representation of $a$ can be rewritten on the
+positive imaginary axis: the integrands on the two shifted vertical lines $\pm 1 + it$ differ
+from the integrand on the imaginary axis by explicit exponential factors, and their combination
+on the imaginary axis equals the subtracted-singularity integrand of
+\eqref{eqn:a-another-integral}.
+\end{lemma}
+\begin{proof}\leanok
+Direct computation from the definitions, using the periodicity $z \mapsto z + 2$ of the
+integrands and the transformation laws of $\phi_0$, $\phi_{-2}$, $\phi_{-4}$.
+\end{proof}
+
+\begin{lemma}\label{lemma:a-laplace-integrable}\uses{lemma:a-vertical-rewrites, cor:disc-nonvanishing}\lean{MagicFunction.g.CohnElkies.IntegralReps.exists_inv_Delta_bound_exp, MagicFunction.g.CohnElkies.IntegralReps.exists_phi2'_phi4'_bound_exp, MagicFunction.g.CohnElkies.IntegralReps.integrableOn_Φ₅'_imag_axis, MagicFunction.g.CohnElkies.IntegralReps.aLaplaceIntegral_convergent}\leanok
+There are constants $C, c > 0$ such that $|1/\Delta(it)| \le C e^{2\pi t}$ and the profiles
+$\phi_{-2}$, $\phi_{-4}$ satisfy exponential bounds of the same type on $[1, \infty)$.
+Consequently, the subtracted-singularity integrand
+\begin{equation*}
+    t \mapsto t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}
+\end{equation*}
+is integrable against $e^{-\pi r^2 t}$ on $(0, \infty)$ for every $r \ge 0$.
+\end{lemma}
+\begin{proof}\leanok
+The exponential bounds follow from the $q$-expansions; integrability follows by comparison.
+\end{proof}
+
+\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition, thm:rect-deform-tendsto-top, lemma:a-vertical-rewrites, lemma:a-laplace-integrable}\lean{MagicFunction.g.CohnElkies.IntegralReps.aRadial_eq_another_integral_main}\leanok
 For $r\geq0$ we have
 \begin{align}\label{eqn:a-another-integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
@@ -500,7 +543,7 @@ Now, we are ready to define function $b$.
 Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
 
 
-\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}\lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}\leanok
+\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS, def:contour-parametrisations}\lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}\leanok
 Define $b_\rad : \R \to \C$ by
 \begin{equation}
     b_\rad(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r)
@@ -540,7 +583,7 @@ As in the case of $a(x)$, we start with the following exponential bound of $\psi
 % \end{align}
 % \end{proof}
 
-\begin{lemma}\label{lemma:psi-bound}\lean{MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one}\leanok
+\begin{lemma}\label{lemma:psi-bound}\uses{def:resToImagAxis}\lean{MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one}\leanok
     There exist constants $C_I, C_S, C_T > 0$ such that
     \begin{align}
         |\psi_I(z)| &\le C_I e^{2\pi \Im z}, \label{eqn:psiI-bound} \\
@@ -588,7 +631,7 @@ There exist a constant $C > 0$ such that
 
 Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and the radial bridge above, we can prove that $b(x)$ is a Schwartz function.
 
-\begin{lemma}[Smoothness of the radial profiles of $b$]\label{lemma:J-smooth}\uses{def:b-definition, thm:contDiff-integral-Ioo01, lemma:hasDerivAt-integral-IciOne}\lean{MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁', MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂', MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃', MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄', MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅', MagicFunction.b.SchwartzIntegrals.J₆'}\leanok
+\begin{lemma}[Smoothness of the radial profiles of $b$]\label{lemma:J-smooth}\uses{def:b-definition, thm:contDiff-integral-Ioo01, lemma:hasDerivAt-integral-IciOne, thm:contDiffOn-family-hasDerivAt}\lean{MagicFunction.b.Schwartz.J1Smooth.contDiff_J₁', MagicFunction.b.Schwartz.J2Smooth.contDiff_J₂', MagicFunction.b.Schwartz.J3Smooth.contDiff_J₃', MagicFunction.b.Schwartz.J4Smooth.contDiff_J₄', MagicFunction.b.Schwartz.J5Smooth.contDiff_J₅', MagicFunction.b.SchwartzIntegrals.J₆'}\leanok
   The radial profiles $J_1', \dots, J_5' : \R \to \C$ are $C^\infty$ on $\R$, and $J_6'$
   multiplied by the cutoff of Definition~\ref{def:radial-cutoff} is $C^\infty$ on $\R$.
 \end{lemma}
@@ -609,7 +652,7 @@ $b(x)$ is a Schwartz function.
 Similar to the proof of \ref{prop:a-schwartz}.
 \end{proof}
 
-\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz, thm:perm-contour-neg}\lean{MagicFunction.b.Fourier.eig_b}\leanok
+\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz, thm:perm-contour-neg, lemma:inv-change-of-variables}\lean{MagicFunction.b.Fourier.eig_b}\leanok
 $b(x)$ satisfies \eqref{eqn:b-fourier}.
 \end{proposition}
 \begin{proof}\leanok
@@ -720,8 +763,42 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
     \end{align}
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
+As for $a$, the passage from Proposition~\ref{prop:b-double-zeros} to this formula requires
+controlling the integrand $\psi_I(it)$ on the imaginary axis. This is done through the
+$q$-expansions of the theta functions and an explicit cancellation estimate.
 
-\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, def:b-definition}\lean{MagicFunction.g.CohnElkies.IntegralReps.bRadial_eq_another_integral_main}\leanok
+\begin{lemma}\label{lemma:b-theta-axis-bounds}\uses{def:H2-H3-H4, def:resToImagAxis, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}\lean{MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one, MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one, MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis.exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one}\leanok
+On $[1, \infty)$ the restrictions $t \mapsto H_i(it)$ agree with the leading terms of their
+Fourier expansions up to exponentially small errors: there are constants $C, c > 0$ with
+\begin{equation*}
+    \big|H_2(it) - 16 e^{-\pi t} - 64 e^{-2\pi t}\big| \le C e^{-(2 + c)\pi t},
+    \qquad
+    \big|H_4(it) - 1 + 8 e^{-\pi t}\big| \le C e^{-(1 + c)\pi t},
+\end{equation*}
+and similarly for $H_3$ and for the combination $H_3 + H_4$.
+\end{lemma}
+\begin{proof}\leanok
+Immediate from the Fourier expansions of Propositions~\ref{prop:H2-fourier}--\ref{prop:H4-fourier},
+estimating the tails by geometric series.
+\end{proof}
+
+\begin{lemma}\label{lemma:b-psiI-cancellation}\uses{lemma:b-theta-axis-bounds, def:psiI-psiT-psiS}\lean{MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis, MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one, MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase_integrable_exp}\leanok
+There are constants $C, c > 0$ such that
+\begin{equation*}
+    \big|\psi_I(it) - e^{2\pi t} - 144\big| \le C e^{(2 - c)\pi t}
+    \qquad (t \ge 1).
+\end{equation*}
+Consequently, $t \mapsto \psi_I(it) - e^{2\pi t} - 144$ is integrable against $e^{-\pi r^2 t}$
+on $(0, \infty)$ for every $r \ge 0$.
+\end{lemma}
+\begin{proof}\leanok
+The function $\psi_I$ is a quotient of polynomial expressions in $H_2, H_3, H_4$ divided by
+powers of theta functions; substituting the expansions of Lemma~\ref{lemma:b-theta-axis-bounds}
+and tracking the leading terms, the singular parts $e^{2\pi t}$ and $144$ cancel, leaving an
+exponentially decaying remainder. Integrability follows by comparison.
+\end{proof}
+
+\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, def:b-definition, lemma:b-theta-axis-bounds, lemma:b-psiI-cancellation}\lean{MagicFunction.g.CohnElkies.IntegralReps.bRadial_eq_another_integral_main}\leanok
 For $r\geq0$ we have
 \begin{equation}\label{eqn:b-another-integral}b(r)=-4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
