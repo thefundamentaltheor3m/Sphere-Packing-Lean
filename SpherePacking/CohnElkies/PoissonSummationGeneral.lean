@@ -54,14 +54,6 @@ public instance instIsZLattice : IsZLattice ℝ (standardLattice d) :=
 
 end standardLattice
 
-/- The fundamental cube `(0,1]^d` is *notation*, not a definition (cf. the cube machinery in
-`ForMathlib/CoordCube.lean`): it elaborates literally to the set-builder, so membership is
-judgemental and there is nothing to unfold. The precheck is disabled because Mathlib's set-builder
-syntax has no `quot_precheck` support. -/
-set_option quotPrecheck false in
-local notation "iocCube" =>
-  {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
-
 namespace PoissonSummation
 
 namespace Standard
@@ -86,8 +78,16 @@ public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
 
 open TopologicalSpace UnitAddTorus
 
+/-- The half-open cube `(0,1]^d`, the explicit fundamental domain for `ℤ^d`
+(`isAddFundamentalDomain_iocCube`) over which every torus integral is unfolded. Deliberately a
+definition rather than an inline set-builder: the integral-bridge proofs below carry it through
+`simpa`, where `Set.mem_Ioc`/`Set.preimage_setOf_eq` would normalize a bare set-builder's body and
+detach the terms from the statements. The constant shields the spelling (cf. `standardLattice`). -/
+public def iocCube : Set E := {x | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
+
 /-- The half-open cube `(0,1]^d` is measurable. -/
-public lemma measurableSet_iocCube : MeasurableSet (iocCube) := by
+public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
+  unfold iocCube
   measurability
 
 /-- Every element of the standard lattice comes from an integer vector via `intVec`. -/
@@ -175,7 +175,7 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) �
   have hmp : MeasurePreserving (⇑f) (volume : Measure (Fin d → ℝ)) (volume : Measure E) := by
     simpa [f] using PiLp.volume_preserving_toLp (ι := Fin d)
   have hpre : f ⁻¹' iocCube = Set.univ.pi fun _ : Fin d ↦ Set.Ioc (0 : ℝ) 1 := by
-    ext x; simp [f]
+    ext x; simp [f, iocCube]
   calc
     (∫ y : UnitAddTorus (Fin d), g y)
         = ∫ x, g (UnitAddTorus.coeFun (Fin d) x) ∂(volume : Measure (Fin d → ℝ)).restrict
@@ -195,11 +195,7 @@ namespace SchwartzMap.PoissonSummation.Standard
 variable {d : ℕ}
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
--- Re-declarations of the block-local notations from the top of the file (`local` scope ends with
--- each namespace block), plus the `√d`-ball as a `Compacts.mk` spelling.
-set_option quotPrecheck false in
-local notation "iocCube" =>
-  {x : EuclideanSpace ℝ (Fin d) | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
+-- The `√d`-ball as an inline `Compacts.mk` spelling (notation, not a definition).
 local notation "sqrtdBall" =>
   TopologicalSpace.Compacts.mk (Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
     (isCompact_closedBall (0 : EuclideanSpace ℝ (Fin d)) (Real.sqrt d))
@@ -585,7 +581,7 @@ lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLatt
           (standardLattice d)
       = Submodule.span ℤ ((fun a : E => latticeEquiv L a) ''
             Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis)) := by
-        simp [Submodule.map_span]
+        simp [SchwartzMap.standardLattice, Submodule.map_span]
     _ = Submodule.span ℤ (Set.range (rBasis L)) := by rw [hrange]
     _ = L := by
         simpa [rBasis] using Module.Basis.ofZLatticeBasis_span (K := ℝ) (L := L) (b := zBasis L)
