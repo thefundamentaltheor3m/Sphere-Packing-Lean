@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Auguste Poiroux
 -/
 module
+-- `#min_imports` artifact: carries instances that the elaboration of this file's statements
+-- depends on (cf. the `CStarMatrix` note in `SpherePacking/UpperBound.lean`). Do not remove
+-- without a full build.
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.Analysis.InnerProductSpace.Adjoint
@@ -21,14 +24,14 @@ product. This is the full-Jacobian generalisation of mathlib's isometry lemma
 `[NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]`.
 
 Upstream target: `Mathlib/Analysis/Fourier/FourierTransform.lean`, beside
-`Real.fourier_comp_linearIsometry`. Imports here are left as `public import Mathlib`; they are
-narrowed at upstreaming time.
+`Real.fourier_comp_linearIsometry`. The lemmas live in the `Real` namespace, matching that
+upstream neighbour.
 -/
 
 open scoped FourierTransform Real
 open MeasureTheory
 
-namespace SpherePacking.ForMathlib.Fourier
+namespace Real
 
 variable {V E : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
   [MeasurableSpace V] [BorelSpace V] [NormedAddCommGroup E] [NormedSpace ℂ E]
@@ -64,4 +67,4 @@ public theorem fourierInv_comp_linearEquiv (A : V ≃ₗ[ℝ] V) (f : V → E) (
   rw [Real.fourierInv_eq_fourier_neg, fourier_comp_linearEquiv, map_neg,
     ← Real.fourierInv_eq_fourier_neg]
 
-end SpherePacking.ForMathlib.Fourier
+end Real

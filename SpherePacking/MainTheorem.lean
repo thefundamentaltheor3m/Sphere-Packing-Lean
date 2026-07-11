@@ -31,7 +31,7 @@ lattice packing to obtain the dimension-8 optimal packing density.
 namespace SpherePacking
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SchwartzMap SpherePacking.ForMathlib.Fourier
+open SchwartzMap
 open MeasureTheory Real SpherePacking Metric
 open MagicFunction.g.CohnElkies
 
@@ -74,8 +74,7 @@ public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := b
         (abs (LinearMap.det (A : ℝ⁸ →ₗ[ℝ] ℝ⁸)))⁻¹ • (𝓕 (g : ℝ⁸ → ℂ)) 0 := by
     simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe, scaledMagic, c, A,
       SchwartzMap.compCLMOfContinuousLinearEquiv_apply] using
-      (SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
-        (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
+      (Real.fourier_comp_linearEquiv (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
   simp_all
 
 /-- Convenience form of `fourier_scaledMagic_zero` for the coerced function `⇑scaledMagic`. -/
@@ -237,7 +236,7 @@ private lemma fourier_scaledMagic_eq (x : ℝ⁸) :
       |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ •
         𝓕 g ((LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x) := by
   simpa [SpherePacking.scaledMagic, scaleEquiv, SchwartzMap.fourier_coe] using
-    SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
+    Real.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
 
 /-- The Fourier transform `𝓕 scaledMagic` is real-valued (scaled variant of `g_real_fourier`). -/
 public theorem scaledMagic_real_fourier' :
@@ -279,7 +278,8 @@ public theorem SpherePackingConstant_le_E8Packing_density :
       SpherePackingConstant 8 ≤ (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal *
         volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
     simpa using
-      (LinearProgrammingBound (d := 8) (f := (scaledMagic : 𝓢(ℝ⁸, ℂ))) hne
+      (SpherePacking.CohnElkies.LinearProgrammingBound (d := 8)
+        (f := (scaledMagic : 𝓢(ℝ⁸, ℂ))) hne
         scaledMagic_real' scaledMagic_real_fourier' scaledMagic_cohnElkies₁'
         scaledMagic_cohnElkies₂' (Nat.succ_pos 7))
   have hratio : (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal = (16 : ℝ≥0∞) := by

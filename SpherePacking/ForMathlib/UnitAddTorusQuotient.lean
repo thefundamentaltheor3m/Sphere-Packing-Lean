@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Auguste Poiroux
 -/
 module
+-- `#min_imports` artifact: carries instances that the elaboration of this file's statements
+-- depends on (cf. the `CStarMatrix` note in `SpherePacking/UpperBound.lean`). Do not remove
+-- without a full build.
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.Fourier.AddCircleMulti
 
@@ -29,8 +32,7 @@ Upstream note: `coeFun ι` is definitionally `Pi.map (fun _ => QuotientAddGroup.
 `(· : UnitAddCircle)` is `QuotientAddGroup.mk`), and `mFourier_apply_coeFun` is a single-`simp`
 unfolding; on upstreaming `coeFun` would be inlined and these lemmas folded into
 `Mathlib/Analysis/Fourier/AddCircleMulti.lean`. They are kept here as the project-local quotient
-API on which `PoissonSummationGeneral.lean` builds. Imports here are left as `public import
-Mathlib`; they are narrowed at upstreaming time.
+API on which `PoissonSummationGeneral.lean` builds.
 -/
 
 open scoped FourierTransform Real
@@ -66,10 +68,11 @@ public theorem mFourier_apply_coeFun (k : ι → ℤ) (x : ι → ℝ) :
       Complex.exp (2 * π * Complex.I * (∑ i : ι, (k i : ℝ) * x i)) := by
   simp [UnitAddTorus.mFourier, coeFun, ← Complex.exp_sum, Finset.mul_sum, mul_assoc]
 
-/-- Pull back Haar integration on `(ℝ/ℤ)^ι` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^ι`. Stated
-against the global `AddCircle.measureSpace 1` instance (see the module docstring on why mathlib's
-`UnitAddTorus.integral_preimage` is not a drop-in). -/
-public theorem integral_eq_integral_preimage_coeFun (t : ℝ) (g : UnitAddTorus ι → ℂ)
+/-- Pull back Haar integration on `(ℝ/ℤ)^ι` to the fundamental cube `∏ i, (t, t+1] ⊆ ℝ^ι`, for
+any Banach-space-valued integrand. Stated against the global `AddCircle.measureSpace 1` instance
+(see the module docstring on why mathlib's `UnitAddTorus.integral_preimage` is not a drop-in). -/
+public theorem integral_eq_integral_preimage_coeFun {G : Type*} [NormedAddCommGroup G]
+    [NormedSpace ℝ G] (t : ℝ) (g : UnitAddTorus ι → G)
     (hg : AEStronglyMeasurable g (volume : Measure (UnitAddTorus ι))) :
     (∫ y : UnitAddTorus ι, g y) =
       ∫ x, g (coeFun ι x) ∂(volume : Measure (ι → ℝ)).restrict

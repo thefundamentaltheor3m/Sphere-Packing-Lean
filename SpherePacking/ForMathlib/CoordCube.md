@@ -8,11 +8,12 @@ the build environment.*
 `SpherePacking/ForMathlib/CoordCube.lean` packages the scaled integer lattice `L·ℤ^d` and its
 coordinate boxes in `EuclideanSpace ℝ (Fin d)`:
 
-- the measure theory of coordinate cubes `{x : EuclideanSpace ℝ (Fin d) | ∀ i, x i ∈ I}`. There is
-  deliberately **no definition** for this set — the set-builder is written inline, so membership is
-  judgemental and no membership/unfolding API exists. The lemmas carry the genuine content:
-  `cube_eq_preimage_ofLp`, `measurableSet_cube`, and `volume_cube` (`= volume I ^ d`, with endpoint
-  corollaries `volume_cube_Ico`/`volume_cube_Icc`);
+- the measure theory of coordinate cubes `{x : EuclideanSpace ℝ ι | ∀ i, x i ∈ I}`, over an
+  arbitrary finite index type `ι`. There is deliberately **no definition** for this set — the
+  set-builder is written inline, so membership is judgemental and no membership/unfolding API
+  exists. The lemmas carry the genuine content: `cube_eq_preimage_ofLp`, `measurableSet_cube`,
+  and `volume_cube` (`= volume I ^ card ι`, with `Fin d` endpoint corollaries
+  `volume_cube_Ico`/`volume_cube_Icc`);
 - the scaled standard basis `cubeBasis d L hL` and the lattice
   `cubeLattice d L hL = span ℤ (range (cubeBasis …))` — both are *local notation*, not
   definitions: they expand literally to `Basis.isUnitSMul` and `Submodule.span`, so Mathlib's

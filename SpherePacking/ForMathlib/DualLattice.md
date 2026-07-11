@@ -18,9 +18,8 @@ theorem LinearMap.BilinForm.discreteTopology_dualSubmodule
 for a nondegenerate bilinear form `B` on a finite-dimensional real space `M`. The proof uses the
 existing `BilinForm.dualSubmodule_span_of_basis`: the dual submodule is spanned by the `B`-dual basis
 of an integral basis of `Λ`, hence is itself the `ℤ`-span of an `ℝ`-basis — a lattice. For the
-inner-product case the file registers the discreteness as the named instance
-`instDiscreteTopology_dualSubmodule_innerₗ`; the Euclidean nondegeneracy fact (formerly the separate
-`innerₗ_nondegenerate`, a one-call composition) is now inlined into that instance during cleanup. The
+inner-product case the file registers the discreteness as an (anonymous) instance, with the
+Euclidean nondegeneracy fact stated separately as the reusable lemma `innerₗ_nondegenerate`. The
 Cohn–Elkies bound consumes exactly this instance when summing over the dual lattice.
 
 ## Overlap with existing Mathlib / open PRs

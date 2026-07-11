@@ -25,8 +25,7 @@ translates are summable, which is what lets one assemble the periodization `∑'
 `Real.fourierCoeff_tsum_comp_add`.
 
 Upstream target: `Mathlib/Analysis/Distribution/SchwartzSpace/ZLattice.lean` (downstream of
-`SchwartzSpace.Basic` and `Algebra.Module.ZLattice.Summable`). Imports here are left as
-`public import Mathlib`; they are narrowed at upstreaming time.
+`SchwartzSpace.Basic` and `Algebra.Module.ZLattice.Summable`).
 -/
 
 open MeasureTheory
@@ -38,7 +37,9 @@ variable {E F : Type*}
 omit [NormedSpace ℝ E] in
 /-- A discrete `ℤ`-submodule of a proper real normed space meets any closed ball in a finite set:
 only finitely many lattice points have norm `≤ r`. Strictly more general than
-`ZSpan.setFinite_inter` (no basis, no `IsZLattice`). -/
+`ZSpan.setFinite_inter` (no basis, no `IsZLattice`). Sibling:
+`EuclideanSpace.finite_lattice_in_ball` (`ForMathlib/CoordCube.lean`) states the open-ball version
+for the scaled cube lattice; TODO: derive that from this lemma when both are upstreamed. -/
 public theorem ZLattice.finite_norm_le [ProperSpace E] (L : Submodule ℤ E) [DiscreteTopology L]
     (r : ℝ) : ({ℓ : L | ‖(ℓ : E)‖ ≤ r} : Set L).Finite := by
   have : DiscreteTopology L.toAddSubgroup := inferInstanceAs (DiscreteTopology L)
@@ -94,13 +95,13 @@ public theorem summable_norm_restrict_comp_addRight (f : 𝓢(E, F)) (L : Submod
 
 /-- A Schwartz function has summable norms over any translate of a discrete `ℤ`-submodule of a
 finite-dimensional real normed space: the singleton-compact case of
-`summable_norm_restrict_comp_addRight`, since the sup-norm over `{a}` is the value at `a`. -/
+`summable_norm_restrict_comp_addRight`, since the value at `a` is dominated by the sup-norm
+over `{a}`. -/
 public theorem summable_norm_comp_add (f : 𝓢(E, F)) (L : Submodule ℤ E) [DiscreteTopology L]
-    (a : E) : Summable (fun ℓ : L => ‖f (a + (ℓ : E))‖) := by
-  refine (f.summable_norm_restrict_comp_addRight L ⟨{a}, isCompact_singleton⟩).congr fun ℓ => ?_
-  refine le_antisymm ((ContinuousMap.norm_le _ (norm_nonneg _)).2 ?_)
-    ((((f : C(E, F)).comp (ContinuousMap.addRight (ℓ : E))).restrict {a}).norm_coe_le_norm ⟨a, rfl⟩)
-  rintro ⟨x, rfl⟩
-  exact le_rfl
+    (a : E) : Summable (fun ℓ : L => ‖f (a + (ℓ : E))‖) :=
+  (f.summable_norm_restrict_comp_addRight L ⟨{a}, isCompact_singleton⟩).of_nonneg_of_le
+    (fun _ => norm_nonneg _) fun ℓ =>
+      (((f : C(E, F)).comp (ContinuousMap.addRight (ℓ : E))).restrict {a}).norm_coe_le_norm
+        ⟨a, rfl⟩
 
 end SchwartzMap

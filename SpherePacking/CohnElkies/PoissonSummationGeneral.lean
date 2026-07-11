@@ -16,14 +16,18 @@ public import SpherePacking.ForMathlib.FourierComp
 public import SpherePacking.ForMathlib.SchwartzLatticeSummable
 public import SpherePacking.ForMathlib.UnitAddTorusQuotient
 
+import SpherePacking.ForMathlib.CoordCube
+
 /-! # Poisson summation for Schwartz functions
 
-Three layers:
+Two layers:
 
-* `SchwartzMap.PoissonSummation.Standard` — periodization, descent to the torus, Schwartz decay
-  bounds, and Poisson summation over the standard `ℤ^d` lattice.
-* `SchwartzMap.PoissonSummationLattices` — Poisson summation over a full-rank `ℤ`-lattice
-  `L ⊆ ℝ^d`, obtained from the standard case via a linear equivalence sending `ℤ^d` to `L`.
+* namespace `SchwartzMap.PoissonSummation.Standard` — periodization, descent to the torus,
+  Schwartz decay bounds, and Poisson summation over the standard `ℤ^d` lattice
+  (`poissonSummation_standard`).
+* section `PoissonSummationLattices` (declarations in namespace `SchwartzMap`) — Poisson
+  summation over a full-rank `ℤ`-lattice `L ⊆ ℝ^d` (`SchwartzMap.poissonSummation_lattice`),
+  obtained from the standard case via a linear equivalence sending `ℤ^d` onto `L`.
 -/
 
 open scoped BigOperators FourierTransform Real
@@ -88,7 +92,7 @@ public def iocCube : Set E := {x | ∀ i : Fin d, x i ∈ Set.Ioc (0 : ℝ) 1}
 /-- The half-open cube `(0,1]^d` is measurable. -/
 public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
   unfold iocCube
-  measurability
+  exact EuclideanSpace.measurableSet_cube measurableSet_Ioc
 
 /-- Every element of the standard lattice comes from an integer vector via `intVec`. -/
 public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
@@ -165,8 +169,10 @@ public theorem isAddFundamentalDomain_iocCube :
     have hℓ' : x + intVec n' ∈ iocCube := by rw [add_comm, ← hn']; exact hℓ
     exact Subtype.ext (hn'.trans (congrArg (intVec) (hmem_unique n' hℓ')))
 
-/-- Pull back Haar integration on `(ℝ/ℤ)^d` to `iocCube` in `E = ℝ^d`. -/
-public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) → ℂ)
+/-- Pull back Haar integration on `(ℝ/ℤ)^d` to `iocCube` in `E = ℝ^d`, for any
+Banach-space-valued integrand. -/
+public theorem integral_eq_integral_preimage_coeFunE {G : Type*} [NormedAddCommGroup G]
+    [NormedSpace ℝ G] (g : UnitAddTorus (Fin d) → G)
     (hg : AEStronglyMeasurable g (volume : Measure (UnitAddTorus (Fin d)))) :
     (∫ y : UnitAddTorus (Fin d), g y) =
       ∫ x, g (coeFunE x) ∂(volume : Measure E).restrict (iocCube) := by
@@ -214,12 +220,15 @@ local notation "Λ" => SchwartzMap.standardLattice d
 
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
-public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
+/-- Translation of `E = ℝ^d` by any `ℤ`-submodule (not just the standard lattice) is
+measurable. -/
+public instance (Λ' : Submodule ℤ E) : MeasurableVAdd Λ' E where
   measurable_const_vadd _ := by simp only [Submodule.vadd_def, vadd_eq_add]; fun_prop
   measurable_vadd_const _ := by simp only [Submodule.vadd_def, vadd_eq_add]; fun_prop
 
-public instance instVAddInvariantMeasure_standardLattice :
-    MeasureTheory.VAddInvariantMeasure Λ E (volume : Measure E) where
+/-- Lebesgue measure on `E = ℝ^d` is invariant under translation by any `ℤ`-submodule. -/
+public instance (Λ' : Submodule ℤ E) :
+    MeasureTheory.VAddInvariantMeasure Λ' E (volume : Measure E) where
   measure_preimage_vadd _ _ _ := by
     simp [Submodule.vadd_def, vadd_eq_add, MeasureTheory.measure_preimage_add]
 
@@ -301,7 +310,7 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 
 public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (coeFunE x) =
-      Complex.exp (2 * Real.pi * Complex.I * ⟪x, intVec n⟫_[ℝ]) := by
+      Complex.exp (2 * π * Complex.I * ⟪x, intVec n⟫_[ℝ]) := by
   have h := mFourier_neg_apply_coeFunE (n := -n) (x := x)
   simp only [neg_neg, intVec_neg, inner_neg_right] at h
   rw [h, ← RCLike.inner_eq_wInner_one]
@@ -322,9 +331,10 @@ public lemma iocCube_subset_closedBall :
         rw [Real.norm_eq_abs, abs_of_pos (hx i).1]; exact (hx i).2
     _ = d := by simp
 
-public lemma volume_iocCube_lt_top : (volume : Measure E) (iocCube) < ⊤ :=
-  ((Metric.isBounded_closedBall (x := (0 : E)) (r := Real.sqrt d)).subset
-    (iocCube_subset_closedBall)).measure_lt_top
+public lemma volume_iocCube_lt_top : (volume : Measure E) (iocCube) < ⊤ := by
+  unfold iocCube
+  rw [EuclideanSpace.volume_cube _ measurableSet_Ioc, Real.volume_Ioc]
+  exact (ENNReal.pow_ne_top ENNReal.ofReal_ne_top).lt_top
 
 /-- On `iocCube`, the integrand `mFourier (-n) (coeFunE ·) * f (· + ℓ)` is bounded by the sup norm
 of the translate `f (· + ℓ)` restricted to `sqrtdBall`. -/
@@ -383,7 +393,11 @@ private lemma volume_unitAddCircle_eq_haar :
 
 /-- `UnitAddTorus.mFourierCoeff g n` as an integral against the file's ambient `volume` on the
 torus. `mFourierCoeff` is defined using `haarAddCircle`; this bridges the resulting measure-space
-diamond to the ambient `volume`, which agrees by `volume_unitAddCircle_eq_haar`. -/
+diamond to the ambient `volume`, which agrees by `volume_unitAddCircle_eq_haar`. The `@`-explicit
+spelling in `hvol` pins the `MeasureSpace.pi` instance under which `mFourierCoeff`'s integral
+actually elaborates, so `congrArg Measure.pi` can rewrite the factor measures; TODO: drop the
+surgery once the `AddCircle.measureSpace`/`haarAddCircle` instance diamond is reconciled upstream
+(see the module docstring of `ForMathlib/UnitAddTorusQuotient.lean`). -/
 private lemma mFourierCoeff_eq_integral_volume (n : Fin d → ℤ) (g : UnitAddTorus (Fin d) → ℂ) :
     UnitAddTorus.mFourierCoeff g n =
       ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • g y := by
@@ -509,7 +523,7 @@ lemma summable_mFourierCoeff_descended :
 /-- Poisson summation for Schwartz functions over the standard lattice `ℤ^d`. -/
 public theorem poissonSummation_standard (v : E) :
     (∑' ℓ : Λ, f (v + (ℓ : E))) = ∑' n : Fin d → ℤ, 𝓕 (fun x : E => f x) (intVec n) *
-        Complex.exp (2 * Real.pi * Complex.I * ⟪v, intVec n⟫_[ℝ]) := by
+        Complex.exp (2 * π * Complex.I * ⟪v, intVec n⟫_[ℝ]) := by
   simpa [descended_comp (f := f) v, periodization_apply (f := f), smul_eq_mul,
     mFourierCoeff_descended (f := f), mFourier_apply_coeFunE_exp, mul_assoc,
     mul_left_comm, mul_comm] using
@@ -716,8 +730,7 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
   have hfourier (w : E) : 𝓕 (fun x : E => f ((latticeEquiv L) x)) w =
       cC * 𝓕 (fun x : E => f x) (dualEquiv L w) := by
     simpa [dualEquiv_apply, detA, cC, Complex.real_smul] using
-      SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
-        (A := latticeEquiv L) (f := fun x : E => f x) w
+      Real.fourier_comp_linearEquiv (A := latticeEquiv L) (f := fun x : E => f x) w
   have hreindex : (∑' n : Fin d → ℤ, (𝓕 (fun x : E => f ((latticeEquiv L) x)) (intVec n)) *
         Complex.exp (2 * π * Complex.I * ⟪(latticeEquiv L).symm v, intVec n⟫_[ℝ])) =
       cC * ∑' m : dualLattice L, F m := by

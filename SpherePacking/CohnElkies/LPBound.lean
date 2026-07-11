@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
+-- The two imports below are `#min_imports` artifacts: they carry instances that the elaboration
+-- of this file's statements depends on (cf. the `CStarMatrix` note in
+-- `SpherePacking/UpperBound.lean`). Do not remove without a full build.
 public import Mathlib.Dynamics.Ergodic.Action.Regular
 public import Mathlib.Order.CompletePartialOrder
 
@@ -15,7 +18,8 @@ public import SpherePacking.ForMathlib.DualLattice
 /-!
 # Cohn-Elkies linear programming bound
 
-Cohn-Elkies upper bound on `SpherePackingConstant d` via `LinearProgrammingBound`. Also contains
+Cohn-Elkies upper bound on `SpherePackingConstant d` via
+`SpherePacking.CohnElkies.LinearProgrammingBound`. Also contains
 the periodizing constructions and boundary-control machinery (merged from `BoundaryControl`):
 `periodizedCenters`, `periodize_to_periodicSpherePacking`, the inline coordinate cubes
 `{x | ∀ i, x i ∈ Set.Ico 0 L}`/`{x | ∀ i, x i ∈ Set.Icc r (L - r)}`, the cube lattice
@@ -38,10 +42,6 @@ local notation:max "cubeBasis " d:max L:max hL:max =>
     fun _ : Fin d ↦ IsUnit.mk0 L (LT.lt.ne' hL)
 local notation:max "cubeLattice " d:max L:max hL:max =>
   Submodule.span ℤ (Set.range (cubeBasis d L hL))
-
-/-- Any coordinate of a vector is bounded in absolute value by the Euclidean norm. -/
-public lemma abs_coord_le_norm (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) : |x i| ≤ ‖x‖ :=
-  PiLp.norm_apply_le x i
 
 /-- If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then `2 * r ≤ dist x y`. Holds
 in any real normed space. -/
@@ -113,7 +113,7 @@ lemma ball_subset_cube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : ∀ i, x i ∈ Set.Icc r (L - r)) :
     ball x r ⊆ {y : EuclideanSpace ℝ (Fin d) | ∀ i, y i ∈ Set.Ico 0 L} :=
   fun y hy i => by
-  have h₁ : |y i - x i| ≤ ‖y - x‖ := by simpa using abs_coord_le_norm (y - x) i
+  have h₁ : |y i - x i| ≤ ‖y - x‖ := by simpa using PiLp.norm_apply_le (y - x) i
   have h₂ : ‖y - x‖ < r := by simpa [dist_eq_norm] using hy
   obtain ⟨hlo, hhi⟩ := abs_lt.mp (h₁.trans_lt h₂)
   obtain ⟨hxl, hxr⟩ := hx i
@@ -138,8 +138,9 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
 unique lattice translate landing in `D`, the same holds for `v +ᵥ D`. Fully lattice-generic — no
 cube, basis, or `EuclideanSpace` structure is used. -/
 public lemma vadd_unique_covers {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
-    {D : Set (EuclideanSpace ℝ (Fin d))} (hD : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) (v : Λ) :
-    ∀ x, ∃! g : Λ, g +ᵥ x ∈ v +ᵥ D := fun x => by
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) (v : Λ)
+    (x : EuclideanSpace ℝ (Fin d)) :
+    ∃! g : Λ, g +ᵥ x ∈ v +ᵥ D := by
   have hvadd (a : Λ) : a +ᵥ x ∈ v +ᵥ D ↔ (a - v) +ᵥ x ∈ D := by
     simp [Set.mem_vadd_set_iff_neg_vadd_mem, Submodule.vadd_def, vadd_eq_add, sub_eq_add_neg,
       add_assoc, add_comm]
@@ -233,7 +234,7 @@ lemma cube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
         {x | ∀ i, x i ∈ Set.Icc 1 (L - 1)} := by
   rintro z ⟨x, hx, y, hy, rfl⟩
   have hyi : ∀ i : Fin d, |y i| < (2⁻¹ : ℝ) := fun i =>
-    (abs_coord_le_norm y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
+    (PiLp.norm_apply_le y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
   rw [Set.mem_diff] at hx
   refine ⟨fun i => ?_, fun hz_inner => ?_⟩
   · -- Each coordinate of `x + y` lands in `[-1/2, L + 1/2]`.
@@ -672,15 +673,10 @@ open MeasureTheory Filter
 /-- If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` iff `f = 0`.
 The only requirement on the measure is that it is positive on nonempty open sets
 (`IsOpenPosMeasure`); no group or invariance structure is needed. -/
-public theorem Continuous.integral_zero_iff_zero_of_nonneg {E : Type*} [TopologicalSpace E]
+public theorem Continuous.integral_eq_zero_iff_of_nonneg {E : Type*} [TopologicalSpace E]
     [MeasurableSpace E] {μ : Measure E} [μ.IsOpenPosMeasure] {f : E → ℝ} (hf₁ : Continuous f)
     (hf₂ : Integrable f μ) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v ∂μ = 0 ↔ f = 0 := by
-  refine ⟨fun hintf => funext fun x => ?_, fun hf => by simp [hf]⟩
-  by_contra hx
-  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds μ
-      ((isOpen_lt continuous_const hf₁).mem_nhds (lt_of_le_of_ne (hnn x) (Ne.symm hx)))).ne'
-    (measure_mono_null (fun (y : E) (hy : 0 < f y) => hy.ne')
-      ((integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf))
+  rw [MeasureTheory.integral_eq_zero_iff_of_nonneg hnn hf₂, hf₁.ae_eq_iff_eq μ continuous_zero]
 
 end Integration
 
@@ -690,8 +686,8 @@ end LPPrereqs
 
 /- The dual `ℤ`-lattice for the Euclidean inner product is *notation*, not a definition (declared
 locally here and in `PoissonSummationGeneral.lean`): it elaborates literally to
-`LinearMap.BilinForm.dualSubmodule`, so the discreteness instance
-`instDiscreteTopology_dualSubmodule_innerₗ` from `ForMathlib/DualLattice.lean` applies directly.
+`LinearMap.BilinForm.dualSubmodule`, so the discreteness instance from
+`ForMathlib/DualLattice.lean` applies directly.
 Declared at file level so it scopes over the remaining sections (cf. `conj` below); the ambient
 space is a hole, pinned by unification with `L`'s type at each use site (notation hygiene forbids
 capturing a use-site `d`). -/
@@ -1024,9 +1020,6 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
     have hℓ : ℓ = 0 := lattice_translate_eq_zero hD_unique_covers h
     exact hxy (Subtype.ext (by simpa [hℓ] using h))
 
-end SpherePacking.CohnElkies
-
-variable {d : ℕ}
 variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hne_zero : f ≠ 0)
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
@@ -1059,7 +1052,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
         integrable_fourier]
     simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion)
-  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
+  have hfun := (Continuous.integral_eq_zero_iff_of_nonneg
     (Complex.continuous_re.comp (𝓕 f).continuous) integrable_fourier.re hCohnElkies₂).1
     hintegral_zero
   ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
@@ -1147,16 +1140,15 @@ private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
   congr 1; push_cast; congr! 3 with m
   rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
 
-
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
-theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
-    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
-      (1 / ZLattice.covolume P.lattice volume) *
+theorem le_numReps_mul_re_f_zero (hd : 0 < d) :
+    (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
-                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
+                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
+      ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := by
   calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
         numReps_mul_f_zero_ge_double_tsum hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
@@ -1209,14 +1201,13 @@ theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
 
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
 theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
-    (1 / ZLattice.covolume P.lattice volume) *
+    ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume ≤
+      (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
-                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
-      ≥
-      ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
+                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
   calc (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
@@ -1257,7 +1248,7 @@ theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
 
 omit [Nonempty ↑P.centers] in include hne_zero hReal hRealFourier hCohnElkies₂ in
 /-- Degenerate case of the LP bound when `𝓕 f 0 = 0`: the right-hand side is `∞`. -/
-private lemma density_le_of_𝓕_zero (h𝓕f : 𝓕 f 0 = 0) :
+private lemma density_le_of_fourier_zero (h𝓕f : 𝓕 f 0 = 0) :
     ENat.toENNReal (P.numReps : ENat) *
         volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) /
         (ZLattice.covolume P.lattice volume).toNNReal ≤
@@ -1311,7 +1302,7 @@ private lemma density_le_of_hCalc_of_ne_zero
     ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right
       (by simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
         ENat.toENNReal (P.numReps : ENat) ≠ 0)
-      (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
+      (by simp : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
     ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc, hcast_num, hcast_sq,
     ENNReal.coe_le_coe]
   exact Real.toNNReal_le_toNNReal hCalc
@@ -1325,23 +1316,21 @@ public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   haveI : Fact (0 < d) := ⟨hd⟩
   rw [P.density_eq' hd]
-  suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
-    (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
+  suffices hCalc : (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re /
+      ZLattice.covolume P.lattice volume ≤ (P.numReps' hd hD_isBounded) * (f 0).re by
     rw [hP]
-    rw [ge_iff_le] at hCalc
     by_cases h𝓕f : 𝓕 f 0 = 0
-    · exact density_le_of_𝓕_zero (P := P) hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f
+    · exact density_le_of_fourier_zero (P := P) hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f
     rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
       hD_unique_covers] at hCalc
     haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
       (nonempty_quotient_iff _).2 ‹_›
     exact density_le_of_hCalc_of_ne_zero (P := P) hRealFourier hCohnElkies₂
       (ZLattice.covolume_pos P.lattice volume) h𝓕f hCalc
-  exact ge_trans
-    (numReps_mul_re_f_zero_ge (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
+  exact (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D)
+      (hCohnElkies₂ := hCohnElkies₂) hD_isBounded hd).trans
+    (le_numReps_mul_re_f_zero (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
       hD_unique_covers hd)
-    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
-      hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
 
@@ -1349,7 +1338,7 @@ include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 /-- The Cohn-Elkies linear programming upper bound on `SpherePackingConstant d`. -/
 public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
-    (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal *
+    (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant hd,
     periodic_constant_eq_periodic_constant_normalized (d := d)]
@@ -1360,3 +1349,5 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
       (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
         (PeriodicSpherePacking.basis_index_equiv P))) hd
+
+end SpherePacking.CohnElkies
