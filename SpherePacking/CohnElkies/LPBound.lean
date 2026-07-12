@@ -1329,8 +1329,9 @@ public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
       (nonempty_quotient_iff _).2 ‹_›
     exact density_le_of_hCalc_of_ne_zero (P := P) hRealFourier hCohnElkies₂
       (ZLattice.covolume_pos P.lattice volume) h𝓕f hCalc
-  exact (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D)
-      (hCohnElkies₂ := hCohnElkies₂) hD_isBounded hd).trans
+  exact le_trans
+    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D)
+      (hCohnElkies₂ := hCohnElkies₂) hD_isBounded hd)
     (le_numReps_mul_re_f_zero (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
       hD_unique_covers hd)
 
