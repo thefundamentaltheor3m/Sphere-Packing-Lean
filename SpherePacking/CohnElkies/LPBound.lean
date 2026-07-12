@@ -1149,6 +1149,7 @@ theorem le_numReps_mul_re_f_zero (hd : 0 < d) :
               exp (2 * π * I *
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
       ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := by
+  rw [← ge_iff_le]
   calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
         numReps_mul_f_zero_ge_double_tsum hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
@@ -1208,6 +1209,7 @@ theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
+  rw [← ge_iff_le]
   calc (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
