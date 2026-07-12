@@ -1,7 +1,7 @@
 In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
 
 The following theorem is the key result of \cite{ElkiesCohn}. (Note that the original theorem is stated for a class of functions more general then Schwartz functions.)
-\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-periodic}\uses{def:Fourier-Transform, def:SpherePacking.density}\lean{SpherePacking.CohnElkies.LinearProgrammingBound_periodic}\leanok
+\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-periodic}\uses{def:Fourier-Transform, def:SpherePacking.density}\lean{LinearProgrammingBound_periodic}\leanok
 
 Let $X\subset\mathbb{R}^d$ be a discrete subset such that $\|x-y\|\geq 1$ for any distinct $x,y\in X$. Suppose that $X$ is $\Lambda$-periodic with respect to some lattice $\Lambda\subset\mathbb{R}^d$. Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies the following conditions:
 \begin{equation}\label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
@@ -33,7 +33,7 @@ $$\Delta(\mathcal{P}_X)=\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lam
 This finishes the proof of the theorem for periodic packings.
 \end{proof}
 
-\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-general}\lean{SpherePacking.CohnElkies.LinearProgrammingBound}\leanok
+\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-general}\lean{LinearProgrammingBound}\leanok
   Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2}. Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
 \end{theorem}
 \begin{proof}\uses{thm:Cohn-Elkies-periodic,thm:periodic-packing-optimal}\lean{periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok

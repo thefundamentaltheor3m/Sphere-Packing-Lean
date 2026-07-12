@@ -278,8 +278,7 @@ public theorem SpherePackingConstant_le_E8Packing_density :
       SpherePackingConstant 8 ≤ (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal *
         volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
     simpa using
-      (SpherePacking.CohnElkies.LinearProgrammingBound (d := 8)
-        (f := (scaledMagic : 𝓢(ℝ⁸, ℂ))) hne
+      (LinearProgrammingBound (d := 8) (f := (scaledMagic : 𝓢(ℝ⁸, ℂ))) hne
         scaledMagic_real' scaledMagic_real_fourier' scaledMagic_cohnElkies₁'
         scaledMagic_cohnElkies₂' (Nat.succ_pos 7))
   have hratio : (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal = (16 : ℝ≥0∞) := by

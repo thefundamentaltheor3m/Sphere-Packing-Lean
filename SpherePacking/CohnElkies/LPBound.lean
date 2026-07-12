@@ -18,8 +18,7 @@ public import SpherePacking.ForMathlib.DualLattice
 /-!
 # Cohn-Elkies linear programming bound
 
-Cohn-Elkies upper bound on `SpherePackingConstant d` via
-`SpherePacking.CohnElkies.LinearProgrammingBound`. Also contains
+Cohn-Elkies upper bound on `SpherePackingConstant d` via `LinearProgrammingBound`. Also contains
 the periodizing constructions and boundary-control machinery (merged from `BoundaryControl`):
 `periodizedCenters`, `periodize_to_periodicSpherePacking`, the inline coordinate cubes
 `{x | ∀ i, x i ∈ Set.Ico 0 L}`/`{x | ∀ i, x i ∈ Set.Icc r (L - r)}`, the cube lattice
@@ -1020,6 +1019,9 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
     have hℓ : ℓ = 0 := lattice_translate_eq_zero hD_unique_covers h
     exact hxy (Subtype.ext (by simpa [hℓ] using h))
 
+end SpherePacking.CohnElkies
+
+variable {d : ℕ}
 variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hne_zero : f ≠ 0)
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
@@ -1141,15 +1143,14 @@ private lemma re_mul_conj_eq_norm_sq_step {d : ℕ}
   rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
 
 include d f hP hRealFourier hCohnElkies₁ hD_unique_covers in
-theorem le_numReps_mul_re_f_zero (hd : 0 < d) :
-    (1 / ZLattice.covolume P.lattice volume) *
+theorem numReps_mul_re_f_zero_ge (hd : 0 < d) :
+    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
+      (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
-                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
-      ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := by
-  rw [← ge_iff_le]
+                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
   calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
         numReps_mul_f_zero_ge_double_tsum hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
@@ -1202,14 +1203,14 @@ theorem le_numReps_mul_re_f_zero (hd : 0 < d) :
 
 include d f hCohnElkies₂ in omit [Nonempty ↑P.centers] in
 theorem numReps_sq_mul_re_fourier_zero_div_le (hd : 0 < d) :
-    ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume ≤
-      (1 / ZLattice.covolume P.lattice volume) *
+    (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
-                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
-  rw [← ge_iff_le]
+                ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
+      ≥
+      ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
   calc (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : dualLattice P.lattice,
           (𝓕 ⇑f m).re *
@@ -1318,9 +1319,10 @@ public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   haveI : Fact (0 < d) := ⟨hd⟩
   rw [P.density_eq' hd]
-  suffices hCalc : (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re /
-      ZLattice.covolume P.lattice volume ≤ (P.numReps' hd hD_isBounded) * (f 0).re by
+  suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
+    (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
     rw [hP]
+    rw [ge_iff_le] at hCalc
     by_cases h𝓕f : 𝓕 f 0 = 0
     · exact density_le_of_fourier_zero (P := P) hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f
     rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
@@ -1329,11 +1331,11 @@ public theorem LinearProgrammingBound_periodic (hd : 0 < d) :
       (nonempty_quotient_iff _).2 ‹_›
     exact density_le_of_hCalc_of_ne_zero (P := P) hRealFourier hCohnElkies₂
       (ZLattice.covolume_pos P.lattice volume) h𝓕f hCalc
-  exact le_trans
-    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D)
-      (hCohnElkies₂ := hCohnElkies₂) hD_isBounded hd)
-    (le_numReps_mul_re_f_zero (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
+  exact ge_trans
+    (numReps_mul_re_f_zero_ge (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
       hD_unique_covers hd)
+    (numReps_sq_mul_re_fourier_zero_div_le (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+      hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
 
@@ -1352,5 +1354,3 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
     (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
       (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
         (PeriodicSpherePacking.basis_index_equiv P))) hd
-
-end SpherePacking.CohnElkies
