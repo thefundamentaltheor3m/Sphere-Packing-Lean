@@ -4,13 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Gareth Ma
 -/
 module
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+
 public import SpherePacking.E8.Packing
 public import SpherePacking.UpperBound
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import SpherePacking.MagicFunction.a.Eigenfunction
 public import SpherePacking.MagicFunction.b.Eigenfunction
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-!
 # Main theorem: optimal sphere packing in dimension 8
@@ -30,7 +31,7 @@ lattice packing to obtain the dimension-8 optimal packing density.
 namespace SpherePacking
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SchwartzMap SpherePacking.ForMathlib.Fourier
+open SchwartzMap
 open MeasureTheory Real SpherePacking Metric
 open MagicFunction.g.CohnElkies
 
@@ -43,6 +44,9 @@ public lemma sqrt2_ne_zero : (Real.sqrt (2 : ℝ)) ≠ 0 :=
 
 /-- The scaled Schwartz function used for the dimension-8 Cohn-Elkies LP bound. -/
 @[expose] public noncomputable def scaledMagic : 𝓢(ℝ⁸, ℂ) :=
+  -- Short-circuit a `ContinuousSMul ℝ ℝ⁸` synthesis loop on `EuclideanSpace`'s `PiLp` structure
+  -- inside `toContinuousLinearEquiv`.
+  have : ContinuousSMul ℝ ℝ⁸ := inferInstance
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
     ((LinearEquiv.smulOfNeZero (K := ℝ) (M := ℝ⁸)
       (Real.sqrt 2) sqrt2_ne_zero).toContinuousLinearEquiv) g
@@ -70,8 +74,7 @@ public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := b
         (abs (LinearMap.det (A : ℝ⁸ →ₗ[ℝ] ℝ⁸)))⁻¹ • (𝓕 (g : ℝ⁸ → ℂ)) 0 := by
     simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe, scaledMagic, c, A,
       SchwartzMap.compCLMOfContinuousLinearEquiv_apply] using
-      (SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
-        (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
+      (Real.fourier_comp_linearEquiv (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
   simp_all
 
 /-- Convenience form of `fourier_scaledMagic_zero` for the coerced function `⇑scaledMagic`. -/
@@ -233,7 +236,7 @@ private lemma fourier_scaledMagic_eq (x : ℝ⁸) :
       |LinearMap.det (scaleEquiv : ℝ⁸ →ₗ[ℝ] ℝ⁸)|⁻¹ •
         𝓕 g ((LinearMap.adjoint ((scaleEquiv.symm : ℝ⁸ ≃ₗ[ℝ] ℝ⁸) : ℝ⁸ →ₗ[ℝ] ℝ⁸)) x) := by
   simpa [SpherePacking.scaledMagic, scaleEquiv, SchwartzMap.fourier_coe] using
-    SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
+    Real.fourier_comp_linearEquiv (A := scaleEquiv) (f := g) (w := x)
 
 /-- The Fourier transform `𝓕 scaledMagic` is real-valued (scaled variant of `g_real_fourier`). -/
 public theorem scaledMagic_real_fourier' :
