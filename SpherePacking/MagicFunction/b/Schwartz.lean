@@ -10,8 +10,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SmoothCutoff
 public import SpherePacking.MagicFunction.b.Basic
 
-@[expose] public section
-
 /-! # `b` is a Schwartz Function
 
 The purpose of this file is to prove that `b` is a Schwartz function. It collects results stated
@@ -28,6 +26,8 @@ that vanishes on `(-∞, -1/2]` and is identically `1` on `[0, ∞)` (via
 the `Jⱼ'` on `[0, ∞)`, and hence give rise, via composition with `‖·‖ ^ 2`, to Schwartz functions
 on `ℝ⁸` that are *equal* to the radial functions `RadialFunctions.J₁, …, J₆`.
 -/
+
+@[expose] public section
 
 open MagicFunction MagicFunction.b MagicFunction.b.RadialFunctions MagicFunction.b.RealIntegrals
   MagicFunction.Parametrisations

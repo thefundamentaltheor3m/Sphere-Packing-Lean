@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -11,8 +9,6 @@ module
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SmoothCutoff
 public import SpherePacking.MagicFunction.a.Basic
-
-@[expose] public section
 
 /-! # `a` is a Schwartz Function
 
@@ -22,12 +18,15 @@ elsewhere and presents them concisely.
 The one-dimensional integrals `RealIntegrals.I₁', …, I₆' : ℝ → ℂ` are *not* Schwartz functions:
 they grow exponentially as `x → -∞` (and the defining integral of `I₆' x` is only known to
 converge for `x > -2`). Only their restrictions to `[0, ∞)` matter, since the corresponding
-functions on `ℝ⁸` are obtained by composing with `‖·‖ ^ 2 ≥ 0`. We therefore multiply each `Iⱼ'` by a smooth
-transition function that vanishes on `(-∞, -1]` and is identically `1` on `[0, ∞)` (via
-`SchwartzMap.ofNonnegDecay` with `a = -2`): the products are Schwartz functions which agree with
+functions on `ℝ⁸` are obtained by composing with `‖·‖ ^ 2 ≥ 0`. We therefore multiply each
+`Iⱼ'` by a smooth transition function that vanishes on `(-∞, -1]` and is identically `1` on
+`[0, ∞)` (via `SchwartzMap.ofNonnegDecay` with `a = -2`): the products are Schwartz functions
+which agree with
 the `Iⱼ'` on `[0, ∞)`, and hence give rise, via composition with `‖·‖ ^ 2`, to Schwartz functions
 on `ℝ⁸` that are *equal* to the radial functions `RadialFunctions.I₁, …, I₆`.
 -/
+
+@[expose] public section
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
   MagicFunction.Parametrisations MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands

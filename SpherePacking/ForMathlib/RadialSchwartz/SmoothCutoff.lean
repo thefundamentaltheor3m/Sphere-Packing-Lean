@@ -9,8 +9,6 @@ module
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
 
-@[expose] public section
-
 /-! # Schwartz functions from smoothness and decay on a right half-line
 
 The radial components `I₁', …, I₆', J₁', …, J₆' : ℝ → ℂ` of the integrals defining Viazovska's
@@ -36,6 +34,8 @@ the original function on `[0, ∞)`.
 * `SchwartzMap.ofNonnegDecay_apply_of_nonneg`: `SchwartzMap.ofNonnegDecay` agrees with `f` on
   `[0, ∞)`.
 -/
+
+@[expose] public section
 
 open Real Set Filter
 open scoped ContDiff Topology
@@ -81,7 +81,7 @@ private lemma eventuallyEq_self (ha : a < 0) {x : ℝ} (hx : 0 < x) :
   filter_upwards [Ioi_mem_nhds hx] with y hy
   rw [transition_eq_one ha hy.le, one_smul]
 
-private lemma contDiff_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a)) :
+lemma contDiff_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a)) :
     ContDiff ℝ ∞ fun x ↦ smoothTransition (1 - 2 * x / a) • f x := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -93,7 +93,7 @@ private lemma contDiff_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (
   · exact contDiffAt_const.congr_of_eventuallyEq
       (eventuallyEq_zero ha (hx.trans_lt (by linarith)))
 
-private lemma decay_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a))
+lemma decay_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a))
     (hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (k n : ℕ) :
     ∃ C, ∀ x, ‖x‖ ^ k *
       ‖iteratedFDeriv ℝ n (fun x ↦ smoothTransition (1 - 2 * x / a) • f x) x‖ ≤ C := by
@@ -110,7 +110,7 @@ private lemma decay_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi
         Pi.zero_apply]
     rw [h0, norm_zero, mul_zero]
     exact le_max_of_le_left (mul_nonneg (by positivity) hC₁0)
-  rcases le_or_lt x 1 with hx1 | hx1
+  rcases le_or_gt x 1 with hx1 | hx1
   · -- On the compact interval `[a/2, 1]` we use continuity of the iterated derivatives.
     refine le_max_of_le_left ?_
     have hxa : ‖x‖ ≤ 1 + |a| := by
@@ -142,13 +142,13 @@ noncomputable def ofNonnegDecay (f : ℝ → E) (a : ℝ) (ha : a < 0)
 theorem ofNonnegDecay_apply_of_nonneg {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
     {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C}
     {x : ℝ} (hx : 0 ≤ x) : ofNonnegDecay f a ha hf hdecay x = f x := by
-  show smoothTransition (1 - 2 * x / a) • f x = f x
+  change smoothTransition (1 - 2 * x / a) • f x = f x
   rw [transition_eq_one ha hx, one_smul]
 
 theorem ofNonnegDecay_apply_of_le_half {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
     {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C}
     {x : ℝ} (hx : x ≤ a / 2) : ofNonnegDecay f a ha hf hdecay x = 0 := by
-  show smoothTransition (1 - 2 * x / a) • f x = 0
+  change smoothTransition (1 - 2 * x / a) • f x = 0
   rw [transition_eq_zero ha hx, zero_smul]
 
 end SchwartzMap
