@@ -19,6 +19,7 @@ public import SpherePacking.ForMathlib.InnerProductSpace
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
+public import SpherePacking.ForMathlib.RadialSchwartz.SmoothCutoff
 public import SpherePacking.ForMathlib.Real
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
