@@ -85,7 +85,8 @@ section Decay
 
 We follow the proof of Proposition 7.8 in the blueprint (`prop:b-schwartz`). Note that the decay
 statements are restricted to `[0, ∞)`: they are *false* on all of `ℝ`, since the `Jⱼ'` grow
-exponentially as `x → -∞`.
+exponentially as `x → -∞`. As on the `a`-side, the zeroth-order bounds should follow from the
+analogue of the `Iⱼ'_bounding` estimates and the blueprint's `lemma:psi-bound`.
 -/
 
 theorem J₁'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),

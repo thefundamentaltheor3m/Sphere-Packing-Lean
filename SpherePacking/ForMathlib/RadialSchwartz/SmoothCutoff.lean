@@ -59,7 +59,12 @@ section TransitionLemmas
 
 /- The rescaled transition function `x ↦ Real.smoothTransition (1 - 2 * x / a)` (for `a < 0`)
 vanishes on `(-∞, a/2]`, is identically `1` on `[0, ∞)` and transitions smoothly in between.
-For `a = -2` this is exactly `x ↦ Real.smoothTransition (x + 1)`, transitioning on `[-1, 0]`. -/
+For `a = -2` this is exactly `x ↦ Real.smoothTransition (x + 1)`, transitioning on `[-1, 0]`.
+
+The pointwise facts are `private`; the two substantive lemmas `contDiff_transition_smul` and
+`decay_transition_smul` — the two Schwartz conditions for the cutoff product — must be `public`,
+since `ofNonnegDecay` is `@[expose]`d (so that its `*_apply*` lemmas are provable downstream) and
+an exposed definition may not reference `private` declarations in its proof fields. -/
 
 private lemma transition_eq_zero (ha : a < 0) {x : ℝ} (hx : x ≤ a / 2) :
     smoothTransition (1 - 2 * x / a) = 0 :=
@@ -97,33 +102,29 @@ lemma decay_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a))
     (hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (k n : ℕ) :
     ∃ C, ∀ x, ‖x‖ ^ k *
       ‖iteratedFDeriv ℝ n (fun x ↦ smoothTransition (1 - 2 * x / a) • f x) x‖ ≤ C := by
-  obtain ⟨C₁, hC₁⟩ := (isCompact_Icc (a := a / 2) (b := 1)).exists_bound_of_continuousOn
-    (((contDiff_transition_smul ha hf).continuous_iteratedFDeriv
-      (mod_cast le_top)).continuousOn)
+  -- Split `ℝ` at the endpoints `a/2` and `0` of the transition interval: the product vanishes
+  -- below `a/2`, equals `f` above `0`, and lives on the compact `[a/2, 0]` in between.
+  obtain ⟨C₁, hC₁⟩ := (isCompact_Icc (a := a / 2) (b := 0)).exists_bound_of_continuousOn
+    (((contDiff_transition_smul ha hf).continuous_iteratedFDeriv (mod_cast le_top)).continuousOn)
   obtain ⟨C₂, hC₂⟩ := hdecay k n
-  have hC₁0 : (0 : ℝ) ≤ C₁ := (norm_nonneg _).trans (hC₁ 0 ⟨by linarith, zero_le_one⟩)
-  refine ⟨max ((1 + |a|) ^ k * C₁) C₂, fun x ↦ ?_⟩
+  have hC₁0 : (0 : ℝ) ≤ C₁ := (norm_nonneg _).trans (hC₁ 0 ⟨by linarith, le_refl 0⟩)
+  refine ⟨max (|a| ^ k * C₁) C₂, fun x ↦ ?_⟩
   rcases lt_or_ge x (a / 2) with hx | hx
-  · -- On `(-∞, a/2)` the product vanishes identically, so all its derivatives vanish.
+  · -- Below `a/2` the product vanishes identically, so all its derivatives vanish.
     have h0 : iteratedFDeriv ℝ n (fun x ↦ smoothTransition (1 - 2 * x / a) • f x) x = 0 := by
       rw [((eventuallyEq_zero ha hx).iteratedFDeriv ℝ n).eq_of_nhds, iteratedFDeriv_fun_zero,
         Pi.zero_apply]
     rw [h0, norm_zero, mul_zero]
     exact le_max_of_le_left (mul_nonneg (by positivity) hC₁0)
-  rcases le_or_gt x 1 with hx1 | hx1
-  · -- On the compact interval `[a/2, 1]` we use continuity of the iterated derivatives.
-    refine le_max_of_le_left ?_
-    have hxa : ‖x‖ ≤ 1 + |a| := by
-      rw [Real.norm_eq_abs, abs_le]
-      exact ⟨by linarith [neg_abs_le a, abs_nonneg a], by linarith [abs_nonneg a]⟩
-    exact mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hxa _) (hC₁ x ⟨hx, hx1⟩) (norm_nonneg _)
-      (by positivity)
-  · -- On `(1, ∞)` the product agrees with `f` near `x`, so the decay hypothesis applies.
-    have heq : iteratedFDeriv ℝ n (fun x ↦ smoothTransition (1 - 2 * x / a) • f x) x
-        = iteratedFDeriv ℝ n f x :=
-      ((eventuallyEq_self ha (one_pos.trans hx1)).iteratedFDeriv ℝ n).eq_of_nhds
-    rw [heq]
-    exact le_max_of_le_right (hC₂ x (by linarith))
+  rcases le_or_gt x 0 with hx0 | hx0
+  · -- On the transition interval `[a/2, 0]` we use continuity of the iterated derivatives.
+    refine le_max_of_le_left (mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) ?_ _)
+      (hC₁ x ⟨hx, hx0⟩) (norm_nonneg _) (by positivity))
+    rw [Real.norm_eq_abs, abs_le]
+    exact ⟨by linarith [neg_abs_le a, abs_nonneg a], by linarith [abs_nonneg a]⟩
+  · -- Above `0` the product agrees with `f` near `x`, so the decay hypothesis applies.
+    rw [((eventuallyEq_self ha hx0).iteratedFDeriv ℝ n).eq_of_nhds]
+    exact le_max_of_le_right (hC₂ x hx0.le)
 
 end TransitionLemmas
 
@@ -139,16 +140,18 @@ noncomputable def ofNonnegDecay (f : ℝ → E) (a : ℝ) (ha : a < 0)
   smooth' := contDiff_transition_smul ha hf
   decay' := decay_transition_smul ha hf hdecay
 
-theorem ofNonnegDecay_apply_of_nonneg {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
-    {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C}
-    {x : ℝ} (hx : 0 ≤ x) : ofNonnegDecay f a ha hf hdecay x = f x := by
-  change smoothTransition (1 - 2 * x / a) • f x = f x
-  rw [transition_eq_one ha hx, one_smul]
+variable {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
+  {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C} {x : ℝ}
 
-theorem ofNonnegDecay_apply_of_le_half {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
-    {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C}
-    {x : ℝ} (hx : x ≤ a / 2) : ofNonnegDecay f a ha hf hdecay x = 0 := by
-  change smoothTransition (1 - 2 * x / a) • f x = 0
-  rw [transition_eq_zero ha hx, zero_smul]
+@[simp]
+theorem ofNonnegDecay_apply :
+    ofNonnegDecay f a ha hf hdecay x = smoothTransition (1 - 2 * x / a) • f x :=
+  rfl
+
+theorem ofNonnegDecay_apply_of_nonneg (hx : 0 ≤ x) : ofNonnegDecay f a ha hf hdecay x = f x := by
+  rw [ofNonnegDecay_apply, transition_eq_one ha hx, one_smul]
+
+theorem ofNonnegDecay_apply_of_le_half (hx : x ≤ a / 2) : ofNonnegDecay f a ha hf hdecay x = 0 := by
+  rw [ofNonnegDecay_apply, transition_eq_zero ha hx, zero_smul]
 
 end SchwartzMap
