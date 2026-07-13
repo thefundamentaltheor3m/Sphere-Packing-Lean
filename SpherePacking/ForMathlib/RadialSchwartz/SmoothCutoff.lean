@@ -42,7 +42,11 @@ open scoped ContDiff Topology
 
 /-- There exists a smooth transition function that is identically `0` on `(-∞, -1]` and
 identically `1` on `[0, ∞)`. This is the statement of PR #316 (Matt Cushman), obtained here from
-mathlib's `Real.smoothTransition`. -/
+mathlib's `Real.smoothTransition`.
+
+This is a standalone existence result recording the connection to PR #316; it is *not* used by
+`ofNonnegDecay`, which builds the rescaled transition `smoothTransition (1 - 2 * x / a)` directly
+(recovering this `f` when `a = -2`). -/
 theorem exists_smooth_cutoff :
     ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ (∀ x : ℝ, x ≤ -1 → f x = 0) ∧ ∀ x : ℝ, x ≥ 0 → f x = 1 :=
   ⟨fun x ↦ smoothTransition (x + 1),
