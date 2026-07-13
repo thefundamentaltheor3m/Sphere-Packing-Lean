@@ -201,7 +201,6 @@ end MagicFunction.b.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
 
 /-- The radial component of the -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
-@[simps!]
 def b' : 𝓢(ℝ, ℂ) :=
     MagicFunction.b.SchwartzIntegrals.J₁'
   + MagicFunction.b.SchwartzIntegrals.J₂'
@@ -211,7 +210,6 @@ def b' : 𝓢(ℝ, ℂ) :=
   + MagicFunction.b.SchwartzIntegrals.J₆'
 
 /-- The -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
-@[simps!]
 def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) b'
 
