@@ -24,9 +24,9 @@ the original function on `[0, ∞)`.
 
 ## Main definitions and results
 
-* `exists_smooth_cutoff`: there is a smooth `f : ℝ → ℝ` with `f = 0` on `(-∞, -1]` and `f = 1` on
-  `[0, ∞)`. This is the statement of PR #316 (Matt Cushman); here it is obtained directly from
-  mathlib's `Real.smoothTransition`.
+* `Real.exists_smooth_cutoff`: there is a smooth `f : ℝ → ℝ` with `f = 0` on `(-∞, -1]` and
+  `f = 1` on `[0, ∞)`. This is the statement of PR #316 (Matt Cushman); here it is obtained
+  directly from mathlib's `Real.smoothTransition`.
 * `SchwartzMap.ofNonnegDecay`: the Schwartz function obtained from `f : ℝ → E` (smooth on
   `(a, ∞)`, `a < 0`, with Schwartz-type decay on `[0, ∞)`) by multiplying with the smooth
   transition function `x ↦ Real.smoothTransition (1 - 2 * x / a)`, which vanishes on `(-∞, a/2]`
@@ -47,7 +47,7 @@ mathlib's `Real.smoothTransition`.
 This is a standalone existence result recording the connection to PR #316; it is *not* used by
 `ofNonnegDecay`, which builds the rescaled transition `smoothTransition (1 - 2 * x / a)` directly
 (recovering this `f` when `a = -2`). -/
-theorem exists_smooth_cutoff :
+theorem Real.exists_smooth_cutoff :
     ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ (∀ x : ℝ, x ≤ -1 → f x = 0) ∧ ∀ x : ℝ, x ≥ 0 → f x = 1 :=
   ⟨fun x ↦ smoothTransition (x + 1),
     smoothTransition.contDiff.comp (contDiff_id.add contDiff_const),
