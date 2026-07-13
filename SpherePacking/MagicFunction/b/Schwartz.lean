@@ -89,27 +89,27 @@ exponentially as `x → -∞`. As on the `a`-side, the zeroth-order bounds shoul
 analogue of the `Iⱼ'_bounding` estimates and the blueprint's `lemma:psi-bound`.
 -/
 
-theorem J₁'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₁'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₁' x‖ ≤ C := by
   sorry
 
-theorem J₂'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₂'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₂' x‖ ≤ C := by
   sorry
 
-theorem J₃'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₃'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₃' x‖ ≤ C := by
   sorry
 
-theorem J₄'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₄'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₄' x‖ ≤ C := by
   sorry
 
-theorem J₅'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₅'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₅' x‖ ≤ C := by
   sorry
 
-theorem J₆'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem J₆'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ ≤ C := by
   sorry
 

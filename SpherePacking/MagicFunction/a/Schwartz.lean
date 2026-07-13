@@ -101,27 +101,27 @@ restricted to `[0, ∞)`: they are *false* on all of `ℝ`, since the `Iⱼ'` gr
 and the higher-order bounds from the same estimates after differentiating under the integral sign.
 -/
 
-theorem I₁'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₁'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₁' x‖ ≤ C := by
   sorry
 
-theorem I₂'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₂'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₂' x‖ ≤ C := by
   sorry
 
-theorem I₃'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₃'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := by
   sorry
 
-theorem I₄'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₄'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₄' x‖ ≤ C := by
   sorry
 
-theorem I₅'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₅'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₅' x‖ ≤ C := by
   sorry
 
-theorem I₆'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x ≥ (0 : ℝ),
+theorem I₆'_decay_nonneg : ∀ (k n : ℕ), ∃ C, ∀ x, (0 : ℝ) ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₆' x‖ ≤ C := by
   sorry
 

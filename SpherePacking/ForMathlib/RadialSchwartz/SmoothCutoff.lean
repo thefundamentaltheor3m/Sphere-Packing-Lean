@@ -37,7 +37,7 @@ the original function on `[0, ∞)`.
 
 @[expose] public section
 
-open Real Set Filter
+open Real Set
 open scoped ContDiff Topology
 
 /-- There exists a smooth transition function that is identically `0` on `(-∞, -1]` and
@@ -48,7 +48,7 @@ This is a standalone existence result recording the connection to PR #316; it is
 `ofNonnegDecay`, which builds the rescaled transition `smoothTransition (1 - 2 * x / a)` directly
 (recovering this `f` when `a = -2`). -/
 theorem Real.exists_smooth_cutoff :
-    ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ (∀ x : ℝ, x ≤ -1 → f x = 0) ∧ ∀ x : ℝ, x ≥ 0 → f x = 1 :=
+    ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ (∀ x : ℝ, x ≤ -1 → f x = 0) ∧ ∀ x : ℝ, 0 ≤ x → f x = 1 :=
   ⟨fun x ↦ smoothTransition (x + 1),
     smoothTransition.contDiff.comp (contDiff_id.add contDiff_const),
     fun _ hx ↦ smoothTransition.zero_of_nonpos (by linarith),
@@ -103,7 +103,7 @@ lemma contDiff_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a)) 
       (eventuallyEq_zero ha (hx.trans_lt (by linarith)))
 
 lemma decay_transition_smul (ha : a < 0) (hf : ContDiffOn ℝ ∞ f (Ioi a))
-    (hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (k n : ℕ) :
+    (hdecay : ∀ k n : ℕ, ∃ C, ∀ x, (0 : ℝ) ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (k n : ℕ) :
     ∃ C, ∀ x, ‖x‖ ^ k *
       ‖iteratedFDeriv ℝ n (fun x ↦ smoothTransition (1 - 2 * x / a) • f x) x‖ ≤ C := by
   -- Split `ℝ` at the endpoints `a/2` and `0` of the transition interval: the product vanishes
@@ -138,14 +138,14 @@ function that vanishes on `(-∞, a/2]` and is identically `1` on `[0, ∞)`. It
 `[0, ∞)`: see `SchwartzMap.ofNonnegDecay_apply_of_nonneg`. -/
 noncomputable def ofNonnegDecay (f : ℝ → E) (a : ℝ) (ha : a < 0)
     (hf : ContDiffOn ℝ ∞ f (Ioi a))
-    (hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    (hdecay : ∀ k n : ℕ, ∃ C, ∀ x, (0 : ℝ) ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     𝓢(ℝ, E) where
   toFun x := smoothTransition (1 - 2 * x / a) • f x
   smooth' := contDiff_transition_smul ha hf
   decay' := decay_transition_smul ha hf hdecay
 
 variable {ha : a < 0} {hf : ContDiffOn ℝ ∞ f (Ioi a)}
-  {hdecay : ∀ k n : ℕ, ∃ C, ∀ x ≥ (0 : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C} {x : ℝ}
+  {hdecay : ∀ k n : ℕ, ∃ C, ∀ x, (0 : ℝ) ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C} {x : ℝ}
 
 @[simp]
 theorem ofNonnegDecay_apply :
