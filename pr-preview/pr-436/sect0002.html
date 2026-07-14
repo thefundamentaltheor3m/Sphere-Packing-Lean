@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: Facts from Fourier analysis</title>
+<link rel="next" href="sect0003.html" title="Cohn-Elkies linear programming bounds" />
+<link rel="prev" href="sect0001.html" title="The E8 lattice" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class="">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000003">4 Facts from Fourier analysis</h1>
+<p> Recall the definition of a Fourier transform. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:Fourier-Transform">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">4.1</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#def:Fourier-Transform">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FourierTransform.fourier" class="lean_decl">FourierTransform.fourier</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>The Fourier transform of an \(L^1\)-function \(f:\mathbb {R}^d\to \mathbb {C}\) is defined as </p>
+<div class="displaymath" id="a0000000058">
+  \[  \mathcal{F}(f)(y) = \widehat{f}(y) := \int _{\mathbb {R}^d} f(x)e^{-2\pi i \langle x, y \rangle } \, \mathrm{d}x, \quad y \in \mathbb {R}^d  \]
+</div>
+<p>where \(\langle x, y \rangle = \frac12\| x\| ^2 + \frac12\| y\| ^2 - \frac12\| x - y\| ^2\) is the standard scalar product in \(\mathbb {R}^d\). </p>
+
+  </div>
+</div>
+<p>The following computational result will be of use later on. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Gaussian-Fourier">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">4.2</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#lemma:Gaussian-Fourier">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000059"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:Fourier-Transform">Definition 4.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
+<div class="equation" id="a0000000060">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \mathcal{F}(e^{\pi i \| x\| ^2 z})(y) = z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z}) }. \end{equation}
+  </div>
+  <span class="equation_label">1</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000059">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p><span style="None"></span>red<b class="bfseries">Fill in proof.</b> </p>
+
+  </div>
+</div>
+<p>Of great interest to us will be a specific family of functions, known as Schwartz Functions. The Fourier transform behaves particularly well when acting on Schwartz functions. We elaborate in the following subsections. </p>
+<h2 id="a0000000031">4.1 On Schwartz Functions</h2>
+<div class="definition_thmwrapper theorem-style-plain" id="def:Schwartz-Space">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">4.3</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#def:Schwartz-Space">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap" class="lean_decl">SchwartzMap</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>A \(C^\infty \)&#160;function \(f:\mathbb {R}^d\to \mathbb {C}\) is called a <em>Schwartz function</em> if it decays to zero as \(\| x\| \to \infty \) faster then any inverse power of \(\| x\| \), and the same holds for all partial derivatives of \(f\), ie, if for all \(k, n \in \mathbb {N}\), there exists a constant \(C \in \mathbb {R}\) such that for all \(x \in \mathbb {R}^d\), \(\left\lVert x \right\rVert ^k \cdot \left\lVert f^{(n)}(x) \right\rVert  \leq C\), where \(f^{(n)}\) denotes the \(n\)-th derivative of \(f\) considered along with the appropriate operator norm. The set of all Schwartz functions from \(\mathbb {R}^d\) to \(\mathbb {C}\) is called the <em>Schwartz space</em>. It is an \(\mathbb {R}\)-vector space. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Fourier-transform-is-automorphism">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">4.4</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#lemma:Fourier-transform-is-automorphism">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000061"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:Fourier-Transform">Definition 4.1</a></li>
+          
+          <li><a href="sect0002.html#def:Schwartz-Space">Definition 4.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap.fourierTransformCLM" class="lean_decl">SchwartzMap.fourierTransformCLM</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>The Fourier transform is a continuous, linear automorphism of the space of Schwartz functions. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000061">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We do not elaborate here as the result already exists in Mathlib. We do, however, mention that the Lean implementation <em>defines</em> a continuous linear equivalence on the Schwartz space <em>using</em> the Fourier transform (see <code class="verbatim">SchwartzMap.fourierTransformCLM</code>). The ‘proof’ that for any Schwartz function \(f\), its Fourier transform and its image under this continuous linear equivalence are, indeed, the same \(\mathbb {R}^d \to \mathbb {R}\) function, is stated in Mathlib solely for the purpose of <code class="verbatim">rw</code> and <code class="verbatim">simp</code> tactics, and is proven simply by <code class="verbatim">rfl</code>. </p>
+
+  </div>
+</div>
+<p>Another reason we are interested in Schwartz Functions is that they behave well under infinite sums. This will be useful to us when proving the Cohn-Elkies linear programming bound. </p>
+<h2 id="a0000000032">4.2 On the Summability of Schwartz Functions</h2>
+<p>We begin by stating a general summability result over specific subsets of \(\mathbb {R}^d\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:inv-power-summable">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">4.5</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#lemma:inv-power-summable">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000062"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> Let \(X \subset \mathbb {R}^d\) be a set of sphere packing centres of separation \(1\) that is periodic with some lattice \(\Lambda \subset \mathbb {R}^d\). Then, there exists \(k \in \mathbb {N}\) sufficiently large such that </p>
+<div class="displaymath" id="a0000000063">
+  \[  \sum _{x \in X} \frac{1}{\left\lVert x \right\rVert ^{k}} {\lt} \infty .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000062">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>First, note that it does not matter how we number the (countably many) elements of the discrete set \(X\): if we prove absolute convergence for one numbering, we prove absolute convergence for <em>any</em> numbering. The idea will be to bound the sequence of partial sums by considering the volumes of concentric \(d\)-spheres of the appropriate radii (or scaled versions of a \(0\)-centred fundamental domain). </p>
+<p><span style="None"></span>red<b class="bfseries">Finish!</b> </p>
+
+  </div>
+</div>
+<p>The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Schwartz-summable">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">4.6</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#lemma:Schwartz-summable">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000064"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:Schwartz-Space">Definition 4.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> Let \(f : \mathbb {R}^d \to \mathbb {C}\) be a Schwartz function and let \(X \subset \mathbb {R}^d\) be periodic with respect to some lattice \(\Lambda \subset \mathbb {R}^d\). Then, </p>
+<div class="displaymath" id="a0000000065">
+  \[  \sum _{x \in X} |f(x)| {\lt} \infty .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000064">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Without loss of generality, assume that \(0 \notin X\): if \(0 \in X\), then we can add the \(f(0)\) term to the sum over nonzero elements of \(X\), which, if the sum over the nonzero elements converges absolutely, will be equal to the sum over all of \(X\). Now, we know that for all \(k \in \mathbb {N}\), there exists some constant \(C\) such that \(|f(x)| \leq C\left\lVert x \right\rVert ^{-k}\) for all \(x \in \mathbb {R}^d\). Choosing \(k\) to be sufficiently large, we see that </p>
+<div class="displaymath" id="a0000000066">
+  \[  \sum _{x \in X} |f(x)| \leq \sum _{x \in X} \frac{C}{\left\lVert x \right\rVert ^{k}} = C \sum _{x \in X} \frac{1}{\left\lVert x \right\rVert ^k} {\lt} \infty .  \]
+</div>
+
+  </div>
+</div>
+<p>We end with a crucial result on Schwartz functions, the statement of which only makes sense because of the above result. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:Poisson-summation-formula">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">4.7</span>
+    <span class="theorem_thmtitle">Poisson summation formula</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#thm:Poisson-summation-formula">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000067"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:Fourier-Transform">Definition 4.1</a></li>
+          
+          <li><a href="sect0002.html#def:Schwartz-Space">Definition 4.3</a></li>
+          
+          <li><a href="sect0002.html#lemma:Schwartz-summable">Lemma 4.6</a></li>
+          
+          <li><a href="sect0002.html#lemma:inv-power-summable">Lemma 4.5</a></li>
+          
+          <li><a href="sec-sphere-packings.html#def:dual-lattice">Definition 1.11</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap.PoissonSummation_Lattices" class="lean_decl">SchwartzMap.PoissonSummation_Lattices</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Let \(\Lambda \) be a lattice in \(\mathbb {R}^d\), and let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function. Then, for all \(v \in \mathbb {R}^d\), </p>
+<div class="displaymath" id="a0000000068">
+  \[  \sum _{\ell \in \Lambda }f(\ell + v) = \frac{1}{\operatorname {Vol}\! \left(\mathbb {R}^d/\Lambda \right)} \sum _{m\in \Lambda ^*}\widehat{f}(m) e^{-2\pi i \left\langle v, m \right\rangle }.  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000067">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>One possible proof would be by induction on \(d\). However, there are numerous nuances involved, particularly in manipulating nested infinite sums. Ideas would be appreciated. </p>
+
+  </div>
+</div>
+<p>While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes. </p>
+<p>Later, we will use Theorem <a href="sect0002.html#thm:Poisson-summation-formula">4.7</a> to prove that the certain functions \(a(x)\) and \(b(x)\) that will be defined later are eigenfunctions of the Fourier transform. To apply the theorem, we need to show that these functions are Schwartz functions. We will do so by verifying the following sufficient condition. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:smooth-fast-decay-schwartz">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">4.8</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#thm:smooth-fast-decay-schwartz">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p> Assume \(f : \mathbb {R}\to \mathbb {C}\) is smooth on \([0, \infty )\) and for all \(k, n \in \mathbb {N}\), there exists \(C \in \mathbb {R}\) such that </p>
+<div class="displaymath" id="a0000000069">
+  \[  x^{\frac{k}{2}} \cdot |f^{(n)}(x)| \leq C.  \]
+</div>
+<p> Then, for all \(d \in \mathbb {N}\), the function </p>
+<div class="displaymath" id="a0000000070">
+  \[  f_d : \mathbb {R}^d \to \mathbb {C}, \quad f_d(x) := f(\| x\| ^2)  \]
+</div>
+<p> is a Schwartz function. </p>
+
+  </div>
+</div>
+<p><br /></p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0001.html" title="The \(E_8\) lattice"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0003.html" title="Cohn-Elkies linear programming bounds"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

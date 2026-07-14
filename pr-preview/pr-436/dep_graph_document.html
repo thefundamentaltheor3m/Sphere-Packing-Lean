@@ -1,0 +1,5234 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/extra_styles.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      
+      <dt>Boxes</dt><dd>definitions</dd>
+      
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Orange border</dt><dd>the <em>statement</em> of this result is not ready to be formalized; the blueprint needs more work</dd>
+      
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+      
+      <dt>Dark green background</dt><dd>the <em>proof</em> of this result and all its ancestors are formalized</dd>
+      
+      <dt>Dark green border</dt><dd>this is in Mathlib</dd>
+      
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="cor:dim-mf_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:dim-mf" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">6.30</span></div>
+    <div class="thm_thmcontent"><p>We have </p>
+<div class="displaymath" id="eqn:dimM2">
+  \begin{align}  \dim M_2(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimM2} \\ \dim M_4(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM4} \\ \dim M_6(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM6} \\ \dim M_8(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM8} \\ \dim S_4(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimS4} \\ \dim S_6(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimS6} \\ \dim S_8(\mathrm{SL}_{2}(\mathbb {Z})) & = 0. \label{eqn:dimS8} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:dim-mf">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:disc-nonvanishing_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:disc-nonvanishing" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">6.26</span></div>
+    <div class="thm_thmcontent"><p> \(\Delta (z) \neq 0\) for all \(z \in \mathfrak {H}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:disc-nonvanishing">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Δ_ne_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:disc-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:disc-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">6.25</span></div>
+    <div class="thm_thmcontent"><p>\(\Delta (it) {\gt} 0\) for all \(t {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:disc-pos">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta_imag_axis_pos">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:ineqAnew_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:ineqAnew" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">8.7</span></div>
+    <div class="thm_thmcontent"><p><a href="sec--g.html#eqn:ineqAnew" class="eqref">213</a> holds. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#cor:ineqAnew">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FG_inequality_1">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:ineqBnew_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:ineqBnew" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">8.13</span></div>
+    <div class="thm_thmcontent"><p>  <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a> holds. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#cor:ineqBnew">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FG_inequality_2">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:logder-disc-E2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:logder-disc-E2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">6.50</span></div>
+    <div class="thm_thmcontent">
+<div class="equation" id="eqn:logder-disc-E2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:logder-disc-E2} \Delta ' = E_2 \Delta . \end{equation}
+  </div>
+  <span class="equation_label">87</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:logder-disc-E2">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:MLDE-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:MLDE-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">8.9</span></div>
+    <div class="thm_thmcontent"><p><a href="sec--g.html#eqn:ddf" class="eqref">218</a> (resp. <a href="sec--g.html#eqn:ddg" class="eqref">219</a>) is positive (resp. negative) on the (positive) imaginary axis. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#cor:MLDE-pos">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:phi0-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:phi0-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">7.5</span></div>
+    <div class="thm_thmcontent"><p> There exists a constant \(C_0 {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi0-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi0-bound} |\phi _0(z)| \le C_0 e^{-2 \pi \Im z} \end{equation}
+  </div>
+  <span class="equation_label">140</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#cor:phi0-bound">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:phi0-near-0-infty_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:phi0-near-0-infty" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">7.13</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:phi0-near-0">
+  \begin{align}  \phi _0\left(\frac{i}{t}\right) & = O(e^{-2 \pi / t}) \quad \text{as } t \to 0 \label{eqn:phi0-near-0} \\ \phi _0\left(\frac{i}{t}\right) & = O(t^{-2}e^{2 \pi t}) \quad \text{as } t \to \infty . \label{eqn:phi0-near-infty} \\ \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#cor:phi0-near-0-infty">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:phi2-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:phi2-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">7.6</span></div>
+    <div class="thm_thmcontent"><p> There exists a constant \(C_{-2} {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi2-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi2-bound} |\phi _{-2}(z)| \le C_{-2} \end{equation}
+  </div>
+  <span class="equation_label">141</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#cor:phi2-bound">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:phi4-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:phi4-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">7.7</span></div>
+    <div class="thm_thmcontent"><p> There exists a constant \(C_{-4} {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi4-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi4-bound} |\phi _{-4}(z)| \le C_{-4} e^{2 \pi \Im z} \end{equation}
+  </div>
+  <span class="equation_label">142</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#cor:phi4-bound">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:psiI-near-0-infty_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:psiI-near-0-infty" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">7.27</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:psiI-near-0">
+  \begin{align}  \psi _I(it) & = O(t^2 e^{\pi /t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\ \psi _I(it) & = O(e^{2 \pi t}) \quad \text{as } t \to \infty . \label{eqn:psiI-near-infty} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#cor:psiI-near-0-infty">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:theta-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:theta-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">6.42</span></div>
+    <div class="thm_thmcontent"><p> \(H_2(it)\) and \(H_4(it)\) are positive for \(t {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:theta-pos">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_imag_axis_pos" class="lean_decl">H₂_imag_axis_pos</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_imag_axis_pos" class="lean_decl">H₄_imag_axis_pos</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="corollary:upper-bound-E8_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="corollary:upper-bound-E8" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">1.16</span></div>
+    <div class="thm_thmcontent"><p> All packing \(\mathcal{P} \subseteq \mathbb {R}^8\) has density satisfying \(\Delta _{\mathcal{P}} \leq \Delta _{E_8}\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#corollary:upper-bound-E8">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def: h_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def: h" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7.17</span></div>
+    <div class="thm_thmcontent">
+<div class="equation" id="eqn: h define">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: h define} h(z) := 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2}. \end{equation}
+  </div>
+  <span class="equation_label">162</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#def: h">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:a-definition_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:a-definition" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7.3</span></div>
+    <div class="thm_thmcontent"><p> Define \(a_{\mathrm{rad}} : \mathbb {R}\to \mathbb {C}\) by </p>
+<div class="displaymath" id="eqn:a-rad-definition">
+  \begin{align} \label{eqn:a-rad-definition} a_\mathrm{rad}(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r) \end{align}
+</div>
+<p> where </p>
+<div class="displaymath" id="eqn:a-I1">
+  \begin{align}  I_1(r) & := \int _{-1}^{-1 + i} \phi _0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I1} \\ I_2(r) & := \int _{-1 + i}^{i} \phi _0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I2} \\ I_3(r) & := \int _{1}^{1 + i} \phi _0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I3} \\ I_4(r) & := \int _{1 + i}^{i} \phi _0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I4} \\ I_5(r) & := -2 \int _{0}^{i} \phi _0 \left(\frac{-1}{z}\right) z^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I5} \\ I_6(r) & := 2 \int _{i}^{i\infty } \phi _0(z) e^{\pi i r z} \mathrm{d}z \label{eqn:a-I6} \end{align}
+</div>
+<p> Here all the contours are chosen to be straight line segments. Now, define \(a(x) := a_{\mathrm{rad}}(\| x\| ^2)\) for \(x \in \mathbb {R}^8\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#def:a-definition">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.RealIntegrals.a'" class="lean_decl">MagicFunction.a.RealIntegrals.a'</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.RadialFunctions.a" class="lean_decl">MagicFunction.a.RadialFunctions.a</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:automorphy-factor_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:automorphy-factor" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.7</span></div>
+    <div class="thm_thmcontent"><p> The <em>automorphy factor</em> of weight \(k\) is defined as </p>
+<div class="displaymath" id="a0000000085">
+  \[ j_k(z,\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)):=(cz+d)^{-k}. \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:automorphy-factor">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/UpperHalfPlane.denom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:b-definition_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:b-definition" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7.21</span></div>
+    <div class="thm_thmcontent"><p> Define \(b_\mathrm{rad}: \mathbb {R}\to \mathbb {C}\) by </p>
+<div class="equation" id="eqn:b-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \label{eqn:b-definition} b_\mathrm{rad}(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r) \end{equation}
+  </div>
+  <span class="equation_label">181</span>
+</p>
+</div>
+<p> where for \(r \in \mathbb {R}\), </p>
+<div class="displaymath" id="eqn:J1">
+  \begin{align}  J_1(r) & := \int _{-1}^{-1 + i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J1} \\ J_2(r) & := \int _{-1 + i}^{i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J2} \\ J_3(r) & := \int _{1}^{1 + i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J3} \\ J_4(r) & := \int _{1 + i}^{i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J4} \\ J_5(r) & := -2 \int _{0}^{i} \psi _I(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J5} \\ J_6(r) & := -2 \int _{i}^{i \infty } \psi _S(z) e^{\pi i r z} \,  \mathrm{d}z. \label{eqn:J6} \end{align}
+</div>
+<p> Here all the contours are straight line segments. Then we define \(b : \mathbb {R}^8 \to \mathbb {C}\) by \(b(x) := b_\mathrm{rad}(\| x\| ^2)\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#def:b-definition">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:congruence-subgroup_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:congruence-subgroup" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.3</span></div>
+    <div class="thm_thmcontent"><p>A subgroup \(\Gamma \subset \Gamma _1\) is called a <em>congruence subgroup</em> if \(\Gamma (N)\subset \Gamma \) for some \(N\in \mathbb {N}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:congruence-subgroup">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dedekind_eta_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dedekind_eta" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.21</span></div>
+    <div class="thm_thmcontent"><p> The Dedekind eta function is defined as </p>
+<div class="displaymath" id="a0000000098">
+  \[  \eta (z) = q^{1/24} \prod _{n \ge 1} (1 - q^n)  \]
+</div>
+<p> where \(q = e^{2\pi i z}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:dedekind_eta">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eta">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:derivative_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:derivative" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.43</span></div>
+    <div class="thm_thmcontent"><p>  Let \(F\) be a quasimodular form. We define the (normalized) derivative of \(F\) as </p>
+<div class="equation" id="eqn:derivative">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:derivative} F' = DF := \frac{1}{2\pi i} \frac{\mathrm{d}}{\mathrm{d}z} F. \end{equation}
+  </div>
+  <span class="equation_label">67</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:derivative">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/D">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:disc-definition_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:disc-definition" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.17</span></div>
+    <div class="thm_thmcontent"><p> The <em>discriminant form</em> \(\Delta (z)\) is given by </p>
+<div class="equation" id="eqn:disc-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:disc-definition} \Delta (z) = e^{2 \pi i z} \prod _{n \ge 1} (1 - e^{2 \pi i n z})^{24}. \end{equation}
+  </div>
+  <span class="equation_label">12</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:disc-definition">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Δ">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dual-lattice_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dual-lattice" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.11</span></div>
+    <div class="thm_thmcontent"><p>The <em>dual lattice</em> of a lattice \(\Lambda \) is the set </p>
+<div class="displaymath" id="a0000000021">
+  \[  \Lambda ^* := \left\{  v \in \mathbb {R}^d \;  \middle | \;  \forall l \in \Lambda , \left\langle v,l \right\rangle \in \mathbb {Z} \right\}   \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#def:dual-lattice">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/LinearMap.BilinForm.dualSubmodule">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:E2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:E2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.18</span></div>
+    <div class="thm_thmcontent"><p>We set </p>
+<div class="equation" id="eqn:E2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2} E_2(z):= 1-24\sum _{n=1}^\infty \sigma _1(n)\, e^{2\pi i n z}. \end{equation}
+  </div>
+  <span class="equation_label">13</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:E2">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_eq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Ek_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Ek" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.13</span></div>
+    <div class="thm_thmcontent"><p>  For an even integer \(k\geq 4\) we define the <em>weight \(k\) Eisenstein series</em> as </p>
+<div class="equation" id="eqn:Ek-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-definition} E_k(z):=\frac{1}{2}\sum _{(c,d)\in \mathbb {Z}^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
+  </div>
+  <span class="equation_label">9</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:Ek">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eisensteinSeries_MF">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:FG-definition_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:FG-definition" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">8.3</span></div>
+    <div class="thm_thmcontent"><p>Define two (quasi) modular forms as </p>
+<div class="displaymath" id="eqn:defF">
+  \begin{align}  F(z) & = (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\ G(z) & = H_2(z)^{3} (2 H_{2}(z)^{2} + 5 H_{2}(z) H_{4}(z) + 5 H_{4}(z)^{2}). \label{eqn:defG} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--g.html#def:FG-definition">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/F" class="lean_decl">F</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/G" class="lean_decl">G</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Fourier-Transform_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Fourier-Transform" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">4.1</span></div>
+    <div class="thm_thmcontent"><p>The Fourier transform of an \(L^1\)-function \(f:\mathbb {R}^d\to \mathbb {C}\) is defined as </p>
+<div class="displaymath" id="a0000000058">
+  \[  \mathcal{F}(f)(y) = \widehat{f}(y) := \int _{\mathbb {R}^d} f(x)e^{-2\pi i \langle x, y \rangle } \, \mathrm{d}x, \quad y \in \mathbb {R}^d  \]
+</div>
+<p>where \(\langle x, y \rangle = \frac12\| x\| ^2 + \frac12\| y\| ^2 - \frac12\| x - y\| ^2\) is the standard scalar product in \(\mathbb {R}^d\). </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#def:Fourier-Transform">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FourierTransform.fourier">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Gamma-1-Action_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Gamma-1-Action" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.1</span></div>
+    <div class="thm_thmcontent"><p>The modular group \(\Gamma _1:=\mathrm{SL}_2(\mathbb {Z})\) acts on \(\mathfrak {H}\) by linear fractional transformations </p>
+<div class="displaymath" id="a0000000080">
+  \[ \left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}. \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:Gamma-1-Action">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Gamma-generators_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Gamma-generators" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.4</span></div>
+    <div class="thm_thmcontent"><p>Define the matrices </p>
+<div class="displaymath" id="a0000000082">
+  \[  S = \begin{pmatrix}  0 
+
+&  -1 
+
+\\ 1 
+
+&  0 
+
+\end{pmatrix} \in \Gamma _1, T = \begin{pmatrix}  1 
+
+&  1 
+
+\\ 0 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _1, \alpha = \begin{pmatrix}  1 
+
+&  2 
+
+\\ 0 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _2 \subset \Gamma _1, \beta = \begin{pmatrix}  1 
+
+&  0 
+
+\\ 2 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _2 \subset \Gamma _1.  \]
+</div>
+<p>It is easily verifiable that \(\alpha = T^2\) and \(\beta = -S\alpha ^{-1}S = -ST^{-2}S\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:Gamma-generators">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularGroup.S" class="lean_decl">ModularGroup.S</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularGroup.T" class="lean_decl">ModularGroup.T</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/α" class="lean_decl">α</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/β" class="lean_decl">β</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:H2-H3-H4_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:H2-H3-H4" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.32</span></div>
+    <div class="thm_thmcontent"><p>Define </p>
+<div class="equation" id="eqn:H2-H3-H4">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_2 = \Theta _2^4, \quad H_3 = \Theta _3^4, \quad H_4 = \Theta _4^4. \label{eqn:H2-H3-H4} \end{equation}
+  </div>
+  <span class="equation_label">26</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:H2-H3-H4">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂" class="lean_decl">H₂</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃" class="lean_decl">H₃</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄" class="lean_decl">H₄</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:level-N-princ-cong-subgp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:level-N-princ-cong-subgp" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.2</span></div>
+    <div class="thm_thmcontent"><p>The <em>level \(N\) principal congruence subgroup</em> of \(\Gamma _1\) is </p>
+<div class="displaymath" id="a0000000081">
+  \[  \Gamma (N):=\left\{ \left.\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)\in \Gamma _1\right|\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)\equiv \left(\begin{smallmatrix} 1
+
+& 0
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\; \mathrm{mod}\; N\right\} .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:level-N-princ-cong-subgp">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Mk_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Mk" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.12</span></div>
+    <div class="thm_thmcontent"><p>Let \(\Gamma \) denote a subgroup of \(\mathrm{SL}_2(\mathbb {Z})\), then a modular form of level \(\Gamma \) and weight \(k \in \mathbb {Z}\) is a function \(f : \mathbb {H} \to \mathbb {C}\) such that: </p>
+<ol class="enumerate">
+  <li><p>For all \(\gamma \in \Gamma \) we have \(f\mid _k \gamma = f\) (such functions are called slash invariant). </p>
+</li>
+  <li><p>\(f\) is holomorphic on \(\mathbb {H}\). </p>
+</li>
+  <li><p>For all \(\gamma \in \mathrm{SL}_2(\mathbb {Z})\), there exist \(A, B \in \mathbb {R}\) such that for all \(z \in \mathbb {H}\), with \( A \le \mathrm{Im}(z)\), we have \(|(f \mid _k \gamma ) (z) |\le B\). Here \(| - |\) denotes the standard complex absolute value. </p>
+</li>
+</ol>
+<p> This defines a complex vector space which we denote by \(M_{k}(\Gamma )\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:Mk">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Periodic-sphere-packing-constant_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Periodic-sphere-packing-constant" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.13</span></div>
+    <div class="thm_thmcontent"><p>The periodic sphere packing constant is defined to be </p>
+<div class="displaymath" id="a0000000022">
+  \[  \Delta _{d}^{\text{periodic}} := \sup _{\substack {P \subset \mathbb {R}^d \\ \text{periodic packing}}} \Delta _P \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#def:Periodic-sphere-packing-constant">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePackingConstant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:phi4-phi2-phi0_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:phi4-phi2-phi0" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7.1</span></div>
+    <div class="thm_thmcontent">
+<div class="displaymath" id="eqn: def phi4">
+  \begin{align}  \phi _{-4} & := \frac{E_4^2}{\Delta } \label{eqn: def phi4} \\ \phi _{-2} & := \frac{E_4(E_2 E_4 - E_6)}{\Delta } \label{eqn: def phi2} \\ \phi _{0} & := \frac{(E_2 E_4 - E_6)^2}{\Delta } \label{eqn: def phi0} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:psiI-psiT-psiS_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:psiI-psiT-psiS" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7.18</span></div>
+    <div class="thm_thmcontent"><p> We define the following three functions </p>
+<div class="displaymath" id="eqn:psiI-define">
+  \begin{align}  \psi _I\, :=\, & h-h|_{-2}ST \label{eqn:psiI-define}\\ \psi _T\, :=\, & \psi _I|_{-2}T \label{eqn:psiT-define}\\ \psi _S\, :=\, & \psi _I|_{-2}S. \label{eqn:psiS-define} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:Schwartz-Space_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:Schwartz-Space" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">4.3</span></div>
+    <div class="thm_thmcontent"><p>A \(C^\infty \)&#160;function \(f:\mathbb {R}^d\to \mathbb {C}\) is called a <em>Schwartz function</em> if it decays to zero as \(\| x\| \to \infty \) faster then any inverse power of \(\| x\| \), and the same holds for all partial derivatives of \(f\), ie, if for all \(k, n \in \mathbb {N}\), there exists a constant \(C \in \mathbb {R}\) such that for all \(x \in \mathbb {R}^d\), \(\left\lVert x \right\rVert ^k \cdot \left\lVert f^{(n)}(x) \right\rVert  \leq C\), where \(f^{(n)}\) denotes the \(n\)-th derivative of \(f\) considered along with the appropriate operator norm. The set of all Schwartz functions from \(\mathbb {R}^d\) to \(\mathbb {C}\) is called the <em>Schwartz space</em>. It is an \(\mathbb {R}\)-vector space. </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#def:Schwartz-Space">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:serre-der_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:serre-der" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.45</span></div>
+    <div class="thm_thmcontent"><p> For \(k \in \mathbb {R}\), define the weight \(k\) Serre derivative \(\partial _{k}\) of a modular form \(F\) as </p>
+<div class="equation" id="eqn:serre-der">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:serre-der} \partial _{k}F := F' - \frac{k}{12} E_2 F. \end{equation}
+  </div>
+  <span class="equation_label">68</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:serre-der">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:slash-operator_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:slash-operator" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.9</span></div>
+    <div class="thm_thmcontent"><p>Let \(F\) be a function on \(\mathfrak {H}\) and \(\gamma \in \mathrm{SL}_2(\mathbb {Z})\). Then the <em>slash operator</em> acts on \(F\) by </p>
+<div class="displaymath" id="a0000000088">
+  \[ (F|_k\gamma )(z):=j_k(z,\gamma )\, F(\gamma z).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:slash-operator">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:th00-th01-th10_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:th00-th01-th10" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6.31</span></div>
+    <div class="thm_thmcontent"><p>We define three different theta functions (so called “Thetanullwerte”) as </p>
+<div class="displaymath" id="a0000000111">
+  \begin{align}  \Theta _{2}(z) = \theta _{10}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}e^{\pi i (n+\frac12)^2 z}. \notag \\ \Theta _{3}(z) = \theta _{00}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}e^{\pi i n^2 z} \notag \\ \Theta _{4}(z) = \theta _{01}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}(-1)^n\, e^{\pi i n^2 z} \notag \\ \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:th00-th01-th10">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₂" class="lean_decl">Θ₂</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₃" class="lean_decl">Θ₃</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₄" class="lean_decl">Θ₄</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-defs-equivalent_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-defs-equivalent" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">3.3</span></div>
+    <div class="thm_thmcontent"><p>The two definitions above coincide, i.e. \(\Lambda _8 = \mathrm{span}_{\mathbb {Z}}(\mathcal{B}_8)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-defs-equivalent">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/span_E8Matrix">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-is-basis_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-is-basis" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.4</span></div>
+    <div class="thm_thmcontent"><p>\(B_8\) is a \(\mathbb {R}\)-basis of \(\mathbb {R}^8\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-is-basis">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/span_E8Matrix_eq_top">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-Lattice_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-Lattice" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.5</span></div>
+    <div class="thm_thmcontent"><p>\(\Lambda _8\) is an additive subgroup of \(\mathbb {R}^8\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-Lattice">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Lattice">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-Matrix_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-Matrix" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.2</span></div>
+    <div class="thm_thmcontent"><p>(\(E_8\)-lattice, Definition 2)We define the <em>\(E_8\) basis vectors</em> to be the set of vectors </p>
+<div class="displaymath" id="a0000000049">
+  \[  \mathcal{B}_8 = \left\{  \begin{bmatrix}  1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ 1 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\end{bmatrix} \right\}   \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-Matrix">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Matrix">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-Set_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-Set" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.1</span></div>
+    <div class="thm_thmcontent"><p>(\(E_8\)-lattice, Definition 1)We define the <em>\(E_8\)-lattice</em> (as a subset of \(\mathbb {R}^8\)) to be </p>
+<div class="displaymath" id="a0000000048">
+  \[ \Lambda _8=\{ (x_i)\in \mathbb {Z}^8\cup (\mathbb {Z}+\textstyle \frac12\displaystyle )^8|\; \sum _{i=1}^8x_i\equiv 0\; (\mathrm{mod\; 2})\} . \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-Set">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Submodule.E8">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8-vector-norms_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8-vector-norms" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.6</span></div>
+    <div class="thm_thmcontent"><p>All vectors in \(\Lambda _8\) have norm of the form \(\sqrt{2n}\), where \(n\) is a nonnegative integer. </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8-vector-norms">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8_norm_eq_sqrt_even">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8Packing_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8Packing" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.9</span></div>
+    <div class="thm_thmcontent"><p>The <em>\(E_8\) sphere packing</em> is the (periodic) sphere packing with separation \(\sqrt{2}\), whose set of centres is \(\Lambda _8\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8Packing">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Packing">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8Packing-covol_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8Packing-covol" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.10</span></div>
+    <div class="thm_thmcontent"><p>\(\operatorname {Vol}\! \left(\Lambda _8\right) = \mathrm{Covol}(\mathbb {R}^8 / \Lambda _8) = 1\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8Packing-covol">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Basis_volume">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="E8Packing-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="E8Packing-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">3.11</span></div>
+    <div class="thm_thmcontent"><p>We have \(\Delta _{\mathcal{P}(E_8)} = \frac{\pi ^4}{384}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#E8Packing-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Packing_density">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="instDiscreteE8Lattice_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="instDiscreteE8Lattice" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.7</span></div>
+    <div class="thm_thmcontent"><p>\(c\Lambda _8\) is discrete, i.e. that the subspace topology induced by its inclusion into \(\mathbb {R}^8\) is the discrete topology. </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#instDiscreteE8Lattice">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/instDiscreteE8Lattice">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="instLatticeE8_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="instLatticeE8" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.8</span></div>
+    <div class="thm_thmcontent"><p>\(c\Lambda _8\) is a \(\mathbb {Z}\)-lattice, i.e. it is discrete and spans \(\mathbb {R}^8\) over \(\mathbb {R}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#instLatticeE8">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/instIsZLatticeE8Lattice">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="IsZLattice_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="IsZLattice" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.10</span></div>
+    <div class="thm_thmcontent"><p>We say that an additive subgroup \(\Lambda \leq \mathbb {R}^d\) is a <em>lattice</em> if it is discrete and its \(\mathbb {R}\)-span contains all the elements of \(\mathbb {R}^d\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#IsZLattice">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/IsZLattice">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:bound-I1-I3-I5_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:bound-I1-I3-I5" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.9</span></div>
+    <div class="thm_thmcontent"><p> There exists \(C {\gt} 0\) such that for all \(r \geq 0\), </p>
+<div class="equation" id="a0000000171">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_1(r)|, |I_3(r)|, |I_5(r)| \leq C \int _1^{\infty } e^{-2\pi s} \,  e^{-\pi r / s} \,  \mathrm{d}s. \end{equation}
+  </div>
+  <span class="equation_label">147</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lem:bound-I1-I3-I5">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:bound-I2-I4-I6_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:bound-I2-I4-I6" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.10</span></div>
+    <div class="thm_thmcontent"><p> There exist \(C_1, C_2 {\gt} 0\) such that for all \(r \geq 0\), </p>
+<div class="equation" id="a0000000177">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_2(r)|, |I_4(r)| \leq C_1 e^{-\pi r} \end{equation}
+  </div>
+  <span class="equation_label">148</span>
+</p>
+</div>
+<p> and </p>
+<div class="equation" id="a0000000178">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_6(r)| \leq C_2 \frac{e^{-\pi (r + 2)}}{r + 2} \end{equation}
+  </div>
+  <span class="equation_label">149</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lem:bound-I2-I4-I6">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:integral-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:integral-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.8</span></div>
+    <div class="thm_thmcontent"><p> For all \(n \in \mathbb {N}\), there exists a constant \(C'\) such that for all \(r \geq 0\), </p>
+<div class="displaymath" id="a0000000166">
+  \begin{align}  r^n \cdot \int _{1}^{\infty } e^{-2\pi s} \,  e^{-\pi r /s} \,  \mathrm{d}s \leq C’ \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lem:integral-bound">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:automorphy-factor-chain-rule_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:automorphy-factor-chain-rule" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.8</span></div>
+    <div class="thm_thmcontent"><p> The automorphy factor satisfies the <em>chain rule</em> </p>
+<div class="displaymath" id="a0000000087">
+  \[ j_k(z,\gamma _1\gamma _2)=j_k(z,\gamma _1)\, j_k(\gamma _2z,\gamma _1).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:automorphy-factor-chain-rule">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/UpperHalfPlane.denom_cocycle">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:bound-J1-J3-J5_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:bound-J1-J3-J5" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.23</span></div>
+    <div class="thm_thmcontent"><p> There exist a constant \(C {\gt} 0\) such that </p>
+<div class="displaymath" id="a0000000204">
+  \begin{align}  |J_1(r)|, |J_3(r)|, |J_5(r)| & \le C \int _1^{\infty } e^{-\pi s} e^{\pi r / s}\,  \mathrm{d}s. \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:bound-J1-J3-J5">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:bound-J2-J4-J6_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:bound-J2-J4-J6" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.24</span></div>
+    <div class="thm_thmcontent"><p> There exist \(C_1, C_2 {\gt} 0\) such that </p>
+<div class="displaymath" id="a0000000205">
+  \begin{align}  |J_2(r)|, |J_4(r)| & \le C_1 e^{-\pi r} \\ |J_6(r)| & \le C_2 \frac{e^{\pi (r + 1)}}{r + 1} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:bound-J2-J4-J6">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:dedekind_eta_transformation_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:dedekind_eta_transformation" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.22</span></div>
+    <div class="thm_thmcontent"><p> The Dedekind eta function transforms as </p>
+<div class="displaymath" id="a0000000100">
+  \[  \eta \left(-\frac{1}{z}\right) = \sqrt{-iz} \eta (z).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:dedekind_eta_transformation">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eta_comp_eq_csqrt_I_inv">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:der-q-series_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:der-q-series" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.44</span></div>
+    <div class="thm_thmcontent"><p>We have an equality of operators \(D = q \frac{\mathrm{d}}{\mathrm{d}q}\). In particular, the \(q\)-series of the derivative of a quasimodular form \(F(z) = \sum _{n \ge n_0} a_n q^n\) is \(F'(z) = \sum _{n \ge n_0} n a_n q^n\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:der-q-series">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/D_qexp_tsum_pnat">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:disc-cuspform_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:disc-cuspform" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.23</span></div>
+    <div class="thm_thmcontent"><p> \(\Delta (z) \in M_{12}(\Gamma _1)\). Especially, we have </p>
+<div class="equation" id="eqn:disc-trans-S">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:disc-trans-S} \Delta \left(-\frac{1}{z}\right) = z^{12} \Delta (z). \end{equation}
+  </div>
+  <span class="equation_label">16</span>
+</p>
+</div>
+<p> Also, it vanishes at the unique cusp, i.e. it is a cusp form of level \(\Gamma _1\) and weight \(12\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:disc-cuspform">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:disc-E4E6_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:disc-E4E6" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.24</span></div>
+    <div class="thm_thmcontent"><p>We have </p>
+<div class="equation" id="a0000000103">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \Delta (z) = (E_4^3-E_6^2)/1728. \end{equation}
+  </div>
+  <span class="equation_label">17</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:disc-E4E6">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta_E4_eqn">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:E2-transform-general_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:E2-transform-general" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.20</span></div>
+    <div class="thm_thmcontent">
+<div class="equation" id="eqn:E2-transform-general">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2-transform-general} (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix}  a 
+
+&  b 
+
+\\ c 
+
+&  d
+
+\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb {Z}). \end{equation}
+  </div>
+  <span class="equation_label">15</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:E2-transform-general">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_slash_transform">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:E2-transform-S_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:E2-transform-S" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.19</span></div>
+    <div class="thm_thmcontent"><p> This function is not modular, however it satisfies </p>
+<div class="equation" id="eqn:E2-S-transform">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2-S-transform} z^{-2}\, E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi }\,  \frac{1}{z}. \end{equation}
+  </div>
+  <span class="equation_label">14</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:E2-transform-S">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_transform">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Ek-Fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Ek-Fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.16</span></div>
+    <div class="thm_thmcontent"><p>The Eisenstein series possesses the Fourier expansion </p>
+<div class="equation" id="eqn:Ek-Fourier">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta (1-k)}\sum _{n=1}^\infty \sigma _{k-1}(n)\, e^{2\pi i z}, \end{equation}
+  </div>
+  <span class="equation_label">11</span>
+</p>
+</div>
+<p> where \(\sigma _{k-1}(n)\, =\, \sum _{d|n} d^{k-1}\). In particular, we have </p>
+<div class="displaymath" id="a0000000095">
+  \begin{align}  E_4(z)\, =\, &  1+240\sum _{n=1}^\infty \sigma _3(n)\, e^{2\pi i n z} \notag \\ E_6(z)\, =\, &  1-504\sum _{n=1}^\infty \sigma _5(n)\, e^{2\pi i n z}. \notag \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:Ek-Fourier">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E_k_q_expansion">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Ek-is-modular-form_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Ek-is-modular-form" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.14</span></div>
+    <div class="thm_thmcontent"><p> For all \(k\), \(E_k\in M_k(\Gamma _1)\). Especially, we have </p>
+<div class="equation" id="eqn:Ek-trans-S">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-trans-S} E_k \left(-\frac{1}{z}\right) = z^k E_k(z). \end{equation}
+  </div>
+  <span class="equation_label">10</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:Ek-is-modular-form">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/EisensteinSeries.eisensteinSeries_SIF">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:F-G-phi-psi-identities_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:F-G-phi-psi-identities" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.4</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:phi0-F">
+  \begin{align}  \phi _0 & = \frac{F}{\Delta } \label{eqn:phi0-F} \\ \psi _S & = -\frac{1}{2} \frac{G}{\Delta }\label{eqn:psiS-G} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:F-G-phi-psi-identities">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:F-G-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:F-G-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.6</span></div>
+    <div class="thm_thmcontent"><p>For all \(t {\gt} 0\), we have \(F(it) {\gt} 0\) and \(G(it) {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:F-G-pos">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/F_imag_axis_pos" class="lean_decl">F_imag_axis_pos</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/G_imag_axis_pos" class="lean_decl">G_imag_axis_pos</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:FG-de_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:FG-de" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.8</span></div>
+    <div class="thm_thmcontent"><p>\(F\) and \(G\) satisfy the following differential equations: </p>
+<div class="displaymath" id="eqn:ddf">
+  \begin{align}  \partial _{12}\partial _{10} F - \frac{5}{6} E_{4} F & = 7200 \Delta (-E_{2}’) \label{eqn:ddf} \\ \partial _{12}\partial _{10} G - \frac{5}{6} E_{4} G & = -640 \Delta H_{2} \label{eqn:ddg} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:FG-de">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MLDE_F" class="lean_decl">MLDE_F</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MLDE_G" class="lean_decl">MLDE_G</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Fourier-transform-is-automorphism_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Fourier-transform-is-automorphism" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">4.4</span></div>
+    <div class="thm_thmcontent"><p>The Fourier transform is a continuous, linear automorphism of the space of Schwartz functions. </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#lemma:Fourier-transform-is-automorphism">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap.fourierTransformCLM">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Gamma-1-generators_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Gamma-1-generators" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.5</span></div>
+    <div class="thm_thmcontent"><p>We have \(\Gamma (1) = \langle S, T, -I \rangle \). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:Gamma-1-generators">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SL2Z_generate">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Gamma-2-generators_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Gamma-2-generators" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.6</span></div>
+    <div class="thm_thmcontent"><p>We have \(\Gamma (2) = \langle \alpha , \beta , -I \rangle \). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:Gamma-2-generators">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Γ2_generate">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Gaussian-Fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Gaussian-Fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">4.2</span></div>
+    <div class="thm_thmcontent">
+<div class="equation" id="a0000000060">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \mathcal{F}(e^{\pi i \| x\| ^2 z})(y) = z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z}) }. \end{equation}
+  </div>
+  <span class="equation_label">1</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0002.html#lemma:Gaussian-Fourier">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:ineqABnew-equiv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:ineqABnew-equiv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.5</span></div>
+    <div class="thm_thmcontent"><p> Inequality <a href="sec--g.html#eqn:ineqA" class="eqref">206</a> and <a href="sec--g.html#eqn:ineqB" class="eqref">208</a> are equivalent to </p>
+<div class="displaymath" id="eqn:ineqAnew">
+  \begin{align}  F(it) + \frac{18}{\pi ^2} G(it) {\gt} 0 \label{eqn:ineqAnew} \\ F(it) - \frac{18}{\pi ^2} G(it) {\gt} 0 \label{eqn:ineqBnew} \end{align}
+</div>
+<p> respectively. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:ineqABnew-equiv">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:inv-power-summable_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:inv-power-summable" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">4.5</span></div>
+    <div class="thm_thmcontent"><p> Let \(X \subset \mathbb {R}^d\) be a set of sphere packing centres of separation \(1\) that is periodic with some lattice \(\Lambda \subset \mathbb {R}^d\). Then, there exists \(k \in \mathbb {N}\) sufficiently large such that </p>
+<div class="displaymath" id="a0000000063">
+  \[  \sum _{x \in X} \frac{1}{\left\lVert x \right\rVert ^{k}} {\lt} \infty .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0002.html#lemma:inv-power-summable">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:jacobi-identity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:jacobi-identity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.40</span></div>
+    <div class="thm_thmcontent"><p>These three theta functions satisfy the <em>Jacobi identity</em> </p>
+<div class="equation" id="eqn:jacobi-identity">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:jacobi-identity} H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta _{2}^4 + \Theta _{4}^4 = \Theta _{3}^4. \end{equation}
+  </div>
+  <span class="equation_label">59</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:jacobi-identity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/jacobi_identity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:lattice-points-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:lattice-points-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">2.2</span></div>
+    <div class="thm_thmcontent"><p>For all \(R\), we have the following inequality relating the number of lattice points from \(\Lambda \) in a ball with the volume of the ball and the fundamental region \(\mathcal{D}\): </p>
+<div class="displaymath" id="a0000000038">
+  \[  \frac{\mathrm{Vol}(\mathcal{B}_d(R - L))}{\mathrm{Vol}(\mathcal{D})} \leq \left|\Lambda \cap \mathcal{B}_d(R)\right| \leq \frac{\mathrm{Vol}(\mathcal{B}_d(R + L))}{\mathrm{Vol}(\mathcal{D})}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-packings-density.html#lemma:lattice-points-bound">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking.aux2_ge'" class="lean_decl">PeriodicSpherePacking.aux2_ge'</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking.aux2_le'" class="lean_decl">PeriodicSpherePacking.aux2_le'</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:log-der-inf_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:log-der-inf" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.11</span></div>
+    <div class="thm_thmcontent"><p> Let \(F\) be a quasimodular form where the vanishing order of \(F\) at infinity is \(n_0 {\gt} 0\), i.e. \(F(z) = \sum _{n \geq n_0} a_n q^{n}\) with \(a_{n_0} \ne 0\). Then </p>
+<div class="equation" id="a0000000243">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to \infty } \frac{F'(it)}{F(it)} = n_0. \end{equation}
+  </div>
+  <span class="equation_label">246</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:log-der-inf">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:lv1-lv2-identities_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:lv1-lv2-identities" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.41</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:e4theta">
+  \begin{align}  E_4 & = \frac{1}{2}(H_{2}^{2} + H_{3}^{2} + H_{4}^{2}) = H_{2}^{2} + H_{2}H_{4} + H_{4}^{2} \label{eqn:e4theta} \\ E_6 & = \frac{1}{2} (H_{2} + H_{3})(H_{3} + H_{4}) (H_{4} - H_{2}) = \frac{1}{2}(H_2 + 2H_4)(2H_2 + H_4)(H_4 - H_2) \label{eqn:e6theta} \\ \Delta & = \frac{1}{256} (H_{2}H_{3}H_{4})^2. \label{eqn:disctheta} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:lv1-lv2-identities">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:mod-div-disc-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:mod-div-disc-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.4</span></div>
+    <div class="thm_thmcontent"><p>Let \(f(z)\) be a holomorphic function with a Fourier expansion </p>
+<div class="equation" id="a0000000158">
+<p>
+  <div class="equation_content">
+    \begin{equation}  f(z) = \sum _{n \ge n_0} c_f(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">132</span>
+</p>
+</div>
+<p> with \(c_f(n_0) \ne 0\). Assume that \(c_f(n)\) has a polynomial growth, i.e. \(|c_f(n)| = O(n^k)\) for some \(k \in \mathbb {N}\). Then there exists a constant \(C_f {\gt} 0\) such that </p>
+<div class="equation" id="a0000000159">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \left|\frac{f(z)}{\Delta (z)}\right| \le C_f e^{-\pi (n_0 - 2) \Im z} \end{equation}
+  </div>
+  <span class="equation_label">133</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:mod_form_poly_growth_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:mod_form_poly_growth" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.15</span></div>
+    <div class="thm_thmcontent"><p>: Let \(\Gamma \) be a finite index subgroup of \(\mathrm{SL}_2(\mathbb {Z})\) and \(f \in \mathcal{M}_k(\Gamma )\) be a modular form of weight \(k\). Then the Fourier coefficients \(a_n(f)\) has a polynomial growth, i.e. \(|a_n(f)| = O(n^k)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:mod_form_poly_growth">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:periodic-points-bounds_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:periodic-points-bounds" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">2.3</span></div>
+    <div class="thm_thmcontent"><p>For all \(R\), we have the following inequality relating the number of points from \(X\) (periodic w.r.t. \(\Lambda \)) in a ball with the number of points from \(\Lambda \): </p>
+<div class="displaymath" id="a0000000040">
+  \[  \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda \right| \leq \left|X \cap \mathcal{B}_d(R)\right| \leq \left|\Lambda \cap \mathcal{B}_d(R + L)\right|\left|X / \Lambda \right|  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-packings-density.html#lemma:periodic-points-bounds">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking.aux_ge" class="lean_decl">PeriodicSpherePacking.aux_ge</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking.aux_le" class="lean_decl">PeriodicSpherePacking.aux_le</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:phi0-transform_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:phi0-transform" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.2</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:phi0-trans-T">
+  \begin{align}  \phi _0(z + 1) & = \phi _0(z) \label{eqn:phi0-trans-T} \\ \phi _0\left(-\frac{1}{z}\right) & = \phi _0(z)-\frac{12i}{\pi }\, \frac{1}{z}\, \phi _{-2}(z)-\frac{36}{\pi ^2}\, \frac{1}{z^2}\, \phi _{-4}(z).\label{eqn:phi0-trans-S} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:phi0-transform">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:psi-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:psi-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.22</span></div>
+    <div class="thm_thmcontent"><p> There exist constants \(C_I, C_S, C_T {\gt} 0\) such that </p>
+<div class="displaymath" id="eqn:psiI-bound">
+  \begin{align}  |\psi _I(z)| & \le C_I e^{2\pi \Im z}, \label{eqn:psiI-bound} \\ |\psi _T(z)| & \le C_T e^{2\pi \Im z}, \label{eqn:psiT-bound} \\ |\psi _S(z)| & \le C_S e^{- \pi \Im z} \label{eqn:psiS-bound} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:psi-bound">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:psi-new_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:psi-new" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.19</span></div>
+    <div class="thm_thmcontent"><p> \(\psi _I(z), \psi _S(z), \psi _T(z)\) can be written as </p>
+<div class="displaymath" id="eqn:psiI-new">
+  \begin{align}  \psi _I(z) & = \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta }, \label{eqn:psiI-new} \\ \psi _S(z) & = -\frac{H_2^3 (2 H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta }. \label{eqn:psiS-new} \\ \psi _T(z) & = \frac{H_3^3 (5 H_2^2 - 5 H_2 H_3 + 2 H_3^2)}{2 \Delta }\label{eqn:psiT-new} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:psi-new">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:psiI-psiT-psiS-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:psiI-psiT-psiS-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">7.20</span></div>
+    <div class="thm_thmcontent"><p> The Fourier expansions of these functions are </p>
+<div class="displaymath" id="eqn: psi fourier I">
+  \begin{align}  \psi _I(z)\, =\, & q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier I}\\ \psi _T(z)\, =\, & q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier T} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#lemma:psiI-psiT-psiS-fourier">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Qlim_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Qlim" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">8.10</span></div>
+    <div class="thm_thmcontent"><p>We have </p>
+<div class="equation" id="a0000000238">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to 0^+} Q(t) = \frac{18}{\pi ^2}. \end{equation}
+  </div>
+  <span class="equation_label">239</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--g.html#lemma:Qlim">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FmodG_rightLimitAt_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:Schwartz-summable_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:Schwartz-summable" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">4.6</span></div>
+    <div class="thm_thmcontent"><p> Let \(f : \mathbb {R}^d \to \mathbb {C}\) be a Schwartz function and let \(X \subset \mathbb {R}^d\) be periodic with respect to some lattice \(\Lambda \subset \mathbb {R}^d\). Then, </p>
+<div class="displaymath" id="a0000000065">
+  \[  \sum _{x \in X} |f(x)| {\lt} \infty .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0002.html#lemma:Schwartz-summable">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:slash-negI-even-weight_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:slash-negI-even-weight" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.11</span></div>
+    <div class="thm_thmcontent"><p>For even \(k\), \(F|_{k}(-I) = F\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:slash-negI-even-weight">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/modular_slash_negI_of_even">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:slash-operator-chain-rule_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:slash-operator-chain-rule" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.10</span></div>
+    <div class="thm_thmcontent"><p>The chain rule implies </p>
+<div class="displaymath" id="a0000000090">
+  \[ F|_k\gamma _1\gamma _2=(F|_k\gamma _1)|_k\gamma _2. \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:slash-operator-chain-rule">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SlashAction.slash_mul">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:sp-finite-density-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:sp-finite-density-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">2.1</span></div>
+    <div class="thm_thmcontent"><p>For any \(R {\gt} 0\), </p>
+<div class="displaymath" id="a0000000036">
+  \[  \left|X \cap \mathcal{B}_d\left(R - \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))} \leq \Delta _{\mathcal{P}}(R) \leq \left|X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-packings-density.html#lemma:sp-finite-density-bound">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.finiteDensity_le" class="lean_decl">SpherePacking.finiteDensity_le</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.finiteDensity_ge" class="lean_decl">SpherePacking.finiteDensity_ge</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:theta-bounded-im-infty_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:theta-bounded-im-infty" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.35</span></div>
+    <div class="thm_thmcontent"><p>For all \(\gamma \in \Gamma _1\), \(H_{2}|_2 \gamma \), \(H_{3}|_2 \gamma \), and \(H_{4}|_2 \gamma \) are holomorphic at \(i\infty \). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:theta-bounded-im-infty">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/isBoundedAtImInfty_H_slash">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:theta-modular_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:theta-modular" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.36</span></div>
+    <div class="thm_thmcontent"><p>\(H_{2}\), \(H_{3}\), and \(H_{4}\) belong to \(M_2(\Gamma (2))\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:theta-modular">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_MF" class="lean_decl">H₂_MF</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_MF" class="lean_decl">H₃_MF</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_MF" class="lean_decl">H₄_MF</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:theta-slash-invariant_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:theta-slash-invariant" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.34</span></div>
+    <div class="thm_thmcontent"><p>\(H_{2}\), \(H_{3}\), and \(H_{4}\) are slash invariant under \(\Gamma (2)\), i.e. for all \(\gamma \in \Gamma (2)\) and \(i \in \{ 2, 3, 4\} \), we have \(H_i|\gamma = H_i|\gamma ^{-1} = H_i\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:theta-slash-invariant">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_SIF" class="lean_decl">H₂_SIF</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_SIF" class="lean_decl">H₃_SIF</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_SIF" class="lean_decl">H₄_SIF</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:theta-transform-S-T_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:theta-transform-S-T" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6.33</span></div>
+    <div class="thm_thmcontent"><p>These elements act on the theta functions in the following way </p>
+<div class="displaymath" id="eqn:H2-transform-S">
+  \begin{align}  H_2 | S & = -H_4 \label{eqn:H2-transform-S} \\ H_3 | S & = -H_3 \label{eqn:H3-transform-S} \\ H_4 | S & = -H_2 \label{eqn:H4-transform-S} \end{align}
+</div>
+<p> and </p>
+<div class="displaymath" id="eqn:H2-transform-T">
+  \begin{align}  H_2 | T & = -H_2 \label{eqn:H2-transform-T} \\ H_3 | T & = H_4 \label{eqn:H3-transform-T} \\ H_4 | T & = H_3 \label{eqn:H4-transform-T} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#lemma:theta-transform-S-T">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_T_action" class="lean_decl">H₂_T_action</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_T_action" class="lean_decl">H₃_T_action</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_T_action" class="lean_decl">H₄_T_action</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_S_action" class="lean_decl">H₂_S_action</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_S_action" class="lean_decl">H₃_S_action</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_S_action" class="lean_decl">H₄_S_action</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lemma:volume-ball-ratio-limit_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lemma:volume-ball-ratio-limit" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">2.4</span></div>
+    <div class="thm_thmcontent"><p>For any constant \(C {\gt} 0\), we have </p>
+<div class="displaymath" id="a0000000043">
+  \[  \lim _{R \to \infty } \frac{\mathrm{Vol}(\mathcal{B}_d(R))}{\mathrm{Vol}(\mathcal{B}_d(R + C))} = 1  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-packings-density.html#lemma:volume-ball-ratio-limit">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/volume_ball_ratio_tendsto_nhds_one''">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="MainTheorem_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="MainTheorem" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">1.17</span></div>
+    <div class="thm_thmcontent"><p> \(\Delta _8 = \Delta _{E_8}\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#MainTheorem">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.MainTheorem">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="PeriodicSpherePacking_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="PeriodicSpherePacking" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.12</span></div>
+    <div class="thm_thmcontent"><p>We say that a sphere packing \(\mathcal{P}(X)\) is (\(\Lambda \)-)<em>periodic</em> if there exists a lattice \(\Lambda \subset \mathbb {R}^d\) such that for all \(x \in X\) and \(y \in \Lambda \), \(x + y \in X\) (ie, \(X\) is \(\Lambda \)-periodic). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#PeriodicSpherePacking">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:a-another-integral_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:a-another-integral" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.15</span></div>
+    <div class="thm_thmcontent"><p> For \(r\geq 0\) we have </p>
+<div class="displaymath" id="eqn:a-another-integral">
+  \begin{align} \label{eqn:a-another-integral}a(r)=& 4i\, \sin (\pi r^2/2)^2\, \Bigg(\frac{36}{\pi ^3\, (r^2-2)}-\frac{8640}{\pi ^3\, r^4}+\frac{18144}{\pi ^3\, r^2}\\ +& \int \limits _0^\infty \, \left(t^2\, \phi _0\Big(\frac{i}{t}\Big)-\frac{36}{\pi ^2}\, e^{2\pi t}+\frac{8640}{\pi }\, t-\frac{18144}{\pi ^2}\right)\, e^{-\pi r^2 t}\, dt \Bigg) .\notag \end{align}
+</div>
+<p> The integral converges absolutely for all \(r\in \mathbb {R}_{\geq 0}\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:a-another-integral">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:a-double-zeros_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:a-double-zeros" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.14</span></div>
+    <div class="thm_thmcontent"><p>  For \(r{\gt}\sqrt{2}\) we can express \(a(r)\) in the following form </p>
+<div class="equation" id="eqn: a double zeroes">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: a double zeroes} a(r)=-4\sin (\pi r^2/2)^2\, \int \limits _{0}^{i\infty }\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz. \end{equation}
+  </div>
+  <span class="equation_label">157</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:a-double-zeros">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:a-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:a-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.12</span></div>
+    <div class="thm_thmcontent"><p>  \(a(x)\) satisfies <a href="sec--fourier-double-zeroes.html#eqn:a-fourier" class="eqref">113</a>. </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:a-fourier">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.Fourier.eig_a">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:a-schwartz_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:a-schwartz" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.11</span></div>
+    <div class="thm_thmcontent"><p> \(a(x)\) is a Schwartz function. </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:a-schwartz">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.FourierEigenfunctions.a">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:a0_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:a0" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.16</span></div>
+    <div class="thm_thmcontent"><p>We have \(a(0) = -\frac{i}{8640}\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:a0">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.SpecialValues.a_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:b-another-integral_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:b-another-integral" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.29</span></div>
+    <div class="thm_thmcontent"><p> For \(r\geq 0\) we have </p>
+<div class="equation" id="eqn:b-another-integral">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:b-another-integral}b(r)=4i\, \sin (\pi r^2/2)^2\, \left(\frac{144}{\pi \, r^2}+\frac{1}{\pi \, (r^2-2)}+\int \limits _0^\infty \, \left(\psi _I(it)-144-e^{2\pi t}\right)\, e^{-\pi r^2 t}\, dt\right).\end{equation}
+  </div>
+  <span class="equation_label">202</span>
+</p>
+</div>
+<p> The integral converges absolutely for all \(r\in \mathbb {R}_{\geq 0}\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:b-another-integral">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:b-double-zeros_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:b-double-zeros" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.28</span></div>
+    <div class="thm_thmcontent"><p> For \(r{\gt}\sqrt{2}\) function \(b(r)\) can be expressed as </p>
+<div class="equation" id="eqn: b double zeroes">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: b double zeroes} b(r)=-4\sin (\pi r^2/2)^2\, \int \limits _{0}^{i\infty }\psi _I(z)\, e^{\pi i r^2 \, z}\, dz. \end{equation}
+  </div>
+  <span class="equation_label">197</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:b-double-zeros">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:b-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:b-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.26</span></div>
+    <div class="thm_thmcontent"><p>\(b(x)\) satisfies <a href="sec--fourier-double-zeroes.html#eqn:b-fourier" class="eqref">114</a>. </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:b-fourier">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.b.Fourier.eig_b">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:b-schwartz_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:b-schwartz" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.25</span></div>
+    <div class="thm_thmcontent"><p>\(b(x)\) is a Schwartz function. </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:b-schwartz">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.FourierEigenfunctions.b">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:b0_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:b0" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">7.30</span></div>
+    <div class="thm_thmcontent"><p>We have \(b(0) = 0\). </p>
+</div>
+
+    <a class="latex_link" href="sec--fourier-double-zeroes.html#prop:b0">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.b.SpecialValues.b_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:H2-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:H2-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">6.37</span></div>
+    <div class="thm_thmcontent"><p> \(H_2\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000121">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_2(z) = \sum _{n \ge 1} c_{H_2}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">48</span>
+</p>
+</div>
+<p> for some \(c_{H_2}(n) \in \mathbb {R}_{\ge 0}\), with \(c_{H_2}(1) = 16\) and \(c_{H_2}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#prop:H2-fourier">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:H3-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:H3-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">6.38</span></div>
+    <div class="thm_thmcontent"><p> \(H_3\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000124">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_3(z) = \sum _{n \ge 0} c_{H_3}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">56</span>
+</p>
+</div>
+<p> for some \(c_{H_3}(n) \in \mathbb {R}_{\ge 0}\) with \(c_{H_3}(0) = 1\) and \(c_{H_3}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). Especially, \(H_3\) is not cuspidal. </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#prop:H3-fourier">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:H4-fourier_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:H4-fourier" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">6.39</span></div>
+    <div class="thm_thmcontent"><p> \(H_4\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000126">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_4(z) = \sum _{n \ge 0} c_{H_4}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">58</span>
+</p>
+</div>
+<p> for some \(c_{H_4}(n) \in \mathbb {R}\) with \(c_{H_4}(0) = 1\) and \(c_{H_4}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). Especially, \(H_4\) is not cuspidal. </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#prop:H4-fourier">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:ineqA_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:ineqA" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">8.1</span></div>
+    <div class="thm_thmcontent"><p> Consider the function \(A:(0,\infty )\to \mathbb {C}\) defined as </p>
+<div class="equation" id="eqn:defA">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:defA} A(t):=-t^2\phi _0(i/t)-\frac{36}{\pi ^2}\, \psi _I(it). \end{equation}
+  </div>
+  <span class="equation_label">205</span>
+</p>
+</div>
+<p> Then </p>
+<div class="equation" id="eqn:ineqA">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:ineqA} A(t) {\lt} 0 \end{equation}
+  </div>
+  <span class="equation_label">206</span>
+</p>
+</div>
+<p> for all \(t {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#prop:ineqA">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:ineqB_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:ineqB" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">8.2</span></div>
+    <div class="thm_thmcontent"><p> Consider the function \(B:(0,\infty )\to \mathbb {C}\) defined as </p>
+<div class="equation" id="eqn:defB">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:defB} B(t) := -t^2\phi _0(i/t)+\frac{36}{\pi ^2}\, \psi _I(it) \end{equation}
+  </div>
+  <span class="equation_label">207</span>
+</p>
+</div>
+<p> Then </p>
+<div class="equation" id="eqn:ineqB">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:ineqB} B(t) {\gt} 0 \end{equation}
+  </div>
+  <span class="equation_label">208</span>
+</p>
+</div>
+<p> for all \(t {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#prop:ineqB">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:Qdec_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:Qdec" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">8.12</span></div>
+    <div class="thm_thmcontent"><p>The function \(t \mapsto Q(t)\) is strictly decreasing. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#prop:Qdec">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FmodG_strictAntiOn">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:theta-der_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:theta-der" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">6.51</span></div>
+    <div class="thm_thmcontent"><p> We have </p>
+<div class="displaymath" id="eqn:H2-der">
+  \begin{align}  H_2’ & = \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\ H_3’ & = \frac{1}{6} (H_{2}^{2} - H_{4}^{2} + E_2 H_3) \label{eqn:H3-der}\\ H_4’ & = -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2} - E_2 H_4) \label{eqn:H4-der} \end{align}
+</div>
+<p> or equivalently, </p>
+<div class="displaymath" id="eqn:H2-serre-der">
+  \begin{align}  \partial _{2} H_{2} & = \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4}) \label{eqn:H2-serre-der} \\ \partial _{2} H_{3} & = \frac{1}{6} (H_{2}^{2} - H_{4}^{2}) \label{eqn:H3-serre-der} \\ \partial _{2} H_{4} & = -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2}) \label{eqn:H4-serre-der} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#prop:theta-der">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.balls_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.balls" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.1</span></div>
+    <div class="thm_thmcontent"><p>Given a set \(X \subset \mathbb {R}^d\) and a real number \(r {\gt} 0\) (known as the <em>separation radius</em>) such that \(\| x - y\|  \geq r\) for all distinct \(x, y \in X\), we define the <em>sphere packing</em> \(\mathcal{P}(X)\) with centres at \(X\) to be the union of all open balls of radius \(r\) centred at points in \(X\): </p>
+<div class="displaymath" id="a0000000007">
+  \[  \mathcal{P}(X) := \bigcup _{x \in X} B_d(x, r)  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.balls">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.balls">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.constant_eq_constant_normalized_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.constant_eq_constant_normalized" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">1.9</span></div>
+    <div class="thm_thmcontent">
+<div class="displaymath" id="a0000000019">
+  \[  \Delta _d = \sup \limits _{\substack {\mathcal{P}\subset \mathbb {R}^d \\ \text{sphere packing} \\ \text{sep.~ rad.} = 1}} \Delta _{\mathcal{P}}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.constant_eq_constant_normalized">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.constant_eq_constant_normalized">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.4</span></div>
+    <div class="thm_thmcontent"><p>We define the <em>density</em> of a packing \(\mathcal{P}\) as the limit superior </p>
+<div class="displaymath" id="a0000000009">
+  \[  \Delta _{\mathcal{P}}:=\limsup \limits _{R\to \infty }\Delta _{\mathcal{P}}(R).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.density">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.finiteDensity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.finiteDensity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.3</span></div>
+    <div class="thm_thmcontent"><p>The <em>finite density</em> of a packing \(\mathcal{P}\) is defined as </p>
+<div class="displaymath" id="a0000000008">
+  \[  \Delta _{\mathcal{P}}(R):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,R))}{\mathrm{Vol}(B_d(0,R))},\quad R{\gt}0.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.finiteDensity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.finiteDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.scale_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.scale" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.6</span></div>
+    <div class="thm_thmcontent"><p>Given a sphere packing \(\mathcal{P}(X)\) with separation radius \(r\), we defined the <em>scaled packing</em> with respect to a real number \(c {\gt} 0\) to be the packing \(\mathcal{P}(cX)\), where \(cX = \left\{  cx \in V \;  \middle | \;  x \in X \right\} \) has separation radius \(cr\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.scale">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.scale">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.scale_density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.scale_density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">1.8</span></div>
+    <div class="thm_thmcontent"><p>Let \(\mathcal{P}(X)\) be a sphere packing and \(c\) a positive real number. Then, the density of the scaled packing \(\mathcal{P}(cX)\) is equal to the density of the original packing \(\mathcal{P}(X)\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.scale_density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.scale_density">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePacking.scale_finiteDensity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePacking.scale_finiteDensity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">1.7</span></div>
+    <div class="thm_thmcontent"><p>Let \(\mathcal{P}(X)\) be a sphere packing and \(c\) a positive real number. Then, for all \(R {\gt} 0\), </p>
+<div class="displaymath" id="a0000000013">
+  \[  \Delta _{\mathcal{P}(cX)}(cR) = \Delta _{\mathcal{P}(X)}(R).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePacking.scale_finiteDensity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePacking.scale_finiteDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SpherePackingConstant_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SpherePackingConstant" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.5</span></div>
+    <div class="thm_thmcontent"><p>The <em>sphere packing constant</em> is defined as supremum of packing densities over all possible packings: </p>
+<div class="displaymath" id="a0000000010">
+  \[  \Delta _d:=\sup \limits _{\substack {\mathcal{P}\subset \mathbb {R}^d\\ \scriptscriptstyle \mathrm{sphere}\; \mathrm{packing}}}\Delta _{\mathcal{P}}.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#SpherePackingConstant">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SpherePackingConstant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="theorem:CE_Main_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="theorem:CE_Main" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">1.15</span></div>
+    <div class="thm_thmcontent"><p> All <em>periodic</em> packing \(\mathcal{P} \subseteq \mathbb {R}^8\) has density satisfying \(\Delta _{\mathcal{P}} \leq \Delta _{E_8} = \frac{\pi ^4}{384}\), the density of the \(E_8\) sphere packing (see <a href="sect0001.html#E8Packing">definition 3.9</a>). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#theorem:CE_Main">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="theorem:psp-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="theorem:psp-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">2.5</span></div>
+    <div class="thm_thmcontent"><p>For a periodic sphere packing \(\mathcal{P} = \mathcal{P}(X)\) with centers \(X\) periodic to the lattice \(\Lambda \) and separation \(r\), </p>
+<div class="displaymath" id="a0000000045">
+  \[  \Delta _{\mathcal{P}} = |X / \Lambda | \cdot \frac{\operatorname {Vol}\! \left(\mathcal{B}_d(r / 2)\right)}{\operatorname {Vol}\! \left(\mathbb {R}^d / \Lambda \right)}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sec-packings-density.html#theorem:psp-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/PeriodicSpherePacking.density_eq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:anti-serre-der-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:anti-serre-der-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.53</span></div>
+    <div class="thm_thmcontent"><p> Let \(F\) be a holomorphic quasimodular cusp form with real Fourier coefficients. Assume that there exists \(k\) such that \((\partial _{k}F)(it) {\gt} 0\) for all \(t {\gt} 0\). If the first Fourier coefficient of \(F\) is positive, then \(F(it) {\gt} 0\) for all \(t {\gt} 0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:anti-serre-der-pos">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:Cohn-Elkies-general_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:Cohn-Elkies-general" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">5.2</span><span class="theorem_thmtitle">Cohn–Elkies <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span></span></div>
+    <div class="thm_thmcontent"><p>Let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function that is not identically zero and satisfies <a href="sect0003.html#eqn:Cohn-Elkies-condition-1" class="eqref">2</a> and <a href="sect0003.html#eqn:Cohn-Elkies-condition-2" class="eqref">3</a>. Then the density of any \(\Lambda \)-periodic sphere packing is bounded above by </p>
+<div class="displaymath" id="a0000000078">
+  \[ \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)). \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0003.html#thm:Cohn-Elkies-general">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/LinearProgrammingBound">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:Cohn-Elkies-periodic_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:Cohn-Elkies-periodic" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">5.1</span><span class="theorem_thmtitle">Cohn–Elkies <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span></span></div>
+    <div class="thm_thmcontent">
+<p>Let \(X\subset \mathbb {R}^d\) be a discrete subset such that \(\| x-y\| \geq 1\) for any distinct \(x,y\in X\). Suppose that \(X\) is \(\Lambda \)-periodic with respect to some lattice \(\Lambda \subset \mathbb {R}^d\). Let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function that is not identically zero and satisfies the following conditions: </p>
+<div class="equation" id="eqn:Cohn-Elkies-condition-1">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \| x\| \geq 1\end{equation}
+  </div>
+  <span class="equation_label">2</span>
+</p>
+</div>
+<p> and </p>
+<div class="equation" id="eqn:Cohn-Elkies-condition-2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq 0\mbox{ for all } x\in \mathbb {R}^d.\end{equation}
+  </div>
+  <span class="equation_label">3</span>
+</p>
+</div>
+<p> Then the density of any \(\Lambda \)-periodic sphere packing is bounded above by </p>
+<div class="displaymath" id="a0000000072">
+  \[ \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)). \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0003.html#thm:Cohn-Elkies-periodic">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/LinearProgrammingBound'">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:dim-mf-general-level_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:dim-mf-general-level" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.29</span></div>
+    <div class="thm_thmcontent"><p> Let \(\Gamma \) be a congruence subgroup. Then \(M_k(\Gamma )\) is finite-dimensional. </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:dim-mf-general-level">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/dim_gen_cong_levels">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:g_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:g" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">5.3</span></div>
+    <div class="thm_thmcontent"><p> There exists a radial Schwartz function \(g:\mathbb {R}^8\to \mathbb {R}\) which satisfies: </p>
+<div class="displaymath" id="eqn:g1">
+  \begin{align}  g(x)& \leq 0\mbox{ for } \| x\| \geq \sqrt{2} \label{eqn:g1}\\ \widehat{g}(x)& \geq 0\mbox{ for all } x\in \mathbb {R}^8\label{eqn:g2}\\ g(0)& =\widehat{g}(0)=1.\label{eqn:g3} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0003.html#thm:g">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:g1_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:g1" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">8.14</span></div>
+    <div class="thm_thmcontent"><p>  The function </p>
+<div class="displaymath" id="a0000000253">
+  \[ g(x):=\frac{\pi \, i}{8640}a(x)+\frac{i}{240\pi }\, b(x) \]
+</div>
+<p> satisfies conditions <a href="sect0003.html#eqn:g1" class="eqref">6</a>–<a href="sect0003.html#eqn:g3" class="eqref">8</a>. </p>
+</div>
+
+    <a class="latex_link" href="sec--g.html#thm:g1">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:lvl1_dims_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:lvl1_dims" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.28</span></div>
+    <div class="thm_thmcontent"><p>Let \(k \in \mathbb {Z}\) with \(k \ge 0\) and even. Then \(\dim M_k(\Gamma _1) = \lfloor k / 12 \rfloor \) if \(k \equiv 2 \mod 12\) and \(\dim M_k(\Gamma _1) = \lfloor k / 12 \rfloor + 1\) if \(k \not\equiv 2 \mod 12\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:lvl1_dims">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.dimension_level_one">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:nonpos_wt_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:nonpos_wt" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.27</span></div>
+    <div class="thm_thmcontent"><p>Let \(k \in \mathbb {Z}\) with \(k {\lt} 0\). Then \(M_k(\Gamma _1) = \{ 0\} \) and moreover \(\dim M_0(\Gamma (1)) = 1\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:nonpos_wt">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularFormClass.levelOne_neg_weight_eq_zero" class="lean_decl">ModularFormClass.levelOne_neg_weight_eq_zero</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.levelOne_weight_zero_rank_one" class="lean_decl">ModularForm.levelOne_weight_zero_rank_one</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:periodic-packing-optimal_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:periodic-packing-optimal" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">1.14</span></div>
+    <div class="thm_thmcontent"><p>For all \(d\), the periodic sphere packing constant in \(\mathbb {R}^d\) is equal to the sphere packing constant in \(\mathbb {R}^d\). </p>
+</div>
+
+    <a class="latex_link" href="sec-sphere-packings.html#thm:periodic-packing-optimal">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/periodic_constant_eq_constant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:Poisson-summation-formula_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:Poisson-summation-formula" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">4.7</span><span class="theorem_thmtitle">Poisson summation formula</span></div>
+    <div class="thm_thmcontent"><p>Let \(\Lambda \) be a lattice in \(\mathbb {R}^d\), and let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function. Then, for all \(v \in \mathbb {R}^d\), </p>
+<div class="displaymath" id="a0000000068">
+  \[  \sum _{\ell \in \Lambda }f(\ell + v) = \frac{1}{\operatorname {Vol}\! \left(\mathbb {R}^d/\Lambda \right)} \sum _{m\in \Lambda ^*}\widehat{f}(m) e^{-2\pi i \left\langle v, m \right\rangle }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0002.html#thm:Poisson-summation-formula">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SchwartzMap.PoissonSummation_Lattices">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:ramanujan-formula_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:ramanujan-formula" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.49</span></div>
+    <div class="thm_thmcontent"><p>  We have </p>
+<div class="displaymath" id="eqn:DE2">
+  \begin{align}  E_2’ & = \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\ E_4’ & = \frac{E_2 E_4 - E_6}{3} \label{eqn:DE4} \\ E_6’ & = \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6} \end{align}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:ramanujan-formula">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₂" class="lean_decl">ramanujan_E₂</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₄" class="lean_decl">ramanujan_E₄</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₆" class="lean_decl">ramanujan_E₆</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₂'" class="lean_decl">ramanujan_E₂'</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₄'" class="lean_decl">ramanujan_E₄'</a></li>
+        
+           <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₆'" class="lean_decl">ramanujan_E₆'</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:serre-der-equiv-action_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:serre-der-equiv-action" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.46</span></div>
+    <div class="thm_thmcontent"><p>Serre derivative \(\partial _{k}\) is equivariant with the slash action of \(\mathrm{SL}_{2}(\mathbb {Z})\) in the following sense: </p>
+<div class="equation" id="a0000000134">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \partial _{k} (F|_{k}\gamma ) = (\partial _{k} F)|_{k+2}\gamma , \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb {Z}). \end{equation}
+  </div>
+  <span class="equation_label">69</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:serre-der-equiv-action">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_slash_equivariant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:serre-der-modularity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:serre-der-modularity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.47</span></div>
+    <div class="thm_thmcontent"><p>Let \(F\) be a modular form of weight \(k\) and level \(\Gamma \). Then, \(\partial _{k}F\) is a modular form of weight \(k + 2\) of the same level. </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:serre-der-modularity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_slash_invariant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:serre-der-prod-rule_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:serre-der-prod-rule" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6.52</span></div>
+    <div class="thm_thmcontent"><p>  The Serre derivative satisfies the following product rule: for any quasimodular forms \(F\) and \(G\), </p>
+<div class="equation" id="a0000000149">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \partial _{w_1 + w_2} (FG) = (\partial _{w_1}F)G + F (\partial _{w_2}G). \end{equation}
+  </div>
+  <span class="equation_label">106</span>
+</p>
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:serre-der-prod-rule">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_mul">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:smooth-fast-decay-schwartz_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:smooth-fast-decay-schwartz" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">4.8</span></div>
+    <div class="thm_thmcontent"><p> Assume \(f : \mathbb {R}\to \mathbb {C}\) is smooth on \([0, \infty )\) and for all \(k, n \in \mathbb {N}\), there exists \(C \in \mathbb {R}\) such that </p>
+<div class="displaymath" id="a0000000069">
+  \[  x^{\frac{k}{2}} \cdot |f^{(n)}(x)| \leq C.  \]
+</div>
+<p> Then, for all \(d \in \mathbb {N}\), the function </p>
+<div class="displaymath" id="a0000000070">
+  \[  f_d : \mathbb {R}^d \to \mathbb {C}, \quad f_d(x) := f(\| x\| ^2)  \]
+</div>
+<p> is a Schwartz function. </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#thm:smooth-fast-decay-schwartz">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"SpherePacking.density"	[color=green,		fillcolor="#B0ECA3",		label="SpherePacking.density",		shape=box,		style=filled];	"def:Periodic-sphere-packing-constant"	[color=green,		fillcolor="#B0ECA3",		label="Periodic-sphere-packing-constant",		shape=box,		style=filled];	"SpherePacking.density" -> "def:Periodic-sphere-packing-constant"	[style=dashed];	"theorem:psp-density"	[color=green,		fillcolor="#9CEC8B",		label="psp-density",		shape=ellipse,		style=filled];	"SpherePacking.density" -> "theorem:psp-density"	[style=dashed];	"thm:Cohn-Elkies-periodic"	[color=green,		fillcolor="#9CEC8B",		label="Cohn-Elkies-periodic",		shape=ellipse,		style=filled];	"SpherePacking.density" -> "thm:Cohn-Elkies-periodic"	[style=dashed];	SpherePackingConstant	[color=green,		fillcolor="#B0ECA3",		label=SpherePackingConstant,		shape=box,		style=filled];	"SpherePacking.density" -> SpherePackingConstant	[style=dashed];	"thm:periodic-packing-optimal"	[color=green,		fillcolor="#A3D6FF",		label="periodic-packing-optimal",		shape=ellipse,		style=filled];	"def:Periodic-sphere-packing-constant" -> "thm:periodic-packing-optimal"	[style=dashed];	"E8Packing-density"	[color=green,		fillcolor="#9CEC8B",		label="E8Packing-density",		shape=ellipse,		style=filled];	"theorem:psp-density" -> "E8Packing-density"	[style=dashed];	"thm:Cohn-Elkies-general"	[color=green,		fillcolor="#9CEC8B",		label="Cohn-Elkies-general",		shape=ellipse,		style=filled];	"thm:Cohn-Elkies-periodic" -> "thm:Cohn-Elkies-general";	"SpherePacking.constant_eq_constant_normalized"	[color=green,		fillcolor="#9CEC8B",		label="SpherePacking.constant_eq_constant_normalized",		shape=ellipse,		style=filled];	SpherePackingConstant -> "SpherePacking.constant_eq_constant_normalized"	[style=dashed];	"theorem:CE_Main"	[label=CE_Main,		shape=ellipse];	SpherePackingConstant -> "theorem:CE_Main"	[style=dashed];	"thm:periodic-packing-optimal" -> "thm:Cohn-Elkies-general";	"E8Packing-density" -> "theorem:CE_Main"	[style=dashed];	"thm:Cohn-Elkies-general" -> "theorem:CE_Main"	[style=dashed];	"corollary:upper-bound-E8"	[label="upper-bound-E8",		shape=ellipse];	"theorem:CE_Main" -> "corollary:upper-bound-E8"	[style=dashed];	MainTheorem	[label=MainTheorem,		shape=ellipse];	"corollary:upper-bound-E8" -> MainTheorem	[style=dashed];	"def:Ek"	[color=blue,		fillcolor="#A3D6FF",		label=Ek,		shape=box,		style=filled];	"lemma:Ek-Fourier"	[color=green,		fillcolor="#1CAC78",		label="Ek-Fourier",		shape=ellipse,		style=filled];	"def:Ek" -> "lemma:Ek-Fourier"	[style=dashed];	"def:phi4-phi2-phi0"	[label="phi4-phi2-phi0",		shape=box];	"def:Ek" -> "def:phi4-phi2-phi0"	[style=dashed];	"def:FG-definition"	[color=green,		fillcolor="#B0ECA3",		label="FG-definition",		shape=box,		style=filled];	"def:Ek" -> "def:FG-definition"	[style=dashed];	"lemma:Ek-is-modular-form"	[fillcolor="#1CAC78",		label="Ek-is-modular-form",		shape=ellipse,		style=filled];	"def:Ek" -> "lemma:Ek-is-modular-form"	[style=dashed];	"cor:phi4-bound"	[label="phi4-bound",		shape=ellipse];	"lemma:Ek-Fourier" -> "cor:phi4-bound"	[style=dashed];	"cor:phi0-bound"	[color=blue,		fillcolor="#A3D6FF",		label="phi0-bound",		shape=ellipse,		style=filled];	"lemma:Ek-Fourier" -> "cor:phi0-bound"	[style=dashed];	"cor:phi2-bound"	[label="phi2-bound",		shape=ellipse];	"lemma:Ek-Fourier" -> "cor:phi2-bound"	[style=dashed];	"def:phi4-phi2-phi0" -> "cor:phi4-bound"	[style=dashed];	"def:phi4-phi2-phi0" -> "cor:phi2-bound"	[style=dashed];	"def:a-definition"	[color=green,		fillcolor="#B0ECA3",		label="a-definition",		shape=box,		style=filled];	"def:phi4-phi2-phi0" -> "def:a-definition"	[style=dashed];	"lemma:phi0-transform"	[label="phi0-transform",		shape=ellipse];	"def:phi4-phi2-phi0" -> "lemma:phi0-transform"	[style=dashed];	"lemma:F-G-phi-psi-identities"	[label="F-G-phi-psi-identities",		shape=ellipse];	"def:FG-definition" -> "lemma:F-G-phi-psi-identities"	[style=dashed];	"lemma:Ek-is-modular-form" -> "lemma:phi0-transform"	[style=dashed];	"lemma:Qlim"	[color=green,		label=Qlim,		shape=ellipse];	"lemma:Ek-is-modular-form" -> "lemma:Qlim"	[style=dashed];	"cor:phi0-near-0-infty"	[label="phi0-near-0-infty",		shape=ellipse];	"cor:phi4-bound" -> "cor:phi0-near-0-infty"	[style=dashed];	"cor:phi0-bound" -> "cor:phi0-near-0-infty"	[style=dashed];	"prop:a-schwartz"	[color=green,		label="a-schwartz",		shape=ellipse];	"cor:phi0-bound" -> "prop:a-schwartz"	[style=dashed];	"cor:phi2-bound" -> "cor:phi0-near-0-infty"	[style=dashed];	"def:a-definition" -> "prop:a-schwartz"	[style=dashed];	"prop:a-double-zeros"	[label="a-double-zeros",		shape=ellipse];	"def:a-definition" -> "prop:a-double-zeros"	[style=dashed];	"lemma:phi0-transform" -> "cor:phi0-near-0-infty"	[style=dashed];	"lemma:ineqABnew-equiv"	[label="ineqABnew-equiv",		shape=ellipse];	"lemma:F-G-phi-psi-identities" -> "lemma:ineqABnew-equiv"	[style=dashed];	"cor:ineqBnew"	[color=blue,		fillcolor="#A3D6FF",		label=ineqBnew,		shape=ellipse,		style=filled];	"lemma:Qlim" -> "cor:ineqBnew"	[style=dashed];	"def:psiI-psiT-psiS"	[label="psiI-psiT-psiS",		shape=box];	"cor:psiI-near-0-infty"	[label="psiI-near-0-infty",		shape=ellipse];	"def:psiI-psiT-psiS" -> "cor:psiI-near-0-infty"	[style=dashed];	"def:b-definition"	[label="b-definition",		shape=box];	"def:psiI-psiT-psiS" -> "def:b-definition"	[style=dashed];	"def:psiI-psiT-psiS" -> "lemma:ineqABnew-equiv"	[style=dashed];	"prop:b-double-zeros"	[label="b-double-zeros",		shape=ellipse];	"cor:psiI-near-0-infty" -> "prop:b-double-zeros"	[style=dashed];	"prop:b-fourier"	[color=green,		label="b-fourier",		shape=ellipse];	"def:b-definition" -> "prop:b-fourier"	[style=dashed];	"prop:b-another-integral"	[label="b-another-integral",		shape=ellipse];	"def:b-definition" -> "prop:b-another-integral"	[style=dashed];	"prop:ineqB"	[label=ineqB,		shape=ellipse];	"lemma:ineqABnew-equiv" -> "prop:ineqB"	[style=dashed];	"prop:ineqA"	[label=ineqA,		shape=ellipse];	"lemma:ineqABnew-equiv" -> "prop:ineqA"	[style=dashed];	"prop:b-double-zeros" -> "prop:b-another-integral"	[style=dashed];	"thm:g1"	[label=g1,		shape=ellipse];	"prop:b-fourier" -> "thm:g1"	[style=dashed];	"prop:b0"	[color=green,		label=b0,		shape=ellipse];	"prop:b-another-integral" -> "prop:b0"	[style=dashed];	"thm:g"	[label=g,		shape=ellipse];	"thm:g1" -> "thm:g"	[style=dashed];	"prop:ineqB" -> "thm:g1"	[style=dashed];	"prop:ineqA" -> "thm:g1"	[style=dashed];	"prop:Qdec"	[color=green,		label=Qdec,		shape=ellipse];	"prop:Qdec" -> "cor:ineqBnew"	[style=dashed];	"cor:ineqBnew" -> "prop:ineqB"	[style=dashed];	"E8-vector-norms"	[color=green,		fillcolor="#1CAC78",		label="E8-vector-norms",		shape=ellipse,		style=filled];	E8Packing	[color=green,		fillcolor="#B0ECA3",		label=E8Packing,		shape=box,		style=filled];	"E8-vector-norms" -> E8Packing	[style=dashed];	instDiscreteE8Lattice	[color=green,		fillcolor="#1CAC78",		label=instDiscreteE8Lattice,		shape=ellipse,		style=filled];	"E8-vector-norms" -> instDiscreteE8Lattice	[style=dashed];	"E8Packing-covol"	[color=green,		fillcolor="#1CAC78",		label="E8Packing-covol",		shape=ellipse,		style=filled];	E8Packing -> "E8Packing-covol"	[style=dashed];	instLatticeE8	[color=green,		fillcolor="#1CAC78",		label=instLatticeE8,		shape=ellipse,		style=filled];	instDiscreteE8Lattice -> instLatticeE8	[style=dashed];	"E8Packing-covol" -> "E8Packing-density"	[style=dashed];	"lemma:inv-power-summable"	[color=blue,		fillcolor="#A3D6FF",		label="inv-power-summable",		shape=ellipse,		style=filled];	"thm:Poisson-summation-formula"	[color=green,		label="Poisson-summation-formula",		shape=ellipse];	"lemma:inv-power-summable" -> "thm:Poisson-summation-formula"	[style=dashed];	"thm:Poisson-summation-formula" -> "thm:Cohn-Elkies-periodic";	"cor:phi0-near-0-infty" -> "prop:a-double-zeros"	[style=dashed];	"prop:a-fourier"	[label="a-fourier",		shape=ellipse];	"prop:a-schwartz" -> "prop:a-fourier"	[style=dashed];	"prop:a-fourier" -> "thm:g1"	[style=dashed];	"thm:g" -> "theorem:CE_Main"	[style=dashed];	"def:serre-der"	[color=green,		fillcolor="#B0ECA3",		label="serre-der",		shape=box,		style=filled];	"thm:serre-der-prod-rule"	[color=green,		fillcolor="#1CAC78",		label="serre-der-prod-rule",		shape=ellipse,		style=filled];	"def:serre-der" -> "thm:serre-der-prod-rule"	[style=dashed];	"thm:serre-der-equiv-action"	[color=green,		fillcolor="#A3D6FF",		label="serre-der-equiv-action",		shape=ellipse,		style=filled];	"def:serre-der" -> "thm:serre-der-equiv-action"	[style=dashed];	"prop:theta-der"	[color=blue,		fillcolor="#A3D6FF",		label="theta-der",		shape=ellipse,		style=filled];	"def:serre-der" -> "prop:theta-der"	[style=dashed];	"lemma:FG-de"	[color=green,		label="FG-de",		shape=ellipse];	"thm:serre-der-prod-rule" -> "lemma:FG-de"	[style=dashed];	"thm:serre-der-modularity"	[color=green,		fillcolor="#9CEC8B",		label="serre-der-modularity",		shape=ellipse,		style=filled];	"thm:serre-der-equiv-action" -> "thm:serre-der-modularity"	[style=dashed];	"prop:theta-der" -> "lemma:FG-de"	[style=dashed];	"cor:MLDE-pos"	[color=green,		label="MLDE-pos",		shape=ellipse];	"lemma:FG-de" -> "cor:MLDE-pos"	[style=dashed];	"thm:ramanujan-formula"	[color=green,		fillcolor="#A3D6FF",		label="ramanujan-formula",		shape=ellipse,		style=filled];	"thm:serre-der-modularity" -> "thm:ramanujan-formula"	[style=dashed];	"thm:ramanujan-formula" -> "cor:phi0-bound"	[style=dashed];	"thm:ramanujan-formula" -> "lemma:FG-de"	[style=dashed];	"lemma:F-G-pos"	[color=green,		fillcolor="#9CEC8B",		label="F-G-pos",		shape=ellipse,		style=filled];	"thm:ramanujan-formula" -> "lemma:F-G-pos"	[style=dashed];	"cor:logder-disc-E2"	[color=blue,		fillcolor="#A3D6FF",		label="logder-disc-E2",		shape=ellipse,		style=filled];	"thm:ramanujan-formula" -> "cor:logder-disc-E2"	[style=dashed];	"lemma:F-G-pos" -> "cor:ineqBnew"	[style=dashed];	"cor:ineqAnew"	[color=green,		fillcolor="#A3D6FF",		label=ineqAnew,		shape=ellipse,		style=filled];	"lemma:F-G-pos" -> "cor:ineqAnew"	[style=dashed];	"thm:anti-serre-der-pos"	[label="anti-serre-der-pos",		shape=ellipse];	"cor:logder-disc-E2" -> "thm:anti-serre-der-pos"	[style=dashed];	"thm:anti-serre-der-pos" -> "prop:Qdec"	[style=dashed];	"lemma:E2-transform-general"	[color=green,		fillcolor="#1CAC78",		label="E2-transform-general",		shape=ellipse,		style=filled];	"lemma:E2-transform-general" -> "thm:serre-der-equiv-action"	[style=dashed];	"cor:MLDE-pos" -> "prop:Qdec"	[style=dashed];	"def:Fourier-Transform"	[color=green,		fillcolor="#B0ECA3",		label="Fourier-Transform",		shape=box,		style=filled];	"def:Fourier-Transform" -> "thm:Poisson-summation-formula"	[style=dashed];	"lemma:Gaussian-Fourier"	[color=blue,		fillcolor="#A3D6FF",		label="Gaussian-Fourier",		shape=ellipse,		style=filled];	"def:Fourier-Transform" -> "lemma:Gaussian-Fourier"	[style=dashed];	"lemma:Fourier-transform-is-automorphism"	[color=green,		fillcolor="#1CAC78",		label="Fourier-transform-is-automorphism",		shape=ellipse,		style=filled];	"def:Fourier-Transform" -> "lemma:Fourier-transform-is-automorphism"	[style=dashed];	"lemma:Gaussian-Fourier" -> "prop:b-fourier"	[style=dashed];	"lemma:Gaussian-Fourier" -> "prop:a-fourier"	[style=dashed];	"def:th00-th01-th10"	[color=green,		fillcolor="#B0ECA3",		label="th00-th01-th10",		shape=box,		style=filled];	"def:H2-H3-H4"	[color=green,		fillcolor="#B0ECA3",		label="H2-H3-H4",		shape=box,		style=filled];	"def:th00-th01-th10" -> "def:H2-H3-H4"	[style=dashed];	"def:H2-H3-H4" -> "def:FG-definition"	[style=dashed];	"lemma:theta-transform-S-T"	[color=green,		fillcolor="#1CAC78",		label="theta-transform-S-T",		shape=ellipse,		style=filled];	"def:H2-H3-H4" -> "lemma:theta-transform-S-T"	[style=dashed];	"prop:H2-fourier"	[color=blue,		fillcolor="#A3D6FF",		label="H2-fourier",		shape=ellipse,		style=filled];	"def:H2-H3-H4" -> "prop:H2-fourier"	[style=dashed];	"prop:H4-fourier"	[color=blue,		label="H4-fourier",		shape=ellipse];	"def:H2-H3-H4" -> "prop:H4-fourier"	[style=dashed];	"def: h"	[color=blue,		fillcolor="#A3D6FF",		label=" h",		shape=box,		style=filled];	"def:H2-H3-H4" -> "def: h"	[style=dashed];	"prop:H3-fourier"	[color=blue,		fillcolor="#A3D6FF",		label="H3-fourier",		shape=ellipse,		style=filled];	"def:H2-H3-H4" -> "prop:H3-fourier"	[style=dashed];	"lemma:theta-transform-S-T" -> "lemma:Qlim"	[style=dashed];	"lemma:theta-slash-invariant"	[color=green,		fillcolor="#1CAC78",		label="theta-slash-invariant",		shape=ellipse,		style=filled];	"lemma:theta-transform-S-T" -> "lemma:theta-slash-invariant"	[style=dashed];	"cor:theta-pos"	[color=blue,		fillcolor="#1CAC78",		label="theta-pos",		shape=ellipse,		style=filled];	"lemma:theta-transform-S-T" -> "cor:theta-pos"	[style=dashed];	"def: h" -> "def:psiI-psiT-psiS"	[style=dashed];	"lemma:theta-bounded-im-infty"	[color=green,		fillcolor="#1CAC78",		label="theta-bounded-im-infty",		shape=ellipse,		style=filled];	"lemma:theta-slash-invariant" -> "lemma:theta-bounded-im-infty"	[style=dashed];	"cor:theta-pos" -> "lemma:F-G-pos"	[style=dashed];	"cor:theta-pos" -> "cor:MLDE-pos"	[style=dashed];	"def:congruence-subgroup"	[color=green,		fillcolor="#B0ECA3",		label="congruence-subgroup",		shape=box,		style=filled];	"def:Mk"	[color=green,		fillcolor="#B0ECA3",		label=Mk,		shape=box,		style=filled];	"def:congruence-subgroup" -> "def:Mk"	[style=dashed];	"def:Mk" -> "lemma:Ek-is-modular-form"	[style=dashed];	"def:Mk" -> "thm:serre-der-modularity"	[style=dashed];	"thm:nonpos_wt"	[color=green,		fillcolor="#1CAC78",		label=nonpos_wt,		shape=ellipse,		style=filled];	"def:Mk" -> "thm:nonpos_wt"	[style=dashed];	"thm:lvl1_dims"	[color=green,		fillcolor="#1CAC78",		label=lvl1_dims,		shape=ellipse,		style=filled];	"def:Mk" -> "thm:lvl1_dims"	[style=dashed];	"thm:dim-mf-general-level"	[color=green,		fillcolor="#A3D6FF",		label="dim-mf-general-level",		shape=ellipse,		style=filled];	"thm:lvl1_dims" -> "thm:dim-mf-general-level"	[style=dashed];	"cor:dim-mf"	[color=green,		fillcolor="#1CAC78",		label="dim-mf",		shape=ellipse,		style=filled];	"thm:lvl1_dims" -> "cor:dim-mf"	[style=dashed];	"prop:a-another-integral"	[label="a-another-integral",		shape=ellipse];	"prop:a0"	[color=green,		label=a0,		shape=ellipse];	"prop:a-another-integral" -> "prop:a0"	[style=dashed];	"prop:a0" -> "thm:g1"	[style=dashed];	"prop:a-double-zeros" -> "prop:a-another-integral"	[style=dashed];	"lemma:lattice-points-bound"	[color=green,		fillcolor="#1CAC78",		label="lattice-points-bound",		shape=ellipse,		style=filled];	"lemma:lattice-points-bound" -> "theorem:psp-density";	"E8-Matrix"	[color=green,		fillcolor="#B0ECA3",		label="E8-Matrix",		shape=box,		style=filled];	"E8-is-basis"	[color=green,		fillcolor="#1CAC78",		label="E8-is-basis",		shape=ellipse,		style=filled];	"E8-Matrix" -> "E8-is-basis"	[style=dashed];	"E8-defs-equivalent"	[color=green,		fillcolor="#1CAC78",		label="E8-defs-equivalent",		shape=ellipse,		style=filled];	"E8-Matrix" -> "E8-defs-equivalent"	[style=dashed];	"E8-is-basis" -> instLatticeE8	[style=dashed];	"E8-defs-equivalent" -> "E8-vector-norms"	[style=dashed];	"E8-Lattice"	[color=green,		fillcolor="#1CAC78",		label="E8-Lattice",		shape=ellipse,		style=filled];	"E8-defs-equivalent" -> "E8-Lattice"	[style=dashed];	"E8-Lattice" -> E8Packing	[style=dashed];	"def:Gamma-1-Action"	[color=green,		fillcolor="#1CAC78",		label="Gamma-1-Action",		shape=ellipse,		style=filled];	"def:slash-operator"	[color=green,		fillcolor="#B0ECA3",		label="slash-operator",		shape=box,		style=filled];	"def:Gamma-1-Action" -> "def:slash-operator"	[style=dashed];	"lemma:slash-negI-even-weight"	[color=green,		fillcolor="#1CAC78",		label="slash-negI-even-weight",		shape=ellipse,		style=filled];	"def:slash-operator" -> "lemma:slash-negI-even-weight"	[style=dashed];	"lemma:slash-negI-even-weight" -> "lemma:theta-slash-invariant"	[style=dashed];	"lemma:Gamma-1-generators"	[color=green,		fillcolor="#1CAC78",		label="Gamma-1-generators",		shape=ellipse,		style=filled];	"lemma:Gamma-1-generators" -> "lemma:theta-bounded-im-infty"	[style=dashed];	"lemma:theta-modular"	[color=green,		fillcolor="#1CAC78",		label="theta-modular",		shape=ellipse,		style=filled];	"lemma:theta-bounded-im-infty" -> "lemma:theta-modular"	[style=dashed];	"lemma:jacobi-identity"	[color=green,		fillcolor="#1CAC78",		label="jacobi-identity",		shape=ellipse,		style=filled];	"lemma:theta-modular" -> "lemma:jacobi-identity"	[style=dashed];	"lemma:lv1-lv2-identities"	[color=blue,		fillcolor="#A3D6FF",		label="lv1-lv2-identities",		shape=ellipse,		style=filled];	"lemma:theta-modular" -> "lemma:lv1-lv2-identities"	[style=dashed];	"lemma:mod_form_poly_growth"	[color=green,		fillcolor="#1CAC78",		label=mod_form_poly_growth,		shape=ellipse,		style=filled];	"lemma:mod_form_poly_growth" -> "cor:phi0-bound"	[style=dashed];	"cor:ineqAnew" -> "prop:ineqA"	[style=dashed];	"prop:b0" -> "thm:g1"	[style=dashed];	"lemma:Schwartz-summable"	[color=blue,		fillcolor="#A3D6FF",		label="Schwartz-summable",		shape=ellipse,		style=filled];	"lemma:Schwartz-summable" -> "thm:Poisson-summation-formula"	[style=dashed];	"cor:disc-pos"	[color=green,		fillcolor="#1CAC78",		label="disc-pos",		shape=ellipse,		style=filled];	"cor:disc-pos" -> "lemma:ineqABnew-equiv"	[style=dashed];	"cor:disc-pos" -> "cor:MLDE-pos"	[style=dashed];	"SpherePacking.scale"	[color=green,		fillcolor="#B0ECA3",		label="SpherePacking.scale",		shape=box,		style=filled];	"SpherePacking.scale_finiteDensity"	[color=green,		fillcolor="#9CEC8B",		label="SpherePacking.scale_finiteDensity",		shape=ellipse,		style=filled];	"SpherePacking.scale" -> "SpherePacking.scale_finiteDensity"	[style=dashed];	"SpherePacking.scale_density"	[color=green,		fillcolor="#9CEC8B",		label="SpherePacking.scale_density",		shape=ellipse,		style=filled];	"SpherePacking.scale_finiteDensity" -> "SpherePacking.scale_density";	"SpherePacking.scale_density" -> "SpherePacking.constant_eq_constant_normalized";	"lemma:psiI-psiT-psiS-fourier"	[label="psiI-psiT-psiS-fourier",		shape=ellipse];	"lemma:psiI-psiT-psiS-fourier" -> "prop:b-double-zeros"	[style=dashed];	"def:Gamma-generators"	[color=green,		fillcolor="#B0ECA3",		label="Gamma-generators",		shape=box,		style=filled];	"def:Gamma-generators" -> "lemma:Gamma-1-generators"	[style=dashed];	"lemma:Gamma-2-generators"	[color=green,		fillcolor="#1CAC78",		label="Gamma-2-generators",		shape=ellipse,		style=filled];	"def:Gamma-generators" -> "lemma:Gamma-2-generators"	[style=dashed];	"lemma:Gamma-2-generators" -> "lemma:theta-slash-invariant"	[style=dashed];	"thm:smooth-fast-decay-schwartz"	[color=blue,		label="smooth-fast-decay-schwartz",		shape=ellipse];	"thm:smooth-fast-decay-schwartz" -> "prop:a-schwartz";	"prop:b-schwartz"	[color=green,		label="b-schwartz",		shape=ellipse];	"thm:smooth-fast-decay-schwartz" -> "prop:b-schwartz";	"prop:b-schwartz" -> "prop:b-fourier"	[style=dashed];	"lemma:der-q-series"	[color=green,		fillcolor="#1CAC78",		label="der-q-series",		shape=ellipse,		style=filled];	"lemma:log-der-inf"	[color=blue,		fillcolor="#A3D6FF",		label="log-der-inf",		shape=ellipse,		style=filled];	"lemma:der-q-series" -> "lemma:log-der-inf"	[style=dashed];	"lemma:log-der-inf" -> "prop:Qdec"	[style=dashed];	"lemma:periodic-points-bounds"	[color=green,		fillcolor="#1CAC78",		label="periodic-points-bounds",		shape=ellipse,		style=filled];	"lemma:periodic-points-bounds" -> "theorem:psp-density";	"lemma:jacobi-identity" -> "prop:theta-der"	[style=dashed];	"lemma:lv1-lv2-identities" -> "lemma:FG-de"	[style=dashed];	"def:dual-lattice"	[color=green,		fillcolor="#B0ECA3",		label="dual-lattice",		shape=box,		style=filled];	"def:dual-lattice" -> "thm:Poisson-summation-formula"	[style=dashed];	"def:derivative"	[color=green,		fillcolor="#B0ECA3",		label=derivative,		shape=box,		style=filled];	"def:derivative" -> "def:serre-der"	[style=dashed];	"def:derivative" -> "lemma:der-q-series"	[style=dashed];	"lemma:dedekind_eta_transformation"	[color=blue,		fillcolor="#1CAC78",		label=dedekind_eta_transformation,		shape=ellipse,		style=filled];	"lemma:disc-cuspform"	[color=green,		fillcolor="#1CAC78",		label="disc-cuspform",		shape=ellipse,		style=filled];	"lemma:dedekind_eta_transformation" -> "lemma:disc-cuspform"	[style=dashed];	"lemma:disc-cuspform" -> "lemma:phi0-transform"	[style=dashed];	"lemma:disc-cuspform" -> "lemma:lv1-lv2-identities"	[style=dashed];	"lemma:psi-bound"	[color=blue,		fillcolor="#A3D6FF",		label="psi-bound",		shape=ellipse,		style=filled];	"lemma:psi-bound" -> "cor:psiI-near-0-infty"	[style=dashed];	"lemma:psi-bound" -> "prop:b-schwartz"	[style=dashed];	"cor:dim-mf" -> "thm:ramanujan-formula"	[style=dashed];	"cor:dim-mf" -> "lemma:jacobi-identity"	[style=dashed];	"cor:disc-nonvanishing"	[color=green,		fillcolor="#1CAC78",		label="disc-nonvanishing",		shape=ellipse,		style=filled];	"cor:disc-nonvanishing" -> "prop:b-double-zeros"	[style=dashed];	"cor:disc-nonvanishing" -> "prop:a-double-zeros"	[style=dashed];	"def:E2"	[color=green,		fillcolor="#B0ECA3",		label=E2,		shape=box,		style=filled];	"def:E2" -> "def:phi4-phi2-phi0"	[style=dashed];	"def:E2" -> "def:FG-definition"	[style=dashed];	"def:E2" -> "def:serre-der"	[style=dashed];	"lemma:E2-transform-S"	[color=green,		fillcolor="#1CAC78",		label="E2-transform-S",		shape=ellipse,		style=filled];	"def:E2" -> "lemma:E2-transform-S"	[style=dashed];	"lemma:E2-transform-S" -> "lemma:phi0-transform"	[style=dashed];	"lemma:E2-transform-S" -> "lemma:Qlim"	[style=dashed];	"lemma:E2-transform-S" -> "lemma:E2-transform-general"	[style=dashed];	"lem:bound-I1-I3-I5"	[color=blue,		fillcolor="#A3D6FF",		label="bound-I1-I3-I5",		shape=ellipse,		style=filled];	"lem:bound-I1-I3-I5" -> "prop:a-schwartz";	IsZLattice	[color=green,		fillcolor="#B0ECA3",		label=IsZLattice,		shape=box,		style=filled];	PeriodicSpherePacking	[color=green,		fillcolor="#B0ECA3",		label=PeriodicSpherePacking,		shape=box,		style=filled];	IsZLattice -> PeriodicSpherePacking	[style=dashed];	PeriodicSpherePacking -> "def:Periodic-sphere-packing-constant"	[style=dashed];	"lemma:bound-J2-J4-J6"	[color=blue,		label="bound-J2-J4-J6",		shape=ellipse];	"lemma:bound-J2-J4-J6" -> "prop:b-schwartz";	"SpherePacking.balls"	[color=green,		fillcolor="#B0ECA3",		label="SpherePacking.balls",		shape=box,		style=filled];	"SpherePacking.finiteDensity"	[color=green,		fillcolor="#B0ECA3",		label="SpherePacking.finiteDensity",		shape=box,		style=filled];	"SpherePacking.balls" -> "SpherePacking.finiteDensity"	[style=dashed];	"SpherePacking.finiteDensity" -> "SpherePacking.density"	[style=dashed];	"SpherePacking.finiteDensity" -> "SpherePacking.scale_finiteDensity"	[style=dashed];	"lemma:sp-finite-density-bound"	[color=green,		fillcolor="#9CEC8B",		label="sp-finite-density-bound",		shape=ellipse,		style=filled];	"SpherePacking.finiteDensity" -> "lemma:sp-finite-density-bound"	[style=dashed];	"lemma:sp-finite-density-bound" -> "theorem:psp-density";	"lem:bound-I2-I4-I6"	[color=blue,		fillcolor="#A3D6FF",		label="bound-I2-I4-I6",		shape=ellipse,		style=filled];	"lem:bound-I2-I4-I6" -> "prop:a-schwartz";	"def:dedekind_eta"	[color=green,		fillcolor="#B0ECA3",		label=dedekind_eta,		shape=box,		style=filled];	"def:dedekind_eta" -> "lemma:dedekind_eta_transformation"	[style=dashed];	"def:disc-definition"	[color=green,		fillcolor="#B0ECA3",		label="disc-definition",		shape=box,		style=filled];	"def:dedekind_eta" -> "def:disc-definition"	[style=dashed];	"def:disc-definition" -> "cor:disc-pos"	[style=dashed];	"def:disc-definition" -> "lemma:disc-cuspform"	[style=dashed];	"def:disc-definition" -> "cor:disc-nonvanishing"	[style=dashed];	"lemma:mod-div-disc-bound"	[color=green,		fillcolor="#1CAC78",		label="mod-div-disc-bound",		shape=ellipse,		style=filled];	"def:disc-definition" -> "lemma:mod-div-disc-bound";	"lemma:disc-E4E6"	[color=green,		fillcolor="#1CAC78",		label="disc-E4E6",		shape=ellipse,		style=filled];	"def:disc-definition" -> "lemma:disc-E4E6"	[style=dashed];	"lemma:mod-div-disc-bound" -> "cor:phi4-bound"	[style=dashed];	"lemma:mod-div-disc-bound" -> "cor:phi0-bound"	[style=dashed];	"lemma:mod-div-disc-bound" -> "cor:phi2-bound"	[style=dashed];	"lemma:disc-E4E6" -> "thm:lvl1_dims"	[style=dashed];	"lemma:slash-operator-chain-rule"	[color=green,		fillcolor="#1CAC78",		label="slash-operator-chain-rule",		shape=ellipse,		style=filled];	"lemma:slash-operator-chain-rule" -> "lemma:theta-slash-invariant"	[style=dashed];	"E8-Set"	[color=green,		fillcolor="#B0ECA3",		label="E8-Set",		shape=box,		style=filled];	"E8-Set" -> "E8-defs-equivalent"	[style=dashed];	"def:Schwartz-Space"	[color=green,		fillcolor="#B0ECA3",		label="Schwartz-Space",		shape=box,		style=filled];	"def:Schwartz-Space" -> "lemma:Fourier-transform-is-automorphism"	[style=dashed];	"def:Schwartz-Space" -> "lemma:Schwartz-summable"	[style=dashed];	"lemma:bound-J1-J3-J5"	[color=blue,		label="bound-J1-J3-J5",		shape=ellipse];	"lemma:bound-J1-J3-J5" -> "prop:b-schwartz";	"def:automorphy-factor"	[color=green,		fillcolor="#B0ECA3",		label="automorphy-factor",		shape=box,		style=filled];	"def:automorphy-factor" -> "def:slash-operator"	[style=dashed];	"lemma:automorphy-factor-chain-rule"	[color=green,		fillcolor="#1CAC78",		label="automorphy-factor-chain-rule",		shape=ellipse,		style=filled];	"def:automorphy-factor" -> "lemma:automorphy-factor-chain-rule"	[style=dashed];	"lemma:automorphy-factor-chain-rule" -> "lemma:slash-operator-chain-rule"	[style=dashed];	"def:level-N-princ-cong-subgp"	[color=green,		fillcolor="#B0ECA3",		label="level-N-princ-cong-subgp",		shape=box,		style=filled];	"def:level-N-princ-cong-subgp" -> "def:congruence-subgroup"	[style=dashed];	"def:level-N-princ-cong-subgp" -> "def:Gamma-generators"	[style=dashed];	"lemma:psi-new"	[color=blue,		fillcolor="#A3D6FF",		label="psi-new",		shape=ellipse,		style=filled];	"lemma:psi-new" -> "lemma:F-G-phi-psi-identities"	[style=dashed];	"lemma:psi-new" -> "lemma:psiI-psiT-psiS-fourier"	[style=dashed];	"lemma:volume-ball-ratio-limit"	[color=green,		fillcolor="#1CAC78",		label="volume-ball-ratio-limit",		shape=ellipse,		style=filled];	"lemma:volume-ball-ratio-limit" -> "theorem:psp-density";	"lem:integral-bound"	[color=blue,		fillcolor="#A3D6FF",		label="integral-bound",		shape=ellipse,		style=filled];	"lem:integral-bound" -> "prop:a-schwartz";}`)
+    .on("end", interactive);
+
+latexLabelEscaper = function(label) {
+  return label.replace(/\./g, '\\.').replace(/:/g, '\\:')
+}
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+  $('.thm').hide();
+  $('#'+latexLabelEscaper(node_id)).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+latexLabelEscaper(title)+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>

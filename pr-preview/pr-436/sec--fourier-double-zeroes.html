@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: Fourier eigenfunctions with double zeroes at lattice points</title>
+<link rel="next" href="sec--g.html" title="Proof of Theorem " />
+<link rel="prev" href="sect0004.html" title="Modular forms" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class="">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="sec: fourier double zeroes">7 Fourier eigenfunctions with double zeroes at lattice points</h1>
+
+<p>In this section we construct two radial Schwartz functions \(a,b:\mathbb {R}^8\to i\mathbb {R}\) such that </p>
+<div class="displaymath" id="eqn:a-fourier">
+  \begin{align} \mathcal{F}(a)& =a\label{eqn:a-fourier}\\ \mathcal{F}(b)& =-b\label{eqn:b-fourier} \end{align}
+</div>
+<p> which double zeroes at all \(\Lambda _8\)-vectors of length greater than \(\sqrt{2}\). Recall that each vector of \(\Lambda _8\) has length \(\sqrt{2n}\) for some \(n\in \mathbb {N}_{\geq 0}\). We define \(a\) and \(b\) so that their values are purely imaginary because this simplifies some of our computations. We will show in Section <a href="sec--g.html">8</a> that an appropriate linear combination of functions \(a\) and \(b\) satisfies conditions <a href="sect0003.html#eqn:g1" class="eqref">6</a>–<a href="sect0003.html#eqn:g3" class="eqref">8</a>. </p>
+<p>Both of the functions will be defined via certain integrals of (quasi)modular forms. Then the eigenfunction property mainly follows from the Poisson summation formula (Theorem <a href="sect0002.html#thm:Poisson-summation-formula">4.7</a>) and the transformation laws of (quasi)modular forms. To apply Theorem <a href="sect0002.html#thm:Poisson-summation-formula">4.7</a>, we will show that \(a(x)\) and \(b(x)\) are Schwartz functions, and this can be proved by verifying fast decay of the integrals. </p>
+<p>First, we will define function \(a\). To this end we consider the following functions: </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:phi4-phi2-phi0">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7.1</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Ek">Definition 6.13</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<div class="displaymath" id="eqn: def phi4">
+  \begin{align}  \phi _{-4} & := \frac{E_4^2}{\Delta } \label{eqn: def phi4} \\ \phi _{-2} & := \frac{E_4(E_2 E_4 - E_6)}{\Delta } \label{eqn: def phi2} \\ \phi _{0} & := \frac{(E_2 E_4 - E_6)^2}{\Delta } \label{eqn: def phi0} \end{align}
+</div>
+
+  </div>
+</div>
+<p>The function \(\phi _0(z)\) is not modular; however, it satisfies the following transformation rules: </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:phi0-transform">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.2</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:phi0-transform">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000155"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">Definition 7.1</a></li>
+          
+          <li><a href="sect0004.html#lemma:Ek-is-modular-form">Lemma 6.14</a></li>
+          
+          <li><a href="sect0004.html#lemma:E2-transform-S">Lemma 6.19</a></li>
+          
+          <li><a href="sect0004.html#lemma:disc-cuspform">Lemma 6.23</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:phi0-trans-T">
+  \begin{align}  \phi _0(z + 1) & = \phi _0(z) \label{eqn:phi0-trans-T} \\ \phi _0\left(-\frac{1}{z}\right) & = \phi _0(z)-\frac{12i}{\pi }\, \frac{1}{z}\, \phi _{-2}(z)-\frac{36}{\pi ^2}\, \frac{1}{z^2}\, \phi _{-4}(z).\label{eqn:phi0-trans-S} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000155">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p><a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-T" class="eqref">118</a> easily follows from periodicity of Eisenstein series and \(\Delta (z)\). For <a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-S" class="eqref">119</a>, </p>
+<div class="displaymath" id="a0000000156">
+  \begin{align}  \phi _{0}\left(-\frac{1}{z}\right) & = \frac{(E_2(-1/z) E_4(-1/z) - E_6(-1/z))^{2}}{\Delta (-1/z)} \\ & = \frac{((z^2 E_2(z) - 6iz / \pi ) \cdot z^4 E_4(z) - z^6 E_6(z))^{2}}{z^{12} \Delta (z)} \\ & = \frac{\left(E_2(z) E_4(z) - E_6(z) - \frac{6i}{\pi z} E_4(z)\right)^2}{\Delta (z)} \\ & = \frac{(E_2(z) E_4(z) - E_6(z))^{2} - \frac{12i}{\pi z}(E_2(z) E_4(z) - E_6(z)) E_4(z) - \frac{36}{\pi ^2 z^2} E_4(z)^{2}}{\Delta (z)} \\ & = \phi _0(z) - \frac{12 i}{\pi z} \phi _{-2}(z) - \frac{36}{\pi ^2 z^2} \phi _{-4}(z). \end{align}
+</div>
+
+  </div>
+</div>
+<p>For our formalization, we choose rectangular contours for the first and the second integral, and write it as follows. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:a-definition">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7.3</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#def:a-definition">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">Definition 7.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.RealIntegrals.a'" class="lean_decl">MagicFunction.a.RealIntegrals.a'</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.RadialFunctions.a" class="lean_decl">MagicFunction.a.RadialFunctions.a</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Define \(a_{\mathrm{rad}} : \mathbb {R}\to \mathbb {C}\) by </p>
+<div class="displaymath" id="eqn:a-rad-definition">
+  \begin{align} \label{eqn:a-rad-definition} a_\mathrm{rad}(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r) \end{align}
+</div>
+<p> where </p>
+<div class="displaymath" id="eqn:a-I1">
+  \begin{align}  I_1(r) & := \int _{-1}^{-1 + i} \phi _0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I1} \\ I_2(r) & := \int _{-1 + i}^{i} \phi _0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I2} \\ I_3(r) & := \int _{1}^{1 + i} \phi _0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I3} \\ I_4(r) & := \int _{1 + i}^{i} \phi _0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I4} \\ I_5(r) & := -2 \int _{0}^{i} \phi _0 \left(\frac{-1}{z}\right) z^2 e^{\pi i r z} \mathrm{d}z \label{eqn:a-I5} \\ I_6(r) & := 2 \int _{i}^{i\infty } \phi _0(z) e^{\pi i r z} \mathrm{d}z \label{eqn:a-I6} \end{align}
+</div>
+<p> Here all the contours are chosen to be straight line segments. Now, define \(a(x) := a_{\mathrm{rad}}(\| x\| ^2)\) for \(x \in \mathbb {R}^8\). </p>
+
+  </div>
+</div>
+<p> In the original paper, the integrals \(I_1\) and \(I_2\) are combined, as well as \(I_3\) and \(I_4\). We choose to write them separately to simplify the formalization. </p>
+<p>Now we prove that \(a\) satisfies condition <a href="sec--fourier-double-zeroes.html#eqn:a-fourier" class="eqref">113</a>. The following lemma will be used to prove Schwartzness of \(a\) and \(b\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:mod-div-disc-bound">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.4</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000157"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff" class="lean_decl">MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>Let \(f(z)\) be a holomorphic function with a Fourier expansion </p>
+<div class="equation" id="a0000000158">
+<p>
+  <div class="equation_content">
+    \begin{equation}  f(z) = \sum _{n \ge n_0} c_f(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">132</span>
+</p>
+</div>
+<p> with \(c_f(n_0) \ne 0\). Assume that \(c_f(n)\) has a polynomial growth, i.e. \(|c_f(n)| = O(n^k)\) for some \(k \in \mathbb {N}\). Then there exists a constant \(C_f {\gt} 0\) such that </p>
+<div class="equation" id="a0000000159">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \left|\frac{f(z)}{\Delta (z)}\right| \le C_f e^{-\pi (n_0 - 2) \Im z} \end{equation}
+  </div>
+  <span class="equation_label">133</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+
+  </div>
+</div>
+<p> When \(f(z)\) is a (quasi)modular form, we can take \(k\) to be the weight of \(f\). </p>
+<div class="proof_wrapper" id="a0000000157">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By the product formula <a href="sect0004.html#eqn:disc-definition" class="eqref">12</a>, </p>
+<div class="displaymath" id="a0000000160">
+  \begin{align}  \left|\frac{f(z)}{\Delta (z)}\right| & = \left|\frac{\sum _{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2 \pi i z}\prod _{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\ & = |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum _{n \ge n_0} c_f(n) e^{\pi i (n - n_0) z}|}{\prod _{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\ & \le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum _{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) \Im z}}{\prod _{n \ge 1} (1 - e^{- 2\pi n \Im z})^{24}} \\ & \le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum _{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod _{n \ge 1} (1 - e^{-\pi n})^{24}} \\ & = C_f \cdot e^{-\pi (n_0 - 2) \Im z} \end{align}
+</div>
+<p> where </p>
+<div class="equation" id="a0000000161">
+<p>
+  <div class="equation_content">
+    \begin{equation}  C_f = \frac{\sum _{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod _{n \ge 1} (1 - e^{-\pi n})^{24}}. \end{equation}
+  </div>
+  <span class="equation_label">139</span>
+</p>
+</div>
+<p> Note that the summation in the numerator converges absolutely because of polynomial growth. The denominator also converges, which is simply \(e^{\pi } \cdot \Delta (i/2)\). </p>
+
+  </div>
+</div>
+<p>As corollaries, we have the following bound for \(\phi _0\), \(\phi _{-2}\), and \(\phi _{-4}\). </p>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:phi0-bound">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">7.5</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#cor:phi0-bound">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000162"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:ramanujan-formula">Theorem 6.49</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">Lemma 7.4</a></li>
+          
+          <li><a href="sect0004.html#lemma:Ek-Fourier">Lemma 6.16</a></li>
+          
+          <li><a href="sect0004.html#lemma:mod_form_poly_growth">Lemma 6.15</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> There exists a constant \(C_0 {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi0-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi0-bound} |\phi _0(z)| \le C_0 e^{-2 \pi \Im z} \end{equation}
+  </div>
+  <span class="equation_label">140</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000162">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By Ramanujan’s formula, \(E_2 E_4 - E_6 = 3E_4' = 720 \sum _{n \ge 1} n \sigma _3(n) e^{2 \pi i n z}\) and </p>
+<div class="displaymath" id="a0000000163">
+  \begin{equation*}  (E_2(z) E_4(z) - E_6(z))^{2} = 720^{2} e^{4 \pi i z} + O(e^{5 \pi i z}). \end{equation*}
+</div>
+<p> Then the result follows from Lemma&#160;<a href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">7.4</a> with \(f(z) = (E_2 E_4 - E_6)^2\) and \(n_0 = 4\). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:phi2-bound">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">7.6</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#cor:phi2-bound">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">Definition 7.1</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">Lemma 7.4</a></li>
+          
+          <li><a href="sect0004.html#lemma:Ek-Fourier">Lemma 6.16</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> There exists a constant \(C_{-2} {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi2-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi2-bound} |\phi _{-2}(z)| \le C_{-2} \end{equation}
+  </div>
+  <span class="equation_label">141</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:phi4-bound">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">7.7</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#cor:phi4-bound">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">Definition 7.1</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">Lemma 7.4</a></li>
+          
+          <li><a href="sect0004.html#lemma:Ek-Fourier">Lemma 6.16</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> There exists a constant \(C_{-4} {\gt} 0\) such that </p>
+<div class="equation" id="eqn:phi4-bound">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:phi4-bound} |\phi _{-4}(z)| \le C_{-4} e^{2 \pi \Im z} \end{equation}
+  </div>
+  <span class="equation_label">142</span>
+</p>
+</div>
+<p> for all \(z\) with \(\Im z {\gt} 1/2\). </p>
+
+  </div>
+</div>
+<p>Note that we can take the constants \(C_0\), \(C_{-2}\), and \(C_{-4}\) as </p>
+<div class="displaymath" id="a0000000164">
+  \begin{align}  C_0 & = 9 \cdot 240^2 \cdot e^{\pi } \cdot \frac{E_4'(i/2)^{2}}{\Delta (i/2)} \notag \\ C_{-2} & = 3 \cdot \frac{E_4(i/2) E_4'(i/2)}{\Delta (i/2)} \notag \\ C_{-4} & = e^{-\pi } \cdot \frac{E_4(i/2)^{2}}{\Delta (i/2)}. \notag \end{align}
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:integral-bound">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.8</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lem:integral-bound">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000165"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> For all \(n \in \mathbb {N}\), there exists a constant \(C'\) such that for all \(r \geq 0\), </p>
+<div class="displaymath" id="a0000000166">
+  \begin{align}  r^n \cdot \int _{1}^{\infty } e^{-2\pi s} \,  e^{-\pi r /s} \,  \mathrm{d}s \leq C’ \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000165">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Fix \(n \in \mathbb {N}\). We know there exists a constant \(C\) such that for all \(x \geq 0\), \(\left\lvert x \right\rvert ^n \cdot \left\lvert e^{-\pi x} \right\rvert  \leq C\). In particular, for all \(r \geq 0\) and \(s \geq 1\), \(r^n \cdot e^{-\pi r/s} \leq C s^n\). Hence, for all \(r \in \mathbb {R}\), we can write </p>
+<div class="displaymath" id="a0000000167">
+  \begin{align}  r^n \cdot \int _{1}^{\infty } e^{-2\pi s} \,  e^{-\pi r /s} \,  \mathrm{d}{s} = \int _{1}^{\infty } e^{-2\pi s} \,  \left(\left\lvert r \right\rvert ^n \cdot e^{-\pi r /s}\right) \,  \mathrm{d}{s} \leq C \int _{1}^{\infty } e^{-2\pi s} \,  s^n \,  \mathrm{d}{s} \end{align}
+</div>
+<p> The \(\Gamma \) function is given by </p>
+<div class="displaymath" id="a0000000168">
+  \begin{align}  \Gamma (x) = \int _{0}^{\infty } e^{-u} \,  u^{x-1} \,  \mathrm{d}{u} \end{align}
+</div>
+<p> for all \(x {\gt} 0\). Hence, writing \(u = 2\pi s\) and using \(\Gamma (n+1) = n!\), we get </p>
+<div class="displaymath" id="a0000000169">
+  \begin{align}  C \int _{1}^{\infty } e^{-2\pi s} \,  s^n \,  \mathrm{d}{s} \leq C \int _{0}^{\infty } e^{-2\pi s} \,  s^n \,  \mathrm{d}{s} = C \int _{0}^{\infty } \frac{1}{(2\pi )^{n+1}} e^{-u} \,  u^n \,  \mathrm{d}{u} = \frac{C}{(2\pi )^n} \Gamma (n+1) = \frac{C \cdot n!}{(2\pi )^n} \end{align}
+</div>
+<p> Defining \(C' := \frac{C \cdot n!}{(2\pi )^n}\) finishes the proof. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:bound-I1-I3-I5">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.9</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lem:bound-I1-I3-I5">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000170"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> There exists \(C {\gt} 0\) such that for all \(r \geq 0\), </p>
+<div class="equation" id="a0000000171">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_1(r)|, |I_3(r)|, |I_5(r)| \leq C \int _1^{\infty } e^{-2\pi s} \,  e^{-\pi r / s} \,  \mathrm{d}s. \end{equation}
+  </div>
+  <span class="equation_label">147</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000170">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We only prove the bound for \(I_1(r)\), as the other two are similar. By the change of variable \(z = -1 + i t\) for \(t \in [0,1]\), we have </p>
+<div class="displaymath" id="a0000000172">
+  \[  I_1(r) = -i \int _0^1 \phi _0\left(\frac{-1}{i t}\right) t^2 e^{-\pi i r} \cdot e^{-\pi r t} \,  \mathrm{d}t.  \]
+</div>
+<p> With the change of variable \(s = 1 / t\), we get </p>
+<div class="displaymath" id="a0000000173">
+  \[  I_1(r) = i \int _1^{\infty } \phi _0(i s) \cdot s^{-4} \cdot e^{-\pi i r} \cdot e^{-\pi r / s} \,  \mathrm{d}s  \]
+</div>
+<p> and the absolute value can be bounded as </p>
+<div class="displaymath" id="a0000000174">
+  \[  |I_1(r)| \leq \int _1^{\infty } |\phi _0(i s)| \cdot s^{-4} \cdot |e^{-\pi i r}| \cdot e^{-\pi r / s} \,  \mathrm{d}s \le \int _1^{\infty } |\phi _0(is)| \cdot e^{-\pi r / s} \,  \mathrm{d}s.  \]
+</div>
+<p> Now, Corollary&#160;<a href="sec--fourier-double-zeroes.html#cor:phi0-bound">7.5</a> shows </p>
+<div class="displaymath" id="a0000000175">
+  \[  |I_1(r)| \leq C_0 \int _1^{\infty } e^{-2\pi s} \,  e^{-\pi r / s} \,  \mathrm{d}s.  \]
+</div>
+
+  </div>
+</div>
+<p> Combined with Lemma&#160;<a href="sec--fourier-double-zeroes.html#lem:integral-bound">7.8</a>, this shows that the integrals \(I_1\), \(I_3\), and \(I_5\) decay faster than any polynomial as \(r \to \infty \). For the integrals \(I_2\), \(I_4\), and \(I_6\), it is easier to see this since the contours are not touching the real axis. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:bound-I2-I4-I6">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.10</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lem:bound-I2-I4-I6">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000176"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> There exist \(C_1, C_2 {\gt} 0\) such that for all \(r \geq 0\), </p>
+<div class="equation" id="a0000000177">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_2(r)|, |I_4(r)| \leq C_1 e^{-\pi r} \end{equation}
+  </div>
+  <span class="equation_label">148</span>
+</p>
+</div>
+<p> and </p>
+<div class="equation" id="a0000000178">
+<p>
+  <div class="equation_content">
+    \begin{equation}  |I_6(r)| \leq C_2 \frac{e^{-\pi (r + 2)}}{r + 2} \end{equation}
+  </div>
+  <span class="equation_label">149</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000176">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>For \(I_2(r)\), parametrize \(z\) as \(z = t + i\) for \(t \in [-1,0]\), and we have </p>
+<div class="displaymath" id="a0000000179">
+  \[  I_2(r) = \int _{-1}^0 \phi _0\left(\frac{-1}{t + 1 + i}\right) (t + 1 + i)^2 e^{\pi i r t} e^{-\pi r} \,  \mathrm{d}t.  \]
+</div>
+<p> Since the function \(z \mapsto \phi _0\left(\frac{-1}{z+1}\right) (z+1)^2\) is holomorphic and bounded on the contour, there exists \(C {\gt} 0\) such that \(|\phi _0\left(\frac{-1}{z+1}\right) (z + 1)^2| \leq C\), and the absolute value of the integral can be bounded by </p>
+<div class="displaymath" id="a0000000180">
+  \[  |I_2(r)| \le \int _{-1}^{0} C e^{-\pi r} \,  \mathrm{d}t = C e^{-\pi r}.  \]
+</div>
+<p> The bound for \(I_4(r)\) is similar. For \(I_6(r)\), parametrize \(z\) as \(z = i t\) for \(t \in [1, \infty )\), and we have </p>
+<div class="displaymath" id="a0000000181">
+  \[  I_6(r) = 2 i \int _1^{\infty } \phi _0(i t) e^{-\pi r t} \,  \mathrm{d}t  \]
+</div>
+<p> and the absolute value can be bounded as (using Corollary&#160;<a href="sec--fourier-double-zeroes.html#cor:phi0-bound">7.5</a>) </p>
+<div class="displaymath" id="a0000000182">
+  \[  |I_6(r)| \leq 2 \int _1^{\infty } |\phi _0(i t)| e^{-\pi r t} \,  \mathrm{d}t \leq \frac{2C_0}{\pi } \int _1^{\infty } e^{-2\pi t} e^{-\pi r t} \,  \mathrm{d}t = \frac{2C_0}{\pi } \frac{e^{-\pi (r + 2)}}{r + 2}.  \]
+</div>
+
+  </div>
+</div>
+<p>Combining these, one can show that \(a\) is a Schwartz function. </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:a-schwartz">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.11</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:a-schwartz">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000183"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:a-definition">Definition 7.3</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:phi0-bound">Corollary 7.5</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lem:bound-I1-I3-I5">Lemma 7.9</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lem:bound-I2-I4-I6">Lemma 7.10</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lem:integral-bound">Lemma 7.8</a></li>
+          
+          <li><a href="sect0002.html#thm:smooth-fast-decay-schwartz">Theorem 4.8</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.FourierEigenfunctions.a" class="lean_decl">MagicFunction.FourierEigenfunctions.a</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> \(a(x)\) is a Schwartz function. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000183">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> By Theorem <a href="sect0002.html#thm:smooth-fast-decay-schwartz">4.8</a>, it suffices to show that the function is smooth and decays faster than any polynomial. The smoothness follows from the “differentiation under the integral”, which is already formalized in <span class="ttfamily">mathlib</span>. The decay follows from Lemmas <a href="sec--fourier-double-zeroes.html#lem:bound-I1-I3-I5">7.9</a> and <a href="sec--fourier-double-zeroes.html#lem:bound-I2-I4-I6">7.10</a>, together with Lemma <a href="sec--fourier-double-zeroes.html#lem:integral-bound">7.8</a>. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:a-fourier">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.12</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:a-fourier">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000184"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:Ek-Fourier">Lemma 6.16</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:a-definition">Definition 7.3</a></li>
+          
+          <li><a href="sect0002.html#lemma:Gaussian-Fourier">Lemma 4.2</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a-schwartz">Proposition 7.11</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.Fourier.eig_a" class="lean_decl">MagicFunction.a.Fourier.eig_a</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  \(a(x)\) satisfies <a href="sec--fourier-double-zeroes.html#eqn:a-fourier" class="eqref">113</a>. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000184">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We recall that the Fourier transform of a Gaussian function is </p>
+<div class="equation" id="eqn:gaussian Fourier">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:gaussian Fourier} \mathcal{F}(e^{\pi i \| x\| ^2 z})(y)=z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z}) }. \end{equation}
+  </div>
+  <span class="equation_label">150</span>
+</p>
+</div>
+<p> Next, we exchange the contour integration with respect to \(z\) variable and Fourier transform with respect to \(x\) variable in ??. This can be done, since the corresponding double integral converges absolutely. In this way we obtain </p>
+<div class="displaymath" id="a0000000185">
+  \begin{align}  \widehat{a}(y)=& \int \limits _{-1}^i\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z})}\, dz +\int \limits _{1}^i\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z})}\, dz\notag \\ -& 2\int \limits _{0}^i\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z})}\, dz +2\int \limits _{i}^{i\infty }\phi _0(z)\, z^{-4}\, e^{\pi i \| y\| ^2 \, (\frac{-1}{z})}\, dz.\notag \end{align}
+</div>
+<p> Now we make a change of variables \(w=\frac{-1}{z}\). We obtain </p>
+<div class="displaymath" id="a0000000186">
+  \begin{align}  \widehat{a}(y)=& \int \limits _{1}^i\phi _0\Big(1-\frac{1}{w-1}\Big)\, (\frac{-1}{w}+1)^2\, w^{2}\, e^{\pi i \| y\| ^2 \, w}\, dw\notag \\ +& \int \limits _{-1}^i\phi _0\Big(1-\frac{1}{w+1}\Big)\, (\frac{-1}{w}-1)^2\, w^2\, e^{\pi i \| y\| ^2 \, w}\, dw\\ -& 2\int \limits _{i \infty }^i\phi _0(w)\, e^{\pi i \| y\| ^2 \, w}\, dw +2\int \limits _{i}^{0}\phi _0\Big(\frac{-1}{w}\Big)\, w^{2}\, e^{\pi i \| y\| ^2 \, w}\, dw.\notag \end{align}
+</div>
+<p> Since \(\phi _0\) is \(1\)-periodic we have </p>
+<div class="displaymath" id="a0000000187">
+  \begin{align}  \widehat{a}(y)\, =\, & \int \limits _{1}^i\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, e^{\pi i \| y\| ^2 \, z}\, dz +\int \limits _{-1}^i\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, e^{\pi i \| y\| ^2 \, z}\, dz\notag \\ +& 2\int \limits _{i}^{i\infty }\phi _0(z)\, e^{\pi i \| y\| ^2 \, z}\, dz -2\int \limits _{0}^{i}\phi _0\Big(\frac{-1}{z}\Big)\, z^{2}\, e^{\pi i \| y\| ^2 \, z}\, dz\notag \\ \, =\, & a(y). \end{align}
+</div>
+<p> This finishes the proof of the proposition. </p>
+
+  </div>
+</div>
+<p>Next, we check that \(a\) has double zeroes at all \(\Lambda _8\)-lattice points of length greater then \(\sqrt{2}\). Using <a href="sec--fourier-double-zeroes.html#eqn:phi0-bound" class="eqref">140</a>, <a href="sec--fourier-double-zeroes.html#eqn:phi2-bound" class="eqref">141</a>, and <a href="sec--fourier-double-zeroes.html#eqn:phi4-bound" class="eqref">142</a>, we can control the behavior of \(\phi _0\) near \(0\) and \(i\infty \). </p>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:phi0-near-0-infty">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">7.13</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#cor:phi0-near-0-infty">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000188"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:phi0-bound">Corollary 7.5</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:phi2-bound">Corollary 7.6</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:phi4-bound">Corollary 7.7</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:phi0-transform">Lemma 7.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:phi0-near-0">
+  \begin{align}  \phi _0\left(\frac{i}{t}\right) & = O(e^{-2 \pi / t}) \quad \text{as } t \to 0 \label{eqn:phi0-near-0} \\ \phi _0\left(\frac{i}{t}\right) & = O(t^{-2}e^{2 \pi t}) \quad \text{as } t \to \infty . \label{eqn:phi0-near-infty} \\ \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000188">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The first estimate follows from <a href="sec--fourier-double-zeroes.html#eqn:phi0-bound" class="eqref">140</a> with \(z = i/t\). For the second estimate, by <a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-S" class="eqref">119</a>, <a href="sec--fourier-double-zeroes.html#eqn:phi2-bound" class="eqref">141</a>, and <a href="sec--fourier-double-zeroes.html#eqn:phi4-bound" class="eqref">142</a>, we have </p>
+<div class="equation" id="a0000000189">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \left|\phi _0\left(\frac{i}{t}\right)\right| \le |\phi _0(it)| + \frac{12}{\pi t} |\phi _{-2}(it)| + \frac{36}{\pi ^2 t^2} |\phi _{-4}(it)| \le C_0 e^{-2 \pi t} + \frac{12}{\pi t} \cdot C_{-2} + \frac{36}{\pi ^2 t^2} \cdot C_{-4} e^{2 \pi t} = O(t^{-2}e^{2 \pi t}). \end{equation}
+  </div>
+  <span class="equation_label">156</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:a-double-zeros">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.14</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:a-double-zeros">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000190"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:phi0-near-0-infty">Corollary 7.13</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:a-definition">Definition 7.3</a></li>
+          
+          <li><a href="sect0004.html#cor:disc-nonvanishing">Corollary 6.26</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  For \(r{\gt}\sqrt{2}\) we can express \(a(r)\) in the following form </p>
+<div class="equation" id="eqn: a double zeroes">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: a double zeroes} a(r)=-4\sin (\pi r^2/2)^2\, \int \limits _{0}^{i\infty }\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz. \end{equation}
+  </div>
+  <span class="equation_label">157</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000190">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We denote the right hand side of <a href="sec--fourier-double-zeroes.html#eqn: a double zeroes" class="eqref">157</a> by \(d(r)\). Convergence of the integral for \(r {\gt} \sqrt{2}\) follows from Corollary&#160;<a href="sec--fourier-double-zeroes.html#cor:phi0-near-0-infty">7.13</a>. We can write </p>
+<div class="displaymath" id="a0000000191">
+  \begin{align}  d(r)=& \int \limits _{-1}^{i\infty -1}\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, e^{\pi i r^2 \, z}\, dz- 2\int \limits _{0}^{i\infty }\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz\notag \\ +& \int \limits _{1}^{i\infty +1}\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, e^{\pi i r^2 \, z}\, dz.\notag \end{align}
+</div>
+<p> From <a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-S" class="eqref">119</a> we deduce that if \(r{\gt}\sqrt{2}\) then \(\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\to 0\) as \(\Im (z)\to \infty \). Therefore, we can deform the paths of integration and rewrite </p>
+<div class="displaymath" id="a0000000192">
+  \begin{align}  d(r)=& \int \limits _{-1}^{i}\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, e^{\pi i r^2 \, z}\, dz +\int \limits _{i}^{i\infty }\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, e^{\pi i r^2 \, z}\, dz\notag \\ -2& \int \limits _{0}^{i}\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz -2\int \limits _{i}^{i\infty }\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz\notag \\ +& \int \limits _{1}^{i}\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, e^{\pi i r^2 \, z}\, dz +\int \limits _{i}^{i\infty }\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, e^{\pi i r^2 \, z}\, dz.\notag \end{align}
+</div>
+<p> Now from <a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-S" class="eqref">119</a> we find </p>
+<div class="displaymath" id="a0000000193">
+  \begin{align} & \phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2-2\phi _0\Big(\frac{-1}{z}\Big)\, z^2+ \phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2=\notag \\ & \phi _0(z+1)\, (z+1)^2-2\phi _0(z)\, z^2+\phi _0(z-1)\, (z-1)^2\notag \\ & -\frac{12i}{\pi }\, \Big(\phi _{-2}(z+1)\, (z+1)-2\phi _{-2}(z)\, z+\phi _{-2}(z-1)\, (z-1)\Big)\notag \\ & -\frac{36}{\pi ^2}\Big(\phi _{-4}(z+1)-2\phi _{-4}(z)+\phi _{-4}(z-1)\Big)=\notag \\ & 2\phi _0(z). \end{align}
+</div>
+<p> Thus, we obtain </p>
+<div class="displaymath" id="a0000000194">
+  \begin{align}  d(r)=& \int \limits _{-1}^{i}\phi _0\Big(\frac{-1}{z+1}\Big)\, (z+1)^2\, e^{\pi i r^2 \, z}\, dz -2\int \limits _{0}^{i}\phi _0\Big(\frac{-1}{z}\Big)\, z^2\, e^{\pi i r^2 \, z}\, dz\notag \\ +& \int \limits _{1}^{i}\phi _0\Big(\frac{-1}{z-1}\Big)\, (z-1)^2\, e^{\pi i r^2 \, z}\, dz +2\int \limits _{i}^{i\infty }\phi _0(z)\, e^{\pi i r^2 \, z}\, dz=a(r).\notag \end{align}
+</div>
+<p> This finishes the proof. </p>
+
+  </div>
+</div>
+<p>Finally, we find another convenient integral representation for \(a\) and compute values of \(a(r)\) at \(r=0\) and \(r=\sqrt{2}\). </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:a-another-integral">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.15</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:a-another-integral">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000195"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a-double-zeros">Proposition 7.14</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:phi4-phi2-phi0">Definition 7.1</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:phi0-transform">Lemma 7.2</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:a-definition">Definition 7.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> For \(r\geq 0\) we have </p>
+<div class="displaymath" id="eqn:a-another-integral">
+  \begin{align} \label{eqn:a-another-integral}a(r)=& 4i\, \sin (\pi r^2/2)^2\, \Bigg(\frac{36}{\pi ^3\, (r^2-2)}-\frac{8640}{\pi ^3\, r^4}+\frac{18144}{\pi ^3\, r^2}\\ +& \int \limits _0^\infty \, \left(t^2\, \phi _0\Big(\frac{i}{t}\Big)-\frac{36}{\pi ^2}\, e^{2\pi t}+\frac{8640}{\pi }\, t-\frac{18144}{\pi ^2}\right)\, e^{-\pi r^2 t}\, dt \Bigg) .\notag \end{align}
+</div>
+<p> The integral converges absolutely for all \(r\in \mathbb {R}_{\geq 0}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000195">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Suppose that \(r{\gt}\sqrt{2}\). Then by Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:a-double-zeros">7.14</a> </p>
+<div class="displaymath" id="a0000000196">
+  \[ a(r)=4i\, \sin (\pi r^2/2)^2\, \int \limits _{0}^{\infty }\phi _0(i/t)\, t^2\, e^{-\pi r^2 t}\, dt.  \]
+</div>
+<p> From <a href="sec--fourier-double-zeroes.html#eqn:phi0-trans-S" class="eqref">119</a> we obtain </p>
+<div class="equation" id="eqn: phi asymptotic">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: phi asymptotic} \phi _0(i/t)\, t^2=\frac{36}{\pi ^2}\, e^{2 \pi t}-\frac{8640}{\pi }\, t+\frac{18144}{\pi ^2}+O(t^2\, e^{-2\pi t})\quad \mbox{as}\; t\to \infty . \end{equation}
+  </div>
+  <span class="equation_label">160</span>
+</p>
+</div>
+<p> For \(r{\gt}\sqrt{2}\) we have </p>
+<div class="equation" id="a0000000197">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \int \limits _0^\infty \left(\frac{36}{\pi ^2}\, e^{2 \pi t}+\frac{8640}{\pi }\, t+\frac{18144}{\pi ^2}\right)\, e^{-\pi r^2 t}\, dt =\frac{36}{\pi ^3\, (r^2-2)}-\frac{8640}{\pi ^3\, r^4}+\frac{18144}{\pi ^3\, r^2}.\end{equation}
+  </div>
+  <span class="equation_label">161</span>
+</p>
+</div>
+<p> Therefore, the identity <a href="sec--fourier-double-zeroes.html#eqn:a-another-integral" class="eqref">159</a> holds for \(r{\gt}\sqrt{2}\). </p>
+<p>On the other hand, from the definition&#160;?? we see that \(a(r)\) is analytic in some neighborhood of \([0,\infty )\). The asymptotic expansion&#160;<a href="sec--fourier-double-zeroes.html#eqn: phi asymptotic" class="eqref">160</a> implies that the right hand side of <a href="sec--fourier-double-zeroes.html#eqn:a-another-integral" class="eqref">159</a> is also analytic in some neighborhood of \([0,\infty )\). Hence, the identity <a href="sec--fourier-double-zeroes.html#eqn:a-another-integral" class="eqref">159</a> holds on the whole interval \([0,\infty )\). This finishes the proof of the proposition. </p>
+
+  </div>
+</div>
+<p> From the identity&#160;<a href="sec--fourier-double-zeroes.html#eqn:a-another-integral" class="eqref">159</a> we see that the values \(a(r)\) are in \(i\mathbb {R}\) for all \(r\in \mathbb {R}_{\geq 0}\). </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:a0">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.16</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:a0">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000198"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a-another-integral">Proposition 7.15</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.a.SpecialValues.a_zero" class="lean_decl">MagicFunction.a.SpecialValues.a_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>We have \(a(0) = -\frac{i}{8640}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000198">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>These identities follow immediately from the previous proposition. </p>
+
+  </div>
+</div>
+<p>Now we construct function \(b\). To this end we consider the function </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def: h">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7.17</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#def: h">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<div class="equation" id="eqn: h define">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: h define} h(z) := 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2}. \end{equation}
+  </div>
+  <span class="equation_label">162</span>
+</p>
+</div>
+
+  </div>
+</div>
+<p> It is easy to see that \(h\in M^!_{-2}(\Gamma _0(2))\). Indeed, first we check that \(h|_{-2}\gamma =h\) for all \(\gamma \in \Gamma _0(2)\). Since the group \(\Gamma _0(2)\) is generated by elements \(\left(\begin{smallmatrix} 1
+
+& 0
+
+\\ 2
+
+& 1
+
+\end{smallmatrix}\right)\) and \(\left(\begin{smallmatrix} 1
+
+& 1
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\) it suffices to check that \(h\) is invariant under their action. This follows immediately from <a href="sect0004.html#eqn:H2-transform-S" class="eqref">27</a>–<a href="sect0004.html#eqn:H4-transform-S" class="eqref">29</a> and <a href="sec--fourier-double-zeroes.html#eqn: h define" class="eqref">162</a>. Next we analyze the poles of \(h\). It is known <span class="cite">
+	[
+	<a href="sec--g.html#Mumford" >7</a>
+	, 
+	Chapter
+	
+	I Lemma
+	
+	4.1
+	]
+</span> that \(\theta _{10}\) has no zeros in the upper-half plane and hence \(h\) has poles only at the cusps. At the cusp \(i\infty \) this modular form has the Fourier expansion </p>
+<div class="displaymath" id="a0000000199">
+  \begin{equation*}  h(z)\, =\, q^{-1} + 16 - 132 q + 640 q^2 - 2550 q^3+O(q^4). \end{equation*}
+</div>
+<p> Let \(I=\left(\begin{smallmatrix} 1
+
+& 0
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\), \(T=\left(\begin{smallmatrix} 1
+
+& 1
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\), and \(S=\left(\begin{smallmatrix} 0
+
+& -1
+
+\\ 1
+
+& 0
+
+\end{smallmatrix}\right)\) be elements of \(\Gamma _1\). </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:psiI-psiT-psiS">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7.18</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def: h">Definition 7.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> We define the following three functions </p>
+<div class="displaymath" id="eqn:psiI-define">
+  \begin{align}  \psi _I\, :=\, & h-h|_{-2}ST \label{eqn:psiI-define}\\ \psi _T\, :=\, & \psi _I|_{-2}T \label{eqn:psiT-define}\\ \psi _S\, :=\, & \psi _I|_{-2}S. \label{eqn:psiS-define} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:psi-new">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.19</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:psi-new">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000200"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> \(\psi _I(z), \psi _S(z), \psi _T(z)\) can be written as </p>
+<div class="displaymath" id="eqn:psiI-new">
+  \begin{align}  \psi _I(z) & = \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta }, \label{eqn:psiI-new} \\ \psi _S(z) & = -\frac{H_2^3 (2 H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta }. \label{eqn:psiS-new} \\ \psi _T(z) & = \frac{H_3^3 (5 H_2^2 - 5 H_2 H_3 + 2 H_3^2)}{2 \Delta }\label{eqn:psiT-new} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000200">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By Lemma <a href="sect0004.html#lemma:theta-transform-S-T">6.33</a>, we have </p>
+<div class="displaymath" id="a0000000201">
+  \begin{align}  H_2|_{-2}ST = (-H_4)|_{-2}T = -H_3, \\ H_3|_{-2}ST = (-H_3)|_{-2}T = -H_4, \\ H_4|_{-2}ST = (-H_2)|_{-2}T = H_2. \end{align}
+</div>
+<p> Using these equations and Lemma <a href="sect0004.html#lemma:lv1-lv2-identities">6.41</a>, we can rewrite \(\psi _I(z)\) as </p>
+<div class="displaymath" id="a0000000202">
+  \begin{align}  \psi _I(z) & = h(z) - h|_{-2}ST(z) \\ & = 128 \frac{H_3 + H_4}{H_2^2} - 128 \frac{-H_4 + H_2}{H_3^2} \\ & = 128 \frac{H_3^2 (H_3 + H_4) - H_2^2 (H_2 - H_4)}{H_2^2 H_3^2} \\ & = 128 \frac{(H_2 + H_4)^2 (H_2 + 2 H_4) - H_2^2 (H_2 - H_4)}{H_2^2 H_3^2} \\ & = 128 \frac{H_4(5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{ H_2^2 H_3^2} \\ & = 128 \frac{H_4^3(5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{ H_2^2 H_3^2 H_4^3} \\ & = \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta }. \end{align}
+</div>
+<p> Applying \(|_{-2}S\) and \(|_{-2}T\) to the expression of \(\psi _I\) proves <a href="sec--fourier-double-zeroes.html#eqn:psiS-new" class="eqref">167</a> and <a href="sec--fourier-double-zeroes.html#eqn:psiT-new" class="eqref">168</a>. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:psiI-psiT-psiS-fourier">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.20</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:psiI-psiT-psiS-fourier">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psi-new">Lemma 7.19</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> The Fourier expansions of these functions are </p>
+<div class="displaymath" id="eqn: psi fourier I">
+  \begin{align}  \psi _I(z)\, =\, & q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier I}\\ \psi _T(z)\, =\, & q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier T} \end{align}
+</div>
+
+  </div>
+</div>
+<p>Now, we are ready to define function \(b\). Again, the definition here is slightly different from that in <span class="cite">
+	[
+	<a href="sec--g.html#Via2017" >11</a>
+	]
+</span>, where all the contours are chosen to be the straight lines. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:b-definition">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7.21</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#def:b-definition">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">Definition 7.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Define \(b_\mathrm{rad}: \mathbb {R}\to \mathbb {C}\) by </p>
+<div class="equation" id="eqn:b-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \label{eqn:b-definition} b_\mathrm{rad}(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r) \end{equation}
+  </div>
+  <span class="equation_label">181</span>
+</p>
+</div>
+<p> where for \(r \in \mathbb {R}\), </p>
+<div class="displaymath" id="eqn:J1">
+  \begin{align}  J_1(r) & := \int _{-1}^{-1 + i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J1} \\ J_2(r) & := \int _{-1 + i}^{i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J2} \\ J_3(r) & := \int _{1}^{1 + i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J3} \\ J_4(r) & := \int _{1 + i}^{i} \psi _T(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J4} \\ J_5(r) & := -2 \int _{0}^{i} \psi _I(z) e^{\pi i r z} \,  \mathrm{d}z, \label{eqn:J5} \\ J_6(r) & := -2 \int _{i}^{i \infty } \psi _S(z) e^{\pi i r z} \,  \mathrm{d}z. \label{eqn:J6} \end{align}
+</div>
+<p> Here all the contours are straight line segments. Then we define \(b : \mathbb {R}^8 \to \mathbb {C}\) by \(b(x) := b_\mathrm{rad}(\| x\| ^2)\). </p>
+
+  </div>
+</div>
+<p>Now we prove that \(b\) is a Schwartz function and satisfies condition <a href="sec--fourier-double-zeroes.html#eqn:b-fourier" class="eqref">114</a>. As in the case of \(a(x)\), we start with the following exponential bound of \(\psi _S(z)\) and \(\psi _I(z)\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:psi-bound">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.22</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:psi-bound">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000203"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> There exist constants \(C_I, C_S, C_T {\gt} 0\) such that </p>
+<div class="displaymath" id="eqn:psiI-bound">
+  \begin{align}  |\psi _I(z)| & \le C_I e^{2\pi \Im z}, \label{eqn:psiI-bound} \\ |\psi _T(z)| & \le C_T e^{2\pi \Im z}, \label{eqn:psiT-bound} \\ |\psi _S(z)| & \le C_S e^{- \pi \Im z} \label{eqn:psiS-bound} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000203">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The proof is similar to that of Lemma <a href="sec--fourier-double-zeroes.html#cor:phi0-bound">7.5</a>, follows from Lemma <a href="sec--fourier-double-zeroes.html#lemma:mod-div-disc-bound">7.4</a> and the fact that the vanishing orders of the numerators of \(\psi _I\), \(\psi _T\), and \(\psi _S\) at infinity are \(0\), \(0\) (i.e. not cusp forms), and \(\frac{3}{2}\) respectively. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:bound-J1-J3-J5">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.23</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:bound-J1-J3-J5">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> There exist a constant \(C {\gt} 0\) such that </p>
+<div class="displaymath" id="a0000000204">
+  \begin{align}  |J_1(r)|, |J_3(r)|, |J_5(r)| & \le C \int _1^{\infty } e^{-\pi s} e^{\pi r / s}\,  \mathrm{d}s. \end{align}
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:bound-J2-J4-J6">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">7.24</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#lemma:bound-J2-J4-J6">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> There exist \(C_1, C_2 {\gt} 0\) such that </p>
+<div class="displaymath" id="a0000000205">
+  \begin{align}  |J_2(r)|, |J_4(r)| & \le C_1 e^{-\pi r} \\ |J_6(r)| & \le C_2 \frac{e^{\pi (r + 1)}}{r + 1} \end{align}
+</div>
+
+  </div>
+</div>
+<p>Combining Lemmas <a href="sec--fourier-double-zeroes.html#lemma:bound-J1-J3-J5">7.23</a>, <a href="sec--fourier-double-zeroes.html#lemma:bound-J2-J4-J6">7.24</a>, and Theorem <a href="sect0002.html#thm:smooth-fast-decay-schwartz">4.8</a>, we can prove that \(b(x)\) is a Schwartz function. </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:b-schwartz">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.25</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:b-schwartz">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000206"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psi-bound">Lemma 7.22</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:bound-J1-J3-J5">Lemma 7.23</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:bound-J2-J4-J6">Lemma 7.24</a></li>
+          
+          <li><a href="sect0002.html#thm:smooth-fast-decay-schwartz">Theorem 4.8</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.FourierEigenfunctions.b" class="lean_decl">MagicFunction.FourierEigenfunctions.b</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>\(b(x)\) is a Schwartz function. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000206">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Similar to the proof of <a href="sec--fourier-double-zeroes.html#prop:a-schwartz">7.11</a>. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:b-fourier">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.26</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:b-fourier">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000207"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:b-definition">Definition 7.21</a></li>
+          
+          <li><a href="sect0002.html#lemma:Gaussian-Fourier">Lemma 4.2</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">Definition 7.18</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b-schwartz">Proposition 7.25</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.b.Fourier.eig_b" class="lean_decl">MagicFunction.b.Fourier.eig_b</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>\(b(x)\) satisfies <a href="sec--fourier-double-zeroes.html#eqn:b-fourier" class="eqref">114</a>. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000207">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Here, we repeat the arguments used in the proof of Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:a-fourier">7.12</a>. We use identity&#160;<a href="sec--fourier-double-zeroes.html#eqn:gaussian Fourier" class="eqref">150</a> and change contour integration in \(z\) and Fourier transform in \(x\). Thus we obtain </p>
+<div class="displaymath" id="a0000000208">
+  \begin{align}  \mathcal{F}(b)(x)= &  \int \limits _{-1}^{i}\psi _T(z)\, z^{-4}\, e^{\pi i \| x\| ^2 (\frac{-1}{z})}\, dz + \int \limits _{1}^{i}\psi _T(z)\, z^{-4}\, e^{\pi i \| x\| ^2 (\frac{-1}{z})}\, dz \notag \\ -&  2\, \int \limits _{0}^{i}\psi _I(z)\, z^{-4}\, e^{\pi i \| x\| ^2 (\frac{-1}{z})}\, dz - 2\, \int \limits _{i}^{i\infty }\psi _S(z)\, z^{-4}\, e^{\pi i \| x\| ^2 (\frac{-1}{z})}\, dz. \notag \end{align}
+</div>
+<p> We make the change of variables \(w=\frac{-1}{z}\) and arrive at </p>
+<div class="displaymath" id="a0000000209">
+  \begin{align}  \mathcal{F}(b)(x)= &  \int \limits _{1}^{i}\psi _T\Big(\frac{-1}{w}\Big)\, w^{2}\, e^{\pi i \| x\| ^2 w}\, dw + \int \limits _{-1}^{i}\psi _T\Big(\frac{-1}{w}\Big)\, w^{2}\, e^{\pi i \| x\| ^2 w}\, dw \notag \\ -&  2\, \int \limits _{i\infty }^{i}\psi _I\Big(\frac{-1}{w}\Big)\, w^{2}\, e^{\pi i \| x\| ^2 w}\, dw - 2\, \int \limits _{i}^{0}\psi _S\Big(\frac{-1}{w}\Big)\, w^{2}\, e^{\pi i \| x\| ^2 w}\, dw.\notag \end{align}
+</div>
+<p> Now we observe that the definitions <a href="sec--fourier-double-zeroes.html#eqn:psiI-define" class="eqref">163</a>–<a href="sec--fourier-double-zeroes.html#eqn:psiS-define" class="eqref">165</a> imply </p>
+<div class="displaymath" id="a0000000210">
+  \begin{align}  \psi _T|_{-2}S=& -\psi _T \notag \\ \psi _I|_{-2}S=& \psi _S \notag \\ \psi _S|_{-2}S=& \psi _I. \notag \end{align}
+</div>
+<p> Therefore, we arrive at </p>
+<div class="displaymath" id="a0000000211">
+  \begin{align}  \mathcal{F}(b)(x)= &  \int \limits _{1}^{i}-\psi _T(z)\, e^{\pi i \| x\| ^2 z}\, dz + \int \limits _{-1}^{i}-\psi _T(z)\, e^{\pi i \| x\| ^2 z}\, dz \notag \\ +&  2\, \int \limits _{i}^{i\infty }\psi _S(z)\, e^{\pi i \| x\| ^2 z}\, dz + 2\, \int \limits _{0}^{i}\psi _I(z)\, e^{\pi i \| x\| ^2 w}\, dw.\notag \end{align}
+</div>
+<p> Now from&#160;<a href="sec--fourier-double-zeroes.html#eqn:b-definition" class="eqref">181</a> we see that </p>
+<div class="displaymath" id="a0000000212">
+  \[  \mathcal{F}(b)(x)=-b(x).  \]
+</div>
+
+  </div>
+</div>
+<p> Now we regard the radial function \(b\) as a function on \(\mathbb {R}_{\geq 0}\). We check that \(b\) has double roots at \(\Lambda _8\)-points. </p>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:psiI-near-0-infty">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">7.27</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#cor:psiI-near-0-infty">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000213"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psi-bound">Lemma 7.22</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">Definition 7.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:psiI-near-0">
+  \begin{align}  \psi _I(it) & = O(t^2 e^{\pi /t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\ \psi _I(it) & = O(e^{2 \pi t}) \quad \text{as } t \to \infty . \label{eqn:psiI-near-infty} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000213">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sec--fourier-double-zeroes.html#eqn:psiS-define" class="eqref">165</a>, we have </p>
+<div class="equation" id="a0000000214">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \psi _I(it) = (it)^{-2} \psi _S\left(\frac{-1}{it}\right) = -t^{-2} \psi _S\left(\frac{i}{t}\right). \end{equation}
+  </div>
+  <span class="equation_label">196</span>
+</p>
+</div>
+<p> and combined with <a href="sec--fourier-double-zeroes.html#eqn:psiS-bound" class="eqref">190</a> we get <a href="sec--fourier-double-zeroes.html#eqn:psiI-near-0" class="eqref">194</a>. <a href="sec--fourier-double-zeroes.html#eqn:psiI-near-infty" class="eqref">195</a> follows from Lemma <a href="sec--fourier-double-zeroes.html#lemma:psi-bound">7.22</a>. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:b-double-zeros">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.28</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:b-double-zeros">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000215"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psiI-psiT-psiS-fourier">Lemma 7.20</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">Definition 7.18</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#cor:psiI-near-0-infty">Corollary 7.27</a></li>
+          
+          <li><a href="sect0004.html#cor:disc-nonvanishing">Corollary 6.26</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> For \(r{\gt}\sqrt{2}\) function \(b(r)\) can be expressed as </p>
+<div class="equation" id="eqn: b double zeroes">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: b double zeroes} b(r)=-4\sin (\pi r^2/2)^2\, \int \limits _{0}^{i\infty }\psi _I(z)\, e^{\pi i r^2 \, z}\, dz. \end{equation}
+  </div>
+  <span class="equation_label">197</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000215">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We denote the right hand side of&#160;<a href="sec--fourier-double-zeroes.html#eqn: b double zeroes" class="eqref">197</a> by \(c(r)\). By Corollary <a href="sec--fourier-double-zeroes.html#cor:psiI-near-0-infty">7.27</a>, the integral in&#160;<a href="sec--fourier-double-zeroes.html#eqn: b double zeroes" class="eqref">197</a> converges for \(r{\gt}\sqrt{2}\). Then we rewrite it in the following way: </p>
+<div class="displaymath" id="a0000000216">
+  \[ c(r)=\int \limits _{-1}^{i\infty -1}\psi _I(z+1)\, e^{\pi i r^2 \, z}\, dz-2\int \limits _{0}^{i\infty }\psi _I(z)\, e^{\pi i r^2 \, z}\, dz+ \int \limits _{1}^{i\infty +1}\psi _I(z-1)\, e^{\pi i r^2 \, z}\, dz. \]
+</div>
+<p> From the Fourier expansion&#160;<a href="sec--fourier-double-zeroes.html#eqn: psi fourier I" class="eqref">179</a> we know that \(\psi _I(z)=e^{-2\pi i z}+O(1)\) as \(\Im (z)\to \infty \). By assumption \(r^2{\gt}2\), hence we can deform the path of integration and write </p>
+<div class="displaymath" id="eqn: inside proof 1">
+  \begin{align} \label{eqn: inside proof 1} \int \limits _{-1}^{i\infty -1}\psi _I(z+1)\, e^{\pi i r^2 \, z}\, dz=&  \int \limits _{-1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz+\int \limits _{i}^{i\infty }\psi _T(z)\, e^{\pi i r^2 \, z}\, dz\\ \int \limits _{1}^{i\infty +1}\psi _I(z-1)\, e^{\pi i r^2 \, z}\, dz=&  \int \limits _{-1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz+\int \limits _{i}^{i\infty }\psi _T(z)\, e^{\pi i r^2 \, z}\, dz. \end{align}
+</div>
+<p> We have </p>
+<div class="displaymath" id="eqn: c1">
+  \begin{align} \label{eqn: c1}c(r)=& \int \limits _{-1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz+\int \limits _{1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz -2\int \limits _{0}^{i}\psi _I(z)\, e^{\pi i r^2 \, z}\, dz\\ & +2\int \limits _{i}^{i\infty }(\psi _T(z)-\psi _I(z))\, e^{\pi i r^2 \, z}\, dz.\nonumber \end{align}
+</div>
+<p> Next, we check that the functions \(\psi _I,\psi _T\), and \(\psi _S\) satisfy the following identity: </p>
+<div class="equation" id="eqn: c2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: c2}\psi _T+\psi _S=\psi _I.\end{equation}
+  </div>
+  <span class="equation_label">201</span>
+</p>
+</div>
+<p> Indeed, from definitions <a href="sec--fourier-double-zeroes.html#eqn:psiI-define" class="eqref">163</a>-<a href="sec--fourier-double-zeroes.html#eqn:psiS-define" class="eqref">165</a> we get </p>
+<div class="displaymath" id="a0000000217">
+  \begin{align} \psi _T+\psi _S=& (h-h|_{-2}ST)|_{-2}T+(h-h|_{-2}ST)|_{-2}S\notag \\ =& h|_{-2}T-h|_{-2}ST^2+h|_{-2}S-h|_{-2}STS.\notag \end{align}
+</div>
+<p> Note that \(ST^2S\) belongs to \(\Gamma _0(2)\). Thus, since \(h\in M^!_{-2}\Gamma _0(2)\) we get </p>
+<div class="displaymath" id="a0000000218">
+  \[ \psi _T+\psi _S=h|_{-2}T-h|_{-2}STS.  \]
+</div>
+<p> Now we observe that \(T\) and \(STS(ST)^{-1}\) are also in \(\Gamma _0(2)\). Therefore, </p>
+<div class="displaymath" id="a0000000219">
+  \[ \psi _T+\psi _S=h|_{-2}T-h|_{-2}STS=h|_{-2}-h|ST=\psi _I. \]
+</div>
+<p>Combining <a href="sec--fourier-double-zeroes.html#eqn: c1" class="eqref">200</a> and <a href="sec--fourier-double-zeroes.html#eqn: c2" class="eqref">201</a> we find </p>
+<div class="displaymath" id="a0000000220">
+  \begin{align} c(r)=& \int \limits _{-1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz+\int \limits _{1}^{i}\psi _T(z)\, e^{\pi i r^2 \, z}\, dz -2\int \limits _{0}^{i}\psi _I(z)\, e^{\pi i r^2 \, z}\, dz\notag \\ & -2\int \limits _{i}^{i\infty }\psi _S(z)\, e^{\pi i r^2 \, z}\, dz\notag \\ =& b(r).\notag \end{align}
+</div>
+
+  </div>
+</div>
+<p> At the end of this section we find another integral representation of \(b(r)\) for \(r\in \mathbb {R}_{\geq 0}\) and compute special values of \(b\). </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:b-another-integral">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.29</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:b-another-integral">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000221"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b-double-zeros">Proposition 7.28</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psiI-psiT-psiS-fourier">Lemma 7.20</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:b-definition">Definition 7.21</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#eqn: psi asymptotic"> 203</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> For \(r\geq 0\) we have </p>
+<div class="equation" id="eqn:b-another-integral">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:b-another-integral}b(r)=4i\, \sin (\pi r^2/2)^2\, \left(\frac{144}{\pi \, r^2}+\frac{1}{\pi \, (r^2-2)}+\int \limits _0^\infty \, \left(\psi _I(it)-144-e^{2\pi t}\right)\, e^{-\pi r^2 t}\, dt\right).\end{equation}
+  </div>
+  <span class="equation_label">202</span>
+</p>
+</div>
+<p> The integral converges absolutely for all \(r\in \mathbb {R}_{\geq 0}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000221">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The proof is analogous to the proof of Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:a-another-integral">7.15</a>. First, suppose that \(r{\gt}\sqrt{2}\). Then by Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:b-double-zeros">7.28</a> </p>
+<div class="displaymath" id="a0000000222">
+  \[ b(r)=4i\, \sin (\pi r^2/2)^2\, \int \limits _{0}^{\infty }\psi _I(it)\, e^{-\pi r^2 t}\, dt.  \]
+</div>
+<p> From <a href="sec--fourier-double-zeroes.html#eqn: psi fourier I" class="eqref">179</a> we obtain </p>
+<div class="equation" id="eqn: psi asymptotic">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: psi asymptotic} \psi _I(it)=e^{2\pi t}+144+O(e^{-\pi t})\quad \mbox{as}\; t\to \infty . \end{equation}
+  </div>
+  <span class="equation_label">203</span>
+</p>
+</div>
+<p> For \(r{\gt}\sqrt{2}\) we have </p>
+<div class="equation" id="a0000000223">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \int \limits _0^\infty \left(e^{2\pi t}+144\right)\, e^{-\pi r^2 t}\, dt =\frac{1}{\pi \, (r^2-2)}+\frac{144}{\pi \, r^2}.\end{equation}
+  </div>
+  <span class="equation_label">204</span>
+</p>
+</div>
+<p> Therefore, the identity <a href="sec--fourier-double-zeroes.html#eqn:b-another-integral" class="eqref">202</a> holds for \(r{\gt}\sqrt{2}\). </p>
+<p>On the other hand, from the definition <a href="sec--fourier-double-zeroes.html#eqn:b-definition" class="eqref">181</a> we see that \(b(r)\) is analytic in some neighborhood of \([0,\infty )\). The asymptotic expansion <a href="sec--fourier-double-zeroes.html#eqn: psi asymptotic" class="eqref">203</a> implies that the right hand side of <a href="sec--fourier-double-zeroes.html#eqn:b-another-integral" class="eqref">202</a> is also analytic in some neighborhood of \([0,\infty )\). Hence, the identity <a href="sec--fourier-double-zeroes.html#eqn:b-another-integral" class="eqref">202</a> holds on the whole interval \([0,\infty )\). This finishes the proof of the proposition. </p>
+
+  </div>
+</div>
+<p> We see from <a href="sec--fourier-double-zeroes.html#eqn:b-another-integral" class="eqref">202</a> that \(b(r)\in i\mathbb {R}\) far all \(r\in \mathbb {R}_\geq {0}\). Another immediate corollary of this proposition is </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:b0">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">7.30</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#prop:b0">#</a>
+    
+    <a class="icon proof" href="sec--fourier-double-zeroes.html#a0000000224"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b-another-integral">Proposition 7.29</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MagicFunction.b.SpecialValues.b_zero" class="lean_decl">MagicFunction.b.SpecialValues.b_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>We have \(b(0) = 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000224">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>These identities follow immediately from the previous proposition. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0004.html" title="Modular forms"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sec--g.html" title="Proof of Theorem 5.3"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

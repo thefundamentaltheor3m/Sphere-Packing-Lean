@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></title>
+<link rel="prev" href="sec--fourier-double-zeroes.html" title="Fourier eigenfunctions with double zeroes at lattice points" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class=" active current">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="sec: g">8 Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></h1>
+<p> Our proof of the Theorem&#160;<a href="sect0003.html#thm:g">5.3</a> relies on the following two inequalities for modular objects. </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:ineqA">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">8.1</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#prop:ineqA">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:ineqABnew-equiv">Lemma 8.5</a></li>
+          
+          <li><a href="sec--g.html#lemma:F-G-phi-psi-identities">Lemma 8.4</a></li>
+          
+          <li><a href="sec--g.html#lemma:F-G-pos">Lemma 8.6</a></li>
+          
+          <li><a href="sec--g.html#cor:ineqAnew">Corollary 8.7</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> Consider the function \(A:(0,\infty )\to \mathbb {C}\) defined as </p>
+<div class="equation" id="eqn:defA">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:defA} A(t):=-t^2\phi _0(i/t)-\frac{36}{\pi ^2}\, \psi _I(it). \end{equation}
+  </div>
+  <span class="equation_label">205</span>
+</p>
+</div>
+<p> Then </p>
+<div class="equation" id="eqn:ineqA">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:ineqA} A(t) {\lt} 0 \end{equation}
+  </div>
+  <span class="equation_label">206</span>
+</p>
+</div>
+<p> for all \(t {\gt} 0\). </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:ineqB">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">8.2</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#prop:ineqB">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:ineqABnew-equiv">Lemma 8.5</a></li>
+          
+          <li><a href="sec--g.html#lemma:F-G-phi-psi-identities">Lemma 8.4</a></li>
+          
+          <li><a href="sec--g.html#cor:ineqBnew">Corollary 8.13</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> Consider the function \(B:(0,\infty )\to \mathbb {C}\) defined as </p>
+<div class="equation" id="eqn:defB">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:defB} B(t) := -t^2\phi _0(i/t)+\frac{36}{\pi ^2}\, \psi _I(it) \end{equation}
+  </div>
+  <span class="equation_label">207</span>
+</p>
+</div>
+<p> Then </p>
+<div class="equation" id="eqn:ineqB">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:ineqB} B(t) {\gt} 0 \end{equation}
+  </div>
+  <span class="equation_label">208</span>
+</p>
+</div>
+<p> for all \(t {\gt} 0\). </p>
+
+  </div>
+</div>
+<p>Here we formalize the proof of the inequalities by Lee <span class="cite">
+	[
+	<a href="sec--g.html#Lee" >6</a>
+	]
+</span>. First, we can rewrite the inequality in <a href="sec--g.html#prop:ineqA">8.1</a> as follows. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:FG-definition">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">8.3</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#def:FG-definition">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+          <li><a href="sect0004.html#def:Ek">Definition 6.13</a></li>
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/F" class="lean_decl">F</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/G" class="lean_decl">G</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>Define two (quasi) modular forms as </p>
+<div class="displaymath" id="eqn:defF">
+  \begin{align}  F(z) & = (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\ G(z) & = H_2(z)^{3} (2 H_{2}(z)^{2} + 5 H_{2}(z) H_{4}(z) + 5 H_{4}(z)^{2}). \label{eqn:defG} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:F-G-phi-psi-identities">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.4</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:F-G-phi-psi-identities">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000225"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#def:FG-definition">Definition 8.3</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#lemma:psi-new">Lemma 7.19</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:phi0-F">
+  \begin{align}  \phi _0 & = \frac{F}{\Delta } \label{eqn:phi0-F} \\ \psi _S & = -\frac{1}{2} \frac{G}{\Delta }\label{eqn:psiS-G} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000225">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p><a href="sec--g.html#eqn:phi0-F" class="eqref">211</a> is clear. <a href="sec--g.html#eqn:psiS-G" class="eqref">212</a> is already shown in Lemma <a href="sec--fourier-double-zeroes.html#lemma:psi-new">7.19</a>. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:ineqABnew-equiv">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.5</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:ineqABnew-equiv">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000226"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:F-G-phi-psi-identities">Lemma 8.4</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#def:psiI-psiT-psiS">Definition 7.18</a></li>
+          
+          <li><a href="sect0004.html#cor:disc-pos">Corollary 6.25</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> Inequality <a href="sec--g.html#eqn:ineqA" class="eqref">206</a> and <a href="sec--g.html#eqn:ineqB" class="eqref">208</a> are equivalent to </p>
+<div class="displaymath" id="eqn:ineqAnew">
+  \begin{align}  F(it) + \frac{18}{\pi ^2} G(it) {\gt} 0 \label{eqn:ineqAnew} \\ F(it) - \frac{18}{\pi ^2} G(it) {\gt} 0 \label{eqn:ineqBnew} \end{align}
+</div>
+<p> respectively. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000226">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sec--fourier-double-zeroes.html#eqn:psiS-define" class="eqref">165</a>, </p>
+<div class="equation" id="a0000000227">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \psi _I(it) = (\psi _S|_{-2}S)(it) = (it)^{2}\psi _S\left(-\frac{1}{it}\right) = -t^2 \psi _S\left(\frac{i}{t}\right). \end{equation}
+  </div>
+  <span class="equation_label">215</span>
+</p>
+</div>
+<p> Combined with Lemma <a href="sec--g.html#lemma:F-G-phi-psi-identities">8.4</a> we can rewrite <a href="sec--g.html#eqn:ineqA" class="eqref">206</a> as </p>
+<div class="equation" id="a0000000228">
+<p>
+  <div class="equation_content">
+    \begin{equation}  A(t) = -t^2 \phi _0\left(\frac{i}{t}\right) + \frac{36}{\pi ^2} \psi _S\left(\frac{i}{t}\right) {\lt} 0 \Leftrightarrow \frac{F(it)}{\Delta (it)} + \frac{18}{\pi ^2} \frac{G(it)}{\Delta (it)} {\gt} 0 \end{equation}
+  </div>
+  <span class="equation_label">216</span>
+</p>
+</div>
+<p> for \(t {\gt} 0\), which is equivalent to <a href="sec--g.html#eqn:ineqAnew" class="eqref">213</a> by Corollary <a href="sect0004.html#cor:disc-pos">6.25</a>. Equivalences of <a href="sec--g.html#eqn:ineqB" class="eqref">208</a> and <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a> follows similarly; just change the sign. </p>
+
+  </div>
+</div>
+<p>Now, the first inequality <a href="sec--g.html#eqn:ineqAnew" class="eqref">213</a> follows from the positivity of each \(F(it)\) and \(G(it)\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:F-G-pos">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.6</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:F-G-pos">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000229"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:ramanujan-formula">Theorem 6.49</a></li>
+          
+          <li><a href="sect0004.html#cor:theta-pos">Corollary 6.42</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/F_imag_axis_pos" class="lean_decl">F_imag_axis_pos</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/G_imag_axis_pos" class="lean_decl">G_imag_axis_pos</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>For all \(t {\gt} 0\), we have \(F(it) {\gt} 0\) and \(G(it) {\gt} 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000229">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By Ramanujan’s identity <a href="sect0004.html#eqn:DE4" class="eqref">80</a>, we have \(F(z) = 9 E_4'(z)^2\) and </p>
+<div class="equation" id="a0000000230">
+<p>
+  <div class="equation_content">
+    \begin{equation}  F(it) = 9E_4'(it)^2 = 9 \left(240\sum _{n \geq 1} n \sigma _3(n) e^{-2 \pi n t} \right)^{2} {\gt} 0. \end{equation}
+  </div>
+  <span class="equation_label">217</span>
+</p>
+</div>
+<p> \(G(it) {\gt} 0\) follows from positivity of \(H_2(it)\) and \(H_4(it)\) (Lemma <a href="sect0004.html#cor:theta-pos">6.42</a>). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:ineqAnew">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">8.7</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#cor:ineqAnew">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000231"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:F-G-pos">Lemma 8.6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FG_inequality_1" class="lean_decl">FG_inequality_1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p><a href="sec--g.html#eqn:ineqAnew" class="eqref">213</a> holds. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000231">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>This directly follows from Lemma <a href="sec--g.html#lemma:F-G-pos">8.6</a>. </p>
+
+  </div>
+</div>
+<p>To prove the second inequality <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a>, we need some identities satisfied by \(F\) and \(G\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:FG-de">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.8</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:FG-de">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000232"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:ramanujan-formula">Theorem 6.49</a></li>
+          
+          <li><a href="sect0004.html#thm:serre-der-prod-rule">Theorem 6.52</a></li>
+          
+          <li><a href="sect0004.html#prop:theta-der">Proposition 6.51</a></li>
+          
+          <li><a href="sect0004.html#lemma:lv1-lv2-identities">Lemma 6.41</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MLDE_F" class="lean_decl">MLDE_F</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/MLDE_G" class="lean_decl">MLDE_G</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(F\) and \(G\) satisfy the following differential equations: </p>
+<div class="displaymath" id="eqn:ddf">
+  \begin{align}  \partial _{12}\partial _{10} F - \frac{5}{6} E_{4} F & = 7200 \Delta (-E_{2}’) \label{eqn:ddf} \\ \partial _{12}\partial _{10} G - \frac{5}{6} E_{4} G & = -640 \Delta H_{2} \label{eqn:ddg} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000232">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Both can be shown by direct computations. By Ramanujan’s identities (Theorem <a href="sect0004.html#thm:ramanujan-formula">6.49</a>) and the product rule of Serre derivatives (Theorem <a href="sect0004.html#thm:serre-der-prod-rule">6.52</a>), we have </p>
+<div class="displaymath" id="a0000000233">
+  \begin{align}  \partial _{5} (E_2 E_4 - E_6) & = (E_2 E_4 - E_6)’ - \frac{5}{12} E_2 (E_2 E_4 - E_6) \\ & = \frac{E_2^2 - E_4}{12} \cdot E_4 + E_2 \cdot \frac{E_2 E_4 - E_6}{3} - \frac{E_2 E_6 - E_4^2}{2} - \frac{5}{12}E_2 (E_2 E_4 - E_6) \\ & = -\frac{5}{12} (E_2 E_6 - E_4^2) \label{eqn:S5} \\ \partial _{7} (E_2 E_6 - E_4^2) & = (E_2 E_6 - E_4^2)’ - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\ & = \frac{E_2^2 - E_4}{12} \cdot E_6 + E_2 \cdot \frac{E_2 E_6 - E_4^2}{2} - 2 E_4 \cdot \frac{E_2 E_4 - E_6}{3} - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\ & = -\frac{7}{12} E_4 (E_2 E_4 - E_6) \label{eqn:S7} \end{align}
+</div>
+<p> and using these we can compute </p>
+<div class="displaymath" id="a0000000234">
+  \begin{align}  \partial _{10} F & = \partial _{10} (E_2 E_4 - E_6)^2 \\ & = 2 (E_2 E_4 - E_6) \partial _{5} (E_2 E_4 - E_6) \\ & = -\frac{6}{5} (E_2 E_4 - E_6) (E_2 E_6 - E_4^2), \\ \partial _{12}\partial _{10} F & = -\frac{5}{6} \partial _{12} ((E_2 E_4 - E_6) (E_2 E_6 - E_4)) \\ & = -\frac{5}{6} (\partial _{5}(E_2 E_4 - E_6)) (E_2 E_6 - E_4^2) - \frac{5}{6} (E_2 E_4 - E_6) (\partial _{7} (E_2 E_6 - E_4)) \\ & = \frac{25}{72} (E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2, \\ \partial _{12}\partial _{10}F - \frac{5}{6} E_4 F & = \frac{25}{72}(E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2 - \frac{5}{6} E_4 (E_2 E_4 - E_6)^2 \\ & = \frac{25}{72} ((E_2 E_6 - E_4^2)^2 - E_4 (E_2 E_4 - E_6)^2) \\ & = \frac{25}{72} (- E_2^2 E_4^3 + E_2^2 E_6^2 + E_4^4 - E_4 E_6^3) \\ & = -\frac{25}{72} (E_4^3 - E_6^2) (E_2^2 - E_4) \\ & = 7200 \cdot \frac{E_4^3 - E_6^2}{1728} \cdot \frac{-E_2^2 + E_4}{12}\\ & = 7200 \Delta (-E_2’) \end{align}
+</div>
+<p> which proves <a href="sec--g.html#eqn:ddf" class="eqref">218</a>. Similarly, <a href="sec--g.html#eqn:ddg" class="eqref">219</a> can be proved using Proposition <a href="sect0004.html#prop:theta-der">6.51</a> and Lemma <a href="sect0004.html#lemma:lv1-lv2-identities">6.41</a>. </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:MLDE-pos">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">8.9</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#cor:MLDE-pos">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000235"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:FG-de">Lemma 8.8</a></li>
+          
+          <li><a href="sect0004.html#cor:disc-pos">Corollary 6.25</a></li>
+          
+          <li><a href="sect0004.html#cor:theta-pos">Corollary 6.42</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p><a href="sec--g.html#eqn:ddf" class="eqref">218</a> (resp. <a href="sec--g.html#eqn:ddg" class="eqref">219</a>) is positive (resp. negative) on the (positive) imaginary axis. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000235">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>From <a href="sect0004.html#eqn:E2" class="eqref">13</a> and Lemma <a href="sect0004.html#cor:disc-pos">6.25</a>, </p>
+<div class="displaymath" id="a0000000236">
+  \begin{equation*}  7200 (-E_2’(it)) \Delta (it) = 7200 \cdot 24 \left(\sum _{n \ge 1} n \sigma _1(n) e^{-2 \pi n t}\right) \cdot \Delta (it) {\gt} 0. \end{equation*}
+</div>
+<p> Negativity of <a href="sec--g.html#eqn:ddg" class="eqref">219</a>, i.e. \(-640 \Delta (it) H_2(it) {\lt} 0\) follows from Corollary <a href="sect0004.html#cor:theta-pos">6.42</a> and <a href="sect0004.html#cor:disc-pos">6.25</a>. </p>
+
+  </div>
+</div>
+<p>The second inequality <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a> follows from the following two observations. Since \(G(it) {\gt} 0\) for all \(t {\gt} 0\), we can define the quotient </p>
+<div class="equation" id="eqn:Q">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Q} Q(t) := \frac{F(it)}{G(it)} \end{equation}
+  </div>
+  <span class="equation_label">238</span>
+</p>
+</div>
+<p> as a function on \((0, \infty )\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Qlim">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.10</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:Qlim">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000237"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:E2-transform-S">Lemma 6.19</a></li>
+          
+          <li><a href="sect0004.html#lemma:Ek-is-modular-form">Lemma 6.14</a></li>
+          
+          <li><a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FmodG_rightLimitAt_zero" class="lean_decl">FmodG_rightLimitAt_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>We have </p>
+<div class="equation" id="a0000000238">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to 0^+} Q(t) = \frac{18}{\pi ^2}. \end{equation}
+  </div>
+  <span class="equation_label">239</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000237">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We have </p>
+<div class="equation" id="a0000000239">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to 0^+} Q(t) = \lim _{t \to 0^+} \frac{F(it)}{G(it)} = \lim _{t \to \infty } \frac{F(i/t)}{G(i/t)}. \end{equation}
+  </div>
+  <span class="equation_label">240</span>
+</p>
+</div>
+<p> By using the transformation laws of Eisenstein series <a href="sect0004.html#eqn:E2-S-transform" class="eqref">14</a>, <a href="sect0004.html#eqn:Ek-trans-S" class="eqref">10</a> (for \(k = 4, 6\)) and the thetanull functions, <a href="sect0004.html#eqn:H2-transform-S" class="eqref">27</a>, <a href="sect0004.html#eqn:H4-transform-S" class="eqref">29</a>, we get </p>
+<div class="displaymath" id="a0000000240">
+  \begin{align}  F\left(\frac{i}{t}\right) & = t^{12} F(it) - \frac{12t^{11}}{\pi } (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36t^{10}}{\pi ^2}E_4(it)^2, \\ G\left(\frac{i}{t}\right) & = t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2}). \end{align}
+</div>
+<p> Since \(F\), \(E_2 E_4 - E_6\) and \(H_2\) are cusp forms, we have \(\lim _{t \to \infty }t^k A(it) = 0\) when \(A(z)\) is one of these forms and \(k \geq 0\). From \(\lim _{t \to \infty } E_4(it) = 1 = \lim _{t \to \infty }H_{4}(it)\), we get </p>
+<div class="displaymath" id="a0000000241">
+  \begin{align}  \lim _{t \to \infty } \frac{F(i/t)}{G(i/t)} & = \lim _{t \to \infty } \frac{t^{12} F(it) - \frac{12t^{11}}{\pi } (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36t^{10}}{\pi ^2}E_4(it)^2}{t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2})} \\ & = \lim _{t \to \infty } \frac{t^{2} F(it) - \frac{12t}{\pi } (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36}{\pi ^2}E_4(it)^2}{H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2})} \\ & = \frac{18}{\pi ^2}. \end{align}
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:log-der-inf">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">8.11</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#lemma:log-der-inf">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000242"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:der-q-series">Lemma 6.44</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> Let \(F\) be a quasimodular form where the vanishing order of \(F\) at infinity is \(n_0 {\gt} 0\), i.e. \(F(z) = \sum _{n \geq n_0} a_n q^{n}\) with \(a_{n_0} \ne 0\). Then </p>
+<div class="equation" id="a0000000243">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to \infty } \frac{F'(it)}{F(it)} = n_0. \end{equation}
+  </div>
+  <span class="equation_label">246</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000242">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By Lemma <a href="sect0004.html#lemma:der-q-series">6.44</a>, </p>
+<div class="equation" id="a0000000244">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \lim _{t \to \infty } \frac{F'(it)}{F(it)} = \lim _{t \to \infty } \frac{\sum _{n \ge n_0} n a_n e^{-2 \pi n t}}{\sum _{n \ge n_0} a_n e^{-2 \pi n t}} = \lim _{t \to \infty } \frac{n_0 a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})}{a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})} = n_0. \end{equation}
+  </div>
+  <span class="equation_label">247</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:Qdec">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">8.12</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#prop:Qdec">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000245"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:ramanujan-formula">Theorem 6.49</a></li>
+          
+          <li><a href="sect0004.html#thm:serre-der-prod-rule">Theorem 6.52</a></li>
+          
+          <li><a href="sec--g.html#cor:MLDE-pos">Corollary 8.9</a></li>
+          
+          <li><a href="sect0004.html#thm:anti-serre-der-pos">Theorem 6.53</a></li>
+          
+          <li><a href="sec--g.html#lemma:log-der-inf">Lemma 8.11</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FmodG_strictAntiOn" class="lean_decl">FmodG_strictAntiOn</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>The function \(t \mapsto Q(t)\) is strictly decreasing. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000245">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>It is enough to show that </p>
+<div class="displaymath" id="a0000000246">
+  \begin{align}  \frac{\mathrm{d}}{\mathrm{d}t} \left(\frac{F(it)}{G(it)}\right) {\lt} 0 & \Leftrightarrow (- 2\pi ) \frac{F'(it)G(it) - F(it) G'(it)}{G(it)^{2}} {\lt} 0 \\ & \Leftrightarrow F’(it) G(it) - F(it) G’(it) {\gt} 0 \\ & \Leftrightarrow (\partial _{10}F)(it) G(it) - F(it) (\partial _{10}G)(it) {\gt} 0. \end{align}
+</div>
+<p> Let \(\mathcal{L}_{1, 0} := (\partial _{10}F) G - F (\partial _{10} G) = F'G - FG'\). Then </p>
+<div class="displaymath" id="a0000000247">
+  \begin{align}  \frac{\mathcal{L}_{1, 0}}{FG} = \frac{F'G - FG'}{FG} = \frac{F'}{F} - \frac{G'}{G} \end{align}
+</div>
+<p> The vanishing order of \(F\) and \(G\) at the infinity are \(2\) and \(\frac{3}{2}\) respectively, so by Lemma <a href="sec--g.html#lemma:log-der-inf">8.11</a>, we have </p>
+<div class="displaymath" id="a0000000248">
+  \begin{align}  \lim _{t \to \infty } \frac{\mathcal{L}_{1, 0}(it)}{F(it) G(it)} = \lim _{t \to \infty } \left(\frac{F'(it)}{F(it)} - \frac{G'(it)}{G(it)}\right) = 2 - \frac{3}{2} = \frac{1}{2} {\gt} 0 \end{align}
+</div>
+<p> so \(\mathcal{L}_{1, 0}(it) {\gt} 0\) for sufficiently large \(t\). Its Serre derivative \(\partial _{22} \mathcal{L}_{1, 0}\) is positive by Corollary <a href="sec--g.html#cor:MLDE-pos">8.9</a>: </p>
+<div class="displaymath" id="a0000000249">
+  \begin{align}  \partial _{22} \mathcal{L}_{1, 0} = (\partial _{12} \partial _{10} F) G - F (\partial _{12}\partial _{10} G) = \Delta (7200 (-E_{2}’) G + 640 H_2 F) {\gt} 0. \end{align}
+</div>
+<p> Hence \(\mathcal{L}_{1, 0}(it) {\gt} 0\) by Theorem <a href="sect0004.html#thm:anti-serre-der-pos">6.53</a>, and the monotonicity follows. </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:ineqBnew">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">8.13</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#cor:ineqBnew">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000250"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#lemma:Qlim">Lemma 8.10</a></li>
+          
+          <li><a href="sec--g.html#prop:Qdec">Proposition 8.12</a></li>
+          
+          <li><a href="sec--g.html#lemma:F-G-pos">Lemma 8.6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/FG_inequality_2" class="lean_decl">FG_inequality_2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>  <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a> holds. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000250">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <div class="equation" id="a0000000251">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \frac{F(it)}{G(it)} = Q(t) {\lt} \lim _{u \to 0^+} Q(u) = \frac{18}{\pi ^2} \end{equation}
+  </div>
+  <span class="equation_label">254</span>
+</p>
+</div>
+<p> and by Lemma <a href="sec--g.html#lemma:F-G-pos">8.6</a>, <a href="sec--g.html#eqn:ineqBnew" class="eqref">214</a> follows. </p>
+
+  </div>
+</div>
+<p>Finally, we are ready to prove Theorem&#160;<a href="sect0003.html#thm:g">5.3</a>. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:g1">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">8.14</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sec--g.html#thm:g1">#</a>
+    
+    <a class="icon proof" href="sec--g.html#a0000000252"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a-fourier">Proposition 7.12</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b-fourier">Proposition 7.26</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a-double-zeros">Proposition 7.14</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b-double-zeros">Proposition 7.28</a></li>
+          
+          <li><a href="sec--g.html#prop:ineqA">Proposition 8.1</a></li>
+          
+          <li><a href="sec--g.html#prop:ineqB">Proposition 8.2</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:a0">Proposition 7.16</a></li>
+          
+          <li><a href="sec--fourier-double-zeroes.html#prop:b0">Proposition 7.30</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>  The function </p>
+<div class="displaymath" id="a0000000253">
+  \[ g(x):=\frac{\pi \, i}{8640}a(x)+\frac{i}{240\pi }\, b(x) \]
+</div>
+<p> satisfies conditions <a href="sect0003.html#eqn:g1" class="eqref">6</a>–<a href="sect0003.html#eqn:g3" class="eqref">8</a>. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000252">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>First, we prove that <a href="sect0003.html#eqn:g1" class="eqref">6</a> holds. By Propositions&#160;<a href="sec--fourier-double-zeroes.html#prop:a-double-zeros">7.14</a> and <a href="sec--fourier-double-zeroes.html#prop:b-double-zeros">7.28</a> we know that for \(r{\gt}\sqrt{2}\) </p>
+<div class="equation" id="eqn:g A">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:g A} g(r)=\frac{\pi }{2160}\, \sin (\pi r^2/2)^2\, \int \limits _0^\infty A(t)\, e^{-\pi r^2 t}\, dt\end{equation}
+  </div>
+  <span class="equation_label">255</span>
+</p>
+</div>
+<p> where </p>
+<div class="displaymath" id="a0000000254">
+  \[ A(t)=-t^2\phi _0(i/t)-\frac{36}{\pi ^2}\, \psi _I(it). \]
+</div>
+<p> from the Proposition&#160;<a href="sec--g.html#prop:ineqA">8.1</a> we know that \(A(t){\lt}0\quad \mbox{for}\; t\in (0,\infty ).\) Therefore identity <a href="sec--g.html#eqn:g A" class="eqref">255</a> implies <a href="sect0003.html#eqn:g1" class="eqref">6</a>. </p>
+<p>Next, we prove <a href="sect0003.html#eqn:g2" class="eqref">7</a>. By Propositions&#160;<a href="sec--fourier-double-zeroes.html#prop:a-another-integral">7.15</a> and&#160;<a href="sec--fourier-double-zeroes.html#prop:b-another-integral">7.29</a> we know that for \(r{\gt}0\) </p>
+<div class="equation" id="eqn:g B">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:g B} \widehat{g}(r)=\frac{\pi }{2160}\, \sin (\pi r^2/2)^2\, \int \limits _0^\infty B(t)\, e^{-\pi r^2 t}\, dt\end{equation}
+  </div>
+  <span class="equation_label">256</span>
+</p>
+</div>
+<p> where </p>
+<div class="displaymath" id="a0000000255">
+  \[ B(t)=-t^2\phi _0(i/t)+\frac{36}{\pi ^2}\, \psi _I(it). \]
+</div>
+<p>Finally, the property <a href="sect0003.html#eqn:g3" class="eqref">8</a> readily follows from Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:a0">7.16</a> and Proposition&#160;<a href="sec--fourier-double-zeroes.html#prop:b0">7.30</a>. This finishes the proof of Theorems&#160;<a href="sec--g.html#thm:g1">8.14</a> and&#160;<a href="sect0003.html#thm:g">5.3</a>. </p>
+
+  </div>
+</div>
+<dl class="bibliography">
+  <dt><a name="Bruinier">1</a></dt>
+  <dd><p><i class="sc">J. Bruinier</i>, <em>Borcherds products on O(2,l) and Chern classes of Heegner divisors</em>, Springer Lecture Notes in Mathematics 1780 (2002) </p>
+</dd>
+  <dt><a name="ElkiesCohn">2</a></dt>
+  <dd><p><i class="sc">H. Cohn, N. Elkies</i>, <em>New upper bounds on sphere packings I</em>, Annals of Math. 157 (2003) pp. 689–714. </p>
+</dd>
+  <dt><a name="first course">3</a></dt>
+  <dd><p><i class="sc">F. Diamond, J. Shurman</i>, <em>A First Course in Modular Forms</em>, Springer New York, 2005. </p>
+</dd>
+  <dt><a name="Hejhal">4</a></dt>
+  <dd><p><i class="sc">D. Hejhal</i>, <em>The Selberg trace formula for \(\mathrm{PSL}(2, \mathbb {R})\)</em>, Springer Lecture Notes in Mathematics 1001 (1983) </p>
+</dd>
+  <dt><a name="Kohnen">5</a></dt>
+  <dd><p><i class="sc">W. Kohnen</i>, <em>A Very Simple Proof of the \(q\)-Product Expansion of the \(\Delta \)-Function</em>, The Ramanujan Journal 10 (2005): 71-73. </p>
+</dd>
+  <dt><a name="Lee">6</a></dt>
+  <dd><p><i class="sc">S. Lee</i>, <em>Algebraic proof of modular form inequalities for optimal sphere packings</em>, arXiv preprint arXiv:2406.14659 (2024). </p>
+</dd>
+  <dt><a name="Mumford">7</a></dt>
+  <dd><p><i class="sc">D. Mumford</i>, <em>Tata Lectures on Theta I</em>, Birkhäuser, 1983. </p>
+</dd>
+  <dt><a name="Petersson32">8</a></dt>
+  <dd><p><i class="sc">H. Petersson</i>, <em>Ueber die Entwicklungskoeffizienten der automorphen Formen</em>, Acta Mathematica, Bd. 58 (1932), pp. 169–215. </p>
+</dd>
+  <dt><a name="Rademacher38">9</a></dt>
+  <dd><p><i class="sc">H. Rademacher and H. S. Zuckerman</i>, <em>On the Fourier coefficients of certain modular forms of positive dimension</em>, Annals of Math. (2) 39 (1938), pp. 433–462. </p>
+</dd>
+  <dt><a name="Serre73">10</a></dt>
+  <dd><p><i class="sc">J. Serre</i>, <em>A Course in Arithmetic</em>, Springer New York, 1973. </p>
+</dd>
+  <dt><a name="Via2017">11</a></dt>
+  <dd><p><i class="sc">Maryna S. Viazovska</i>, <em>The sphere packing problem in dimension 8 </em>, Pages 991–1015 from Volume 185 (2017), Issue 3. </p>
+</dd>
+  <dt><a name="1-2-3">12</a></dt>
+  <dd><p><i class="sc">D. Zagier</i>, <em>Elliptic Modular Forms and Their Applications</em>, In: The 1-2-3 of Modular Forms, (K. Ranestad, ed.) Norway, Springer Universitext, 2008. </p>
+</dd>
+</dl>
+<p><br /></p>
+<p><small class="footnotesize">Ecole Polytechnique Federale de Lausanne<br />1015 Lausanne<br />Switzerland<br /><i class="it">Email address: maryna.viazovska@epfl.ch</i></small>  </p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sec--fourier-double-zeroes.html" title="Fourier eigenfunctions with double zeroes at lattice points"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

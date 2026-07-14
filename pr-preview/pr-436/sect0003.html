@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: Cohn-Elkies linear programming bounds</title>
+<link rel="next" href="sect0004.html" title="Modular forms" />
+<link rel="prev" href="sect0002.html" title="Facts from Fourier analysis" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class="">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000004">5 Cohn-Elkies linear programming bounds</h1>
+<p> In 2003 Cohn and Elkies <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span> developed linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn–Elkies linear programming bound. </p>
+<p>The following theorem is the key result of <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span>. (Note that the original theorem is stated for a class of functions more general then Schwartz functions.) </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:Cohn-Elkies-periodic">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">5.1</span>
+    <span class="theorem_thmtitle">Cohn–Elkies <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span></span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#thm:Cohn-Elkies-periodic">#</a>
+    
+    <a class="icon proof" href="sect0003.html#a0000000071"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:Fourier-Transform">Definition 4.1</a></li>
+          
+          <li><a href="sec-sphere-packings.html#SpherePacking.density">Definition 1.4</a></li>
+          
+          <li><a href="sect0002.html#thm:Poisson-summation-formula">Theorem 4.7</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/LinearProgrammingBound'" class="lean_decl">LinearProgrammingBound'</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  
+<p>Let \(X\subset \mathbb {R}^d\) be a discrete subset such that \(\| x-y\| \geq 1\) for any distinct \(x,y\in X\). Suppose that \(X\) is \(\Lambda \)-periodic with respect to some lattice \(\Lambda \subset \mathbb {R}^d\). Let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function that is not identically zero and satisfies the following conditions: </p>
+<div class="equation" id="eqn:Cohn-Elkies-condition-1">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \| x\| \geq 1\end{equation}
+  </div>
+  <span class="equation_label">2</span>
+</p>
+</div>
+<p> and </p>
+<div class="equation" id="eqn:Cohn-Elkies-condition-2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq 0\mbox{ for all } x\in \mathbb {R}^d.\end{equation}
+  </div>
+  <span class="equation_label">3</span>
+</p>
+</div>
+<p> Then the density of any \(\Lambda \)-periodic sphere packing is bounded above by </p>
+<div class="displaymath" id="a0000000072">
+  \[ \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)). \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000071">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Here we reproduce the proof given in <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span>. </p>
+<p>The inequality </p>
+<div class="equation" id="eqn: sharp X 1">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: sharp X 1} \sharp (X/\Lambda )\cdot f(0)\geq \sum _{x\in X}\sum _{y\in X/\Lambda }f(x-y)=\sum _{x\in X/\Lambda }\sum _{y\in X/\Lambda }\sum _{\ell \in \Lambda }f(x-y+l)\end{equation}
+  </div>
+  <span class="equation_label">4</span>
+</p>
+</div>
+<p> follows from the condition <a href="sect0003.html#eqn:Cohn-Elkies-condition-1" class="eqref">2</a> of the theorem and the assumption on the distances between points in \(X\). The equality </p>
+<div class="displaymath" id="a0000000073">
+  \[ \sum _{x\in X/\Lambda }\sum _{y\in X/\Lambda }\sum _{\ell \in \Lambda }f(x-y+l)=\sum _{x\in X/\Lambda }\sum _{y\in X/\Lambda }\frac{1}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\, \sum _{m\in \Lambda ^*} \widehat{f}(m)\, e^{2\pi i m(x-y)}. \]
+</div>
+<p> follows from the Poisson summation formula. The right hand side of the above equation can be written as </p>
+<div class="displaymath" id="a0000000074">
+  \[ \sum _{x\in X/\Lambda }\sum _{y\in X/\Lambda }\frac{1}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\, \sum _{m\in \Lambda ^*} \widehat{f}(m)\, e^{2\pi i m(x-y)}=\frac{1}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\, \sum _{m\in \Lambda ^*} \widehat{f}(m)\cdot \big|\sum _{x\in X/\Lambda }e^{2\pi i m x}\big|^2. \]
+</div>
+<p> Note that \(\big|\sum _{x\in X/\Lambda }e^{2\pi i m x}\big|^2\geq 0\) for all \(m\in \Lambda ^*\). Moreover, the term corresponding to \(m=0\) satisfies \(\big|\sum _{x\in X/\Lambda }e^{2\pi i 0 x}\big|^2=\sharp (X/\Lambda )^2\). Now we use the condition <a href="sect0003.html#eqn:Cohn-Elkies-condition-2" class="eqref">3</a> and estimate </p>
+<div class="equation" id="eqn: sharp X 2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn: sharp X 2}\frac{1}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\, \sum _{m\in \Lambda ^*} \widehat{f}(m)\cdot \big|\sum _{x\in X/\Lambda }e^{2\pi i m(x-y)}\big|^2 \geq \frac{\sharp (X/\Lambda )^2}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\cdot \widehat{f}(0). \end{equation}
+  </div>
+  <span class="equation_label">5</span>
+</p>
+</div>
+<p> Comparing inequalities <a href="sect0003.html#eqn: sharp X 1" class="eqref">4</a> and <a href="sect0003.html#eqn: sharp X 2" class="eqref">5</a> we arrive at </p>
+<div class="displaymath" id="a0000000075">
+  \[ \frac{\sharp (X/\Lambda )}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\leq \frac{f(0)}{\widehat{f}(0)}. \]
+</div>
+<p> Now we see that the density of the periodic packing \(\mathcal{P}_X\) with balls of radius \(1/2\) is bounded by </p>
+<div class="displaymath" id="a0000000076">
+  \[ \Delta (\mathcal{P}_X)=\frac{\sharp (X/\Lambda )}{\mathrm{vol}(\mathbb {R}^d/\Lambda )}\cdot {\mathrm{vol}(B_d(0,1/2))}\leq \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)). \]
+</div>
+<p> This finishes the proof of the theorem for periodic packings. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:Cohn-Elkies-general">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">5.2</span>
+    <span class="theorem_thmtitle">Cohn–Elkies <span class="cite">
+	[
+	<a href="sec--g.html#ElkiesCohn" >2</a>
+	]
+</span></span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#thm:Cohn-Elkies-general">#</a>
+    
+    <a class="icon proof" href="sect0003.html#a0000000077"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/LinearProgrammingBound" class="lean_decl">LinearProgrammingBound</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Let \(f:\mathbb {R}^d\to \mathbb {R}\) be a Schwartz function that is not identically zero and satisfies <a href="sect0003.html#eqn:Cohn-Elkies-condition-1" class="eqref">2</a> and <a href="sect0003.html#eqn:Cohn-Elkies-condition-2" class="eqref">3</a>. Then the density of any \(\Lambda \)-periodic sphere packing is bounded above by </p>
+<div class="displaymath" id="a0000000078">
+  \[ \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)). \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000077">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The result follows immediately from Theorem&#160;<a href="sec-sphere-packings.html#thm:periodic-packing-optimal">1.14</a> and <a href="sect0003.html#thm:Cohn-Elkies-periodic">Theorem 5.1</a>. </p>
+
+  </div>
+</div>
+<p>The main step in our proof of <a href="sec-sphere-packings.html#MainTheorem">corollary 1.17</a> is the explicit construction of an optimal function. It will be convenient for us to scale this function by \(\sqrt{2}\). </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:g">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">5.3</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#thm:g">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec--g.html#thm:g1">Theorem 8.14</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p> There exists a radial Schwartz function \(g:\mathbb {R}^8\to \mathbb {R}\) which satisfies: </p>
+<div class="displaymath" id="eqn:g1">
+  \begin{align}  g(x)& \leq 0\mbox{ for } \| x\| \geq \sqrt{2} \label{eqn:g1}\\ \widehat{g}(x)& \geq 0\mbox{ for all } x\in \mathbb {R}^8\label{eqn:g2}\\ g(0)& =\widehat{g}(0)=1.\label{eqn:g3} \end{align}
+</div>
+
+  </div>
+</div>
+<p> Theorem <a href="sect0003.html#thm:Cohn-Elkies-general">5.2</a> applied to the optimal function \(f(x)=g(x/\sqrt{2})\) immediately implies <a href="sec-sphere-packings.html#MainTheorem">corollary 1.17</a>.  </p>
+<p><br /></p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0002.html" title="Facts from Fourier analysis"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0004.html" title="Modular forms"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>
