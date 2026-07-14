@@ -1,0 +1,4251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: Modular forms</title>
+<link rel="next" href="sec--fourier-double-zeroes.html" title="Fourier eigenfunctions with double zeroes at lattice points" />
+<link rel="prev" href="sect0003.html" title="Cohn-Elkies linear programming bounds" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class="">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000005">6 Modular forms</h1>
+<p> In this section, we recall and develop some theory of (quasi)modular forms. </p>
+<h2 id="a0000000033">6.1 Modular forms and examples</h2>
+<p>Let \(\mathfrak {H}\) be the upper half-plane \(\{ z\in \mathbb {C}\mid \Im (z){\gt}0\} \). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="def:Gamma-1-Action">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.1</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:Gamma-1-Action">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000079"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>The modular group \(\Gamma _1:=\mathrm{SL}_2(\mathbb {Z})\) acts on \(\mathfrak {H}\) by linear fractional transformations </p>
+<div class="displaymath" id="a0000000080">
+  \[ \left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}. \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000079">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+<p>Let \(N\) be a positive integer. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:level-N-princ-cong-subgp">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.2</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:level-N-princ-cong-subgp">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>The <em>level \(N\) principal congruence subgroup</em> of \(\Gamma _1\) is </p>
+<div class="displaymath" id="a0000000081">
+  \[  \Gamma (N):=\left\{ \left.\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)\in \Gamma _1\right|\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)\equiv \left(\begin{smallmatrix} 1
+
+& 0
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\; \mathrm{mod}\; N\right\} .  \]
+</div>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="def:congruence-subgroup">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.3</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:congruence-subgroup">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:level-N-princ-cong-subgp">Definition 6.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>A subgroup \(\Gamma \subset \Gamma _1\) is called a <em>congruence subgroup</em> if \(\Gamma (N)\subset \Gamma \) for some \(N\in \mathbb {N}\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="def:Gamma-generators">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.4</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:Gamma-generators">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:level-N-princ-cong-subgp">Definition 6.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularGroup.S" class="lean_decl">ModularGroup.S</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularGroup.T" class="lean_decl">ModularGroup.T</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/α" class="lean_decl">α</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/β" class="lean_decl">β</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>Define the matrices </p>
+<div class="displaymath" id="a0000000082">
+  \[  S = \begin{pmatrix}  0 
+
+&  -1 
+
+\\ 1 
+
+&  0 
+
+\end{pmatrix} \in \Gamma _1, T = \begin{pmatrix}  1 
+
+&  1 
+
+\\ 0 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _1, \alpha = \begin{pmatrix}  1 
+
+&  2 
+
+\\ 0 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _2 \subset \Gamma _1, \beta = \begin{pmatrix}  1 
+
+&  0 
+
+\\ 2 
+
+&  1 
+
+\end{pmatrix} \in \Gamma _2 \subset \Gamma _1.  \]
+</div>
+<p>It is easily verifiable that \(\alpha = T^2\) and \(\beta = -S\alpha ^{-1}S = -ST^{-2}S\). </p>
+
+  </div>
+</div>
+<p>The following two lemmas tell us the group structure of \(\Gamma (1) = \Gamma _1\) and \(\Gamma (2)\), which we will use later on to define the theta forms. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Gamma-1-generators">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.5</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:Gamma-1-generators">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000083"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Gamma-generators">Definition 6.4</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SL2Z_generate" class="lean_decl">SL2Z_generate</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>We have \(\Gamma (1) = \langle S, T, -I \rangle \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000083">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See&#160;<span class="cite">
+	[
+	<a href="sec--g.html#first course" >3</a>
+	, 
+	Exercise 1.1.1
+	]
+</span>. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Gamma-2-generators">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.6</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:Gamma-2-generators">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000084"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Gamma-generators">Definition 6.4</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Γ2_generate" class="lean_decl">Γ2_generate</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>We have \(\Gamma (2) = \langle \alpha , \beta , -I \rangle \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000084">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See&#160;<span class="cite">
+	[
+	<a href="sec--g.html#first course" >3</a>
+	, 
+	Exercise 1.2.4
+	]
+</span>. </p>
+
+  </div>
+</div>
+<p>Let \(z\in \mathfrak {H}\), \(k\in \mathbb {Z}\), and \(\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)\in \mathrm{SL}_2(\mathbb {Z})\). We omit many of the proofs below when they exist in Mathlib already. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:automorphy-factor">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.7</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:automorphy-factor">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/UpperHalfPlane.denom" class="lean_decl">UpperHalfPlane.denom</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> The <em>automorphy factor</em> of weight \(k\) is defined as </p>
+<div class="displaymath" id="a0000000085">
+  \[ j_k(z,\left(\begin{smallmatrix} a
+
+& b
+
+\\ c
+
+& d
+
+\end{smallmatrix}\right)):=(cz+d)^{-k}. \]
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:automorphy-factor-chain-rule">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.8</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:automorphy-factor-chain-rule">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000086"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:automorphy-factor">Definition 6.7</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/UpperHalfPlane.denom_cocycle" class="lean_decl">UpperHalfPlane.denom_cocycle</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> The automorphy factor satisfies the <em>chain rule</em> </p>
+<div class="displaymath" id="a0000000087">
+  \[ j_k(z,\gamma _1\gamma _2)=j_k(z,\gamma _1)\, j_k(\gamma _2z,\gamma _1).  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000086">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="def:slash-operator">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.9</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:slash-operator">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:automorphy-factor">Definition 6.7</a></li>
+          
+          <li><a href="sect0004.html#def:Gamma-1-Action">Lemma 6.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>Let \(F\) be a function on \(\mathfrak {H}\) and \(\gamma \in \mathrm{SL}_2(\mathbb {Z})\). Then the <em>slash operator</em> acts on \(F\) by </p>
+<div class="displaymath" id="a0000000088">
+  \[ (F|_k\gamma )(z):=j_k(z,\gamma )\, F(\gamma z).  \]
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:slash-operator-chain-rule">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.10</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:slash-operator-chain-rule">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000089"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:automorphy-factor-chain-rule">Lemma 6.8</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/SlashAction.slash_mul" class="lean_decl">SlashAction.slash_mul</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>The chain rule implies </p>
+<div class="displaymath" id="a0000000090">
+  \[ F|_k\gamma _1\gamma _2=(F|_k\gamma _1)|_k\gamma _2. \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000089">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+<p>In particular, this lemma implies that if \(\Gamma = \langle M_i \rangle _{i \in \mathcal{I}} \rangle \), then the slash action \(F|\gamma \) is uniquely determined by the action of generators, i.e. \(F|M_i\) and \(F|M_i^{-1}\). </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:slash-negI-even-weight">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.11</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:slash-negI-even-weight">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000091"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:slash-operator">Definition 6.9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/modular_slash_negI_of_even" class="lean_decl">modular_slash_negI_of_even</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>For even \(k\), \(F|_{k}(-I) = F\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000091">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Follows from the definition of the slash operator: \((F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="def:Mk">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.12</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:Mk">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:congruence-subgroup">Definition 6.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm" class="lean_decl">ModularForm</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>Let \(\Gamma \) denote a subgroup of \(\mathrm{SL}_2(\mathbb {Z})\), then a modular form of level \(\Gamma \) and weight \(k \in \mathbb {Z}\) is a function \(f : \mathbb {H} \to \mathbb {C}\) such that: </p>
+<ol class="enumerate">
+  <li><p>For all \(\gamma \in \Gamma \) we have \(f\mid _k \gamma = f\) (such functions are called slash invariant). </p>
+</li>
+  <li><p>\(f\) is holomorphic on \(\mathbb {H}\). </p>
+</li>
+  <li><p>For all \(\gamma \in \mathrm{SL}_2(\mathbb {Z})\), there exist \(A, B \in \mathbb {R}\) such that for all \(z \in \mathbb {H}\), with \( A \le \mathrm{Im}(z)\), we have \(|(f \mid _k \gamma ) (z) |\le B\). Here \(| - |\) denotes the standard complex absolute value. </p>
+</li>
+</ol>
+<p> This defines a complex vector space which we denote by \(M_{k}(\Gamma )\). </p>
+
+  </div>
+</div>
+<p> By replacing condition \((3)\) above with (4) below defines the subspace of cusp forms, which we denote by \(S_k(\Gamma )\). </p>
+<ol class="enumerate">
+  <li><p>For all \(\gamma \in \mathrm{SL}_2(\mathbb {Z})\), and all \(0 {\lt} \epsilon \), there exists \(A \in \mathbb {R}\) such that for all \(z \in \mathbb {H}\), with \( A \le \mathrm{Im}(z)\), we have \(|(f \mid _k \gamma ) (z) |\le \epsilon \). </p>
+</li>
+</ol>
+<p>Let us consider several examples of modular forms. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:Ek">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.13</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:Ek">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eisensteinSeries_MF" class="lean_decl">ModularForm.eisensteinSeries_MF</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  For an even integer \(k\geq 4\) we define the <em>weight \(k\) Eisenstein series</em> as </p>
+<div class="equation" id="eqn:Ek-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-definition} E_k(z):=\frac{1}{2}\sum _{(c,d)\in \mathbb {Z}^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
+  </div>
+  <span class="equation_label">9</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Ek-is-modular-form">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.14</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:Ek-is-modular-form">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000092"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+          <li><a href="sect0004.html#def:Ek">Definition 6.13</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/EisensteinSeries.eisensteinSeries_SIF" class="lean_decl">EisensteinSeries.eisensteinSeries_SIF</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> For all \(k\), \(E_k\in M_k(\Gamma _1)\). Especially, we have </p>
+<div class="equation" id="eqn:Ek-trans-S">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-trans-S} E_k \left(-\frac{1}{z}\right) = z^k E_k(z). \end{equation}
+  </div>
+  <span class="equation_label">10</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000092">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>This follows from the fact that the sum converges absolutely. Now apply slash operator with \(\gamma = \left(\begin{smallmatrix}  0 
+
+&  -1 
+
+\\ 1 
+
+&  0 
+
+\end{smallmatrix}\right)\) gives <a href="sect0004.html#eqn:Ek-trans-S" class="eqref">10</a>. </p>
+
+  </div>
+</div>
+<p>Since modular forms are holomorphic and periodic they have a Fourier expansions. One thing that we will need is the growth of the Fourier coefficients, which is given by the following lemma. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:mod_form_poly_growth">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.15</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:mod_form_poly_growth">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000093"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>: Let \(\Gamma \) be a finite index subgroup of \(\mathrm{SL}_2(\mathbb {Z})\) and \(f \in \mathcal{M}_k(\Gamma )\) be a modular form of weight \(k\). Then the Fourier coefficients \(a_n(f)\) has a polynomial growth, i.e. \(|a_n(f)| = O(n^k)\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000093">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Note that the assumption on the polynomial growth holds when \(f\) is a holomorphic modular form, where the proof can be found in <span class="cite">
+	[
+	<a href="sec--g.html#Serre73" >10</a>
+	, 
+	p. 94
+	]
+</span> for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler. </p>
+
+  </div>
+</div>
+<p>For Eisenstein series, we can see this directly from the following: </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:Ek-Fourier">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.16</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:Ek-Fourier">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000094"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Ek">Definition 6.13</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E_k_q_expansion" class="lean_decl">E_k_q_expansion</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>The Eisenstein series possesses the Fourier expansion </p>
+<div class="equation" id="eqn:Ek-Fourier">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta (1-k)}\sum _{n=1}^\infty \sigma _{k-1}(n)\, e^{2\pi i z}, \end{equation}
+  </div>
+  <span class="equation_label">11</span>
+</p>
+</div>
+<p> where \(\sigma _{k-1}(n)\, =\, \sum _{d|n} d^{k-1}\). In particular, we have </p>
+<div class="displaymath" id="a0000000095">
+  \begin{align}  E_4(z)\, =\, &  1+240\sum _{n=1}^\infty \sigma _3(n)\, e^{2\pi i n z} \notag \\ E_6(z)\, =\, &  1-504\sum _{n=1}^\infty \sigma _5(n)\, e^{2\pi i n z}. \notag \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000094">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+<p>The infinite sum <a href="sect0004.html#eqn:Ek-definition" class="eqref">9</a> does not converge absolutely for \(k=2\). On the other hand, the expression <a href="sect0004.html#eqn:Ek-Fourier" class="eqref">11</a> converges to a holomorphic function on the upper half-plane and we will take it as a definition of \(E_2\) (See Definition <a href="sect0004.html#def:E2">6.18</a> below). </p>
+<p>The discriminant form is a unique normalized cusp form of weight 12, which can be defined as: </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:disc-definition">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.17</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:disc-definition">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:dedekind_eta">Definition 6.21</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Δ" class="lean_decl">Δ</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> The <em>discriminant form</em> \(\Delta (z)\) is given by </p>
+<div class="equation" id="eqn:disc-definition">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:disc-definition} \Delta (z) = e^{2 \pi i z} \prod _{n \ge 1} (1 - e^{2 \pi i n z})^{24}. \end{equation}
+  </div>
+  <span class="equation_label">12</span>
+</p>
+</div>
+
+  </div>
+</div>
+<p>This product formula allows us to prove positivity of \(\Delta (it)\) for \(t {\gt} 0\) later. But we need to first check its a modular form. For this we first need some definitions/ results. </p>
+<p>We define it as a \(q\)-series, which gives a holomorphic function on \(\mathfrak {H}\). </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:E2">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.18</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:E2">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_eq" class="lean_decl">E₂_eq</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>We set </p>
+<div class="equation" id="eqn:E2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2} E_2(z):= 1-24\sum _{n=1}^\infty \sigma _1(n)\, e^{2\pi i n z}. \end{equation}
+  </div>
+  <span class="equation_label">13</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:E2-transform-S">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.19</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:E2-transform-S">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000096"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_transform" class="lean_decl">E₂_transform</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> This function is not modular, however it satisfies </p>
+<div class="equation" id="eqn:E2-S-transform">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2-S-transform} z^{-2}\, E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi }\,  \frac{1}{z}. \end{equation}
+  </div>
+  <span class="equation_label">14</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000096">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>This is exercise 1.2.8 of <span class="cite">
+	[
+	<a href="sec--g.html#first course" >3</a>
+	]
+</span>. </p>
+
+  </div>
+</div>
+<p>More generally, we have </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:E2-transform-general">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.20</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:E2-transform-general">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000097"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:E2-transform-S">Lemma 6.19</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E₂_slash_transform" class="lean_decl">E₂_slash_transform</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
+<div class="equation" id="eqn:E2-transform-general">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:E2-transform-general} (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix}  a 
+
+&  b 
+
+\\ c 
+
+&  d
+
+\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb {Z}). \end{equation}
+  </div>
+  <span class="equation_label">15</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000097">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Use the fact that \(\mathrm{SL}_2(\mathbb {Z})\) is generated by \(S\) and \(T\). Then <a href="sect0004.html#eqn:E2-transform-general" class="eqref">15</a> follows from <a href="sect0004.html#eqn:E2-S-transform" class="eqref">14</a> and \(E_2|_T = E_2\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="def:dedekind_eta">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.21</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:dedekind_eta">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eta" class="lean_decl">ModularForm.eta</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> The Dedekind eta function is defined as </p>
+<div class="displaymath" id="a0000000098">
+  \[  \eta (z) = q^{1/24} \prod _{n \ge 1} (1 - q^n)  \]
+</div>
+<p> where \(q = e^{2\pi i z}\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:dedekind_eta_transformation">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.22</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:dedekind_eta_transformation">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000099"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:dedekind_eta">Definition 6.21</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.eta_comp_eq_csqrt_I_inv" class="lean_decl">ModularForm.eta_comp_eq_csqrt_I_inv</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> The Dedekind eta function transforms as </p>
+<div class="displaymath" id="a0000000100">
+  \[  \eta \left(-\frac{1}{z}\right) = \sqrt{-iz} \eta (z).  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000099">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Consider the logarithmic derivative of \(\eta \), which one can easily see is equal to \(\frac{\pi i}{12} E_2\). The result then follows from the transformation of \(E_2\). </p>
+<p>See <span class="cite">
+	[
+	<a href="sec--g.html#first course" >3</a>
+	, 
+	proposition 1.2.5
+	]
+</span>. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:disc-cuspform">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.23</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:disc-cuspform">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000101"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+          <li><a href="sect0004.html#lemma:dedekind_eta_transformation">Lemma 6.22</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta" class="lean_decl">Delta</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> \(\Delta (z) \in M_{12}(\Gamma _1)\). Especially, we have </p>
+<div class="equation" id="eqn:disc-trans-S">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:disc-trans-S} \Delta \left(-\frac{1}{z}\right) = z^{12} \Delta (z). \end{equation}
+  </div>
+  <span class="equation_label">16</span>
+</p>
+</div>
+<p> Also, it vanishes at the unique cusp, i.e. it is a cusp form of level \(\Gamma _1\) and weight \(12\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000101">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under \(S\). Now, note that \(\eta ^{24} = \Delta \), and from <a href="sect0004.html#lemma:dedekind_eta_transformation">6.22</a> we have \(\eta (-1/z) = \sqrt{-iz} \eta (z)\), so \(\Delta (-1/z) = z^{12} \Delta (z)\) as required. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:disc-E4E6">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.24</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:disc-E4E6">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000102"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta_E4_eqn" class="lean_decl">Delta_E4_eqn</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>We have </p>
+<div class="equation" id="a0000000103">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \Delta (z) = (E_4^3-E_6^2)/1728. \end{equation}
+  </div>
+  <span class="equation_label">17</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000102">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We only need to show its a cuspform, since once we have this, dividing the rhs by \(\Delta \) would give a modular form of weight \(0\) which is a constant, and so we can determine the constant easily. </p>
+<p>To check its a cuspform, we just look at the \(q\)-expansions of \(E_4\) and \(E_6\) and prove directly that the first term vanishes. </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:disc-pos">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">6.25</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#cor:disc-pos">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000104"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Delta_imag_axis_pos" class="lean_decl">Delta_imag_axis_pos</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>\(\Delta (it) {\gt} 0\) for all \(t {\gt} 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000104">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sect0004.html#def:disc-definition">6.17</a>, we have </p>
+<div class="displaymath" id="a0000000105">
+  \[  \Delta (it) = e^{-2 \pi t} \prod _{n \ge 1} (1 - e^{-2 \pi n t})^{24} {\gt} 0.  \]
+</div>
+
+  </div>
+</div>
+<p>The following nonvanishing result, which directly follows from <a href="sect0004.html#def:disc-definition">Definition 6.17</a>, will be used in the construction of the magic function. </p>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:disc-nonvanishing">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">6.26</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#cor:disc-nonvanishing">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000106"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Δ_ne_zero" class="lean_decl">Δ_ne_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> \(\Delta (z) \neq 0\) for all \(z \in \mathfrak {H}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000106">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>This follows from the product formula. </p>
+
+  </div>
+</div>
+<p>A key fact in the theory of modular forms is that the spaces \(M_k(\Gamma )\) are finite-dimensional. To prove this we will do use the following non-standard proof. First we have the following result. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:nonpos_wt">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.27</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:nonpos_wt">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000107"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularFormClass.levelOne_neg_weight_eq_zero" class="lean_decl">ModularFormClass.levelOne_neg_weight_eq_zero</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.levelOne_weight_zero_rank_one" class="lean_decl">ModularForm.levelOne_weight_zero_rank_one</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Let \(k \in \mathbb {Z}\) with \(k {\lt} 0\). Then \(M_k(\Gamma _1) = \{ 0\} \) and moreover \(\dim M_0(\Gamma (1)) = 1\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000107">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The proof makes use of the maximum modulus principle, as its already been formalised we skip the details here but see the lean proof for details. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:lvl1_dims">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.28</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:lvl1_dims">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000108"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+          <li><a href="sect0004.html#lemma:disc-E4E6">Lemma 6.24</a></li>
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ModularForm.dimension_level_one" class="lean_decl">ModularForm.dimension_level_one</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Let \(k \in \mathbb {Z}\) with \(k \ge 0\) and even. Then \(\dim M_k(\Gamma _1) = \lfloor k / 12 \rfloor \) if \(k \equiv 2 \mod 12\) and \(\dim M_k(\Gamma _1) = \lfloor k / 12 \rfloor + 1\) if \(k \not\equiv 2 \mod 12\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000108">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>First we note that for \(2 {\lt} k\) we have \(\dim (M_k(\Gamma _1)) = 1 + \dim S_k(\Gamma _1)\). This follows since we know the \(E_k\) are in \(M_k\) so by scaling appropriately, any non-cuspform \(f \in M_k\) we would have \(f - a E_k \in S_k\) for some \(a\). </p>
+<p>Next, note that \(S_k(\Gamma _1)\) is isomorphic to \(M_{k-12}(\Gamma _1)\), since if \(f \in S_k\) then \(f/ \Delta \) is now a modular form (using the product expansion of \(\Delta \) and its non-vanishing on \(\mathfrak {H}\)) of weight \(k-12\). Note its important that \(f\) is a cuspform so that the quotient by \(\Delta \) is a modular form. </p>
+<p>So we only need to know the dimensions of \(M_k(\Gamma _1)\) for \(0 \le k \le 12\). For \(k = 0\) we have \(\dim M_0(\Gamma _1) = 1\) by <a href="sect0004.html#thm:nonpos_wt">Theorem 6.27</a>. For \(k = 4\) we have \(\dim M_4(\Gamma _1) = 1\) since if there was a cuspform \(f\) of weight \(4\) then \(f/ \Delta \) would be a modular form of negative weight, i.e. zero, so \(f=0\). Similarly for \(k=6,8,10\). For \(k=12\) we have \(\dim S_{12}(\Gamma _1) = 1\) since the discriminant form is a cusp form of weight \(12\) and any other cusp form of weight \(12\) would be a scalar multiple of \(\Delta \) (since their ratio would be a modular form of weight \(0\)). So we have \(\dim M_{12}(\Gamma _1) = 2\). </p>
+<p>Finally we need to check that \(\dim M_2(\Gamma _1) = 0\). Firstly, there can’t be any cuspforms here by the same argument as above. So we need to check that there are no modular forms of weight \(2\). If we did have one, call it \(f\) then \(f^2\) would be a non-cuspform of weight \(4\) and so \(f^2 = a E_4\), where in fact \(a=a_0(f)^2\) (since \((f^2-a_0(f)E_4)\) is now a cuspform of weight \(4\) which means its zero). Similarly, \(f^3 = a_0(f)^3 E_6\). But now taking powers to make them weight \(12\) forms we see that \(a_0(f)^6(E_4^3 - E_6^2) = 0 = 1728 a_0(f)^6 \Delta \) but \(a_0(f) \ne 0\) (since its assumed to not be a cuspform), this would mean \(\Delta =0\) which we know can’t happen. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:dim-mf-general-level">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.29</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:dim-mf-general-level">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000109"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+          <li><a href="sect0004.html#thm:lvl1_dims">Theorem 6.28</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/dim_gen_cong_levels" class="lean_decl">dim_gen_cong_levels</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p> Let \(\Gamma \) be a congruence subgroup. Then \(M_k(\Gamma )\) is finite-dimensional. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000109">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We know that \(\dim (M_k(\Gamma _1))\) is finite dimensional from the above, now this means that there is some \(r_k\) such that any element of \(M_k(\Gamma _1)\) vanishing at infinity to degree \({\gt} r_k\) must be zero. Now take \(f \in M_k(\Gamma )\) and vanishes to degree \(n\) at infinity, then consider \(F = \prod _\gamma f\mid _k \gamma \) where the product is over a set of representatives of \(\Gamma _1 \backslash \Gamma \). Then \(F\) is a modular form of weight \(k d\) where \(d = [\Gamma _1: \Gamma ]\) and vanishes at infinity to degree at least \(n\). So if \(n {\gt} r_{kd}\) then \(F=0\) meaning the \(f=0\). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:dim-mf">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">6.30</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#cor:dim-mf">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000110"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+          <li><a href="sect0004.html#thm:lvl1_dims">Theorem 6.28</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>We have </p>
+<div class="displaymath" id="eqn:dimM2">
+  \begin{align}  \dim M_2(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimM2} \\ \dim M_4(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM4} \\ \dim M_6(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM6} \\ \dim M_8(\mathrm{SL}_{2}(\mathbb {Z})) & = 1, \label{eqn:dimM8} \\ \dim S_4(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimS4} \\ \dim S_6(\mathrm{SL}_{2}(\mathbb {Z})) & = 0, \label{eqn:dimS6} \\ \dim S_8(\mathrm{SL}_{2}(\mathbb {Z})) & = 0. \label{eqn:dimS8} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000110">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+<p>Another examples of modular forms we would like to consider are <em>theta functions</em> <span class="cite">
+	[
+	<a href="sec--g.html#1-2-3" >12</a>
+	, 
+	Section
+	
+	3.1
+	]
+</span>. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:th00-th01-th10">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.31</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:th00-th01-th10">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₂" class="lean_decl">Θ₂</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₃" class="lean_decl">Θ₃</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Θ₄" class="lean_decl">Θ₄</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>We define three different theta functions (so called “Thetanullwerte”) as </p>
+<div class="displaymath" id="a0000000111">
+  \begin{align}  \Theta _{2}(z) = \theta _{10}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}e^{\pi i (n+\frac12)^2 z}. \notag \\ \Theta _{3}(z) = \theta _{00}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}e^{\pi i n^2 z} \notag \\ \Theta _{4}(z) = \theta _{01}(z)\, =\,  &  \sum _{n\in \mathbb {Z}}(-1)^n\, e^{\pi i n^2 z} \notag \\ \end{align}
+</div>
+
+  </div>
+</div>
+<p>For convenience, we use the following notations for the fourth powers of the theta functions. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:H2-H3-H4">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.32</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:H2-H3-H4">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:th00-th01-th10">Definition 6.31</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂" class="lean_decl">H₂</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃" class="lean_decl">H₃</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄" class="lean_decl">H₄</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>Define </p>
+<div class="equation" id="eqn:H2-H3-H4">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_2 = \Theta _2^4, \quad H_3 = \Theta _3^4, \quad H_4 = \Theta _4^4. \label{eqn:H2-H3-H4} \end{equation}
+  </div>
+  <span class="equation_label">26</span>
+</p>
+</div>
+
+  </div>
+</div>
+<p> Note that we only need these fourth powers to define <a href="sec--fourier-double-zeroes.html#def:b-definition" class="eqref">7.21</a>. </p>
+<p>The group \(\Gamma _1\) is generated by the elements \(T=\left(\begin{smallmatrix} 1
+
+& 1
+
+\\ 0
+
+& 1
+
+\end{smallmatrix}\right)\), \(S=\left(\begin{smallmatrix} 0
+
+& 1
+
+\\ -1
+
+& 0
+
+\end{smallmatrix}\right)\), and \(-I = \left(\begin{smallmatrix} -1
+
+& 0
+
+\\ 0
+
+& -1
+
+\end{smallmatrix}\right)\) (<a href="sect0004.html#lemma:Gamma-1-generators">Lemma 6.5</a>), and the transformation of functions under \(\Gamma (2)\) is determined by that under \(\Gamma _1\) (by <a href="sect0004.html#lemma:slash-operator-chain-rule">Lemma 6.10</a>). The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:theta-transform-S-T">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.33</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:theta-transform-S-T">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000112"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:th00-th01-th10">Definition 6.31</a></li>
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_T_action" class="lean_decl">H₂_T_action</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_T_action" class="lean_decl">H₃_T_action</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_T_action" class="lean_decl">H₄_T_action</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_S_action" class="lean_decl">H₂_S_action</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_S_action" class="lean_decl">H₃_S_action</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_S_action" class="lean_decl">H₄_S_action</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>These elements act on the theta functions in the following way </p>
+<div class="displaymath" id="eqn:H2-transform-S">
+  \begin{align}  H_2 | S & = -H_4 \label{eqn:H2-transform-S} \\ H_3 | S & = -H_3 \label{eqn:H3-transform-S} \\ H_4 | S & = -H_2 \label{eqn:H4-transform-S} \end{align}
+</div>
+<p> and </p>
+<div class="displaymath" id="eqn:H2-transform-T">
+  \begin{align}  H_2 | T & = -H_2 \label{eqn:H2-transform-T} \\ H_3 | T & = H_4 \label{eqn:H3-transform-T} \\ H_4 | T & = H_3 \label{eqn:H4-transform-T} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000112">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The last three identities easily follow from the definition. For example, <a href="sect0004.html#eqn:H2-transform-T" class="eqref">30</a> follows from </p>
+<div class="displaymath" id="a0000000113">
+  \begin{align}  \Theta _{2}(z + 1) & = \sum _{n\in \mathbb {Z}}e^{\pi i (n+\frac12)^2 (z + 1)} = \sum _{n \in \mathbb {Z}} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\ & = \sum _{n \in \mathbb {Z}} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} = \sum _{n \in \mathbb {Z}} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\ & = e^{\pi i / 4} \Theta _{2}(z) \end{align}
+</div>
+<p> and taking 4th power. <a href="sect0004.html#eqn:H2-transform-S" class="eqref">27</a> and <a href="sect0004.html#eqn:H4-transform-S" class="eqref">29</a> are equivalent under \(z \leftrightarrow -1/z\), so it is enough to show <a href="sect0004.html#eqn:H2-transform-S" class="eqref">27</a> and <a href="sect0004.html#eqn:H3-transform-S" class="eqref">28</a>. These identities follow from the identities of the <em>two-variable</em> Jacobi theta function, which is defined as (be careful for the variables, where we use \(\tau \) instead of \(z\)) </p>
+<div class="equation" id="eqn:jacobi2">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \theta (z, \tau ) = \sum _{n \in \mathbb {Z}} e^{2 \pi i n z + \pi i n^2 \tau } \label{eqn:jacobi2} \end{equation}
+  </div>
+  <span class="equation_label">36</span>
+</p>
+</div>
+<p> and already formalized by David Loeffler. This function specialize to the theta functions as </p>
+<div class="displaymath" id="eqn:Th2-as-jacobi2">
+  \begin{align}  \Theta _{2}(\tau ) & = e^{\pi i \tau / 4} \theta (-\tau / 2, \tau ) \label{eqn:Th2-as-jacobi2} \\ \Theta _{3}(\tau ) & = \theta (0, \tau ) \label{eqn:Th3-as-jacobi2} \\ \Theta _{4}(\tau ) & = \theta (1/2, \tau ) \label{eqn:Th4-as-jacobi2} \\ \end{align}
+</div>
+<p>Poisson summation formula gives </p>
+<div class="equation" id="eqn:jacobi2transform">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \theta (z, \tau ) = \frac{1}{\sqrt{-i \tau }} e^{-\frac{\pi i z^2}{\tau }} \theta \left(\frac{z}{\tau }, -\frac{1}{\tau }\right) \label{eqn:jacobi2transform} \end{equation}
+  </div>
+  <span class="equation_label">41</span>
+</p>
+</div>
+<p> and applying the specializations above yield the identities. For example, <a href="sect0004.html#eqn:H4-transform-S" class="eqref">29</a> follows from </p>
+<div class="equation" id="a0000000114">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \Theta _{4}(\tau ) = \theta \left(\frac{1}{2}, \tau \right) = \frac{1}{\sqrt{-i\tau }} e^{- \frac{\pi i }{4 \tau }} \theta \left(\frac{1}{2 \tau }, -\frac{1}{\tau }\right) = \frac{1}{\sqrt{-i\tau }} \Theta _{2}\left(-\frac{1}{\tau }\right) \end{equation}
+  </div>
+  <span class="equation_label">42</span>
+</p>
+</div>
+<p> and taking 4th power. </p>
+
+  </div>
+</div>
+<p>Using the above identities, we can prove that these are modular forms. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:theta-slash-invariant">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.34</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:theta-slash-invariant">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000115"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:slash-operator-chain-rule">Lemma 6.10</a></li>
+          
+          <li><a href="sect0004.html#lemma:slash-negI-even-weight">Lemma 6.11</a></li>
+          
+          <li><a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a></li>
+          
+          <li><a href="sect0004.html#lemma:Gamma-2-generators">Lemma 6.6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_SIF" class="lean_decl">H₂_SIF</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_SIF" class="lean_decl">H₃_SIF</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_SIF" class="lean_decl">H₄_SIF</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(H_{2}\), \(H_{3}\), and \(H_{4}\) are slash invariant under \(\Gamma (2)\), i.e. for all \(\gamma \in \Gamma (2)\) and \(i \in \{ 2, 3, 4\} \), we have \(H_i|\gamma = H_i|\gamma ^{-1} = H_i\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000115">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sect0004.html#lemma:Gamma-2-generators">lemma 6.6</a> and <a href="sect0004.html#lemma:slash-operator-chain-rule">lemma 6.10</a>, it suffices to show that the \(H_i\) are invariant under slash actions with respect to \(\alpha \), \(\beta \), and \(-I\). Invariance under \(-I\) follows from Lemma <a href="sect0004.html#lemma:slash-negI-even-weight">6.11</a>. The rest follows from Lemma <a href="sect0004.html#lemma:slash-operator-chain-rule">6.10</a>, <a href="sect0004.html#lemma:theta-transform-S-T">6.33</a>, and the matrix identities </p>
+<div class="equation" id="eqn:matrix">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \alpha = T^2, \quad \beta = -S\alpha ^{-1}S = -ST^{-2}S. \label{eqn:matrix} \end{equation}
+  </div>
+  <span class="equation_label">43</span>
+</p>
+</div>
+<p> For example, invariance for \(H_2\) can be proved by </p>
+<div class="displaymath" id="a0000000116">
+  \begin{align}  H_2|\alpha & = H_2 |T^{2} = -H_2 |T = H_2 \\ H_2|\beta & = H_2 |(-S\alpha ^{-1}S) = H_2 | (S\alpha ^{-1}S) =-H_4 |(\alpha ^{-1}S) = -H_4 |S = H_2. \end{align}
+</div>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:theta-bounded-im-infty">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.35</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:theta-bounded-im-infty">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000117"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:theta-slash-invariant">Lemma 6.34</a></li>
+          
+          <li><a href="sect0004.html#lemma:Gamma-1-generators">Lemma 6.5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/isBoundedAtImInfty_H_slash" class="lean_decl">isBoundedAtImInfty_H_slash</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>For all \(\gamma \in \Gamma _1\), \(H_{2}|_2 \gamma \), \(H_{3}|_2 \gamma \), and \(H_{4}|_2 \gamma \) are holomorphic at \(i\infty \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000117">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We want to show that for \(\gamma \in \Gamma _1\), \(\| H_2|_2\gamma (z)\| \) is bounded as \(z \in \mathbb {H} \to i\infty \). Firstly, by <a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a>, <a href="sect0004.html#lemma:Gamma-2-generators">Lemma 6.6</a> and induction on group elements, we notice that \(\{ \pm H_2, \pm H_3, \pm H_4\} \) is closed under action by \(\Gamma _1\). Hence, it suffices to prove that \(H_2\), \(H_3\) and \(H_4\) are bounded at \(i\infty \). Consider \(z \in \mathbb {H}\) with \(\Im (z) \geq A\). We proceed by direct algebraic manipulation: </p>
+<div class="displaymath" id="a0000000118">
+  \begin{align}  \| H_2(z)\|  & = \left\| \sum _{n \in \mathbb {Z}} \exp \left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\| ^4 \leq \left(\sum _{n \in \mathbb {Z}} \left\| \exp \left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right)\right\| ^4 \\ & = \left(\sum _{n \in \mathbb {Z}} \left\| \exp \left(-\pi \left(n + \frac{1}{2}\right)^2 \Im (z)\right)\right)\right\| ^4 \leq \left(\sum _{n \in \mathbb {Z}} \left\| \exp \left(-\pi \left(n + \frac{1}{2}\right)^2 A\right)\right)\right\| ^4 \end{align}
+</div>
+<p>Where we prove the final term is convergent by noticing that it equals \(\exp (-\pi A / 4)\theta (iA / 2, iA)\), which has been shown to converge in <span class="ttfamily">Mathlib</span>. The proofs for \(H_3\) and \(H_4\) are similar (actually easier) and have been omitted. </p>
+<p><span style="None"></span>red<b class="bfseries">It seems the <span class="ttfamily">MDifferentiable</span> requirement is missing.</b> </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:theta-modular">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.36</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:theta-modular">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000119"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:theta-slash-invariant">Lemma 6.34</a></li>
+          
+          <li><a href="sect0004.html#lemma:theta-bounded-im-infty">Lemma 6.35</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_MF" class="lean_decl">H₂_MF</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₃_MF" class="lean_decl">H₃_MF</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_MF" class="lean_decl">H₄_MF</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(H_{2}\), \(H_{3}\), and \(H_{4}\) belong to \(M_2(\Gamma (2))\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000119">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>From <a href="sect0004.html#lemma:theta-slash-invariant">lemma 6.34</a> and <a href="sect0004.html#lemma:theta-bounded-im-infty">lemma 6.35</a>, it remains ot prove that \(H_2\), \(H_3\) and \(H_4\) are holomorphic on \(\mathbb {H}\). <span style="None"></span>red<b class="bfseries">fill in proof.</b> </p>
+
+  </div>
+</div>
+<p>They have Fourier expansions as follows. </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:H2-fourier">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">6.37</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#prop:H2-fourier">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000120"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> \(H_2\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000121">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_2(z) = \sum _{n \ge 1} c_{H_2}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">48</span>
+</p>
+</div>
+<p> for some \(c_{H_2}(n) \in \mathbb {R}_{\ge 0}\), with \(c_{H_2}(1) = 16\) and \(c_{H_2}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000120">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We have </p>
+<div class="displaymath" id="a0000000122">
+  \begin{align}  H_2(z) & = \Theta _2(z)^4 \\ & = \left(\sum _{n \in \mathbb {Z}} e^{\pi i (n + \frac{1}{2})^{2} z}\right)^{4} \\ & = \left(2\sum _{n \ge 0} e^{\pi i (n + \frac{1}{2})^{2} z}\right)^{4} \\ & = \left(2 e^{\pi i z / 4} + 2 \sum _{n \ge 1} e^{\pi i (n^2 + n + \frac{1}{4}) z}\right)^{4} \\ & = 16 e^{\pi i z}\left(1 + \sum _{n \ge 1} e^{\pi i (n^2 + n)z}\right)^{4} \\ & = 16 e^{\pi i z} + \sum _{n \ge 2} c_{H_2}(n) e^{\pi i n z} \\ & = \sum _{n \ge 1} c_{H_2}(n) e^{\pi i n z}. \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:H3-fourier">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">6.38</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#prop:H3-fourier">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000123"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> \(H_3\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000124">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_3(z) = \sum _{n \ge 0} c_{H_3}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">56</span>
+</p>
+</div>
+<p> for some \(c_{H_3}(n) \in \mathbb {R}_{\ge 0}\) with \(c_{H_3}(0) = 1\) and \(c_{H_3}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). Especially, \(H_3\) is not cuspidal. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000123">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We have </p>
+<div class="equation" id="a0000000125">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_3(z) = \Theta _3(z)^{4} = \left(\sum _{n \in \mathbb {Z}} e^{\pi i n^2 z}\right)^{4} = \left(1 + 2 \sum _{n \ge 1} e^{\pi i n^2 z}\right)^{4} = 1 + O(e^{\pi i z}). \end{equation}
+  </div>
+  <span class="equation_label">57</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:H4-fourier">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">6.39</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#prop:H4-fourier">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:H2-H3-H4">Definition 6.32</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> \(H_4\) admits a Fourier series of the form </p>
+<div class="equation" id="a0000000126">
+<p>
+  <div class="equation_content">
+    \begin{equation}  H_4(z) = \sum _{n \ge 0} c_{H_4}(n) e^{\pi i n z} \end{equation}
+  </div>
+  <span class="equation_label">58</span>
+</p>
+</div>
+<p> for some \(c_{H_4}(n) \in \mathbb {R}\) with \(c_{H_4}(0) = 1\) and \(c_{H_4}(n) = O(n^k)\) for some \(k \in \mathbb {N}\). Especially, \(H_4\) is not cuspidal. </p>
+
+  </div>
+</div>
+<p>We also have a nontrivial relation between these theta functions. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:jacobi-identity">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.40</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:jacobi-identity">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000127"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:theta-modular">Lemma 6.36</a></li>
+          
+          <li><a href="sect0004.html#cor:dim-mf">Corollary 6.30</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/jacobi_identity" class="lean_decl">jacobi_identity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>These three theta functions satisfy the <em>Jacobi identity</em> </p>
+<div class="equation" id="eqn:jacobi-identity">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:jacobi-identity} H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta _{2}^4 + \Theta _{4}^4 = \Theta _{3}^4. \end{equation}
+  </div>
+  <span class="equation_label">59</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000127">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Let \(f = (H_2 + H_4 - H_3)^{2}\). Obviously, \(f\) is a modular form of weight \(4\) and level \(\Gamma (2)\). However, by using the transformation rules of \(H_2, H_3, H_4\), one have </p>
+<div class="displaymath" id="a0000000128">
+  \begin{align}  f|_{S} & = (-H_4 - H_2 + H_3)^{2} = f\\ f|_{T} & = (-H_2 + H_3 - H_4)^{2} = f \end{align}
+</div>
+<p> so \(f\) is actually a modular form of level \(1\). By considering the limit as \(z \to i\infty \), \(f\) is a cusp form, so we get \(f = 0\) from <a href="sect0004.html#eqn:dimS4" class="eqref">22</a>. </p>
+
+  </div>
+</div>
+<p>These are also related to \(E_4\), \(E_6\), and \(\Delta \) as follows. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:lv1-lv2-identities">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.41</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:lv1-lv2-identities">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000129"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a></li>
+          
+          <li><a href="sect0004.html#lemma:theta-modular">Lemma 6.36</a></li>
+          
+          <li><a href="sect0004.html#lemma:disc-cuspform">Lemma 6.23</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:e4theta">
+  \begin{align}  E_4 & = \frac{1}{2}(H_{2}^{2} + H_{3}^{2} + H_{4}^{2}) = H_{2}^{2} + H_{2}H_{4} + H_{4}^{2} \label{eqn:e4theta} \\ E_6 & = \frac{1}{2} (H_{2} + H_{3})(H_{3} + H_{4}) (H_{4} - H_{2}) = \frac{1}{2}(H_2 + 2H_4)(2H_2 + H_4)(H_4 - H_2) \label{eqn:e6theta} \\ \Delta & = \frac{1}{256} (H_{2}H_{3}H_{4})^2. \label{eqn:disctheta} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000129">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We can prove these similarly as Lemma <a href="sect0004.html#lemma:jacobi-identity">6.40</a>. Right hand sides of <a href="sect0004.html#eqn:e4theta" class="eqref">62</a>, <a href="sect0004.html#eqn:e6theta" class="eqref">63</a>, and <a href="sect0004.html#eqn:disctheta" class="eqref">64</a> are all modular forms of level \(\Gamma _1\) and desired weights, where <a href="sect0004.html#eqn:disctheta" class="eqref">64</a> is a cusp form since \(H_2\) is. Now the identities follow from the dimension calculations \(\dim M_4(\Gamma _1) = \dim M_6(\Gamma _1) = \dim S_{12}(\Gamma _1) = 1\) and comparing the first nonzero \(q\)-coefficients. </p>
+
+  </div>
+</div>
+<p>The <em>strict</em> positivity of Jacobi theta functions might needed later. </p>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:theta-pos">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">6.42</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#cor:theta-pos">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000130"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₂_imag_axis_pos" class="lean_decl">H₂_imag_axis_pos</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/H₄_imag_axis_pos" class="lean_decl">H₄_imag_axis_pos</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p> \(H_2(it)\) and \(H_4(it)\) are positive for \(t {\gt} 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000130">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By the transformation law <a href="sect0004.html#eqn:H2-transform-S" class="eqref">27</a>, it is enough to prove the positivity for \(\Theta _2(it)\), which is clear from its definition: </p>
+<div class="equation" id="a0000000131">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \Theta _{2}(it) = \sum _{n \in \mathbb {Z}} e^{- \pi (n + \frac{1}{2})^{2} t} {\gt} 0. \end{equation}
+  </div>
+  <span class="equation_label">65</span>
+</p>
+</div>
+
+  </div>
+</div>
+<h2 id="a0000000034">6.2 Quasimodular forms and derivatives</h2>
+<p>Morally, quasimodular forms can be thought as <em>modular forms with differentiations</em>. It can be defined formally as follows: Let \(f: \mathfrak {H} \to \mathbb {C}\) be a holomorphic function, and let \(k\) and \(s \ge 0\) be integers. The function \(f\) is a <em>quasimodular form of weight \(k\), level \(\Gamma \), and depth \(s\)</em> if there exist holomorphic functions \(f_0, \dots , f_s : \mathfrak {H} \to \mathbb {C}\) such that </p>
+<div class="equation" id="eqn:quasimod-def">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:quasimod-def} (f|_{k}\gamma )(z) = (cz + d)^{-k} f\left(\frac{az + b}{cz + d}\right) = \sum _{j=0}^{s} f_j(z) \left(\frac{c}{cz + d}\right)^j \end{equation}
+  </div>
+  <span class="equation_label">66</span>
+</p>
+</div>
+<p> for all \(z \in \mathfrak {H}\) and \(\gamma = \left(\begin{smallmatrix}  a
+
+& b
+
+\\ c
+
+& d 
+
+\end{smallmatrix}\right) \in \Gamma \). </p>
+<p>By taking \(\gamma = \left(\begin{smallmatrix}  1 
+
+&  0 
+
+\\ 0 
+
+&  1 
+
+\end{smallmatrix}\right)\), one can check that we should have \(f_0 = f\). Thus, a quasimodular form of depth \(0\) is just a modular form of same weight and level. Also, it is easy to see that the space of quasimodular forms is closed under the normalized derivative. </p>
+<p>In this project, we are <em>not</em> going to formalize the above definition of quasimodular forms. Instead, we only use \(E_2\) (defined in <a href="sect0004.html#def:E2">Definition 6.18</a>) and define the normalized derivative operator \(D\) (<a href="sect0004.html#def:derivative">Definition 6.43</a>) and the Serre derivative \(\partial _k\) (<a href="sect0004.html#def:serre-der">Definition 6.45</a>) as the main tools to work with quasimodular forms. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:derivative">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.43</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:derivative">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/D" class="lean_decl">D</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(F\) be a quasimodular form. We define the (normalized) derivative of \(F\) as </p>
+<div class="equation" id="eqn:derivative">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:derivative} F' = DF := \frac{1}{2\pi i} \frac{\mathrm{d}}{\mathrm{d}z} F. \end{equation}
+  </div>
+  <span class="equation_label">67</span>
+</p>
+</div>
+
+  </div>
+</div>
+<p>Normalizing the derivative by \(1/(2 \pi i)\) as in <a href="sect0004.html#eqn:derivative" class="eqref">67</a> is standard in the theory of modular forms, since it makes the \(q\)-expansion coefficients nicer. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="lemma:der-q-series">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6.44</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#lemma:der-q-series">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000132"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:derivative">Definition 6.43</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/D_qexp_tsum_pnat" class="lean_decl">D_qexp_tsum_pnat</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>We have an equality of operators \(D = q \frac{\mathrm{d}}{\mathrm{d}q}\). In particular, the \(q\)-series of the derivative of a quasimodular form \(F(z) = \sum _{n \ge n_0} a_n q^n\) is \(F'(z) = \sum _{n \ge n_0} n a_n q^n\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000132">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Directly follows from the definition <a href="sect0004.html#def:derivative" class="eqref">6.43</a>, where \(\frac{1}{2 \pi i}\frac{\mathrm{d}}{\mathrm{d}z}e^{2\pi i n z} = n e^{2\pi i n z}\). </p>
+
+  </div>
+</div>
+<p>The most important example of quasimodular form is the weight 2 Eisenstein series \(E_2\) (<a href="sect0004.html#def:E2">Definition 6.18</a>). Using it, we can define the <em>Serre derivative</em> of a quasimodular form. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="def:serre-der">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">6.45</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#def:serre-der">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:derivative">Definition 6.43</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D" class="lean_decl">serre_D</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> For \(k \in \mathbb {R}\), define the weight \(k\) Serre derivative \(\partial _{k}\) of a modular form \(F\) as </p>
+<div class="equation" id="eqn:serre-der">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:serre-der} \partial _{k}F := F' - \frac{k}{12} E_2 F. \end{equation}
+  </div>
+  <span class="equation_label">68</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:serre-der-equiv-action">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.46</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:serre-der-equiv-action">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000133"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+          <li><a href="sect0004.html#def:E2">Definition 6.18</a></li>
+          
+          <li><a href="sect0004.html#lemma:E2-transform-general">Lemma 6.20</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_slash_equivariant" class="lean_decl">serre_D_slash_equivariant</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Serre derivative \(\partial _{k}\) is equivariant with the slash action of \(\mathrm{SL}_{2}(\mathbb {Z})\) in the following sense: </p>
+<div class="equation" id="a0000000134">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \partial _{k} (F|_{k}\gamma ) = (\partial _{k} F)|_{k+2}\gamma , \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb {Z}). \end{equation}
+  </div>
+  <span class="equation_label">69</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000133">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Let \(G = \partial _{k}F = F' - \frac{k}{12}E_2 F\). From \(F \in M_k(\Gamma )\), we have </p>
+<div class="equation" id="a0000000135">
+<p>
+  <div class="equation_content">
+    \begin{equation}  (F|_{k}\gamma )(z) := (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right), \quad \gamma = \begin{pmatrix} a 
+
+&  b 
+
+\\ c 
+
+&  d
+
+\end{pmatrix} \in \Gamma . \end{equation}
+  </div>
+  <span class="equation_label">70</span>
+</p>
+</div>
+<p> By taking the derivative of the above equation, we get </p>
+<div class="displaymath" id="a0000000136">
+  \begin{align}  \frac{\mathrm{d}}{\mathrm{d}z}(F|_{k} \gamma )(z) & = -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\mathrm{d}F}{\mathrm{d}z}\left(\frac{az + b}{cz + d}\right) \\ & = -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} \frac{\mathrm{d}F}{\mathrm{d}z}\left(\frac{az + b}{cz + d}\right) \\ & = -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + 2 \pi i (cz + d)^{-k - 2} F’\left(\frac{az + b}{cz + d}\right) \\ \Leftrightarrow (F|_{k} \gamma )’(z) & = -\frac{kc}{2 \pi i} (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} F’\left(\frac{az + b}{cz + d}\right). \end{align}
+</div>
+<p> Combined with <a href="sect0004.html#eqn:E2-transform-general" class="eqref">15</a>, we get </p>
+<div class="displaymath" id="a0000000137">
+  \begin{align}  ((\partial _k F)|_{k+2}\gamma )(z) & = (cz + d)^{-k-2} \left(F’\left(\frac{az + b}{cz + d}\right) - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right) \\ & = (cz + d)^{-k-2} F’\left(\frac{az + b}{cz + d}\right) - \frac{k}{12} \left(E_2(z) - \frac{6ic}{\pi (cz + d)}\right) \cdot (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) \\ & = (F|_{k}\gamma )’(z) - \frac{k}{12} E_2(z) (F|_{k}\gamma )(z) \\ & = \partial _{k} (F|_{k}\gamma )(z). \end{align}
+</div>
+
+  </div>
+</div>
+<p>As a direct consequence of Theorem <a href="sect0004.html#thm:serre-der-equiv-action">6.46</a>, we can check that the Serre derivative preserves the modularity of a modular form. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:serre-der-modularity">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.47</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:serre-der-modularity">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000138"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+          <li><a href="sect0004.html#def:Mk">Definition 6.12</a></li>
+          
+          <li><a href="sect0004.html#thm:serre-der-equiv-action">Theorem 6.46</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_slash_invariant" class="lean_decl">serre_D_slash_invariant</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>Let \(F\) be a modular form of weight \(k\) and level \(\Gamma \). Then, \(\partial _{k}F\) is a modular form of weight \(k + 2\) of the same level. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000138">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Immediate from Theorem <a href="sect0004.html#thm:serre-der-equiv-action">6.46</a> since \(F|_k\gamma = F\) for all \(\gamma \in \Gamma \). </p>
+
+  </div>
+</div>
+<div class="remark_thmwrapper theorem-style-plain" id="a0000000139">
+  <div class="remark_thmheading">
+    <span class="remark_thmcaption">
+    Remark
+    </span>
+    <span class="remark_thmlabel">6.48</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#a0000000139">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="remark_thmcontent">
+  <p>More generally, the following theorem holds: if \(F\) is a quasimodular form of weight \(k\) and depth \(s\), then \(\partial _{k-s}F\) is a quasimodular form of weight \(k + 2\) <em>and depth \(\le s\)</em> of the same level. We will not prove this here. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:ramanujan-formula">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.49</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:ramanujan-formula">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000140"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:serre-der-modularity">Theorem 6.47</a></li>
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+          <li><a href="sect0004.html#lemma:E2-transform-general">Lemma 6.20</a></li>
+          
+          <li><a href="sect0004.html#cor:dim-mf">Corollary 6.30</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₂" class="lean_decl">ramanujan_E₂</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₄" class="lean_decl">ramanujan_E₄</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₆" class="lean_decl">ramanujan_E₆</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₂'" class="lean_decl">ramanujan_E₂'</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₄'" class="lean_decl">ramanujan_E₄'</a></li>
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/ramanujan_E₆'" class="lean_decl">ramanujan_E₆'</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>  We have </p>
+<div class="displaymath" id="eqn:DE2">
+  \begin{align}  E_2’ & = \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\ E_4’ & = \frac{E_2 E_4 - E_6}{3} \label{eqn:DE4} \\ E_6’ & = \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000140">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>In terms of Serre derivatives, these are equivalent to </p>
+<div class="displaymath" id="eqn:SE2">
+  \begin{align}  \partial _{1}E_2 & = -\frac{1}{12} E_4 \label{eqn:SE2} \\ \partial _{4}E_4 & = -\frac{1}{3} E_6 \label{eqn:SE4} \\ \partial _{6}E_6 & = -\frac{1}{2} E_4^2 \label{eqn:SE6} \end{align}
+</div>
+<p> By Theorem <a href="sect0004.html#thm:serre-der-modularity">6.47</a>, all the Serre derivatives are, in fact, modular. To be precise, the modularity of \(\partial _{4} E_4\) and \(\partial _6 E_6\) directly follows from Theorem <a href="sect0004.html#thm:serre-der-modularity">6.47</a>, and that of \(\partial _{1}E_2\) follows from <a href="sect0004.html#eqn:E2-transform-general" class="eqref">15</a>. Differentiating and squaring then gives us the following: </p>
+<div class="displaymath" id="eqn:DE2-transform">
+  \begin{align}  E_2’|_{4}\gamma & = E_2’ - \frac{ic}{\pi (cz + d)} E_2 - \frac{3c^2}{\pi ^2 (cz + d)^2} \label{eqn:DE2-transform} \\ E_2^2|_{4}\gamma & = E_2^2 - \frac{12ic}{\pi (cz + d)} E_2 - \frac{36c^2}{\pi ^2 (cz + d)^2} \label{eqn:E2sq-transform} \end{align}
+</div>
+<p> Hence, <a href="sect0004.html#eqn:DE2" class="eqref">79</a>\(-\frac{1}{12}\)<a href="sect0004.html#eqn:E2sq-transform" class="eqref">86</a> is a modular form of weight 4. By <a href="sect0004.html#cor:dim-mf">Corollary 6.30</a>, they should be multiples of \(E_4, E_6, E_4^2\), and the proportionality constants can be determined by observing the constant terms of \(q\)-expansions. </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:logder-disc-E2">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">6.50</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#cor:logder-disc-E2">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000141"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#thm:ramanujan-formula">Theorem 6.49</a></li>
+          
+          <li><a href="sect0004.html#def:disc-definition">Definition 6.17</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  
+<div class="equation" id="eqn:logder-disc-E2">
+<p>
+  <div class="equation_content">
+    \begin{equation} \label{eqn:logder-disc-E2} \Delta ' = E_2 \Delta . \end{equation}
+  </div>
+  <span class="equation_label">87</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000141">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By Ramanujan’s formula <a href="sect0004.html#eqn:DE4" class="eqref">80</a> and <a href="sect0004.html#eqn:DE6" class="eqref">81</a>, </p>
+<div class="equation" id="a0000000142">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \Delta ' = \frac{3 E_4^2 E_4' - 2 E_6 E_6'}{1728} = \frac{1}{1728} \left(3 E_4^2 \cdot \frac{E_2 E_4 - E_6}{3} - 2 E_6 \cdot \frac{E_2 E_6 - E_4^2}{2}\right) = \frac{E_2(E_4^3 - E_6^2)}{1728} = E_2\Delta . \end{equation}
+  </div>
+  <span class="equation_label">88</span>
+</p>
+</div>
+
+  </div>
+</div>
+<p>Similar argument allow us to compute (Serre) derivatives of \(H_2, H_3, H_4\). </p>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:theta-der">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">6.51</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#prop:theta-der">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000143"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+          <li><a href="sect0004.html#lemma:theta-transform-S-T">Lemma 6.33</a></li>
+          
+          <li><a href="sect0004.html#lemma:jacobi-identity">Lemma 6.40</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p> We have </p>
+<div class="displaymath" id="eqn:H2-der">
+  \begin{align}  H_2’ & = \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\ H_3’ & = \frac{1}{6} (H_{2}^{2} - H_{4}^{2} + E_2 H_3) \label{eqn:H3-der}\\ H_4’ & = -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2} - E_2 H_4) \label{eqn:H4-der} \end{align}
+</div>
+<p> or equivalently, </p>
+<div class="displaymath" id="eqn:H2-serre-der">
+  \begin{align}  \partial _{2} H_{2} & = \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4}) \label{eqn:H2-serre-der} \\ \partial _{2} H_{3} & = \frac{1}{6} (H_{2}^{2} - H_{4}^{2}) \label{eqn:H3-serre-der} \\ \partial _{2} H_{4} & = -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2}) \label{eqn:H4-serre-der} \end{align}
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000143">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Equivalences are obvious from the definition of the Serre derivative. Define \(f_{2}, f_{3}, f_{4}\) be the differences of the left and right hand sides of <a href="sect0004.html#eqn:H2-serre-der" class="eqref">92</a>, <a href="sect0004.html#eqn:H3-serre-der" class="eqref">93</a>, <a href="sect0004.html#eqn:H4-serre-der" class="eqref">94</a>. </p>
+<div class="displaymath" id="a0000000144">
+  \begin{align}  f_{2} & := \partial _{2} H_{2} - \frac{1}{6} H_{2}(H_{2} + 2H_{4}) \\ f_{3} & := \partial _{2} H_{3} - \frac{1}{6} (H_{2}^2 - H_{4}^2) \\ f_{4} & := \partial _{2} H_{4} + \frac{1}{6} H_{4}(2H_{2} + H_{4}). \end{align}
+</div>
+<p> Then these are a priori modular forms of weight \(4\) and level \(\Gamma (2)\), and our goal is to prove that they are actually zeros. By Jacobi’s identity <a href="sect0004.html#eqn:jacobi-identity" class="eqref">59</a>, we have \(f_{2} + f_{4} = f_{3}\). Also, the transformation rules of \(H_2, H_3, H_4\) give </p>
+<div class="displaymath" id="a0000000145">
+  \begin{align}  f_{2}|_{S} & = -f_{4} \\ f_{2}|_{T} & = -f_{2} \\ f_{4}|_{S} & = -f_{2} \\ f_{4}|_{T} & = f_{3} = f_{2} + f_{4}. \end{align}
+</div>
+<p> Now, define </p>
+<div class="displaymath" id="a0000000146">
+  \begin{align}  g & := (2 H_2 + H_4) f_2 + (H_2 + 2 H_4) f_4 \\ h & := f_{2}^{2} + f_{2}f_{4} + f_{4}^{2}. \end{align}
+</div>
+<p> Then one can check that both \(g\) and \(h\) are invariant under the actions of \(S\) and \(T\), hence they are modular forms of level \(1\). Also, by analyzing the limit of \(g\) and \(h\) as \(z \to i \infty \), one can see that \(g\) and \(h\) are cusp forms, hence \(g = h = 0\) by <a href="sect0004.html#eqn:dimS6" class="eqref">23</a> and <a href="sect0004.html#eqn:dimS8" class="eqref">24</a>. This implies </p>
+<div class="displaymath" id="a0000000147">
+  \begin{align}  3 E_4 f_2^{2} & = 3 (H_2^2 + H_2 H_4 + H_4^2) f_2^{2} = ((2 H_2 + H_4)^{2} - (2H_2 + H_4)(H_2 + 2H_4) + (H_2 + 2H_4)^{2}) f_2^{2}\\ & = (2 H_2 + H_4)^{2} (f_2^2 + f_2 f_4 + f_4^2) = 0 \end{align}
+</div>
+<p> and by considering \(q\)-series (\(E_4\) has an invertible \(q\)-series), we get \(f_2 = 0\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:serre-der-prod-rule">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.52</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:serre-der-prod-rule">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000148"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/serre_D_mul" class="lean_decl">serre_D_mul</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>  The Serre derivative satisfies the following product rule: for any quasimodular forms \(F\) and \(G\), </p>
+<div class="equation" id="a0000000149">
+<p>
+  <div class="equation_content">
+    \begin{equation}  \partial _{w_1 + w_2} (FG) = (\partial _{w_1}F)G + F (\partial _{w_2}G). \end{equation}
+  </div>
+  <span class="equation_label">106</span>
+</p>
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000148">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>It follows from the definition: </p>
+<div class="displaymath" id="a0000000150">
+  \begin{align}  \partial _{w_1 + w_2} (FG) & = (FG)’ - \frac{w_1 + w_2}{12} E_2 (FG) \\ & = F’G + FG’ - \frac{w_1 + w_2}{12} E_2(FG) \\ & = \left(F’ - \frac{w_1}{12}E_2 F\right)G + F \left(G’ - \frac{w_2}{12}E_2 G\right) \\ & = (\partial _{w_1}F)G + F(\partial _{w_2}G). \end{align}
+</div>
+
+  </div>
+</div>
+<p>We also have the following useful theorem for proving positivity of quasimodular forms on the imaginary axis, which is <span class="cite">
+	[
+	<a href="sec--g.html#Lee" >6</a>
+	, 
+	Proposition 3.5, Corollary 3.6
+	]
+</span>. </p>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:anti-serre-der-pos">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">6.53</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0004.html#thm:anti-serre-der-pos">#</a>
+    
+    <a class="icon proof" href="sect0004.html#a0000000151"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0004.html#def:serre-der">Definition 6.45</a></li>
+          
+          <li><a href="sect0004.html#cor:logder-disc-E2">Corollary 6.50</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p> Let \(F\) be a holomorphic quasimodular cusp form with real Fourier coefficients. Assume that there exists \(k\) such that \((\partial _{k}F)(it) {\gt} 0\) for all \(t {\gt} 0\). If the first Fourier coefficient of \(F\) is positive, then \(F(it) {\gt} 0\) for all \(t {\gt} 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000151">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sect0004.html#eqn:logder-disc-E2" class="eqref">87</a>, we have </p>
+<div class="displaymath" id="a0000000152">
+  \begin{align}  \frac{\mathrm{d}}{\mathrm{d}t} \left( \frac{F(it)}{\Delta (it)^{\frac{k}{12}}}\right) & = (-2 \pi ) \frac{F'(it) \Delta (it)^{\frac{k}{12}} - F(it) \frac{k}{12} E_{2}(it) \Delta (it)^{\frac{k}{12}}}{\Delta (it)^{\frac{k}{6}}} \\ & = (-2 \pi ) \frac{(\partial _{k} F)(it)}{\Delta (it)^{\frac{k}{12}}} {\lt} 0, \end{align}
+</div>
+<p> hence </p>
+<div class="displaymath" id="a0000000153">
+  \[  t \mapsto \frac{F(it)}{\Delta (it)^{\frac{k}{12}}}  \]
+</div>
+<p> is monotone decreasing. Because of the assumption on the positivity of the first nonzero Fourier coefficient of \(F\), \(F(it) {\gt} 0\) for sufficiently large \(t\) since </p>
+<div class="displaymath" id="a0000000154">
+  \[  F = \sum _{n \geq n_{0}} a_{n} q^{n} \Rightarrow e^{2 \pi n_{0} t} F(it) = a_{n_{0}} + e^{-2 \pi t}\sum _{n\geq n_{0} + 1} a_{n} e^{-2 \pi (n - n_{0} - 1)t}  \]
+</div>
+<p> and \(\lim _{t \to \infty } e^{2 \pi n_{0}t} F(it) = a_{n_0} {\gt} 0\), hence the result follows. </p>
+
+  </div>
+</div>
+<p><br /></p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0003.html" title="Cohn-Elkies linear programming bounds"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sec--fourier-double-zeroes.html" title="Fourier eigenfunctions with double zeroes at lattice points"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

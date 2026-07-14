@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean: The \(E_8\) lattice</title>
+<link rel="next" href="sect0002.html" title="Facts from Fourier analysis" />
+<link rel="prev" href="sec-packings-density.html" title="Density of packings" />
+<link rel="up" href="index.html" title="Sphere Packing in Lean" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Sphere Packing in Lean</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-sphere-packings.html"><span class="toc_ref">1</span> <span class="toc_entry">Sphere packings</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sec-sphere-packings.html#a0000000006"><span class="toc_ref">1.1</span> <span class="toc_entry">The Setup</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000011"><span class="toc_ref">1.2</span> <span class="toc_entry">Scaling Sphere Packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000020"><span class="toc_ref">1.3</span> <span class="toc_entry">Lattices and Periodic packings</span></a>
+ </li>
+<li class="">
+  <a href="sec-sphere-packings.html#a0000000024"><span class="toc_ref">1.4</span> <span class="toc_entry">Main Result</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec-packings-density.html"><span class="toc_ref">2</span> <span class="toc_entry">Density of packings</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0001.html"><span class="toc_ref">3</span> <span class="toc_entry">The \(E_8\) lattice</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0001.html#a0000000028"><span class="toc_ref">3.1</span> <span class="toc_entry">Definitions of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000029"><span class="toc_ref">3.2</span> <span class="toc_entry">Basic Properties of \(E_8\) lattice</span></a>
+ </li>
+<li class="">
+  <a href="sect0001.html#a0000000030"><span class="toc_ref">3.3</span> <span class="toc_entry">The \(E_8\) sphere packing</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">4</span> <span class="toc_entry">Facts from Fourier analysis</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html#a0000000031"><span class="toc_ref">4.1</span> <span class="toc_entry">On Schwartz Functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html#a0000000032"><span class="toc_ref">4.2</span> <span class="toc_entry">On the Summability of Schwartz Functions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">5</span> <span class="toc_entry">Cohn-Elkies linear programming bounds</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">6</span> <span class="toc_entry">Modular forms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0004.html#a0000000033"><span class="toc_ref">6.1</span> <span class="toc_entry">Modular forms and examples</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000034"><span class="toc_ref">6.2</span> <span class="toc_entry">Quasimodular forms and derivatives</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sec--fourier-double-zeroes.html"><span class="toc_ref">7</span> <span class="toc_entry">Fourier eigenfunctions with double zeroes at lattice points</span></a>
+ </li>
+<li class="">
+  <a href="sec--g.html"><span class="toc_ref">8</span> <span class="toc_entry">Proof of Theorem <a href="sect0003.html#thm:g">5.3</a></span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000002">3 The \(E_8\) lattice</h1>
+<h2 id="a0000000028">3.1 Definitions of \(E_8\) lattice</h2>
+<p>There are several equivalent definitions of the \(E_8\) lattice. Below, we formalise two of them, and prove they are equivalent. </p>
+<div class="definition_thmwrapper theorem-style-plain" id="E8-Set">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">3.1</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-Set">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/Submodule.E8" class="lean_decl">Submodule.E8</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>(\(E_8\)-lattice, Definition 1)We define the <em>\(E_8\)-lattice</em> (as a subset of \(\mathbb {R}^8\)) to be </p>
+<div class="displaymath" id="a0000000048">
+  \[ \Lambda _8=\{ (x_i)\in \mathbb {Z}^8\cup (\mathbb {Z}+\textstyle \frac12\displaystyle )^8|\; \sum _{i=1}^8x_i\equiv 0\; (\mathrm{mod\; 2})\} . \]
+</div>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-plain" id="E8-Matrix">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">3.2</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-Matrix">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Matrix" class="lean_decl">E8Matrix</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>(\(E_8\)-lattice, Definition 2)We define the <em>\(E_8\) basis vectors</em> to be the set of vectors </p>
+<div class="displaymath" id="a0000000049">
+  \[  \mathcal{B}_8 = \left\{  \begin{bmatrix}  1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ 1 
+
+\\ 0 
+
+\end{bmatrix}, \begin{bmatrix}  -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\\ -1/2 
+
+\end{bmatrix}, \begin{bmatrix}  0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 0 
+
+\\ 1 
+
+\\ -1 
+
+\\ 0 
+
+\end{bmatrix} \right\}   \]
+</div>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="E8-defs-equivalent">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">3.3</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-defs-equivalent">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000050"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-Set">Definition 3.1</a></li>
+          
+          <li><a href="sect0001.html#E8-Matrix">Definition 3.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/span_E8Matrix" class="lean_decl">span_E8Matrix</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>The two definitions above coincide, i.e. \(\Lambda _8 = \mathrm{span}_{\mathbb {Z}}(\mathcal{B}_8)\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000050">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We prove each side contains the other side. </p>
+<p>For a vector \(\vec{v} \in \Lambda _8 \subseteq \mathbb {R}^8\), we have \(\sum _i \vec{v}_i \equiv 0 \pmod{2}\) and \(\vec{v}_i\) being either all integers or all half-integers. After some modulo arithmetic, it can be seen that \(\mathcal{B}_8^{-1}\vec{v}\) as integer coordinates (i.e. it is congruent to \(0\) modulo \(1\)). Hence, \(\vec{v} \in \mathrm{span}_{\mathbb {Z}}(\mathcal{B}_8)\). </p>
+<p>For the opposite direction, we write the vector as \(\vec{v} = \sum _i c_i\mathcal{B}_8^i \in \mathrm{span}_{\mathbb {Z}}(\mathcal{B}_8)\) with \(c_i\) being integers and \(\mathcal{B}_8^i\) being the \(i\)-th basis vector. Expanding the definition then gives \(\vec{v} = \left(c_1 - \frac{1}{2}c_7, -c_1 + c_2 - \frac{1}{2}c_7, \cdots , -\frac{1}{2}c_7\right)\). Again, after some modulo arithmetic, it can be seen that \(\sum _i \vec{v}_i\) is indeed \(0\) modulo \(2\) and are all either integers and half-integers, concluding the proof. </p>
+<p>(Note: this proof doesn’t depend on that \(\mathcal{B}_8\) is linearly independent.) </p>
+
+  </div>
+</div>
+<h2 id="a0000000029">3.2 Basic Properties of \(E_8\) lattice</h2>
+<p>In this section, we establish basic properties of the \(E_8\) lattice and the \(\mathcal{B}_8\) vectors. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="E8-is-basis">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.4</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-is-basis">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000051"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-Matrix">Definition 3.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/span_E8Matrix_eq_top" class="lean_decl">span_E8Matrix_eq_top</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(B_8\) is a \(\mathbb {R}\)-basis of \(\mathbb {R}^8\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000051">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>It suffices to prove that \(\mathcal{B}_8 \in \mathrm{GL}_8(\mathbb {R})\). We prove this by explicitly defining the inverse matrix \(\mathcal{B}_8^{-1}\) and proving \(\mathcal{B}_8 \mathcal{B}_8^{-1} = I_8\), which implies that \(\det (\mathcal{B}_8)\) is nonzero. See the Lean code for more details., </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="E8-Lattice">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.5</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-Lattice">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000052"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-Set">Definition 3.1</a></li>
+          
+          <li><a href="sect0001.html#E8-defs-equivalent">Theorem 3.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Lattice" class="lean_decl">E8Lattice</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(\Lambda _8\) is an additive subgroup of \(\mathbb {R}^8\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000052">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Trivially follows from that \(\Lambda _8 \subseteq \mathbb {R}^8\) is the \(\mathbb {Z}\)-span of \(\mathcal{B}_8\) and hence an additive group. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="E8-vector-norms">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.6</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8-vector-norms">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000053"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-defs-equivalent">Theorem 3.3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8_norm_eq_sqrt_even" class="lean_decl">E8_norm_eq_sqrt_even</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>All vectors in \(\Lambda _8\) have norm of the form \(\sqrt{2n}\), where \(n\) is a nonnegative integer. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000053">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Writing \(\vec{v} = \sum _i c_i\mathcal{B}_8^i\), we have \(\| v\| ^2 = \sum _i \sum _j c_ic_j (\mathcal{B}_8^i \cdot \mathcal{B}_8^j)\). Computing all \(64\) pairs of dot products and simplifying, we get a massive term that is a quadratic form in \(c_i\) with even integer coefficients, concluding the proof. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="instDiscreteE8Lattice">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.7</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#instDiscreteE8Lattice">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000054"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-vector-norms">Lemma 3.6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/instDiscreteE8Lattice" class="lean_decl">instDiscreteE8Lattice</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(c\Lambda _8\) is discrete, i.e. that the subspace topology induced by its inclusion into \(\mathbb {R}^8\) is the discrete topology. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000054">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Since \(\Lambda _8\) is a topological group and \(+\) is continuous, it suffices to prove that \(\{ 0\} \) is open in \(\Lambda _8\). This follows from the fact that there is an open ball \(\mathcal{B}(\sqrt{2}) \subseteq \mathbb {R}^8\) around it containing no other lattice points, since the shortest nonzero vector has norm \(\sqrt{2}\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="instLatticeE8">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.8</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#instLatticeE8">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000055"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#instDiscreteE8Lattice">Lemma 3.7</a></li>
+          
+          <li><a href="sect0001.html#E8-is-basis">Lemma 3.4</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/instIsZLatticeE8Lattice" class="lean_decl">instIsZLatticeE8Lattice</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(c\Lambda _8\) is a \(\mathbb {Z}\)-lattice, i.e. it is discrete and spans \(\mathbb {R}^8\) over \(\mathbb {R}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000055">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The first part is by <a href="sect0001.html#instDiscreteE8Lattice">lemma 3.7</a>, and the second part follows from that \(\mathcal{B}_8\) is a basis (<a href="sect0001.html#E8-is-basis">lemma 3.4</a>) and hence linearly independent over \(\mathbb {R}\). </p>
+
+  </div>
+</div>
+<p><span style="None"></span>red<b class="bfseries">Prove \(E_8\) is unimodular.</b> <span style="None"></span>red<b class="bfseries">Prove \(E_8\) is positive-definite.</b> </p>
+<h2 id="a0000000030">3.3 The \(E_8\) sphere packing</h2>
+<div class="definition_thmwrapper theorem-style-plain" id="E8Packing">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">3.9</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8Packing">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8-Lattice">Lemma 3.5</a></li>
+          
+          <li><a href="sect0001.html#E8-vector-norms">Lemma 3.6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Packing" class="lean_decl">E8Packing</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>The <em>\(E_8\) sphere packing</em> is the (periodic) sphere packing with separation \(\sqrt{2}\), whose set of centres is \(\Lambda _8\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="E8Packing-covol">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">3.10</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8Packing-covol">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000056"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#E8Packing">Definition 3.9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Basis_volume" class="lean_decl">E8Basis_volume</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>\(\operatorname {Vol}\! \left(\Lambda _8\right) = \mathrm{Covol}(\mathbb {R}^8 / \Lambda _8) = 1\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000056">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p><span style="None"></span>red<b class="bfseries">In theory this should follow directly from \(\det (\Lambda _8) = 1\), but Lean hates me and <span class="ttfamily">EuclideanSpace</span> is being annoying.</b> </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="E8Packing-density">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">3.11</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0001.html#E8Packing-density">#</a>
+    
+    <a class="icon proof" href="sect0001.html#a0000000057"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sec-packings-density.html#theorem:psp-density">Theorem 2.5</a></li>
+          
+          <li><a href="sect0001.html#E8Packing-covol">Lemma 3.10</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/find/#doc/E8Packing_density" class="lean_decl">E8Packing_density</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>We have \(\Delta _{\mathcal{P}(E_8)} = \frac{\pi ^4}{384}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000057">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>By <a href="sec-packings-density.html#theorem:psp-density">theorem 2.5</a>, we have \(\Delta _{\mathcal{P}(E_8)} = |E_8 / E_8| \cdot \frac{\operatorname {Vol}\! \left(\mathcal{B}_8(\sqrt{2} / 2)\right)}{\mathrm{Covol}(E_8)} = \frac{\pi ^4}{384}\), where the last equality follows from <a href="sect0001.html#E8Packing-covol">lemma 3.10</a> and the formula for volume of a ball: \(\operatorname {Vol}\! \left(\mathcal{B}_d(R)\right) = R^d \pi ^{d / 2} / \Gamma \left(\frac{d}{2} + 1\right)\). </p>
+
+  </div>
+</div>
+<p><br /></p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sec-packings-density.html" title="Density of packings"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Sphere Packing in Lean"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0002.html" title="Facts from Fourier analysis"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>
