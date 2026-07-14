@@ -10,6 +10,7 @@ module
 
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.Tactic.SlashSimp
 
 @[expose] public section
 
@@ -63,55 +64,26 @@ section eq
 
 section aux
 
-private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
-  have hh : 0 < (z + 1 : ℂ).im  := by
-    calc
-      0 < z.im := z.2
-      _ = (z + 1 : ℂ).im := by simp
-  by_contra hz
-  rw [hz] at hh
-  exact (lt_self_iff_false 0).mp hh
+private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 :=
+  ne_of_apply_ne Complex.im (by simpa using z.im_ne_zero)
 
 private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (-2 : ℤ) := by
-  rw [SL_slash_apply, S, denom]
-  simp
+  slash_simp
 
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, S, denom]
-  simp [zpow_two, pow_two]
+  slash_simp
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [slashS, mul_assoc]
-  simp only [sl_moeb, Int.reduceNeg, _root_.zpow_neg]
-  have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
-    rw [mul_comm]
-    apply Complex.mul_inv_cancel
-    exact nonzero
-  have helper (a : ℂ) : a * a = 0 → a = 0 := by
-    simp only [mul_eq_zero, or_self, imp_self]
-  have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a ^ (2 : ℤ) := by
-    rw [zpow_two, pow_two]
-  have sp : (((z : ℂ) ^ (2 : ℤ))⁻¹ * (z : ℂ) ^ 2) = 1 := by
-    apply inv_mul_cancel ((z : ℂ) ^ (2 : ℤ))
-    simp only [ne_eq]
-    intro hP
-    apply UpperHalfPlane.ne_zero z
-    apply helper
-    rw [← pow_two]
-    exact hP
-  rw [sp]
-  simp
+  slash_simp
 
 private lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
-  rw [SL_slash_apply, T, denom]
-  simp
+  slash_simp
 
 private lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) =  (F) (T • z) := by
-  rw [SL_slash_apply, T, denom]
-  simp
+  slash_simp
  -- no need for slashT'', as ← slashT already fulfils that role
 
 private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]⟩ := by
@@ -121,37 +93,16 @@ private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]
 -- the following statements will be applied of F = H₂, H₃, H₄ or (H₃+H₄)/H₂^2
 private lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (-2 : ℤ) := by
-  rw [SL_slash_apply, S_mul_T, denom]
-  simp
+  slash_simp [S_mul_T, UpperHalfPlane.denom]
 
 private lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, S_mul_T, denom]
-  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
-    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
-    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
-    one_mul]
-  rw [zpow_two, pow_two]
+  slash_simp [S_mul_T, UpperHalfPlane.denom]
 
 private lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
-  rw [slashST, mul_assoc]
-  simp only [sl_moeb, map_mul, Int.reduceNeg, _root_.zpow_neg]
-  have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
-    rw [mul_comm]
-    exact Complex.mul_inv_cancel nonzero
-  have helper (a : ℂ) : a * a = 0 → a = 0 := by
-    simp only [mul_eq_zero, or_self, imp_self]
-  have sp : (((z + 1 : ℂ) ^ (2 : ℤ))⁻¹ * (z + 1 : ℂ) ^ 2) = 1 := by
-    apply inv_mul_cancel ((z + 1 : ℂ) ^ (2 : ℤ) )
-    simp only [ne_eq]
-    intro hP
-    apply z_plus_one_nonzero z
-    apply helper
-    rw [← pow_two]
-    exact hP
-  rw [sp]
-  simp only [mul_one]
+  slash_simp [S_mul_T, UpperHalfPlane.denom]
+  field_simp [z_plus_one_nonzero z]
 
 end aux
 

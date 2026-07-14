@@ -4,6 +4,9 @@ public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
+public import Mathlib.Tactic.Bound
+public import SpherePacking.Tactic.SlashSimp
+public import SpherePacking.Tactic.PushReIm
 
 @[expose] public section
 
@@ -53,9 +56,7 @@ lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) *
     apply E₄.slash_action_eq'
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
-  field_simp [ne_zero z] at h
+  slash_simp at h
   exact h
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
@@ -65,9 +66,7 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
     apply E₆.slash_action_eq'
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
-  field_simp [ne_zero z] at h
+  slash_simp at h
   exact h
 
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
@@ -242,7 +241,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     ResToImagAxis.Real (E k hk).toFun := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  let z : ℍ := ⟨Complex.I * t, by positivity⟩
   change (E k hk z).im = 0
   have hq := E_k_q_expansion k hk hk2 z
   simp only at hq ⊢
@@ -315,7 +314,7 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  let z : ℍ := ⟨Complex.I * t, by positivity⟩
   change (E₂ z).im = 0
   have hq := E₂_eq z
   rw [hq]
@@ -365,12 +364,10 @@ end ImagAxisProperties
 /-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
 
 This bound on the q-parameter is useful for estimating q-expansions when im(z) ≥ 1. -/
+@[bound]
 lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
     ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
-  have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-    rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-    simp [Complex.I_re, Complex.I_im, mul_comm]
-  rw [Complex.norm_exp, h, Real.exp_le_exp]
+  norm_exp_simp [Real.exp_le_exp]
   nlinarith [Real.pi_pos]
 
 /-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
@@ -389,6 +386,7 @@ The key estimates are:
 - |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| for n ≥ 1
 - |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|)
 - ∑ n·rⁿ = r/(1-r)², so ∑ n·rⁿ/(1-r) = r/(1-r)³ -/
+@[bound]
 lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
     ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := by
   set r : ℝ := ‖q‖
@@ -424,6 +422,7 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
 
 /-- Monotone version of `norm_tsum_logDeriv_expo_le`: if ‖q‖ ≤ r < 1, then
 ‖∑ n·qⁿ/(1-qⁿ)‖ ≤ r/(1-r)³. Useful when we have a uniform bound on ‖q‖. -/
+@[bound]
 lemma norm_tsum_logDeriv_expo_le_of_norm_le {q : ℂ} {r : ℝ} (hqr : ‖q‖ ≤ r) (hr : r < 1) :
     ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ r / (1 - r) ^ 3 := by
   have hq : ‖q‖ < 1 := lt_of_le_of_lt hqr hr

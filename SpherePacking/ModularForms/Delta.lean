@@ -9,6 +9,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.ResToImagAxis
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.Tactic.NormNumI
+public import SpherePacking.Tactic.SlashSimp
 
 public import SpherePacking.ForMathlib.Cusps
 
@@ -123,9 +124,7 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
   have h := Discriminant_S_invariant
   simp only [funext_iff] at h
   specialize h z
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  field_simp [ne_zero z] at h
+  slash_simp at h
   rw [h, mul_comm]
 
 theorem Delta_boundedfactor :
@@ -228,7 +227,7 @@ lemma Complex.im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ)
 /- Δ(it) is real on the (positive) imaginary axis. -/
 lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
   intro t ht
-  simp [ResToImagAxis, ht, Δ]
+  res_simp [Δ, UpperHalfPlane.coe_mk]
   set g : ℕ → ℂ := fun n => (1 - cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t))) ^ 24
   have hArg (n : ℕ) :
       2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t) = -(2 * (π : ℂ) * (n + 1) * t) := by
@@ -242,7 +241,7 @@ lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
     have : ((1 - cexp (2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t))) : ℂ).im = 0 := by
       simpa [Complex.sub_im, hArg n] using this
     simpa [g] using Complex.im_pow_eq_zero_of_im_eq_zero this 24
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  let z : ℍ := ⟨Complex.I * t, by positivity⟩
   have hmul : Multipliable g := by
     have hz : (z : ℂ) = Complex.I * t := rfl
     simpa [g, hz] using

@@ -131,7 +131,7 @@ lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
     D f z = serre_D k f z + k * 12⁻¹ * E₂ z * f z := by
   simp only [serre_D_apply]; ring
 
-@[simp]
+@[simp, d_simps]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 1 E₂ z]
@@ -139,7 +139,7 @@ theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
     show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
   ring
 
-@[simp]
+@[simp, d_simps]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
   rw [D_eq_serre_D_add 4 E₄.toFun z]
@@ -147,7 +147,7 @@ theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun
     show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl]
   ring
 
-@[simp]
+@[simp, d_simps]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 6 E₆.toFun z]

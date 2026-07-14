@@ -2,6 +2,7 @@ module
 
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.Tactic.DNf
 
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
@@ -112,31 +113,21 @@ theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
     + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
     := by
-  rw [F, D_sq, D_sub, D_mul]
-  · ring_nf
-    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-    ext z
-    simp
-    ring_nf
-  -- Holomorphicity of the terms
-  repeat fun_prop
+  d_nf [F]
 
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
-  ext z; simp [serre_D_apply]; norm_num
+  d_nf
 
 /--
 Modular linear differential equation satisfied by $F$.
 -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) =
     5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
-  -- Unfold serre_D to D-level, substitute D F formula
+  -- Unfold serre_D to D-level, substitute the D F formula, and normalize
   rw [serre_D_10_F]
-  -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
-  simp (disch := fun_prop) only [serre_D_eq, D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
-    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const]
+  simp (disch := fun_prop) only [d_simps, F_aux]
   ext z
-  simp [F, Δ_fun, negDE₂]
+  simp [pointwise_simps, F, Δ_fun, negDE₂]
   field_simp (disch := norm_num)
   ring
 
@@ -145,26 +136,20 @@ private lemma Δ_fun_theta :
     Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
   ext z
   rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
-  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  simp [pointwise_simps]
   ring
 
 private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
   rw [G_eq]
-  ext z
-  simp (disch := fun_prop) [serre_D_apply, D_mul, D_add, D_sq, D_cube, D_smul,
-    D_H₂, D_H₄, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul]
-  ring
+  d_nf
 
 /--
 Modular linear differential equation satisfied by $G$.
 -/
 theorem MLDE_G : serre_D 12 (serre_D 10 G) =
     5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
-  ext z
   rw [E₄_eq_H_sum_sq, serre_D_10_G, Δ_fun_theta]
-  simp (disch := fun_prop) [H_sum_sq, D_H₂, D_H₄, G, Pi.mul_apply, Pi.add_apply,
-    Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, Complex.real_smul, Complex.ofReal_ofNat]
-  ring
+  d_nf [H_sum_sq, G]
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
 private lemma logderiv_mul_eq (f h : ℍ → ℂ)

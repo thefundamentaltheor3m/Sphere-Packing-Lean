@@ -59,7 +59,7 @@ lemma I₆'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ici (1 : ℝ),
   rw [mem_Ici] at ht
   gcongr
   have him : (I * t).im = t := by simp
-  have hpos : 0 < (I * t).im := by rw [him]; linarith
+  have hpos : 0 < (I * t).im := by positivity
   have h_half_lt_one : 1 / 2 < (I * t).im := by rw [him]; linarith
   let z : ℍ := ⟨I * t, hpos⟩
   have him' : z.im = t := him

@@ -7,6 +7,7 @@ public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.Tactic.Pointwise
 
 @[expose] public section
 
@@ -165,17 +166,15 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   -- Step 2: (H₂ + 2•H₄)|[2]S = -(H₄ + 2•H₂)
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+    pointwise
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]S = H₄ * (H₄ + 2•H₂)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] S) = H₄ * (H₄ + (2 : ℂ) • H₂) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₂_S_action, h_lin_comb]
-    ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
+    pointwise
   -- Combine: f₂|[4]S = -serre_D 2 H₄ - (1/6) * H₄ * (2*H₂ + H₄) = -f₄
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₄
-  ext z
-  simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.mul_apply, smul_eq_mul]
-  ring_nf
+  pointwise using ring_nf
 
 /-- f₂ transforms under T as f₂|T = -f₂.
 
@@ -205,7 +204,7 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₂_T_action, h_lin_comb]
   -- Combine: f₂|[4]T = -serre_D 2 H₂ - (1/6)(-H₂)(H₂ + 2H₄) = -f₂
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
-  ext z; simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.mul_apply, smul_eq_mul]; ring
+  pointwise
 
 /-- f₄ transforms under S as f₄|S = -f₂.
 
@@ -222,17 +221,15 @@ lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   -- Step 2: (2•H₂ + H₄)|[2]S = -(2•H₄ + H₂)
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+    pointwise
   -- Step 3: Product (H₄ * (2•H₂ + H₄))|[4]S = H₂ * (H₂ + 2•H₄)
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] S) = H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₄_S_action, h_lin_comb]
-    ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
+    pointwise
   -- Combine: f₄|[4]S = -serre_D 2 H₂ + (1/6) * H₂ * (H₂ + 2H₄) = -f₂
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₂
-  ext z
-  simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.mul_apply, smul_eq_mul]
-  ring_nf
+  pointwise using ring_nf
 
 /-- f₄ transforms under T as f₄|T = f₃.
 
@@ -291,22 +288,22 @@ lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
   -- Linear combination transforms: (2•H₂ + H₄)|S = -(2•H₄ + H₂), (H₂ + 2•H₄)|S = -(H₄ + 2•H₂)
   have h_2H₂_H₄ : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
     simp only [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+    pointwise
   have h_H₂_2H₄ : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     simp only [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+    pointwise
   -- Product transforms using mul_slash_SL2
   have h_term1 : ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] S) = ((2 : ℂ) • H₄ + H₂) * f₄ := by
     have hmul := mul_slash_SL2 2 4 S ((2 : ℂ) • H₂ + H₄) f₂
     simp only [h_2H₂_H₄, f₂_S_action] at hmul
-    convert hmul using 1; ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+    convert hmul using 1; pointwise
   have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) = (H₄ + (2 : ℂ) • H₂) * f₂ := by
     have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
     simp only [h_H₂_2H₄, f₄_S_action] at hmul
-    convert hmul using 1; ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+    convert hmul using 1; pointwise
   -- g|S = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂ = g
   simp only [theta_g, add_slash, h_term1, h_term2]
-  ext z; simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply]; ring
+  pointwise
 
 /-- g is invariant under T.
 
@@ -318,9 +315,7 @@ lemma theta_g_T_action : (theta_g ∣[(6 : ℤ)] T) = theta_g := by
   -- Linear combination transforms: (2•H₂ + H₄)|T = -2•H₂ + H₃, (H₂ + 2•H₄)|T = -H₂ + 2•H₃
   have h_2H₂_H₄ : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] T) = -(2 : ℂ) • H₂ + H₃ := by
     simp only [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action, smul_neg]
-    ext z
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-    ring
+    pointwise
   have h_H₂_2H₄ : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = -H₂ + (2 : ℂ) • H₃ := by
     simp only [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
   -- Product transforms
@@ -558,26 +553,24 @@ Their difference is a weight-4 cusp form, hence zero by dimension vanishing.
 
 /-- S-action on H_sum_sq: invariant since H₂|S = -H₄ and H₄|S = -H₂ -/
 private lemma H_sum_sq_S_action : (H_sum_sq ∣[(4 : ℤ)] S) = H_sum_sq := by
-  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
-    ext z; simp [H_sum_sq, sq]
+  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by pointwise [H_sum_sq]
   simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
     SlashAction.add_slash, mul_slash_SL2 2 2 S _ _, H₂_S_action, H₄_S_action]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+  pointwise
 
 /-- T-action on H_sum_sq: invariant since H₂|T = -H₂ and H₄|T = H₃ = H₂+H₄ -/
 private lemma H_sum_sq_T_action : (H_sum_sq ∣[(4 : ℤ)] T) = H_sum_sq := by
-  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
-    ext z; simp [H_sum_sq, sq]
+  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by pointwise [H_sum_sq]
   simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
     SlashAction.add_slash, mul_slash_SL2 2 2 T _ _, H₂_T_action, H₄_T_action, ← jacobi_identity]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+  pointwise
 
 private lemma H_sum_sq_SL2Z_invariant :
     ∀ γ : SL(2, ℤ), H_sum_sq ∣[(4 : ℤ)] γ = H_sum_sq :=
   slashaction_generators_SL2Z H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
 
 private lemma isBoundedAtImInfty_H_sum_sq : IsBoundedAtImInfty H_sum_sq := by
-  have : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by ext z; simp [H_sum_sq, sq]
+  have : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by pointwise [H_sum_sq]
   rw [this]
   exact ((isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₂).add
     (isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₄)).add
@@ -749,3 +742,5 @@ theorem D_H₄ :
   rw [h, congrFun serre_D_H₄]
   simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
   ring
+
+attribute [d_simps] D_H₂ D_H₃ D_H₄

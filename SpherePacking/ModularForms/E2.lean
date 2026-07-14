@@ -2,6 +2,7 @@ module
 
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.Tactic.SlashSimp
 
 @[expose] public section
 
@@ -51,14 +52,11 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
       E₂ z - (1 / (2 * riemannZeta 2)) * (2 * π * Complex.I / z) := by
     simpa [E₂, EisensteinSeries.D2_S, smul_eq_mul] using h
   rw [riemannZeta_two] at h'
-  have hpi : (π : ℂ) ≠ 0 := by simp
-  have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
   calc
     (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
         E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
     _ = E₂ z + 6 / (π * Complex.I * z) := by
-      field_simp [hpi, hI, hz]
+      field_simp (disch := slash_ne_zero)
       ring_nf
       simp [Complex.I_sq, add_comm]
 

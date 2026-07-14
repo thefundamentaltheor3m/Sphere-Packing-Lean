@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+public import SpherePacking.Tactic.Pointwise
 
 @[expose] public section
 
@@ -39,23 +40,18 @@ lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
   change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] S) = -(H₂ + H₄ - H₃)
   simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_S_action, H₃_S_action, H₄_S_action]
-  ext z
-  simp only [Pi.add_apply, Pi.neg_apply]
-  ring
+  pointwise
 
 /-- T-action on `g`: `g|[2]T = -g`. -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] T) = -(H₂ + H₄ - H₃)
   simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_T_action, H₃_T_action, H₄_T_action]
-  ext z
-  simp only [Pi.add_apply, Pi.neg_apply]
-  ring
+  pointwise
 
 /-- Rewrite `jacobi_f` as a pointwise product. -/
 lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
-  ext
-  simp [jacobi_f, sq]
+  pointwise [jacobi_f]
 
 /-- S-invariance of `f`: `f|[4]S = f`, because `g|[2]S = -g`. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by

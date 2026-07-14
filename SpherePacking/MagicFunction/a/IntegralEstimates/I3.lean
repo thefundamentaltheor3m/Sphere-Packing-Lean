@@ -10,6 +10,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.Tactic.PushReIm
 
 @[expose] public section
 
@@ -143,13 +144,12 @@ section Bounding_Integrand
 lemma I₃'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
   intro s hs
   rw [mem_Ici] at hs
-  simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
-    norm_zpow, norm_real, norm_eq_abs, norm_exp, neg_re, mul_re, ofReal_re, I_re, mul_zero,
-    ofReal_im, I_im, mul_one, _root_.sub_self, zero_mul, mul_im, add_zero,
-    Real.exp_zero, div_ofReal_re, sub_zero]
+  norm_exp_simp [g]
+  have hs0 : s ≠ 0 := by positivity
+  rw [show π * r * s * s⁻¹ ^ 2 = π * r * s⁻¹ from by field_simp [sq]]
   conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
   gcongr
-  rw [abs_of_nonneg (zero_le_one.trans hs)]
+  rw [abs_of_nonneg (zero_le_one.trans hs), zpow_neg]
   apply inv_le_one_of_one_le₀
   exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
 
@@ -161,11 +161,9 @@ lemma I₃'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
   rw [mem_Ici] at hs
   apply (I₃'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
   have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
+  let z : ℍ := ⟨I * s, by positivity⟩
+  have him' : z.im = s := by simp [z, UpperHalfPlane.im]
   have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
   specialize hC₀ z him'_gt_half
   simp only [z, him'] at hC₀
