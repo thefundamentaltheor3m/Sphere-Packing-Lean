@@ -1,27 +1,51 @@
+# Builds the Lean project and, on top of the build, generates the documentation
+# (home page, API docs, blueprint and dependency graph) and deploys it to the
+# `gh-pages` branch.
+#
+# Deployment layout (mirrors the style of the website repo,
+# thefundamentaltheor3m.github.io, which serves per-branch/per-PR previews from
+# subdirectories of gh-pages):
+#
+#   push to `main`    -> gh-pages root         (production: full site with API docs)
+#   push to `gauss2`  -> gh-pages /gauss2/     (blueprint + dependency graph)
+#   PR to main/gauss2 -> gh-pages /pr-preview-<N>/ (blueprint + dependency graph)
+#   PR closed/merged  -> the /pr-preview-<N>/ directory is removed again
+#
+# NOTE: for these deployments to be *served*, the repository's Pages source must
+# be set to "Deploy from a branch" -> branch `gh-pages` / root (Settings ->
+# Pages). The previous setup deployed via the "GitHub Actions" Pages source,
+# which can only host a single deployment and therefore cannot serve the
+# production site, the gauss2 preview and PR previews side by side.
+
 on:
   push:
     branches:
       - main
+      - gauss2
   pull_request:
     branches:
       - main
+      - gauss2
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
 
-# Cancel previous runs if a new commit is pushed to the same PR or branch
-concurrency:
-  group: ${{ github.ref }}  # Group runs by the ref (branch or PR)
-  cancel-in-progress: true  # Cancel any ongoing runs in the same group
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Sets permissions of the GITHUB_TOKEN to allow pushing the built documentation
+# to the gh-pages branch and commenting the preview URL on pull requests.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
+  pull-requests: write
 
 jobs:
   build_project:
     runs-on: ubuntu-latest
     name: Build Project
+    # Everything except the preview teardown that runs when a PR is closed.
+    if: github.event.action != 'closed'
+    # Cancel superseded builds for the same branch/PR, but never cancel an
+    # in-flight deploy (that lives in the separate gh-pages-write group below).
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Cleanup to free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
@@ -63,4 +87,146 @@ jobs:
         uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
           blueprint: true
+          # The full site (API docs + Jekyll home page) is only built for the
+          # production deploy from `main`. Previews (gauss2 and PRs) ship the
+          # blueprint + dependency graph only, which is faster to build and is
+          # self-contained (relative links work in any subdirectory).
+          api-docs: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+          build-page: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
           homepage: home_page
+          # We publish to gh-pages ourselves (see the deploy job) instead of
+          # using docgen-action's built-in GitHub-Actions-Pages deployment, so
+          # that main, gauss2 and PR previews can coexist.
+          deploy: false
+
+      - name: Stage documentation for deployment
+        run: |
+          rm -rf deploy-src
+          mkdir -p deploy-src
+          if [ -d home_page/_site ]; then
+            echo "Staging full site (home_page/_site)."
+            cp -a home_page/_site/. deploy-src/
+          else
+            echo "Staging blueprint + dependency graph (home_page/blueprint)."
+            cp -a home_page/blueprint/. deploy-src/
+          fi
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: deploy-src
+          retention-days: 3
+
+  deploy:
+    needs: build_project
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    name: Deploy
+    # All writers to gh-pages share one group so deploys never race, and a
+    # deploy is never cancelled part-way through.
+    concurrency:
+      group: gh-pages-write
+      cancel-in-progress: false
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Download documentation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: deploy-src
+
+      - name: Determine deploy target
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            dest="pr-preview-${{ github.event.number }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            dest=""
+          elif [ "${{ github.ref }}" = "refs/heads/gauss2" ]; then
+            dest="gauss2"
+          else
+            dest="${{ github.ref_name }}"
+          fi
+          echo "dest=$dest" >> "$GITHUB_OUTPUT"
+          base="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          if [ -z "$dest" ]; then
+            echo "url=$base/" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=$base/$dest/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash .github/scripts/gh-pages-publish.sh \
+            "${GITHUB_WORKSPACE}/deploy-src" \
+            "${{ steps.target.outputs.dest }}" \
+            "Deploy ${{ steps.target.outputs.dest || 'production site' }} (${GITHUB_SHA})"
+
+      - name: Comment the preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const url = ${{ toJSON(steps.target.outputs.url) }};
+            const n = context.issue.number;
+            const marker = '<!-- deploy-preview-comment -->';
+            const body = [
+              marker,
+              `### 🔎 Preview deployed`,
+              ``,
+              `| | |`,
+              `| --- | --- |`,
+              `| 📘 Blueprint | ${url} |`,
+              `| 🕸️ Dependency graph | ${url}dep_graph_document.html |`,
+              ``,
+              `Rebuilt for commit \`${context.sha.substring(0, 7)}\`. It may take a minute to go live.`,
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: n,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: n, body });
+            }
+
+  remove_preview:
+    # Tear the preview down when a PR is closed or merged.
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Remove preview
+    concurrency:
+      group: gh-pages-write
+      cancel-in-progress: false
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Remove preview from gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash .github/scripts/gh-pages-remove.sh "pr-preview-${{ github.event.number }}"
+
+      - name: Note removal on the PR
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const n = context.issue.number;
+            const marker = '<!-- deploy-preview-comment -->';
+            const body = `${marker}\n### 🧹 Preview removed\n\nThe preview for this PR has been taken down.`;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: n,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            }
