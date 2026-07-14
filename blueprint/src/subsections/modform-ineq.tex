@@ -41,7 +41,7 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psi-new}\lean{φ₀,F,G,MagicFunction.b.PsiBounds.ψS_apply_eq_factor,Delta_eq_H₂_H₃_H₄}\leanok
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:lv1-lv2-identities, lemma:psi-new}\lean{φ₀,F,G,MagicFunction.b.PsiBounds.ψS_apply_eq_factor,Delta_eq_H₂_H₃_H₄}\leanok
 We have
 \begin{align}
     \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
@@ -77,7 +77,7 @@ Equivalences of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; ju
 
 Now, the first inequality \eqref{eqn:ineqAnew} follows from the positivity of each $F(it)$ and $G(it)$.
 
-\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, cor:theta-pos}\lean{F_pos, G_pos}\leanok
+\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, cor:theta-pos, def:resToImagAxis}\lean{F_pos, G_pos}\leanok
 For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$.
 \end{lemma}
 \begin{proof}\leanok
@@ -133,7 +133,7 @@ which proves \eqref{eqn:ddf}.
 Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} and Lemma \ref{lemma:lv1-lv2-identities}.
 \end{proof}
 
-\begin{corollary}\label{cor:MLDE-pos}\uses{lemma:FG-de, cor:disc-pos, cor:theta-pos, def:E2}\lean{SerreDer_22_L₁₀_pos}\leanok
+\begin{corollary}\label{cor:MLDE-pos}\uses{lemma:FG-de, cor:disc-pos, cor:theta-pos, def:E2, lemma:der-q-series}\lean{SerreDer_22_L₁₀_pos}\leanok
 \eqref{eqn:ddf} (resp. \eqref{eqn:ddg}) is positive (resp. negative) on the (positive) imaginary axis.
 \end{corollary}
 \begin{proof}\leanok
@@ -158,7 +158,7 @@ Since $G(it) > 0$ for all $t > 0$, we can define the quotient
 \end{equation}
 as a function on $(0, \infty)$.
 
-\begin{lemma}\label{lemma:Qlim}\uses{lemma:E2-transform-S, lemma:Ek-is-modular-form, lemma:theta-transform-S-T}\lean{FmodG_rightLimitAt_zero}\leanok
+\begin{lemma}\label{lemma:Qlim}\uses{lemma:E2-transform-S, lemma:Ek-is-modular-form, lemma:theta-transform-S-T, prop:A_E-tsum}\lean{FmodG_rightLimitAt_zero}\leanok
 We have
 \begin{equation}
     \lim_{t \to 0^+} Q(t) = \frac{18}{\pi^2}.
@@ -184,7 +184,20 @@ From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
 \end{align}
 \end{proof}
 
-\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:MLDE-pos, thm:anti-serre-der-pos}\lean{FmodG_strictAntiOn}\leanok
+The monotonicity argument below also needs to know that $\mathcal{L}_{1, 0} := F'G - FG'$ is
+eventually positive on the imaginary axis; this is extracted from the vanishing orders of $F$
+and $G$ at $i\infty$.
+\begin{lemma}\label{lemma:L10-eventually-pos}\uses{def:FG-definition, def:resToImagAxis}\lean{L₁₀_eventuallyPos}\leanok
+The function $t \mapsto \mathcal{L}_{1,0}(it) = (F'G - FG')(it)$ is positive for all
+sufficiently large $t$.
+\end{lemma}
+\begin{proof}\leanok
+The vanishing orders of $F$ and $G$ at $i\infty$ are $2$ and $\frac{3}{2}$ respectively, so
+$\mathcal{L}_{1,0}/(FG) = F'/F - G'/G \to 2 - \frac{3}{2} = \frac{1}{2} > 0$ as $t \to \infty$,
+and $F(it)G(it) > 0$.
+\end{proof}
+
+\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:MLDE-pos, thm:anti-serre-der-pos, lemma:L10-eventually-pos}\lean{FmodG_strictAntiOn}\leanok
 The function $t \mapsto Q(t)$ is strictly decreasing.
 \end{proposition}
 \begin{proof}\leanok

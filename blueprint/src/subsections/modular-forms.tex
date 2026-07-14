@@ -128,7 +128,7 @@ Since modular forms are holomorphic and periodic they have Fourier expansions, a
 
 For Eisenstein series, we can see this directly from the following:
 
-\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
+\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion, E4_q_exp, E6_q_exp}\leanok
 The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
 where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
@@ -139,6 +139,90 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
 \end{lemma}
 \begin{proof}\leanok
 \end{proof}
+
+\subsection{q-expansion machinery}
+
+The basic Eisenstein Fourier expansion is enough for the first modular-form statements, and the
+lemma above already includes the explicit coefficient formulas for $E_4$ and $E_6$. The later
+$\varphi$-bounds also use the convergent tsum expression for the combination $E_2E_4-E_6$. The
+supporting Lean development packages the needed summability, product, and termwise-differentiation
+lemmas in \texttt{QExpansionLemmas.lean}, \texttt{MultipliableLemmas.lean}, and
+	exttt{TsumDerivWithin.lean}.
+
+\begin{lemma}\label{lemma:qexp-infrastructure}\uses{def:Mk}\lean{hasDerivAt_tsum_fun, qExpansion_smul2, qExpansion_ext2, qExpansion_sub1, qExpansion_pow, MultipliableEtaProductExpansion, modularForm_tendsto_atImInfty}\leanok
+The $q$-series manipulations used below are justified by the following facts:
+a locally uniformly convergent series of holomorphic functions may be differentiated termwise;
+the $q$-expansion of level-one modular forms is compatible with scalar multiples, differences,
+and powers; and the eta/discriminant product expansions are multipliable on $\mathfrak{H}$.
+Moreover a modular form tends to its constant $q$-coefficient as $z \to i\infty$.
+\end{lemma}
+\begin{proof}\leanok
+Standard complex analysis (Weierstrass) for termwise differentiation; direct computations with
+the \texttt{qExpansion} API for the algebraic compatibilities; comparison with a geometric
+series for multipliability.
+\end{proof}
+
+\begin{proposition}\label{prop:A_E-tsum}\uses{lemma:Ek-Fourier, lemma:qexp-infrastructure, lemma:der-q-series}\lean{A_E_eq_tsum}\leanok
+The combination $A_E(z) := E_2(z)E_4(z) - E_6(z)$ can be rewritten as a convergent series
+\[
+    A_E(z) = \sum'_{n : \mathbb{N}} A_{E,\mathrm{term}}(z,n).
+\]
+This is the q-expansion identity used later in the $\varphi$-bounds.
+\end{proposition}
+
+\subsection{Cusp form theory behind the dimension formulas}
+
+The low-weight dimension formulas later in the blueprint rest on three ingredients: a workable cusp-form
+predicate, the division-by-$\Delta$ equivalence, and the vanishing of cusp forms below weight $12$.
+
+\begin{definition}\label{def:IsCuspForm}\lean{IsCuspForm}\leanok
+A modular form is a cusp form if it lies in the cusp-form submodule.
+\end{definition}
+
+\begin{theorem}\label{thm:cuspFormOfSIFTendstoZero}\uses{def:IsCuspForm}\lean{cuspFormOfSIFTendstoZero}\leanok
+If a slash-invariant holomorphic function tends to $0$ at $i\infty$, then it defines a cusp form.
+\end{theorem}
+
+\begin{lemma}\label{lemma:IsCuspForm-iff-coeffZero}\uses{def:IsCuspForm}\lean{IsCuspForm_iff_coeffZero_eq_zero}\leanok
+For level one, a modular form is a cusp form if and only if its constant $q$-coefficient vanishes.
+\end{lemma}
+
+\begin{lemma}\label{lemma:cuspform-transport-equivalences}\uses{def:IsCuspForm}\lean{cuspForm_Gamma_one_equiv_SL, modularForm_Gamma_one_equiv_SL}\leanok
+The project’s $\Gamma(1)$ cusp forms and modular forms transport canonically to Mathlib’s $\mathcal{S}\mathcal{L}$ versions.
+\end{lemma}
+
+\begin{lemma}\label{lemma:Delta-apply-E4-E6}\lean{Delta_apply_eq_one_div_1728_mul_E4_pow_three_sub_E6_sq}\leanok
+The discriminant form satisfies $\Delta(z) = (E_4(z)^3 - E_6(z)^2)/1728$.
+\end{lemma}
+
+\begin{lemma}\label{lemma:Delta-q-exp-two}\lean{Delta_q_exp_two}\leanok
+The second $q$-coefficient of $\Delta$ is $-24$.
+\end{lemma}
+
+\begin{theorem}\label{thm:CuspForms-iso-Modforms}\uses{lemma:cuspform-transport-equivalences, lemma:Delta-apply-E4-E6, lemma:Delta-q-exp-two}\lean{CuspForms_iso_Modforms}\leanok
+Division by $\Delta$ gives an equivalence $\mathrm{CuspForm}\,\Gamma(1)\,k \simeq \mathrm{ModularForm}\,\Gamma(1)\,(k - 12)$.
+\end{theorem}
+
+\begin{theorem}\label{thm:cuspform-weight-lt-12-zero}\uses{lemma:cuspform-transport-equivalences, thm:CuspForms-iso-Modforms}\lean{cuspform_weight_lt_12_zero}\leanok
+The cusp-form space vanishes in weights below $12$.
+\end{theorem}
+
+\begin{theorem}\label{thm:cuspform-weight-12-finrank-one}\uses{lemma:cuspform-transport-equivalences, lemma:Delta-apply-E4-E6, lemma:Delta-q-exp-two}\lean{cuspform_weight_12_finrank_one}\leanok
+The weight-$12$ cusp-form space is one-dimensional.
+\end{theorem}
+
+\begin{corollary}\label{cor:IsCuspForm-weight-lt-eq-zero}\uses{lemma:IsCuspForm-iff-coeffZero, thm:cuspform-weight-lt-12-zero}\lean{IsCuspForm_weight_lt_eq_zero}\leanok
+A level-one cusp form of weight $<12$ is zero.
+\end{corollary}
+
+\begin{corollary}\label{cor:eq-zero-of-tendsto-zero-atImInfty}\uses{cor:IsCuspForm-weight-lt-eq-zero, lemma:IsCuspForm-iff-coeffZero}\lean{eq_zero_of_tendsto_zero_atImInfty}\leanok
+Let $G \in M_k(\Gamma(1))$ with $k<12$.
+If $G(z) \to 0$ as $\Im z \to \infty$, then $G=0$.
+\end{corollary}
+
+These statements are the infrastructure behind the existing theorem \ref{thm:lvl1_dims} and the
+corollary \ref{cor:dim-mf} below, which package the low-weight dimension formulas used later in
+the modular-form arguments.
 
 The infinite sum \eqref{eqn:Ek-definition} does not converge absolutely for $k=2$.
 On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def:E2} below).
@@ -266,7 +350,7 @@ To prove this we will do use the following non-standard proof. First we have the
 \end{proof}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
+\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition, thm:CuspForms-iso-Modforms, thm:cuspform-weight-lt-12-zero, thm:cuspform-weight-12-finrank-one, cor:IsCuspForm-weight-lt-eq-zero}\lean{ModularForm.dimension_level_one}\leanok
     Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}\leanok
@@ -418,7 +502,7 @@ $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
 
 
 They have Fourier expansions as follows.
-\begin{proposition}\label{prop:H2-fourier}\uses{def:H2-H3-H4}\lean{H₂}\leanok
+\begin{proposition}\label{prop:H2-fourier}\uses{def:H2-H3-H4}\uses{lemma:theta-transform-S-T}\lean{H₂}\leanok
 $H_2$ admits a Fourier series of the form
 \begin{equation}
     H_2(z) = \sum_{n \ge 1} c_{H_2}(n) e^{\pi i n z}
@@ -438,7 +522,7 @@ We have
 \end{align}
 \end{proof}
 
-\begin{proposition}\label{prop:H3-fourier}\uses{def:H2-H3-H4}\lean{H₃}\leanok
+\begin{proposition}\label{prop:H3-fourier}\uses{def:H2-H3-H4}\uses{lemma:theta-transform-S-T}\lean{H₃}\leanok
 $H_3$ admits a Fourier series of the form
 \begin{equation}
     H_3(z) = \sum_{n \ge 0} c_{H_3}(n) e^{\pi i n z}
@@ -453,7 +537,7 @@ We have
 \end{equation}
 \end{proof}
 
-\begin{proposition}\label{prop:H4-fourier}\uses{def:H2-H3-H4}\lean{H₄}\leanok
+\begin{proposition}\label{prop:H4-fourier}\uses{def:H2-H3-H4}\uses{lemma:theta-transform-S-T}\lean{H₄}\leanok
 $H_4$ admits a Fourier series of the form
 \begin{equation}
     H_4(z) = \sum_{n \ge 0} c_{H_4}(n) e^{\pi i n z}
@@ -467,7 +551,7 @@ Especially, $H_4$ is not cuspidal.
 
 
 We also have a nontrivial relation between these theta functions.
-\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf}\lean{jacobi_identity}\leanok
+\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf, thm:cuspFormOfSIFTendstoZero}\lean{jacobi_identity}\leanok
 These three theta functions satisfy the \emph{Jacobi identity}
 \begin{equation}\label{eqn:jacobi-identity}
 H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4.
@@ -486,7 +570,7 @@ H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
-\begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma:theta-transform-S-T, lemma:theta-modular, lemma:disc-cuspform}\lean{SpherePacking.ModularForms.E₄_eq_thetaE4,SpherePacking.ModularForms.E₆_eq_thetaE6,Delta_eq_H₂_H₃_H₄}\leanok
+\begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma:theta-transform-S-T, lemma:theta-modular, lemma:disc-cuspform, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier, thm:cuspFormOfSIFTendstoZero}\lean{SpherePacking.ModularForms.E₄_eq_thetaE4,SpherePacking.ModularForms.E₆_eq_thetaE6,Delta_eq_H₂_H₃_H₄}\leanok
 We have
 \begin{align}
     E_4 &= \frac{1}{2}(H_{2}^{2} + H_{3}^{2} + H_{4}^{2}) = H_{2}^{2} + H_{2}H_{4} + H_{4}^{2} \label{eqn:e4theta} \\
@@ -501,7 +585,7 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos,H₄_imag_axis_pos,jacobi_identity}\leanok
+\begin{corollary}\label{cor:theta-pos}\uses{def:H2-H3-H4, lemma:jacobi-identity, lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos,H₄_imag_axis_pos,jacobi_identity}\leanok
 All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
 \end{corollary}
 \begin{proof}\leanok
@@ -510,6 +594,57 @@ By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-tr
     \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
 \end{equation}
 \end{proof}
+
+\subsection{Restriction to the imaginary axis}
+
+Many of the positivity and growth estimates in the later sections are statements about the
+restriction of a modular object $F : \mathfrak{H} \to \C$ to the positive imaginary axis,
+$t \mapsto F(it)$. In the formalization this restriction is packaged as an explicit operator,
+together with transfer lemmas that move growth and decay information between the modular
+picture (behaviour at $i\infty$) and the real-variable picture (behaviour as $t \to \infty$).
+
+\begin{definition}\label{def:resToImagAxis}\lean{ResToImagAxis, resToImagAxis}\leanok
+For $F : \mathfrak{H} \to \C$ define its \emph{restriction to the imaginary axis} as the function
+\begin{equation}
+    F|_{i\R_{>0}} : \R \to \C, \qquad
+    t \mapsto \begin{cases} F(it) & t > 0, \\ 0 & t \le 0.\end{cases}
+\end{equation}
+We say that $F$ is \emph{real} (resp.\ \emph{positive}) \emph{on the imaginary axis} if
+$F(it) \in \R$ (resp.\ $F(it) > 0$) for all $t > 0$.
+\end{definition}
+
+\begin{lemma}\label{lemma:resToImagAxis-props}\uses{def:resToImagAxis}\lean{ResToImagAxis.Real, ResToImagAxis.Pos, ResToImagAxis.Differentiable, ResToImagAxis.SlashActionS}\leanok
+The class of functions that are real (resp.\ positive) on the imaginary axis is closed under
+addition, multiplication, and scalar multiplication by real (resp.\ positive) constants.
+If $F$ is holomorphic on $\mathfrak{H}$, then $t \mapsto F(it)$ is differentiable on $(0, \infty)$.
+Moreover, the restriction interacts with the slash action of $S$ by
+$(F|_{k}S)(it) = (it)^{-k} F(i/t)$ for $t > 0$.
+\end{lemma}
+\begin{proof}\leanok
+All statements follow directly from the definition; differentiability follows from the chain
+rule applied to $t \mapsto it$.
+\end{proof}
+
+\begin{lemma}\label{lemma:resToImagAxis-decay-transfer}\uses{def:resToImagAxis, lemma:resToImagAxis-props}\lean{isBigO_resToImagAxis_of_isBigO_atImInfty, tendsto_rpow_mul_resToImagAxis_of_isBigO_exp, tendsto_rpow_mul_resToImagAxis_of_fourier_shift}\leanok
+Let $F : \mathfrak{H} \to \C$ and $c > 0$. If $F(z) = O(e^{-c \Im z})$ as $\Im z \to \infty$,
+then $F(it) = O(e^{-ct})$ as $t \to \infty$, and for every $s \in \R$,
+\begin{equation}
+    t^{s} F(it) \longrightarrow 0 \qquad (t \to \infty).
+\end{equation}
+In particular, if $F$ is bounded at $i\infty$ and has vanishing constant Fourier coefficient
+(so that $F(z) = O(e^{-2\pi \Im z})$ after shifting off the constant term), the same conclusion
+holds with $c = 2\pi$.
+\end{lemma}
+\begin{proof}\leanok
+The first claim is immediate from the definition of $O$-bounds at $i\infty$.
+The second follows since polynomial growth is dominated by exponential decay.
+The Fourier-shift variant reduces to the first via the $q$-expansion.
+\end{proof}
+
+These transfer lemmas are used throughout Section~\ref{sec: g}: the positivity statements for
+$F$, $G$, and the theta functions are statements about restrictions to the imaginary axis, and
+the asymptotic input for the monotonicity argument (Proposition~\ref{prop:Qdec}) is obtained by
+transferring $q$-expansion decay through Lemma~\ref{lemma:resToImagAxis-decay-transfer}.
 
 \subsection{Quasimodular forms and derivatives}
 
@@ -556,7 +691,7 @@ For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of
 \end{definition}
 
 \begin{theorem}
-\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2, lemma:E2-transform-general}\lean{serre_D_slash_equivariant}\leanok
+\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2, lemma:E2-transform-general}\lean{serre_D_slash_equivariant, D_slash}\leanok
 Serre derivative $\partial_{k}$ is equivariant with the slash action of $\mathrm{SL}_{2}(\mathbb{Z})$ in the following sense:
 \begin{equation}
     \partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
@@ -597,7 +732,7 @@ Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
 \end{remark}
 
-\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf} \lean{ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'} \leanok
+\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf, cor:eq-zero-of-tendsto-zero-atImInfty} \lean{ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'} \leanok
 We have
 \begin{align}
     E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
@@ -635,7 +770,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}\lean{serre_D_two_H₂,serre_D_two_H₄}\leanok
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity, thm:cuspFormOfSIFTendstoZero}\lean{serre_D_two_H₂,serre_D_two_H₄}\leanok
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\

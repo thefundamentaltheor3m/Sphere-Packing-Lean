@@ -49,6 +49,21 @@ Now that we have simplified the process of computing the packing densities of sp
     For all $d$, the periodic sphere packing constant in $\R^d$ is equal to the sphere packing constant in $\R^d$.
 \end{theorem}
 \begin{proof}\leanok
+By scaling (\Cref{lemma:scaling-density}) both constants may be computed using only packings of
+separation $1$.
+
+Since every periodic packing is in particular a packing, the periodic constant is at most the
+sphere packing constant.
+
+For the reverse inequality it suffices to show that for every packing $\mathcal{P}$ of
+separation $1$ and every $a$ less than the density of $\mathcal{P}$ there is a \emph{periodic}
+packing of separation $1$ whose density exceeds $a$. Choose $R$ large enough that the finite
+density of $\mathcal{P}$ over the cube $[-R, R)^d$ exceeds $a$; let $X$ be the set of centers of
+$\mathcal{P}$ lying in the cube whose balls do not meet the boundary, and repeat $X$ periodically
+with respect to the lattice $(2R)\Z^d$. Distinct translates of the cube are far enough apart that
+the repeated configuration still has separation $1$, and its density equals the finite density of
+the truncated configuration, which exceeds $a$ for $R$ large. Taking the supremum over $a$
+finishes the proof.
 \end{proof}
 
 Thus, one can show a sphere packing to be optimal by showing its density to be equal to the \emph{periodic} sphere packing constant instead of the regular sphere packing constant. The determination of the periodic constant is easier than that of the general constant, as we shall see when investigating the Linear Programming bounds derived by Cohn and Elkies in~\cite{ElkiesCohn}.
