@@ -5,6 +5,7 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.Tactic.Positivity
 
 @[expose] public section
 
@@ -33,6 +34,35 @@ noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ := ResToImagAxis
     F.resToImagAxis t = ResToImagAxis F t := rfl
 
 end Function
+
+/-- Evaluate `ResToImagAxis F` at a positive `t`, with the membership proof of the
+imaginary-axis point provided by `positivity`. This is the workhorse rewrite of `res_simp`. -/
+lemma ResToImagAxis_apply_of_pos {F : ℍ → ℂ} {t : ℝ} (ht : 0 < t) :
+    ResToImagAxis F t = F ⟨I * t, by positivity⟩ := by
+  simp [ResToImagAxis, ht]
+
+/-- `ResToImagAxis F` vanishes at nonpositive `t` by definition. -/
+lemma ResToImagAxis_apply_of_nonpos {F : ℍ → ℂ} {t : ℝ} (ht : t ≤ 0) :
+    ResToImagAxis F t = 0 := by
+  simp [ResToImagAxis, not_lt.mpr ht]
+
+/-- `res_simp` rewrites `F.resToImagAxis t` and `ResToImagAxis F t` to `F ⟨I * t, _⟩`,
+discharging the side condition `0 < t` with `positivity` (so it fires whenever `0 < t` is
+in context or `positivity` can derive it, e.g. from `ht : 1 ≤ t`).
+
+* `res_simp [foo, h]` adds extra simp lemmas to the same `simp only` call;
+* `res_simp at h ⊢` works at hypotheses. -/
+syntax (name := resSimpTac) "res_simp" (" [" Lean.Parser.Tactic.simpLemma,* "]")?
+  (Lean.Parser.Tactic.location)? : tactic
+
+macro_rules
+  | `(tactic| res_simp $[$loc:location]?) =>
+    `(tactic| simp (disch := positivity) only [Function.resToImagAxis_apply,
+        Function.resToImagAxis_eq_resToImagAxis, ResToImagAxis_apply_of_pos] $[$loc:location]?)
+  | `(tactic| res_simp [$ls,*] $[$loc:location]?) =>
+    `(tactic| simp (disch := positivity) only [Function.resToImagAxis_apply,
+        Function.resToImagAxis_eq_resToImagAxis, ResToImagAxis_apply_of_pos, $ls,*]
+        $[$loc:location]?)
 
 /--
 Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is real-valued,
@@ -91,7 +121,7 @@ Realness, positivity and essential positivity are closed under the addition and 
 @[fun_prop]
 theorem ResToImagAxis.Real.const (c : ℝ) : ResToImagAxis.Real (fun _ => c) := by
   intro t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, ofReal_im]
+  res_simp [ofReal_im]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := ResToImagAxis.Real.const 0
@@ -104,8 +134,8 @@ theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) : R
     := by
   intro t ht
   have hFreal := hF t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp [ResToImagAxis, ht, hFreal]
+  res_simp at hFreal ⊢
+  simp [hFreal]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
@@ -113,8 +143,8 @@ theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
   intro t ht
   have hFreal := hF t ht
   have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, hFreal, hGreal]
+  res_simp at hFreal hGreal ⊢
+  simp [hFreal, hGreal]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.sub {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
@@ -127,16 +157,16 @@ theorem ResToImagAxis.Real.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
   intro t ht
   have hFreal := hF t ht
   have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, hFreal, hGreal]
+  res_simp at hFreal hGreal ⊢
+  simp [hFreal, hGreal]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real (c • F) := by
   intro t ht
   have hFreal := hF t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp [ResToImagAxis, ht, hFreal]
+  res_simp at hFreal ⊢
+  simp [hFreal]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n : ℕ) :
@@ -150,8 +180,8 @@ theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real F⁻¹ := by
   intro t ht
   have hFreal := hF t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp [ResToImagAxis, ht, Pi.inv_apply, Complex.inv_im, hFreal]
+  res_simp at hFreal ⊢
+  simp [Complex.inv_im, hFreal]
 
 @[fun_prop]
 theorem ResToImagAxis.Real.div {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
@@ -207,8 +237,8 @@ theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
   refine ⟨Real.add hF.1 hG.1, fun t ht ↦ ?_⟩
   have hFpos := hF.2 t ht
   have hGpos := hG.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos hGpos
-  simp [ResToImagAxis, ht, add_pos hFpos hGpos]
+  res_simp at hFpos hGpos ⊢
+  exact add_pos hFpos hGpos
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
@@ -223,11 +253,9 @@ theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.P
     (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
   rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
-  have hFreal := hF.1 t ht
   have hFpos := hF.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos
-  simp [ResToImagAxis, ht, mul_pos hc hFpos]
+  res_simp at hFpos ⊢
+  simp [mul_pos hc hFpos]
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : ℕ) :
@@ -271,8 +299,7 @@ theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
   have hFpos_t := hFpos t htF
   have hGpos_t := hGpos t htG
   have htpos : 0 < t := by grind
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos] at hFpos_t hGpos_t
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos]
+  res_simp at hFpos_t hGpos_t ⊢
   exact add_pos hFpos_t hGpos_t
 
 @[fun_prop]
@@ -304,11 +331,9 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   use t₀
   refine ⟨hF0, fun t ht ↦ ?_⟩
   have htpos : 0 < t := by grind
-  have hFreal_t := hF.1 t htpos
   have hFpos_t := hFpos t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
-  simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
+  res_simp at hFpos_t ⊢
+  simp [mul_pos hc hFpos_t]
 
 /-- If `F` is real-valued, then `F` is equal to the real part of itself on imaginary axis. -/
 theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :

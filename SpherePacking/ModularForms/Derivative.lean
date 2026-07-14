@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.Tactic.DNfAttr
 
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.tsumderivWithin
@@ -19,6 +20,20 @@ open scoped ModularForm MatrixGroups Manifold Topology BigOperators
 @[fun_prop]
 lemma MDifferentiable.pi_ofNat (n : ℕ) [n.AtLeastTwo] :
     MDiff (@OfNat.ofNat (ℍ → ℂ) n _) := mdifferentiable_const
+
+/-- `Function.const` functions are MDifferentiable (`fun_prop` does not see through
+`Function.const` to the lambda form of `mdifferentiable_const`). -/
+@[fun_prop]
+lemma MDifferentiable.function_const (c : ℂ) : MDiff (Function.const ℍ c) :=
+  mdifferentiable_const
+
+/-- Applied form of `MDifferentiable.function_const`: in reducible mode (e.g. as a `simp`
+discharger) `fun_prop` eta-expands goals to `fun z => Function.const ℍ c z` and needs the
+theorem keyed on the applied `Function.const`. -/
+@[fun_prop]
+lemma MDifferentiable.function_const_apply (c : ℂ) :
+    MDiff (fun z : ℍ => Function.const ℍ c z) :=
+  mdifferentiable_const
 
 /-- Inverse of a constant Pi function (e.g. `6⁻¹ : ℍ → ℂ`) is MDifferentiable. -/
 @[fun_prop]
@@ -227,6 +242,20 @@ lemma pi_ofNat_eq_const (n : ℕ) [n.AtLeastTwo] :
 lemma pi_inv_const_eq_const (c : ℂ) :
     (Function.const ℍ c)⁻¹ = Function.const ℍ c⁻¹ := rfl
 
+/-- `D` of a numeric literal vanishes, stated on the `OfNat` form directly for use with
+`rw`. (Inside `simp` the residual `D (OfNat n)` leaves are instead cleaned up by the
+global `pi_ofNat_eq_const` + `D_const` route; keeping the `d_simps` structural phase free
+of `Function.const` matters because `fun_prop` cannot discharge `MDiff (Function.const _ _)`
+side goals in the reducible mode that `simp` dischargers run in.) -/
+@[simp]
+lemma D_pi_ofNat (n : ℕ) [n.AtLeastTwo] : D (@OfNat.ofNat (ℍ → ℂ) n _) = 0 := by
+  rw [pi_ofNat_eq_const, D_const]
+
+/-- `D` of the inverse of a numeric literal vanishes. -/
+@[simp]
+lemma D_pi_inv_ofNat (n : ℕ) [n.AtLeastTwo] : D (@OfNat.ofNat (ℍ → ℂ) n _)⁻¹ = 0 := by
+  rw [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const]
+
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
 /-- Helper: HasDerivAt for a·exp(2πicw) with chain rule. -/
@@ -401,6 +430,9 @@ lemma serre_D_apply (k : ℂ) (F : ℍ → ℂ) (z : ℍ) :
 
 lemma serre_D_eq (k : ℂ) (F : ℍ → ℂ) :
     serre_D k F = fun z => D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
+attribute [d_simps] serre_D_apply serre_D_eq D_add D_sub D_smul D_neg D_mul D_sq D_cube
+  D_const D_pi_ofNat D_pi_inv_ofNat
 
 /--
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.

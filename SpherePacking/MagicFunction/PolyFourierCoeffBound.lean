@@ -349,9 +349,8 @@ private lemma step_11 :
 
 -- Summability on N implies summability on N+
 private lemma natplus_summable_of_nat_summable {a : ℕ → ℝ} (h : Summable a)
-  : Summable (fun (n : ℕ+) => a n) := by
-  rw [← Equiv.pnatEquivNat.symm.summable_iff, Equiv.pnatEquivNat_symm_apply]
-  exact (summable_nat_add_iff 1).mpr h
+  : Summable (fun (n : ℕ+) => a n) :=
+  summable_pnat_iff_summable_nat.mpr h
 
 private lemma step_12a {r : ℝ} (cpos : r > 0)
     : Multipliable fun (b : ℕ+) ↦ (1 - rexp (-r * ↑↑b)) ^ 24 := by

@@ -6,6 +6,7 @@ Authors: Bhavik Mehta, Gareth Ma
 module
 
 public import SpherePacking.Basic.PeriodicPacking
+public import SpherePacking.Tactic.FinVecSimp
 
 @[expose] public section
 
@@ -284,8 +285,7 @@ lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
 
 lemma E8Matrix_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Matrix R = (E8Matrix ℚ).map (Rat.castHom R) := by
-  rw [← Matrix.ext_iff]
-  norm_num [Fin.forall_fin_succ, E8Matrix]
+  fin_vec_simp [E8Matrix]
 
 lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
     (E8Matrix R).BlockTriangular OrderDual.toDual := by
@@ -334,8 +334,7 @@ private def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (F
 
 private lemma E8Inverse_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) := by
-  rw [← Matrix.ext_iff]
-  norm_num [Fin.forall_fin_succ, E8Inverse]
+  fin_vec_simp [E8Inverse]
 
 private lemma E8Inverse_mul_E8Matrix_rat : E8Inverse ℚ * E8Matrix ℚ = 1 := by decide +kernel
 

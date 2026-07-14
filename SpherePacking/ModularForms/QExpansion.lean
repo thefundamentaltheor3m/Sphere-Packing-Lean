@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.Tactic.PushReIm
 
 @[expose] public section
 
@@ -36,24 +37,15 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
       simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I]
       rw [← mul_zero ‖a k‖]
       refine Tendsto.const_mul ‖a k‖ <| (Real.tendsto_exp_atBot).comp ?_
-      simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-        coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, tendsto_neg_atBot_iff]
-      rw [tendsto_mul_const_atTop_of_pos, tendsto_const_mul_atTop_of_pos] <;> try positivity
-      exact tendsto_im_atImInfty
-  · rw [eventually_atImInfty]
-    use 1
+      push_re_im [tendsto_neg_atBot_iff]
+      exact ((tendsto_im_atImInfty.const_mul_atTop Real.pi_pos).atTop_mul_const
+        (mod_cast Nat.pos_of_ne_zero hk)).atTop_mul_const two_pos
+  · eventually_im_infty 1
     intro z hz k
     simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I, mul_right_comm]
-    simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
-      sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, neg_mul]
+    push_re_im
     gcongr
-    have hz2 : (2 : ℝ) ≤ 2 * z.im := by nlinarith [hz]
-    have hbase : 2 * π ≤ 2 * z.im * π := by
-      exact mul_le_mul_of_nonneg_right hz2 (by positivity)
-    have hk : (0 : ℝ) ≤ (k : ℝ) := by positivity
-    have hmul : 2 * π * (k : ℝ) ≤ (2 * z.im * π) * (k : ℝ) := by
-      exact mul_le_mul_of_nonneg_right hbase hk
-    simpa [mul_assoc, mul_comm, mul_left_comm, add_assoc, add_left_comm, add_comm] using hmul
+    exact le_mul_of_one_le_left Real.pi_pos.le hz
 
 lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :
@@ -67,17 +59,14 @@ lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * r
       exact fun _ ↦ tsum_congr (by simpa using fun _ ↦ ha' _ (by omega))
     · exact (summable_int_iff_summable_nat_and_neg.mp ha).left
   apply this.congr'
-  rw [EventuallyEq, eventually_atImInfty]
-  use 1, fun z hz ↦ ?_
+  rw [EventuallyEq]
+  eventually_im_infty 1 with z hz
   rw [← tsum_nat_add_neg_add_one]
   · rfl
   rw [← summable_norm_iff]
   convert_to Summable fun n ↦ ‖a n‖ * rexp (z.im * -2 * π * n)
   · ext n
-    rw [norm_mul, mul_right_comm _ I, mul_right_comm _ I, norm_exp_mul_I]
-    simp
-    ring_nf
-    simp
+    norm_exp_simp
   · apply ha.of_nonneg_of_le (fun _ ↦ by positivity) fun b ↦ ?_
     by_cases hb : 0 ≤ b
     · have : z.im * -2 * π * b ≤ -2 * π * b := by

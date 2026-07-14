@@ -1,6 +1,8 @@
 module
 
 public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.Tactic.PushReIm
+public import SpherePacking.Tactic.SlashSimp
 
 @[expose] public section
 
@@ -169,15 +171,13 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
   have h := congrFun H₂_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
-  field_simp [ne_zero] at h ⊢
-  exact h
+  slash_simp [Pi.neg_apply] at h
+  linear_combination h
 
 lemma H₄_S_action' (z : ℍ) : H₄ (S • z) = - z ^ 2 * H₂ z := by
   have h := congrFun H₄_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
-  field_simp [ne_zero z] at h ⊢
-  exact h
+  slash_simp [Pi.neg_apply] at h
+  linear_combination h
 
 lemma H₂_S_inv_action : (H₂ ∣[(2 : ℤ)] S⁻¹) = -H₄ := by
   rw [← neg_eq_iff_eq_neg.mpr H₄_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
@@ -687,7 +687,7 @@ exponentials.
 @[fun_prop]
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+  res_simp [H₂]
   -- H₂ = Θ₂^4, and Θ₂(I*t) has zero imaginary part,
   -- so H₂(I*t) = Θ₂(I*t)^4 has zero imaginary part
   have hΘ₂_im := Θ₂_imag_axis_real t ht
@@ -752,7 +752,7 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   constructor
   · exact H₂_imag_axis_real
   · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+    res_simp [H₂]
     -- H₂ = Θ₂^4 where Θ₂(it) is real and positive
     -- For z with z.im = 0 and z.re > 0, (z^4).re = (z.re)^4 > 0
     have hΘ₂_im := Θ₂_imag_axis_real t ht
@@ -779,7 +779,7 @@ Blueprint: Corollary 6.43 - follows from Θ₄ being real on the imaginary axis.
 @[fun_prop]
 theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₄]
+  res_simp [H₄]
   have hΘ₄_im := Θ₄_imag_axis_real t ht
   exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₄_im 4
 
@@ -820,7 +820,7 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
     have h1_div_1t : 1 / (1 / t) = t := by field_simp
     -- The negation of resToImagAxis
     have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, h1t_pos, ↓reduceDIte, Pi.neg_apply]
+      res_simp [Pi.neg_apply]
     -- Substitute into hSlash
     rw [hNeg, hI_neg2, h1t_neg2, h1_div_1t] at hSlash
     -- hSlash : -(H₂.resToImagAxis (1/t)) = -1 * t^2 * H₄.resToImagAxis t
@@ -841,10 +841,7 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
     -- (t^2 * H₄.resToImagAxis t).re = t^2 * (H₄.resToImagAxis t).re
     have hProd_re : ((t : ℂ) ^ 2 * H₄.resToImagAxis t).re =
         (t : ℝ) ^ 2 * (H₄.resToImagAxis t).re := by
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hH₄_real ⊢
-      simp only [sq, Complex.mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero]
-      ring_nf
-      simp only [hH₄_real, mul_zero, sub_zero]
+      push_re_im [hH₄_real]
     -- Combine: t^2 * (H₄.resToImagAxis t).re > 0 and t^2 > 0 imply (H₄.resToImagAxis t).re > 0
     rw [hRe, hProd_re] at hH₂_pos
     have ht2_pos : 0 < (t : ℝ) ^ 2 := sq_pos_of_pos ht
