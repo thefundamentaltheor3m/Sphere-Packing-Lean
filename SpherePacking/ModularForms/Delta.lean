@@ -5,17 +5,17 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.SlashActionAuxil
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
+public import Mathlib.NumberTheory.ModularForms.Discriminant
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.E2
-public import Mathlib.NumberTheory.ModularForms.Discriminant
 public import SpherePacking.ModularForms.exp_lems
-public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.ResToImagAxis
-public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.Tactic.NormNumI
 
-public import SpherePacking.ForMathlib.Cusps
 
 /-! # The modular discriminant `Δ`
 
@@ -46,7 +46,9 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
   rw [multipliable_pnat_iff_multipliable_succ
     (f := fun n : ℕ ↦ 1 - cexp (2 * π * Complex.I * n * z))]
   exact (ModularForm.multipliableLocallyUniformlyOn_eta.multipliable z.2).congr fun n ↦ by
-    rw [ModularForm.eta_q_eq_cexp]; push_cast; ring_nf
+    rw [ModularForm.eta_q_eq_cexp]
+    push_cast
+    ring_nf
 
 /-- The discriminant as a `q`-product with explicit complex exponentials. -/
 lemma Δ_eq_cexp_prod (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z) * ∏' n : ℕ,
@@ -82,12 +84,6 @@ theorem Δ_boundedfactor :
 
 open Real
 
-/-- The imaginary part of a natural power vanishes when the base is real. -/
-lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) : (z ^ m).im = 0 := by
-  induction m with
-  | zero => simp
-  | succ m ih => simp [pow_succ, Complex.mul_im, *]
-
 /-- On the positive imaginary axis, `Δ (i t)` is the real quantity
 `e ^ (-2 π t) * ∏' (1 - e ^ (-2 π (n + 1) t)) ^ 24`. -/
 private lemma resToImagAxis_Δ_eq (t : ℝ) (ht : 0 < t) :
@@ -111,41 +107,29 @@ private lemma resToImagAxis_Δ_eq (t : ℝ) (ht : 0 < t) :
         (hg' := Complex.continuous_re) (hgg' := by intro x; simp))
   simp [ResToImagAxis, ht, Δ_eq_cexp_prod, h1, h2, hMap', fR]
 
-private lemma Δ_imag_axis_real : ResToImagAxis.Real Δ := by
-  intro t ht
-  rw [resToImagAxis_Δ_eq t ht, Complex.ofReal_im]
-
-private lemma re_resToImagAxis_Δ_eq_real_prod (t : ℝ) (ht : 0 < t) :
-    (Function.resToImagAxis Δ t).re =
-      Real.exp (-2 * π * t) * ∏' n : ℕ, (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
-  rw [resToImagAxis_Δ_eq t ht, Complex.ofReal_re]
-
-private lemma tprod_pos_nat_im (z : ℍ) :
-    0 < ∏' n : ℕ, (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := by
-  have hpos_pow : ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := fun n =>
+private lemma tprod_pos (t : ℝ) (ht : 0 < t) :
+    0 < ∏' n : ℕ, (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
+  have hpos_pow : ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := fun n =>
     pow_pos (sub_pos.mpr (exp_lt_one_iff.mpr (neg_lt_zero.mpr (by positivity)))) _
   have hsum_log : Summable fun n : ℕ =>
-      Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24) := by
+      Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24) := by
     simp only [Real.log_pow, Nat.cast_ofNat, ← smul_eq_mul]
     apply Summable.const_smul
     simp [sub_eq_add_neg]
     apply Real.summable_log_one_add_of_summable
     apply Summable.neg
-    have h0 : Summable fun n : ℕ => Real.exp (n * (-(2 * π * z.im))) :=
+    have h0 : Summable fun n : ℕ => Real.exp (n * (-(2 * π * t))) :=
       Real.summable_exp_nat_mul_iff.mpr
-        (by simpa using neg_lt_zero.mpr (by positivity : 0 < 2 * π * z.im))
+        (by simpa using neg_lt_zero.mpr (by positivity : 0 < 2 * π * t))
     simpa [Nat.cast_add, Nat.cast_one, mul_comm, mul_left_comm, mul_assoc] using
       (summable_nat_add_iff 1).2 h0
   rw [← Real.rexp_tsum_eq_tprod
-        (f := fun n : ℕ => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24) hpos_pow hsum_log]
+        (f := fun n : ℕ => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24) hpos_pow hsum_log]
   exact Real.exp_pos _
 
 /-- `Δ` is real and positive on the positive imaginary axis. -/
 lemma Δ_imag_axis_pos : ResToImagAxis.Pos Δ := by
-  rw [ResToImagAxis.Pos]
-  refine And.intro Δ_imag_axis_real fun t ht => ?_
-  rw [re_resToImagAxis_Δ_eq_real_prod t ht]
-  refine mul_pos (Real.exp_pos _) ?_
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  have hz : z.im = t := by simp [UpperHalfPlane.im, z]
-  simpa [hz] using tprod_pos_nat_im z
+  refine ⟨fun t ht => ?_, fun t ht => ?_⟩
+  · rw [resToImagAxis_Δ_eq t ht, Complex.ofReal_im]
+  · rw [resToImagAxis_Δ_eq t ht, Complex.ofReal_re]
+    exact mul_pos (Real.exp_pos _) (tprod_pos t ht)

@@ -675,6 +675,11 @@ lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
   intro n
   exact Θ₄_term_imag_axis_real n t ht
 
+/-- The imaginary part of a natural power vanishes when the base is real. -/
+lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) : (z ^ m).im = 0 := by
+  rw [← Complex.conj_eq_iff_im] at hz ⊢
+  rw [map_pow, hz]
+
 /--
 `H₂(it)` is real for all `t > 0`.
 Blueprint: Follows from the q-expansion having real coefficients.
