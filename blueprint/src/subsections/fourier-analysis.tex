@@ -163,7 +163,7 @@ Lemma~\ref{lemma:schwartz-comp-normsq} is not directly applicable to the functio
   Take $\Theta(x) := \theta(x + 1)$, where $\theta$ is Mathlib's smooth transition function \verb|Real.smoothTransition|, which is smooth, takes values in $[0,1]$, vanishes on $(-\infty, 0]$ and equals $1$ on $[1, \infty)$. Explicitly, $\theta(x) = \frac{\rho(x)}{\rho(x) + \rho(1-x)}$ where $\rho(x) = e^{-1/x}$ for $x > 0$ and $\rho(x) = 0$ for $x \leq 0$.
 \end{proof}
 
-Note that, being smooth and constant on both $(-\infty, -1]$ and $[0, \infty)$, the function $\Theta$ has all of its derivatives supported in the compact interval $[-1, 0]$; in particular $\Theta$ and all of its derivatives are (individually) bounded. Rescaling, for any $\theta < 0$ we obtain a smooth cutoff $\Theta_\theta(x) := \Theta\left(\frac{2x - \theta}{-\theta}\right)$ which vanishes for $x \leq \theta/2$, equals $1$ for $x \geq 0$, and transitions on $[\theta/2, 0]$.
+Note that, being smooth and constant on both $(-\infty, -1]$ and $[0, \infty)$, the function $\Theta$ has all of its derivatives supported in the compact interval $[-1, 0]$; in particular $\Theta$ and all of its derivatives are (individually) bounded. Rescaling, for any $\theta < 0$ we obtain a smooth cutoff $\Theta_\theta(x) := \Theta\left(\frac{2x}{-\theta}\right)$ which vanishes for $x \leq \theta/2$, equals $1$ for $x \geq 0$, and transitions on $[\theta/2, 0]$; for $\theta = -2$ this is $\Theta$ itself.
 
 \begin{theorem}\label{thm:cutoff-schwartz}\uses{def:Schwartz-Space, lemma:smooth-cutoff}
   Let $\theta < 0$ and let $f : \R \to \C$ be smooth on $(\theta, \infty)$ and such that for all $k, n \in \N$ there exists $C \in \R$ with
