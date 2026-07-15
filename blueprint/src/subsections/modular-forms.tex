@@ -221,7 +221,7 @@ $$
 \end{proof}
 
 
-\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok\lean{Delta}
+\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok\lean{CuspForm.discriminant}
 $\Delta(z) \in M_{12}(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:disc-trans-S}
@@ -236,7 +236,7 @@ Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$
 
 
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{Delta_E4_eqn}\leanok
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq}\leanok
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
@@ -252,7 +252,7 @@ We have
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}\lean{Delta_imag_axis_pos}\leanok
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}\lean{Δ_imag_axis_pos}\leanok
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}\leanok
@@ -263,7 +263,7 @@ $$
 \end{proof}
 
 The following nonvanishing result, which directly follows from \Cref{def:disc-definition}, will be used in the construction of the magic function.
-\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok\lean{Δ_ne_zero}
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok\lean{ModularForm.discriminant_ne_zero}
 $\Delta(z) \neq 0$ for all $z \in \h$.
 \end{corollary}
 \begin{proof}
