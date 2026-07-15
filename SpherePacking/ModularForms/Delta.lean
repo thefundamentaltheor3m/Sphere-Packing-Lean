@@ -91,14 +91,10 @@ private lemma resToImagAxis_Δ_eq (t : ℝ) (ht : 0 < t) :
       ((Real.exp (-2 * π * t) *
         ∏' n : ℕ, (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 : ℝ) : ℂ) := by
   have h1 : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
-    calc
-      _ = cexp (2 * ↑π * (Complex.I * Complex.I) * t) := by ring_nf
-      _ = rexp (-2 * π * t) := by simp
+    push_cast; congr 1; linear_combination (2 * (π : ℂ) * t) * Complex.I_sq
   have h2 (n : ℕ) :
       cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
-    calc
-      _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
-      _ = rexp (-(2 * π * (n + 1) * t)) := by simp
+    push_cast; congr 1; linear_combination (2 * (π : ℂ) * (n + 1) * t) * Complex.I_sq
   set fR : ℕ → ℝ := fun n => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24
   have hMap' : Complex.ofReal (∏' n : ℕ, fR n) = ∏' n : ℕ, ((fR n : ℝ) : ℂ) := by
     simpa using
