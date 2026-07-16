@@ -103,7 +103,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
       ring
     rw [← Complex.exp_add, harg, Complex.exp_zero]
   have hzpow : (1 / (-1 * x⁻¹ ^ 2) * x ^ (-2 : ℤ) : ℂ) = -1 := by
-    rw [zpow_neg, zpow_ofNat]
+    rw [_root_.zpow_neg, zpow_ofNat]
     field_simp
   linear_combination hexp * (1 / (-1 * x⁻¹ ^ 2) * x ^ (-2 : ℤ) * jacobiTheta₂ (1 / 2) x ^ 4) +
     hzpow * jacobiTheta₂ (1 / 2) x ^ 4
@@ -507,13 +507,16 @@ theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
   simpa [funext Θ₄_as_jacobiTheta₂] using jacobiTheta₂_half_apply_tendsto_atImInfty
 
 theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
-  simpa [H₂] using Θ₂_tendsto_atImInfty.pow 4
+  change Tendsto (fun x : ℍ ↦ Θ₂ x ^ 4) atImInfty (𝓝 0)
+  simpa using Θ₂_tendsto_atImInfty.pow 4
 
 theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
-  simpa [H₃] using Θ₃_tendsto_atImInfty.pow 4
+  change Tendsto (fun x : ℍ ↦ Θ₃ x ^ 4) atImInfty (𝓝 1)
+  simpa using Θ₃_tendsto_atImInfty.pow 4
 
 theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
-  simpa [H₄] using Θ₄_tendsto_atImInfty.pow 4
+  change Tendsto (fun x : ℍ ↦ Θ₄ x ^ 4) atImInfty (𝓝 1)
+  simpa using Θ₄_tendsto_atImInfty.pow 4
 
 /-!
 ## Imaginary Axis Properties
@@ -668,7 +671,7 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
     norm_num
   have h1t2 : (↑(1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
     have : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr ht.ne'
-    simp only [one_div, ofReal_inv, zpow_neg]
+    simp only [one_div, ofReal_inv, _root_.zpow_neg]
     field_simp
   have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
     simp only [Function.resToImagAxis_apply, ResToImagAxis, ht', ↓reduceDIte, Pi.neg_apply]

@@ -67,7 +67,8 @@ lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
     have h := congrFun
       (serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable) z
     simp only [Pi.add_apply] at h
-    convert h.symm using 2; exact jacobi_identity.symm
+    rw [jacobi_identity] at h
+    exact h.symm
   linear_combination h_serre
 
 /-- `f₂|[4]S = -f₄` -/
@@ -193,12 +194,14 @@ lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
       ((2 : ℂ) • H₄ + H₂) * f₄ := by
     have hmul := mul_slash_SL2 2 4 S ((2 : ℂ) • H₂ + H₄) f₂
     simp only [h_2H₂_H₄, f₂_S_action] at hmul
+    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
     convert hmul using 1
     ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
   have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) =
       (H₄ + (2 : ℂ) • H₂) * f₂ := by
     have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
     simp only [h_H₂_2H₄, f₄_S_action] at hmul
+    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
     convert hmul using 1
     ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
   simp only [theta_g, add_slash, h_term1, h_term2]
@@ -219,9 +222,11 @@ lemma theta_g_T_action : (theta_g ∣[(6 : ℤ)] T) = theta_g := by
       ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = -H₂ + (2 : ℂ) • H₃ := by
     simp only [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
   have h_term1 : ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] T) = (-(2 : ℂ) • H₂ + H₃) * (-f₂) := by
-    simpa only [h_2H₂_H₄, f₂_T_action] using mul_slash_SL2 2 4 T ((2 : ℂ) • H₂ + H₄) f₂
+    simpa only [show (2 : ℤ) + 4 = 6 by norm_num, h_2H₂_H₄, f₂_T_action] using
+      mul_slash_SL2 2 4 T ((2 : ℂ) • H₂ + H₄) f₂
   have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] T) = (-H₂ + (2 : ℂ) • H₃) * f₃ := by
-    simpa only [h_H₂_2H₄, f₄_T_action]  using mul_slash_SL2 2 4 T (H₂ + (2 : ℂ) • H₄) f₄
+    simpa only [show (2 : ℤ) + 4 = 6 by norm_num, h_H₂_2H₄, f₄_T_action] using
+      mul_slash_SL2 2 4 T (H₂ + (2 : ℂ) • H₄) f₄
   -- Combine and simplify using Jacobi: H₃ = H₂ + H₄, f₃ = f₂ + f₄
   simp only [theta_g, add_slash, h_term1, h_term2]
   ext z; simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
