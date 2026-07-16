@@ -36,24 +36,16 @@ noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 /-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ. -/
 lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   funext z
-  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
-    ext w
-    rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]
-    rfl
-  have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
-    ext w
-    rw [pow_two, @DirectSum.of_mul_of]
-    rfl
-  have h := congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
-  have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
-    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply] at h
-    simp only [hds, hd6] at h
-    simp only [pow_three, pow_two] at h ⊢
-    convert h using 2
+  have hE4 : ModularForm.E₄ z = E₄ z := rfl
+  have hE6 : ModularForm.E₆ z = E₆ z := rfl
+  have hΔ : Δ z = (E₄ z ^ 3 - E₆ z ^ 2) / 1728 := by
+    rw [show Δ = ModularForm.discriminant from Δ_eq_discriminant, ← hE4, ← hE6]
+    exact ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z
   calc
     Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
       simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
-    _ = Δ z := by simp [← hE4E6, ← Delta_E4_eqn, Delta_apply]
+    _ = (E₄ z ^ 3 - E₆ z ^ 2) / 1728 := by ring
+    _ = Δ z := hΔ.symm
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
@@ -773,10 +765,12 @@ lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C 
   have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
   have hq_md : MDiff q := by
     intro τ
-    simpa [hq, Function.comp] using DifferentiableAt_MDifferentiableAt
+    change MDiffAt ((fun t : ℂ ↦ cexp (a * t)) ∘ fun w : ℍ ↦ (w : ℂ)) τ
+    exact DifferentiableAt_MDifferentiableAt
       (G := fun t : ℂ ↦ cexp (a * t)) (z := τ) ((differentiableAt_id.const_mul a).cexp)
   have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
   have hDg_div_g : Filter.Tendsto (fun z ↦ D g z / g z) atImInfty (nhds 0) := by
+    change Filter.Tendsto (D g / g) atImInfty (nhds 0)
     simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
   have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
   have hDq_div_q : ∀ z : ℍ, D q z / q z = a / (2 * π * I) :=
@@ -830,10 +824,14 @@ theorem D_diff_qexp (z : ℍ) :
     funext n
     ring
   have hsum' : Summable (fun n : ℕ+ => b n * cexp (2 * π * I * ↑n * ↑z)) := by
-    convert hsum.mul_left 720 using 1
-    funext n
-    simp only [b]
-    ring
+    have hterm :
+        (fun n : ℕ+ => b n * cexp (2 * π * I * ↑n * ↑z)) =
+          fun n : ℕ+ => 720 * (a n * cexp (2 * π * I * ↑n * ↑z)) := by
+      funext n
+      simp only [a, b]
+      ring
+    rw [hterm]
+    exact hsum.mul_left 720
   have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖b n * (2 * π * I * ↑n) *
         cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := fun K hK_sub hK_compact => by

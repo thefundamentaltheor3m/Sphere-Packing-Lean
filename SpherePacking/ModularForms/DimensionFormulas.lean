@@ -28,7 +28,8 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 noncomputable section
 
-theorem mul_apply {k₁ k₂ : ℤ} {Γ : Subgroup SL(2, ℤ)} (f : SlashInvariantForm Γ k₁)
+private theorem slashInvariantForm_mul_apply {k₁ k₂ : ℤ} {Γ : Subgroup SL(2, ℤ)}
+    (f : SlashInvariantForm Γ k₁)
     (g : SlashInvariantForm Γ k₂) (z : ℍ) : (f.mul g) z = f z * g z := rfl
 
 /-- `Module.rank` of a `ModularForm` space is invariant under equality of the underlying subgroup.

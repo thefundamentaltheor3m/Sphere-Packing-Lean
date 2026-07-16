@@ -185,7 +185,10 @@ section Corollaries
 /-- φ₀'' is holomorphic on the upper half-plane (using `Set.univ ×ℂ Ioi 0` notation).
     This is equivalent to `φ₀''_holo` since `Set.univ ×ℂ Ioi 0 = ℍ₀`. -/
 theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
-  simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
+  have hset : (Set.univ ×ℂ Ioi 0 : Set ℂ) = ℍ₀ := by
+    ext z
+    simp [upperHalfPlaneSet, reProdIm]
+  simpa [hset] using φ₀''_holo
 
 /-- φ₀'' is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=

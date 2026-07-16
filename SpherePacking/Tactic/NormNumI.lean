@@ -133,8 +133,10 @@ meta def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) 
   let ⟨a, b, pf⟩ ← parse z
   let ra ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) a
   let rb ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) b
-  let { expr := (a' : Q(ℝ)), proof? := (pf_a : Q($a = $a')) } ← ra.toSimpResult | unreachable!
-  let { expr := (b' : Q(ℝ)), proof? := (pf_b : Q($b = $b')) } ← rb.toSimpResult | unreachable!
+  let { expr := (a' : Q(ℝ)), proof? := (pf_a : Q($a = $a')), cache := _ } ←
+    ra.toSimpResult | unreachable!
+  let { expr := (b' : Q(ℝ)), proof? := (pf_b : Q($b = $b')), cache := _ } ←
+    rb.toSimpResult | unreachable!
   return ⟨a', b', q(eq_eq $pf $pf_a $pf_b)⟩
 
 elab "norm_numI" : conv => do
@@ -142,7 +144,7 @@ elab "norm_numI" : conv => do
   unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
   have z : Q(ℂ) := z
   let ⟨a, b, pf⟩ ← normalize z
-  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
+  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf, cache := true }
 
 -- Testing the `parse` function
 elab "norm_numI_parse" : conv => do
