@@ -118,6 +118,10 @@ lemma E₆_tendsto_one_atImInfty : Filter.Tendsto E₆.toFun atImInfty (nhds 1) 
 
 /-! ## Boundedness lemmas -/
 
+/-- E₄ is bounded at infinity (as a modular form). -/
+lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
+  ModularFormClass.bdd_at_infty E₄
+
 /-- E₆ is bounded at infinity (as a modular form). -/
 lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
   ModularFormClass.bdd_at_infty E₆

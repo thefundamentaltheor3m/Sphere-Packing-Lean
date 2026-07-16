@@ -46,6 +46,19 @@ noncomputable section
 These are the main theorems. The primed versions are in terms of serre_D,
 the non-primed versions are in terms of D. -/
 
+/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
+private lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
+    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+  exact ⟨c, hc.symm⟩
+
+private lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ}
+    {f g : ModularForm Γ k} {c : ℂ} (h : f = c • g) (z : ℍ) :
+    (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
+  simpa [ModularForm.coe_smul, smul_eq_mul] using
+    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+
 /-- Determine scalar coefficient from limits: if `f = c * g` pointwise,
 `f → L` at i∞, and `g → 1` at i∞, then `c = L`.
 
