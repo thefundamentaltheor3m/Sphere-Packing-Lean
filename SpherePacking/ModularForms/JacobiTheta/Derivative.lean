@@ -251,9 +251,7 @@ lemma theta_h_S_action : (theta_h ∣[(8 : ℤ)] S) = theta_h := by
   have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] S) = f₂ * f₄ := by
     have hmul := mul_slash_SL2 4 4 S f₂ f₄
     simp only [f₂_S_action, f₄_S_action] at hmul
-    convert hmul using 1
-    ext z
-    simp only [Pi.mul_apply, Pi.neg_apply, neg_mul_neg, mul_comm]
+    simpa [show (4 : ℤ) + 4 = 8 by norm_num, mul_comm] using hmul
   -- h|S = f₄² + f₂f₄ + f₂² = h
   simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
@@ -282,10 +280,7 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
   have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] T) = (-f₂) * (f₂ + f₄) := by
     have hmul := mul_slash_SL2 4 4 T f₂ f₄
     simp only [f₂_T_action, f₄_T_action] at hmul
-    convert hmul using 1
-    ext z
-    simp only [Pi.mul_apply, Pi.neg_apply]
-    rw [(congrFun f₂_add_f₄_eq_f₃ z).symm, Pi.add_apply]
+    simpa [show (4 : ℤ) + 4 = 8 by norm_num, ← f₂_add_f₄_eq_f₃] using hmul
   -- h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
   simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
@@ -320,20 +315,26 @@ lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
     tendsto_cont
-  simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
+  change Tendsto
+    (fun z => serre_D 2 H₂ z - (1 / 6 : ℂ) * (H₂ z * (H₂ z + 2 * H₄ z)))
+    atImInfty (𝓝 0)
+  simpa using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- `f₄ → 0` at `i∞` -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
   have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
-    convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
-      H₄_tendsto_atImInfty using 2
-    norm_num
+    simpa [show -(2 : ℂ) / 12 = -(1 / 6 : ℂ) by norm_num] using
+      serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
+        H₄_tendsto_atImInfty
   have h_scaled : Tendsto (fun z ↦ (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
       atImInfty (𝓝 (1/6 : ℂ)) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
     tendsto_cont
-  simpa [f₄] using h_serre_H₄.add h_scaled
+  change Tendsto
+    (fun z => serre_D 2 H₄ z + (1 / 6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
+    atImInfty (𝓝 0)
+  simpa using h_serre_H₄.add h_scaled
 
 /-- `theta_g → 0` at `i∞` -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
@@ -435,12 +436,18 @@ theorem E₄_eq_H_sum_sq : _root_.E₄.toFun = H_sum_sq := by
   have h_toFun : (_root_.E₄ - H_sum_sq_MF).toFun = _root_.E₄.toFun - H_sum_sq := by
     ext z; simp [H_sum_sq_MF, H_sum_sq_SIF]; rfl
   have h_diff_tendsto : Tendsto (_root_.E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
-    rw [h_toFun]; simpa using E₄_tendsto_one_atImInfty.sub H_sum_sq_tendsto
+    rw [h_toFun]
+    change Tendsto (fun z => _root_.E₄.toFun z - H_sum_sq z) atImInfty (nhds 0)
+    simpa using E₄_tendsto_one_atImInfty.sub H_sum_sq_tendsto
   have h_cusp : IsCuspForm (Γ 1) 4 (_root_.E₄ - H_sum_sq_MF) := by
     rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff]; simp
     exact IsZeroAtImInfty.cuspFunction_apply_zero h_diff_tendsto (by norm_num : (0 : ℝ) < 1)
   have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (_root_.E₄ - H_sum_sq_MF) h_cusp
-  funext z; simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
+  funext z
+  have hz : _root_.E₄.toFun z = (H_sum_sq_MF : ℍ → ℂ) z := by
+    simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
+  change _root_.E₄.toFun z = H_sum_sq z
+  exact hz
 
 /-- From `Af₂ + Bf₄ = 0`: `f₄² · 3H_sum_sq = A² · theta_h` -/
 lemma f₄_sq_mul_eq (z : ℍ) (hg_z : theta_g z = 0) :

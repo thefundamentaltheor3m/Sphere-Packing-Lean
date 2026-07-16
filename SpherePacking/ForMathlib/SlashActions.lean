@@ -49,11 +49,8 @@ Bridge `MDifferentiableAt` on the upper half-plane with ordinary complex differe
 -/
 lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
     (h : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) F z) :
-    DifferentiableAt ℂ (F ∘ ofComplex) ↑z := by
-  have h₁ : DifferentiableWithinAt ℂ (F ∘ ofComplex) Set.univ ↑z := by
-    simpa [writtenInExtChartAt, extChartAt, Set.range_id] using
-      MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
-  exact differentiableWithinAt_univ.1 h₁
+    DifferentiableAt ℂ (F ∘ ofComplex) ↑z :=
+  UpperHalfPlane.mdifferentiableAt_iff.mp h
 
 /--
 Ordinary complex differentiability near a point of `ℍ` gives `MDifferentiableAt` after coercion.

@@ -127,13 +127,13 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
   have h := congrFun H₂_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+  simp only [SL_slash_apply, denom_S, _root_.zpow_neg, Pi.neg_apply] at h
   field_simp [ne_zero] at h ⊢
   exact h
 
 lemma H₄_S_action' (z : ℍ) : H₄ (S • z) = - z ^ 2 * H₂ z := by
   have h := congrFun H₄_S_action z
-  simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+  simp only [SL_slash_apply, denom_S, _root_.zpow_neg, Pi.neg_apply] at h
   field_simp [ne_zero z] at h ⊢
   exact h
 
@@ -441,7 +441,6 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     simpa [jacobiTheta₂_term, mul_right_comm _ I, mul_assoc, ← sq, I_sq, norm_exp,
       ← ofReal_intCast, ← ofReal_pow] using this
   · intro k
-    simp only
     split_ifs with hk
     · subst hk
       simp
@@ -473,7 +472,6 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     simpa [jacobiTheta₂_term, mul_right_comm _ I, mul_assoc, ← sq, I_sq, norm_exp,
       ← ofReal_intCast, ← ofReal_pow] using this
   · intro k
-    simp only
     split_ifs with hk
     · subst hk
       simp
