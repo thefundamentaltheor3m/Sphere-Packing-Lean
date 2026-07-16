@@ -923,7 +923,7 @@ theorem L₁₀_div_FG_tendsto :
   have h_L_over_FG : Tendsto (L₁₀ / (F * G)) atImInfty (nhds (1 / 2)) := by
     convert (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
       filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm) using 2
-    norm_num
+    all_goals norm_num
   have h_re := Complex.continuous_re.continuousAt.tendsto.comp
     (tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG)
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
@@ -1133,7 +1133,7 @@ lemma F_isBigO_exp_atImInfty : F =O[atImInfty] fun τ ↦ Real.exp (-(4 * π) * 
 is bounded. -/
 lemma F₁_mul_E₄_isBigO_exp_atImInfty :
     (F₁ * E₄.toFun) =O[atImInfty] fun τ ↦ Real.exp (-(2 * π) * τ.im) := by
-  simpa using F₁_isBigO_exp_atImInfty.mul E₄_isBoundedAtImInfty
+  simpa [Pi.mul_def] using F₁_isBigO_exp_atImInfty.mul E₄_isBoundedAtImInfty
 
 /-- `s² * FReal s → 0` as `s → ∞`. -/
 lemma sq_mul_FReal_tendsto_zero : Tendsto (fun s : ℝ ↦ s ^ 2 * FReal s) atTop (nhds 0) :=
@@ -1211,7 +1211,8 @@ theorem FmodG_rightLimitAt_zero :
     exact mul_div_mul_left _ _ (pow_ne_zero 10 hs.ne')
   have hlim : Tendsto rhs atTop (nhds (18 * π ^ (-2 : ℤ))) := by
     convert numerator_tendsto_at_infty.div denominator_tendsto_at_infty (by norm_num) using 2
-    ring
+    · rfl
+    · ring
   exact (hlim.comp tendsto_inv_nhdsGT_zero).congr' <|
     (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
       simpa [one_div, inv_inv] using ht.symm
