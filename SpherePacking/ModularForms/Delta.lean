@@ -71,10 +71,9 @@ lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z :=
 /-- `Δ` transforms under `S` as `Δ (-1 / z) = z ^ 12 * Δ z`. -/
 lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
   have h := congrFun ModularForm.discriminant_S_invariant z
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
+  rw [modular_slash_S_apply, ← modular_S_smul] at h
   field_simp [ne_zero z] at h
-  rw [h, mul_comm]
+  exact h
 
 theorem Δ_boundedfactor :
     Tendsto (fun x : ℍ ↦ ∏' n : ℕ, (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty
