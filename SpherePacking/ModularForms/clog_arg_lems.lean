@@ -150,14 +150,13 @@ lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀
 lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
     Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
   have h := arg_pow2 n f hf
-  simp at *
+  rw [Filter.eventually_iff_exists_mem] at h ⊢
   simp_rw [Complex.log]
   obtain ⟨a, ha0, ha⟩ := h
   use a
   refine ⟨ha0, ?_⟩
   intro b hb
-  have h2 := ha hb
-  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq] at *
+  have h2 := ha b hb
   rw [h2]
   simp only [norm_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
   ring
