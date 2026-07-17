@@ -1,9 +1,32 @@
+/-
+Copyright (c) 2024 The Sphere Packing Contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Contributors
+-/
 module
 
 public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
+
+/-! # The Eisenstein series `E₄` and `E₆`
+
+This file defines the normalised level-one Eisenstein series `E₄` and `E₆` (as
+`ModularForm Γ(1) k`, with constant term `1`) together with the quotients `φ₀`, `φ₂'`, `φ₄'` of
+Eisenstein series by the discriminant `Δ` used to build the magic function, and collects the
+properties of `E₂`, `E₄` and `E₆` needed by the project:
+
+* `E₄_periodic`, `E₆_periodic`, `E₄_S_transform`, `E₆_S_transform`: pointwise transformation laws
+  under the generators of `SL(2, ℤ)`.
+* `E4_q_exp`, `E4_q_exp_zero`, `E6_q_exp_zero`: explicit `q`-expansion coefficients
+  (`240 · σ₃` for `E₄`).
+* `Ek_ne_zero`, `E4_ne_zero`, `E6_ne_zero`: non-vanishing, via mathlib's
+  `EisensteinSeries.E_ne_zero`.
+* `E_even_imag_axis_real`, `E₂_imag_axis_real`, `E₄_imag_axis_real`, `E₆_imag_axis_real`:
+  realness on the positive imaginary axis.
+* `E₂_isBoundedAtImInfty`: boundedness of `E₂` at `i∞` (not yet in mathlib).
+-/
 
 @[expose] public section
 
