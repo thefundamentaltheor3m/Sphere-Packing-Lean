@@ -4,7 +4,6 @@ public import Mathlib.Data.Rat.Star
 public import Mathlib.LinearAlgebra.Dimension.Localization
 public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
 public import SpherePacking.ModularForms.Eisenstein
-public import SpherePacking.ModularForms.IsCuspForm
 
 /-!
 # Dimension formulas for level-one modular forms

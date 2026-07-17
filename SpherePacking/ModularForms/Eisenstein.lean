@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ModularForms.Eisensteinqexpansions
+public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
@@ -70,6 +71,10 @@ lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := b
 lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
   simpa using (φ₀''_def (z := (z : ℂ)) (UpperHalfPlane.im_pos z))
 
+open SlashInvariantFormClass ModularFormClass
+
+open scoped Real MatrixGroups CongruenceSubgroup
+
 private lemma E4_eq' :
     (E₄ : ℍ → ℂ) = (ModularForm.E (k := 4) (by norm_num) : ℍ → ℂ) := rfl
 
@@ -90,6 +95,65 @@ lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
   rw [E6_eq']
   exact EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+
+private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
+    (g : ModularForm Γ(1) b) :
+    PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
+      PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
+        PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
+  rw [coe_mul, qExpansion_mul (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
+                              (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
+
+theorem E4E6_coeff_zero_eq_zero :
+  (PowerSeries.coeff 0)
+      (qExpansion 1
+        ((1 / 1728 : ℂ) •
+          ((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3 - (DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2)
+            12)) =
+    0 := by
+  simp only [one_div, DirectSum.sub_apply]
+  have hsub :
+      qExpansion (1 : ℕ)
+        ⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+          (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
+      qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+        qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) := by
+    simpa using
+      (ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+        (hh := by positivity) (hΓ := by simp)
+        ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
+        ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
+  rw [← Nat.cast_one (R := ℝ),
+    ModularForm.qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
+      (hh := by positivity) (hΓ := by simp), hsub]
+  simp only [_root_.map_smul, map_sub, smul_eq_mul,
+    mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
+  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
+    ext z
+    rw [pow_three, @DirectSum.of_mul_of, @DirectSum.of_mul_of]
+    rfl
+  have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
+    ext z
+    rw [pow_two, @DirectSum.of_mul_of]
+    rfl
+  rw [hds, hd6]
+  have hq4 : PowerSeries.constantCoeff (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
+    rw [qExpansion_constantCoeff_mul E₄ (E₄.mul E₄), qExpansion_constantCoeff_mul E₄ E₄]
+    rw [show PowerSeries.constantCoeff (qExpansion 1 ⇑E₄) = 1 by
+      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E4_q_exp_zero]
+    norm_num
+  have hq6 : PowerSeries.constantCoeff (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
+    rw [qExpansion_constantCoeff_mul E₆ E₆]
+    rw [show PowerSeries.constantCoeff (qExpansion 1 ⇑E₆) = 1 by
+      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E6_q_exp_zero]
+    norm_num
+  have hcoeff4 :
+      (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq4
+  have hcoeff6 : (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
+  exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
   let F := DirectSum.of _ 4 E₄
