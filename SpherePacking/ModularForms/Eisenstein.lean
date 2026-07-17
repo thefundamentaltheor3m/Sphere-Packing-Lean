@@ -57,23 +57,13 @@ lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
 
 /-- E₄ transforms under S as: E₄(-1/z) = z⁴ · E₄(z) -/
 lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z := by
-  have h : (E₄.toFun ∣[(4 : ℤ)] ModularGroup.S) z = E₄.toFun z :=
-    congrFun (E₄.slash_action_eq' _
-      (Subgroup.mem_map.mpr ⟨_, CongruenceSubgroup.mem_Gamma_one _, rfl⟩)) z
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
-  field_simp [ne_zero z] at h
-  exact h
+  simpa using
+    SlashInvariantForm.slash_action_eqn_SL'' E₄ (CongruenceSubgroup.mem_Gamma_one ModularGroup.S) z
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
 lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z := by
-  have h : (E₆.toFun ∣[(6 : ℤ)] ModularGroup.S) z = E₆.toFun z :=
-    congrFun (E₆.slash_action_eq' _
-      (Subgroup.mem_map.mpr ⟨_, CongruenceSubgroup.mem_Gamma_one _, rfl⟩)) z
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
-  field_simp [ne_zero z] at h
-  exact h
+  simpa using
+    SlashInvariantForm.slash_action_eqn_SL'' E₆ (CongruenceSubgroup.mem_Gamma_one ModularGroup.S) z
 
 end Definitions
 
@@ -113,7 +103,8 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
   · simp [bernoulli, bernoulli'_four]; ring
 
 lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
-  simpa using congr_fun E4_q_exp 0
+  rw [E4_eq']
+  exact EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
   rw [E6_eq']
@@ -203,18 +194,6 @@ open ArithmeticFunction
 
 section ImagAxisProperties
 
-lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
-    ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
-  have h : (-2 * Real.pi * Complex.I) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k := by ring
-  rw [h]
-  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
-  have h2 : (Complex.I ^ k : ℂ).im = 0 := by
-    obtain ⟨m, rfl⟩ := hk
-    simp only [← two_mul, pow_mul, I_sq]
-    -- (-1)^m is real: ±1
-    rcases m.even_or_odd with hm | hm <;> simp [hm.neg_one_pow]
-  simp [Complex.mul_im, h1, h2]
-
 /-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
 This is useful for reusing the same algebraic simplification across `E₂`, `E₄`, `E₆`. -/
 lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
@@ -278,8 +257,14 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     rw [im_tsum hsum]
     simp [hterm_im]
   -- Step 4: Show the coefficient is real and product with sum is real
-  have hpow_im : ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 :=
-    neg_two_pi_I_pow_even_real k hk2
+  have hpow_im : ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
+    rw [show (-2 * Real.pi * Complex.I : ℂ) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k by ring]
+    have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
+    have h2 : (Complex.I ^ k : ℂ).im = 0 := by
+      obtain ⟨m, hm⟩ := hk2
+      rw [hm, ← two_mul, pow_mul, I_sq]
+      rcases m.even_or_odd with hm' | hm' <;> simp [hm'.neg_one_pow]
+    simp [Complex.mul_im, h1, h2]
   have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
   -- For ζ(k) when k ≥ 4, it's real (mathlib: riemannZeta_im_eq_zero_of_one_lt)
   have hzeta_im : (riemannZeta k).im = 0 := by
@@ -362,14 +347,6 @@ lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
   rw [Complex.norm_exp, h, Real.exp_le_exp]
   nlinarith [Real.pi_pos]
 
-/-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
-private lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
-    (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-  have hs : Summable fun n : ℕ => (n : ℝ) * r ^ n := by
-    simpa using summable_pow_mul_geometric_of_norm_lt_one (k := 1) (r := r) hr
-  rw [← tsum_coe_mul_geometric_of_norm_lt_one hr, ← tsum_zero_pnat_eq_tsum_nat hs]
-  simp
-
 /-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
 
 For ‖q‖ < 1, we have ‖∑ₙ₌₁ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³.
@@ -408,22 +385,12 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
     _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
         hsumm_norms.tsum_le_tsum hterm_bound hsumm_majorant
     _ = r / (1 - r) ^ 3 := by
-        simp only [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one,
-          pow_succ]
+        have htsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+          rw [← tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one,
+            ← tsum_zero_pnat_eq_tsum_nat hsumm_nat]
+          simp
+        simp only [div_eq_mul_inv, tsum_mul_right, htsum_pnat, pow_succ]
         field_simp
-
-/-- Monotone version of `norm_tsum_logDeriv_expo_le`: if ‖q‖ ≤ r < 1, then
-‖∑ n·qⁿ/(1-qⁿ)‖ ≤ r/(1-r)³. Useful when we have a uniform bound on ‖q‖. -/
-lemma norm_tsum_logDeriv_expo_le_of_norm_le {q : ℂ} {r : ℝ} (hqr : ‖q‖ ≤ r) (hr : r < 1) :
-    ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ r / (1 - r) ^ 3 := by
-  have hq : ‖q‖ < 1 := lt_of_le_of_lt hqr hr
-  have hr_nonneg : 0 ≤ r := le_trans (norm_nonneg _) hqr
-  calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le hq
-    _ ≤ r / (1 - r) ^ 3 := by
-        have := sub_pos.mpr hr
-        have := sub_pos.mpr hq
-        gcongr
 
 /-- E₂ is bounded at infinity.
 
@@ -454,4 +421,10 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
         calc _ ≤ ‖(1 : ℂ)‖ + ‖24 * S‖ := norm_sub_le _ _
           _ = _ := by simp
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
-        gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
+        have hq_lt_one : ‖q‖ < 1 := lt_of_le_of_lt hq_bound hr₀_lt_one
+        gcongr
+        calc ‖S‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le hq_lt_one
+          _ ≤ r₀ / (1 - r₀) ^ 3 := by
+              have := sub_pos.mpr hr₀_lt_one
+              have := sub_pos.mpr hq_lt_one
+              gcongr
