@@ -34,6 +34,10 @@ public import SpherePacking.CohnElkies.PoissonSummationGeneral
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 import Mathlib.Combinatorics.Pigeonhole
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Cohn-Elkies linear programming bound
 
@@ -1127,102 +1131,27 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 
 local notation "conj" => starRingEnd ℂ
 
-local notation "FT" => FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
-
-section Complex_Function_Helpers
-
-theorem helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
-  (∀ x : EuclideanSpace ℝ (Fin d), ↑(g x).re = (g x)) →
-  (∀ x : EuclideanSpace ℝ (Fin d), (g x).im = 0) := by
-  intro hIsReal x
-  simpa [eq_comm] using congrArg Complex.im (hIsReal x)
-
-include hRealFourier in
-@[simp]
-theorem hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
-  helper (𝓕 ⇑f) hRealFourier
-
-end Complex_Function_Helpers
-
-section Nonnegativity
-
-private theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
-    (𝓕 f).integrable
-
-include hne_zero in
-theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
-  intro hFourierZero
-  apply hne_zero
-  simpa using congrArg (fun g => 𝓕⁻ g) hFourierZero
-
-include hCohnElkies₂ in
-theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
-  -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
-  have hfourier : (f 0).re = (𝓕⁻ (𝓕 f) 0).re := by
-    exact congrArg (fun g : 𝓢(EuclideanSpace ℝ (Fin d), ℂ) => (g 0).re)
-      (FourierTransform.fourierInv_fourier_eq f).symm
-  rw [hfourier, SchwartzMap.fourierInv_coe, fourierInv_eq]
-  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
-  exact (integral_nonneg (f := fun v : EuclideanSpace ℝ (Fin d) => ((𝓕 f) v).re) hCohnElkies₂).trans
-    (integral_re (μ := volume) (f := fun v : EuclideanSpace ℝ (Fin d) => (𝓕 f) v) hIntegrable).le
+theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
+  (FourierTransform.fourierCLE ℂ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) f).integrable
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
-  -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
-  -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
-  -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
-  -- apply ne_of_gt
-  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by
-    exact congrArg (fun g : 𝓢(EuclideanSpace ℝ (Fin d), ℂ) => g 0)
-      (FourierTransform.fourierInv_fourier_eq f).symm
-  rw [SchwartzMap.fourierInv_coe, fourierInv_eq] at haux₁
-  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
-  -- We need to take real parts at haux₁
-  rw [← re_add_im (f 0), hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
-  -- We need to take real and imaginary parts inside the integral.
-  have haux₂ : ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 f) v =
-    ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) := by
-    calc ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 f) v
-    _ = ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) +
-        (∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).im : ℝ) * I := by
-          symm
-          exact integral_re_add_im (μ := volume)
-            (f := fun v : EuclideanSpace ℝ (Fin d) => (𝓕 f) v) hIntegrable
-    _ = ((∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re : ℝ) : ℂ) := by
-          rw [add_eq_left]
-          suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), ((𝓕 f) v).im = 0 by
-            simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
-          exact hFourierImZero hRealFourier
-  rw [haux₂] at haux₁
-  norm_cast at haux₁
-  rw [haux₁, lt_iff_not_ge]
-  by_contra hantisymm₁
-  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re := integral_nonneg
-    hCohnElkies₂
-  have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), ((𝓕 f) v).re := by
-    exact antisymm' hantisymm₁ hantisymm₂
-  have h𝓕frezero : ∀ x, ((𝓕 f) x).re = 0 := by
-    -- Integral of a nonneg continuous function is zero iff the function is zero
-    suffices hfun : (fun x => ((𝓕 f) x).re) = 0 by
-      -- (This is the function actually being integrated)
-      intro x
-      calc ((𝓕 f) x).re
-      _ = (fun x => ((𝓕 f) x).re) x := rfl
-      _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
-      _ = 0 := by rw [Pi.zero_apply]
-    have hcont : Continuous (fun x ↦ (𝓕 f x).re) := by
-      exact Continuous.comp' continuous_re (𝓕 f).continuous
-    refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
-    exact MeasureTheory.Integrable.re ((𝓕 f).integrable (μ := volume))
-  have h𝓕fzero : 𝓕 f = 0 := by
-    ext x
-    rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
-      add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
-    exact h𝓕frezero x
-  exact fourier_ne_zero hne_zero h𝓕fzero
-
-end Nonnegativity
+  refine lt_of_le_of_ne (show 0 ≤ (f 0).re by
+    rw [← f.fourierInversion, fourierInv_eq]
+    simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul, ← RCLike.re_eq_complex_re]
+    rw [show RCLike.re (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v) =
+        ∫ v : EuclideanSpace ℝ (Fin d), RCLike.re ((𝓕 f) v) from
+      (integral_re hIntegrable).symm]
+    exact integral_nonneg fun v ↦ by simpa using hCohnElkies₂ v) fun hf0re => hne_zero <|
+    (ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℂ _)).1 ?_
+  have hfun := (Continuous.integral_zero_iff_zero_of_nonneg
+    (Complex.continuous_re.comp (𝓕 f).continuous) hIntegrable.re hCohnElkies₂).1 (by
+    rw [show (∫ v : EuclideanSpace ℝ (Fin d), (re ∘ 𝓕 ⇑f) v) =
+        (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re by
+      simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
+    simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
+      congrArg Complex.re (congrArg (· 0) f.fourierInversion))
+  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
 
 section Fundamental_Domain_Dependent
 
@@ -1249,140 +1178,18 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
       exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
 
-include hP hCohnElkies₁ in
-open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
-  ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
-  ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
-  ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
-  _ = (∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
-      if h : x - (y : EuclideanSpace ℝ (Fin d)) = 0 then 0 else (f (x - ↑y)).re) +
-      (∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re)
-        := by
-            have sum_finite := aux4 P D hD_isBounded hd
-            have fintype_centers: Fintype ↑(P.centers ∩ D) := by apply Fintype.ofFinite
-            conv =>
-              rhs
-              rhs
-              equals ∑' (x : ↑(P.centers)), if x.val ∈ D then (f 0).re else 0 =>
-                rw [tsum_subtype (f := fun x => (f 0).re)]
-                rw [tsum_subtype (f := fun x => if ↑x ∈ D then (f 0).re else 0)]
-                apply tsum_congr
-                intro p
-                simp [Set.indicator, ite_and]
-            -- First, we need to un-distribute the tsums on the RHS.
-            -- Then, we need to use some sort of `tsum_ite_eq`.
-            -- Both of the above require some summability stuff.
-            rw [← Summable.tsum_add]
-            · apply tsum_congr
-              intro x
-              split_ifs with hx
-              · let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
-                simp only [dite_eq_ite]
-                rw [← tsum_ite_eq (b := x_in) (a := fun _ ↦ (f 0).re)]
-                simp_rw [← Subtype.val_inj]
-                rw [← Summable.tsum_add]
-                · apply tsum_congr
-                  intro y
-                  dsimp [x_in]
-                  simp_rw [eq_comm (a := y.val), ← sub_eq_zero (a := x.val)]
-                  split_ifs with x_eq_y <;> simp [x_eq_y]
-                · apply Summable.of_finite
-                · simp_rw [Subtype.val_inj]
-                  apply (hasSum_ite_eq _ _).summable
-              · simp only [dite_eq_ite, add_zero]
-                apply tsum_congr
-                intro b
-                have x_neq_b: x.val ≠ b.val := by
-                  by_contra!
-                  rw [this] at hx
-                  have b_in_d := b.property.right
-                  contradiction
-                dsimp [Ne] at x_neq_b
-                rw [← sub_eq_zero] at x_neq_b
-                simp [x_neq_b]
-            · rw [← summable_abs_iff]
-              apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩
-                D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
-              · intro b
-                rw [← Real.norm_eq_abs]
-                apply norm_tsum_le_tsum_norm
-                apply Summable.of_norm_bounded (g := fun x => |(f (b.val - x.val)).re|)
-                · apply Summable.of_finite
-                · intro a
-                  split_ifs <;> simp
-              · simp_rw [tsum_fintype]
-                apply Summable.of_nonneg_of_le (f := fun x => ∑ (y: ↑(P.centers ∩ D)), |(f (x.val -
-                  y.val)).re|)
-                · intro b
-                  refine Fintype.sum_nonneg ?_
-                  rw [Pi.le_def]
-                  simp
-                · intro b
-                  apply Finset.sum_le_sum
-                  intro x hx
-                  split_ifs <;> simp
-                · apply summable_sum
-                  intro y hy
-                  have summable_f_re: Summable (fun x => (f x).re) := by
-                    apply (Complex.hasSum_re (hf.choose_spec)).summable
-                  rw [summable_abs_iff]
-                  apply Summable.comp_injective summable_f_re
-                  -- TODO - find a simpler injectivity proof
-                  intro a b hab
-                  field_simp at hab
-                  aesop
-            · apply summable_of_hasFiniteSupport
-              -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
-              apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
-              · rw [Set.finite_coe_iff] at sum_finite
-                apply Set.Finite.of_finite_image (f := Subtype.val)
-                · conv =>
-                    arg 1
-                    equals (P.centers ∩ D) =>
-                      ext a
-                      rw [Set.inter_comm]
-                      simp
-                  exact sum_finite
-                · simp
-              · intro x hx
-                simp only [Function.mem_support, ne_eq, ite_eq_right_iff, Classical.not_imp] at hx
-                simp [hx.1]
-  _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
-        := by
-            rw [← tsub_nonpos]
-            rw [add_sub_cancel_right]
-            apply tsum_nonpos
-            intro x
-            apply tsum_nonpos
-            intro y
-            cases eq_or_ne ((x : EuclideanSpace ℝ (Fin d)) - y) (0 : EuclideanSpace ℝ (Fin d))
-            · case inl h =>
-              simp only [h, ↓reduceDIte, le_refl]
-            · case inr h =>
-              simp only [h, ↓reduceDIte]
-              apply hCohnElkies₁ (x - y)
-              -- Both `x` and `y` are in `P.centers` and are distinct. `hP` then implies the result.
-              rw [← hP]
-              apply P.centers_dist'
-              · exact Subtype.mem x
-              · obtain ⟨hy₁, hy₂⟩ := Subtype.mem y
-                exact hy₁
-              · exact sub_ne_zero.mp h
-    -- _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
-    -- := by simp only [sub_self]
-    _ = ↑(P.numReps' hd hD_isBounded) * (f 0).re
-        := by
-            simp only [tsum_const, nsmul_eq_mul, mul_eq_mul_right_iff, Nat.cast_inj]
-            cases eq_or_ne (f 0).re 0
-            · case inl h =>
-              right
-              rw [h]
-            · case inr h =>
-              left
-              let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-              rw [PeriodicSpherePacking.numReps']
-              exact Nat.card_eq_fintype_card
+omit hRealFourier in include hP hCohnElkies₁ hD_unique_covers in
+/-- Bound `numReps * (f 0).re` by the double sum of `f` values via `lattice_sum_re_le_ite`. -/
+private lemma numReps_mul_f_zero_ge_double_tsum (hd : 0 < d) :
+    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥
+      ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
+  letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
+  classical
+  simp_rw [SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
+    (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd, tsum_fintype]
+  exact (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
+    CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans
+    (by simp [PeriodicSpherePacking.numReps'])
 
 omit [Nonempty ↑P.centers] in include hD_isBounded in
 /-- Pull `Complex.re` outside the triply-nested centers/centers/lattice sum. -/
@@ -1632,20 +1439,11 @@ public theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
     (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant hd,
-    periodic_constant_eq_periodic_constant_normalized hd]
-  apply iSup_le
-  intro P
-  rw [iSup_le_iff]
-  intro hP
-  cases isEmpty_or_nonempty ↑P.centers
-  · case inl instEmpty =>
-    rw [P.density_of_centers_empty hd]
-    exact zero_le'
-  · case inr instNonempty =>
-    let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
-      (P.basis_index_equiv)
-    exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-      (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-      (P.fundamental_domain_unique_covers b) hd hf
-
-end Main_Theorem
+    periodic_constant_eq_periodic_constant_normalized (d := d)]
+  refine iSup_le fun P => iSup_le fun hP => ?_
+  rcases isEmpty_or_nonempty ↑P.centers with _ | _
+  · simp [P.density_of_centers_empty hd]
+  exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+    (ZSpan.fundamentalDomain_isBounded _) (PeriodicSpherePacking.fundamental_domain_unique_covers
+      (S := P) (((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
+        (PeriodicSpherePacking.basis_index_equiv P))) hd

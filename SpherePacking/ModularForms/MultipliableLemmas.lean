@@ -49,6 +49,6 @@ public lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 /-- The delta product factors `∏ (1 - exp(2π i n z))^24` form a convergent infinite product. -/
 public lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
     Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
-  simpa using (MultipliableEtaProductExpansion_pnat z).map
+  simpa [Function.comp_def, powMonoidHom_apply] using (MultipliableEtaProductExpansion_pnat z).map
     (g := powMonoidHom 24) (hg := by exact continuous_pow 24)
 

@@ -6,6 +6,10 @@ Authors: Bhavik Mehta, Gareth Ma
 module
 public import SpherePacking.Basic.PeriodicPacking
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! # Basic properties of the E₈ lattice: as parity submodule of `Fin 8 → R` and as the ℤ-span of
 `E8Matrix`, plus integrality of squared norms. -/
 
@@ -232,7 +236,8 @@ public theorem span_E8Matrix (R : Type*) [Field R] [CharZero R] :
   rw [Submodule.mem_span_range_iff_exists_fun]
   obtain ⟨c, hc⟩ := exists_cast_eq_vecMul_E8Inverse v hv
   exact ⟨c, by
-    simpa [Matrix.vecMul_eq_sum, Matrix.row, LinearMap.intCast_apply, zsmul_eq_mul] using
+    simpa [Matrix.vecMul_eq_sum, Matrix.row_def, LinearMap.intCast_apply, zsmul_eq_mul,
+      funext_iff, Finset.sum_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul] using
       show Matrix.vecMul (LinearMap.intCast R c) (E8Matrix R) = v by
         rw [hc, Matrix.vecMul_vecMul, show E8Inverse R * E8Matrix R = 1 by
           rw [E8Matrix_eq_cast, show E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) by
@@ -248,7 +253,7 @@ def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
 
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by
-  simpa [Matrix.mul_apply', Matrix.col_transpose] using congrArg (· i j)
+  simpa [Matrix.mul_apply', Matrix.col_transpose, Matrix.row_def] using congrArg (· i j)
     (show E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) by
       rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
         show E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) by decide +kernel,
