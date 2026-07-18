@@ -124,7 +124,7 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
 lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
-  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' E₂_isBoundedAtImInfty
+  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' isBoundedAtImInfty_E2
 
 /-- D E₄ is bounded at infinity (by Cauchy estimate: D f → 0 when f is bounded). -/
 lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
@@ -219,7 +219,7 @@ def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
 lemma serre_DE₂_tendsto_atImInfty :
     Filter.Tendsto (serre_D 1 E₂) atImInfty (nhds (-(1/12 : ℂ))) := by
   have h := serre_D_tendsto_neg_k_div_12 1 E₂ E₂_holo'
-    E₂_isBoundedAtImInfty E₂_tendsto_one_atImInfty
+    isBoundedAtImInfty_E2 E₂_tendsto_one_atImInfty
   simp only [Int.cast_one, neg_div] at h
   exact h
 

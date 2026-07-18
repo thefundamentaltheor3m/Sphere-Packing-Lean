@@ -1072,7 +1072,7 @@ theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
     have hmul : IsBoundedAtImInfty (fun z => (k * 12⁻¹) * (E₂ z * f z)) :=
-      hconst.mul (E₂_isBoundedAtImInfty.mul hbdd)
+      hconst.mul (EisensteinSeries.isBoundedAtImInfty_E2.mul hbdd)
     rw [isBoundedAtImInfty_iff] at hmul ⊢
     obtain ⟨M, A, hMA⟩ := hmul
     refine ⟨M, A, ?_⟩
