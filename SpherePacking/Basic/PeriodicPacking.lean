@@ -511,12 +511,16 @@ public theorem PeriodicSpherePacking.aux2_ge'
     ← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
   refine volume.mono fun x hx => ?_
   obtain ⟨g, hg, -⟩ := hD_unique_covers x
+  have hgD : (g : EuclideanSpace ℝ (Fin d)) + x ∈ D := hg
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
-  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, Set.mem_vadd_set_iff_neg_vadd_mem.2 hg⟩⟩
-  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt
-    (by simpa [sub_eq_add_neg, add_assoc] using norm_sub_le (a := g.val + x) (b := x) :
-      ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖) (by
-    linarith [hL _ (hg : g.val + x ∈ D), mem_ball_zero_iff.mp hx])
+  refine ⟨-g.val, ⟨⟨by simp, ?_⟩,
+    Set.mem_vadd_set_iff_neg_vadd_mem.2 (by simpa using hgD)⟩⟩
+  have h1 : ‖(g : EuclideanSpace ℝ (Fin d))‖ ≤ ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ + ‖x‖ := by
+    simpa [sub_eq_add_neg, add_assoc] using
+      norm_sub_le (a := (g : EuclideanSpace ℝ (Fin d)) + x) (b := x)
+  have h2 : ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ ≤ L := hL _ hgD
+  have h3 : ‖x‖ < R - L := mem_ball_zero_iff.mp hx
+  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt h1 (by linarith)
 
 /-- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_le'

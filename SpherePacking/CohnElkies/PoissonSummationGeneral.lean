@@ -511,6 +511,7 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
         simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
           ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) _
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
+      rw [one_mul]
       exact ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
         ⟨x, iocCube_subset_closedBall (d := d) hx⟩
 
@@ -541,11 +542,12 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
         have hmFourier : ‖UnitAddTorus.mFourier (-n) (coeFunE (d := d) x)‖ ≤ 1 := by
           simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
             ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)
-        simpa using (mul_le_mul hmFourier
-          (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
-              ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
-            ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
-          (norm_nonneg _) (by norm_num)).trans (one_mul _).le)
+        have hfx : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by
+          have h := ContinuousMap.norm_coe_le_norm
+            ((translate (d := d) f ℓ).restrict (ball (d := d)))
+            ⟨x, iocCube_subset_closedBall (d := d) hx⟩
+          exact h
+        simpa using (mul_le_mul hmFourier hfx (norm_nonneg _) (by norm_num)).trans (one_mul _).le)
 
 /-- The `n`-th torus Fourier coefficient of `descended f` is the integral over the unit cube
 of `mFourier(-n)(coeFunE x)` times the periodization `∑' ℓ, f (x + ℓ)`. -/
@@ -664,7 +666,7 @@ lemma summable_mFourierCoeff_descended :
       simpa [Real.norm_of_nonneg (norm_nonneg _), div_eq_mul_inv, inv_pow, one_div] using
         (le_div_iff₀' (pow_pos (lt_trans (by positivity)
           (lt_of_not_ge (by simpa using hℓ) : (1 : ℝ) < ‖(ℓ : E)‖)) _)).2 (hC' (ℓ : E))
-    simpa [equivIntVec] using
+    simpa [equivIntVec, Function.comp_def] using
       hsum_lattice.comp_injective (equivIntVec (d := d)).injective
   exact Summable.of_norm (by simpa [mFourierCoeff_descended (d := d) (f := f)] using hsum_norm)
 
@@ -871,7 +873,7 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
             map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)).toEquiv).tsum_eq
       (f := F), ← tsum_mul_left]
     exact tsum_congr fun n ↦ by
-      simpa [F, iv, adjointSymmEquiv, mul_assoc,
+      simpa [F, iv, adjointSymmEquiv, PoissonSummation.Standard.equivIntVec, mul_assoc,
           poissonSummation_lattice_inner_swap (L := L) v (w := iv n)] using
         congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ L) (iv n)⟫_[ℝ]))
           (hfourier (w := iv n))]

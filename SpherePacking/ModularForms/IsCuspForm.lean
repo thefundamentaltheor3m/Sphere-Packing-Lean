@@ -13,6 +13,10 @@ public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ModularForms.QExpansionLemmas
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Cusp forms
 
@@ -73,7 +77,7 @@ public def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
   intro f hf
   -- `ModForm_mk` is definitional, so it suffices to check pointwise.
   ext z
-  simpa [CuspForm_to_ModularForm, ModForm_mk] using congrArg (fun g : ModularForm Γ k => g z) hf
+  exact congrArg (fun g : ModularForm Γ k => g z) hf
 
 lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
     (hf : f ∈ CuspFormSubmodule Γ k) :
@@ -81,7 +85,7 @@ lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularFor
   rw [CuspFormSubmodule, LinearMap.mem_range] at hf
   aesop
 
-instance (priority := 100) CuspFormSubmodule.funLike :
+public instance (priority := 100) CuspFormSubmodule.funLike :
     FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
   coe f := f.1.toFun
   coe_injective f g h := by cases f; cases g; congr; exact DFunLike.ext' h
@@ -115,8 +119,7 @@ public instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSu
     f.toSlashInvariantForm := by
   rw [IsCuspForm_to_CuspForm]
   rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
-  simpa [CuspForm_to_ModularForm, ModForm_mk] using
-    congrArg (fun x ↦ x.toSlashInvariantForm) hf.choose_spec
+  exact congrArg (fun x ↦ x.toSlashInvariantForm) hf.choose_spec
 
 /-- The extracted cusp form has the same underlying function as the original modular form. -/
 @[simp] public lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ)

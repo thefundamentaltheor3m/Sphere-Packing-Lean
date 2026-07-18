@@ -23,6 +23,10 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
 
 import SpherePacking.ForMathlib.DerivHelpers
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! # Scalar one-form utilities, convenience measures on standard intervals (Lebesgue
 restrictions), and inversion change-of-variables on `Ioc (0, 1]`.
 
@@ -49,8 +53,7 @@ public lemma diffContOnCl_scalarOneForm {F : ℂ → ℂ} {s : Set ℂ} (hF : Di
     DiffContOnCl ℝ (MagicFunction.scalarOneForm F) s := by
   let L : ℂ →L[ℝ] (ℂ →L[ℂ] ℂ) :=
     (ContinuousLinearMap.smulRightL ℂ ℂ ℂ (ContinuousLinearMap.id ℂ ℂ)).restrictScalars ℝ
-  simpa [MagicFunction.scalarOneForm, L] using
-    L.differentiable.comp_diffContOnCl (g := F) (t := s) hF
+  exact L.differentiable.comp_diffContOnCl (g := F) (t := s) hF
 
 open MagicFunction
 
@@ -233,7 +236,7 @@ public lemma continuous_comp_upperHalfPlane_mk {α β : Type*} [TopologicalSpace
     (hz : Continuous z) (him : ∀ a : α, 0 < (z a).im) {ψT' : ℂ → β}
     (hEq : ∀ a : α, ψT' (z a) = ψT (⟨z a, him a⟩ : UpperHalfPlane)) :
     Continuous fun a : α => ψT' (z a) := by
-  simpa [hEq] using hψT.comp (hz.upperHalfPlaneMk him)
+  simpa [hEq, Function.comp_def] using hψT.comp (hz.upperHalfPlaneMk him)
 
 /-- A continuous function on `[0,1]` is bounded on `Ι (0,1)`. -/
 public lemma exists_bound_norm_uIoc_zero_one_of_continuous (f : ℝ → ℂ) (hf : Continuous f) :
@@ -269,7 +272,7 @@ private lemma aestronglyMeasurable_gN_Ioo
     (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
     (continuous_coeff : Continuous coeff) (n : ℕ) (x : ℝ) :
     AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x) μIoo01 := by
-  simpa [μIoo01, gN, g] using (((continuous_coeff.pow n).continuousOn.mul (continuousOn_hf.mul
+  exact (((continuous_coeff.pow n).continuousOn.mul (continuousOn_hf.mul
     ((continuous_const.mul continuous_coeff).cexp.continuousOn))).aestronglyMeasurable
       measurableSet_Ioo)
 

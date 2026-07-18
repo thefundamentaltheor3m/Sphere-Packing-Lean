@@ -3,6 +3,10 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Multipliability lemmas for product expansions
 
@@ -46,5 +50,5 @@ public lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 public lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
     Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
   simpa using (MultipliableEtaProductExpansion_pnat z).map
-    (g := powMonoidHom 24) (hg := by simpa using continuous_pow 24)
+    (g := powMonoidHom 24) (hg := by exact continuous_pow 24)
 

@@ -60,6 +60,6 @@ public theorem ModularGroup.coe_ST_smul (z : UpperHalfPlane) :
     simp [slash_def, denom, hk.neg_one_zpow, Matrix.det_neg, σ]
   have hGL : ∀ g' : GL (Fin 2) ℝ, f ∣[k] (-g') = f ∣[k] g' := fun g' => by
     rw [← neg_one_mul, SlashAction.slash_mul, this, SlashAction.slash_one]
-  rw [SL_slash, ← hGL (g : GL (Fin 2) ℝ)]
+  rw [SL_slash, ← hGL]
   congr
   aesop
