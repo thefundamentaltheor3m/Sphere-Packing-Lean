@@ -6,6 +6,10 @@ Authors: Bhavik Mehta, Gareth Ma
 module
 public import SpherePacking.E8.Basic
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! # The E₈ packing — density `π^4 / 384`.
 
 Main definitions: `E8Lattice`, `E8Packing`. Main result: `E8Packing_density`.
@@ -69,7 +73,7 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
     rw [show Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
           ((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm :
               (Fin 8 → ℝ) →ₗ[ℤ] EuclideanSpace ℝ (Fin 8)) '' Set.range (E8Matrix ℝ).row by
-        simpa [Function.comp] using
+        simpa [Function.comp_def] using
           Set.range_comp (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (E8Matrix ℝ).row,
       ← Submodule.map_span, span_E8Matrix ℝ]
     simp [E8Lattice]
@@ -93,6 +97,8 @@ open scoped Real
     rw [hdist]
     convert (E8_norm_lower_bound _ (Submodule.sub_mem _ ha' hb')).resolve_left
       (sub_ne_zero.mpr (by contrapose! hab; simp [hab])) using 2
+    rw [← map_sub]
+    rfl
   lattice_action x y := add_mem
 
 private lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by

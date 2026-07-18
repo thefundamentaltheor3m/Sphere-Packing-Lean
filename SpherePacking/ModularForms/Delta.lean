@@ -9,6 +9,10 @@ import SpherePacking.Tactic.NormNumI
 
 public import SpherePacking.ForMathlib.Cusps
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Discriminant Product Formula
 
@@ -81,7 +85,7 @@ public lemma Delta_ne_zero : Delta ≠ 0 :=
 /-- The discriminant cusp form is `Θ`-equivalent to `exp(-2π Im z)` at `Im z → ∞`. -/
 public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * τ.im)) :=
   ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta,
-    by simpa [Delta_apply, Δ] using exp_isBigO_discriminant⟩
+    by exact exp_isBigO_discriminant⟩
 
 private lemma Complex_im_finset_prod_eq_zero_of_im_eq_zero (s : Finset ℕ) (f : ℕ → ℂ)
     (h : ∀ i ∈ s, (f i).im = 0) : (∏ i ∈ s, f i).im = 0 := by
@@ -132,7 +136,7 @@ public lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
     have hz : (z : ℂ) = Complex.I * t := rfl
     simpa [g, hz] using
       ((by simpa using MultipliableEtaProductExpansion z : Multipliable _).map
-        (g := powMonoidHom 24) (hg := by simpa using continuous_pow 24))
+        (g := powMonoidHom 24) (hg := by exact continuous_pow 24))
   have htprod_im : (∏' n : ℕ, g n).im = 0 :=
     Complex_im_tprod_eq_zero_of_im_eq_zero g hmul him_g
   have him_pref : (cexp (2 * π * Complex.I * (Complex.I * t))).im = 0 := by
@@ -159,7 +163,7 @@ public lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
     simpa using
       (Function.LeftInverse.map_tprod (f := fR)
         (g := Complex.ofRealHom.toMonoidHom)
-        (hg := by simpa using Complex.continuous_ofReal)
+        (hg := by exact Complex.continuous_ofReal)
         (hg' := Complex.continuous_re)
         (hgg' := by intro x; simp))
   simpa [ResToImagAxis, ht, Delta_apply, Δ_eq_qProd, cexp_aux1, cexp_aux2, hMap', fR] using

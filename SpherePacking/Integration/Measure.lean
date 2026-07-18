@@ -272,8 +272,7 @@ private lemma aestronglyMeasurable_gN_Ioo
     (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
     (continuous_coeff : Continuous coeff) (n : ℕ) (x : ℝ) :
     AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x) μIoo01 := by
-  show AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x)
-    ((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1))
+  simp only [μIoo01]
   exact (((continuous_coeff.pow n).continuousOn.mul (continuousOn_hf.mul
     (((continuous_const (y := ((x : ℝ) : ℂ))).mul continuous_coeff).cexp.continuousOn))).aestronglyMeasurable
       measurableSet_Ioo)

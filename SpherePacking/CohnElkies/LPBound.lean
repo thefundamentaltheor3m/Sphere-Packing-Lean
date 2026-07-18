@@ -462,7 +462,9 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
           (by simpa [D, Submodule.vadd_def, vadd_eq_add] using
             (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d)) :
             IsBounded D) hD_unique hd).symm
-  exact ⟨P, hPsep, by simpa [hnumReps, hPsep] using P.density_eq' (d := d) hd⟩
+  exact ⟨P, hPsep, by
+    simpa [hnumReps, hPsep, show P.lattice = cubeLattice d L hL from rfl] using
+      P.density_eq' (d := d) hd⟩
 
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     Tendsto
@@ -484,7 +486,7 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     change (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d = ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
     rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
   refine (show Tendsto (fun L : ℝ => ENNReal.ofReal (f L)) atTop (𝓝 (0 : ℝ≥0∞)) by
-    simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
+    exact (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
   filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
   have hL2' : 0 ≤ L - 2 := by linarith
   rw [volume_cubeShell_eq_pow L, show volume (coordCube d L) = (ENNReal.ofReal L) ^ d by
@@ -614,7 +616,7 @@ private lemma sg_card_mul_volBall_div_volCube_gt (hd : 0 < d)
       simp only [div_eq_mul_inv,
         show a * volCube * c⁻¹ * volCube⁻¹ = a * c⁻¹ * (volCube * volCube⁻¹) by ring,
         ENNReal.mul_inv_cancel hvolCube_ne0 hvolCube_ne_top, mul_one]] at h) volBall
-  simp only [div_eq_mul_inv] at this ⊢; convert this using 1 <;> ring
+  simp only [div_eq_mul_inv] at this ⊢; convert this using 1 <;> first | rfl | ring
 
 /-- From a finset `sg` of centers in `g0 +ᵥ coordCube d L` satisfying `sg.card * volBall / volCube`
 exceeding some bound `δ + shellVol / volCube`, construct a periodic packing `P` with separation `1`
@@ -1041,7 +1043,9 @@ public lemma calc_steps_swap_sums {d : ℕ} (f : 𝓢(EuclideanSpace ℝ (Fin d)
       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hFourierReal : ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) = a m := fun m => by
     simpa [a] using (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  simpa (config := { zeta := false }) [c, e, hFourierReal] using
+  simpa (config := { zeta := false }) [c, e, hFourierReal,
+      show ∀ m : SchwartzMap.dualLattice (d := d) P.lattice, ((a m).re : ℂ) = a m from
+        fun m => by simp [a]] using
     tsum_finset_finset_const_mul_swap c a e fun x y =>
       summable_const_mul_re_fourier_mul_exp f P c x y
 
@@ -1151,7 +1155,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
       simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable]
     simpa [fourierInv_eq, show f 0 = 0 by simpa [hf0re.symm] using (hReal 0).symm] using
       congrArg Complex.re (congrArg (· 0) f.fourierInversion))
-  ext x; simpa [show (𝓕 f x).re = 0 by simpa using congrFun hfun x] using (hRealFourier x).symm
+  ext x; simpa [show (𝓕 f x).re = 0 by exact congrFun hfun x] using (hRealFourier x).symm
 
 section Fundamental_Domain_Dependent
 
@@ -1335,7 +1339,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
             by_cases hm : m = (0 : ↥(SchwartzMap.dualLattice (d := d) P.lattice))
             · simp [hm]
             · simpa [hm] using mul_nonneg
-                (by simpa using hCohnElkies₂ (m : EuclideanSpace ℝ (Fin d)))
+                (by exact hCohnElkies₂ (m : EuclideanSpace ℝ (Fin d)))
                 (sq_nonneg (norm (∑' x : ↑(P.centers ∩ D),
                   exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
                     (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))))
@@ -1389,7 +1393,7 @@ private lemma density_le_of_hCalc_of_ne_zero
     div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
     ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
     ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right
-      (by simpa [ENat.toENNReal_coe] using Fintype.card_ne_zero :
+      (by simpa [ENat.toENNReal_coe] using (Fintype.card_ne_zero : P.numReps ≠ 0) :
         ENat.toENNReal (P.numReps : ENat) ≠ 0)
       (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
     ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc,
