@@ -102,13 +102,9 @@ theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b 
   obtain ⟨t, hts, hcard⟩ := hs.exists_subset_card_eq (b + 1)
   exact ⟨t, by simpa, by simp [encard_coe_eq_coe_finsetCard, hcard, Nat.cast_lt, - Nat.cast_add]⟩
 
--- These forward to mathlib's `WithTop.add_eq_top` / `WithTop.add_ne_top`, but are kept as `ℕ∞`
--- specialisations: the `@[simp]` form is needed for `simp` automation below (the general
--- `WithTop` lemma does not fire on the `ℕ∞` addition syntactically).
-@[simp]
-theorem add_eq_top {x y : ℕ∞} : x + y = ⊤ ↔ x = ⊤ ∨ y = ⊤ :=
-  WithTop.add_eq_top
-
+-- `ENat.add_eq_top` is now in mathlib (a `@[simp]` `ℕ∞` specialisation of `WithTop.add_eq_top`).
+-- `add_ne_top` is kept as an `ℕ∞` specialisation because the general `WithTop` lemma does not fire
+-- on the `ℕ∞` addition syntactically; the `@[simp]` `add_eq_top` above powers its `by simp` proof.
 theorem add_ne_top {x y : ℕ∞} : x + y ≠ ⊤ ↔ x ≠ ⊤ ∧ y ≠ ⊤ :=
   by simp
 

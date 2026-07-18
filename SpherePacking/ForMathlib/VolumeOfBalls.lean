@@ -39,7 +39,8 @@ theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
   ext t
   exact False.elim (IsEmpty.false t)
 
-theorem EuclideanSpace.volume_ball_lt_top [inst : NoAtoms (volume : Measure (EuclideanSpace ℝ ι))]
+theorem EuclideanSpace.volume_ball_lt_top
+    [inst : NullSingletonClass (volume : Measure (EuclideanSpace ℝ ι))]
     (x : EuclideanSpace ℝ ι) : volume (ball x r) < ⊤ :=
   -- `volume` is finite on compacts, so this is mathlib's `MeasureTheory.measure_ball_lt_top`.
   measure_ball_lt_top

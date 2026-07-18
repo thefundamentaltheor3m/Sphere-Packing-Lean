@@ -170,10 +170,10 @@ such that `norm_num` successfully recognises both the real and imaginary parts o
   let ⟨az, bz, pfz⟩ ← NormNumI.parse z
   let ⟨aw, bw, pfw⟩ ← NormNumI.parse w
   let ⟨ba, ra⟩ ← deriveBool q($az = $aw)
-  match ba with
+  match (dependent := true) ba with
   | true =>
     let ⟨bb, rb⟩ ← deriveBool q($bz = $bw)
-    match bb with
+    match (dependent := true) bb with
     | true => return Result'.isBool true q(NormNumI.eq_of_eq_of_eq_of_eq $pfz $pfw $ra $rb)
     | false => return Result'.isBool false q(NormNumI.ne_of_im_ne $pfz $pfw $rb)
   | false => return Result'.isBool false q(NormNumI.ne_of_re_ne $pfz $pfw $ra)
