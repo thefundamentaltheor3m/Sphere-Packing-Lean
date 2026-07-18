@@ -1018,18 +1018,6 @@ theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
     rw [interior_Ioi] at ht
     exact deriv_FmodGReal_neg t ht
 
-lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
-    match n % 4 with
-    | 0 => (t : ℂ) ^ n
-    | 1 => I * (t : ℂ) ^ n
-    | 2 => -((t : ℂ) ^ n)
-    | 3 => -I * (t : ℂ) ^ n
-    | _ => 0  -- unreachable
-    := by
-  have hmod : n % 4 < 4 := Nat.mod_lt n (by norm_num)
-  rw [mul_pow, Complex.I_pow_eq_pow_mod]
-  interval_cases n % 4 <;> simp
-
 /- Functional equation of $F$ -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -1048,22 +1036,32 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
         - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
           + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
     rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
-    simp only [z, I_mul_t_pow_nat]
+    have hz : ((z : ℍ) : ℂ) = I * t := rfl
+    have e10 : ((z : ℍ) : ℂ) ^ 10 = -(t : ℂ) ^ 10 := by
+      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
+    have e11 : ((z : ℍ) : ℂ) ^ 11 = -I * (t : ℂ) ^ 11 := by
+      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
+    have e12 : ((z : ℍ) : ℂ) ^ 12 = (t : ℂ) ^ 12 := by
+      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
+    rw [e10, e11, e12]
     linear_combination 12 * (π : ℂ) ^ (-1 : ℤ) * (t : ℂ) ^ 11 * (F₁ * E₄.toFun) z * I_sq
-  have hFz : F z = F.resToImagAxis t := by simpa [z] using ResToImagAxis.I_mul_t_eq F t ht
-  have hF₁E₄z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
-    simpa [z] using ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht
-  have hE₄z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
-    simpa [z] using ResToImagAxis.I_mul_t_eq E₄.toFun t ht
-  rwa [hFz, hF₁E₄z, hE₄z, F_eq_FReal t, F_eq_FReal (1 / t)] at hF
+  calc (FReal (1 / t) : ℂ)
+      = F.resToImagAxis (1 / t) := (F_eq_FReal (1 / t)).symm
+    _ = (t : ℂ) ^ 12 * F z - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
+          + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := hF
+    _ = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
+          + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
+        simp only [z, ResToImagAxis.I_mul_t_eq F t ht,
+          ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht,
+          ResToImagAxis.I_mul_t_eq E₄.toFun t ht, F_eq_FReal t]
 
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
     G (S • z) = -z ^ 10 * H₄ z ^ 3 * (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-  have hG_expand : G (S • z) = H₂ (S • z) ^ 3 *
+  change H₂ (S • z) ^ 3 *
       ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
-       (5 : ℝ) * H₄ (S • z) ^ 2) := rfl
-  simp only [hG_expand, H₂_S_action', H₄_S_action', ofReal_ofNat]
+       (5 : ℝ) * H₄ (S • z) ^ 2) = _
+  simp only [H₂_S_action', H₄_S_action', ofReal_ofNat]
   ring
 
 theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
@@ -1076,8 +1074,10 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
         (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
           5 * H₂.resToImagAxis t ^ 2) := by
     rw [ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z]
-    simp only [z, I_mul_t_pow_nat, ResToImagAxis.I_mul_t_eq H₂ t ht,
-      ResToImagAxis.I_mul_t_eq H₄ t ht]
+    have e10 : ((z : ℍ) : ℂ) ^ 10 = -(t : ℂ) ^ 10 := by
+      rw [show ((z : ℍ) : ℂ) = I * t from rfl, mul_pow, Complex.I_pow_eq_pow_mod]; simp
+    rw [e10]
+    simp only [z, ResToImagAxis.I_mul_t_eq H₂ t ht, ResToImagAxis.I_mul_t_eq H₄ t ht]
     ring
   rwa [G_eq_GReal (1 / t)] at hG
 
