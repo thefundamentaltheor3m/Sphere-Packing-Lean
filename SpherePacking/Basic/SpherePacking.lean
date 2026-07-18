@@ -91,45 +91,62 @@ open Real
     exact (mul_le_mul_iff_right₀ hc).mpr <| S.centers_dist (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩)
       fun heq ↦ hxy <| by simp [Subtype.ext_iff] at heq; simp [heq]
 
-/-- Scale a periodic packing by a positive factor `c`, scaling both centers and the lattice. -/
-@[expose] public noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ}
-    (hc : 0 < c) : PeriodicSpherePacking d := {
+lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
+    DiscreteTopology ↥(c • S.lattice) := by
+  letI : DiscreteTopology S.lattice := S.lattice_discrete
+  change DiscreteTopology ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice :
+    Set (EuclideanSpace ℝ (Fin d))))
+  exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
+    (S.lattice : Set (EuclideanSpace ℝ (Fin d)))).discreteTopology
+
+noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
+  PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
     simp_all only [SpherePacking.scale, Set.mem_smul_set]
-    obtain ⟨x, hx, rfl⟩ := hx; obtain ⟨y, hy, rfl⟩ := hy
-    exact ⟨x + y, S.lattice_action hx hy, smul_add ..⟩
-  lattice_discrete := by
-    have hd := S.lattice_discrete
-    rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at hd ⊢
-    obtain ⟨ε, hε, hε'⟩ := hd; refine ⟨c * ε, mul_pos hc hε, ?_⟩
-    rintro ⟨y, hy⟩ hy'
-    obtain ⟨z, hz, rfl⟩ := hy
-    have hz' : dist (⟨z, hz⟩ : S.lattice) 0 < ε := by
-      rw [Subtype.dist_eq] at hy' ⊢
-      simp only [Submodule.coe_zero, dist_zero_right] at hy' ⊢
-      simp only [DistribSMul.toLinearMap_apply] at hy'
-      rwa [norm_smul, Real.norm_eq_abs, abs_of_pos hc, mul_lt_mul_iff_right₀ hc] at hy'
-    have := hε' ⟨z, hz⟩ hz'
-    rw [Submodule.mk_eq_zero] at this
-    simp [this]
+    obtain ⟨x, hx, rfl⟩ := hx
+    obtain ⟨y, hy, rfl⟩ := hy
+    use x + y, S.lattice_action hx hy, smul_add ..
+  lattice_discrete := scale_lattice_discrete S hc
   lattice_isZLattice := by
-    use ?_; rw [← S.lattice_isZLattice.span_top]
-    ext v; simp_rw [Submodule.mem_span]; refine ⟨fun h p hp ↦ ?_, fun h p hp ↦ ?_⟩
-    · simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c⁻¹ _ (Submodule.smul_mem (c • p) c (h _ <| by
-          rw [Submodule.coe_pointwise_smul]; exact Set.smul_set_mono hp))
-    · simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm] using
-        Submodule.smul_mem_pointwise_smul _ c _ (Submodule.smul_mem (c⁻¹ • p) c⁻¹ (h _ <| by
-          rw [Submodule.coe_pointwise_smul] at *
-          simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm] using Set.smul_set_mono (a := c⁻¹) hp))
+    letI : DiscreteTopology ↥(c • S.lattice) := scale_lattice_discrete S hc
+    refine ⟨?_⟩
+    rw [← S.lattice_isZLattice.span_top]
+    ext v
+    simp_rw [Submodule.mem_span]
+    constructor <;> intro h p hp
+    · specialize h (c • p) ?_
+      · rw [Submodule.coe_pointwise_smul]
+        exact Set.smul_set_mono hp
+      · have : c • v ∈ c • p := Submodule.smul_mem _ _ h
+        have := Submodule.smul_mem_pointwise_smul _ c⁻¹ _ this
+        simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul]
+    · specialize h (c⁻¹ • p) ?_
+      · rw [Submodule.coe_pointwise_smul] at *
+        have := Set.smul_set_mono (a := c⁻¹) hp
+        rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this
+      · have : c⁻¹ • v ∈ c⁻¹ • p := Submodule.smul_mem _ _ h
+        have := Submodule.smul_mem_pointwise_smul _ c _ this
+        simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
 }
+
+lemma PeriodicSpherePacking.scale_toSpherePacking
+    {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).toSpherePacking = S.toSpherePacking.scale hc := by
+  cases S
+  rfl
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
     (S.scale hc).balls = c • S.balls := by
-  ext; simp [SpherePacking.balls, SpherePacking.scale, Set.smul_set_iUnion, Set.mem_smul_set,
-    _root_.smul_ball hc.ne', Real.norm_eq_abs, abs_of_pos hc, mul_div_assoc]
+  have hc0 : (c : ℝ) ≠ 0 := hc.ne'
+  ext x
+  simp [SpherePacking.balls, SpherePacking.scale, Set.smul_set_iUnion, Set.mem_smul_set,
+    _root_.smul_ball hc0, Real.norm_eq_abs, abs_of_pos hc, mul_div_assoc]
+
+lemma PeriodicSpherePacking.scale_balls {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).balls = c • S.balls := by
+  exact S.scale_toSpherePacking hc ▸ SpherePacking.scale_balls (S := S.toSpherePacking) hc
 
 end Scaling
 
@@ -146,12 +163,16 @@ namespace SpherePacking
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  have hball : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
-    rw [smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R, smul_zero,
-      Real.norm_eq_abs, abs_of_pos hc]
-  rw [finiteDensity, scale_balls, hball, ← Set.smul_set_inter₀ hc.ne.symm,
-    Measure.addHaar_smul_of_nonneg _ hc.le, Measure.addHaar_smul_of_nonneg _ hc.le,
-    ENNReal.mul_div_mul_left _ _ (by simp; positivity) ENNReal.ofReal_ne_top, finiteDensity]
+  -- haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
+  have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
+    rw [_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R]
+    rw [smul_zero, Real.norm_eq_abs, abs_of_nonneg hc.le]
+  rw [finiteDensity, scale_balls, this, ← Set.smul_set_inter₀ hc.ne.symm]
+  repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
+  rw [ENNReal.mul_div_mul_left, finiteDensity]
+  · rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]
+    positivity
+  · apply ENNReal.ofReal_ne_top
 
 @[simp]
 public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :

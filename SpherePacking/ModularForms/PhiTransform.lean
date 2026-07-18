@@ -23,7 +23,9 @@ This file proves the basic translation and `S`-transformation rules for the auxi
 Blueprint Lemma 7.2.
 -/
 
-open scoped Real
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+  Metric Filter Function Complex MatrixGroups
 
 open UpperHalfPlane
 

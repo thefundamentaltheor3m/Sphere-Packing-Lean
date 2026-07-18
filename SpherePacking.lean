@@ -1,4 +1,4 @@
-module  -- shake: keep-all
+module  -- shake: keep-all --deprecated_module: ignore
 
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.Basic.SpherePacking
@@ -14,6 +14,7 @@ public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.Integration.Measure
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.a.Eigenfunction
+public import SpherePacking.MagicFunction.a.Integrability.RealDecay
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction
 public import SpherePacking.MagicFunction.b.PsiBounds
@@ -60,4 +61,7 @@ public import SpherePacking.ModularForms.TsumDerivWithin
 public import SpherePacking.Tactic.FunPropExt
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.Tactic.TendstoContAttr
+public import SpherePacking.Tactic.Test.NormNumI
+public import SpherePacking.Tactic.Test.TendstoCont
 public import SpherePacking.UpperBound
