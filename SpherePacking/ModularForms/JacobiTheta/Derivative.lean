@@ -73,12 +73,14 @@ lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
 private lemma two_H₂_add_H₄_S_action :
     (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
   rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-  ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+  ext z
+  simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
 
 private lemma H₂_add_two_H₄_S_action :
     ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
   rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-  ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+  ext z
+  simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
 
 /-- `f₂|[4]S = -f₄` -/
 lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
@@ -89,7 +91,8 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] S) = H₄ * (H₄ + (2 : ℂ) • H₂) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₂_S_action,
       H₂_add_two_H₄_S_action]
-    ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
+    ext z
+    simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₄
   ext z
@@ -104,8 +107,8 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
     simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = H₂ + (2 : ℂ) • H₄ := by
     rw [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
-    ext z; simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-    simp only [jacobi_identity_apply]
+    ext z
+    simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul, jacobi_identity_apply]
     ring
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] T) = -H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₂_T_action, h_lin_comb]
@@ -123,7 +126,8 @@ lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] S) = H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₄_S_action,
       two_H₂_add_H₄_S_action]
-    ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
+    ext z
+    simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₂
   ext z
@@ -138,8 +142,8 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] T) = H₄ - H₂ := by
     rw [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
     ext z
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.sub_apply, smul_eq_mul]
-    simp only [jacobi_identity_apply]
+    simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.sub_apply, smul_eq_mul,
+      jacobi_identity_apply]
     ring
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] T) = H₃ * (H₄ - H₂) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₄_T_action, h_lin_comb]
