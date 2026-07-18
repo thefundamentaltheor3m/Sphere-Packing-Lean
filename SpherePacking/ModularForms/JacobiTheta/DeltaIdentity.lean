@@ -23,6 +23,10 @@ public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.Tactic.TendstoCont
 import SpherePacking.Tactic.NormNumI
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Jacobi theta functions: Jacobi identity and the `Delta` identity
 
@@ -219,9 +223,8 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
   have hΘ₄ : Tendsto Θ₄ atImInfty (𝓝 1) := by
-    simpa [Θ₄, Θ₄_term] using
-      (tsum_weighted_exp_sq_tendsto_atImInfty (w := fun n : ℤ ↦ (-1 : ℂ) ^ n) (by simp)
-        (by intro n; simp))
+    exact tsum_weighted_exp_sq_tendsto_atImInfty (w := fun n : ℤ ↦ (-1 : ℂ) ^ n) (by simp)
+      (by intro n; simp)
   simpa [funext Θ₄_as_jacobiTheta₂] using hΘ₄
 
 /-- The theta function `Θ₂` tends to `0` at `Im z → ∞`. -/
@@ -248,15 +251,15 @@ public theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
 
 /-- The function `H₂ = Θ₂^4` tends to `0` at `Im z → ∞`. -/
 public theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
-  simpa [H₂] using (Θ₂_tendsto_atImInfty.pow 4)
+  exact Θ₂_tendsto_atImInfty.pow 4
 
 /-- The function `H₃ = Θ₃^4` tends to `1` at `Im z → ∞`. -/
 public theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
-  simpa [H₃] using (Θ₃_tendsto_atImInfty.pow 4)
+  exact Θ₃_tendsto_atImInfty.pow 4
 
 /-- The function `H₄ = Θ₄^4` tends to `1` at `Im z → ∞`. -/
 public theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
-  simpa [H₄] using (Θ₄_tendsto_atImInfty.pow 4)
+  exact Θ₄_tendsto_atImInfty.pow 4
 
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
 public theorem jacobi_identity : H₂ + H₄ = H₃ := by
@@ -363,14 +366,15 @@ private noncomputable def thetaDelta_CF : CuspForm (Γ 1) 12 :=
         (thetaDeltaFun_slash_invariant S hprod_S) (thetaDeltaFun_slash_invariant T hprod_T) }
     (by
       have hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDelta_f := by
-        simpa [thetaDelta_f] using
-          H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
+        exact H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
       simpa [thetaDeltaFun, pow_two] using (hf.mul hf).const_smul ((256 : ℂ)⁻¹))
     (by
       have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
-        simpa [thetaDelta_f, mul_assoc] using
-          H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
-      simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
+        rw [show thetaDelta_f = H₂ * (H₃ * H₄) from mul_assoc H₂ H₃ H₄]
+        exact H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+      simpa [thetaDeltaFun, mul_zero,
+          show (256 : ℂ)⁻¹ • thetaDelta_f ^ 2 = fun x : ℍ => 256⁻¹ * thetaDelta_f x ^ 2
+            from rfl] using
         tendsto_const_nhds.mul (by simpa using hf0.pow 2 :
           Tendsto (fun z : ℍ => (thetaDelta_f z) ^ 2) atImInfty (𝓝 (0 : ℂ))))
 

@@ -207,7 +207,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E k hk z).im = 0
   have hq := E_k_q_expansion k hk hk2 z
-  simp only at hq ⊢
+  try simp only at hq ⊢
   rw [hq]
   simp only [add_im, one_im, zero_add]
   -- Step 1: Show each term in the sum is real on the imaginary axis
