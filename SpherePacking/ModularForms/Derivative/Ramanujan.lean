@@ -2,6 +2,10 @@ module
 public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
 import SpherePacking.ModularForms.Lv1Lv2Identities
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 @[expose] public section
 
 /-!
@@ -54,14 +58,14 @@ lemma tendsto_serre_D_E₄_atImInfty :
   simpa [show ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) by norm_num] using
     tendsto_serre_D_of_bounded_tendsto_one (k := (4 : ℂ))
       (f := E₄.toFun) E₄.holo' (ModularFormClass.bdd_at_infty E₄)
-      (by simpa using tendsto_E₄_atImInfty)
+      (by exact tendsto_E₄_atImInfty)
 
 lemma tendsto_serre_D_E₆_atImInfty :
     Tendsto (fun z : ℍ => serre_D 6 E₆.toFun z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
   simpa [show ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) by norm_num] using
     tendsto_serre_D_of_bounded_tendsto_one (k := (6 : ℂ))
       (f := E₆.toFun) E₆.holo' (ModularFormClass.bdd_at_infty E₆)
-      (by simpa using tendsto_E₆_atImInfty)
+      (by exact tendsto_E₆_atImInfty)
 
 noncomputable def serreD_modularForm (k : ℤ) (F : ModularForm Γ(1) k) :
     ModularForm Γ(1) (k + 2) :=
@@ -76,7 +80,7 @@ noncomputable def serreD_modularForm (k : ℤ) (F : ModularForm Γ(1) k) :
         have hFGL := F.slash_action_eq' (γ' : GL (Fin 2) ℝ) hγ'GL
         simpa [ModularForm.SL_slash] using hFGL
       have hSerre := serre_D_slash_invariant k F.toFun F.holo' γ' hF
-      simpa [ModularForm.SL_slash] using hSerre
+      exact hSerre
     holo' := serre_D_differentiable (k := (k : ℂ)) F.holo'
     bdd_at_cusps' := by
       intro c hc
@@ -266,7 +270,7 @@ private noncomputable def ramanujanE2_F₄ : ModularForm Γ(1) 4 where
     have hcast :
         serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
           serre_D 1 E₂ ∣[(4 : ℤ)] γ := by
-      simpa using (ModularForm.SL_slash (f := serre_D 1 E₂) (k := (4 : ℤ)) γ).symm
+      exact (ModularForm.SL_slash (f := serre_D 1 E₂) (k := (4 : ℤ)) γ).symm
     have hSerreSL : serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂ := ramanujanE2_serre_slash γ
     have hSerreGL :
         serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
@@ -340,7 +344,7 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
       simpa [F₈, serreD_modularForm] using tendsto_serre_D_E₆_atImInfty
     have hE4sq :
         Tendsto (fun z : ℍ => E4sq z) atImInfty (𝓝 ((1 : ℂ) * (1 : ℂ))) := by
-      simpa [E4sq] using tendsto_E₄_atImInfty.mul tendsto_E₄_atImInfty
+      exact tendsto_E₄_atImInfty.mul tendsto_E₄_atImInfty
     have hE4sq' :
         Tendsto (fun z : ℍ =>
           (2⁻¹ : ℂ) * E4sq z) atImInfty (𝓝 ((2⁻¹ : ℂ) * ((1 : ℂ) * (1 : ℂ)))) :=
