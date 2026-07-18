@@ -29,6 +29,10 @@ import Mathlib.Tactic.Ring
 import Mathlib.Topology.Algebra.GroupWithZero
 import Mathlib.Topology.Instances.Complex
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! # Contour identities for `mobiusInv` on `wedgeSet`.
 
 Contains the shared contour deformation lemmas (`perm_J12_contour_h1` / `perm_J12_contour_h2`,
@@ -224,7 +228,7 @@ private lemma continuousOn_mobiusInv_segment_of_ne_zero (a b : ℂ)
     (segment_ne_zero : ∀ t : Set.Icc (0 : ℝ) 1, Path.segment a b t ≠ 0) :
     ContinuousOn mobiusInv (Set.range (Path.segment a b)) := by
   rintro _ ⟨t, rfl⟩
-  simpa [mobiusInv] using (continuousAt_inv₀ (segment_ne_zero t)).neg.continuousWithinAt
+  exact (continuousAt_inv₀ (segment_ne_zero t)).neg.continuousWithinAt
 
 /-- `mobiusInv` is continuous on the segment `-1 → -1 + I`. -/
 public lemma continuousOn_mobiusInv_segment_z₁ :
@@ -274,7 +278,7 @@ public lemma curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
   let γw : Path (f a) (f b) := (Path.segment a b).map' (f := f) hf
   have hExt : ∀ {t : ℝ}, t ∈ Set.Ioo (0 : ℝ) 1 →
       γw.extend t = f (AffineMap.lineMap a b t) :=
-    fun {t} ht => by simpa [γw] using γw.extend_apply ⟨ht.1.le, ht.2.le⟩
+    fun {t} ht => by exact γw.extend_apply ⟨ht.1.le, ht.2.le⟩
   rw [curveIntegral_segment (ω := scalarOneForm (Ψ r)) a b,
     curveIntegral_eq_intervalIntegral_deriv (ω := scalarOneForm (Ψ' r)) γw,
     ← intervalIntegral.integral_neg]
@@ -339,11 +343,13 @@ public lemma curveIntegral_segment_neg_inv
       (ContinuousLinearMap.mulLeftRight ℝ ℂ (AffineMap.lineMap a b t)⁻¹
         (AffineMap.lineMap a b t)⁻¹) (AffineMap.lineMap a b t) := by
     have h := (hasFDerivAt_inv' (𝕜 := ℝ) (R := ℂ) hz0).neg
-    convert h using 2; simp
+    rw [neg_neg] at h
+    exact h
   have hderiv :=
     (show HasDerivAt (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s))
         ((b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ)) t by
-      simpa [mobiusInv, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
+      simpa [Function.comp_def, mobiusInv, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm,
+          mul_comm] using
         (hfderiv.comp_hasDerivAt t
           (AffineMap.hasDerivAt_lineMap (a := a) (b := b) (x := t)))).deriv
   simpa [hderiv, _root_.SpherePacking.deriv_mobiusInv, div_eq_mul_inv, mul_assoc, mul_left_comm,
@@ -459,8 +465,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
   let δ : Path q0 q1 := Path.segment q0 q1; let I01 : Set ℝ := unitInterval
   let φ : (γ : C(I01, ℂ)).Homotopy δ := .affine ..
   have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := fun a ha b hb => by
-    simpa [φ, γ, δ, Path.map', Path.segment_apply] using
-      (homotopy_mem_wedgeSet (x := (a : ℝ)) (y := (b : ℝ)) ha hb)
+    exact homotopy_mem_wedgeSet (x := (a : ℝ)) (y := (b : ℝ)) ha hb
   have hcontdiff : ContDiffOn ℝ 2
       (fun xy : ℝ × ℝ ↦ Set.IccExtend zero_le_one (φ.extend xy.1) xy.2)
       (Set.Icc (0 : ℝ × ℝ) 1) := by
@@ -498,7 +503,12 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
         mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
         (by simp [AffineMap.lineMap_apply_one] : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ))]
       exact curveIntegral_cast ω _ _ _]
-  simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
+  rw [show ((AffineMap.lineMap p0 p1) (1 : ℝ)) = ((Path.segment p0 p1) 1 : ℂ) from rfl,
+    show ((AffineMap.lineMap q0 q1) (1 : ℝ)) = ((Path.segment q0 q1) 1 : ℂ) from rfl,
+    show ((AffineMap.lineMap p0 p1) (0 : ℝ)) = ((Path.segment p0 p1) 0 : ℂ) from rfl,
+    show ((AffineMap.lineMap q0 q1) (0 : ℝ)) = ((Path.segment q0 q1) 0 : ℂ) from rfl]
+  rw [add_comm] at h
+  exact h
 
 /-- Contour deformation `h1`: from mapped segment `(-1 → -1 + I)` to vertical segment
 `(1 → 1 + I)` inside `wedgeSet`. -/

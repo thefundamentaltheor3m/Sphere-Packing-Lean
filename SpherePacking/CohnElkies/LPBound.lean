@@ -486,7 +486,7 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     change (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d = ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
     rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
   refine (show Tendsto (fun L : ℝ => ENNReal.ofReal (f L)) atTop (𝓝 (0 : ℝ≥0∞)) by
-    exact (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
+    simpa [Function.comp_def] using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf).congr' ?_
   filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
   have hL2' : 0 ≤ L - 2 := by linarith
   rw [volume_cubeShell_eq_pow L, show volume (coordCube d L) = (ENNReal.ofReal L) ^ d by
@@ -1393,7 +1393,7 @@ private lemma density_le_of_hCalc_of_ne_zero
     div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
     ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
     ← ENNReal.div_eq_inv_mul, ← ENNReal.mul_le_mul_iff_right
-      (by simpa [ENat.toENNReal_coe] using (Fintype.card_ne_zero : P.numReps ≠ 0) :
+      (by exact_mod_cast (Fintype.card_ne_zero : P.numReps ≠ 0) :
         ENat.toENNReal (P.numReps : ENat) ≠ 0)
       (Ne.symm (ne_of_beq_false rfl) : ENat.toENNReal (P.numReps : ENat) ≠ ⊤),
     ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc,

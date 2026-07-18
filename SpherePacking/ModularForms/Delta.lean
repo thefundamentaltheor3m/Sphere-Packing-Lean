@@ -134,7 +134,7 @@ public lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hmul : Multipliable g := by
     have hz : (z : ℂ) = Complex.I * t := rfl
-    simpa [g, hz] using
+    simpa [g, hz, Function.comp_def, powMonoidHom_apply] using
       ((by simpa using MultipliableEtaProductExpansion z : Multipliable _).map
         (g := powMonoidHom 24) (hg := by exact continuous_pow 24))
   have htprod_im : (∏' n : ℕ, g n).im = 0 :=
