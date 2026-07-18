@@ -1,8 +1,14 @@
 module
-
-public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
-public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.JacobiTheta.Basic
+public import SpherePacking.ModularForms.JacobiTheta.Positivity
+public import SpherePacking.ModularForms.JacobiTheta.SlashActions
+public import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
+public import SpherePacking.ModularForms.Derivative.Basic
+public import SpherePacking.ModularForms.Derivative.SerreD
+public import SpherePacking.ModularForms.Derivative.SlashFormula
+public import SpherePacking.ModularForms.Derivative.Equivariance
+public import SpherePacking.ModularForms.Derivative.AntiSerreDerPos
+public import SpherePacking.ModularForms.Derivative.Ramanujan
 public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.Tactic.FunPropExt
@@ -28,7 +34,7 @@ This file proves the Serre derivative identities for Jacobi theta functions
 ### Error Terms (Phases 1-5)
 * Error terms `f₂`, `f₃`, `f₄` definitions
 * MDifferentiable proofs for error terms
-* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in `JacobiIdentity.lean`)
+* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in JacobiTheta.lean)
 * S/T transformation rules: `f₂_S_action`, `f₂_T_action`, `f₄_S_action`, `f₄_T_action`
 
 ### Level-1 Invariants (Phase 6)
@@ -133,15 +139,11 @@ lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
   have h_serre : serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z := by
     have h := congrFun (serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable) z
     simp only [Pi.add_apply] at h
-    rw [jacobi_identity] at h
-    exact h.symm
-  calc serre_D 2 H₂ z - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z)) +
-       (serre_D 2 H₄ z + 1/6 * (H₄ z * (2 * H₂ z + H₄ z)))
-      = (serre_D 2 H₂ z + serre_D 2 H₄ z) +
-        (1/6 * (H₄ z * (2 * H₂ z + H₄ z)) - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z))) := by ring
-    _ = serre_D 2 H₃ z +
-        (1/6 * (H₄ z * (2 * H₂ z + H₄ z)) - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z))) := by rw [h_serre]
-    _ = serre_D 2 H₃ z - 1/6 * (H₂ z ^ 2 - H₄ z ^ 2) := by ring
+    convert h.symm using 2; exact jacobi_identity.symm
+  simp only [one_div, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply, smul_eq_mul,
+    Pi.pow_apply]
+  rw [h_serre.symm]
+  ring_nf
 
 /-!
 ## Phase 5: S/T Transformation Rules for f₂, f₄
@@ -275,33 +277,9 @@ g|S = (2(-H₄) + (-H₂))(-f₄) + ((-H₄) + 2(-H₂))(-f₂)
     = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂
     = g -/
 lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
-  -- Linear combination transforms: (2•H₂ + H₄)|S = -(2•H₄ + H₂), (H₂ + 2•H₄)|S = -(H₄ + 2•H₂)
-  have h_2H₂_H₄ : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
-    simp only [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
-  have h_H₂_2H₄ : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
-    simp only [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
-    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
-  -- Product transforms using mul_slash_SL2
-  have h_term1 :
-      ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] S) =
-        ((2 : ℂ) • H₄ + H₂) * f₄ := by
-    have hmul := mul_slash_SL2 2 4 S ((2 : ℂ) • H₂ + H₄) f₂
-    simp only [h_2H₂_H₄, f₂_S_action] at hmul
-    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
-    refine hmul.trans ?_
-    ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]; ring
-  have h_term2 :
-      (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) =
-        (H₄ + (2 : ℂ) • H₂) * f₂ := by
-    have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
-    simp only [h_H₂_2H₄, f₄_S_action] at hmul
-    rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
-    refine hmul.trans ?_
-    ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]; ring
-  -- g|S = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂ = g
-  simp only [theta_g, add_slash, h_term1, h_term2]
-  ext z; simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply]; ring
+  ext z
+  simp [theta_g, add_slash, mul_slash_SL2_2_4, H₂_S_action, H₄_S_action, f₂_S_action, f₄_S_action,
+    smul_eq_mul]; ring
 
 /-- g is invariant under T.
 
@@ -329,22 +307,6 @@ Using mul_slash_SL2: (f₂²)|[8]S = (f₂|[4]S)² = (-f₄)² = f₄²
                      (f₄²)|[8]S = (f₄|[4]S)² = (-f₂)² = f₂²
 So h|[8]S = f₄² + f₂f₄ + f₂² = f₂² + f₂f₄ + f₄² = h -/
 lemma theta_h_S_action : (theta_h ∣[(8 : ℤ)] S) = theta_h := by
-  -- Under S: f₂ ↦ -f₄, f₄ ↦ -f₂
-  -- (f₂²)|S = f₄², (f₄²)|S = f₂², (f₂f₄)|S = f₂f₄
-  have h_f₂_sq : ((f₂ ^ 2) ∣[(8 : ℤ)] S) = f₄ ^ 2 := by
-    have hmul := mul_slash_SL2 4 4 S f₂ f₂
-    simp only [f₂_S_action] at hmul
-    convert hmul using 1 <;> ext <;> simp [sq]
-  have h_f₄_sq : ((f₄ ^ 2) ∣[(8 : ℤ)] S) = f₂ ^ 2 := by
-    have hmul := mul_slash_SL2 4 4 S f₄ f₄
-    simp only [f₄_S_action] at hmul
-    convert hmul using 1 <;> ext <;> simp [sq]
-  have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] S) = f₂ * f₄ := by
-    have hmul := mul_slash_SL2 4 4 S f₂ f₄
-    simp only [f₂_S_action, f₄_S_action] at hmul
-    simpa [show (4 : ℤ) + 4 = 8 by norm_num, mul_comm] using hmul
-  -- h|S = f₄² + f₂f₄ + f₂² = h
-  simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
   simp [theta_h, pow_two, add_slash, mul_slash_SL2_4_4, f₂_S_action, f₄_S_action]; ring
 
@@ -355,25 +317,6 @@ h|T = (-f₂)² + (-f₂)(f₂ + f₄) + (f₂ + f₄)²
     = f₂² - f₂² - f₂f₄ + f₂² + 2f₂f₄ + f₄²
     = f₂² + f₂f₄ + f₄² = h -/
 lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
-  -- Under T: f₂ ↦ -f₂, f₄ ↦ f₃ = f₂ + f₄
-  -- (f₂²)|T = f₂², (f₄²)|T = (f₂+f₄)², (f₂f₄)|T = (-f₂)(f₂+f₄)
-  have h_f₂_sq : ((f₂ ^ 2) ∣[(8 : ℤ)] T) = f₂ ^ 2 := by
-    have hmul := mul_slash_SL2 4 4 T f₂ f₂
-    simp only [f₂_T_action] at hmul
-    convert hmul using 1 <;> ext <;> simp [sq]
-  have h_f₄_sq : ((f₄ ^ 2) ∣[(8 : ℤ)] T) = (f₂ + f₄) ^ 2 := by
-    have hmul := mul_slash_SL2 4 4 T f₄ f₄
-    simp only [f₄_T_action] at hmul
-    convert hmul using 1
-    · ext; simp [sq]
-    · ext z; simp only [Pi.pow_apply, Pi.mul_apply, sq]
-      rw [(congrFun f₂_add_f₄_eq_f₃ z).symm, Pi.add_apply]
-  have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] T) = (-f₂) * (f₂ + f₄) := by
-    have hmul := mul_slash_SL2 4 4 T f₂ f₄
-    simp only [f₂_T_action, f₄_T_action] at hmul
-    simpa [show (4 : ℤ) + 4 = 8 by norm_num, ← f₂_add_f₄_eq_f₃] using hmul
-  -- h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
-  simp only [theta_h, add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
   ext z
   have hf3 : f₃ z = f₂ z + f₄ z := (congrFun f₂_add_f₄_eq_f₃ z).symm
   simp [theta_h, pow_two, add_slash, mul_slash_SL2_4_4, f₂_T_action, f₄_T_action, hf3]; ring
@@ -381,11 +324,10 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
 /-!
 ## Phase 7: Vanishing of the error terms
 
-We need to show g and h vanish at infinity.
-The tendsto lemmas for H₂, H₃, H₄ are already in `Basic.lean`:
-- H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0)
-- H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1)
-- H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1)
+We show that the level-1 invariants `theta_g` (weight 6) and `theta_h` (weight 8) are cusp forms
+by checking that they tend to `0` at `i∞`. Since there are no nonzero level-1 cusp forms of weight
+`< 12`, we conclude `theta_g = theta_h = 0`. We then deduce `f₂ = f₃ = f₄ = 0`, i.e. the Serre
+derivative identities of Blueprint Proposition `prop:theta-der`.
 -/
 
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
@@ -414,10 +356,7 @@ lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
     tendsto_cont
-  change Tendsto
-    (fun z => serre_D 2 H₂ z - (1 / 6 : ℂ) * (H₂ z * (H₂ z + 2 * H₄ z)))
-    atImInfty (𝓝 0)
-  simpa using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
+  simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
 Proof: f₄ = serre_D 2 H₄ + (1/6)H₄(2H₂ + H₄)
@@ -426,18 +365,15 @@ H₄(2H₂ + H₄) → 1*(0 + 1) = 1
 So f₄ → -1/6 + (1/6)*1 = 0. -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
   have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
-    simpa [show -(2 : ℂ) / 12 = -(1 / 6 : ℂ) by norm_num] using
-      serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
-        H₄_tendsto_atImInfty
+    convert serre_D_tendsto_of_tendsto 2 H₄ 1 H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
+      H₄_tendsto_atImInfty using 2
+    norm_num
   have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
       atImInfty (𝓝 (1/6 : ℂ)) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
     tendsto_cont
-  change Tendsto
-    (fun z => serre_D 2 H₄ z + (1 / 6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
-    atImInfty (𝓝 0)
-  simpa using h_serre_H₄.add h_scaled
+  simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- g = 0 by dimension argument: weight-6 cusp forms vanish.
 `theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄`, and since `2H₂ + H₄ → 1`, `H₂ + 2H₄ → 2`,
@@ -492,146 +428,13 @@ lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 :=
     simpa [hE4] using this
   simp_all
 
-/-- H₂² + H₂H₄ + H₄² -/
-noncomputable def H_sum_sq : ℍ → ℂ := fun z => H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2
-
-/-- H_sum_sq is MDifferentiable -/
-lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
-  unfold H_sum_sq
-  exact ((H₂_SIF_MDifferentiable.pow 2).add (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add
-    (H₄_SIF_MDifferentiable.pow 2)
-
-/-- H_sum_sq → 1 at infinity -/
-lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have := H₂_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  unfold H_sum_sq
-  tendsto_cont
-
-/-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
-lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=
-  ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
-
-/-- 3 * H_sum_sq ≠ 0 -/
-lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
-  fun h => H_sum_sq_ne_zero
-    (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
-
-/-- 3 * H_sum_sq is MDifferentiable -/
-lemma three_H_sum_sq_MDifferentiable : MDiff (fun z => 3 * H_sum_sq z) :=
-  mdifferentiable_const.mul H_sum_sq_MDifferentiable
-
-/-!
-## E₄ = H_sum_sq (dimension argument)
-
-E₄ and H_sum_sq are both weight-4 level-1 modular forms tending to 1 at ∞.
-Their difference is a weight-4 cusp form, hence zero by dimension vanishing.
--/
-
-/-- S-action on H_sum_sq: invariant since H₂|S = -H₄ and H₄|S = -H₂ -/
-private lemma H_sum_sq_S_action : (H_sum_sq ∣[(4 : ℤ)] S) = H_sum_sq := by
-  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
-    ext z; simp [H_sum_sq, sq]
-  simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
-    SlashAction.add_slash, mul_slash_SL2 2 2 S _ _, H₂_S_action, H₄_S_action]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
-
-/-- T-action on H_sum_sq: invariant since H₂|T = -H₂ and H₄|T = H₃ = H₂+H₄ -/
-private lemma H_sum_sq_T_action : (H_sum_sq ∣[(4 : ℤ)] T) = H_sum_sq := by
-  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
-    ext z; simp [H_sum_sq, sq]
-  simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
-    SlashAction.add_slash, mul_slash_SL2 2 2 T _ _, H₂_T_action, H₄_T_action, ← jacobi_identity]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
-
-private lemma H_sum_sq_SL2Z_invariant :
-    ∀ γ : SL(2, ℤ), H_sum_sq ∣[(4 : ℤ)] γ = H_sum_sq :=
-  slashaction_generators_SL2Z H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
-
-private lemma isBoundedAtImInfty_H_sum_sq : IsBoundedAtImInfty H_sum_sq := by
-  have : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by ext z; simp [H_sum_sq, sq]
-  rw [this]
-  exact ((isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₂).add
-    (isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₄)).add
-    (isBoundedAtImInfty_H₄.mul isBoundedAtImInfty_H₄)
-
-private noncomputable def H_sum_sq_SIF : SlashInvariantForm (Γ 1) 4 where
-  toFun := H_sum_sq
-  slash_action_eq' := slashaction_generators_GL2R H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
-
-private noncomputable def H_sum_sq_MF : ModularForm (Γ 1) 4 := {
-  H_sum_sq_SIF with
-  holo' := H_sum_sq_MDifferentiable
-  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA⟩ => by
-    rw [← hA]; simpa [SL_slash] using H_sum_sq_SL2Z_invariant A' ▸ isBoundedAtImInfty_H_sum_sq
-}
-
-/-- E₄.toFun = H₂² + H₂H₄ + H₄². Both are weight-4 level-1 modular forms tending to 1
-at ∞, so their difference is a weight-4 cusp form, hence zero. -/
-theorem E₄_eq_H_sum_sq : _root_.E₄.toFun = H_sum_sq := by
-  have h_toFun : (_root_.E₄ - H_sum_sq_MF).toFun = _root_.E₄.toFun - H_sum_sq := by
-    ext z; simp [H_sum_sq_MF, H_sum_sq_SIF]; rfl
-  have h_diff_tendsto : Tendsto (_root_.E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
-    rw [h_toFun]
-    change Tendsto (fun z => _root_.E₄.toFun z - H_sum_sq z) atImInfty (nhds 0)
-    simpa using E₄_tendsto_one_atImInfty.sub H_sum_sq_tendsto
-  have h_cusp : IsCuspForm (Γ 1) 4 (_root_.E₄ - H_sum_sq_MF) := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, qExpansion_coeff]; simp
-    exact IsZeroAtImInfty.cuspFunction_apply_zero h_diff_tendsto (by norm_num : (0 : ℝ) < 1)
-  have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (_root_.E₄ - H_sum_sq_MF) h_cusp
-  funext z
-  have hz : _root_.E₄.toFun z = (H_sum_sq_MF : ℍ → ℂ) z := by
-    simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
-  change _root_.E₄.toFun z = H_sum_sq z
-  exact hz
-
-/-!
-## Phase 9: Deduce f₂ = f₃ = f₄ = 0
--/
-
-/-- Key algebraic identity for proving f₂ = f₄ = 0.
-Given Af₂ + Bf₄ = 0, we have f₄² * (A² - AB + B²) = A² * (f₂² + f₂f₄ + f₄²). -/
-lemma f₄_sq_mul_eq (z : ℍ) (hg_z : theta_g z = 0) :
-    f₄ z ^ 2 * (3 * H_sum_sq z) = (2 * H₂ z + H₄ z) ^ 2 * theta_h z := by
-  unfold H_sum_sq
-  -- Define A = 2H₂ + H₄, B = H₂ + 2H₄
-  set A := 2 * H₂ z + H₄ z with hA
-  set B := H₂ z + 2 * H₄ z with hB
-  -- From theta_g = 0: A * f₂ + B * f₄ = 0
-  have h_Af₂_eq : A * f₂ z + B * f₄ z = 0 := by
-    simp only [theta_g, hA, hB, smul_eq_mul, Pi.smul_apply, Pi.mul_apply, Pi.add_apply] at hg_z ⊢
-    linear_combination hg_z
-  -- Af₂ = -Bf₄
-  have hAf₂ : A * f₂ z = -(B * f₄ z) := by linear_combination h_Af₂_eq
-  -- A²f₂² = B²f₄²
-  have h1 : A ^ 2 * f₂ z ^ 2 = B ^ 2 * f₄ z ^ 2 := by
-    have h_sq : (A * f₂ z) ^ 2 = (B * f₄ z) ^ 2 := by rw [hAf₂]; ring
-    calc A ^ 2 * f₂ z ^ 2 = (A * f₂ z) ^ 2 := by ring
-      _ = (B * f₄ z) ^ 2 := h_sq
-      _ = B ^ 2 * f₄ z ^ 2 := by ring
-  -- A²f₂f₄ = -ABf₄²
-  have h2 : A ^ 2 * (f₂ z * f₄ z) = -(A * B * f₄ z ^ 2) := by
-    calc A ^ 2 * (f₂ z * f₄ z) = (A * f₂ z) * (A * f₄ z) := by ring
-      _ = (-(B * f₄ z)) * (A * f₄ z) := by rw [hAf₂]
-      _ = -(A * B * f₄ z ^ 2) := by ring
-  -- A² - AB + B² = 3(H₂² + H₂H₄ + H₄²)
-  have h_sum : A ^ 2 - A * B + B ^ 2 = 3 * (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2) := by
-    simp only [hA, hB]; ring
-  -- Now compute A²θₕ
-  unfold theta_h
-  calc f₄ z ^ 2 * (3 * (H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2))
-      = f₄ z ^ 2 * (A ^ 2 - A * B + B ^ 2) := by rw [h_sum]
-    _ = B ^ 2 * f₄ z ^ 2 + (-(A * B * f₄ z ^ 2)) + A ^ 2 * f₄ z ^ 2 := by ring
-    _ = A ^ 2 * f₂ z ^ 2 + A ^ 2 * (f₂ z * f₄ z) + A ^ 2 * f₄ z ^ 2 := by rw [h1, h2]
-    _ = A ^ 2 * (f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) := by ring
-
-/-- From g = 0 and h = 0, deduce f₂ = 0.
-
-Proof: From g = 0 we get a relation between f₂ and f₄. Combined with h = 0,
-we show f₄² · (3 · H_sum_sq) = 0. Since H_sum_sq → 1 ≠ 0, we get f₄ = 0,
-then f₂ = 0 follows from h = f₂² = 0. -/
-lemma f₂_eq_zero : f₂ = 0 := by
-  have hmul0 := E₄_mul_f₂_sq_eq_zero
+/-- Factoring a product of analytic functions on `ℍ`: if `f * g = 0` and `g` tends to a nonzero
+limit `c` at `i∞`, then `f = 0`. Proved via `AnalyticOnNhd.eq_zero_or_eq_zero_of_mul_eq_zero`
+on the connected upper half-plane. -/
+private lemma eq_zero_of_mul_eq_zero_of_tendsto_ne_zero {f g : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hg : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) g)
+    (hmul : (fun z : ℍ => f z * g z) = 0) {c : ℂ} (hc : c ≠ 0)
+    (hglim : Tendsto g atImInfty (𝓝 c)) : f = 0 := by
   let U : Set ℂ := {z : ℂ | 0 < z.im}
   have hU_open : IsOpen U := isOpen_upperHalfPlaneSet
   have hU_pre : IsPreconnected U :=

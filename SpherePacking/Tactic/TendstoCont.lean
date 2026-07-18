@@ -15,23 +15,38 @@ public meta import SpherePacking.Tactic.TendstoContAttr
 /-!
 # `tendsto_cont` tactic
 
-Proves `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)` from atomic
-`Tendsto fᵢ l (nhds aᵢ)` hypotheses by abstracting the body and discharging
-continuity via `fun_prop`. Strategy: parse goal → collect atoms → bundle via
-`prodMk_nhds` → abstract body to a function of the product → `fun_prop` for
-continuity → compose.
+A tactic for proving goals of the form
+  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)`
+where atomic limits `Tendsto fᵢ l (nhds aᵢ)` are known from context
+and the expression is continuous in the atoms (proved via `fun_prop`).
+
+This handles any expression where `fun_prop` can prove continuity of the
+abstracted body — including polynomials, trigonometric functions,
+exponentials, and other compositions.
+
+## Strategy
+
+1. Parse the goal to extract the body, filter, and target limit.
+2. Scan context for `Tendsto` hypotheses matching the goal filter.
+3. Identify which atoms appear in the goal body.
+4. Bundle atoms into a right-associated product via `prodMk_nhds`.
+5. Abstract the body: replace `fᵢ(z)` with projections from the product.
+6. Prove continuity of the abstracted function via `fun_prop`.
+7. Combine via `tendsto_continuousAt_comp` and close the goal.
 -/
 
 @[expose] public section
 
 open Lean Meta Elab Tactic
 
-/-- Compose a continuous function with a convergent one (explicit lambda for kernel typing). -/
+/-- Compose a continuous function with a convergent one. Stated with an
+    explicit lambda (no `Function.comp`) so the kernel sees the right type. -/
 theorem tendsto_continuousAt_comp
     {α β γ : Type*} [TopologicalSpace β] [TopologicalSpace γ]
     {l : Filter α} {f : α → β} {h : β → γ} {b : β}
     (hh : ContinuousAt h b) (hf : Filter.Tendsto f l (nhds b)) :
-    Filter.Tendsto (fun x => h (f x)) l (nhds (h b)) := hh.tendsto.comp hf
+    Filter.Tendsto (fun x => h (f x)) l (nhds (h b)) :=
+  hh.tendsto.comp hf
 
 namespace TendstoCont
 
@@ -42,6 +57,10 @@ meta structure Atom where
   hyp : Expr
   codTy : Expr
   deriving Inhabited
+
+-- ══════════════════════════════════════════════════════════════
+-- Goal and hypothesis parsing
+-- ══════════════════════════════════════════════════════════════
 
 /-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
 private meta def matchTendsto? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
@@ -56,22 +75,46 @@ private meta def matchNhds? (e : Expr) : MetaM (Option Expr) :=
   | _ => none
 
 /-- Parse the goal `Tendsto goalFn l (nhds c)`, returning `(goalFn, l, domTy)`. -/
-private meta def parseGoal (goal : Expr) : MetaM (Expr × Expr × Expr) := do
-  let some (domTy, _, goalFn, l, tgt) ← matchTendsto? goal
-    | throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
-  let some _ ← matchNhds? tgt | throwError "tendsto_cont: target filter is not `nhds _`"
-  return (goalFn, l, domTy)
+private meta def parseGoal (goal : Expr) :
+    MetaM (Expr × Expr × Expr) := do
+  match ← matchTendsto? goal with
+  | some (domTy, _, goalFn, l, tgt) =>
+    match ← matchNhds? tgt with
+    | some _ => return (goalFn, l, domTy)
+    | none =>
+      throwError "tendsto_cont: target filter is not `nhds _`"
+  | none =>
+    throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
 
-/-- Check if `e` equals `cand.fn bvar` for some candidate (`isDefEq` handles coercions). -/
+/-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
+private meta def matchTendstoNhds? (e : Expr) :
+    MetaM (Option (Expr × Expr × Expr × Expr)) := do
+  match ← matchTendsto? e with
+  | some (_α, codTy, f, l, tgt) =>
+    match ← matchNhds? tgt with
+    | some a => return some (codTy, f, l, a)
+    | none => return none
+  | none => return none
+
+-- ══════════════════════════════════════════════════════════════
+-- Atom discovery
+-- ══════════════════════════════════════════════════════════════
+
+/-- Check if `e` equals `cand.fn bvar` for some candidate atom,
+    using `isDefEq` to handle coercions and implicit arguments. -/
 private meta def matchAtom? (e : Expr) (bvar : FVarId)
     (candidates : Array Atom) : MetaM (Option Atom) := do
   unless e.containsFVar bvar do return none
+  let bvarExpr := Expr.fvar bvar
   for cand in candidates do
-    if ← withNewMCtxDepth (isDefEq e (mkApp cand.fn (.fvar bvar))) then return some cand
+    let candApplied := mkApp cand.fn bvarExpr
+    if ← withNewMCtxDepth (isDefEq e candApplied) then
+      return some cand
   return none
 
 /-- Children for left-to-right DFS. -/
-private meta def exprChildren : Expr → Array Expr
+private meta def exprChildren (e : Expr) : Array Expr :=
+  match e with
   | .app f a => #[f, a]
   | .lam _ t b _ => #[t, b]
   | .forallE _ t b _ => #[t, b]
@@ -81,15 +124,22 @@ private meta def exprChildren : Expr → Array Expr
   | _ => #[]
 
 /-- DFS to find atoms. Uses IO.Ref for accumulation. -/
-private meta partial def findAtomsAux (e : Expr) (bvar : FVarId) (candidates : Array Atom)
-    (atomsRef : IO.Ref (Array Atom)) (fnsRef : IO.Ref (Array Expr)) : MetaM Unit := do
+private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
+    (candidates : Array Atom)
+    (atomsRef : IO.Ref (Array Atom))
+    (fnsRef : IO.Ref (Array Expr)) : MetaM Unit := do
   if !e.containsFVar bvar then return
-  if let some cand ← matchAtom? e bvar candidates then
-    unless ← (← fnsRef.get).anyM (withNewMCtxDepth <| isDefEq · cand.fn) do
+  match ← matchAtom? e bvar candidates with
+  | some cand =>
+    let usedFns ← fnsRef.get
+    let alreadyRecorded ← usedFns.anyM fun usedFn =>
+      withNewMCtxDepth (isDefEq usedFn cand.fn)
+    unless alreadyRecorded do
       atomsRef.modify (·.push cand)
       fnsRef.modify (·.push cand.fn)
-  else
-    for child in exprChildren e do findAtomsAux child bvar candidates atomsRef fnsRef
+  | none =>
+    for child in exprChildren e do
+      findAtomsAux child bvar candidates atomsRef fnsRef
 
 /-- Bucket 1: Collect candidates from inline arguments. -/
 private meta def collectInlineCands (goalFilter : Expr)
@@ -212,89 +262,151 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
   checkAmbiguity atoms candidates
   return (candidates, atoms)
 
-/-- Fold atoms right-associatively using `combine` on the given per-atom field. -/
-private meta def foldRightAssoc (atoms : Array Atom) (field : Atom → Expr)
-    (combine : Expr → Expr → MetaM Expr) : MetaM Expr := do
-  let mut acc := field atoms.back!
-  for i in List.range (atoms.size - 1) |>.reverse do acc ← combine (field atoms[i]!) acc
-  return acc
+-- ══════════════════════════════════════════════════════════════
+-- Product type / limit / proof builders
+-- ══════════════════════════════════════════════════════════════
 
 /-- Right-associated product type. -/
-private meta def buildProdType (atoms : Array Atom) : MetaM Expr :=
-  foldRightAssoc atoms (·.codTy) fun a b => mkAppM ``Prod #[a, b]
+private meta def buildProdType (atoms : Array Atom) : MetaM Expr := do
+  if atoms.size = 1 then return atoms[0]!.codTy
+  let mut ty := atoms.back!.codTy
+  for i in List.range (atoms.size - 1) |>.reverse do
+    ty ← mkAppM ``Prod #[atoms[i]!.codTy, ty]
+  return ty
 
 /-- Right-associated limit point. -/
-private meta def buildLimitPoint (atoms : Array Atom) : MetaM Expr :=
-  foldRightAssoc atoms (·.limit) fun a b => mkAppM ``Prod.mk #[a, b]
+private meta def buildLimitPoint (atoms : Array Atom) :
+    MetaM Expr := do
+  if atoms.size = 1 then return atoms[0]!.limit
+  let mut pt := atoms.back!.limit
+  for i in List.range (atoms.size - 1) |>.reverse do
+    pt ← mkAppM ``Prod.mk #[atoms[i]!.limit, pt]
+  return pt
 
 /-- Chain of `prodMk_nhds` applications. -/
-private meta def buildProdMkNhds (atoms : Array Atom) : MetaM Expr :=
-  foldRightAssoc atoms (·.hyp) fun a b => mkAppM ``Filter.Tendsto.prodMk_nhds #[a, b]
+private meta def buildProdMkNhds (atoms : Array Atom) :
+    MetaM Expr := do
+  if atoms.size = 1 then return atoms[0]!.hyp
+  let mut proof := atoms.back!.hyp
+  for i in List.range (atoms.size - 1) |>.reverse do
+    proof ← mkAppM ``Filter.Tendsto.prodMk_nhds #[atoms[i]!.hyp, proof]
+  return proof
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
-private meta def buildProjection (p : Expr) (n i : Nat) : MetaM Expr := do
+private meta def buildProjection (p : Expr) (n i : Nat) :
+    MetaM Expr := do
+  if n = 1 then return p
   let mut e := p
-  for _ in [:i] do e ← mkAppM ``Prod.snd #[e]
-  if i < n - 1 then mkAppM ``Prod.fst #[e] else return e
+  for _ in [:i] do
+    e ← mkAppM ``Prod.snd #[e]
+  if i < n - 1 then
+    e ← mkAppM ``Prod.fst #[e]
+  return e
+
+
+-- ══════════════════════════════════════════════════════════════
+-- Body abstraction
+-- ══════════════════════════════════════════════════════════════
 
 /-- Replace `fᵢ(bvar)` with `projᵢ(p)` in the body. -/
 private meta partial def abstractBody (body : Expr) (bvar : FVarId)
     (pVar : Expr) (atoms : Array Atom) : MetaM Expr := do
   if !body.containsFVar bvar then return body
+  let bvarExpr := Expr.fvar bvar
   for i in [:atoms.size] do
-    if ← withNewMCtxDepth (isDefEq body (mkApp atoms[i]!.fn (.fvar bvar))) then
+    let candApplied := mkApp atoms[i]!.fn bvarExpr
+    if ← withNewMCtxDepth (isDefEq body candApplied) then
       return ← buildProjection pVar atoms.size i
-  let go := (abstractBody · bvar pVar atoms)
   match body with
-  | .app f a => return .app (← go f) (← go a)
-  | .lam n t b bi => return .lam n (← go t) (← go b) bi
-  | .letE n t v b nd => return .letE n (← go t) (← go v) (← go b) nd
-  | .mdata m e => return .mdata m (← go e)
-  | .proj s i e => return .proj s i (← go e)
+  | .app f a =>
+    return .app (← abstractBody f bvar pVar atoms)
+                (← abstractBody a bvar pVar atoms)
+  | .lam n t b bi =>
+    return .lam n (← abstractBody t bvar pVar atoms)
+                  (← abstractBody b bvar pVar atoms) bi
+  | .letE n t v b nd =>
+    return .letE n (← abstractBody t bvar pVar atoms)
+                   (← abstractBody v bvar pVar atoms)
+                   (← abstractBody b bvar pVar atoms) nd
+  | .mdata m e =>
+    return .mdata m (← abstractBody e bvar pVar atoms)
+  | .proj s i e =>
+    return .proj s i (← abstractBody e bvar pVar atoms)
   | _ => return body
 
-/-- Close a goal using a proof whose limit may differ from the stated one (e.g. `1 + 2` vs
-    `3`); `convert using 1` then `congr 1; norm_num <;> ring`. -/
-private meta def reconcileLimits (goal : MVarId) (proof : Expr) : TacticM Unit := do
+-- ══════════════════════════════════════════════════════════════
+-- Limit reconciliation
+-- ══════════════════════════════════════════════════════════════
+
+/-- Close a goal using a proof whose limit may differ from the stated one
+    (e.g. `1 + 2` vs `3`, or `b + a` vs `a + b`).
+    Uses `convert using 1` then `congr 1; norm_num <;> ring`. -/
+private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
+    TacticM Unit := do
+  let proofTy ← inferType proof
   let keyName := `_tendsto_cont_key
-  let goal1 ← goal.define keyName (← inferType proof) proof
+  let goal1 ← goal.define keyName proofTy proof
   let (_, goal2) ← goal1.intro keyName
+  let keyId : Ident := mkIdent keyName
   let remaining ← Elab.Tactic.run goal2
-    (Elab.Tactic.evalTactic (← `(tactic| convert ($(mkIdent keyName)) using 1)))
+    (Elab.Tactic.evalTactic
+      (← `(tactic| convert ($keyId) using 1)))
   for g in remaining do
     try
-      let r ← Elab.Tactic.run g (Elab.Tactic.evalTactic
-        (← `(tactic| first | rfl | (congr 1; norm_num <;> ring))))
+      let r ← Elab.Tactic.run g
+        (Elab.Tactic.evalTactic
+          (← `(tactic| first
+            | rfl
+            | (congr 1; norm_num <;> ring))))
       unless r.isEmpty do
-        throwError m!"tendsto_cont: subgoal not closed by `rfl`, `norm_num`, or \
-          `ring`:\n{← g.getType}"
+        let subgoalTy ← g.getType
+        throwError m!"tendsto_cont: subgoal not closed \
+          by `rfl`, `norm_num`, or `ring`:\n{subgoalTy}"
     catch e =>
-      throwError m!"tendsto_cont: failed to close subgoal after convert:\n{← g.getType}\n\
+      let subgoalTy ← g.getType
+      throwError m!"tendsto_cont: failed to close \
+        subgoal after convert:\n{subgoalTy}\n\
         {← e.toMessageData.format}"
+
+-- ══════════════════════════════════════════════════════════════
+-- Main tactic
+-- ══════════════════════════════════════════════════════════════
 
 /-- Build the continuity-based proof for a non-constant body with atoms. -/
 private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     (atoms : Array Atom) : TacticM Expr := do
-  withLocalDecl `p .default (← buildProdType atoms) fun pVar => do
-    let contFn ← mkLambdaFVars #[pVar] (← abstractBody body bvar pVar atoms)
-    let contGoalTy ← mkAppM ``ContinuousAt #[contFn, ← buildLimitPoint atoms]
+  let prodTy ← buildProdType atoms
+  let limitPt ← buildLimitPoint atoms
+  let prodMkProof ← buildProdMkNhds atoms
+  withLocalDecl `p .default prodTy fun pVar => do
+    let abstracted ← abstractBody body bvar pVar atoms
+    let contFn ← mkLambdaFVars #[pVar] abstracted
+    let contGoalTy ← mkAppM ``ContinuousAt #[contFn, limitPt]
     let contMVar ← mkFreshExprMVar contGoalTy
     try
-      let _ ← Elab.Tactic.run contMVar.mvarId! (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
+      let _ ← Elab.Tactic.run contMVar.mvarId!
+        (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
     catch e =>
-      throwError m!"tendsto_cont: `fun_prop` failed:\n{← e.toMessageData.format}\n\
+      throwError m!"tendsto_cont: `fun_prop` failed:\
+        \n{← e.toMessageData.format}\n\
         goal: {contGoalTy}"
-    mkAppM ``tendsto_continuousAt_comp #[contMVar, ← buildProdMkNhds atoms]
+    mkAppM ``tendsto_continuousAt_comp #[contMVar, prodMkProof]
 
 /-- Core implementation of the `tendsto_cont` tactic. -/
 private meta def tendstoCont (extraHyps : Array Expr := #[]) :
     TacticM Unit := withMainContext do
   let goal ← getMainGoal
-  let (goalFn, goalFilter, domTy) ← parseGoal (← goal.getType >>= instantiateMVars)
+  let goalTy ← goal.getType >>= instantiateMVars
+
+  let (goalFn, goalFilter, domTy) ← parseGoal goalTy
+
   let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
-    | _ => throwError "tendsto_cont: goal function is not a lambda. Hint: try \
-      `show Tendsto (fun z => ...) _ (nhds _)` or `unfold ...`"
+    | _ => throwError
+      "tendsto_cont: goal function is not a lambda.\n\
+       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
+       or `unfold ...`"
+
   let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
     let bvar := zVar.fvarId!
@@ -303,18 +415,28 @@ private meta def tendstoCont (extraHyps : Array Expr := #[]) :
     if atoms.size == 0 then
       if body.containsFVar bvar then
         if candidates.size == 0 then
-          throwError m!"tendsto_cont: no `Tendsto` hypotheses found for filter \
-            `{← ppExpr goalFilter}`"
-        throwError m!"tendsto_cont: body references the bound variable but no \
-          candidate matched.\nAvailable candidates: \
-          {← candidates.mapM fun c => ppExpr c.fn}"
+          let filterFmt ← ppExpr goalFilter
+          throwError m!"tendsto_cont: no `Tendsto` hypotheses \
+            found for filter `{filterFmt}`"
+        else
+          let candFns ← candidates.mapM fun c => ppExpr c.fn
+          throwError m!"tendsto_cont: body references the \
+            bound variable but no candidate matched.\n\
+            Available candidates: {candFns}"
       try
         let _ ← Elab.Tactic.run goal
-          (Elab.Tactic.evalTactic (← `(tactic| exact tendsto_const_nhds)))
+          (Elab.Tactic.evalTactic
+            (← `(tactic| exact tendsto_const_nhds)))
         return none
-      catch _ => throwError "tendsto_cont: constant body but `tendsto_const_nhds` failed"
+      catch _ =>
+        throwError "tendsto_cont: constant body but \
+          `tendsto_const_nhds` failed"
+
     some <$> buildContinuityProof body bvar atoms
-  if let some proof := proof? then reconcileLimits goal proof
+
+  match proof? with
+  | none => return
+  | some proof => reconcileLimits goal proof
 
 syntax "tendsto_cont" ("[" term,* "]")? : tactic
 
