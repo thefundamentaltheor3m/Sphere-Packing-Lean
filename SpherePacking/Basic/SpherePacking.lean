@@ -91,7 +91,7 @@ open Real
     exact (mul_le_mul_iff_right₀ hc).mpr <| S.centers_dist (i := ⟨x', hx'⟩) (j := ⟨y', hy'⟩)
       fun heq ↦ hxy <| by simp [Subtype.ext_iff] at heq; simp [heq]
 
-lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
+public lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
     DiscreteTopology ↥(c • S.lattice) := by
   letI : DiscreteTopology S.lattice := S.lattice_discrete
   change DiscreteTopology ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice :
@@ -99,7 +99,8 @@ lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c
   exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
     (S.lattice : Set (EuclideanSpace ℝ (Fin d)))).discreteTopology
 
-noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
+@[expose] public noncomputable def PeriodicSpherePacking.scale
+    (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
   PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice

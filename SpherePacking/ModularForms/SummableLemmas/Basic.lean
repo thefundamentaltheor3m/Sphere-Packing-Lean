@@ -1,6 +1,10 @@
 module
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Basic summability lemmas over `ℕ+`
 

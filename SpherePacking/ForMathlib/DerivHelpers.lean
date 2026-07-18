@@ -16,6 +16,10 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Derivative helpers
 

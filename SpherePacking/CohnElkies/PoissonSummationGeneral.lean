@@ -24,6 +24,10 @@ import Mathlib.Analysis.Normed.Operator.Banach
 import Mathlib.LinearAlgebra.Determinant
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! # Poisson summation for Schwartz functions
 
 Three layers:

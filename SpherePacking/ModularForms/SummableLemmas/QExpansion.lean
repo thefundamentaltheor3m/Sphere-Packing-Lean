@@ -2,6 +2,10 @@ module
 public import SpherePacking.ModularForms.ExpLemmas
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Summability lemmas for `q`-expansion terms
 

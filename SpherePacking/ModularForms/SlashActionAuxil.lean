@@ -4,6 +4,10 @@ public import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Slash action generators for `SL(2, ℤ)` and `Γ(2)`
 

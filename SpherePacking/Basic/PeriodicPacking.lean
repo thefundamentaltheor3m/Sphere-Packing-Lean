@@ -27,6 +27,10 @@ import Mathlib.LinearAlgebra.Basis.SMul
 open MeasureTheory Metric Filter Module
 open scoped BigOperators ENNReal Pointwise
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 The following ENat/Set.encard helpers are taken from mathlib4 PR #23503 by Peter Nelson,
 and should be removed once that PR is merged.
@@ -319,7 +323,7 @@ theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
   rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]; convert Set.encard_eq_coe_toFinset_card _
 
-public noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
+public noncomputable def PeriodicSpherePacking.instFintypeNumReps'
     (S : PeriodicSpherePacking d) (hd : 0 < d)
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
     Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <|

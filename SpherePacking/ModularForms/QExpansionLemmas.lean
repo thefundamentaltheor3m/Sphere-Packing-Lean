@@ -6,6 +6,10 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import Mathlib.Order.CompletePartialOrder
 import Mathlib.Tactic.Cases
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Limits at infinity
 
@@ -89,7 +93,7 @@ public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
-instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
+instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective := fun ⦃_ _⦄ a ↦ a}
 
 /-- If two `FunLike` objects have the same underlying function, then their `qExpansion`s agree. -/
 public lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (f : α) (g : β)
