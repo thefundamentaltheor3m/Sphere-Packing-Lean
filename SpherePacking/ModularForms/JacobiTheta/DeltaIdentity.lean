@@ -251,15 +251,21 @@ public theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
 
 /-- The function `H₂ = Θ₂^4` tends to `0` at `Im z → ∞`. -/
 public theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
-  exact Θ₂_tendsto_atImInfty.pow 4
+  have h := Θ₂_tendsto_atImInfty.pow 4
+  rw [show ((0 : ℂ) ^ 4) = 0 by norm_num] at h
+  exact h
 
 /-- The function `H₃ = Θ₃^4` tends to `1` at `Im z → ∞`. -/
 public theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
-  exact Θ₃_tendsto_atImInfty.pow 4
+  have h := Θ₃_tendsto_atImInfty.pow 4
+  rw [show ((1 : ℂ) ^ 4) = 1 by norm_num] at h
+  exact h
 
 /-- The function `H₄ = Θ₄^4` tends to `1` at `Im z → ∞`. -/
 public theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
-  exact Θ₄_tendsto_atImInfty.pow 4
+  have h := Θ₄_tendsto_atImInfty.pow 4
+  rw [show ((1 : ℂ) ^ 4) = 1 by norm_num] at h
+  exact h
 
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
 public theorem jacobi_identity : H₂ + H₄ = H₃ := by
@@ -370,8 +376,9 @@ private noncomputable def thetaDelta_CF : CuspForm (Γ 1) 12 :=
       simpa [thetaDeltaFun, pow_two] using (hf.mul hf).const_smul ((256 : ℂ)⁻¹))
     (by
       have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
-        rw [show thetaDelta_f = H₂ * (H₃ * H₄) from mul_assoc H₂ H₃ H₄]
-        exact H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+        have h := H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+        rw [show ((0 : ℂ) * (1 * 1)) = 0 by norm_num] at h
+        exact h
       simpa [thetaDeltaFun, mul_zero,
           show (256 : ℂ)⁻¹ • thetaDelta_f ^ 2 = fun x : ℍ => 256⁻¹ * thetaDelta_f x ^ 2
             from rfl] using
