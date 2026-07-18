@@ -320,7 +320,8 @@ public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun :=
   let G : ModularForm Γ(1) 6 := F₆ + (3⁻¹ : ℂ) • E₆
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hF : Tendsto (fun z : ℍ => F₆ z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
-      simpa [F₆, serreD_modularForm] using tendsto_serre_D_E₄_atImInfty
+      simp only [F₆, serreD_modularForm]
+      exact tendsto_serre_D_E₄_atImInfty
     have hE6 :
         Tendsto (fun z : ℍ => (3⁻¹ : ℂ) * E₆ z) atImInfty
           (𝓝 ((3⁻¹ : ℂ) * (1 : ℂ))) := by
@@ -341,7 +342,8 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
   let G : ModularForm Γ(1) 8 := F₈ + (2⁻¹ : ℂ) • E4sq
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hF : Tendsto (fun z : ℍ => F₈ z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
-      simpa [F₈, serreD_modularForm] using tendsto_serre_D_E₆_atImInfty
+      simp only [F₈, serreD_modularForm]
+      exact tendsto_serre_D_E₆_atImInfty
     have hE4sq :
         Tendsto (fun z : ℍ => E4sq z) atImInfty (𝓝 ((1 : ℂ) * (1 : ℂ))) := by
       exact tendsto_E₄_atImInfty.mul tendsto_E₄_atImInfty
@@ -357,7 +359,9 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
   have hz'' : F₈.toFun z = -((2⁻¹ : ℂ) * E4sq z) := by
     simpa [ModularForm.toFun_eq_coe] using
       (eq_neg_iff_add_eq_zero).2 (by simpa using hz)
-  simpa [F₈, serreD_modularForm, E4sq, neg_mul, mul_assoc, mul_left_comm, mul_comm] using hz''
+  simpa [F₈, serreD_modularForm, E4sq,
+    show ⇑(E₄.mul E₄) = fun z : ℍ => E₄ z * E₄ z from rfl,
+    neg_mul, mul_assoc, mul_left_comm, mul_comm] using hz''
 
 /-- Ramanujan's differential equation for `E₂`. -/
 @[simp]
