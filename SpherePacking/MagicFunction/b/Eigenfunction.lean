@@ -60,7 +60,7 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
     (eq_div_iff (pow_ne_zero 2 hz0)).2 <| by
       have h := (modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH)).symm.trans
         (congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψT_slash_S)
-      simp at h
+      simp at h ⊢
       exact h
   have hz' : 0 < (mobiusInv z).im := by
     simpa [mobiusInv, Complex.inv_im, div_eq_mul_inv] using
@@ -433,7 +433,7 @@ private lemma exists_height_norm_le_one_of_tendsto_zero
 private lemma exists_expNorm_bound (r M : ℝ) (hM : expNorm r 1 < M) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ M := by
   rcases (Metric.continuousAt_iff.1 (by
-    simpa [expNorm, mul_assoc] using (continuousAt_id.mul continuousAt_const).cexp.norm :
+    exact (continuousAt_id.mul continuousAt_const).cexp.norm :
     ContinuousAt (expNorm r) (1 : ℂ))) (M - expNorm r 1) (by linarith) with ⟨δ, hδ_pos, hδ⟩
   refine ⟨δ, hδ_pos, fun {z} hz => ?_⟩
   have := (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1

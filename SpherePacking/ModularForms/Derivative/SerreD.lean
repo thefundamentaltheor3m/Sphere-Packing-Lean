@@ -69,8 +69,11 @@ public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) := Filter.const_boundedAtFilter _ _
-    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
-    ext z
-    try simp only [Pi.mul_apply]
-    first | rfl | ring
+    have heq : (fun z : ℍ => k * 12⁻¹ * E₂ z * f z) =
+        (fun _ : ℍ => k * 12⁻¹) * (E₂ * f) := by
+      funext z
+      simp only [Pi.mul_apply]
+      ring
+    rw [heq]
+    exact hconst.mul (E₂_isBoundedAtImInfty.mul hbdd)
   exact (D_isBoundedAtImInfty_of_bounded hf hbdd).sub hE₂f
