@@ -7,6 +7,10 @@ public import SpherePacking.ModularForms.EisensteinBase
 import SpherePacking.ModularForms.CuspFormIsoModforms
 import SpherePacking.Tactic.FunPropExt
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Level 1 / Level 2 identities
 
@@ -72,15 +76,31 @@ lemma thetaE4_T_action : (thetaE4 ∣[(4 : ℤ)] T) = thetaE4 := by
   ring
 
 lemma thetaE4_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaE4 := by
-  simpa [thetaE4] using ((H₂_SIF_MDifferentiable.pow 2).add
+  exact ((H₂_SIF_MDifferentiable.pow 2).add
     (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add (H₄_SIF_MDifferentiable.pow 2)
 
 lemma thetaE4_tendsto_atImInfty : Tendsto thetaE4 atImInfty (𝓝 (1 : ℂ)) := by
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
+  have hmul : Tendsto (H₂ * H₄) atImInfty (𝓝 (0 : ℂ)) := by
+    have h := hH2.mul hH4
+    rw [show ((0 : ℂ) * 1) = 0 by norm_num] at h
+    exact h
+  have hpow : Tendsto (H₂ ^ 2) atImInfty (𝓝 (0 : ℂ)) := by
+    have h := hH2.pow 2
+    rw [show ((0 : ℂ) ^ 2) = 0 by norm_num] at h
+    exact h
   have hsum : Tendsto (H₂ ^ 2 + H₂ * H₄) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa [Pi.add_apply, zero_mul] using (hH2.pow 2).add (by simpa [zero_mul] using hH2.mul hH4)
-  simpa [thetaE4, Pi.add_apply, add_assoc, zero_add] using hsum.add (by simpa using hH4.pow 2)
+    have h := hpow.add hmul
+    rw [show ((0 : ℂ) + 0) = 0 by norm_num] at h
+    exact h
+  have h4sq : Tendsto (H₄ ^ 2) atImInfty (𝓝 (1 : ℂ)) := by
+    have h := hH4.pow 2
+    rw [show ((1 : ℂ) ^ 2) = 1 by norm_num] at h
+    exact h
+  have h := hsum.add h4sq
+  rw [show ((0 : ℂ) + 1) = 1 by norm_num] at h
+  exact h
 
 /-- The Eisenstein series `E₄` tends to `1` at the cusp `∞`. -/
 public lemma tendsto_E₄_atImInfty : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) :=
@@ -95,13 +115,17 @@ public theorem E₄_eq_thetaE4 : (E₄ : ℍ → ℂ) = thetaE4 := by
   let diffSIF : SlashInvariantForm (Γ 1) 4 := E₄.toSlashInvariantForm - thetaE4_SIF
   let diffCF : CuspForm (Γ 1) 4 :=
     cuspFormOfSIFTendstoZero diffSIF (E₄.holo'.sub thetaE4_MDifferentiable)
-      (by simpa [diffSIF, sub_eq_add_neg] using
-        tendsto_E₄_atImInfty.sub thetaE4_tendsto_atImInfty)
+      (by
+        have h := tendsto_E₄_atImInfty.sub thetaE4_tendsto_atImInfty
+        rw [show ((1 : ℂ) - 1) = 0 by norm_num] at h
+        exact h)
   have hzero : diffCF = 0 :=
     rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 4 (by norm_num)) diffCF
   funext z
   have h : diffSIF.toFun z = 0 := congrFun (congrArg (·.toFun) hzero) z
-  simpa [diffSIF, sub_eq_zero] using h
+  have h2 := h
+  simp [diffSIF, sub_eq_zero] at h2
+  exact h2
 
 /-- The theta-polynomial giving `E₆` (Blueprint equation (e6theta), second form). -/
 @[expose] public noncomputable def thetaE6 : ℍ → ℂ :=
@@ -121,20 +145,28 @@ lemma thetaE6_T_action : (thetaE6 ∣[(6 : ℤ)] T) = thetaE6 := by
   ring
 
 lemma thetaE6_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaE6 := by
-  simpa [thetaE6, mul_assoc] using
-    (((H₂_SIF_MDifferentiable.add (H₄_SIF_MDifferentiable.const_smul (2 : ℂ))).mul
-      (((H₂_SIF_MDifferentiable.const_smul (2 : ℂ)).add H₄_SIF_MDifferentiable).mul
-        (H₄_SIF_MDifferentiable.sub H₂_SIF_MDifferentiable))).const_smul (1 / 2 : ℂ))
+  exact (((H₂_SIF_MDifferentiable.add (H₄_SIF_MDifferentiable.const_smul (2 : ℂ))).mul
+    (((H₂_SIF_MDifferentiable.const_smul (2 : ℂ)).add H₄_SIF_MDifferentiable).mul
+      (H₄_SIF_MDifferentiable.sub H₂_SIF_MDifferentiable))).const_smul (1 / 2 : ℂ)
 
 lemma thetaE6_tendsto_atImInfty : Tendsto thetaE6 atImInfty (𝓝 (1 : ℂ)) := by
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
   have hA : Tendsto (H₂ + (2 : ℂ) • H₄) atImInfty (𝓝 (2 : ℂ)) := by
-    simpa using hH2.add (hH4.const_smul (2 : ℂ))
+    have h := hH2.add (hH4.const_smul (2 : ℂ))
+    rw [show ((0 : ℂ) + (2 : ℂ) • (1 : ℂ)) = 2 by simp] at h
+    exact h
   have hB : Tendsto ((2 : ℂ) • H₂ + H₄) atImInfty (𝓝 (1 : ℂ)) := by
-    simpa using (hH2.const_smul (2 : ℂ)).add hH4
-  have hC : Tendsto (H₄ - H₂) atImInfty (𝓝 (1 : ℂ)) := by simpa using hH4.sub hH2
-  simpa [thetaE6, smul_eq_mul, mul_assoc] using (hA.mul (hB.mul hC)).const_smul (1 / 2 : ℂ)
+    have h := (hH2.const_smul (2 : ℂ)).add hH4
+    rw [show ((2 : ℂ) • (0 : ℂ) + 1) = 1 by simp] at h
+    exact h
+  have hC : Tendsto (H₄ - H₂) atImInfty (𝓝 (1 : ℂ)) := by
+    have h := hH4.sub hH2
+    rw [show ((1 : ℂ) - 0) = 1 by norm_num] at h
+    exact h
+  have h := (hA.mul (hB.mul hC)).const_smul (1 / 2 : ℂ)
+  rw [show ((1 / 2 : ℂ) • ((2 : ℂ) * ((1 : ℂ) * 1))) = 1 by norm_num] at h
+  exact h
 
 /-- The Eisenstein series `E₆` tends to `1` at the cusp `∞`. -/
 public lemma tendsto_E₆_atImInfty : Tendsto (fun z : ℍ => E₆ z) atImInfty (𝓝 (1 : ℂ)) :=
@@ -149,12 +181,16 @@ public theorem E₆_eq_thetaE6 : (E₆ : ℍ → ℂ) = thetaE6 := by
   let diffSIF : SlashInvariantForm (Γ 1) 6 := E₆.toSlashInvariantForm - thetaE6_SIF
   let diffCF : CuspForm (Γ 1) 6 :=
     cuspFormOfSIFTendstoZero diffSIF (E₆.holo'.sub thetaE6_MDifferentiable)
-      (by simpa [diffSIF, sub_eq_add_neg] using
-        tendsto_E₆_atImInfty.sub thetaE6_tendsto_atImInfty)
+      (by
+        have h := tendsto_E₆_atImInfty.sub thetaE6_tendsto_atImInfty
+        rw [show ((1 : ℂ) - 1) = 0 by norm_num] at h
+        exact h)
   have hzero : diffCF = 0 :=
     rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num)) diffCF
   funext z
   have h : diffSIF.toFun z = 0 := congrFun (congrArg (·.toFun) hzero) z
-  simpa [diffSIF, sub_eq_zero] using h
+  have h2 := h
+  simp [diffSIF, sub_eq_zero] at h2
+  exact h2
 
 end SpherePacking.ModularForms

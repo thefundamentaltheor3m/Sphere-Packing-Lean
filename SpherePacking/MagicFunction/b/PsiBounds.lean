@@ -19,6 +19,10 @@ import Mathlib.Topology.Order.Compact
 import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.ForMathlib.ModularFormsHelpers
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Definitions and bounds for the `ψ`-functions
 
@@ -320,7 +324,8 @@ public lemma ψS_apply_eq_factor (z : ℍ) :
   refine (eq_div_iff (mul_ne_zero (pow_ne_zero 2 (H₃_ne_zero z))
     (pow_ne_zero 2 (H₄_ne_zero z)))).2 ?_
   rw [show ψS z = 128 * (((H₄ z - H₂ z) / (H₃ z) ^ 2) - ((H₂ z + H₃ z) / (H₄ z) ^ 2)) by
-    simpa using congrArg (fun f : ℍ → ℂ => f z) ψS_eq']
+    simpa [show ⇑H₂_MF = H₂ from rfl, show ⇑H₃_MF = H₃ from rfl, show ⇑H₄_MF = H₄ from rfl]
+      using congrArg (fun f : ℍ → ℂ => f z) ψS_eq']
   field_simp [H₃_ne_zero z, H₄_ne_zero z]
   simp [hJ]; ring_nf
 
@@ -328,7 +333,8 @@ public lemma ψS_apply_eq_factor (z : ℍ) :
 public lemma continuous_ψS : Continuous ψS := by
   have hH2 := mdifferentiable_H₂.continuous; have hH3 := mdifferentiable_H₃.continuous
   have hH4 := mdifferentiable_H₄.continuous
-  simpa [ψS_eq', mul_assoc] using continuous_const.mul
+  rw [ψS_eq']
+  exact continuous_const.mul
     (((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))).sub
       ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z))))
 
@@ -336,7 +342,8 @@ public lemma continuous_ψS : Continuous ψS := by
 public lemma continuous_ψT : Continuous ψT := by
   have hH2 := mdifferentiable_H₂.continuous; have hH3 := mdifferentiable_H₃.continuous
   have hH4 := mdifferentiable_H₄.continuous
-  simpa [ψT_eq, mul_assoc] using continuous_const.mul
+  rw [ψT_eq]
+  exact continuous_const.mul
     (((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z))).add
       ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z))))
 
@@ -347,9 +354,10 @@ public lemma continuous_ψI : Continuous ψI := by
   rw [show ψI = fun z : ℍ =>
         (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ 2) +
           (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ 2) from funext fun z => by
-    simpa [nsmul_eq_mul, mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
+    simpa [show ⇑H₂_MF = H₂ from rfl, show ⇑H₃_MF = H₃ from rfl, show ⇑H₄_MF = H₄ from rfl,
+      nsmul_eq_mul, mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm,
       mul_comm] using congrArg (fun f : ℍ → ℂ => f z) ψI_eq]
-  simpa [mul_assoc] using (continuous_const.mul
+  exact (continuous_const.mul
     ((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z)))).add
     (continuous_const.mul
       ((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))))
@@ -371,7 +379,10 @@ public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) :=
         -((128 : ℂ) *
             (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2))) /
           ((H₃ z) ^ 2 * (H₄ z) ^ 2) from funext fun z => by simp [ψS_apply_eq_factor]]
-  simpa [Pi.div_apply] using ((tendsto_const_nhds.mul (hH2.mul hpoly)).neg.div
+  show Tendsto ((fun z : ℍ => -((128 : ℂ) *
+      (H₂ z * (2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2)))) /
+      (fun z : ℍ => (H₃ z) ^ 2 * (H₄ z) ^ 2)) atImInfty (𝓝 0)
+  simpa using ((tendsto_const_nhds.mul (hH2.mul hpoly)).neg.div
     (by simpa using (H₃_tendsto_atImInfty.pow 2).mul (hH4.pow 2)) (by norm_num : (1 : ℂ) ≠ 0))
 
 /-- Uniform bound for `‖ψS.resToImagAxis t‖` on `Ici (1 : ℝ)`. -/
