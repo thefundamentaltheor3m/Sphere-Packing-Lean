@@ -39,12 +39,9 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   have h : Even (b ^ 2 + b) := by
     convert Int.even_mul_succ_self b using 1
     ring
-  have harg : (↑π * I * (↑b + 1 / 2) ^ 2 * (1 + ↑x) : ℂ)
+  rw [show (↑π * I * (↑b + 1 / 2) ^ 2 * (1 + ↑x) : ℂ)
       = ↑π * I / 4 + (↑(b ^ 2 + b) * (↑π * I) +
-        ↑π * I * (↑b + 1 / 2) ^ 2 * ↑x) := by
-    push_cast
-    ring
-  rw [harg]
+        ↑π * I * (↑b + 1 / 2) ^ 2 * ↑x) by push_cast; ring]
   simp_rw [Complex.exp_add, Complex.exp_int_mul, Complex.exp_pi_mul_I, h.neg_one_zpow, one_mul]
 
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
@@ -111,8 +108,10 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
   have := jacobiTheta₂_functional_equation 0
-  simp [-one_div] at this
-  simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
+  simp only [neg_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero,
+    zero_div, Complex.exp_zero, mul_one] at this
+  simp only [modular_slash_S_apply, H₃, inv_neg, Θ₃_as_jacobiTheta₂, Int.reduceNeg,
+    _root_.zpow_neg, Pi.neg_apply]
   rw [this, mul_pow, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
     mul_right_comm, ← neg_one_mul (_ ^ 4)]
   congr
@@ -232,9 +231,9 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       (cexp (π * I * z / 4))).norm
   · rw [Real.norm_eq_abs, Real.abs_exp]
     refine Real.exp_monotone ?_
-    have hb : (b : ℝ) + 1 / 2 ≠ 0 := fun h ↦ by
-      have : (2 * b + 1 : ℤ) = 0 := by exact_mod_cast (show (2 * b + 1 : ℝ) = 0 by linarith)
-      omega
+    have hb : (b : ℝ) + 1 / 2 ≠ 0 := by
+      rw [show (b : ℝ) + 1 / 2 = (2 * b + 1 : ℤ) / 2 by push_cast; ring]
+      exact div_ne_zero (Int.cast_ne_zero.mpr (by lia)) two_ne_zero
     nlinarith [sq_pos_of_ne_zero hb, pi_pos, hz, mul_pos pi_pos (sq_pos_of_ne_zero hb)]
   · apply (summable_ofReal.mp ?_).norm
     simp_rw [jacobiTheta₂_rel_aux, ofReal_exp, ← smul_eq_mul (a := cexp _)]
@@ -411,16 +410,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     · exact le_of_eq (by simpa [add_mul] using by ring_nf)
     · rw [norm_exp_mul_I, im_ofReal_mul]
       have (n : ℤ) : 0 ≤ (n : ℝ) ^ 2 + n := by
-        nth_rw 2 [← mul_one n]
-        rw [sq, Int.cast_mul, Int.cast_one, ← mul_add]
-        rcases lt_trichotomy (-1) n with (hn | rfl | hn)
-        · apply mul_nonneg
-          · exact_mod_cast (by omega : 0 ≤ n)
-          · exact_mod_cast (by omega : 0 ≤ n + 1)
-        · norm_num
-        · apply mul_nonneg_of_nonpos_of_nonpos
-          · exact_mod_cast (by omega : n ≤ 0)
-          · exact_mod_cast (by omega : n + 1 ≤ 0)
+        exact_mod_cast (show (0 : ℤ) ≤ n ^ 2 + n by nlinarith [sq_nonneg (2 * n + 1)])
       have h_nonneg : 0 ≤ Real.pi * (k : ℝ) + Real.pi * (k : ℝ) ^ 2 := by
         rw [← mul_add, add_comm]
         exact mul_nonneg Real.pi_nonneg (this k)
@@ -665,14 +655,9 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   have ht' : 0 < 1 / t := one_div_pos.mpr ht
   have hSlash := ResToImagAxis.SlashActionS H₄ 2 ht'
   rw [H₄_S_action] at hSlash
-  have hI2 : (I : ℂ) ^ (-2 : ℤ) = -1 := by
-    change (I ^ 2)⁻¹ = -1
-    rw [I_sq]
-    norm_num
+  have hI2 : (I : ℂ) ^ (-2 : ℤ) = -1 := by simp [_root_.zpow_neg, zpow_ofNat, I_sq]
   have h1t2 : (↑(1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
-    have : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr ht.ne'
-    simp only [one_div, ofReal_inv, _root_.zpow_neg]
-    field_simp
+    simp [one_div, _root_.zpow_neg, zpow_ofNat]
   have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
     simp only [Function.resToImagAxis_apply, ResToImagAxis, ht', ↓reduceDIte, Pi.neg_apply]
   rw [hNeg, hI2, h1t2, one_div_one_div] at hSlash

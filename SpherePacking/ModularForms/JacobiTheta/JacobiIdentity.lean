@@ -225,10 +225,7 @@ lemma Delta_eq_H₂_H₃_H₄ : (Delta : ℍ → ℂ) = (1 / 256 : ℂ) • (H�
       simp_rw [h_rewrite]
       have : (256 : ℂ) = 16 ^ 2 * 1 ^ 2 * 1 ^ 2 := by norm_num
       rw [this]
-      have := H₂_div_exp_tendsto
-      have := H₃_tendsto_atImInfty
-      have := H₄_tendsto_atImInfty
-      tendsto_cont
+      tendsto_cont [H₂_div_exp_tendsto, H₃_tendsto_atImInfty, H₄_tendsto_atImInfty]
     have h_eq_fns : ∀ z : ℍ, c * (Delta z / cexp (2 * ↑π * I * ↑z)) =
         theta_prod_sq z / cexp (2 * ↑π * I * ↑z) := by
       intro z
