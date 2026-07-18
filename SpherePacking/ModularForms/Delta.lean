@@ -1,7 +1,6 @@
 module
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.E2
 public import Mathlib.NumberTheory.ModularForms.Discriminant
 public import SpherePacking.ModularForms.exp_lems
