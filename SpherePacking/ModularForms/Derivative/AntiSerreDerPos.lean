@@ -1,6 +1,10 @@
 module
 public import SpherePacking.ModularForms.Derivative.Equivariance
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 @[expose] public section
 
 /-!
@@ -97,7 +101,7 @@ public theorem D_Delta_eq_E₂_mul_Delta : D Δ = E₂ * Δ := by
     calc
       logDeriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) =
           logDeriv (fun x : ℂ => x ^ (24 : ℕ)) (η (z : ℂ)) * deriv η (z : ℂ) := by
-            simpa [Function.comp] using
+            simpa [Function.comp_def] using
               logDeriv_comp (x := (z : ℂ)) hpowdiff
                 (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet z.2)
       _ = ((24 : ℂ) / η (z : ℂ)) * deriv η (z : ℂ) := by simp [logDeriv_pow]
@@ -132,7 +136,8 @@ private lemma hasDerivAt_mul_rpow_neg {g d : ℝ → ℝ} {g' d' : ℝ} {t a : �
   have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
     simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
       Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl (ne_of_gt hdpos))
-  simpa [mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
+  simpa [Pi.mul_def, Function.comp_def, mul_assoc, mul_left_comm, mul_comm, add_assoc,
+    add_left_comm, add_comm] using
     hg.mul (hpow0.comp t hd)
 
 /-- On the imaginary axis (with `F(it), E₂(it)` real-valued), the real part of `(serre_D k F)`
@@ -200,10 +205,10 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
   have hh : ∀ t, 0 < t → HasDerivAt h _ t := fun t ht =>
     hasDerivAt_mul_rpow_neg (hasDerivAt_re_resToImagAxis F hFderiv t ht)
       (hasDerivAt_re_resToImagAxis Δ
-        (by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)) t ht) (hΔre_pos t ht)
+        (by exact Delta.holo') t ht) (hΔre_pos t ht)
   have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) := strictAntiOn_of_deriv_neg (convex_Ioi _)
     (fun x hx => (hh x hx).continuousAt.continuousWithinAt) <| by
-      simpa [interior_Ioi] using fun t (ht : 0 < t) =>
+      simpa [interior_Ioi, h] using fun t (ht : 0 < t) =>
         antiSerreDerPos_deriv_neg hF_real hSDF ht (hΔre_pos t ht) ha_def (hh t ht)
   exact ⟨hF_real, fun t ht => pos_of_mul_pos_left
     (StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos (fun t ht => mul_pos (hF_pos t ht)
