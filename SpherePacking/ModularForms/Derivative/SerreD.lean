@@ -72,5 +72,5 @@ public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
     ext z
     try simp only [Pi.mul_apply]
-    ring
+    first | rfl | ring
   exact (D_isBoundedAtImInfty_of_bounded hf hbdd).sub hE₂f

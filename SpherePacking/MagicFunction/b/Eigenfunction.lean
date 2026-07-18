@@ -20,6 +20,10 @@ import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Fourier permutations for `b`
 
@@ -54,8 +58,10 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
   have hdiv : ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) =
       (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) :=
     (eq_div_iff (pow_ne_zero 2 hz0)).2 <| by
-      simpa using (modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH)).symm.trans
+      have h := (modular_slash_S_apply (f := ψT) (k := (-2 : ℤ)) (z := zH)).symm.trans
         (congrArg (fun F : UpperHalfPlane → ℂ => F zH) ψT_slash_S)
+      simp at h
+      exact h
   have hz' : 0 < (mobiusInv z).im := by
     simpa [mobiusInv, Complex.inv_im, div_eq_mul_inv] using
       div_pos hz (Complex.normSq_pos.2 fun hz0 => hz.ne' (by simp [hz0]))
@@ -247,7 +253,7 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
   let g : ℝ → ℝ := fun t => ‖ψT' (SpherePacking.Contour.z₁line t)‖ * (1 / t) ^ (k + 2)
   have hmeas_g : AEStronglyMeasurable g μIoc01 := by
     have hcont_g : ContinuousOn g (Ioc (0 : ℝ) 1) := by
-      simpa [g, one_div] using hcont.norm.mul
+      simpa [g, one_div, Pi.mul_def] using hcont.norm.mul
         (((continuousOn_inv₀ : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) ({0}ᶜ)).mono
           (fun t ht => by simp [ne_of_gt ht.1])).pow (k + 2))
     simpa [μIoc01] using hcont_g.aestronglyMeasurable
@@ -427,7 +433,7 @@ private lemma exists_height_norm_le_one_of_tendsto_zero
 private lemma exists_expNorm_bound (r M : ℝ) (hM : expNorm r 1 < M) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ M := by
   rcases (Metric.continuousAt_iff.1 (by
-    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm :
+    simpa [expNorm, mul_assoc] using (continuousAt_id.mul continuousAt_const).cexp.norm :
     ContinuousAt (expNorm r) (1 : ℂ))) (M - expNorm r 1) (by linarith) with ⟨δ, hδ_pos, hδ⟩
   refine ⟨δ, hδ_pos, fun {z} hz => ?_⟩
   have := (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1
@@ -544,7 +550,7 @@ public theorem fourier_J_eq_curveIntegral_of
   rw [htoIter, MeasureTheory.integral_integral_swap
     (μ := (MeasureTheory.volume : MeasureTheory.Measure V)) (ν := μ)
     (f := fun x t => permJKernel w (x, t))
-    (by simpa [Function.uncurry] using integrable_permJKernel w),
+    (by exact integrable_permJKernel w),
     MeasureTheory.integral_congr_ae (integral_permJKernel_x_ae w)]
   exact integral_g_eq_curveIntegral w
 
@@ -850,9 +856,9 @@ public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       phase_mul_J₁'_eq_integral_permJ1Kernel
       integrable_permJ1Kernel
       (fun w' => by
-        simpa [SpherePacking.Integration.μIoc01] using
-          (ae_restrict_iff' (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc).2 <|
-            .of_forall fun t ht => by simpa using (integral_permJ1Kernel_x (w := w') (t := t) ht))
+        exact (ae_restrict_iff' (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1)
+            measurableSet_Ioc).2 <|
+          .of_forall fun t ht => by simpa using (integral_permJ1Kernel_x (w := w') (t := t) ht))
       (fun w' => by
         simpa [SpherePacking.Contour.dir_z₁line] using
           SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
@@ -1156,8 +1162,8 @@ lemma aestronglyMeasurable_kernel (w : ℝ⁸) :
 /-- Cancellation identity `s^(-4) * s^4 = 1` (after coercions to `ℂ`). -/
 public lemma zpow_neg_four_mul_pow_four (s : ℝ) (hs : s ≠ 0) :
     ((s ^ (-4 : ℤ) : ℝ) : ℂ) * (s ^ 4 : ℂ) = 1 := by
-  simpa [Complex.ofReal_zpow] using (zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ))
-    (by exact_mod_cast hs))
+  exact_mod_cast zpow_neg_mul_zpow_self (a := (s : ℂ)) (n := (4 : ℤ))
+    (by exact_mod_cast hs)
 
 lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
     ‖kernel w (x, s)‖ =
@@ -1178,7 +1184,7 @@ lemma kernel_norm_eq (w x : ℝ⁸) (s : ℝ) :
 private lemma integrable_kernel_slice (w : ℝ⁸) {s : ℝ} (hs : s ∈ Ici (1 : ℝ)) :
     Integrable (fun x : ℝ⁸ => kernel w (x, s)) (volume : Measure ℝ⁸) := by
   have hg : Continuous fun x : ℝ⁸ => J5Change.g (‖x‖ ^ 2) s := by
-    simpa [continuousOn_univ, Function.comp] using continuousOn_J₅_g.comp
+    simpa [continuousOn_univ, Function.comp_def] using continuousOn_J₅_g.comp
       (by fun_prop : Continuous fun x : ℝ⁸ => (x, s)).continuousOn
       (show MapsTo (fun x : ℝ⁸ => (x, s)) (Set.univ : Set ℝ⁸) (univ ×ˢ Ici (1 : ℝ)) from
         fun _ _ => ⟨Set.mem_univ _, hs⟩)
@@ -1278,8 +1284,7 @@ private lemma fourier_J₅_inner_eq (w : EuclideanSpace ℝ (Fin 8)) :
   let f : (EuclideanSpace ℝ (Fin 8)) → ℝ → ℂ := fun x s ↦ PermJ5.kernel w (x, s)
   have hint : Integrable (Function.uncurry f)
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μs) := by
-    simpa [μs, SpherePacking.Integration.μIciOne, f, Function.uncurry] using
-      (PermJ5.integrable_kernel (w := w))
+    exact PermJ5.integrable_kernel (w := w)
   have hrew : (fun x : EuclideanSpace ℝ (Fin 8) ↦
         cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
           ((-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s)) =
@@ -1332,7 +1337,7 @@ public theorem perm_J₆ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
     ext; simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
   have h' : J₅ = -FT.symm J₆ := by
     simpa [map_neg] using congrArg FT.symm (show FT J₅ = -J₆ by simpa [FT] using perm_J₅)
-  simpa [h] using (congrArg Neg.neg h').symm
+  simpa [h, FT] using (congrArg Neg.neg h').symm
 
 theorem perm_₃_J₄ :
     FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) ((J₃ : SchwartzMap ℝ⁸ ℂ) + J₄) =
@@ -1343,7 +1348,7 @@ theorem perm_₃_J₄ :
     simp only [FT, FourierTransform.fourierCLE_symm_apply, FourierTransform.fourierCLE_apply,
       fourier_coe, fourierInv_coe, fourierInv_eq_fourier_comp_neg]
     suffices (fun y : ℝ⁸ ↦ (J₃ + J₄) (-y)) = fun y ↦ (J₃ + J₄) y by
-      simpa using congrArg (fun f : ℝ⁸ → ℂ => (𝓕 f) x) this
+      exact congrArg (fun f : ℝ⁸ → ℂ => (𝓕 f) x) this
     funext y
     simp [J₃, J₄, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
   simpa [FT] using
