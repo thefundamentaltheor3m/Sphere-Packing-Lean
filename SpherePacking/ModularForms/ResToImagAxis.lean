@@ -55,6 +55,10 @@ namespace Function
 @[simp] public lemma resToImagAxis_apply (F : ℍ → ℂ) (t : ℝ) :
     F.resToImagAxis t = ResToImagAxis F t := rfl
 
+/-- Evaluate `ResToImagAxis F t` for positive `t`. -/
+@[simp] public lemma _root_.ResToImagAxis_apply_of_pos (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    ResToImagAxis F t = F ⟨I * t, by simp [ht]⟩ := dif_pos ht
+
 /--
 If `F` is continuous on `ℍ`, then its restriction to the imaginary axis is continuous on `Ioi 0`.
 -/

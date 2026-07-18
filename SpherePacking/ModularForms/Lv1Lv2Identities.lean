@@ -145,7 +145,7 @@ lemma thetaE6_T_action : (thetaE6 ∣[(6 : ℤ)] T) = thetaE6 := by
   ring
 
 lemma thetaE6_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaE6 := by
-  exact (((H₂_SIF_MDifferentiable.add (H₄_SIF_MDifferentiable.const_smul (2 : ℂ))).mul
+  exact ((H₂_SIF_MDifferentiable.add (H₄_SIF_MDifferentiable.const_smul (2 : ℂ))).mul
     (((H₂_SIF_MDifferentiable.const_smul (2 : ℂ)).add H₄_SIF_MDifferentiable).mul
       (H₄_SIF_MDifferentiable.sub H₂_SIF_MDifferentiable))).const_smul (1 / 2 : ℂ)
 

@@ -25,6 +25,10 @@ import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Topology.Order.ProjIcc
 import Mathlib.Analysis.Calculus.Deriv.Mul
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # `b` is a Schwartz function
 
@@ -108,14 +112,13 @@ lemma gN_measurable (n : ℕ) (x : ℝ) : AEStronglyMeasurable (gN n x) (μ) := 
   have hψ := Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS
   refine (ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ))
     (s := Ici (1 : ℝ)) ?_ measurableSet_Ici).mono_measure (by simp [μ, μIciOne])
-  simpa [gN, g, mul_assoc] using (hcoeff.pow n).continuousOn.mul
+  exact (hcoeff.pow n).continuousOn.mul
     (continuousOn_const.mul (hψ.mul ((continuous_const.mul hcoeff).cexp).continuousOn))
 
 lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ := by
-  simpa [μ, μIciOne] using
-    (integrable_gN_J6 (f := ψS.resToImagAxis)
-      (hBound := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
-      (n := n) (x := x) hx (hmeas := gN_measurable (n := n) (x := x)))
+  exact integrable_gN_J6 (f := ψS.resToImagAxis)
+    (hBound := exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
+    (n := n) (x := x) hx (hmeas := gN_measurable (n := n) (x := x))
 
 def F (n : ℕ) (x : ℝ) : ℂ := ∫ t in Ici (1 : ℝ), gN n x t
 
@@ -129,8 +132,8 @@ lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
       (hf := ψS.resToImagAxis) (shift := (1 : ℝ))
       (exists_bound_norm_hf := by
         simpa [one_mul, mul_assoc] using exists_bound_norm_ψS_resToImagAxis_exp_Ici_one)
-      (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
-      (n := n) (x := x) hx (hF_int := by simpa [μ] using gN_integrable (n := n) (x := x) hx))
+      (gN_measurable := fun n x => by exact gN_measurable (n := n) (x := x))
+      (n := n) (x := x) hx (hF_int := by exact gN_integrable (n := n) (x := x) hx))
 
 lemma iteratedDeriv_G_eq : ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := fun n => by
   induction n with
@@ -163,7 +166,7 @@ private lemma J₆'_eq_G0 (x : ℝ) : RealIntegrals.J₆' x = G 0 x := by
 /-- Smoothness of `RealIntegrals.J₆'` on the open half-line `Ioi (-1)`. -/
 public theorem contDiffOn_J₆'_Ioi_neg1 :
     ContDiffOn ℝ ∞ RealIntegrals.J₆' (Ioi (-1 : ℝ)) :=
-  (by simpa [G] using contDiffOn_const.mul (by simpa using
+  (by exact contDiffOn_const.mul (by simpa using
       (SpherePacking.ForMathlib.contDiffOn_family_infty_of_hasDerivAt (F := F) (s := s) isOpen_Ioi
         (fun n x hx => by simpa using (hasDerivAt_F (n := n) (x := x) hx)) 0)) :
     ContDiffOn ℝ ∞ (G 0) s).congr (fun x _ => J₆'_eq_G0 x)
@@ -303,7 +306,7 @@ lemma continuous_coeff {z : ℝ → ℂ} (hz : Continuous z) : Continuous (coeff
 lemma continuousOn_hf {ψ : ℂ → ℂ} {z : ℝ → ℂ}
     (hψz : ContinuousOn (fun t : ℝ => ψ (z t)) (Ioo (0 : ℝ) 1)) :
     ContinuousOn (hf ψ z) (Ioo (0 : ℝ) 1) := by
-  simpa [hf] using continuousOn_const.mul hψz
+  exact continuousOn_const.mul hψz
 
 lemma exists_bound_norm_hf {ψ : ℂ → ℂ} {z : ℝ → ℂ}
     (hBound : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψ (z t)‖ ≤ M) :
@@ -337,7 +340,8 @@ lemma decay_norm_gN_bound {ψ : ℂ → ℂ} {z : ℝ → ℂ} (hnorm : ∀ t : 
       (show (coeff z t).re = -Real.pi * t by
         simp [coeff, Complex.mul_re, him_eq t ht, mul_assoc])
   exact le_mul_of_le_mul_of_nonneg_left
-    (by simpa [gN, hf, mul_assoc, mul_left_comm, mul_comm] using
+    (by
+      have h :=
         norm_gN_le_bound_mul_exp (coeff := coeff z) (ψ := ψ) (z := z) (n := n) (Cψ := Cψ)
           (x := x) (t := t) hCψ0
           (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le hnorm t) n)
@@ -345,7 +349,9 @@ lemma decay_norm_gN_bound {ψ : ℂ → ℂ} {z : ℝ → ℂ} (hnorm : ∀ t : 
             (MagicFunction.norm_modular_rewrite_Ioc_exp_bound (k := 2) (Cψ := Cψ) (ψS := ψS)
               (ψZ := ψ) (z := z) (hCψ := hCψ) (hEq := hψEq) (t := t)
               ⟨ht.1, le_of_lt ht.2⟩))
-          hcexp :
+          hcexp
+      simp only [mul_assoc, mul_left_comm, mul_comm] at h ⊢
+      exact h :
       ‖gN ψ z n x t‖ ≤ ((2 * Real.pi) ^ n * Cψ * t ^ 2) *
         (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)))
     (by simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
@@ -499,7 +505,7 @@ lemma continuousOn_ψI'_z₅' : ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Io
   refine continuousOn_iff_continuous_restrict.2 ?_
   have him : ∀ t : Ioo (0 : ℝ) 1, 0 < (z₅' (t : ℝ)).im := fun t =>
     im_z₅'_pos (t := (t : ℝ)) ⟨t.2.1, t.2.2.le⟩
-  simpa [Set.restrict] using continuous_comp_upperHalfPlane_mk (ψT := ψI) (ψT' := ψI')
+  exact continuous_comp_upperHalfPlane_mk (ψT := ψI) (ψT' := ψI')
     MagicFunction.b.PsiBounds.continuous_ψI (z := fun t : Ioo (0 : ℝ) 1 => z₅' (t : ℝ))
     (continuous_z₅'.comp continuous_subtype_val) him (fun t => by simp [ψI', him t])
 
@@ -697,7 +703,7 @@ public theorem contDiff_integral
   simpa using
     SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I (coeff := coeff) (hf := hf))
       (fun n x => by
-        simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
+        exact hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
           continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le n x)
 
 /-- The `n`-th iterated derivative of `x ↦ I 0 x` equals `x ↦ I n x`. -/
@@ -799,7 +805,7 @@ public theorem contDiff_of_eq_I0_mul {z : ℝ → ℂ} {c : ℂ} {f : ℝ → �
     (SpherePacking.Integration.SmoothIntegralCommon.contDiff_integral
       (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t))
       (continuous_const.mul (continuous_ψT'_comp (z := z) hz him))
-      (by simpa [coeff] using (continuous_const.mul hz))
+      (by exact continuous_const.mul hz)
       (exists_bound_norm_hf_mul (z := z) (c := c) hz him) (coeff_norm_le (z := z) hnorm))
 
 /-- Polynomial decay bounds for iterated derivatives of `f`, assuming `im (z t) = 1`. -/
@@ -816,7 +822,7 @@ public theorem decay_of_eq_I0_of_coeff_re_mul {z : ℝ → ℂ} {c : ℂ} {f : �
     (SpherePacking.Integration.SmoothIntegralCommon.decay_integral_of_coeff_re
       (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t))
       (continuous_const.mul (continuous_ψT'_comp (z := z) hz him))
-      (by simpa [coeff] using (continuous_const.mul hz))
+      (by exact continuous_const.mul hz)
       (exists_bound_norm_hf_mul (z := z) (c := c) hz him) (coeff_norm_le (z := z) hnorm)
       (coeff_re := fun t => by
         simp [coeff, Complex.mul_re, him1 t, mul_assoc]))
@@ -986,11 +992,11 @@ private theorem J₆'_smooth_aux :
 /-- 1-D Schwartz function from the primed radial integral `J₆'`. -/
 public def J₆' : 𝓢(ℝ, ℂ) where
   toFun := RadialSchwartz.Bridge.fCut MagicFunction.b.RealIntegrals.J₆'
-  smooth' := by simpa [RadialSchwartz.Bridge.fCut] using J₆'_smooth_aux
+  smooth' := by exact J₆'_smooth_aux
   decay' := by
-    simpa using (RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
+    exact RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
       (f := MagicFunction.b.RealIntegrals.J₆') (hg_smooth := J₆'_smooth_aux)
-      MagicFunction.b.Schwartz.J6Smooth.decay_J₆')
+      MagicFunction.b.Schwartz.J6Smooth.decay_J₆'
 
 /-- Schwartz functions on `ℝ⁸` from the radial profiles `J₁'`-`J₆'`. -/
 @[expose] public def J₁ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
@@ -1142,11 +1148,9 @@ private lemma J2'_add_J4'_zero_eq :
     Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
   simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
     (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
-      ((by simpa [ψI'] using
-          MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
+      ((by exact MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
             Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)
-      ((by simpa [ψT'] using
-          MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
+      ((by exact MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
             Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)).symm.trans
       (intervalIntegral.integral_congr fun t _ => hrel t)
 
