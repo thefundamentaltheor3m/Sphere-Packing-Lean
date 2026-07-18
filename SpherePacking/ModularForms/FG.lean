@@ -713,21 +713,6 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
   simp_rw [h_eq2]
   simpa [ha0] using (qexp_tendsto_of_poly_bound hbound).const_mul (720 : ℂ)
 
-/-- `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`. -/
-private theorem Θ₂_div_exp_tendsto :
-    Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
-      atImInfty (nhds (2 : ℂ)) := by
-  simpa [Θ₂_as_jacobiTheta₂] using jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-
-/-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
-private theorem H₂_div_exp_tendsto :
-    Filter.Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
-      atImInfty (nhds (16 : ℂ)) := by
-  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) =
-      (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := fun z => by
-    simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring
-  simp_rw [h_eq]; convert Θ₂_div_exp_tendsto.pow 4; norm_num
-
 /-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
 theorem D_cexp_div (c : ℂ) (z : ℍ) :
     D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by

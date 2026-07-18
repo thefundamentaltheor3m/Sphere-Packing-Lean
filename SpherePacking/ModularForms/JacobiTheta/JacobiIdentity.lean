@@ -115,6 +115,10 @@ theorem jacobi_identity : H₂ + H₄ = H₃ := by
   ext z
   simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
 
+/-- Pointwise form of the Jacobi identity. -/
+lemma jacobi_identity_apply (z : ℍ) : H₃ z = H₂ z + H₄ z := by
+  rw [← Pi.add_apply, jacobi_identity]
+
 private noncomputable def theta_prod : ℍ → ℂ := H₂ * H₃ * H₄
 
 private lemma theta_prod_S_action : (theta_prod ∣[(6 : ℤ)] S) = -theta_prod := by
@@ -187,7 +191,8 @@ private lemma theta_prod_sq_proportional :
     ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=
   (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp finrank_cuspform_12 theta_prod_sq_CF
 
-private lemma H₂_div_exp_tendsto :
+/-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
+lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
