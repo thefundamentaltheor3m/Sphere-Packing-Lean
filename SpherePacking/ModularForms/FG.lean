@@ -1018,6 +1018,10 @@ theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
     rw [interior_Ioi] at ht
     exact deriv_FmodGReal_neg t ht
 
+/-- Reduce a power of `I * w` via `I ^ 4 = 1`. -/
+lemma I_mul_npow (w : ℂ) (n : ℕ) : (I * w) ^ n = I ^ (n % 4) * w ^ n := by
+  rw [mul_pow, I_pow_eq_pow_mod]
+
 /- Functional equation of $F$ -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -1027,59 +1031,43 @@ theorem F_functional_equation (z : ℍ) :
   field_simp [ne_zero z]
   linear_combination (12 * I * (z : ℂ) * π * (E₂ z * E₄ z - E₆ z) * E₄ z + 36 * E₄ z ^ 2) * I_sq
 
+/-- Functional equation of $F$ restricted to the imaginary axis. -/
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hF :
-      F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
-        - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
-          + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
-    rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
-    have hz : ((z : ℍ) : ℂ) = I * t := rfl
-    have e10 : ((z : ℍ) : ℂ) ^ 10 = -(t : ℂ) ^ 10 := by
-      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
-    have e11 : ((z : ℍ) : ℂ) ^ 11 = -I * (t : ℂ) ^ 11 := by
-      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
-    have e12 : ((z : ℍ) : ℂ) ^ 12 = (t : ℂ) ^ 12 := by
-      rw [hz, mul_pow, Complex.I_pow_eq_pow_mod]; simp
-    rw [e10, e11, e12]
-    linear_combination 12 * (π : ℂ) ^ (-1 : ℤ) * (t : ℂ) ^ 11 * (F₁ * E₄.toFun) z * I_sq
   calc (FReal (1 / t) : ℂ)
       = F.resToImagAxis (1 / t) := (F_eq_FReal (1 / t)).symm
     _ = (t : ℂ) ^ 12 * F z - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
-          + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := hF
+          + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
+        rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z,
+          show (z : ℂ) = I * t from rfl]
+        simp only [I_mul_npow, Nat.reduceMod, pow_zero, one_mul, I_sq, I_pow_three]
+        linear_combination 12 * (π : ℂ) ^ (-1 : ℤ) * (t : ℂ) ^ 11 * (F₁ * E₄.toFun) z * I_sq
     _ = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
           + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
         simp only [z, ResToImagAxis.I_mul_t_eq F t ht,
           ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht,
           ResToImagAxis.I_mul_t_eq E₄.toFun t ht, F_eq_FReal t]
 
-/- Functional equation of $G$ -/
+/-- Functional equation of $G$ under the modular inversion $S$. -/
 theorem G_functional_equation (z : ℍ) :
     G (S • z) = -z ^ 10 * H₄ z ^ 3 * (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-  change H₂ (S • z) ^ 3 *
-      ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
-       (5 : ℝ) * H₄ (S • z) ^ 2) = _
-  simp only [H₂_S_action', H₄_S_action', ofReal_ofNat]
+  simp only [G, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply, real_smul,
+    ofReal_ofNat, H₂_S_action', H₄_S_action']
   ring
 
+/-- Functional equation of $G$ restricted to the imaginary axis. -/
 theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     GReal (1 / t) = t ^ 10 * H₄.resToImagAxis t ^ 3
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
         + 5 * H₂.resToImagAxis t ^ 2) := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hG :
-      G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
-        (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
-          5 * H₂.resToImagAxis t ^ 2) := by
-    rw [ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z]
-    have e10 : ((z : ℍ) : ℂ) ^ 10 = -(t : ℂ) ^ 10 := by
-      rw [show ((z : ℍ) : ℂ) = I * t from rfl, mul_pow, Complex.I_pow_eq_pow_mod]; simp
-    rw [e10]
-    simp only [z, ResToImagAxis.I_mul_t_eq H₂ t ht, ResToImagAxis.I_mul_t_eq H₄ t ht]
-    ring
-  rwa [G_eq_GReal (1 / t)] at hG
+  rw [← G_eq_GReal (1 / t), ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z,
+    show (z : ℂ) = I * t from rfl, I_mul_npow]
+  simp only [Nat.reduceMod, I_sq, z, ResToImagAxis.I_mul_t_eq H₂ t ht,
+    ResToImagAxis.I_mul_t_eq H₄ t ht]
+  ring
 
 /-!
 ### Helper lemmas for the limit computation
