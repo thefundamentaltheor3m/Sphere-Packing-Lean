@@ -27,7 +27,7 @@ public theorem summable_pow_mul_exp_nat (k : ℕ) (e : ℕ+) (z : ℍ) :
       by rw [← Complex.exp_nsmul]; congr; ring]
   have hs := summable_norm_pow_mul_geometric_of_norm_lt_one
     (r := cexp (2 * ↑π * Complex.I * (↑e)* z)) k ?_
-  · simpa [Function.comp] using (hs.subtype (p := fun n : ℕ => 0 < n))
+  · exact hs.subtype (p := fun n : ℕ => 0 < n)
   have he : (0 : ℝ) < (e : ℝ) := by exact_mod_cast e.pos
   let z' : ℍ := ⟨(e : ℂ) * z, by simpa [Complex.mul_im] using mul_pos he z.im_pos⟩
   simpa [z', mul_assoc, mul_left_comm, mul_comm] using exp_upperHalfPlane_lt_one z'

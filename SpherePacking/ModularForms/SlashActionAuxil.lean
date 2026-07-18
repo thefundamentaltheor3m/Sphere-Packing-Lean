@@ -48,9 +48,7 @@ private lemma zmod_two_natCast_self : (2 : ZMod 2) = 0 := by
 
 /-- Identify `α` with `T^2` in `SL(2, ℤ)` (as an element of `Γ(2)`). -/
 public theorem α_eq_T_sq :
-    α = ⟨T ^ 2, by
-      simpa using
-        (ModularGroup_T_pow_mem_Gamma (N := (2 : ℤ)) (M := (2 : ℤ)) (dvd_rfl : (2 : ℤ) ∣ 2))⟩ := by
+    α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by
   ext
   simp [α, T, pow_two]
 
@@ -297,8 +295,9 @@ public theorem slashaction_generators_GL2R
     (∀ γ ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1),
        f ∣[k] γ = f) := by
   intro γ hγ
-  rcases (by simpa [Subgroup.mem_map] using hγ) with ⟨A, -, rfl⟩
-  simpa using slashaction_generators_SL2Z f k hS hT A
+  rcases Subgroup.mem_map.1 hγ with ⟨A, -, rfl⟩
+  change f ∣[k] A = f
+  exact slashaction_generators_SL2Z f k hS hT A
 
 /--
 Reduce invariance under `Γ(2)` (viewed in `GL(2, ℝ)`) to invariance under `α`, `β`, and `negI`.

@@ -52,7 +52,7 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
   have ht : Tendsto (fun τ : ℍ => cuspFunction (n : ℝ) f (Periodic.qParam (n : ℝ) τ)) atImInfty
       (𝓝 (UpperHalfPlane.valueAtInfty (f : ℍ → ℂ))) := by
     rw [← hzero]
-    simpa [cuspFunction] using
+    exact
       (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hn_pos hmem).continuousAt.tendsto.comp
         (UpperHalfPlane.qParam_tendsto_atImInfty hn_pos)
   exact ht.congr fun τ ↦ SlashInvariantFormClass.eq_cuspFunction (f := f) τ hmem

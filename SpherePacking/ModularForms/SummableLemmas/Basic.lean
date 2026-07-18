@@ -23,7 +23,7 @@ public lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddComm
 /-- If `f 0 = 0`, then summability over `ℕ+` is equivalent to summability over `ℕ`. -/
 public theorem nat_pos_tsum2 {α : Type _} [TopologicalSpace α] [AddCommMonoid α]
     (f : ℕ → α) (hf : f 0 = 0) : (Summable fun x : ℕ+ => f x) ↔ Summable f := by
-  simpa [Function.comp] using PNat.coe_injective.summable_iff (f := f) (by
+  exact PNat.coe_injective.summable_iff (f := f) (by
     intro x hx
     rcases Nat.eq_zero_or_pos x with rfl | hx'
     · simpa using hf

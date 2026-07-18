@@ -153,8 +153,8 @@ public theorem contDiff_of_hasDerivAt_succ
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (I : ℕ → ℝ → E)
     (hI : ∀ n x, HasDerivAt (I n) (I (n + 1) x) x) : ContDiff ℝ (⊤ : ℕ∞) (I 0) :=
   contDiff_of_differentiable_iteratedDeriv (n := (⊤ : ℕ∞)) fun m _ => by
-    simpa [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI m] using
-      fun x => (hI m x).differentiableAt
+    rw [iteratedDeriv_eq_of_hasDerivAt_succ (I := I) hI m]
+    exact fun x => (hI m x).differentiableAt
 
 /-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m`. -/
 public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x : ℝ) :
@@ -257,8 +257,7 @@ open Complex Real
 
 @[fun_prop]
 public lemma cutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoff := by
-  simpa [cutoff] using
-    Real.smoothTransition.contDiff.comp ((contDiff_const.mul contDiff_id).add contDiff_const)
+  exact Real.smoothTransition.contDiff.comp ((contDiff_const.mul contDiff_id).add contDiff_const)
 
 /-- Complex-valued version of `cutoff`. -/
 @[expose] public def cutoffC (r : ℝ) : ℂ := (cutoff r : ℂ)
@@ -274,7 +273,7 @@ public lemma cutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoff := by
 
 @[fun_prop]
 public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
-  simpa [cutoffC] using ofRealCLM.contDiff.comp cutoff_contDiff
+  exact ofRealCLM.contDiff.comp cutoff_contDiff
 
 /-- If `f` is smooth on `(-1, ∞)` then `r ↦ cutoffC r * f r` is smooth on all of `ℝ`. -/
 public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
@@ -324,7 +323,7 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
     SpherePacking.ForMathlib.exists_upper_bound_on_Icc
       (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖)
       (a := (-1 : ℝ)) (b := 0) (by norm_num) <| by
-        simpa using ((continuous_norm.pow k).mul (continuous_norm.comp
+        exact ((continuous_norm.pow k).mul (continuous_norm.comp
           (hg_smooth.continuous_iteratedFDeriv (m := n) (by
             exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤))))).continuousOn
   refine ⟨max (max Cmid Cpos) 0, fun x => ?_⟩
@@ -356,9 +355,9 @@ variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
     (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) : 𝓢(ℝ, ℂ) where
   toFun := fCut f
-  smooth' := by simpa [fCut] using cutoffC_contDiff.mul hf
+  smooth' := by exact cutoffC_contDiff.mul hf
   decay' := by
-    simpa [fCut] using cutoffC_mul_decay_of_nonneg_of_contDiff (f := f)
+    exact cutoffC_mul_decay_of_nonneg_of_contDiff (f := f)
       (cutoffC_contDiff.mul hf) hf_decay
 
 /-- On `0 ≤ r`, `fCut f` agrees with `f`. -/

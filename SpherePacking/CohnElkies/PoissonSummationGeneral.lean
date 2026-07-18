@@ -82,8 +82,7 @@ namespace SchwartzMap.UnitAddTorus
 /-- Continuity of the coordinatewise quotient map `coeFun`. -/
 @[continuity]
 public theorem continuous_coeFun {n : ℕ} : Continuous (coeFun n) := by
-  simpa [coeFun, UnitAddCircle] using
-    (continuous_pi fun i => (AddCircle.continuous_mk' (p := (1 : ℝ))).comp (continuous_apply i))
+  exact continuous_pi fun i => (AddCircle.continuous_mk' (p := (1 : ℝ))).comp (continuous_apply i)
 
 /-- A homeomorphism `α × (Fin n → α) ≃ (Fin (n+1) → α)`, specialized to constant families. -/
 def finSuccPiHomeomorph (α : Type*) [TopologicalSpace α] (n : ℕ) :
@@ -114,9 +113,9 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
         cases i using Fin.cases with
         | zero => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map]
         | succ i => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map, Fin.tail]
-      simpa [hconj] using
-        (IsOpenQuotientMap.comp eY.isOpenQuotientMap
-          (IsOpenQuotientMap.comp (IsOpenQuotientMap.prodMap h₁ ih) eX.isOpenQuotientMap))
+      rw [hconj]
+      exact IsOpenQuotientMap.comp eY.isOpenQuotientMap
+        (IsOpenQuotientMap.comp (IsOpenQuotientMap.prodMap h₁ ih) eX.isOpenQuotientMap)
 
 /-- Evaluate the additive character `mFourier k` on a point `x : ℝ^n` viewed in the torus
 via `coeFun`. -/
@@ -137,21 +136,22 @@ public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : Uni
   have hmp : MeasurePreserving (coeFun n)
       (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
       (volume : Measure (UnitAddTorus (Fin n))) := by
-    simpa [coeFun] using
-      (MeasureTheory.measurePreserving_pi
-        (μ := fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
-        (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
-        (hf := fun _ => UnitAddCircle.measurePreserving_mk t))
+    exact MeasureTheory.measurePreserving_pi
+      (μ := fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
+      (ν := fun _ : Fin n => (volume : Measure UnitAddCircle))
+      (hf := fun _ => UnitAddCircle.measurePreserving_mk t)
   have h1 : (∫ y : UnitAddTorus (Fin n), g y) =
       ∫ x, g (coeFun n x) ∂(Measure.pi fun _ : Fin n =>
         (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) := by
     rw [← hmp.map_eq]
     simpa using MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
       (hfm := by simpa [hmp.map_eq] using hg)
-  simpa [(by simpa using (Measure.restrict_pi_pi
-    (μ := fun _ : Fin n => (volume : Measure ℝ)) (s := fun _ : Fin n => Set.Ioc t (t + 1))) :
-    (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) =
-    Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))).symm] using h1
+  rw [show (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n =>
+      Set.Ioc t (t + 1)) =
+    Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)) from
+    Measure.restrict_pi_pi (μ := fun _ : Fin n => (volume : Measure ℝ))
+      (s := fun _ : Fin n => Set.Ioc t (t + 1))]
+  exact h1
 
 end SchwartzMap.UnitAddTorus
 
@@ -244,7 +244,7 @@ public lemma dualSubmodule_standardLattice_eq :
   fun x ↦ UnitAddTorus.coeFun d ((WithLp.ofLp : E → (Fin d → ℝ)) x)
 
 @[continuity] public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) := by
-  simpa [coeFunE] using (UnitAddTorus.continuous_coeFun (n := d)).comp
+  exact (UnitAddTorus.continuous_coeFun (n := d)).comp
     (PiLp.continuous_ofLp (p := (2 : ENNReal)) (β := fun _ : Fin d ↦ ℝ))
 
 @[simp] public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
@@ -338,9 +338,9 @@ variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
 public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
   measurable_const_vadd _ := by
-    simpa [Submodule.vadd_def, vadd_eq_add] using (continuous_const.add continuous_id).measurable
-  measurable_vadd_const _ := by simpa [Submodule.vadd_def, vadd_eq_add] using
-    (continuous_subtype_val.add continuous_const).measurable
+    exact (continuous_const.add continuous_id).measurable
+  measurable_vadd_const _ := by
+    exact (continuous_subtype_val.add continuous_const).measurable
 
 public instance instVAddInvariantMeasure_standardLattice :
     MeasureTheory.VAddInvariantMeasure Λ E (volume : Measure E) where
@@ -437,8 +437,9 @@ public lemma periodized_factorsThrough :
 
 /-- Descend the periodization to the torus `(ℝ/ℤ)^d` via the quotient. -/
 @[expose] public noncomputable def descended : C(UnitAddTorus (Fin d), ℂ) :=
-  Topology.IsQuotientMap.lift (hf := (show IsOpenQuotientMap (coeFunE (d := d)) by
-      simpa [coeFunE] using IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
+  Topology.IsQuotientMap.lift (f := coeFunEC (d := d))
+    (hf := (show IsOpenQuotientMap (coeFunE (d := d)) by
+      exact IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
         (PiLp.homeomorph (p := (2 : ENNReal))
           (β := fun _ : Fin d ↦ ℝ)).isOpenQuotientMap).isQuotientMap)
     (g := periodized (d := d) f) (periodized_factorsThrough (d := d) (f := f))
@@ -510,9 +511,8 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
         simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
           ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) _
     _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
-      simpa [translate_apply, ContinuousMap.restrict_apply] using
-        ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
-          ⟨x, iocCube_subset_closedBall (d := d) hx⟩
+      exact ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K)
+        ⟨x, iocCube_subset_closedBall (d := d) hx⟩
 
 section StandardPoissonSummation
 
@@ -542,9 +542,8 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
           simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
             ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n)) (coeFunE (d := d) x)
         simpa using (mul_le_mul hmFourier
-          (by simpa [translate_apply, ContinuousMap.restrict_apply] using
-              ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
-                ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
+          (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict (ball (d := d)))
+              ⟨x, iocCube_subset_closedBall (d := d) hx⟩ :
             ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖)
           (norm_nonneg _) (by norm_num)).trans (one_mul _).le)
 
@@ -756,14 +755,13 @@ lemma covolume_eq_abs_det_A :
       show (Matrix.of (Pi.basisFun ℝ (Fin d)) : Matrix (Fin d) (Fin d) ℝ) = 1 by
         ext; simp [Matrix.of_apply, Matrix.one_apply, Pi.basisFun_apply, Pi.single_apply, eq_comm]]
       using (show MeasurePreserving (fun x : E => (f x)) volume volume by
-        simpa [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv] using
-          PiLp.volume_preserving_ofLp (ι := Fin d)).measureReal_preimage
+        exact PiLp.volume_preserving_ofLp (ι := Fin d)).measureReal_preimage
       (ZSpan.fundamentalDomain_measurableSet (b := (Pi.basisFun ℝ (Fin d)))).nullMeasurableSet
   have hr : rBasis (d := d) L = fun i : Fin d => (zBasis (d := d) L i : E) :=
     funext fun i => by simp [rBasis]
   have hcovol : ZLattice.covolume L =
       |(stdBasis (d := d)).det (fun i : Fin d => (zBasis (d := d) L i : E))| := by
-    simpa [stdBasis, hvol] using
+    simpa [stdBasis, hvol, Function.comp_def] using
       ZLattice.covolume_eq_det_mul_measureReal (L := L) (b := zBasis (d := d) L)
         (b₀ := stdBasis (d := d)) (μ := (volume : Measure E))
   rw [hcovol, ← hr]; simp [A, stdBasis]
@@ -780,7 +778,7 @@ noncomputable def Aadjₗ : E →ₗ[ℝ] E := (Aₗ L).toLinearMap.adjoint
 
 noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[ℤ] L :=
   (LinearEquiv.restrictScalars ℤ (Aₗ L)).ofSubmodules (SchwartzMap.standardLattice d) L
-    (by simpa [LinearEquiv.restrictScalars_apply] using map_standardLattice_eq (d := d) L)
+    (by simpa [Aₗ, LinearEquiv.restrictScalars_apply] using map_standardLattice_eq (d := d) L)
 
 @[simp] lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
     ((equivStandardLattice (d := d) L x : L) : E) = (Aₗ L) x := by simp [equivStandardLattice]
@@ -869,11 +867,12 @@ private lemma poissonSummation_lattice_rhs (f : SchwartzMap E ℂ) (v : E) :
         cC * ∑' m : dualLattice (d := d) L, F m from by
     rw [← (PoissonSummation.Standard.equivIntVec.trans
       ((LinearEquiv.restrictScalars ℤ (adjointSymmEquiv L)).ofSubmodules _ _ <| by
-          simpa [LinearEquiv.restrictScalars_apply] using
+          simpa [adjointSymmEquiv, LinearEquiv.restrictScalars_apply] using
             map_standardLattice_adjointSymm_eq_dualSubmodule (d := d) (L := L)).toEquiv).tsum_eq
       (f := F), ← tsum_mul_left]
     exact tsum_congr fun n ↦ by
-      simpa [F, mul_assoc, poissonSummation_lattice_inner_swap (L := L) v (w := iv n)] using
+      simpa [F, iv, adjointSymmEquiv, mul_assoc,
+          poissonSummation_lattice_inner_swap (L := L) v (w := iv n)] using
         congrArg (· * Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ L) (iv n)⟫_[ℝ]))
           (hfourier (w := iv n))]
   simp [F, cC, show ZLattice.covolume L = abs detA from by
