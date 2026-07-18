@@ -68,9 +68,7 @@ public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.exp_lems
-public import SpherePacking.ModularForms.riemannZetalems
 public import SpherePacking.ModularForms.tsumderivWithin
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.TendstoCont
