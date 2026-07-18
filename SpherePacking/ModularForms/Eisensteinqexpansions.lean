@@ -28,13 +28,17 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [_root_.E]
-  change (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition z) = _
+  let F : ℍ → ℂ :=
+    (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition : ℍ → ℂ)
+  change F z = _
   calc
-    (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition z) =
+    F z =
         1 + (riemannZeta k)⁻¹ * (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
           ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) := by
-      simpa [ModularForm.E, standardcongruencecondition, smul_eq_mul] using
-        EisensteinSeries.q_expansion_riemannZeta (k := k) (by omega) hk2 z
+      have hq := EisensteinSeries.q_expansion_riemannZeta (k := k) (by omega) hk2 z
+      rw [ModularForm.E] at hq
+      change F z = _ at hq
+      exact hq
     _ = 1 + (1 / riemannZeta k) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
           ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
       rw [show ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) =
