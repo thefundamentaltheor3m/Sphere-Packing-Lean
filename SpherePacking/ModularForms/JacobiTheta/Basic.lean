@@ -56,7 +56,7 @@ lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
     simp [sq, hb, hb.neg_one_zpow, Even.neg_one_zpow, Odd.neg_one_zpow]
 
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
-  -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
+  -- H₄|T = (H₃|T)|T = H₃, since Θ₃ = jacobiTheta₂ 0 has period 2 in the second variable
   ext x
   simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc,
     ofReal_one, show (1 : ℂ) + 1 = 2 by norm_num, add_comm (2 : ℂ), jacobiTheta₂_add_right]
@@ -224,10 +224,7 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       rw [jacobiTheta₂_term_half_apply, ← Complex.exp_add]
       ring_nf
     simp_rw [this, ← smul_eq_mul (a := cexp _)]
-    have hz_im : 0 < (z : ℂ).im := by
-      rw [coe_im]
-      linarith
-    exact (((summable_jacobiTheta₂_term_iff _ z).mpr hz_im).const_smul
+    exact (((summable_jacobiTheta₂_term_iff _ z).mpr (by rw [coe_im]; linarith)).const_smul
       (cexp (π * I * z / 4))).norm
   · rw [Real.norm_eq_abs, Real.abs_exp]
     refine Real.exp_monotone ?_
@@ -375,8 +372,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     simp
   · intro n
     have : n = -1 ∨ n = 0 ∨ n ∉ ({-1, 0} : Set ℤ) := by
-      simp
-      tauto
+      rw [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
     rcases this with (rfl | rfl | hn) <;> ring_nf
     · simp
     · simp
@@ -534,16 +530,19 @@ private lemma summable_Θ₄_term_imagAxis (t : ℝ) (ht : 0 < t) :
   simp_rw [Θ₄_term_as_jacobiTheta₂_term, summable_jacobiTheta₂_term_iff]
   exact (⟨I * t, by simp [ht]⟩ : ℍ).im_pos
 
+/-- On the imaginary axis, the exponent of `Θ₂_term` is real. -/
+private lemma Θ₂_term_arg_imagAxis (n : ℤ) (t : ℝ) :
+    Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
+      ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) := by
+  push_cast
+  linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq
+
 /-- Each term `Θ₂_term n (I*t)` has zero imaginary part for `t > 0`. -/
 lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₂_term
   change (cexp (Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * t))).im = 0
-  have : Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
-        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) := by
-    push_cast
-    linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq
-  rw [this]
+  rw [Θ₂_term_arg_imagAxis]
   exact exp_ofReal_im _
 
 /-- `Θ₂(I*t)` has zero imaginary part for `t > 0`. -/
@@ -554,11 +553,7 @@ lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
 
 /-- `(-1 : ℂ)^n` has zero imaginary part for any integer n. -/
 lemma neg_one_zpow_im_eq_zero (n : ℤ) : ((-1 : ℂ) ^ n).im = 0 := by
-  rcases Int.even_or_odd n with hn | hn
-  · rw [hn.neg_one_zpow]
-    simp
-  · rw [hn.neg_one_zpow]
-    simp
+  rcases Int.even_or_odd n with hn | hn <;> (rw [hn.neg_one_zpow]; simp)
 
 /-- Each term `Θ₄_term n (I*t)` has zero imaginary part for `t > 0`. -/
 lemma Θ₄_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
@@ -569,8 +564,7 @@ lemma Θ₄_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     push_cast
     linear_combination ((Real.pi : ℂ) * (n : ℂ) ^ 2 * ↑t) * I_sq
   rw [this]
-  simp only [Complex.mul_im, neg_one_zpow_im_eq_zero, exp_ofReal_im,
-    mul_zero, zero_mul, add_zero]
+  simp only [Complex.mul_im, neg_one_zpow_im_eq_zero, exp_ofReal_im, mul_zero, zero_mul, add_zero]
 
 /-- `Θ₄(I*t)` has zero imaginary part for `t > 0`. -/
 lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
@@ -595,11 +589,7 @@ lemma Θ₂_term_imag_axis_re (n : ℤ) (t : ℝ) (ht : 0 < t) :
       Real.exp (-Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) := by
   unfold Θ₂_term
   change (cexp (Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * t))).re = _
-  have : Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
-        ((-(Real.pi * ((n : ℝ) + 1 / 2) ^ 2 * t) : ℝ) : ℂ) := by
-    push_cast
-    linear_combination ((Real.pi : ℂ) * ((n : ℂ) + 1 / 2) ^ 2 * ↑t) * I_sq
-  rw [this, Complex.exp_ofReal_re]
+  rw [Θ₂_term_arg_imagAxis, Complex.exp_ofReal_re]
   ring_nf
 
 /-- Each term `Θ₂_term n (I*t)` has positive real part for `t > 0`. -/
