@@ -1,0 +1,77 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
+module
+
+public import Mathlib.LinearAlgebra.Dimension.Localization
+public import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+
+public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.IsCuspForm
+public import SpherePacking.ModularForms.QExpansionLemmas
+
+/-!
+# Cusp forms vs. modular forms
+
+This file transports mathlib's `CuspForm.discriminantEquiv` (the equivalence between cusp forms
+of weight `k` and modular forms of weight `k - 12` for `𝒮ℒ`, given by division by `Δ`) to the
+project's `Γ(1)` setting and uses mathlib's `CuspForm.rank_eq_zero_of_weight_lt_twelve` to derive
+the level-one weight `< 12` vanishing statements.
+-/
+
+open scoped MatrixGroups CongruenceSubgroup
+
+open ModularForm UpperHalfPlane Complex
+
+noncomputable section
+
+/-- Type-level transport `CuspForm Γ(1) k ≃ CuspForm 𝒮ℒ k` along `Gamma_one_coe_eq_SL`. -/
+@[expose] public noncomputable def cuspForm_Gamma_one_equiv_SL (k : ℤ) :
+    CuspForm Γ(1) k ≃ₗ[ℂ] CuspForm 𝒮ℒ k where
+  toFun f := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
+  map_add' _ _ := by ext; rfl
+  map_smul' _ _ := by ext; rfl
+  invFun f := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL
+  left_inv _ := by ext; rfl
+  right_inv _ := by ext; rfl
+
+/-- Type-level transport `ModularForm Γ(1) k ≃ ModularForm 𝒮ℒ k` along `Gamma_one_coe_eq_SL`. -/
+@[expose] public noncomputable def modularForm_Gamma_one_equiv_SL (k : ℤ) :
+    ModularForm Γ(1) k ≃ₗ[ℂ] ModularForm 𝒮ℒ k where
+  toFun f := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL.symm
+  map_add' _ _ := by ext; rfl
+  map_smul' _ _ := by ext; rfl
+  invFun f := f.copy (⇑f) rfl CongruenceSubgroup.Gamma_one_coe_eq_SL
+  left_inv _ := by ext; rfl
+  right_inv _ := by ext; rfl
+
+/-- Division by the discriminant yields a linear equivalence between cusp forms of weight `k` and
+modular forms of weight `k - 12` (transport of mathlib's `CuspForm.discriminantEquiv` through
+`Gamma_one_coe_eq_SL`). -/
+public def CuspForms_iso_Modforms (k : ℤ) :
+    CuspForm Γ(1) k ≃ₗ[ℂ] ModularForm Γ(1) (k - 12) :=
+  ((cuspForm_Gamma_one_equiv_SL k).trans CuspForm.discriminantEquiv).trans
+    (modularForm_Gamma_one_equiv_SL (k - 12)).symm
+
+/-- Transport mathlib's `CuspForm.rank_eq_zero_of_weight_lt_twelve` from `𝒮ℒ` to `Γ(1)`. -/
+public lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) :
+    Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
+  rw [(cuspForm_Gamma_one_equiv_SL k).rank_eq]
+  exact CuspForm.rank_eq_zero_of_weight_lt_twelve hk
+
+/-- The rank of weight-12 cusp forms on `Γ(1)` is 1 (transport of
+`CuspForm.rank_eq_one_of_weight_eq_twelve`). -/
+public lemma cuspform_weight_12_finrank_one : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 := by
+  apply Module.finrank_eq_of_rank_eq
+  rw [(cuspForm_Gamma_one_equiv_SL (12 : ℤ)).rank_eq]
+  exact_mod_cast CuspForm.rank_eq_one_of_weight_eq_twelve
+
+/-- A modular form of level `Γ(1)` and weight `< 12` which is a cusp form is identically zero. -/
+public lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
+    (hf : IsCuspForm Γ(1) k f) : f = 0 := by
+  obtain ⟨g, hg⟩ := hf
+  have hg_zero : g = 0 := rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero k hk) g
+  ext z
+  rw [← hg]; simpa using DFunLike.congr_fun hg_zero z

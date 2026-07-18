@@ -1,0 +1,70 @@
+/-
+Copyright (c) 2025 Sphere Packing Lean contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Lean contributors
+-/
+module
+
+public import SpherePacking.ModularForms.Derivative.SlashFormula
+
+@[expose] public section
+
+/-!
+# Slash equivariance of the Serre derivative
+
+This file proves the Serre derivative `serre_D k F` is equivariant under the weight-`k` slash
+action: if `F ∣[k] γ = F` then `serre_D k F ∣[k+2] γ = serre_D k F`. As an application, for a
+level-one weight-`k` modular form `f`, we package `serre_D k f` as a modular form of weight
+`k + 2`.
+-/
+
+open scoped ModularForm MatrixGroups Manifold Topology BigOperators
+
+open UpperHalfPlane hiding I
+open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap ModularForm
+open ModularFormClass
+open Metric Filter Function
+open scoped Derivative
+
+/-- Expansion of the Serre derivative: `serre_D k F = D F - (k/12) • (E₂ * F)`. -/
+private lemma serre_D_eq_sub_smul (k : ℤ) (F : ℍ → ℂ) :
+    serre_D k F = D F - ((k : ℂ) * 12⁻¹) • (E₂ * F) := by
+  funext w
+  simp [serre_D, E₂]
+  ring
+
+/-- Slash action commutes with the product `E₂ * F` for `SL(2, ℤ)`. -/
+private lemma E₂_mul_slash (k : ℤ) (F : ℍ → ℂ) (γ : SL(2, ℤ)) :
+    (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
+  simpa [add_comm, add_left_comm, add_assoc] using
+    ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F)
+
+/-- Serre derivative is equivariant under the slash action. -/
+public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) :
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
+  intro γ
+  ext z
+  let c : ℂ := (k : ℂ) * 12⁻¹
+  let corr : ℍ → ℂ := fun w : ℍ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ w)
+  have hD' : D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
+      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
+    simpa [Pi.sub_apply] using congrFun (D_slash k F hF γ) z
+  have hE : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr z := by
+    simpa [corr] using congrFun (E₂_slash γ) z
+  calc
+    (serre_D k F ∣[k + 2] γ) z
+        = ((D F - c • (E₂ * F)) ∣[k + 2] γ) z := by rw [serre_D_eq_sub_smul]
+    _ = (D F ∣[k + 2] γ) z - c * ((E₂ ∣[(2 : ℤ)] γ) z * (F ∣[k] γ) z) := by
+          simp [sub_eq_add_neg, SlashAction.neg_slash, Pi.smul_apply, smul_eq_mul,
+            E₂_mul_slash k F γ, Pi.mul_apply]
+    _ = (D F ∣[k + 2] γ) z
+          - (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z
+          - c * (E₂ z * (F ∣[k] γ) z) := by rw [hE]; ring
+    _ = serre_D k (F ∣[k] γ) z := by
+          change _ =
+            D (F ∣[k] γ) z - (k : ℂ) * 12⁻¹ * EisensteinSeries.E2 z * (F ∣[k] γ) z
+          rw [hD', show EisensteinSeries.E2 z = E₂ z from rfl]; simp [c]; ring
+
+public theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ))
+    (h : F ∣[k] γ = F) : serre_D k F ∣[k + 2] γ = serre_D k F := by
+  simpa [h] using serre_D_slash_equivariant (k := k) (F := F) hF γ
