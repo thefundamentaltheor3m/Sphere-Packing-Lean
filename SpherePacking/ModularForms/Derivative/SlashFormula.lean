@@ -1,6 +1,10 @@
 module
 public import SpherePacking.ModularForms.Derivative.SerreD
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 @[expose] public section
 
 /-!
@@ -74,7 +78,7 @@ public lemma deriv_denom_zpow (k : ℤ) (z : ℍ) :
       HasDerivAt (fun w => denom γ w) ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) (z : ℂ) := by
     simpa [deriv_denom (γ := γ)] using (differentiableAt_denom γ (z : ℂ)).hasDerivAt
   have hcomp := (hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)).comp (z : ℂ) hderiv_denom
-  simpa [Function.comp, Int.cast_neg, mul_assoc, mul_left_comm, mul_comm] using hcomp.deriv
+  simpa [Function.comp_def, Int.cast_neg, mul_assoc, mul_left_comm, mul_comm] using hcomp.deriv
 
 end DSlashHelpers
 
@@ -99,7 +103,7 @@ private lemma slash_comp_ofComplex_eventuallyEq (k : ℤ) (F : ℍ → ℂ) (z :
     simpa [hsmul_coe] using this
   congr 2
   ext
-  · simpa [ofComplex_apply_of_im_pos hmob_im] using hsmul_coe
+  · simpa [gz, ofComplex_apply_of_im_pos hmob_im] using hsmul_coe
 
 /-- Power consolidations for the denominator: combine `1/d^2 * d^(-k)` and split `d^(-k-1)`. -/
 private lemma denom_pow_combine (k : ℤ) (z : ℍ) :

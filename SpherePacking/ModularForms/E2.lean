@@ -3,6 +3,10 @@ module
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 public import SpherePacking.ModularForms.SlashActionAuxil
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # The Eisenstein series `E₂`
 
@@ -35,6 +39,9 @@ def E₂ : ℍ → ℂ := EisensteinSeries.E2
 
 /-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := EisensteinSeries.D2 γ
+
+lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ) := by
+  exact EisensteinSeries.G2_slash_action γ
 
 lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
     ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
