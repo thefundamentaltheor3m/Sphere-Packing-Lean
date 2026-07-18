@@ -127,7 +127,7 @@ def G (n : ℕ) (x : ℝ) : ℂ := (-2 : ℂ) * F n x
 
 lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
     HasDerivAt (fun y : ℝ => F n y) (F (n + 1) x) x := by
-  simpa [F, μ] using
+  exact
     (SmoothIntegralIciOne.hasDerivAt_integral_gN
       (hf := ψS.resToImagAxis) (shift := (1 : ℝ))
       (exists_bound_norm_hf := by
@@ -1148,9 +1148,11 @@ private lemma J2'_add_J4'_zero_eq :
     Continuous.upperHalfPlaneMk (by fun_prop) (fun _ => by simp)
   simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
     (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := 0) (b := 1)
-      ((by exact MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
+      ((by simpa [ψI', Function.comp_def] using
+          MagicFunction.b.PsiBounds.continuous_ψI.comp hAddI :
             Continuous fun t : ℝ => ψI' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)
-      ((by exact MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
+      ((by simpa [ψT', Function.comp_def] using
+          MagicFunction.b.PsiBounds.continuous_ψT.comp hAddI :
             Continuous fun t : ℝ => ψT' ((t : ℂ) + Complex.I)).intervalIntegrable _ _)).symm.trans
       (intervalIntegral.integral_congr fun t _ => hrel t)
 

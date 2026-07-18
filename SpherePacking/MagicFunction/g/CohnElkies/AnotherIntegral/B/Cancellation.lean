@@ -10,6 +10,10 @@ import SpherePacking.ModularForms.JacobiTheta.Positivity
 import SpherePacking.ModularForms.JacobiTheta.SlashActions
 import SpherePacking.ModularForms.JacobiTheta.DeltaIdentity
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-! Cancellation estimates for `ψI'(it)` and the `bAnotherBase` bracket.
 
 After subtracting `exp (2π t)` and `144`, the remainder decays like `O(exp (-π t))`. The
@@ -1040,9 +1044,10 @@ private lemma psiI'_cancellation_decomp {t : ℝ} (ht0 : 0 < t) :
         ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ +
         (H₄.resToImagAxis t - H₂.resToImagAxis t) *
         ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹) by
-      simpa [Function.resToImagAxis, ResToImagAxis, ht0, nsmul_eq_mul, div_eq_mul_inv,
-        mul_add, add_mul] using
-          congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht0⟩) ψI_eq]
+      have h := congrArg (fun f : ℍ → ℂ => f ⟨Complex.I * (t : ℂ), by simpa using ht0⟩) ψI_eq
+      simp only [Function.resToImagAxis_apply, ResToImagAxis_apply_of_pos, ht0, nsmul_eq_mul,
+        div_eq_mul_inv, mul_add, add_mul] at h ⊢
+      exact h]
   ring
 
 /-- Combined bound for the two cross-terms in the `ψI'(it)` cancellation estimate: starting from

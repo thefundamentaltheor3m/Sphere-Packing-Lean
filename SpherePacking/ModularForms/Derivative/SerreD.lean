@@ -7,6 +7,10 @@ module
 
 public import SpherePacking.ModularForms.Derivative.Basic
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 @[expose] public section
 
 /-!
@@ -52,7 +56,7 @@ public theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDiff F 
 /-- Leibniz rule for the Serre derivative, with weights `k₁` and `k₂`. -/
 public theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
     serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by
-  simpa using Derivative.serreDerivative_mul (k₁ : ℂ) (k₂ : ℂ) F G hF hG
+  exact Derivative.serreDerivative_mul (k₁ : ℂ) (k₂ : ℂ) F G hF hG
 
 /-- The Serre derivative preserves MDifferentiability. -/
 public theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
@@ -67,6 +71,6 @@ public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) := Filter.const_boundedAtFilter _ _
     convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
     ext z
-    simp only [Pi.mul_apply]
+    try simp only [Pi.mul_apply]
     ring
   exact (D_isBoundedAtImInfty_of_bounded hf hbdd).sub hE₂f
