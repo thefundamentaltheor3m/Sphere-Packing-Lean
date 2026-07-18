@@ -238,10 +238,7 @@ private lemma basis_box_neg_one_one_isBounded {d : ℕ}
       have hcoord : ‖b.repr x i‖ ≤ 1 := by
         rw [Real.norm_eq_abs]
         exact abs_le.mpr ⟨by linarith, le_of_lt hi.2⟩
-      calc
-        ‖b.repr x i‖ * ‖b i‖ ≤ 1 * ‖b i‖ :=
-          mul_le_mul_of_nonneg_right hcoord (norm_nonneg _)
-        _ = ‖b i‖ := one_mul _
+      exact mul_le_of_le_one_left (norm_nonneg _) hcoord
 
 -- Issue #218: the unrestricted statement is false for arbitrary `X`; callers must place `X`
 -- inside the lattice before taking this finite intersection.
