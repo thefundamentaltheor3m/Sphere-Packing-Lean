@@ -19,6 +19,10 @@ public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.Tactic.NormNumI
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Jacobi theta functions: slash actions, modular form structure, boundedness at `i∞`
 
@@ -137,7 +141,7 @@ private lemma H₂_S_action_step1 {x : ℂ} (hx : 0 < x.im) :
       cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
   rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
   simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
-    zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
+    _root_.zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
   rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
   refine Or.inl ?_
   congr 3
@@ -201,8 +205,8 @@ public lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   have := jacobiTheta₂_functional_equation 0
   simp only [neg_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, zero_div,
     Complex.exp_zero, mul_one] at this
-  simp only [modular_slash_S_apply, H₃, inv_neg, Θ₃_as_jacobiTheta₂, Int.reduceNeg, zpow_neg,
-    Pi.neg_apply]
+  simp only [modular_slash_S_apply, H₃, inv_neg, Θ₃_as_jacobiTheta₂, Int.reduceNeg,
+    _root_.zpow_neg, Pi.neg_apply]
   rw [this, mul_pow, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
     mul_right_comm, ← neg_one_mul (_ ^ 4)]
   congr
@@ -224,7 +228,9 @@ public theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   refine ⟨H₄_imag_axis_real, fun t ht => ?_⟩
   set a : ℝ := t ^ (-(2 : ℤ)) with ha
   have hrel : H₄.resToImagAxis t = (a : ℂ) * H₂.resToImagAxis (1 / t) := by
-    have hIz : (Complex.I : ℂ) ^ (-(2 : ℤ)) = (-1 : ℂ) := by norm_num1
+    have hIz : (Complex.I : ℂ) ^ (-(2 : ℤ)) = (-1 : ℂ) := by
+      rw [_root_.zpow_neg, zpow_two, Complex.I_mul_I]
+      norm_num
     refine neg_injective ?_
     simpa [H₂_S_action, hIz, ha, Function.resToImagAxis, ResToImagAxis, ht, mul_assoc,
       mul_left_comm, mul_comm]

@@ -479,7 +479,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
           simpa [xI, yI] using
             (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := ⟨h0.1, h1.1⟩) (x := yI))
       _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := rfl
-      _ = _ := by simp [γ, δ, yI, Path.map', xI]; exact Path.segment_apply _ _ _
+      _ = _ := by simp [γ, δ, yI, Path.map', xI]
   have h :
       (∫ᶜ z in γ, ω z) + ∫ᶜ z in Path.segment (γ (1 : I01)) (δ (1 : I01)), ω z =
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
@@ -507,7 +507,7 @@ private lemma perm_J12_contour_h_aux {mobiusInv : ℂ → ℂ} {Ψ₁' : ℝ →
     show ((AffineMap.lineMap q0 q1) (1 : ℝ)) = ((Path.segment q0 q1) 1 : ℂ) from rfl,
     show ((AffineMap.lineMap p0 p1) (0 : ℝ)) = ((Path.segment p0 p1) 0 : ℂ) from rfl,
     show ((AffineMap.lineMap q0 q1) (0 : ℝ)) = ((Path.segment q0 q1) 0 : ℂ) from rfl]
-  rw [add_comm] at h
+  rw [add_comm (∫ᶜ z in δ, ω z) (∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z)] at h
   exact h
 
 /-- Contour deformation `h1`: from mapped segment `(-1 → -1 + I)` to vertical segment

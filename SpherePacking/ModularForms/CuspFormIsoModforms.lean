@@ -12,6 +12,10 @@ public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.QExpansionLemmas
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Cusp forms vs. modular forms
 
@@ -74,4 +78,6 @@ public lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularFo
   obtain ⟨g, hg⟩ := hf
   have hg_zero : g = 0 := rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero k hk) g
   ext z
-  rw [← hg]; simpa using DFunLike.congr_fun hg_zero z
+  rw [← hg]
+  have h0 : g z = 0 := by simpa using DFunLike.congr_fun hg_zero z
+  exact h0

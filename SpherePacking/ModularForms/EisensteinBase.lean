@@ -7,6 +7,10 @@ public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 import SpherePacking.Tactic.NormNumI
 
+-- Migration shim for the Lean v4.31 module system: several proofs in this file rely on
+-- unfolding definitions that mathlib no longer exposes.
+set_option backward.isDefEq.respectTransparency false
+
 
 /-!
 # Level-one Eisenstein series and auxiliary ratios
@@ -197,7 +201,9 @@ This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_
 theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     ResToImagAxis.Real (E k hk).toFun := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  show (dite (0 < t) (fun ht => (E k hk).toFun ⟨Complex.I * t, by simp [ht]⟩)
+    (fun _ => 0)).im = 0
+  rw [dif_pos ht]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E k hk z).im = 0
   have hq := E_k_q_expansion k hk hk2 z
@@ -307,7 +313,8 @@ public lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   have hsumm_nat : Summable (fun n : ℕ ↦ (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
   have hsumm_majorant : Summable (fun n : ℕ+ ↦ (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
+    simp only [div_eq_mul_inv]
+    exact (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
   have hterm_bound (n : ℕ+) : ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * r ^ (n : ℕ) / (1 - r) := by
     rw [norm_div, norm_mul, Complex.norm_natCast]
