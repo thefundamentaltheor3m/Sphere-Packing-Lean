@@ -243,8 +243,8 @@ private lemma basis_box_neg_one_one_isBounded {d : ℕ}
 -- Issue #218: the unrestricted statement is false for arbitrary `X`; callers must place `X`
 -- inside the lattice before taking this finite intersection.
 theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
-  {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ]
-  (hX : X ⊆ Λ) :
+    {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ]
+    (hX : X ⊆ Λ) :
   let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
   let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
