@@ -92,6 +92,13 @@ lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
   exact (hana.continuousAt.tendsto.comp (qParam_tendsto_atImInfty one_pos)).congr
     fun τ ↦ eq_cuspFunction τ one_ne_zero E₂_periodic_comp_ofComplex
 
+/-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
+lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
+    fun z => Real.exp (-(2 * π) * z.im) := by
+  have h := exp_decay_sub_atImInfty one_pos E₂_periodic_comp_ofComplex E₂_holo'
+    isBoundedAtImInfty_E2
+  simpa [neg_mul, show valueAtInfty E₂ = 1 from E₂_tendsto_one_atImInfty.limUnder_eq] using h
+
 /-- E₄ → 1 at i∞. -/
 lemma E₄_tendsto_one_atImInfty : Filter.Tendsto E₄.toFun atImInfty (nhds 1) :=
   E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄
