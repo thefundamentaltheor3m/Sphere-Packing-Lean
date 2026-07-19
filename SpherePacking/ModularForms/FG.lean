@@ -1205,35 +1205,32 @@ theorem FmodG_rightLimitAt_zero :
     (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
       simpa [one_div, inv_inv] using ht.symm
 
-/--
-Main inequalities between $F$ and $G$ on the imaginary axis.
+/-!
+### Main inequalities between $F$ and $G$ on the imaginary axis
 -/
+
+/-- $F(it) + 18\pi^{-2} G(it) > 0$ for $t > 0$, since $F$ and $G$ are both positive on the
+imaginary axis. -/
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
   have := F_imag_axis_pos.2 t ht
   have := G_imag_axis_pos.2 t ht
   positivity
 
+/-- $F(it) - 18\pi^{-2} G(it) < 0$ for $t > 0$: the ratio $F/G$ is strictly antitone on the
+imaginary axis with right limit $18\pi^{-2}$ at $0$, so it stays strictly below $18\pi^{-2}$. -/
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
-  rw [sub_neg]
-  -- Helper: FmodGReal u ≤ L for any u > 0 (from limit + strict antitonicity)
-  have hLe : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu => by
-    by_contra hGt
-    push Not at hGt
-    have hLim := FmodG_rightLimitAt_zero; rw [Metric.tendsto_nhdsWithin_nhds] at hLim
-    obtain ⟨δ, _, hLim'⟩ := hLim _ (sub_pos.mpr hGt)
-    set s := min (u / 2) (δ / 2)
-    have hs : 0 < s := by positivity
-    have hsd : dist s 0 < δ := by simp [abs_of_pos hs]; linarith [min_le_right (u / 2) (δ / 2)]
-    have hBound := hLim' hs hsd; rw [Real.dist_eq] at hBound
-    have hStrict := FmodG_strictAntiOn (Set.mem_Ioi.mpr hs) (Set.mem_Ioi.mpr hu)
-      (lt_of_le_of_lt (min_le_left _ _) (by linarith : u / 2 < u))
-    linarith [abs_sub_lt_iff.mp hBound]
-  -- FmodGReal t < L: by strict antitonicity, FmodGReal t < FmodGReal (t/2) ≤ L
-  have hGoal : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
-    lt_of_lt_of_le (FmodG_strictAntiOn (Set.mem_Ioi.mpr (by linarith : (0:ℝ) < t/2))
-      (Set.mem_Ioi.mpr ht) (by linarith : t / 2 < t)) (hLe (t / 2) (by linarith))
-  calc FReal t = FmodGReal t * GReal t := by unfold FmodGReal; field_simp
-    _ < 18 * (π ^ (-2 : ℤ)) * GReal t := mul_lt_mul_of_pos_right hGoal hG
+  -- `FmodGReal` is bounded by its right limit at `0` on all of `(0, ∞)`, being antitone there,
+  have hle : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu =>
+    ge_of_tendsto FmodG_rightLimitAt_zero <| by
+      filter_upwards [self_mem_nhdsWithin, (gt_mem_nhds hu).filter_mono nhdsWithin_le_nhds]
+        with s hs hsu
+      exact (FmodG_strictAntiOn hs (Set.mem_Ioi.mpr hu) hsu).le
+  -- and in fact lies strictly below it, by comparison with the value at `t / 2`.
+  have hlt : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
+    (FmodG_strictAntiOn (Set.mem_Ioi.mpr (half_pos ht)) (Set.mem_Ioi.mpr ht)
+      (half_lt_self ht)).trans_le (hle _ (half_pos ht))
+  rw [sub_neg, ← div_lt_iff₀ hG]
+  exact hlt
