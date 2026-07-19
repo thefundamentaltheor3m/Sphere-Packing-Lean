@@ -374,68 +374,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
 
 end ImagAxisProperties
 
-/-! ## Boundedness of E₂ -/
-
-/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
-
-This bound on the q-parameter is useful for estimating q-expansions when im(z) ≥ 1. -/
-lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
-    ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
-  have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-    rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-    simp [Complex.I_re, Complex.I_im, mul_comm]
-  rw [Complex.norm_exp, h, Real.exp_le_exp]
-  nlinarith [Real.pi_pos]
-
-/-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
-private lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
-    (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-  have hs : Summable fun n : ℕ => (n : ℝ) * r ^ n := by
-    simpa using summable_pow_mul_geometric_of_norm_lt_one (k := 1) (r := r) hr
-  rw [← tsum_coe_mul_geometric_of_norm_lt_one hr, ← tsum_zero_pnat_eq_tsum_nat hs]
-  simp
-
-/-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
-
-For ‖q‖ < 1, we have ‖∑ₙ₌₁ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³.
-
-The key estimates are:
-- |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| for n ≥ 1
-- |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|)
-- ∑ n·rⁿ = r/(1-r)², so ∑ n·rⁿ/(1-r) = r/(1-r)³ -/
-lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
-    ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := by
-  set r : ℝ := ‖q‖
-  have hr_norm_lt_one : ‖r‖ < 1 := by rwa [Real.norm_of_nonneg (norm_nonneg q)]
-  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
-    simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
-  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    change Summable (fun n : {n : ℕ // 0 < n} => (n : ℝ) * r ^ (n : ℕ) / (1 - r))
-    simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
-  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
-      n * r ^ (n : ℕ) / (1 - r) := fun n => by
-    rw [norm_div, norm_mul, Complex.norm_natCast]
-    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := calc
-      1 - r ≤ 1 - r ^ (n : ℕ) := by
-        have : r ^ (n : ℕ) ≤ r := pow_le_of_le_one q.norm_nonneg hq.le n.ne_zero
-        linarith
-      _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
-      _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
-        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
-    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
-          exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
-            (sub_pos.mpr hq) hdenom_lower
-      _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow]
-  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=
-    .of_nonneg_of_le (fun _ => norm_nonneg _) hterm_bound hsumm_majorant
-  calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ := norm_tsum_le_tsum_norm hsumm_norms
-    _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
-        hsumm_norms.tsum_le_tsum hterm_bound hsumm_majorant
-    _ = r / (1 - r) ^ 3 := by
-        simp only [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one,
-          pow_succ]
-        field_simp
+/-! ## Boundedness of Eisenstein series -/
 
 /-- E₄ is bounded at infinity (as a modular form). -/
 lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
