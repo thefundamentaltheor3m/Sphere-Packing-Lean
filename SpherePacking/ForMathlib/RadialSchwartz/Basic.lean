@@ -24,11 +24,55 @@ whole multiplying-by-a-smooth-transition-function trick.
 
 @[expose] public section
 
+section IsRadial
+
+namespace Function
+
+variable {E F : Type*} [Norm E] [Norm F]
+
+def IsRadial (f : E → F) : Prop := ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
+
+end Function
+
+-- Do some work on rotations. See here: https://www.math.columbia.edu/~woit/fourier-analysis/higherdimensions.pdf
+
+end IsRadial
+
+section RadialSchwartz
+
+open SchwartzMap
+
+@[simps]
+def RadialSchwartzMap (E F : Type*)
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] :
+    Submodule ℝ 𝓢(E, F) where
+  carrier := {f | Function.IsRadial f}
+  add_mem' := by grind [Function.IsRadial]
+  zero_mem' := by simp [Function.IsRadial]
+  smul_mem' := by grind [Function.IsRadial]
+
+section fourier
+
+open SchwartzMap Real FourierTransform
+
 variable {E F : Type*}
-variable [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable [NormedAddCommGroup F] [NormedSpace ℝ F]
+variable [NormedAddCommGroup E] [NormedAddCommGroup F]
+variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
+variable [NormedSpace ℂ F]
 
-structure RadialSchwartzMap extends SchwartzMap E F where
-  radial : ∀ x y : E, ‖x‖ = ‖y‖ → toSchwartzMap x = toSchwartzMap y
+lemma radialSchwartzMap_map_le : (RadialSchwartzMap E F).map
+    (fourierTransformCLM ℝ (V := E) (E := F)).toLinearMap ≤ RadialSchwartzMap E F := by
+  intro f hf x y hxy
+  simp only [Submodule.mem_map, ContinuousLinearMap.coe_coe, fourierTransformCLM_apply] at hf
+  obtain ⟨g, hg, hg_fourier⟩ := hf
+  rw [← hg_fourier, SchwartzMap.fourier_coe, Real.fourier_eq g x, Real.fourier_eq g y]
+  congr with v
+  congr 1
+  sorry
 
+#check FourierTransform.fourier
+#check SchwartzMap.instFourierTransform.fourier
 
+end fourier
+
+end RadialSchwartz
