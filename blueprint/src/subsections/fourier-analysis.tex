@@ -13,15 +13,15 @@ Recall the definition of a Fourier transform.
 The following computational result will be of use later on.
 
 \begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_innerProductSpace}
-  Let $z \in \h$ and let $G_z : \R^8 \to \C$ denote the Gaussian $G_z(x) := e^{\pi i \|x\|^2 z}$. Then, for all $y \in \R^8$,
+  For every $z \in \h$, the Gaussian $x \mapsto e^{\pi i \|x\|^2 z}$ on $\R^8$ satisfies
   \begin{equation}
-    \mathcal{F}(G_z)(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
+    \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
 \end{lemma}
 \begin{proof}
   Mathlib knows the Fourier transform of the Gaussian $x \mapsto e^{-b\|x\|^2}$ on a $d$-dimensional inner product space for any $b \in \C$ with $\Re(b) > 0$: it equals $y \mapsto (\pi/b)^{d/2}\,e^{-\pi^2\|y\|^2/b}$ (see \verb|fourier_gaussian_innerProductSpace|). Taking $d = 8$ and $b = -\pi i z$, which satisfies $\Re(b) = \pi \Im(z) > 0$, we obtain
   \[
-    \mathcal{F}(G_z)(y) = \left(\frac{\pi}{-\pi i z}\right)^{4} e^{-\pi^2\|y\|^2/(-\pi i z)}
+    \left(\frac{\pi}{-\pi i z}\right)^{4} e^{-\pi^2\|y\|^2/(-\pi i z)}
     = z^{-4}\, e^{\pi i \|y\|^2(-1/z)},
   \]
   where no branch-cut issues arise because the exponent $d/2 = 4$ is an integer.
