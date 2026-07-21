@@ -8,7 +8,8 @@ module
 
 public import SpherePacking.MagicFunction.b.Schwartz
 
-/-! # Special Values of `b`
+/-!
+# Special Values of `b`
 
 This file records special values of the function `b`.
 -/

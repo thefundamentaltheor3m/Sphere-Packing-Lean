@@ -7,7 +7,8 @@ public import SpherePacking.ModularForms.tsumderivWithin
 public import Mathlib.Analysis.Calculus.DiffContOnCl
 public import Mathlib.Analysis.Complex.Liouville
 
-/-! # Derivatives of Modular Forms
+/-!
+# Derivatives of Modular Forms
 
 Definition of the (Serre) derivative of modular forms and Ramanujan's formulas for the derivatives
 of the Eisenstein series.

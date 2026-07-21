@@ -8,7 +8,8 @@ module
 
 public import SpherePacking.MagicFunction.b.Schwartz
 
-/-! # The Fourier Eigenfunction Property of `b`
+/-!
+# The Fourier Eigenfunction Property of `b`
 
 This file establishes that the function `b` is a `-1`-eigenfunction of the Fourier transform.
 -/

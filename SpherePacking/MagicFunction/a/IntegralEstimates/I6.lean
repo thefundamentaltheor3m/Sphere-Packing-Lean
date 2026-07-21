@@ -11,7 +11,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-/-! # Constructing Upper-Bounds for I₆
+/-!
+# Constructing Upper-Bounds for I₆
 
 The purpose of this file is to construct bounds on the integral `I₆` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
