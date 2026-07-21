@@ -28,7 +28,7 @@ public import SpherePacking.ForMathlib.InvPowSummability
 /-!
 # Prerequisites for the Cohn–Elkies Bound
 
-Auxiliary results on Schwartz functions used in the proof of the Cohn–Elkies linear programming bound.
+Auxiliary results on Schwartz functions used in the proof of the Cohn–Elkies bound.
 -/
 
 @[expose] public section
