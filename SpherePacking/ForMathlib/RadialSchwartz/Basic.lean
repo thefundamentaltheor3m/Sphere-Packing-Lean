@@ -24,7 +24,7 @@ whole multiplying-by-a-smooth-transition-function trick.
 
 @[expose] public section
 
-section IsRadial
+section Radial_Functions
 
 namespace Function
 
@@ -34,9 +34,15 @@ def IsRadial (f : E → F) : Prop := ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = 
 
 end Function
 
+
+
 -- Do some work on rotations. See here: https://www.math.columbia.edu/~woit/fourier-analysis/higherdimensions.pdf
 
-end IsRadial
+#check ContinuousLinearMap.rotation
+#check Matrix.orthogonalGroup
+#check Matrix.specialOrthogonalGroup
+
+end Radial_Functions
 
 section RadialSchwartz
 
