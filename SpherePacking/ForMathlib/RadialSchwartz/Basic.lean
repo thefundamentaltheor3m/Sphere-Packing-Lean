@@ -34,6 +34,7 @@ structure RadialSchwartzMap extends SchwartzMap E F where
 section Rotation
 
 open Module
+open scoped RealInnerProductSpace
 
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
 
@@ -42,6 +43,22 @@ private theorem det_reflection_orthogonal_span_singleton [FiniteDimensional ℝ 
     (hv : v ≠ 0) : LinearMap.det (Submodule.reflection (ℝ ∙ v)ᗮ).toLinearMap = -1 := by
   rw [Submodule.det_reflection, Submodule.orthogonal_orthogonal, finrank_span_singleton hv,
     pow_one]
+
+/-- In a real inner product space that is not one-dimensional, there is a nonzero vector
+orthogonal to any given nonzero vector `y`. The witness is explicit: the Gram–Schmidt remainder
+`w - starProjection w` of any vector `w` outside `ℝ ∙ y`, where `Submodule.starProjection` is the
+orthogonal projection onto `ℝ ∙ y`. -/
+theorem exists_ne_zero_inner_eq_zero (hV : finrank ℝ V ≠ 1) {y : V} (hy : y ≠ 0) :
+    ∃ u : V, u ≠ 0 ∧ ⟪u, y⟫ = 0 := by
+  have hspan : (ℝ ∙ y) ≠ ⊤ := fun htop =>
+    hV (by rw [← finrank_span_singleton hy, htop, finrank_top])
+  obtain ⟨w, -, hw⟩ := SetLike.exists_of_lt (lt_top_iff_ne_top.mpr hspan)
+  refine ⟨w - (ℝ ∙ y).starProjection w, ?_, ?_⟩
+  · intro h
+    rw [sub_eq_zero] at h
+    exact hw (Submodule.starProjection_eq_self_iff.mp h.symm)
+  · exact Submodule.mem_orthogonal_singleton_iff_inner_left.mp
+      (Submodule.sub_starProjection_mem_orthogonal w)
 
 /-- In a real inner product space that is not one-dimensional, two vectors have the same norm if
 and only if there is a rotation (a linear isometry equivalence of determinant `1`) mapping one to
@@ -63,11 +80,7 @@ theorem norm_eq_iff_exists_rotation (hV : finrank ℝ V ≠ 1) (x y : V) :
       rintro rfl
       exact hxy (norm_eq_zero.mp (h.trans norm_zero))
     -- Since `V` is not a line, there is a nonzero vector `u` orthogonal to `y`.
-    obtain ⟨u, hu_mem, hu⟩ : ∃ u ∈ (ℝ ∙ y)ᗮ, u ≠ 0 := by
-      rw [← Submodule.ne_bot_iff]
-      intro hbot
-      exact hV (by
-        rw [← finrank_span_singleton hy, Submodule.orthogonal_eq_bot_iff.mp hbot, finrank_top])
+    obtain ⟨u, hu, hu_inner⟩ := exists_ne_zero_inner_eq_zero hV hy
     -- Composing the reflection sending `x` to `y` with a reflection fixing `y` gives a rotation
     -- sending `x` to `y`.
     refine ⟨(Submodule.reflection (ℝ ∙ (x - y))ᗮ).trans (Submodule.reflection (ℝ ∙ u)ᗮ), ?_, ?_⟩
@@ -81,7 +94,7 @@ theorem norm_eq_iff_exists_rotation (hV : finrank ℝ V ≠ 1) (x y : V) :
     · rw [LinearIsometryEquiv.trans_apply, Submodule.reflection_sub h]
       refine Submodule.reflection_mem_subspace_eq_self ?_
       rw [Submodule.mem_orthogonal_singleton_iff_inner_left, real_inner_comm]
-      exact Submodule.mem_orthogonal_singleton_iff_inner_left.mp hu_mem
+      exact hu_inner
   · -- In infinite dimension every determinant is `1`, so the reflection sending `x` to `y`
     -- already counts as a rotation.
     exact ⟨Submodule.reflection (ℝ ∙ (x - y))ᗮ,
