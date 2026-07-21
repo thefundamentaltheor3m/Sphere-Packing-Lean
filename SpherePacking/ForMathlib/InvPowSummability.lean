@@ -92,7 +92,7 @@ theorem Summable_of_Inv_Pow_Summable'
     let k := d + 1
     have hk' : 0 < k := by positivity
     rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-    simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
+    simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs] at hX
     obtain ⟨C, hC⟩ := hf k
     simp only [Real.norm_eq_abs] at hC
     have hC_nonneg : 0 ≤ C := by
@@ -239,7 +239,7 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   [Finite (Quotient ρ.orbitRel)]
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
+  simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs]
   intro ε hε
   -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
   let bℤ : Basis _ ℤ Λ :=

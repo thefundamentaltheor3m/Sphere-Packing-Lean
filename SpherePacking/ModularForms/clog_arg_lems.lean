@@ -37,13 +37,13 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
           rw [← neg_div] at hnal
           rw [div_lt_iff₀' ] at hnal
           · rw [Nat.cast_add, add_mul] at hnal
-            simpa only [gt_iff_lt, Nat.cast_one, one_mul] using hnal
+            simpa only [Nat.cast_one, one_mul] using hnal
           · norm_cast
             omega
         · have hnal := hna.2
           rw [lt_div_iff₀', Nat.cast_add] at hnal
           · rw [add_mul] at hnal
-            simpa only [ge_iff_le, Nat.cast_one, one_mul] using hnal.le
+            simpa only [Nat.cast_one, one_mul] using hnal.le
           · norm_cast
             omega
       apply lt_trans hna
@@ -67,7 +67,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
     have h3 := h2.comp hf1
     simp only [arg_one] at h3
     rw [Metric.tendsto_nhds] at *
-    simp only [gt_iff_lt, dist_zero_right, eventually_atTop,
+    simp only [dist_zero_right, eventually_atTop,
       dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
     by_cases hn0 : n = 0
     · rw [hn0]
@@ -99,7 +99,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
     have h3 := h2.comp hf1
     simp only [arg_one] at h3
     rw [Metric.tendsto_nhds] at *
-    simp only [gt_iff_lt, dist_zero_right, dist_self_add_left, arg_one, Real.norm_eq_abs,
+    simp only [dist_zero_right, dist_self_add_left, arg_one, Real.norm_eq_abs,
       comp_apply] at *
     by_cases hn0 : n = 0
     · simp_rw [hn0]
