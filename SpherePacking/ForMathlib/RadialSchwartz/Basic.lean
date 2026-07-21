@@ -31,4 +31,17 @@ variable [NormedAddCommGroup F] [NormedSpace ℝ F]
 structure RadialSchwartzMap extends SchwartzMap E F where
   radial : ∀ x y : E, ‖x‖ = ‖y‖ → toSchwartzMap x = toSchwartzMap y
 
+section Rotation
 
+/- Transitivity of the orthogonal group on spheres requires an inner product: in a general normed
+space, linear isometries need not act transitively on spheres (e.g. `ℝ²` with the sup norm). -/
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+
+/-- In a real inner product space, any two vectors of the same norm are related by a rotation,
+formalised here as a linear isometry equivalence. The witness is the reflection through the
+hyperplane orthogonal to `x - y`. -/
+theorem exists_linearIsometryEquiv_apply_eq_of_norm_eq {x y : V} (h : ‖x‖ = ‖y‖) :
+    ∃ T : V ≃ₗᵢ[ℝ] V, T x = y :=
+  ⟨Submodule.reflection (ℝ ∙ (x - y))ᗮ, Submodule.reflection_sub h⟩
+
+end Rotation
