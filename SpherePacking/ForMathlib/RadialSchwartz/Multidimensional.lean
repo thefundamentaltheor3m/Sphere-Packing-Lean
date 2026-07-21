@@ -10,7 +10,8 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
-public import Mathlib -- TODO: less broad import
+public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
+public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 @[expose] public section
 
@@ -36,38 +37,6 @@ end SchwartzMap_multidimensional_of_schwartzMap_real
 -- def SchwartzMap.of_nonneg
 
 open ContDiff
-
-@[simp]
-lemma SchwartzMap.mk_apply {f : ℝ → ℂ} {smooth : ContDiff ℝ ∞ f}
-    {decay : ∀ (k n : ℕ), ∃ C : ℝ, ∀ x : ℝ, ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C} (x : ℝ) :
-  (⟨f, smooth, decay⟩ : 𝓢(ℝ, ℂ)) x = f x := rfl
-
--- TODO: generalize away from ℝ, ℂ
--- TODO: think about if contdiff can be restricted
-open Filter Topology
-@[simps]
-def SchwartzMap.mkOfCocompact (f : ℝ → ℂ) (smooth : ContDiff ℝ ∞ f)
-    (decay : ∀ k n : ℕ, ∃ C : ℝ, ∀ᶠ x in cocompact ℝ, ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
-    𝓢(ℝ, ℂ) where
-  toFun := f
-  smooth' := smooth
-  decay' k n := by
-    specialize decay k n
-    obtain ⟨C, hC⟩ := decay
-    rw [Filter.Eventually, Filter.mem_cocompact] at hC
-    obtain ⟨t, ht, ht'⟩ := hC
-    rw [Set.subset_def] at ht'
-    simp only [Set.mem_compl_iff, Set.mem_setOf_eq] at ht'
-    let g : ℝ → ℝ := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖
-    have : Continuous g := by
-      apply Continuous.mul
-      · fun_prop
-      have := smooth.continuous_iteratedFDeriv (m := n) (WithTop.coe_le_coe.2 (by simp))
-      fun_prop
-    obtain ⟨C', hC'⟩ := ht.exists_bound_of_continuousOn this.continuousOn
-    simp only [norm_mul, norm_pow, norm_norm, g] at hC'
-    use max C C'
-    grind
 
 open Set
 -- TODO: it suffices for decay to hold coboundedly
