@@ -48,7 +48,7 @@ protected theorem tsum_le_tsum (h : f ≤ g) : ∑' a, f a ≤ ∑' a, g a :=
   Summable.tsum_le_tsum h ENat.summable ENat.summable
 
 protected theorem sum_le_tsum {f : α → ℕ∞} (s : Finset α) : ∑ x ∈ s, f x ≤ ∑' x, f x :=
-  Summable.sum_le_tsum s (fun _ _ ↦ zero_le') ENat.summable
+  Summable.sum_le_tsum s (fun _ _ ↦ zero_le) ENat.summable
 
 protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
   Summable.le_tsum' ENat.summable a
@@ -73,13 +73,13 @@ protected theorem tsum_subtype_union_disjoint {s t : Set α} (hd : Disjoint s t)
 
 protected theorem tsum_subtype_le_of_subset {s t : Set α} (h : s ⊆ t) :
     ∑' (x : s), f x ≤ ∑' (x : t), f x := by
-  rw [← Set.diff_union_of_subset h, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
+  rw [← Set.sdiff_union_of_subset h, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
   exact le_add_self
 
 protected theorem tsum_subtype_union_le (s t : Set α) :
     ∑' (x : ↑(s ∪ t)), f (x : α) ≤ ∑' (x : s), f x + ∑' (x : t), f x := by
-  rw [← Set.diff_union_self, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
-  exact add_le_add_left (ENat.tsum_subtype_le_of_subset diff_subset) _
+  rw [← Set.sdiff_union_self, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
+  exact add_le_add_left (ENat.tsum_subtype_le_of_subset Set.sdiff_subset) _
 
 protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
     ∑' (x : ↑(insert a s)), f x = f a + ∑' (x : s), f x := by
@@ -126,7 +126,7 @@ protected theorem tsum_eq_top_of_support_infinite (hf : f.support.Infinite) : �
   refine ⟨hfin.toFinset, hbt.trans_le ?_⟩
   rw [hfin.encard_eq_coe_toFinset_card, Finset.card_eq_sum_ones, Nat.cast_sum]
   refine Finset.sum_le_sum fun i hi ↦ ?_
-  simp only [Nat.cast_one, ENat.one_le_iff_ne_zero]
+  simp only [Nat.cast_one, Order.one_le_iff_ne_zero]
   exact htf <| by simpa using hi
 
 protected theorem tsum_const_eq_top {ι : Type*} [Infinite ι] {c : ℕ∞} (hc : c ≠ 0) :
@@ -165,7 +165,7 @@ protected theorem tsum_subtype_const_eq_top_of_ne_zero {s : Set α} (hs : s.Infi
 
 protected theorem tsum_comp_le_tsum_of_injective {f : α → β} (hf : Injective f) (g : β → ℕ∞) :
     ∑' x, g (f x) ≤ ∑' y, g y :=
-  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le') (fun _ ↦ le_rfl)
+  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le) (fun _ ↦ le_rfl)
     ENat.summable ENat.summable
 
 protected theorem tsum_le_tsum_comp_of_surjective {f : α → β} (hf : Surjective f) (g : β → ℕ∞) :

@@ -24,7 +24,7 @@ theorem split_one : (1 : ℂ) = ⟨1, 0⟩ := rfl
 theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ}
     (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
     z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := by
-  substs h₁ h₂
+  subst h₁ h₂
   rfl
 
 theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :

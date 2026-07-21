@@ -138,8 +138,9 @@ private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
     PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
       PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
         PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  rw [coe_mul, qExpansion_mul (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
-                              (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  rw [coe_mul, qExpansion_mul
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
+    (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
   exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
 
 theorem E4E6_coeff_zero_eq_zero :

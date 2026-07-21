@@ -2,19 +2,14 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
-
 
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.Topology.Separation.CompletelyRegular
-
-@[expose] public section
 
 /-! # Deforming Paths of Integration for Open Contours
 
@@ -25,6 +20,7 @@ rectangular contours that extend infinitely in the vertical direction.
 TODO: Use `atImInfty` for vanishing as imaginary part tends to i infinity!
 -/
 
+@[expose] public section
 open Set Real Complex intervalIntegral Metric Filter MeasureTheory
 
 open scoped Interval Topology
@@ -51,7 +47,7 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
   wlog hne : x₁ ≠ x₂
   · rw [ne_eq, Decidable.not_not] at hne
     simp only [hne, integral_same, tendsto_const_nhds_iff]
-  simp only [NormedAddGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
+  simp only [NormedAddGroup.tendsto_nhds_zero, eventually_atTop]
   intro ε hε
   obtain ⟨M, hM⟩ := htendsto ((1 / 2) * (ε / |x₂ - x₁|)) <| by
     simp only [one_div, gt_iff_lt, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left]

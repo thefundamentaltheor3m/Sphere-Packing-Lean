@@ -1,7 +1,7 @@
 module
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 

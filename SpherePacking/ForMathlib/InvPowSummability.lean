@@ -81,7 +81,7 @@ theorem Summable_of_Inv_Pow_Summable'
     use 0
     intro ε hε
     simp only [SummationFilter.unconditional_filter, Filter.mem_map, Filter.mem_atTop_sets,
-      ge_iff_le, le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
+      le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
     intro b
     rw [eq_top_of_bot_eq_top rfl b]
     simp only [Finset.top_eq_univ, Finset.univ_eq_empty, Finset.sum_empty]
@@ -168,7 +168,7 @@ theorem Summable_of_Inv_Pow_Summable
   (hf : IsDecayingMap X f) :
   Summable (fun x : X => f x) := by
   if hzero : 0 ∈ X then
-    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.diff_subset
+    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.sdiff_subset
     have haux₂ : Inv_Pow_Norm_Summable_Over_Set_Euclidean (X \ {0}) := by
       exact Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset hX (by simp)
     have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ haux₂ (by simp)

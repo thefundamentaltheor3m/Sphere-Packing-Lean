@@ -59,7 +59,7 @@ lemma one_add_abs_half_ne_zero {x : ℂ} (hb : ‖x‖ < 1 / 2) : 1 + x ≠ 0 :=
 
 lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
     Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  simp only [eventually_atTop, ge_iff_le]
+  simp only [eventually_atTop]
   have hf1 := hf.const_add 1
   simp only [add_zero] at hf1
   have h2 := (Complex.continuousAt_arg (x := 1) ?_)
@@ -67,7 +67,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
     have h3 := h2.comp hf1
     simp only [arg_one] at h3
     rw [Metric.tendsto_nhds] at *
-    simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
+    simp only [gt_iff_lt, dist_zero_right, eventually_atTop,
       dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
     by_cases hn0 : n = 0
     · rw [hn0]
@@ -105,7 +105,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
     · simp_rw [hn0]
       simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, and_true]
       rw [atImInfty]
-      simp only [mem_comap, mem_atTop_sets, ge_iff_le]
+      simp only [mem_comap, mem_atTop_sets]
       use {n | 1 ≤ n.im}
       use {r : ℝ | 1 ≤ r}
       refine ⟨?_, ?_⟩
@@ -170,7 +170,7 @@ lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable f) (m : ℕ) :
   apply Summable.of_norm_bounded_eventually_nat this
   have hft := hf.tendsto_atTop_zero
   have H := clog_pow m f hft
-  simp only [norm_mul, Complex.norm_natCast, eventually_atTop, ge_iff_le] at *
+  simp only [norm_mul, Complex.norm_natCast, eventually_atTop] at *
   obtain ⟨a, ha⟩ := H
   use a
   intro b hb

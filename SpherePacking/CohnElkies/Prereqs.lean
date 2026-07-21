@@ -250,7 +250,7 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
   · exact fun a ↦ SchwartzMap.ext (congrFun a)
   · intro hf
     rw [hf]
-    exact coeFn_zero
+    exact FunLike.coe_zero
 
 omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}

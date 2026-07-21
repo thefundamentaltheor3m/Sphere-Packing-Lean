@@ -273,8 +273,7 @@ private lemma step_9 :
   · exact aux_6 z
   · exact (aux_4 z c n₀ hcsum)
   · exact aux_10 z c n₀ hcsum
-  ·
-    rw [Complex.norm_exp]
+  · rw [Complex.norm_exp]
     simp
 
 private lemma step_10 :
@@ -341,8 +340,7 @@ private lemma step_11 :
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-  ·
-    have : -π * ↑n / 2 = -π * ↑n * (1 / 2) := by rw [mul_one_div]
+  · have : -π * ↑n / 2 = -π * ↑n * (1 / 2) := by rw [mul_one_div]
     rw [this]
     simp only [neg_mul]
     gcongr
@@ -536,7 +534,7 @@ theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
     (fun n ↦ (σ k n : ℝ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℝ)) := by
   rw [isBigO_iff]
   use 1
-  simp only [Real.norm_natCast, norm_pow, one_mul, eventually_atTop, ge_iff_le]
+  simp only [Real.norm_natCast, norm_pow, one_mul, eventually_atTop]
   use 1
   intro n hn
   rw [sigma_apply]
@@ -583,8 +581,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     norm_cast at h ⊢
   have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
     -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop,
-      ge_iff_le] at hdpoly ⊢
+    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop] at hdpoly ⊢
     obtain ⟨R, m, hR⟩ := hdpoly
     use R, m
     intro n hn
