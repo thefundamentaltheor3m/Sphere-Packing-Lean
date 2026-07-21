@@ -50,7 +50,7 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
   simp only [NormedAddGroup.tendsto_nhds_zero, eventually_atTop]
   intro ε hε
   obtain ⟨M, hM⟩ := htendsto ((1 / 2) * (ε / |x₂ - x₁|)) <| by
-    simp only [one_div, gt_iff_lt, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left]
+    simp only [one_div, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left]
     exact (div_pos hε (abs_sub_pos.mpr hne.symm))
   use M
   intro y hy
