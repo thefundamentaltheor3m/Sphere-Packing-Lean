@@ -3,6 +3,12 @@ module
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import SpherePacking.ModularForms.Icc_Ico_lems
 
+/-!
+# Limit Lemmas
+
+Auxiliary lemmas about limits used in the modular forms development.
+-/
+
 @[expose] public section
 
 open TopologicalSpace Set

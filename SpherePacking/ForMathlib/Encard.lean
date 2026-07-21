@@ -8,6 +8,12 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Order
 public import Mathlib.Topology.Order.T5
 public import SpherePacking.ForMathlib.ENat
 
+/-!
+# Extended Cardinality
+
+Auxiliary lemmas about `Set.encard` and infinite sums over `ℕ∞`.
+-/
+
 @[expose] public section
 
 

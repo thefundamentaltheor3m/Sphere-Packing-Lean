@@ -5,6 +5,12 @@ public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
+/-!
+# Eisenstein Series
+
+Properties of the Eisenstein series `E₄` and `E₆`, including their `q`-expansions.
+-/
+
 @[expose] public section
 
 open ModularForm hiding E₄ E₆

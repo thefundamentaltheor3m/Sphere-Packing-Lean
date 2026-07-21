@@ -11,12 +11,12 @@ public import Mathlib.Algebra.Module.ZLattice.Basic
 
 public import SpherePacking.Basic.PeriodicPacking
 
-@[expose] public section
-
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
 inverse powers of the norm function on subsets of Euclidean space.
 -/
+
+@[expose] public section
 
 variable {d : ℕ}
 

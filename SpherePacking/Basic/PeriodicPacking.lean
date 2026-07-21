@@ -14,6 +14,12 @@ public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.ZLattice
 
+/-!
+# Periodic Sphere Packings
+
+Defines periodic sphere packings and relates their density to that of the underlying packing.
+-/
+
 @[expose] public section
 
 -- import Mathlib

@@ -11,6 +11,12 @@ module
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
+/-!
+# The Function `a`
+
+Defines Viazovska's function `a` via its integral representations.
+-/
+
 @[expose] public section
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)

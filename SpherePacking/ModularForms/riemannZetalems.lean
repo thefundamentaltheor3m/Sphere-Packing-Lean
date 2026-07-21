@@ -4,6 +4,12 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 
+/-!
+# Riemann Zeta Lemmas
+
+Auxiliary lemmas about the Riemann zeta function.
+-/
+
 @[expose] public section
 
 open TopologicalSpace Set MeasureTheory intervalIntegral

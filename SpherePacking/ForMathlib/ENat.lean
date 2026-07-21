@@ -5,6 +5,12 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Basic
 public import Mathlib.Topology.Instances.ENat
 public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 
+/-!
+# Extended Naturals
+
+Auxiliary lemmas about infinite sums over `ℕ∞`.
+-/
+
 @[expose] public section
 
 theorem ENat.tsum_const {α : Type*} (c : ENat) :
