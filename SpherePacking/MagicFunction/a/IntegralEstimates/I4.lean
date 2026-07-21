@@ -11,8 +11,6 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
 /-! # Constructing Upper-Bounds for I₄
 
 The purpose of this file is to construct bounds on the integral `I₄` that is part of the definition
@@ -21,6 +19,8 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 ## TODO:
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound

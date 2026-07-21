@@ -15,6 +15,11 @@ public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.Basic.PeriodicPacking
 
+/-! # The Cohn–Elkies Linear Programming Bound
+
+This file proves the Cohn–Elkies linear programming bound on sphere packing densities.
+-/
+
 @[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
