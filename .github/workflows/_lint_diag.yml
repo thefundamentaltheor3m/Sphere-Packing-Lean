@@ -1,0 +1,47 @@
+name: Lint Diagnostic
+
+on:
+  push:
+    branches:
+      - claude/linter-warnings-67wrj6
+  workflow_dispatch:
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    name: Lint Diagnostic
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch mathlib cache
+        run: lake exe cache get || true
+
+      - name: Build and capture warnings
+        run: |
+          set +e
+          lake build 2>&1 | tee /tmp/build.log
+          echo "lake build exit: ${PIPESTATUS[0]}"
+
+      - name: Summarise warnings
+        if: always()
+        run: |
+          echo "=====MODULE-DOCSTRING FILES (should be empty)====="
+          grep -E "warning:.*module doc-string" /tmp/build.log \
+            | sed -E 's/.*warning: ([^:]+):[0-9].*/\1/' | sort -u || true
+          echo "=====OTHER non-copyright non-sorry warnings (should be empty)====="
+          grep -E "warning:" /tmp/build.log \
+            | grep -v "module doc-string" \
+            | grep -vi "declaration uses" \
+            | grep -v "Copyright too short" \
+            | grep -vE "\* '" \
+            | sort -u | head -80 || true
+          echo "=====COUNTS====="
+          echo -n "module-docstring warnings: "; grep -cE "warning:.*module doc-string" /tmp/build.log || true
+          echo "=====END====="

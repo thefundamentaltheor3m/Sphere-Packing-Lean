@@ -5,6 +5,12 @@ public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
+/-!
+# Volumes of Balls
+
+Lemmas computing the volume of balls in Euclidean space.
+-/
+
 @[expose] public section
 
 /- This file contains several (semi-adhoc) lemmas about volume of balls, e.g. that they are positive

@@ -11,7 +11,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-/-! # Constructing Upper-Bounds for I₅
+/-!
+# Constructing Upper-Bounds for I₅
 
 The purpose of this file is to construct bounds on the integral `I₅` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.

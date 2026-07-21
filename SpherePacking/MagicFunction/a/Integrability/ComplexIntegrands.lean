@@ -11,7 +11,8 @@ public import SpherePacking.ModularForms.FG
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
-/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
+/-!
+# Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
 In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
 `I₁`-`I₆` are holomorphic on the upper half-plane.

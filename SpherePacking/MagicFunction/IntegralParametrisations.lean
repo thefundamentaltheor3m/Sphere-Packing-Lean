@@ -12,6 +12,12 @@ public import Mathlib.Analysis.RCLike.Basic
 public import Mathlib.Data.Complex.Basic
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 
+/-!
+# Integral Parametrisations
+
+Parametrisations of the contours used to define the magic-function integrals.
+-/
+
 @[expose] public section
 
 open Set Complex Real

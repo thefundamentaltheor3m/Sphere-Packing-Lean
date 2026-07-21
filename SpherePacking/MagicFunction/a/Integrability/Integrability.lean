@@ -14,7 +14,8 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 
-/-! # Integrability
+/-!
+# Integrability
 
 In this file, we prove that the integrands `Φⱼ` are integrable.
 -/

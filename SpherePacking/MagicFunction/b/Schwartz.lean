@@ -11,7 +11,8 @@ module
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.MagicFunction.b.Basic
 
-/-! # `b` is a Schwartz Function
+/-!
+# `b` is a Schwartz Function
 
 The purpose of this file is to prove that `b` is a Schwartz function. It collects results stated
 elsewhere and presents them concisely.

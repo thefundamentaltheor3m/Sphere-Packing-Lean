@@ -15,6 +15,12 @@ public import Mathlib.Topology.EMetricSpace.Paracompact
 
 public import SpherePacking.ForMathlib.VolumeOfBalls
 
+/-!
+# Sphere Packings
+
+Basic definitions for sphere packings and their densities.
+-/
+
 @[expose] public section
 
 open BigOperators MeasureTheory Metric

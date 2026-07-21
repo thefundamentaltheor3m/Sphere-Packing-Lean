@@ -7,6 +7,12 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import Mathlib.Tactic.Cases
 
+/-!
+# Complex Logarithm and Argument Lemmas
+
+Auxiliary lemmas about `Complex.log` and `Complex.arg`.
+-/
+
 @[expose] public section
 
 open UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

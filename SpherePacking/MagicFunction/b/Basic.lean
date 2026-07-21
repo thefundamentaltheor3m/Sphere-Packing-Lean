@@ -9,7 +9,8 @@ module
 public import SpherePacking.MagicFunction.b.psi
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
-/-! # The Function `b`
+/-!
+# The Function `b`
 
 This file defines Viazovska's function `b` via its integral representations.
 -/

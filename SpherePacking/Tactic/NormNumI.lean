@@ -7,6 +7,12 @@ module
 
 public import Mathlib.Data.Complex.Basic
 
+/-!
+# The `norm_numI` Tactic
+
+A tactic for normalising expressions involving the imaginary unit `I`.
+-/
+
 @[expose] public section
 
 open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic

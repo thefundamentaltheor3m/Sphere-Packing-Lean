@@ -8,7 +8,8 @@ module
 
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
-/-! # Smoothness
+/-!
+# Smoothness
 
 In this file, we prove that the integrands of all of the REAL integrals making up a are smooth. That
 is, we translate the complex holomorphicity results into smoothness results by showing first that
