@@ -11,13 +11,13 @@ module
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
-@[expose] public section
-
 /-! # The ψ Functions
 
 In this file, we define the functions `ψI`, `ψT` and `ψS` that are defined using the
 Jacobi theta functions and are used in the definition of the -1-eigenfunction `b`.
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup

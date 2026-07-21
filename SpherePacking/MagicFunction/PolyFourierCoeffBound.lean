@@ -13,6 +13,12 @@ public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.tprod
 public import SpherePacking.ModularForms.Eisenstein
 
+/-! # Bounding Functions with Polynomially-Growing Fourier Coefficients
+
+This file proves Lemma 7.4 of the blueprint: an upper bound on the ratio between a function whose
+Fourier coefficients grow polynomially and its discriminant.
+-/
+
 @[expose] public section
 
 

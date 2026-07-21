@@ -16,6 +16,12 @@ public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 public import SpherePacking.ModularForms.tsumderivWithin
 
+/-! # The Modular Forms `F` and `G`
+
+This file develops the modular forms `F` and `G` used in the construction of the magic function,
+including their `q`-expansions, vanishing orders, and behaviour on the positive imaginary axis.
+-/
+
 @[expose] public section
 
 open UpperHalfPlane hiding I
