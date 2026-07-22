@@ -33,6 +33,22 @@ namespace Function
 def IsRadial [Norm E] [Norm F] (f : E → F) : Prop :=
   ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
 
+section Isometries
+
+lemma IsRadial.comp_isometry [SeminormedAddCommGroup E] [Norm F] {f : E → F} (hf : f.IsRadial)
+    {g : E → E} (hg : Isometry g) (hg₀ : g 0 = 0) : f ∘ g = f := by
+  ext x
+  rw [comp_apply]
+  exact hf <| hg.norm_map_of_map_zero hg₀ x
+
+lemma isRadial_iff_comp_linearIsometryEquiv [NormedAddCommGroup E] [InnerProductSpace ℝ E] [Norm F]
+    (f : E → F) : f.IsRadial ↔ ∀ (g : E ≃ₗᵢ[ℝ] E), f ∘ g = f := by
+  refine ⟨fun hf ↦ (fun g ↦ hf.comp_isometry g.isometry <| by simp), fun h x y hxy ↦ ?_⟩
+  specialize h (ℝ ∙ (x - y))ᗮ.reflection
+  rw [← Submodule.reflection_sub hxy, ← f.comp_apply (g := (ℝ ∙ (x - y))ᗮ.reflection), h]
+
+end Isometries
+
 end Function
 
 section Rotations
@@ -79,12 +95,15 @@ lemma norm_eq_norm_iff {x y : E} (hfinrank : Module.finrank ℝ E ≠ 1) : ‖x�
       have (v : E) : Module.finrank ℝ (ℝ ∙ v) = 1 := by
         rw [@finrank_eq_one_iff']
         sorry
-      sorry
+      by_cases hxy : x = y
+      · rw [sub_eq_zero.mpr hxy,]
+        sorry
+      · sorry
   · obtain ⟨_, hf, _⟩ := h
     simp [← hf]
 
-#check Submodule.reflection
-#check Submodule.starProjection
+-- #check Submodule.reflection
+-- #check Submodule.starProjection
 
 end Rotations
 
@@ -92,38 +111,52 @@ end Radial_Functions
 
 section RadialSchwartz
 
-open SchwartzMap
+open SchwartzMap Function
+
+variable (E F : Type*)
+variable [NormedAddCommGroup E] [NormedAddCommGroup F]
 
 @[simps]
-def RadialSchwartzMap (E F : Type*)
-    [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] :
+def RadialSchwartzMap [NormedSpace ℝ E] [NormedSpace ℝ F] :
     Submodule ℝ 𝓢(E, F) where
-  carrier := {f | Function.IsRadial f}
-  add_mem' := by grind [Function.IsRadial]
-  zero_mem' := by simp [Function.IsRadial]
-  smul_mem' := by grind [Function.IsRadial]
+  carrier := {f | IsRadial f}
+  add_mem' := by grind [IsRadial]
+  zero_mem' := by simp [IsRadial]
+  smul_mem' := by grind [IsRadial]
+
+lemma SchwartzMap.mem_RadialSchwartzMap_iff_isRadial [NormedSpace ℝ E] [NormedSpace ℝ F]
+    (f : 𝓢(E, F)) : f ∈ RadialSchwartzMap E F ↔ IsRadial f := by
+  simp [RadialSchwartzMap]
+
+lemma SchwartzMap.mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv
+    [InnerProductSpace ℝ E] [NormedSpace ℝ F] (f : 𝓢(E, F)) :
+    f ∈ RadialSchwartzMap E F ↔ ∀ (g : E ≃ₗᵢ[ℝ] E), f ∘ g = f := by
+  rw [mem_RadialSchwartzMap_iff_isRadial, isRadial_iff_comp_linearIsometryEquiv]
+
+-- #check Real.fourierInv_eq_fourier_comp_neg
+-- #check SchwartzMap.fourierInv_apply_eq
+-- #check Real.fourierInv_comp_linearIsometry
+-- #check Real.fourier_comp_linearIsometry
+
 
 section fourier
 
 open SchwartzMap Real FourierTransform
 
-variable {E F : Type*}
-variable [NormedAddCommGroup E] [NormedAddCommGroup F]
 variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 variable [NormedSpace ℂ F]
 
-lemma radialSchwartzMap_map_le : (RadialSchwartzMap E F).map
+lemma radialSchwartzMap_map_fourier_le : (RadialSchwartzMap E F).map
     (fourierTransformCLM ℝ (V := E) (E := F)).toLinearMap ≤ RadialSchwartzMap E F := by
-  intro f hf x y hxy
+  intro f hf
+  rw [mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv]
+  intro r
   simp only [Submodule.mem_map, ContinuousLinearMap.coe_coe, fourierTransformCLM_apply] at hf
   obtain ⟨g, hg, hg_fourier⟩ := hf
-  rw [← hg_fourier, SchwartzMap.fourier_coe, Real.fourier_eq g x, Real.fourier_eq g y]
-  congr with v
-  congr 1
-  sorry
-
-#check FourierTransform.fourier
-#check SchwartzMap.instFourierTransform.fourier
+  rw [mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv] at hg
+  ext x
+  specialize hg r
+  rw [← hg_fourier, comp_apply, fourier_coe, ← Real.fourier_comp_linearIsometry r g x, hg]
 
 end fourier
 
