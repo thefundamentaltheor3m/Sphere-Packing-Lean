@@ -3,8 +3,6 @@ module
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoCont
 
-@[expose] public section
-
 /-!
 # Ramanujan Identities for Eisenstein Series
 
@@ -30,6 +28,8 @@ Since serre_D k E_k is a modular form in the 1-dimensional space,
 it must be a scalar multiple of the unique generator.
 The scalar is determined by comparing limits as z → i∞.
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap

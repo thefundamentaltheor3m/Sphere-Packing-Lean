@@ -13,9 +13,6 @@ public import Mathlib.Analysis.Normed.Group.FunctionSeries
 public import Mathlib.Analysis.Normed.Module.MultipliableUniformlyOn
 public import Mathlib.Analysis.Complex.Exponential
 
-@[expose] public section
-
-
 /-!
 # Products of one plus a complex number
 
@@ -23,6 +20,8 @@ We gather some results about the uniform convergence of the product of `1 + f n 
 sequence `f n x` or complex numbers.
 
 -/
+
+@[expose] public section
 
 open Filter Function Complex Real
 

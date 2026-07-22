@@ -8,6 +8,12 @@ module
 
 public import SpherePacking.MagicFunction.b.Schwartz
 
+/-!
+# Special Values of `b`
+
+This file records special values of the function `b`.
+-/
+
 @[expose] public section
 
 open SchwartzMap Real Complex MagicFunction.FourierEigenfunctions

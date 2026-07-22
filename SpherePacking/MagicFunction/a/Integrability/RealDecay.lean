@@ -12,8 +12,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
-@[expose] public section
-
 /-!
 # Exponential Decay Integrability Lemmas (Tail Regime)
 
@@ -39,6 +37,8 @@ These lemmas are designed to be reusable for contour integral analysis where:
 These patterns appear in the magic function integrability proofs for sphere packing,
 specifically for vertical ray integrands in ContourEndpoints.lean.
 -/
+
+@[expose] public section
 
 open MeasureTheory Set Filter Real
 
