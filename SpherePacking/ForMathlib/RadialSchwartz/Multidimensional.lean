@@ -1,10 +1,9 @@
 /-
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan
+Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 module
-
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
@@ -13,6 +12,9 @@ public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
+/-!
+# Making a radial Schwartz map
+-/
 @[expose] public section
 
 open SchwartzMap Function RCLike
@@ -32,29 +34,18 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ
   simp only [norm_pow, norm_norm]
   nlinarith
 
-end SchwartzMap_multidimensional_of_schwartzMap_real
+@[fun_prop]
+theorem contDiff_ofReal {n} : ContDiff ℝ n Complex.ofReal :=
+  ContinuousLinearMap.contDiff Complex.ofRealCLM
 
--- def SchwartzMap.of_nonneg
-
-open ContDiff
-
-open Set
--- TODO: it suffices for decay to hold coboundedly
+open ContDiff Set
 -- TODO: it suffices to be contdiff on [a, ∞)
 theorem eq_schwartzMap {f : ℝ → ℂ} {a : ℝ}
     (smooth : ContDiff ℝ ∞ f)
     (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a - 1 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     ∃ F : 𝓢(ℝ, ℂ), Set.EqOn f F (Set.Ici a) := by
-  -- sorry
   let F' : ℝ → ℂ := fun x ↦ Real.smoothTransition (x - a + 1) * f x
-  refine ⟨SchwartzMap.mkOfCocompact F' ?_ ?_, ?_⟩
-  · simp only [F']
-    apply ContDiff.mul
-    · have := Real.smoothTransition.contDiff (n := ⊤)
-      apply ContDiff.fun_comp
-      · exact ContinuousLinearMap.contDiff Complex.ofRealCLM
-      fun_prop
-    · exact smooth
+  refine ⟨SchwartzMap.mkOfCocompact F' (by fun_prop) ?_, ?_⟩
   · intro k n
     obtain ⟨C, hC⟩ := decay k n
     use C
@@ -70,33 +61,20 @@ theorem eq_schwartzMap {f : ℝ → ℂ} {a : ℝ}
           iteratedFDerivWithin ℝ n 0 (Iio (a - 1)) x := by
         apply iteratedFDerivWithin_congr _ (by grind)
         intro y hy
-        simp only [mem_Iio] at hy
-        simp only [Pi.zero_apply, mul_eq_zero, Complex.ofReal_eq_zero,
-          Real.smoothTransition.zero_iff_nonpos, F']
-        grind
+        simp only [Pi.zero_apply, mul_eq_zero, Complex.ofReal_eq_zero, F']
+        grind [Real.smoothTransition.zero_iff_nonpos]
       rw [h1, h2]
-      simp only [Real.norm_eq_abs, iteratedFDerivWithin_zero, Pi.zero_apply, norm_zero, mul_zero,
-        ge_iff_le]
-      have := hC (a - 1) (by simp)
-      grw [← this]
+      grw [← hC (a - 1) (by simp)]
+      simp only [Real.norm_eq_abs, iteratedFDerivWithin_zero, Pi.zero_apply, norm_zero, mul_zero]
       positivity
     · have : iteratedFDeriv ℝ n F' x = iteratedFDeriv ℝ n f x := by calc
         _ = iteratedFDerivWithin ℝ n F' (Ioi a) x :=
-          (iteratedFDerivWithin_of_isOpen _ isOpen_Ioi).symm (by grind)
+            (iteratedFDerivWithin_of_isOpen _ isOpen_Ioi).symm (by grind)
         _ = iteratedFDerivWithin ℝ n f (Ioi a) x := by
-          apply iteratedFDerivWithin_congr _ (by grind)
-          intro y hy
-          simp only [mem_Ioi] at hy
-          simp only [F']
-          rw [Real.smoothTransition.eq_one_iff_one_le.2]
-          · simp
-          grind
+            apply iteratedFDerivWithin_congr _ (by grind)
+            grind [Set.EqOn, Real.smoothTransition.eq_one_iff_one_le, Complex.ofReal_one]
         _ = iteratedFDeriv ℝ n f x :=
-          (iteratedFDerivWithin_of_isOpen _ isOpen_Ioi) (by grind)
+            iteratedFDerivWithin_of_isOpen _ isOpen_Ioi (by grind)
       grind
-  · intro x hx
-    simp only [SchwartzMap.mkOfCocompact, mk_apply, F']
-    simp only [Set.mem_Ici] at hx
-    rw [Real.smoothTransition.eq_one_iff_one_le.2]
-    · simp
-    grind
+  · grind [mkOfCocompact_toFun, Set.EqOn, Real.smoothTransition.eq_one_iff_one_le,
+      Complex.ofReal_one, SchwartzMap.mkOfCocompact, mk_apply]
