@@ -26,21 +26,67 @@ whole multiplying-by-a-smooth-transition-function trick.
 
 section Radial_Functions
 
+variable {E F : Type*}
+
 namespace Function
 
-variable {E F : Type*} [Norm E] [Norm F]
-
-def IsRadial (f : E → F) : Prop := ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
+def IsRadial [Norm E] [Norm F] (f : E → F) : Prop :=
+  ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
 
 end Function
 
-
+section Rotations
 
 -- Do some work on rotations. See here: https://www.math.columbia.edu/~woit/fourier-analysis/higherdimensions.pdf
 
-#check ContinuousLinearMap.rotation
-#check Matrix.orthogonalGroup
-#check Matrix.specialOrthogonalGroup
+-- #check ContinuousLinearMap.rotation
+-- #check Matrix.orthogonalGroup
+-- #check Matrix.specialOrthogonalGroup
+
+variable [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+
+lemma norm_eq_norm_iff {x y : E} (hfinrank : Module.finrank ℝ E ≠ 1) : ‖x‖ = ‖y‖ ↔ ∃ f : E ≃ₗᵢ[ℝ] E,
+    f x = y ∧ f.det = 1 := by
+  wlog h_ne_zero : x ≠ 0
+  · simp only [ne_eq, not_not] at h_ne_zero
+    simp only [h_ne_zero, norm_zero, map_zero, exists_and_left]
+    constructor <;> intro h
+    · simp only [norm_eq_zero.mp (id h.symm), true_and]
+      use LinearIsometryEquiv.refl ℝ E
+      sorry
+    · exact (norm_eq_zero.mpr (h.1.symm)).symm
+  constructor <;> intro h
+  · have hy_ne_zero : y ≠ 0 := by
+      by_contra hc
+      rw [hc, norm_zero] at h
+      grind [norm_eq_zero]
+    have hspan : (ℝ ∙ y) ≠ ⊤ := fun htop ↦
+      hfinrank (by rw [← finrank_span_singleton (K := ℝ) hy_ne_zero, htop, finrank_top])
+    obtain ⟨w, -, hw⟩ := SetLike.exists_of_lt (lt_top_iff_ne_top.mpr hspan)
+    let u : E := w - (ℝ ∙ y).starProjection w
+    refine ⟨((ℝ ∙ u)ᗮ).reflection * ((ℝ ∙ (x - y))ᗮ).reflection, ?_, ?_⟩
+    · calc
+      _ = ((ℝ ∙ u)ᗮ).reflection y := by
+        simp only [LinearIsometryEquiv.coe_mul, Function.comp_apply, EmbeddingLike.apply_eq_iff_eq]
+        exact Submodule.reflection_sub h
+      _ = _ := by
+        apply Submodule.reflection_mem_subspace_eq_self
+        simp [Submodule.mem_orthogonal_singleton_iff_inner_right,
+          Submodule.starProjection_inner_eq_zero, u]
+    · rw [LinearIsometryEquiv.mul_def]
+      simp only [LinearIsometryEquiv.toLinearEquiv_trans, LinearEquiv.det_trans,
+        Submodule.linearEquiv_det_reflection]
+      have (v : E) : Module.finrank ℝ (ℝ ∙ v) = 1 := by
+        rw [@finrank_eq_one_iff']
+        sorry
+      sorry
+  · obtain ⟨_, hf, _⟩ := h
+    simp [← hf]
+
+#check Submodule.reflection
+#check Submodule.starProjection
+
+end Rotations
 
 end Radial_Functions
 
