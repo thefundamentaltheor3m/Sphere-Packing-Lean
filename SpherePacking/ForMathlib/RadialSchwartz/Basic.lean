@@ -146,17 +146,32 @@ open SchwartzMap Real FourierTransform
 variable [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 variable [NormedSpace ℂ F]
 
-lemma radialSchwartzMap_map_fourier_le : (RadialSchwartzMap E F).map
-    (fourierTransformCLM ℝ (V := E) (E := F)).toLinearMap ≤ RadialSchwartzMap E F := by
-  intro f hf
-  rw [mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv]
-  intro r
-  simp only [Submodule.mem_map, ContinuousLinearMap.coe_coe, fourierTransformCLM_apply] at hf
-  obtain ⟨g, hg, hg_fourier⟩ := hf
-  rw [mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv] at hg
+namespace SchwartzMap
+
+lemma fourier_mem_radialSchwartzMap_of_mem_radialSchwartzMap
+    {f : 𝓢(E, F)} (hf : f ∈ RadialSchwartzMap E F) :
+    fourierTransformCLM ℝ (V := E) (E := F) f ∈ RadialSchwartzMap E F := by
+  rw [mem_RadialSchwartzMap_iff_comp_linearIsometryEquiv] at hf ⊢
+  intro g
   ext x
-  specialize hg r
-  rw [← hg_fourier, comp_apply, fourier_coe, ← Real.fourier_comp_linearIsometry r g x, hg]
+  simp [fourierTransformCLM_apply, fourier_coe, ← Real.fourier_comp_linearIsometry, hf g]
+
+end SchwartzMap
+
+namespace RadialSchwartzMap
+
+lemma map_fourier_le : (RadialSchwartzMap E F).map
+    (fourierTransformCLM ℝ (V := E) (E := F)).toLinearMap ≤ RadialSchwartzMap E F :=
+  Submodule.map_le_iff_le_comap.mpr <|
+    fun _ hf ↦ fourier_mem_radialSchwartzMap_of_mem_radialSchwartzMap E F hf
+
+noncomputable def fourierCLM : RadialSchwartzMap E F →L[ℝ] RadialSchwartzMap E F :=
+    (fourierTransformCLM ℝ (V := E) (E := F)).restrict <|
+      fun _ hf ↦ fourier_mem_radialSchwartzMap_of_mem_radialSchwartzMap E F hf
+
+
+
+end RadialSchwartzMap
 
 end fourier
 
