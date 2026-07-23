@@ -5,6 +5,12 @@ public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
+/-!
+# Volumes of Balls
+
+Lemmas computing the volume of balls in Euclidean space.
+-/
+
 @[expose] public section
 
 /- This file contains several (semi-adhoc) lemmas about volume of balls, e.g. that they are positive
@@ -39,8 +45,7 @@ theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
   ext t
   exact False.elim (IsEmpty.false t)
 
-theorem EuclideanSpace.volume_ball_lt_top
-    [inst : NullSingletonClass (volume : Measure (EuclideanSpace ℝ ι))]
+theorem EuclideanSpace.volume_ball_lt_top [NullSingletonClass (volume : Measure (EuclideanSpace ℝ ι))]
     (x : EuclideanSpace ℝ ι) : volume (ball x r) < ⊤ :=
   -- `volume` is finite on compacts, so this is mathlib's `MeasureTheory.measure_ball_lt_top`.
   measure_ball_lt_top

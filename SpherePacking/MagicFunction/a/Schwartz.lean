@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -13,13 +11,14 @@ module
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
-/-! # `a` is a Schwartz Function
+/-!
+# `a` is a Schwartz Function
 
 The purpose of this file is to prove that `a` is a Schwartz function. It collects results stated
 elsewhere and presents them concisely.
 -/
+
+@[expose] public section
 
 -- NOTE: We are not ready for the contents of this file. We first need to fix
 -- the dimension bridge for Schwartz functions.

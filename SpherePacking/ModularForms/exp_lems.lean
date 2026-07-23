@@ -3,6 +3,12 @@ module
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
+/-!
+# Exponential Lemmas
+
+Auxiliary lemmas about the complex exponential.
+-/
+
 @[expose] public section
 
 

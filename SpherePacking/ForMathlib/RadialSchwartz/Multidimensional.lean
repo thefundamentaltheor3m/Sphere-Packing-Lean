@@ -8,8 +8,14 @@ module
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
+
+/-!
+# Multidimensional Radial Schwartz Functions
+
+Constructs multidimensional Schwartz functions from radial data.
+-/
 
 @[expose] public section
 

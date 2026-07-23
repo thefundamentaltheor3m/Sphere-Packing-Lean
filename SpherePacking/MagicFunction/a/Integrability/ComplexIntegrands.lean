@@ -11,9 +11,8 @@ public import SpherePacking.ModularForms.FG
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
-@[expose] public section
-
-/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
+/-!
+# Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
 In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
 `I₁`-`I₆` are holomorphic on the upper half-plane.
@@ -28,6 +27,8 @@ In this file, we prove that all the complex integrands Φ₁' through Φ₆' tha
 * `φ₀''_continuous`: `φ₀''` is continuous on the upper half-plane.
 * `φ₀_continuous`: `φ₀ : ℍ → ℂ` is continuous.
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
   MagicFunction.PolyFourierCoeffBound MagicFunction.a.IntegralEstimates.I₁

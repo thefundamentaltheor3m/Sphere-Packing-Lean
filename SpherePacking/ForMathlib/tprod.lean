@@ -9,10 +9,10 @@ public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 public import Mathlib.Topology.Algebra.InfiniteSum.Order
 public import Mathlib.Topology.Instances.Real.Lemmas
 
-@[expose] public section
-
 /-! The contents of this file should go to Topology.Algebra.InfiniteSum, either
  into Basic or into another file. -/
+
+@[expose] public section
 
 variable {β : Type*} {f g : β → ℝ}
 

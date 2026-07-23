@@ -1,7 +1,13 @@
 module
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Algebra.Order.Star.Real
+
+/-!
+# Upper Half-Plane Lemmas
+
+Auxiliary lemmas about the upper half-plane used in the modular forms development.
+-/
 
 @[expose] public section
 
