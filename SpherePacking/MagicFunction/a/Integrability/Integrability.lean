@@ -14,12 +14,13 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 
-@[expose] public section
-
-/-! # Integrability
+/-!
+# Integrability
 
 In this file, we prove that the integrands `Φⱼ` are integrable.
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
   MagicFunction.PolyFourierCoeffBound MagicFunction.a.RealIntegrands

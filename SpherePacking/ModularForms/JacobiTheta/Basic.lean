@@ -2,14 +2,14 @@ module
 
 public import SpherePacking.ModularForms.JacobiTheta.Defs
 
-@[expose] public section
-
 /-!
 # Jacobi theta basics
 
 Prove transformation laws, modularity, asymptotics, and the Jacobi identity for the Jacobi theta
 functions defined in `Defs.lean`.
 -/
+
+@[expose] public section
 
 open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I

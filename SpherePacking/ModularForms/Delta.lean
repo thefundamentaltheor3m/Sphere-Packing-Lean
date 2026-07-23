@@ -11,6 +11,12 @@ public import SpherePacking.Tactic.NormNumI
 
 public import SpherePacking.ForMathlib.Cusps
 
+/-!
+# The Modular Discriminant `Δ`
+
+Properties of the modular discriminant `Δ`.
+-/
+
 @[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
