@@ -3,6 +3,12 @@ module
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 
+/-!
+# Behaviour as the Imaginary Part Tends to Infinity
+
+Auxiliary lemmas about the `atImInfty` filter on the upper half-plane.
+-/
+
 @[expose] public section
 
 /-

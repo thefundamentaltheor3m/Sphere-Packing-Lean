@@ -7,14 +7,15 @@ module
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 /-!
-# Making a radial Schwartz map
+# Multidimensional Radial Schwartz Functions
 -/
+
 @[expose] public section
 
 open SchwartzMap Function RCLike

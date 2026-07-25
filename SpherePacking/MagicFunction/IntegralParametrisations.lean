@@ -12,6 +12,12 @@ public import Mathlib.Analysis.RCLike.Basic
 public import Mathlib.Data.Complex.Basic
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 
+/-!
+# Integral Parametrisations
+
+Parametrisations of the contours used to define the magic-function integrals.
+-/
+
 @[expose] public section
 
 open Set Complex Real
@@ -57,7 +63,7 @@ open scoped UpperHalfPlane
 lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
-    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
+    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
@@ -66,7 +72,7 @@ lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
 lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
-    mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
+    mul_zero, I_im, ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
@@ -75,7 +81,7 @@ lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
 lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
-    ofReal_re, one_mul, zero_add, gt_iff_lt]
+    ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by

@@ -2,6 +2,12 @@ module
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 
+/-!
+# Functions Bounded at Infinity
+
+Auxiliary lemmas about functions bounded at the cusps.
+-/
+
 @[expose] public section
 
 open UpperHalfPlane

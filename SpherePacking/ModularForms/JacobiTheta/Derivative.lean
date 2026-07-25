@@ -8,8 +8,6 @@ public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoCont
 
-@[expose] public section
-
 /-!
 # Theta Derivative Identities
 
@@ -60,6 +58,8 @@ We then show g and h vanish at infinity (Phase 7), hence are cusp forms. By dime
 vanishing (Phase 8), all level-1 cusp forms of weight < 12 are zero. This gives g = h = 0,
 from which we deduce f₂ = f₃ = f₄ = 0 (Phase 9), yielding the main theorems (Phase 10).
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
