@@ -148,7 +148,14 @@ lemma DFunLike.coe_fourier (f : RadialSchwartzMap 𝕜 E F) :
 
 section inverse
 
-/-- The inverse Fourier transform of a radial Schwartz function agrees with its Fourier
+-- TODO: Prove some fact about radial functions being even, then use this result somehow.
+-- TODO: Trim down hypotheses for this result.
+lemma _root_.Function.Even.fourierInv {f : E → F} (hf : (𝓕 f).Even) {w : E} :
+    𝓕⁻ f w = 𝓕 f w := by
+  rw [fourierInv_eq_fourier_neg]
+  exact hf w
+
+/-- The inverse Fourier transform of a radial Schwartz function equals its Fourier
 transform. -/
 lemma _root_.SchwartzMap.fourierInv_eq_fourier_of_isRadial {f : 𝓢(E, F)} (hf : IsRadial ⇑f) :
     (𝓕⁻ f : 𝓢(E, F)) = 𝓕 f := by
