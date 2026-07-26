@@ -33,6 +33,15 @@ of that point. -/
 def IsRadial [Norm E] (f : E → F) : Prop :=
   ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
 
+namespace IsRadial
+
+variable [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial)
+
+include hf in
+lemma even : f.Even := fun x ↦ hf (norm_neg x)
+
+end IsRadial
+
 section Isometries
 
 lemma IsRadial.comp_isometry [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial) {g : E → E}
@@ -157,18 +166,25 @@ lemma _root_.Function.Even.fourierInv {f : E → F} (hf : (𝓕 f).Even) {w : E}
 
 /-- The inverse Fourier transform of a radial Schwartz function equals its Fourier
 transform. -/
-lemma _root_.SchwartzMap.fourierInv_eq_fourier_of_isRadial {f : 𝓢(E, F)} (hf : IsRadial ⇑f) :
-    (𝓕⁻ f : 𝓢(E, F)) = 𝓕 f := by
+lemma _root_.SchwartzMap.fourierInv_eq_fourier_of_isRadial {f : 𝓢(E, F)}
+    (hf : f ∈ RadialSchwartzMap 𝕜 E F) : (𝓕⁻ f : 𝓢(E, F)) = 𝓕 f := by
   ext x
-  rw [SchwartzMap.fourierInv_coe, SchwartzMap.fourier_coe, Real.fourierInv_eq_fourier_neg]
-  exact hf.fourier (norm_neg x)
+  rw [fourierInv_coe, fourier_coe]
+  exact Function.Even.fourierInv <| IsRadial.even (hf.fourier)
+
+instance instFourierInv :
+    FourierTransformInv (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourierInv := fourierTransformCLM 𝕜 E F
+
+
 
 variable [CompleteSpace F] (f : RadialSchwartzMap 𝕜 E F)
 
 /-- The Fourier transform is an involution on radial Schwartz functions. -/
 lemma fourierTransformCLM_apply_apply :
-    fourierTransformCLM 𝕜 E F (fourierTransformCLM 𝕜 E F f) = f :=
-  Subtype.ext <| by simp [← SchwartzMap.fourierInv_eq_fourier_of_isRadial (isRadial f)]
+    𝓕 (𝓕 f) = f := by
+  sorry
+  -- Subtype.ext <| by simp [← SchwartzMap.fourierInv_eq_fourier_of_isRadial (isRadial f)]
 
 end inverse
 
