@@ -9,8 +9,6 @@ public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Delta
 
-@[expose] public section
-
 /-!
 # Transformation Rules for φ₀
 
@@ -35,6 +33,8 @@ are not valid identifiers.
 - `Δ_periodic`, `Δ_S_transform`: in `Delta.lean`
 
 -/
+
+@[expose] public section
 
 open ModularForm hiding E₄ E₆
 open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

@@ -14,6 +14,12 @@ public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.ZLattice
 
+/-!
+# Periodic Sphere Packings
+
+Defines periodic sphere packings and relates their density to that of the underlying packing.
+-/
+
 @[expose] public section
 
 -- import Mathlib
@@ -834,7 +840,7 @@ private lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < �
     case ha => simp
     obtain ⟨k, hk⟩ := this ε hε
     refine ⟨max 0 k, by simp, ?_⟩
-    simp only [ge_iff_le, max_le_iff, and_imp]
+    simp only [max_le_iff, and_imp]
     intro k' hk₀ hk₁
     have := hk k' hk₁
     rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,

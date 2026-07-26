@@ -8,8 +8,6 @@ public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoCont
 
-@[expose] public section
-
 /-!
 # Serre derivative identities for Jacobi theta functions
 
@@ -24,6 +22,8 @@ transformation rules (`f₂|S = -f₄`, `f₂|T = -f₂`, `f₄|S = -f₂`,
 that vanish at `i∞`, then apply cusp form dimension vanishing to get
 `g = h = 0`, from which `f₂ = f₃ = f₄ = 0`.
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup

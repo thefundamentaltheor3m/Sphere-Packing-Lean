@@ -2,8 +2,6 @@ module
 
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 
-@[expose] public section
-
 /-!
 # Jacobi theta identities
 
@@ -17,6 +15,8 @@ The proof strategy:
 4. Apply cusp form vanishing in weight 4 to deduce `f = 0`, hence `g = 0`.
 5. Use the weight-12 analogue for `(H₂ * H₃ * H₄)^2` to identify `Delta`.
 -/
+
+@[expose] public section
 
 open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I

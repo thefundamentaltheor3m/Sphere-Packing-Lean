@@ -8,6 +8,12 @@ public import Mathlib.Tactic.FunProp
 
 public import SpherePacking.ModularForms.Eisenstein
 
+/-!
+# `fun_prop` Lemmas for Manifold Differentiability
+
+`fun_prop` lemmas for manifold differentiability of functions on the upper half-plane.
+-/
+
 @[expose] public section
 
 open scoped Manifold UpperHalfPlane EisensteinSeries

@@ -4,8 +4,6 @@ public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.Analysis.Real.Pi.Bounds
 
-@[expose] public section
-
 /-!
 # Asymptotic Behavior of Eisenstein Series
 
@@ -24,6 +22,8 @@ and constructs the ModularForm structures for Serre derivatives.
 * `serre_DE₄_tendsto_atImInfty`, `serre_DE₆_tendsto_atImInfty`,
   `serre_DE₂_tendsto_atImInfty` : Limits of serre derivatives (for determining scalars)
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap

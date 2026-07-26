@@ -3,14 +3,14 @@ module
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ForMathlib.SlashActions
 
-@[expose] public section
-
 /-!
 # Jacobi theta differentiability
 
 This file contains the `MDiff` results for the Jacobi theta functions and the resulting modular
 form constructions `H₂_MF`, `H₃_MF`, and `H₄_MF`.
 -/
+
+@[expose] public section
 
 open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I

@@ -8,6 +8,12 @@ module
 
 public import SpherePacking.MagicFunction.a.Schwartz
 
+/-!
+# The Fourier Eigenfunction Property of `a`
+
+This file establishes that the function `a` is a `+1`-eigenfunction of the Fourier transform.
+-/
+
 @[expose] public section
 
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap

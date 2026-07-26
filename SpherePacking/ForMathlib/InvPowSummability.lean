@@ -11,12 +11,12 @@ public import Mathlib.Algebra.Module.ZLattice.Basic
 
 public import SpherePacking.Basic.PeriodicPacking
 
-@[expose] public section
-
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
 inverse powers of the norm function on subsets of Euclidean space.
 -/
+
+@[expose] public section
 
 variable {d : ℕ}
 
@@ -81,7 +81,7 @@ theorem Summable_of_Inv_Pow_Summable'
     use 0
     intro ε hε
     simp only [SummationFilter.unconditional_filter, Filter.mem_map, Filter.mem_atTop_sets,
-      ge_iff_le, le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
+      le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
     intro b
     rw [eq_top_of_bot_eq_top rfl b]
     simp only [Finset.top_eq_univ, Finset.univ_eq_empty, Finset.sum_empty]
@@ -92,7 +92,7 @@ theorem Summable_of_Inv_Pow_Summable'
     let k := d + 1
     have hk' : 0 < k := by positivity
     rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-    simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
+    simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs] at hX
     obtain ⟨C, hC⟩ := hf k
     simp only [Real.norm_eq_abs] at hC
     have hC_nonneg : 0 ≤ C := by
@@ -168,7 +168,7 @@ theorem Summable_of_Inv_Pow_Summable
   (hf : IsDecayingMap X f) :
   Summable (fun x : X => f x) := by
   if hzero : 0 ∈ X then
-    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.diff_subset
+    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.sdiff_subset
     have haux₂ : Inv_Pow_Norm_Summable_Over_Set_Euclidean (X \ {0}) := by
       exact Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset hX (by simp)
     have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ haux₂ (by simp)
@@ -239,7 +239,7 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   [Finite (Quotient ρ.orbitRel)]
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
+  simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs]
   intro ε hε
   -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
   let bℤ : Basis _ ℤ Λ :=
