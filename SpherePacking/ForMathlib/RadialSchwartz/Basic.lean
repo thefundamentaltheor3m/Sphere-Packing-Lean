@@ -152,7 +152,7 @@ lemma coe_fourier (f : RadialSchwartzMap 𝕜 E F) :
     ((𝓕 f : RadialSchwartzMap 𝕜 E F) : 𝓢(E, F)) = 𝓕 (f : 𝓢(E, F)) := rfl
 
 @[simp, norm_cast]
-lemma DFunLike.coe_fourier (f : RadialSchwartzMap 𝕜 E F) :
+lemma fourier_coe (f : RadialSchwartzMap 𝕜 E F) :
     ((𝓕 f : RadialSchwartzMap 𝕜 E F) : E → F) = 𝓕 (f : E → F) := rfl
 
 section inverse
@@ -164,29 +164,81 @@ lemma _root_.Function.Even.fourierInv {f : E → F} (hf : (𝓕 f).Even) {w : E}
   rw [fourierInv_eq_fourier_neg]
   exact hf w
 
-/-- The inverse Fourier transform of a radial Schwartz function equals its Fourier
-transform. -/
-lemma _root_.SchwartzMap.fourierInv_eq_fourier_of_isRadial {f : 𝓢(E, F)}
-    (hf : f ∈ RadialSchwartzMap 𝕜 E F) : (𝓕⁻ f : 𝓢(E, F)) = 𝓕 f := by
+variable (𝕜) in
+lemma _root_.SchwartzMap.fourier_eq_fourierInv_of_mem_radialSchwartzMap {f : 𝓢(E, F)}
+    (hf : f ∈ RadialSchwartzMap 𝕜 E F) : 𝓕⁻ f = 𝓕 f := by
   ext x
-  rw [fourierInv_coe, fourier_coe]
+  rw [fourierInv_coe, SchwartzMap.fourier_coe]
   exact Function.Even.fourierInv <| IsRadial.even (hf.fourier)
+
+-- Is this necessary?
+lemma _root_.SchwartzMap.eqOn_fourier_fourierInv_radialSchwartzMap :
+    Set.EqOn (𝓕⁻ : 𝓢(E, F) → 𝓢(E, F)) (𝓕 : 𝓢(E, F) → 𝓢(E, F)) (RadialSchwartzMap 𝕜 E F) :=
+  fun _ hf ↦ SchwartzMap.fourier_eq_fourierInv_of_mem_radialSchwartzMap 𝕜 hf
 
 instance instFourierInv :
     FourierTransformInv (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
   fourierInv := fourierTransformCLM 𝕜 E F
 
+lemma fourierInv_eq_fourier : (𝓕⁻ : RadialSchwartzMap 𝕜 E F → RadialSchwartzMap 𝕜 E F) = 𝓕 := rfl
 
+lemma coe_fourierInv (f : RadialSchwartzMap 𝕜 E F) : 𝓕⁻ f = 𝓕⁻ (f : 𝓢(E, F)) := by
+  rw [fourierInv_eq_fourier, coe_fourier f]
+  exact (SchwartzMap.fourier_eq_fourierInv_of_mem_radialSchwartzMap 𝕜 (Submodule.coe_mem f)).symm
 
-variable [CompleteSpace F] (f : RadialSchwartzMap 𝕜 E F)
+variable [CompleteSpace F]
+
+instance instFourierPair : FourierPair (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourierInv_fourier_eq := by
+    intro f
+    rw [← Subtype.val_inj, coe_fourierInv, coe_fourier]
+    exact SchwartzMap.instFourierPair.fourierInv_fourier_eq (f : 𝓢(E, F))
+
+variable {f : RadialSchwartzMap 𝕜 E F}
 
 /-- The Fourier transform is an involution on radial Schwartz functions. -/
-lemma fourierTransformCLM_apply_apply :
-    𝓕 (𝓕 f) = f := by
-  sorry
-  -- Subtype.ext <| by simp [← SchwartzMap.fourierInv_eq_fourier_of_isRadial (isRadial f)]
+lemma fourier_apply_apply : 𝓕 (𝓕 f) = f := by
+  rw [← fourierInv_eq_fourier]
+  exact instFourierPair.fourierInv_fourier_eq f
+
+/-- The inverse Fourier transform is an involution on radial Schwartz functions. -/
+lemma fourierInv_apply_apply : 𝓕⁻ (𝓕⁻ f) = f := by
+  rw [fourierInv_eq_fourier]
+  exact fourier_apply_apply
+
+instance instFourierInvPair :
+    FourierInvPair (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourier_fourierInv_eq := by
+    intro f
+    rw [fourierInv_eq_fourier]
+    exact fourierInv_apply_apply
 
 end inverse
+
+section MoreFourierInstances
+
+instance instFourierAdd : FourierAdd (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourier_add := fun _ _ ↦ by simp [← Subtype.val_inj]
+
+instance instFourierInvAdd : FourierInvAdd (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourierInv_add := instFourierAdd.fourier_add
+
+instance instFourierSMul : FourierSMul 𝕜 (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourier_smul := fun _ _ ↦ by simp [← Subtype.val_inj]
+
+instance instFourierInvSMul :
+    FourierInvSMul 𝕜 (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  fourierInv_smul := instFourierSMul.fourier_smul
+
+instance instContinuousFourier :
+    ContinuousFourier (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  continuous_fourier := ContinuousLinearMap.continuous _
+
+instance instContinuousFourierInv :
+    ContinuousFourierInv (RadialSchwartzMap 𝕜 E F) (RadialSchwartzMap 𝕜 E F) where
+  continuous_fourierInv := instContinuousFourier.continuous_fourier
+
+end MoreFourierInstances
 
 end RadialSchwartzMap
 
