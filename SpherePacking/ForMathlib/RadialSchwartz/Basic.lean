@@ -244,4 +244,33 @@ end RadialSchwartzMap
 
 end Fourier
 
+noncomputable section Star
+
+open FourierTransform
+
+namespace RadialSchwartzMap
+
+variable {𝕜 E F : Type*} [RCLike 𝕜]
+  [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+  [MeasurableSpace E] [BorelSpace E]
+  [NormedAddCommGroup F] [NormedSpace ℂ F] [NormedSpace 𝕜 F] [SMulCommClass ℂ 𝕜 F]
+
+variable [CompleteSpace F]
+
+instance instInvolutiveStar : StarAddMonoid (RadialSchwartzMap 𝕜 E F) where
+  star := 𝓕
+  star_involutive := fun _ ↦ fourier_apply_apply
+  star_add := instFourierAdd.fourier_add
+
+instance instStarModule : StarModule ℝ (RadialSchwartzMap 𝕜 E F) where
+  star_smul := by
+    intro r f
+    change 𝓕 (r • f) = star r • 𝓕 f
+    rw [star_trivial]
+    aesop
+
+end RadialSchwartzMap
+
+end Star
+
 end RadialSchwartz
