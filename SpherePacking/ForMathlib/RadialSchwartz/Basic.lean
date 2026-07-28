@@ -257,7 +257,7 @@ variable {𝕜 E F : Type*} [RCLike 𝕜]
 
 variable [CompleteSpace F]
 
-instance instInvolutiveStar : StarAddMonoid (RadialSchwartzMap 𝕜 E F) where
+instance instStarAddMonoid : StarAddMonoid (RadialSchwartzMap 𝕜 E F) where
   star := 𝓕
   star_involutive := fun _ ↦ fourier_apply_apply
   star_add := instFourierAdd.fourier_add
