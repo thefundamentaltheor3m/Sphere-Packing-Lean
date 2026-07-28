@@ -9,17 +9,10 @@ public import Mathlib
 
 /-! # Radial Schwartz Functions
 
-The plan for this PR is to define a type of Radial Schwartz functions (as a `structure` extending
-`SchwartzMap`) and prove some basic properties about the type.
-
-The first goal will be to prove that we have a `StarModule` instance on it, where the `star`
-operation will be nothing but the Fourier transform. One key result needed for this is the fact
-that the Fourier transform of a radial Schwartz function is radial itself, which can be found in
-Appendix A (specifically, (A.23)) of Dan Romik's book *Topics in Complex Analysis*.
-
-The second goal will be to show that we can construct a radial Schwartz function from a smooth,
-rapidly decaying function on the nonnegative reals by composing with the norm squared, using this
-whole multiplying-by-a-smooth-transition-function trick.
+-[X] Define submodule of Radial Schwartz Functions
+-[X] Prove facts about Fourier transforms of Radial Schwartz Functions
+-[X] Prove `InvolutiveStar` and `StarModule` instances
+-[ ] Prove that the self-adjoint and skew-adjoint parts are +1- and -1-eigenfunctions of 𝓕
 -/
 
 @[expose] public section
@@ -157,7 +150,6 @@ lemma fourier_coe (f : RadialSchwartzMap 𝕜 E F) :
 
 section inverse
 
--- TODO: Prove some fact about radial functions being even, then use this result somehow.
 -- TODO: Trim down hypotheses for this result.
 lemma _root_.Function.Even.fourierInv {f : E → F} (hf : (𝓕 f).Even) {w : E} :
     𝓕⁻ f w = 𝓕 f w := by
