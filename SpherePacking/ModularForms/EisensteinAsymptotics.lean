@@ -4,8 +4,6 @@ public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.Analysis.Real.Pi.Bounds
 
-@[expose] public section
-
 /-!
 # Asymptotic Behavior of Eisenstein Series
 
@@ -25,9 +23,12 @@ and constructs the ModularForm structures for Serre derivatives.
   `serre_DE₂_tendsto_atImInfty` : Limits of serre derivatives (for determining scalars)
 -/
 
+@[expose] public section
+
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
-open ModularForm EisensteinSeries TopologicalSpace Set MeasureTheory
+open ModularForm hiding E₄ E₆
+open EisensteinSeries TopologicalSpace Set MeasureTheory
 open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
 open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
@@ -53,7 +54,11 @@ lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
 lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
   obtain ⟨c, hc, hO⟩ := ModularFormClass.exp_decay_sub_atImInfty' f
-  rw [qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z]
+  have hΓ : (1 : ℝ) ∈ (↑(CongruenceSubgroup.Gamma 1) : Subgroup (GL (Fin 2) ℝ)).strictPeriods :=
+    CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ one_mem_strictPeriods_SL
+  rw [qExpansion_coeff_zero (by norm_num : (0 : ℝ) < 1)
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) hΓ)
+    (periodic_comp_ofComplex f hΓ)]
   simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
@@ -183,16 +188,16 @@ lemma serre_D_tendsto_zero_of_tendsto_zero (k : ℤ) (f : ℍ → ℂ)
 /-- serre_D 4 E₄ → -1/3 at i∞. -/
 lemma serre_DE₄_tendsto_atImInfty :
     Filter.Tendsto (serre_D 4 E₄.toFun) atImInfty (nhds (-(1/3 : ℂ))) := by
-  convert serre_D_tendsto_neg_k_div_12 4 E₄.toFun E₄.holo'
-    (ModularFormClass.bdd_at_infty E₄) E₄_tendsto_one_atImInfty using 2
-  norm_num
+  simpa [show -(4 : ℂ) / 12 = -(1 / 3 : ℂ) by norm_num] using
+    serre_D_tendsto_neg_k_div_12 4 E₄.toFun E₄.holo'
+      (ModularFormClass.bdd_at_infty E₄) E₄_tendsto_one_atImInfty
 
 /-- serre_D 6 E₆ → -1/2 at i∞. -/
 lemma serre_DE₆_tendsto_atImInfty :
     Filter.Tendsto (serre_D 6 E₆.toFun) atImInfty (nhds (-(1/2 : ℂ))) := by
-  convert serre_D_tendsto_neg_k_div_12 6 E₆.toFun E₆.holo'
-    E₆_isBoundedAtImInfty E₆_tendsto_one_atImInfty using 2
-  norm_num
+  simpa [show -(6 : ℂ) / 12 = -(1 / 2 : ℂ) by norm_num] using
+    serre_D_tendsto_neg_k_div_12 6 E₆.toFun E₆.holo'
+      E₆_isBoundedAtImInfty E₆_tendsto_one_atImInfty
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
 Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
@@ -233,8 +238,8 @@ lemma summable_pow_shift (k : ℕ) :
     ring
   simp_rw [h_eq]
   apply Summable.mul_left
-  convert h.comp_injective Nat.succ_injective using 1
-  ext m
+  refine (h.comp_injective Nat.succ_injective).congr ?_
+  intro i
   simp [Function.comp_apply, Nat.succ_eq_add_one]
 
 /-- Derivative bounds for q-expansion coefficients.
@@ -257,8 +262,7 @@ lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ}
         2 * π * ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
       have : Summable (fun n : ℕ+ =>
           ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := h.subtype _
-      convert this.mul_left (2 * π) using 1
-      ext n; ring
+      simpa [mul_assoc] using this.mul_left (2 * π)
     use fun n => 2 * π * (n : ℝ)^(k + 1) * rexp (-2 * π * ↑n * k_min.im)
     constructor
     · apply hconv.of_nonneg_of_le

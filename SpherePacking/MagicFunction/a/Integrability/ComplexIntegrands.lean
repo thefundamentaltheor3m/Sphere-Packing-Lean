@@ -11,9 +11,8 @@ public import SpherePacking.ModularForms.FG
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
-@[expose] public section
-
-/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
+/-!
+# Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
 In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
 `I₁`-`I₆` are holomorphic on the upper half-plane.
@@ -28,6 +27,8 @@ In this file, we prove that all the complex integrands Φ₁' through Φ₆' tha
 * `φ₀''_continuous`: `φ₀''` is continuous on the upper half-plane.
 * `φ₀_continuous`: `φ₀ : ℍ → ℂ` is continuous.
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
   MagicFunction.PolyFourierCoeffBound MagicFunction.a.IntegralEstimates.I₁
@@ -185,7 +186,10 @@ section Corollaries
 /-- φ₀'' is holomorphic on the upper half-plane (using `Set.univ ×ℂ Ioi 0` notation).
     This is equivalent to `φ₀''_holo` since `Set.univ ×ℂ Ioi 0 = ℍ₀`. -/
 theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
-  simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
+  have hset : (Set.univ ×ℂ Ioi 0 : Set ℂ) = ℍ₀ := by
+    ext z
+    simp [upperHalfPlaneSet, reProdIm]
+  simpa [hset] using φ₀''_holo
 
 /-- φ₀'' is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=

@@ -15,6 +15,12 @@ public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.Basic.PeriodicPacking
 
+/-!
+# The Cohn–Elkies Linear Programming Bound
+
+This file proves the Cohn–Elkies linear programming bound on sphere packing densities.
+-/
+
 @[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
@@ -156,7 +162,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
-      add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
+      add_zero, zero_apply, ofReal_eq_zero]
     exact h𝓕frezero x
   exact fourier_ne_zero hne_zero h𝓕fzero
 
@@ -645,7 +651,7 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
   cases isEmpty_or_nonempty ↑P.centers
   · case inl instEmpty =>
     rw [P.density_of_centers_empty hd]
-    exact zero_le _
+    exact zero_le
   · case inr instNonempty =>
     let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (P.basis_index_equiv)

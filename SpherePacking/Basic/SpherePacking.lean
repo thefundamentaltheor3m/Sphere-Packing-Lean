@@ -6,7 +6,7 @@ Authors: Sidharth Hariharan, Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Order.CompletePartialOrder
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Topology.Metrizable.Basic
@@ -14,6 +14,12 @@ public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.Topology.EMetricSpace.Paracompact
 
 public import SpherePacking.ForMathlib.VolumeOfBalls
+
+/-!
+# Sphere Packings
+
+Basic definitions for sphere packings and their densities.
+-/
 
 @[expose] public section
 
@@ -273,9 +279,8 @@ lemma scale_finiteDensity {d : ℕ} (_ : 0 < d) (S : SpherePacking d) {c : ℝ} 
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   -- haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
-    convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
-    · exact Eq.symm (DistribMulAction.smul_zero c)
-    · rw [Real.norm_eq_abs, abs_eq_self.mpr hc.le]
+    rw [_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R]
+    rw [smul_zero, Real.norm_eq_abs, abs_of_nonneg hc.le]
   rw [finiteDensity, scale_balls, this, ← Set.smul_set_inter₀ hc.ne.symm]
   repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
   rw [ENNReal.mul_div_mul_left, finiteDensity]

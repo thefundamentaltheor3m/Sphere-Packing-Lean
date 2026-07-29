@@ -2,8 +2,6 @@ module
 
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 
-@[expose] public section
-
 /-!
 # Jacobi theta identities
 
@@ -17,6 +15,8 @@ The proof strategy:
 4. Apply cusp form vanishing in weight 4 to deduce `f = 0`, hence `g = 0`.
 5. Use the weight-12 analogue for `(H₂ * H₃ * H₄)^2` to identify `Delta`.
 -/
+
+@[expose] public section
 
 open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I
@@ -102,17 +102,13 @@ identity.
 
 /-- The function `g := H₂ + H₄ - H₃` tends to `0` at `i∞`. -/
 theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  have := H₂_tendsto_atImInfty
-  have := H₃_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
-  tendsto_cont
+  change Tendsto (fun z ↦ H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
+  tendsto_cont [H₂_tendsto_atImInfty, H₃_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 /-- The function `f := g²` tends to `0` at `i∞`. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  have := jacobi_g_tendsto_atImInfty
-  change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
-  tendsto_cont
+  change Tendsto (fun z ↦ jacobi_g z ^ 2) atImInfty (𝓝 0)
+  tendsto_cont [jacobi_g_tendsto_atImInfty]
 
 private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
   cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
@@ -151,7 +147,7 @@ private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod 
   simp [Pi.mul_apply, Pi.neg_apply]
   ring
 
-private noncomputable def theta_prod_sq : ℍ → ℂ := fun z => (H₂ z * H₃ z * H₄ z) ^ 2
+private noncomputable def theta_prod_sq : ℍ → ℂ := fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2
 
 private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := by
   ext z
@@ -171,15 +167,12 @@ private lemma theta_prod_sq_SL2Z_invariant :
     theta_prod_sq_S_action theta_prod_sq_T_action
 
 private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
-  change MDiff (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
+  change MDiff (fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2)
   exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
-  change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
-  have := H₂_tendsto_atImInfty
-  have := H₃_tendsto_atImInfty
-  have := H₄_tendsto_atImInfty
-  tendsto_cont
+  change Tendsto (fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
+  tendsto_cont [H₂_tendsto_atImInfty, H₃_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 private noncomputable def theta_prod_sq_SIF :
     SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
@@ -194,12 +187,18 @@ private noncomputable def theta_prod_sq_CF : CuspForm (CongruenceSubgroup.Gamma 
 private lemma theta_prod_sq_CF_apply (z : ℍ) :
     theta_prod_sq_CF z = theta_prod_sq z := rfl
 
+/-- `Module.rank` of a `CuspForm` space is invariant under equality of the underlying subgroup,
+bridging the project's `Γ(1)`-indexed spaces to mathlib's `𝒮ℒ`-indexed level-one lemmas. -/
+private lemma rank_cuspForm_congr {k : ℤ} {G₁ G₂ : Subgroup (GL (Fin 2) ℝ)}
+    [G₁.HasDetOne] [G₂.HasDetOne] (h : G₁ = G₂) :
+    Module.rank ℂ (CuspForm G₁ k) = Module.rank ℂ (CuspForm G₂ k) := by
+  subst h; rfl
+
 private lemma finrank_cuspform_12 :
-    Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 := by
-  apply Module.finrank_eq_of_rank_eq
-  rw [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)]
-  simp
-  exact ModularForm.levelOne_weight_zero_rank_one
+    Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 :=
+  Module.finrank_eq_of_rank_eq
+    ((rank_cuspForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
+      CuspForm.rank_eq_one_of_weight_eq_twelve)
 
 private lemma theta_prod_sq_proportional :
     ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=

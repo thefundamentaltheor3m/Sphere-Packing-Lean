@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -11,9 +9,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
-/-! # Constructing Upper-Bounds for I₁
+/-!
+# Constructing Upper-Bounds for I₁
 
 The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
@@ -21,6 +18,8 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 ## TODO:
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
@@ -191,7 +190,10 @@ lemma Bound_integrableOn (r C₀ : ℝ) :
       refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
       rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
       exact div_le_self (by positivity) hs
-  simpa [mul_comm] using h_g.bdd_mul hφ hb
+  change Integrable
+    (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s))
+    (volume.restrict (Ici (1 : ℝ)))
+  simpa [μ, mul_comm] using h_g.bdd_mul hφ hb
 
 end Integrability
 

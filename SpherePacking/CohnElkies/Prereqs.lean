@@ -25,6 +25,12 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.ForMathlib.InvPowSummability
 
+/-!
+# Prerequisites for the Cohn–Elkies Bound
+
+Auxiliary results on Schwartz functions used in the proof of the Cohn–Elkies bound.
+-/
+
 @[expose] public section
 
 open BigOperators Bornology
@@ -250,12 +256,12 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
   · exact fun a ↦ SchwartzMap.ext (congrFun a)
   · intro hf
     rw [hf]
-    exact coeFn_zero
+    exact FunLike.coe_zero
 
 omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
   (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
-  simp [← f.toFun_eq_zero_iff_zero]
+  rw [← f.toFun_eq_zero_iff_zero]
   exact f.continuous.integral_zero_iff_zero_of_nonneg f.integrable hnn
 
 end SchwartzMap

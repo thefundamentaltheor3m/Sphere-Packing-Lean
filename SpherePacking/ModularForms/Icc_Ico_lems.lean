@@ -5,6 +5,12 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Data.Int.Star
 public import Mathlib.Tactic.Cases
 
+/-!
+# Interval Lemmas
+
+Auxiliary lemmas about closed and half-open real intervals.
+-/
+
 @[expose] public section
 
 open TopologicalSpace Set

@@ -9,8 +9,6 @@ public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Delta
 
-@[expose] public section
-
 /-!
 # Transformation Rules for φ₀
 
@@ -36,7 +34,10 @@ are not valid identifiers.
 
 -/
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+@[expose] public section
+
+open ModularForm hiding E₄ E₆
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
