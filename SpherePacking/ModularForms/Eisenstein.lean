@@ -199,18 +199,6 @@ theorem E4E6_coeff_zero_eq_zero :
     simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
   exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
 
-def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
-  let F := DirectSum.of _ 4 E₄
-  let G := DirectSum.of _ 6 E₆
-  cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
-
-
-lemma Delta_ne_zero : Delta ≠ 0 := by
-  have := Δ_ne_zero UpperHalfPlane.I
-  rw [@DFunLike.ne_iff]
-  refine ⟨UpperHalfPlane.I, this⟩
-
-
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
   rw [DFunLike.ne_iff] at h ⊢
