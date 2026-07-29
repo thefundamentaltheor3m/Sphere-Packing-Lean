@@ -1213,13 +1213,32 @@ theorem FmodG_rightLimitAt_zero :
     (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
       simpa [one_div, inv_inv] using ht.symm
 
-/--
-Main inequalities between $F$ and $G$ on the imaginary axis.
+/-!
+### Main inequalities between $F$ and $G$ on the imaginary axis
 -/
+
+/-- $F(it) + 18\pi^{-2} G(it) > 0$ for $t > 0$, since $F$ and $G$ are both positive on the
+imaginary axis. -/
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  sorry
+  have := F_imag_axis_pos.2 t ht
+  have := G_imag_axis_pos.2 t ht
+  positivity
 
+/-- $F(it) - 18\pi^{-2} G(it) < 0$ for $t > 0$: the ratio $F/G$ is strictly antitone on the
+imaginary axis with right limit $18\pi^{-2}$ at $0$, so it stays strictly below $18\pi^{-2}$. -/
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
-  sorry
+  have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
+  -- `FmodGReal` is bounded by its right limit at `0` on all of `(0, ∞)`, being antitone there,
+  have hle : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu =>
+    ge_of_tendsto FmodG_rightLimitAt_zero <| by
+      filter_upwards [self_mem_nhdsWithin, (gt_mem_nhds hu).filter_mono nhdsWithin_le_nhds]
+        with s hs hsu
+      exact (FmodG_strictAntiOn hs (Set.mem_Ioi.mpr hu) hsu).le
+  -- and in fact lies strictly below it, by comparison with the value at `t / 2`.
+  have hlt : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
+    (FmodG_strictAntiOn (Set.mem_Ioi.mpr (half_pos ht)) (Set.mem_Ioi.mpr ht)
+      (half_lt_self ht)).trans_le (hle _ (half_pos ht))
+  rw [sub_neg, ← div_lt_iff₀ hG]
+  exact hlt
