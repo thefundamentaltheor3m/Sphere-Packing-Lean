@@ -48,6 +48,10 @@ lemma comp_norm (g : ℝ → F) : (g ∘ (‖·‖ : E → ℝ)).IsRadial := by
 
 variable [Nonempty F]
 
+-- This is a much more general notion: invariance under composition by a function
+-- (actually, invariance under a relation). There should be some infra for that.
+-- If so, interface with it. If not, develop it.
+
 def radialPart {f : E → F} (hf : f.IsRadial) : ℝ → F :=
   -- For any r ∈ ℝ, if r = ‖x‖ for some x, then map to f x, else map to some default value in F.
   sorry
