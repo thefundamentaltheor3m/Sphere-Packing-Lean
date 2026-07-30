@@ -44,11 +44,11 @@ def E₄ := E 4 (by norm_num)
 /-- The normalised Eisenstein series of weight `6` and level one, with constant term `1`. -/
 def E₆ := E 6 (by norm_num)
 
-/-- E₄ is 1-periodic: E₄(z + 1) = E₄(z). This follows from E₄ being a modular form for Γ(1). -/
+/-- E₄ is 1-periodic: E₄(z + 1) = E₄(z), as a modular form for Γ(1). -/
 lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z := by
   simpa using SlashInvariantForm.vAdd_width_periodic 1 4 1 E₄.toSlashInvariantForm z
 
-/-- E₆ is 1-periodic: E₆(z + 1) = E₆(z). This follows from E₆ being a modular form for Γ(1). -/
+/-- E₆ is 1-periodic: E₆(z + 1) = E₆(z), as a modular form for Γ(1). -/
 lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
   simpa using SlashInvariantForm.vAdd_width_periodic 1 6 1 E₆.toSlashInvariantForm z
 

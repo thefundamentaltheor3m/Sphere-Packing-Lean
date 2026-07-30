@@ -14,10 +14,10 @@ public import SpherePacking.ModularForms.Delta
 /-!
 # `q`-expansions of Eisenstein series
 
-This file defines the normalised level-one Eisenstein series `E k` as a modular form for `Γ(1)`
-(mathlib's `ModularForm.E` is typed over `𝒮ℒ`; the two coincide as functions on `ℍ`) and restates
-its `q`-expansion `EisensteinSeries.q_expansion_riemannZeta` with the exponential written as
-`exp (2πinz)`.
+This file defines the normalised level-one Eisenstein series `E k` as a modular form for
+`Γ(1)` (mathlib's `ModularForm.E` is typed over `𝒮ℒ`; the two coincide as functions on `ℍ`)
+and restates its `q`-expansion `EisensteinSeries.q_expansion_riemannZeta` with the exponential
+written as `exp (2πinz)`.
 -/
 
 @[expose] public section
