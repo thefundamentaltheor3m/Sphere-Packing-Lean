@@ -6,7 +6,6 @@ Authors: Sphere Packing Contributors
 module
 
 public import SpherePacking.ModularForms.Eisensteinqexpansions
-public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
@@ -31,23 +30,21 @@ properties of `E₂`, `E₄` and `E₆` needed by the project:
 @[expose] public section
 
 open ModularForm hiding E₄ E₆
-open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
+open UpperHalfPlane Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
-
-open scoped ArithmeticFunction.sigma
+open scoped Real ArithmeticFunction.sigma
 
 noncomputable section
 
-section Definitions
+/-! ## Definitions and transformation laws -/
 
-/- The Eisenstein Series E₄ and E₆ -/
+/-- The normalised Eisenstein series of weight `4` and level one, with constant term `1`. -/
 def E₄ := E 4 (by norm_num)
 
+/-- The normalised Eisenstein series of weight `6` and level one, with constant term `1`. -/
 def E₆ := E 6 (by norm_num)
 
-
+/-- E₄ is 1-periodic: E₄(z + 1) = E₄(z). This follows from E₄ being a modular form for Γ(1). -/
 lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z := by
   simpa using SlashInvariantForm.vAdd_width_periodic 1 4 1 E₄.toSlashInvariantForm z
 
@@ -75,28 +72,28 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
   field_simp [ne_zero z] at h
   exact h
 
-end Definitions
+/-! ## The quotients `φ₀`, `φ₂'`, `φ₄'`
 
-open Complex Real
+The blueprint's `φ₀`, `φ₋₂`, `φ₋₄`; negative signs cannot appear in subscripts of
+identifiers, hence the primes. -/
 
-noncomputable section
-
-/- φ₀, φ₋₂ and φ₋₄, except we can't use - signs in subscripts for definitions... -/
+/-- The quotient `(E₂E₄ - E₆)² / Δ`, the blueprint's `φ₀`. -/
 def φ₀ (z : ℍ) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
+
+/-- The quotient `E₄(E₂E₄ - E₆) / Δ`, the blueprint's `φ₋₂`. -/
 def φ₂' (z : ℍ) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
+
+/-- The quotient `E₄² / Δ`, the blueprint's `φ₋₄`. -/
 def φ₄' (z : ℍ) := ((E₄ z) ^ 2) / (Δ z)
-/- We extend these definitions to ℂ for convenience. -/
+
+/-- The extension of `φ₀` to `ℂ`, vanishing outside the upper half plane. -/
 def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
 
 lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by simp [φ₀'', hz]
 
+lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := φ₀''_def z.im_pos
 
-lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
-  simpa using (φ₀''_def (z := (z : ℂ)) (UpperHalfPlane.im_pos z))
-
-open SlashInvariantFormClass ModularFormClass
-
-open scoped Real MatrixGroups CongruenceSubgroup
+/-! ## `q`-expansion coefficients and non-vanishing -/
 
 private lemma E4_eq' :
     (E₄ : ℍ → ℂ) = (ModularForm.E (k := 4) (by norm_num) : ℍ → ℂ) := rfl
@@ -112,96 +109,28 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
   · rfl
   · simp [bernoulli, bernoulli'_four]; ring
 
-lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
-  rw [E4_eq']
-  exact EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 :=
+  E4_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
-lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
-  rw [E6_eq']
-  exact EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
-
-private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
-    (g : ModularForm Γ(1) b) :
-    PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
-      PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
-        PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  rw [coe_mul, qExpansion_mul
-    (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
-    (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
-  exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
-
-theorem E4E6_coeff_zero_eq_zero :
-  (PowerSeries.coeff 0)
-      (qExpansion 1
-        ((1 / 1728 : ℂ) •
-          ((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3 - (DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2)
-            12)) =
-    0 := by
-  simp only [one_div, DirectSum.sub_apply]
-  have hsub :
-      qExpansion (1 : ℕ)
-        ⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
-          (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
-      qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
-        qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) := by
-    simpa using
-      (ModularForm.qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
-        (hh := by positivity) (hΓ := by simp)
-        ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
-        ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
-  rw [← Nat.cast_one (R := ℝ),
-    ModularForm.qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
-      (hh := by positivity) (hΓ := by simp), hsub]
-  simp only [_root_.map_smul, map_sub, smul_eq_mul,
-    mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
-  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
-    ext z
-    rw [pow_three, @DirectSum.of_mul_of, @DirectSum.of_mul_of]
-    rfl
-  have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
-    ext z
-    rw [pow_two, @DirectSum.of_mul_of]
-    rfl
-  rw [hds, hd6]
-  have hq4 : PowerSeries.constantCoeff (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
-    rw [qExpansion_constantCoeff_mul E₄ (E₄.mul E₄), qExpansion_constantCoeff_mul E₄ E₄]
-    rw [show PowerSeries.constantCoeff (qExpansion 1 ⇑E₄) = 1 by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E4_q_exp_zero]
-    norm_num
-  have hq6 : PowerSeries.constantCoeff (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
-    rw [qExpansion_constantCoeff_mul E₆ E₆]
-    rw [show PowerSeries.constantCoeff (qExpansion 1 ⇑E₆) = 1 by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E6_q_exp_zero]
-    norm_num
-  have hcoeff4 :
-      (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
-    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq4
-  have hcoeff6 : (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
-    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
-  exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
+lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
+  E6_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
-  rw [DFunLike.ne_iff] at h ⊢
-  exact h
+  rwa [DFunLike.ne_iff] at h ⊢
 
 lemma E4_ne_zero : E₄ ≠ 0 := Ek_ne_zero 4 (by norm_num) (by decide)
 
 lemma E6_ne_zero : E₆ ≠ 0 := Ek_ne_zero 6 (by norm_num) (by decide)
 
-open ArithmeticFunction
-
-section ImagAxisProperties
+/-! ## Realness on the imaginary axis -/
 
 /-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
 This is useful for reusing the same algebraic simplification across `E₂`, `E₄`, `E₆`. -/
 lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
     (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-  push_cast
-  ring_nf
-  simp only [I_sq]
-  ring
+  simp [Complex.ext_iff, mul_right_comm]
 
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
@@ -211,8 +140,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E k hk z).im = 0
-  have hq := E_k_q_expansion k hk hk2 z
-  rw [hq]
+  rw [E_k_q_expansion k hk hk2 z]
   simp only [add_im, one_im, zero_add]
   -- Step 1: Show each term in the sum is real on the imaginary axis
   have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
@@ -221,7 +149,6 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
       simpa [z] using exp_imag_axis_arg (t := t) ht n
     rw [hexp_arg]
-    -- Using simp only: `simp` gives false positive linter warning but args are needed
     simp only [mul_im, exp_ofReal_im, natCast_im, mul_zero, zero_mul, add_zero]
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
@@ -290,8 +217,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E₂ z).im = 0
-  have hq := E₂_eq z
-  rw [hq]
+  rw [E₂_eq]
   simp only [sub_im, one_im, zero_sub]
   -- Step 1: Show each term in the sum is real on the imaginary axis
   have hterm_im : ∀ n : ℕ+, (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
@@ -301,7 +227,6 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
       have h1 : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
         simpa [z] using exp_imag_axis_arg (t := t) ht n
       simpa [mul_assoc, mul_left_comm, mul_comm] using h1
-    -- Using simp only: `simp` gives false positive linter warning but args are needed
     have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
       simp only [Complex.sub_im, Complex.one_im, hexp_arg, exp_ofReal_im, sub_zero]
     have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
@@ -331,9 +256,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   -- Step 4: 24 * sum is real, so -(24 * sum).im = 0
   simp [Complex.mul_im, hsum_im]
 
-end ImagAxisProperties
-
-/-! ## Boundedness of E₂ -/
+/-! ## Boundedness of `E₂` -/
 
 /-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
 
@@ -372,7 +295,9 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
         linarith
       _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
       _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
-        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
+        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ))
+        simp only [norm_one] at this
+        linarith
     calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
           exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
             (sub_pos.mpr hq) hdenom_lower
