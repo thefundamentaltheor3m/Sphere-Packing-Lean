@@ -3,6 +3,12 @@ module
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 public import SpherePacking.ModularForms.SlashActionAuxil
 
+/-!
+# The Eisenstein Series `E₂`
+
+Properties of the quasi-modular Eisenstein series `E₂`.
+-/
+
 @[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

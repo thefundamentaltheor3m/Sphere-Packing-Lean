@@ -57,13 +57,23 @@ lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
 
 /-- E₄ transforms under S as: E₄(-1/z) = z⁴ · E₄(z) -/
 lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z := by
-  simpa using
-    SlashInvariantForm.slash_action_eqn_SL'' E₄ (CongruenceSubgroup.mem_Gamma_one ModularGroup.S) z
+  have h : (E₄.toFun ∣[(4 : ℤ)] ModularGroup.S) z = E₄.toFun z :=
+    congrFun (E₄.slash_action_eq' _
+      (Subgroup.mem_map.mpr ⟨_, CongruenceSubgroup.mem_Gamma_one _, rfl⟩)) z
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
+  field_simp [ne_zero z] at h
+  exact h
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
 lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z := by
-  simpa using
-    SlashInvariantForm.slash_action_eqn_SL'' E₆ (CongruenceSubgroup.mem_Gamma_one ModularGroup.S) z
+  have h : (E₆.toFun ∣[(6 : ℤ)] ModularGroup.S) z = E₆.toFun z :=
+    congrFun (E₆.slash_action_eq' _
+      (Subgroup.mem_map.mpr ⟨_, CongruenceSubgroup.mem_Gamma_one _, rfl⟩)) z
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
+  field_simp [ne_zero z] at h
+  exact h
 
 end Definitions
 
@@ -115,8 +125,9 @@ private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
     PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
       PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
         PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  rw [coe_mul, qExpansion_mul (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
-                              (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  rw [coe_mul, qExpansion_mul
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
+    (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
   exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
 
 theorem E4E6_coeff_zero_eq_zero :
@@ -168,18 +179,6 @@ theorem E4E6_coeff_zero_eq_zero :
   have hcoeff6 : (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
     simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
   exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
-
-def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
-  let F := DirectSum.of _ 4 E₄
-  let G := DirectSum.of _ 6 E₆
-  cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
-
-
-lemma Delta_ne_zero : Delta ≠ 0 := by
-  have := Δ_ne_zero UpperHalfPlane.I
-  rw [@DFunLike.ne_iff]
-  refine ⟨UpperHalfPlane.I, this⟩
-
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2

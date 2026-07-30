@@ -5,6 +5,12 @@ public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
 
 public import SpherePacking.ModularForms.Delta
 
+/-!
+# `q`-Expansions of Eisenstein Series
+
+The `q`-expansions of the Eisenstein series.
+-/
+
 @[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

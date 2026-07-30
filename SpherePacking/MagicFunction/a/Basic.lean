@@ -2,14 +2,18 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
 
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.MagicFunction.IntegralParametrisations
+
+/-!
+# The Function `a`
+
+Defines Viazovska's function `a` via its integral representations.
+-/
 
 @[expose] public section
 

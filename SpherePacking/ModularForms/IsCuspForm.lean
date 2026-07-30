@@ -5,6 +5,12 @@ public import Mathlib.Geometry.Manifold.Notation
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.Cusps
 
+/-!
+# Cusp Forms
+
+The predicate `IsCuspForm` and its basic properties.
+-/
+
 @[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
