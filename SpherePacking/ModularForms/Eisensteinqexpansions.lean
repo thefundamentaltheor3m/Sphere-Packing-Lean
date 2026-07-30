@@ -1,56 +1,49 @@
+/-
+Copyright (c) 2024 The Sphere Packing Contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sphere Packing Contributors
+-/
 module
 
 public import Mathlib.NumberTheory.LSeries.Dirichlet
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 
 public import SpherePacking.ModularForms.Delta
 
 /-!
-# `q`-Expansions of Eisenstein Series
+# `q`-expansions of Eisenstein series
 
-The `q`-expansions of the Eisenstein series.
+This file defines the normalised level-one Eisenstein series `E k` as a modular form for `Γ(1)`
+(mathlib's `ModularForm.E` is typed over `𝒮ℒ`; the two coincide as functions on `ℍ`) and restates
+its `q`-expansion `EisensteinSeries.q_expansion_riemannZeta` with the exponential written as
+`exp (2πinz)`.
 -/
 
 @[expose] public section
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+open UpperHalfPlane Complex ModularForm
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Real Nat ArithmeticFunction.sigma
 
-open scoped ArithmeticFunction.sigma
+noncomputable section
 
-noncomputable section Definitions
+/-- The normalised Eisenstein series of weight `k` and level one, with constant term `1`.
+The scaling by `1/2` matches the normalisation, since the sum is taken over coprime pairs. -/
+def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma 1) k :=
+  (1 / 2 : ℂ) • eisensteinSeriesMF hk 0
 
-def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
-
-def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :=
-  (1/2 : ℂ) • eisensteinSeriesMF hk standardcongruencecondition /-they need 1/2 for the
-    normalization to match up (since the sum here is taken over coprime integers).-/
-
-/-Forwards to `EisensteinSeries.q_expansion_riemannZeta` from mathlib. -/
+/-- The `q`-expansion of `E k` with `riemannZeta` coefficient; forwards to mathlib's
+`EisensteinSeries.q_expansion_riemannZeta`. -/
 lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
     (E k hk) z = 1 +
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
-  rw [_root_.E]
-  let F : ℍ → ℂ :=
-    (1 / 2 : ℂ) • (ModularForm.eisensteinSeriesMF hk standardcongruencecondition : ℍ → ℂ)
-  change F z = _
-  calc
-    F z =
-        1 + (riemannZeta k)⁻¹ * (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
-          ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) := by
-      have hq := EisensteinSeries.q_expansion_riemannZeta (k := k) (by omega) hk2 z
-      rw [ModularForm.E] at hq
-      change F z = _ at hq
-      exact hq
-    _ = 1 + (1 / riemannZeta k) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
-          ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
-      rw [show ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) =
-          ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) from by
-            apply tsum_congr
-            intro n
-            rw [zpow_natCast, ← Complex.exp_nat_mul]
-            ring_nf]
-      simp [div_eq_mul_inv, mul_assoc]
+  have hq : (E k hk) z = 1 + (riemannZeta k)⁻¹ * (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
+      ∑' n : ℕ+, σ (k - 1) n * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) :=
+    EisensteinSeries.q_expansion_riemannZeta (by omega) hk2 z
+  have ht : ∑' n : ℕ+, (σ (k - 1) n : ℂ) * cexp (2 * ↑π * Complex.I * z) ^ (n : ℤ) =
+      ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) :=
+    tsum_congr fun n => by rw [zpow_natCast, ← Complex.exp_nat_mul]; ring_nf
+  rw [hq, ht]
+  ring
