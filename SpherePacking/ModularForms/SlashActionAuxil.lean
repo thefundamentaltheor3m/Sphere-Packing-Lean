@@ -6,8 +6,6 @@ public import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
-@[expose] public section
-
 /-!
 # Auxiliary theorems for the slash actions groups SL(2, ℤ) and Γ(2)
 
@@ -18,6 +16,8 @@ the invariance under the whole group.
 These theorems will be used to prove that 4-th powers of Jacobi theta functions Θ_2^4, Θ_3^4, Θ_4^4
 are modular forms of weight 2 and level Γ(2).
 -/
+
+@[expose] public section
 
 open scoped ModularForm MatrixGroups
 open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup

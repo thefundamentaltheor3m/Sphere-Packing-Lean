@@ -65,34 +65,6 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
   rw [this]
   simp only [CuspForm.zero_apply]
 
-lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
-  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
-  ext
-  rfl
-
-theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
-  ext z
-  have hE4 : ModularForm.E₄ z = E₄ z := rfl
-  have hE6 : ModularForm.E₆ z = E₆ z := rfl
-  have hl : Delta z = (E₄ z ^ 3 - E₆ z ^ 2) / 1728 := by
-    rw [Delta_apply, show Δ = ModularForm.discriminant from Δ_eq_discriminant, ← hE4, ← hE6]
-    exact ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z
-  have hr : Delta_E4_E6_aux z =
-      ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12)) z :=
-    congr_fun (congr_arg (fun (f : ModularForm Γ(1) 12) => (f : ℍ → ℂ)) Delta_E4_E6_eq) z
-  have h3 : (((DirectSum.of (fun k : ℤ => ModularForm Γ(1) k) 4 E₄) ^ 3) 12) z = E₄ z ^ 3 := by
-    rw [show (12 : ℤ) = 4 + (4 + 4) by norm_num, pow_three, DirectSum.of_mul_of,
-      DirectSum.of_mul_of, DirectSum.of_eq_same]
-    change E₄ z * (E₄ z * E₄ z) = E₄ z ^ 3
-    ring
-  have h2 : (((DirectSum.of (fun k : ℤ => ModularForm Γ(1) k) 6 E₆) ^ 2) 12) z = E₆ z ^ 2 := by
-    rw [show (12 : ℤ) = 6 + 6 by norm_num, pow_two, DirectSum.of_mul_of, DirectSum.of_eq_same]
-    change E₆ z * E₆ z = E₆ z ^ 2
-    ring
-  rw [hl, hr]
-  simp only [IsGLPos.smul_apply, DirectSum.sub_apply, ModularForm.sub_apply, h3, h2, smul_eq_mul]
-  ring
-
 lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 :=
   (rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans
     ModularForm.levelOne_weight_six_rank_one

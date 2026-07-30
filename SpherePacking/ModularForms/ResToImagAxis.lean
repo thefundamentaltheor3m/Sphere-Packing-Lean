@@ -6,6 +6,12 @@ public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.SlashActionAuxil
 
+/-!
+# Restriction to the Imaginary Axis
+
+Restriction of modular forms to the positive imaginary axis and positivity of the real part.
+-/
+
 @[expose] public section
 
 open UpperHalfPlane hiding I

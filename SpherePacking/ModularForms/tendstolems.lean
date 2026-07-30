@@ -4,6 +4,12 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Topology.EMetricSpace.Paracompact
 
+/-!
+# Convergence Lemmas
+
+Auxiliary lemmas about convergence used in the modular forms development.
+-/
+
 @[expose] public section
 
 open TopologicalSpace Set

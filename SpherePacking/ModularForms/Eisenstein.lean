@@ -5,6 +5,12 @@ public import SpherePacking.ModularForms.IsCuspForm
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
+/-!
+# Eisenstein Series
+
+Properties of the Eisenstein series `E₄` and `E₆`, including their `q`-expansions.
+-/
+
 @[expose] public section
 
 open ModularForm hiding E₄ E₆
@@ -138,8 +144,9 @@ private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
     PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
       PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
         PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  rw [coe_mul, qExpansion_mul (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
-                              (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  rw [coe_mul, qExpansion_mul
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by positivity) (by simp))
+    (ModularFormClass.analyticAt_cuspFunction_zero g (by positivity) (by simp))]
   exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
 
 theorem E4E6_coeff_zero_eq_zero :
@@ -191,18 +198,6 @@ theorem E4E6_coeff_zero_eq_zero :
   have hcoeff6 : (PowerSeries.coeff 0) (qExpansion 1 ⇑(E₆.mul E₆)) = 1 := by
     simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hq6
   exact sub_eq_zero.mpr (hcoeff4.trans hcoeff6.symm)
-
-def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
-  let F := DirectSum.of _ 4 E₄
-  let G := DirectSum.of _ 6 E₆
-  cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
-
-
-lemma Delta_ne_zero : Delta ≠ 0 := by
-  have := Δ_ne_zero UpperHalfPlane.I
-  rw [@DFunLike.ne_iff]
-  refine ⟨UpperHalfPlane.I, this⟩
-
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
