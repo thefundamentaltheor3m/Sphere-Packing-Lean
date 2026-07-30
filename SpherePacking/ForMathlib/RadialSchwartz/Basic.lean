@@ -9,17 +9,20 @@ public import Mathlib
 
 /-! # Radial Schwartz Functions
 
--[X] Define submodule of Radial Schwartz Functions
--[X] Prove facts about Fourier transforms of Radial Schwartz Functions
--[X] Prove `InvolutiveStar` and `StarModule` instances
--[ ] Prove that the self-adjoint and skew-adjoint parts are +1- and -1-eigenfunctions of 𝓕
+- [X] Define submodule of Radial Schwartz Functions
+- [X] Prove facts about Fourier transforms of Radial Schwartz Functions
+- [X] Prove `InvolutiveStar` and `StarModule` instances
+- [X] Prove that the self-adjoint and skew-adjoint parts are +1- and -1-eigenfunctions of 𝓕
+- [ ] Composition with a radial function creates radial functions (then prove norm is radial)
+- [ ] After merging Bhavik's PR, interface with it to show that the created Schwartz function
+      lies in `RadialSchwartzMap`
 -/
 
 @[expose] public section
 
 namespace Function
 
-variable {E F : Type*}
+variable {D E F : Type*}
 
 /-- A function on a space with a norm is *radial* if its value at a point depends only on the norm
 of that point. -/
@@ -28,10 +31,37 @@ def IsRadial [Norm E] (f : E → F) : Prop :=
 
 namespace IsRadial
 
-variable [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial)
+lemma even [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial) : f.Even := fun x ↦ hf (norm_neg x)
 
-include hf in
-lemma even : f.Even := fun x ↦ hf (norm_neg x)
+lemma comp_right [Norm D] {f : D → E} {g : E → F} (hf : f.IsRadial) :
+  (g ∘ f).IsRadial := by grind [IsRadial]
+
+variable [Norm E]
+
+variable (E) in
+lemma _root_.Norm.isRadial : (‖·‖ : E → ℝ).IsRadial := by grind [IsRadial]
+
+example : Function.IsRadial (‖·‖ : E → ℝ) := Norm.isRadial E
+
+lemma comp_norm (g : ℝ → F) : (g ∘ (‖·‖ : E → ℝ)).IsRadial := by
+  simp [IsRadial.comp_right, Norm.isRadial]
+
+variable [Nonempty F]
+
+def radialPart {f : E → F} (hf : f.IsRadial) : ℝ → F :=
+  -- For any r ∈ ℝ, if r = ‖x‖ for some x, then map to f x, else map to some default value in F.
+  sorry
+
+lemma eq_radialPart_comp_norm {f : E → F} (hf : f.IsRadial) : f = hf.radialPart ∘ (‖·‖) := by
+  sorry
+
+lemma _root_.Function.isRadial_iff_comp_norm {f : E → F} :
+    f.IsRadial ↔ ∃ g : ℝ → F, f = g ∘ (‖·‖) := by
+  constructor
+  · intro hf
+
+    sorry
+  · exact fun ⟨g, hg⟩ ↦ hg ▸ IsRadial.comp_norm g
 
 end IsRadial
 
@@ -260,6 +290,18 @@ instance instStarModule : StarModule ℝ (RadialSchwartzMap 𝕜 E F) where
     change 𝓕 (r • f) = star r • 𝓕 f
     rw [star_trivial]
     aesop
+
+variable {f : RadialSchwartzMap 𝕜 E F}
+
+lemma mem_selfAdjoint_iff :
+  f ∈ selfAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = f := by rfl
+
+lemma mem_skewAdjoint_iff :
+  f ∈ skewAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = -f := by rfl
+
+lemma selfAdjointPart_eq : selfAdjointPart ℝ f = (1 / 2 : ℝ) • (f + 𝓕 f) := by aesop
+
+lemma skewAdjointPart_eq : skewAdjointPart ℝ f = (1 / 2 : ℝ) • (f - 𝓕 f) := by aesop
 
 end RadialSchwartzMap
 
