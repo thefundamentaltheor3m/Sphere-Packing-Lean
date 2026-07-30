@@ -38,13 +38,17 @@ noncomputable def jacobi_f : ℍ → ℂ := jacobi_g ^ 2
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
   simp only [jacobi_g, sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_S_action, H₃_S_action, H₄_S_action]
-  ext z; simp only [Pi.add_apply, Pi.neg_apply]; ring
+  ext z
+  simp only [Pi.add_apply, Pi.neg_apply]
+  ring
 
 /-- T-action on `g`: `g|[2]T = -g`. -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   simp only [jacobi_g, sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
     H₂_T_action, H₃_T_action, H₄_T_action]
-  ext z; simp only [Pi.add_apply, Pi.neg_apply]; ring
+  ext z
+  simp only [Pi.add_apply, Pi.neg_apply]
+  ring
 
 /-- Rewrite `jacobi_f` as a pointwise product. -/
 lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := sq jacobi_g
@@ -121,13 +125,17 @@ private lemma theta_prod_S_action : (theta_prod ∣[(6 : ℤ)] S) = -theta_prod 
   simp only [theta_prod, (by norm_num : (6 : ℤ) = 2 + 2 + 2),
     mul_slash_SL2 (2 + 2) 2 S _ _, mul_slash_SL2 2 2 S _ _,
     H₂_S_action, H₃_S_action, H₄_S_action]
-  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
+  ext z
+  simp [Pi.mul_apply, Pi.neg_apply]
+  ring
 
 private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod := by
   simp only [theta_prod, (by norm_num : (6 : ℤ) = 2 + 2 + 2),
     mul_slash_SL2 (2 + 2) 2 T _ _, mul_slash_SL2 2 2 T _ _,
     H₂_T_action, H₃_T_action, H₄_T_action]
-  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
+  ext z
+  simp [Pi.mul_apply, Pi.neg_apply]
+  ring
 
 private noncomputable def theta_prod_sq : ℍ → ℂ := (H₂ * H₃ * H₄) ^ 2
 

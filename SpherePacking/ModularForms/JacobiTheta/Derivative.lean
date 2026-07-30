@@ -61,7 +61,9 @@ noncomputable def f₄ : ℍ → ℂ :=
 
 /-- `f₂ = serre_D 2 H₂ + (-1/6) • (H₂ * (H₂ + 2H₄))` -/
 lemma f₂_decompose : f₂ = serre_D (2 : ℤ) H₂ + ((-1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))) := by
-  ext z; simp [f₂, sub_eq_add_neg]; ring
+  ext z
+  simp [f₂, sub_eq_add_neg]
+  ring
 
 /-- `f₄ = serre_D 2 H₄ + (1/6) • (H₄ * (2H₂ + H₄))` -/
 lemma f₄_decompose : f₄ = serre_D (2 : ℤ) H₄ + ((1/6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄))) := by rfl
@@ -195,13 +197,17 @@ lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
     simp only [two_H₂_add_H₄_S_action, f₂_S_action] at hmul
     rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
     convert hmul using 1
-    ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+    ext z
+    simp only [Pi.mul_apply, Pi.neg_apply]
+    ring
   have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) = (H₄ + (2 : ℂ) • H₂) * f₂ := by
     have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
     simp only [H₂_add_two_H₄_S_action, f₄_S_action] at hmul
     rw [show (2 : ℤ) + 4 = 6 by norm_num] at hmul
     convert hmul using 1
-    ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+    ext z
+    simp only [Pi.mul_apply, Pi.neg_apply]
+    ring
   simp only [theta_g, add_slash, h_term1, h_term2]
   ext z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply]; ring
@@ -382,14 +388,18 @@ private lemma H_sum_sq_eq_mul : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H�
 private lemma H_sum_sq_S_action : (H_sum_sq ∣[(4 : ℤ)] S) = H_sum_sq := by
   rw [H_sum_sq_eq_mul, show (4 : ℤ) = 2 + 2 from rfl]
   simp only [SlashAction.add_slash, mul_slash_SL2 2 2 S _ _, H₂_S_action, H₄_S_action]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+  ext z
+  simp [Pi.mul_apply, Pi.add_apply]
+  ring
 
 /-- `H_sum_sq` is invariant under `T`. -/
 private lemma H_sum_sq_T_action : (H_sum_sq ∣[(4 : ℤ)] T) = H_sum_sq := by
   rw [H_sum_sq_eq_mul, show (4 : ℤ) = 2 + 2 from rfl]
   simp only [SlashAction.add_slash, mul_slash_SL2 2 2 T _ _,
     H₂_T_action, H₄_T_action, ← jacobi_identity]
-  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+  ext z
+  simp [Pi.mul_apply, Pi.add_apply]
+  ring
 
 private lemma H_sum_sq_SL2Z_invariant : ∀ γ : SL(2, ℤ), H_sum_sq ∣[(4 : ℤ)] γ = H_sum_sq :=
   slashaction_generators_SL2Z H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
@@ -414,7 +424,9 @@ private noncomputable def H_sum_sq_MF : ModularForm (Γ 1) 4 := {
 /-- `E₄ = H₂ ^ 2 + H₂ * H₄ + H₄ ^ 2`. -/
 theorem E₄_eq_H_sum_sq : _root_.E₄.toFun = H_sum_sq := by
   have h_toFun : (_root_.E₄ - H_sum_sq_MF).toFun = _root_.E₄.toFun - H_sum_sq := by
-    ext z; simp [H_sum_sq_MF, H_sum_sq_SIF]; rfl
+    ext z
+    simp [H_sum_sq_MF, H_sum_sq_SIF]
+    rfl
   have h_diff_tendsto : Tendsto (_root_.E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
     rw [h_toFun]
     change Tendsto (fun z ↦ _root_.E₄.toFun z - H_sum_sq z) atImInfty (nhds 0)
