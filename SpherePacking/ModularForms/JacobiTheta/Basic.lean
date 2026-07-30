@@ -584,15 +584,15 @@ theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
   simpa [funext Θ₄_as_jacobiTheta₂] using jacobiTheta₂_half_apply_tendsto_atImInfty
 
 theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
-  change Tendsto (fun x : ℍ => Θ₂ x ^ 4) atImInfty (𝓝 0)
+  change Tendsto (fun x : ℍ ↦ Θ₂ x ^ 4) atImInfty (𝓝 0)
   simpa using Θ₂_tendsto_atImInfty.pow 4
 
 theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
-  change Tendsto (fun x : ℍ => Θ₃ x ^ 4) atImInfty (𝓝 1)
+  change Tendsto (fun x : ℍ ↦ Θ₃ x ^ 4) atImInfty (𝓝 1)
   simpa using Θ₃_tendsto_atImInfty.pow 4
 
 theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
-  change Tendsto (fun x : ℍ => Θ₄ x ^ 4) atImInfty (𝓝 1)
+  change Tendsto (fun x : ℍ ↦ Θ₄ x ^ 4) atImInfty (𝓝 1)
   simpa using Θ₄_tendsto_atImInfty.pow 4
 
 /-!
@@ -630,7 +630,7 @@ lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
     (Θ₂ ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₂
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₂_term n z := by
     simp_rw [Θ₂_term_as_jacobiTheta₂_term]
     apply Summable.mul_left
     rw [summable_jacobiTheta₂_term_iff]
@@ -667,13 +667,18 @@ lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
     (Θ₄ ⟨I * t, by simp [ht]⟩).im = 0 := by
   unfold Θ₄
   let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hsum : Summable fun n : ℤ => Θ₄_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₄_term n z := by
     simp_rw [Θ₄_term_as_jacobiTheta₂_term]
     rw [summable_jacobiTheta₂_term_iff]
     exact z.im_pos
   apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
   intro n
   exact Θ₄_term_imag_axis_real n t ht
+
+/-- The imaginary part of a natural power vanishes when the base is real. -/
+lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) : (z ^ m).im = 0 := by
+  rw [← Complex.conj_eq_iff_im] at hz ⊢
+  rw [map_pow, hz]
 
 /--
 `H₂(it)` is real for all `t > 0`.
@@ -722,7 +727,7 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   -- The sum of positive terms (at least one nonzero) is positive
   let z : ℍ := ⟨I * t, by simp [ht]⟩
   -- Summability of the complex series
-  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+  have hsum : Summable fun n : ℤ ↦ Θ₂_term n z := by
     simp_rw [Θ₂_term_as_jacobiTheta₂_term]
     apply Summable.mul_left
     rw [summable_jacobiTheta₂_term_iff]
@@ -731,13 +736,13 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   unfold Θ₂
   rw [Complex.re_tsum hsum]
   -- Summability of the real series
-  have hsum_re : Summable fun n : ℤ => (Θ₂_term n z).re := by
+  have hsum_re : Summable fun n : ℤ ↦ (Θ₂_term n z).re := by
     obtain ⟨x, hx⟩ := hsum
     exact ⟨x.re, Complex.hasSum_re hx⟩
   -- Each term is positive
-  have hpos : ∀ n : ℤ, 0 < (Θ₂_term n z).re := fun n => Θ₂_term_imag_axis_re_pos n t ht
+  have hpos : ∀ n : ℤ, 0 < (Θ₂_term n z).re := fun n ↦ Θ₂_term_imag_axis_re_pos n t ht
   -- Use that sum of positive terms is positive
-  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 0 (hpos 0)
+  exact Summable.tsum_pos hsum_re (fun n ↦ le_of_lt (hpos n)) 0 (hpos 0)
 
 /--
 `H₂(it) > 0` for all `t > 0`.

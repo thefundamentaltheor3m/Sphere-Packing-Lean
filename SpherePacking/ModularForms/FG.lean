@@ -46,7 +46,7 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   have hE4 : ModularForm.E₄ z = E₄ z := rfl
   have hE6 : ModularForm.E₆ z = E₆ z := rfl
   have hΔ : Δ z = (E₄ z ^ 3 - E₆ z ^ 2) / 1728 := by
-    rw [show Δ = ModularForm.discriminant from Δ_eq_discriminant, ← hE4, ← hE6]
+    rw [← hE4, ← hE6]
     exact ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z
   calc
     Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
@@ -141,7 +141,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
 private lemma Δ_fun_theta :
     Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
   ext z
-  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
+  rw [congrFun Δ_fun_eq_Δ z, Δ_eq_H₂_H₃_H₄ z, ← jacobi_identity]
   simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
@@ -173,7 +173,7 @@ private lemma logderiv_mul_eq (f h : ℍ → ℂ)
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
-lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
+lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Δ_imag_axis_pos
 
 /-- The q-expansion exponent argument on imaginary axis z=it with ℕ+ index.
 Simplifies `2πi * n * z` where z=it to `-2πnt`. -/
@@ -644,7 +644,7 @@ private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos SerreDer_22_L�
     push_cast
     ring
   rw [h_eq]
-  have := Delta_imag_axis_pos
+  have := Δ_imag_axis_pos
   have := negDE₂_imag_axis_pos
   have := G_imag_axis_pos
   have := H₂_imag_axis_pos
@@ -1213,13 +1213,32 @@ theorem FmodG_rightLimitAt_zero :
     (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
       simpa [one_div, inv_inv] using ht.symm
 
-/--
-Main inequalities between $F$ and $G$ on the imaginary axis.
+/-!
+### Main inequalities between $F$ and $G$ on the imaginary axis
 -/
+
+/-- $F(it) + 18\pi^{-2} G(it) > 0$ for $t > 0$, since $F$ and $G$ are both positive on the
+imaginary axis. -/
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  sorry
+  have := F_imag_axis_pos.2 t ht
+  have := G_imag_axis_pos.2 t ht
+  positivity
 
+/-- $F(it) - 18\pi^{-2} G(it) < 0$ for $t > 0$: the ratio $F/G$ is strictly antitone on the
+imaginary axis with right limit $18\pi^{-2}$ at $0$, so it stays strictly below $18\pi^{-2}$. -/
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
-  sorry
+  have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
+  -- `FmodGReal` is bounded by its right limit at `0` on all of `(0, ∞)`, being antitone there,
+  have hle : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu =>
+    ge_of_tendsto FmodG_rightLimitAt_zero <| by
+      filter_upwards [self_mem_nhdsWithin, (gt_mem_nhds hu).filter_mono nhdsWithin_le_nhds]
+        with s hs hsu
+      exact (FmodG_strictAntiOn hs (Set.mem_Ioi.mpr hu) hsu).le
+  -- and in fact lies strictly below it, by comparison with the value at `t / 2`.
+  have hlt : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
+    (FmodG_strictAntiOn (Set.mem_Ioi.mpr (half_pos ht)) (Set.mem_Ioi.mpr ht)
+      (half_lt_self ht)).trans_le (hle _ (half_pos ht))
+  rw [sub_neg, ← div_lt_iff₀ hG]
+  exact hlt
