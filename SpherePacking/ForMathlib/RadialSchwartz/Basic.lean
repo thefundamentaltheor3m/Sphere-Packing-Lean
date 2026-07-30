@@ -22,27 +22,34 @@ namespace Function
 
 variable {D E F : Type*}
 
-/-- A function on a space with a norm is *radial* if its value at a point depends only on the norm
-of that point. -/
-def IsRadial [Norm E] (f : E → F) : Prop :=
-  ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
+/-- A function on a space with a norm is *radial* if factors through the norm. -/
+def IsRadial [Norm E] (f : E → F) : Prop := f.FactorsThrough (‖·‖ : E → ℝ)
 
--- *TODO:*
--- This is a much more general notion: invariance under composition by a function
--- (actually, invariance under a relation). There should be some infra for that.
--- If so, interface with it. If not, develop it.
+lemma isRadial_def [Norm E] (f : E → F) :
+    f.IsRadial ↔ ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y := by
+  simp [IsRadial, Function.FactorsThrough]
 
 namespace IsRadial
+
+/-- The radial part of a function. If f is a radial function, then `f = f.radialPart ∘ ‖·‖`. -/
+noncomputable def _root_.Function.radialPart [Norm E] [hF : Nonempty F] (f : E → F) : ℝ → F :=
+  Function.extend (‖·‖ : E → ℝ) f <| fun _ ↦ Classical.choice hF
+
+lemma eq_radialPart_comp_norm [Norm E] [Nonempty F] {f : E → F} (hf : f.IsRadial) :
+    f = f.radialPart ∘ (‖·‖ : E → ℝ) := by
+  ext x
+  rw [radialPart]
+  exact (hf.extend_apply _ _).symm
 
 lemma even [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial) : f.Even := fun x ↦ hf (norm_neg x)
 
 lemma comp_right [Norm D] {f : D → E} {g : E → F} (hf : f.IsRadial) :
-  (g ∘ f).IsRadial := by grind [IsRadial]
+  (g ∘ f).IsRadial := by grind [isRadial_def]
 
 variable [Norm E]
 
 variable (E) in
-lemma _root_.Norm.isRadial : (‖·‖ : E → ℝ).IsRadial := by grind [IsRadial]
+lemma _root_.Norm.isRadial : (‖·‖ : E → ℝ).IsRadial := by grind [isRadial_def]
 
 example : Function.IsRadial (‖·‖ : E → ℝ) := Norm.isRadial E
 
@@ -78,9 +85,9 @@ def RadialSchwartzMap (𝕜 E F : Type*) [NormedField 𝕜] [NormedAddCommGroup 
     [NormedAddCommGroup F] [NormedSpace ℝ F] [NormedSpace 𝕜 F] [SMulCommClass ℝ 𝕜 F] :
     Submodule 𝕜 𝓢(E, F) where
   carrier := {f | IsRadial f}
-  add_mem' := by grind [IsRadial]
-  zero_mem' := by simp [IsRadial]
-  smul_mem' := by grind [IsRadial]
+  add_mem' := by grind [isRadial_def]
+  zero_mem' := by simp [isRadial_def]
+  smul_mem' := by grind [isRadial_def]
 
 namespace RadialSchwartzMap
 
@@ -130,8 +137,9 @@ lemma Function.IsRadial.fourier {f : E → F} (hf : f.IsRadial) : (𝓕 f).IsRad
 
 variable (𝕜) in
 lemma SchwartzMap.fourier_mem_radialSchwartzMap_of_mem_radialSchwartzMap {f : 𝓢(E, F)}
-    (hf : f ∈ RadialSchwartzMap 𝕜 E F) : 𝓕 f ∈ RadialSchwartzMap 𝕜 E F :=
-  SchwartzMap.fourier_coe f ▸ hf.fourier
+    (hf : f ∈ RadialSchwartzMap 𝕜 E F) : 𝓕 f ∈ RadialSchwartzMap 𝕜 E F := by
+  rw [SchwartzMap.mem_radialSchwartzMap_iff_isRadial] at hf ⊢
+  exact SchwartzMap.fourier_coe f ▸ hf.fourier
 
 namespace RadialSchwartzMap
 
