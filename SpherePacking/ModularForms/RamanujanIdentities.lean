@@ -36,13 +36,9 @@ The scalar is determined by comparing limits as z → i∞.
 
 @[expose] public section
 
-open UpperHalfPlane hiding I
-open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
-open ModularForm hiding E₄ E₆
-open EisensteinSeries TopologicalSpace Set MeasureTheory
-open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
+open UpperHalfPlane
 
-open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
+open scoped MatrixGroups
 
 noncomputable section
 
@@ -53,16 +49,13 @@ the non-primed versions are in terms of D. -/
 
 /-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
 private lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
-    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
-  exact ⟨c, hc.symm⟩
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e :=
+  ((finrank_eq_one_iff_of_nonzero' e he).mp
+    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f).imp fun _ hc => hc.symm
 
 private lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ}
     {f g : ModularForm Γ k} {c : ℂ} (h : f = c • g) (z : ℍ) :
-    (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
-  simpa [ModularForm.coe_smul, smul_eq_mul] using
-    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+    (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by simp [h]
 
 /-- Determine scalar coefficient from limits: if `f = c * g` pointwise,
 `f → L` at i∞, and `g → 1` at i∞, then `c = L`.
@@ -71,9 +64,8 @@ This captures the "uniqueness of limits" argument used in dimension-1 proofs. -/
 lemma scalar_eq_of_tendsto {f g : ℍ → ℂ} {c L : ℂ} (hfun : ∀ z, f z = c * g z)
     (hf_lim : Filter.Tendsto f atImInfty (nhds L)) (hg_lim : Filter.Tendsto g atImInfty (nhds 1)) :
     c = L := by
-  refine (tendsto_nhds_unique hf_lim ?_).symm
-  simpa [mul_one] using (show Filter.Tendsto f atImInfty (nhds (c * 1)) by
-    convert tendsto_const_nhds.mul hg_lim using 1; ext z; exact hfun z)
+  simpa using tendsto_nhds_unique
+    ((tendsto_const_nhds.mul hg_lim).congr fun z => (hfun z).symm) hf_lim
 
 /--
 Serre derivative of E₂: `serre_D 1 E₂ = - 12⁻¹ * E₄`.
@@ -98,10 +90,9 @@ theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
 /-- Serre derivative of E₄: `serre_D 4 E₄ = - 3⁻¹ * E₆`.
 
 Uses the dimension argument:
-1. serre_D 4 E₄ is weight-6 slash-invariant (by serre_D_slash_invariant)
-2. serre_D 4 E₄ is bounded at infinity (serre_DE₄_isBoundedAtImInfty)
-3. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
-4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
+1. serre_D 4 E₄ is a weight-6 modular form (serre_DE₄_ModularForm)
+2. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
+3. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
 -/
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_six_one_dimensional E6_ne_zero
@@ -131,12 +122,8 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one
     (weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num)) hE₄_sq_ne
     serre_DE₆_ModularForm
-  have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := fun z => by
-    calc
-      serre_D 6 E₆.toFun z = (serre_DE₆_ModularForm : ℍ → ℂ) z := rfl
-      _ = c * (E₄_sq : ℍ → ℂ) z := smul_modularForm_eq_pointwise hc z
-      _ = c * (E₄.toFun z * E₄.toFun z) := by
-        congr 1
+  have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := fun z =>
+    smul_modularForm_eq_pointwise hc z
   have hc_val : c = -(1/2 : ℂ) := scalar_eq_of_tendsto hfun serre_DE₆_tendsto_atImInfty
     (by tendsto_cont [E₄_tendsto_one_atImInfty])
   ext z
@@ -155,22 +142,22 @@ lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 1 E₂ z]
-  simp only [congrFun ramanujan_E₂' z, Pi.mul_apply, Pi.sub_apply,
-    show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
+  simp only [congrFun ramanujan_E₂' z, Pi.mul_apply, Pi.sub_apply, Pi.neg_apply, Pi.inv_apply,
+    Pi.ofNat_apply]
   ring
 
 @[simp]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
   rw [D_eq_serre_D_add 4 E₄.toFun z]
-  simp only [congrFun ramanujan_E₄' z, Pi.mul_apply, Pi.sub_apply,
-    show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl]
+  simp only [congrFun ramanujan_E₄' z, Pi.mul_apply, Pi.sub_apply, Pi.neg_apply, Pi.inv_apply,
+    Pi.ofNat_apply]
   ring
 
 @[simp]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 6 E₆.toFun z]
-  simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
-    show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
+  simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply, Pi.neg_apply, Pi.inv_apply,
+    Pi.ofNat_apply]
   ring
