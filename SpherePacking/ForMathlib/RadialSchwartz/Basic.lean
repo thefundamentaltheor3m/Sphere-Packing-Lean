@@ -5,17 +5,15 @@ Authors: Sidharth Hariharan, Seewoo Lee
 -/
 module
 
-public import Mathlib
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 
 /-! # Radial Schwartz Functions
 
-- [X] Define submodule of Radial Schwartz Functions
-- [X] Prove facts about Fourier transforms of Radial Schwartz Functions
-- [X] Prove `InvolutiveStar` and `StarModule` instances
-- [X] Prove that the self-adjoint and skew-adjoint parts are +1- and -1-eigenfunctions of 𝓕
-- [ ] Composition with a radial function creates radial functions (then prove norm is radial)
-- [ ] After merging Bhavik's PR, interface with it to show that the created Schwartz function
-      lies in `RadialSchwartzMap`
+This file defines the notion of a radial function, and uses it to define the submodule the Schwartz
+space consisting of radial functions. It proves that the Fourier transform is an involution on this
+submodule. It proves `FourierTransform`, `FourierPair`, `ContinuousFourier`, `FourierAdd` and
+`FourierSMul` instances (and the corresponding instances for 𝓕⁻) and `StarAddMonoid` and
+`StarModule` instances (where the module structure is over ℝ).
 -/
 
 @[expose] public section
@@ -28,6 +26,11 @@ variable {D E F : Type*}
 of that point. -/
 def IsRadial [Norm E] (f : E → F) : Prop :=
   ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y
+
+-- *TODO:*
+-- This is a much more general notion: invariance under composition by a function
+-- (actually, invariance under a relation). There should be some infra for that.
+-- If so, interface with it. If not, develop it.
 
 namespace IsRadial
 
@@ -45,27 +48,6 @@ example : Function.IsRadial (‖·‖ : E → ℝ) := Norm.isRadial E
 
 lemma comp_norm (g : ℝ → F) : (g ∘ (‖·‖ : E → ℝ)).IsRadial := by
   simp [IsRadial.comp_right, Norm.isRadial]
-
-variable [Nonempty F]
-
--- This is a much more general notion: invariance under composition by a function
--- (actually, invariance under a relation). There should be some infra for that.
--- If so, interface with it. If not, develop it.
-
-def radialPart {f : E → F} (hf : f.IsRadial) : ℝ → F :=
-  -- For any r ∈ ℝ, if r = ‖x‖ for some x, then map to f x, else map to some default value in F.
-  sorry
-
-lemma eq_radialPart_comp_norm {f : E → F} (hf : f.IsRadial) : f = hf.radialPart ∘ (‖·‖) := by
-  sorry
-
-lemma _root_.Function.isRadial_iff_comp_norm {f : E → F} :
-    f.IsRadial ↔ ∃ g : ℝ → F, f = g ∘ (‖·‖) := by
-  constructor
-  · intro hf
-
-    sorry
-  · exact fun ⟨g, hg⟩ ↦ hg ▸ IsRadial.comp_norm g
 
 end IsRadial
 
