@@ -64,13 +64,14 @@ section Holo_Lemmas
 
 theorem φ₀''_holo : Holo(φ₀'') := by
   have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
-  have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
+  have hΔ := UpperHalfPlane.mdifferentiable_iff.mp CuspForm.discriminant.holo'
   have h_eq :
       EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z) ℍ₀ :=
     fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
   refine DifferentiableOn.congr ?_ h_eq
   exact hF.div hΔ fun z hz => by
-    simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
+    simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz,
+      ModularForm.discriminant_ne_zero]
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
