@@ -62,7 +62,6 @@ lemma IsRadial.comp_isometry [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadi
     (hg : Isometry g) (hg₀ : g 0 = 0) : f ∘ g = f :=
   funext fun x ↦ hf <| hg.norm_map_of_map_zero hg₀ x
 
-
 lemma isRadial_iff_comp_linearIsometryEquiv [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (f : E → F) : f.IsRadial ↔ ∀ g : E ≃ₗᵢ[ℝ] E, f ∘ g = f := by
   refine ⟨fun hf g ↦ hf.comp_isometry g.isometry (by simp), fun h x y hxy ↦ ?_⟩
