@@ -51,8 +51,6 @@ variable [Norm E]
 variable (E) in
 lemma _root_.Norm.isRadial : (‖·‖ : E → ℝ).IsRadial := by grind [isRadial_def]
 
-example : Function.IsRadial (‖·‖ : E → ℝ) := Norm.isRadial E
-
 lemma comp_norm (g : ℝ → F) : (g ∘ (‖·‖ : E → ℝ)).IsRadial := by
   simp [IsRadial.comp_right, Norm.isRadial]
 
