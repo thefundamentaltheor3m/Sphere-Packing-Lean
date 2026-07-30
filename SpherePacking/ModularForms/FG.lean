@@ -46,7 +46,7 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   have hE4 : ModularForm.E₄ z = E₄ z := rfl
   have hE6 : ModularForm.E₆ z = E₆ z := rfl
   have hΔ : Δ z = (E₄ z ^ 3 - E₆ z ^ 2) / 1728 := by
-    rw [show Δ = ModularForm.discriminant from Δ_eq_discriminant, ← hE4, ← hE6]
+    rw [← hE4, ← hE6]
     exact ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z
   calc
     Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
@@ -148,7 +148,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
 private lemma Δ_fun_theta :
     Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
   ext z
-  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
+  rw [congrFun Δ_fun_eq_Δ z, Δ_eq_H₂_H₃_H₄ z, ← jacobi_identity]
   simp only [Pi.add_apply, one_div, Pi.smul_apply, Pi.pow_apply, Pi.mul_apply, smul_eq_mul]
   ring
 
@@ -555,7 +555,7 @@ private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos SerreDer_22_L�
     push_cast
     ring
   rw [h_eq]
-  have := Delta_imag_axis_pos
+  have := Δ_imag_axis_pos
   have := negDE₂_imag_axis_pos
   have := G_imag_axis_pos
   have := H₂_imag_axis_pos
