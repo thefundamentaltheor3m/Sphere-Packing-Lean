@@ -240,22 +240,16 @@ private lemma basis_box_neg_one_one_isBounded {d : ℕ}
         exact abs_le.mpr ⟨by linarith, le_of_lt hi.2⟩
       exact mul_le_of_le_one_left (norm_nonneg _) hcoord
 
--- Issue #218: the unrestricted statement is false for arbitrary `X`; callers must place `X`
--- inside the lattice before taking this finite intersection.
-theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
+/-- The intersection of a bounded set with a `ℤ`-lattice is finite. -/
+theorem ZLattice.setFinite_inter {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
     {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ]
-    (hX : X ⊆ Λ) :
-  let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
-  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
-  let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
-  Finite ↑(X ∩ D) := by
+    (hX : Bornology.IsBounded X) :
+    (X ∩ (Λ : Set (EuclideanSpace ℝ (Fin d)))).Finite := by
   classical
-  intro bℤ bℝ D
-  have hDΛ : (D ∩ Λ).Finite := by
-    have hD_bounded : Bornology.IsBounded D := basis_box_neg_one_one_isBounded bℝ
-    have hspan : Submodule.span ℤ (Set.range bℝ) = Λ := bℤ.ofZLatticeBasis_span ℝ
-    simpa [hspan] using ZSpan.setFinite_inter bℝ hD_bounded
-  exact Set.finite_coe_iff.mpr (hDΛ.subset fun x hx ↦ ⟨hx.2, hX hx.1⟩)
+  let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ)
+  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ
+  have hspan : Submodule.span ℤ (Set.range bℝ) = Λ := bℤ.ofZLatticeBasis_span ℝ
+  simpa [hspan] using ZSpan.setFinite_inter bℝ hX
 
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
