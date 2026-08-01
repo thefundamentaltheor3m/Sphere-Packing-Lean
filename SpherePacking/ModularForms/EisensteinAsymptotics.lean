@@ -58,50 +58,43 @@ lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     (periodic_comp_ofComplex f hΓ)]
   simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
+/-- `E₂ ∘ ofComplex` is 1-periodic (off `ℍ` both sides are the same junk value). -/
+private lemma E₂_periodic_comp_ofComplex : Function.Periodic (E₂ ∘ ofComplex) 1 := by
+  intro w
+  rcases lt_or_ge 0 w.im with hw | hw
+  · have hw1 : 0 < (w + 1).im := by simpa using hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw1, ofComplex_apply_of_im_pos hw]
+    convert E₂_periodic ⟨w, hw⟩ using 2
+    ext
+    simp [add_comm]
+  · have hw1 : (w + 1).im ≤ 0 := by simpa using hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_nonpos hw1,
+      ofComplex_apply_of_im_nonpos hw]
+
+/-- E₂ → 1 at i∞: `E₂` extends continuously to the cusp, with value the constant coefficient `1`
+of its `q`-expansion (mathlib's `EisensteinSeries.hasSum_qExpansion_E2`). -/
+lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
+  have hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦
+      (if m = 0 then 1 else -24 * ArithmeticFunction.sigma 1 m : ℂ) •
+        Function.Periodic.qParam 1 τ ^ m) (E₂ τ) := fun τ ↦ by
+    simp only [Function.Periodic.qParam, Complex.ofReal_one, div_one]
+    exact EisensteinSeries.hasSum_qExpansion_E2 (z := τ)
+  have hana : AnalyticAt ℂ (cuspFunction 1 E₂) 0 :=
+    analyticAt_cuspFunction_zero one_pos E₂_periodic_comp_ofComplex E₂_holo'
+      EisensteinSeries.isBoundedAtImInfty_E2
+  have h0 : cuspFunction 1 E₂ 0 = 1 := by
+    have h := (hasFPowerSeriesOnBall_cuspFunction one_pos hana hf).coeff_zero (fun _ ↦ 1)
+    simpa [FormalMultilinearSeries.ofScalars] using h.symm
+  rw [← h0]
+  exact (hana.continuousAt.tendsto.comp (qParam_tendsto_atImInfty one_pos)).congr
+    fun τ ↦ eq_cuspFunction τ one_ne_zero E₂_periodic_comp_ofComplex
+
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
 lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
     fun z => Real.exp (-(2 * π) * z.im) := by
-  rw [Asymptotics.isBigO_iff]
-  refine ⟨192, Filter.eventually_atImInfty.mpr ⟨1, fun z hz => ?_⟩⟩
-  -- E₂ z - 1 = -24 * ∑' n, n·qⁿ/(1-qⁿ)
-  have hsub : E₂ z - 1 = -24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) := by rw [E₂_eq z]; ring
-  rw [hsub, norm_mul, show ‖(-24 : ℂ)‖ = 24 by simp, Real.norm_of_nonneg (Real.exp_pos _).le]
-  set q : ℂ := cexp (2 * π * Complex.I * z)
-  -- Rewrite sum in terms of q^n
-  simp_rw [show ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n by
-    intro n; rw [← Complex.exp_nat_mul]; congr 1; ring]
-  -- Key bounds: ‖q‖ ≤ exp(-2π) < 1/2
-  have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
-  have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
-    nlinarith [Real.exp_pos (-2 * π), pi_gt_three,
-      Real.add_one_lt_exp (show (2 : ℝ) * π ≠ 0 by positivity),
-      show Real.exp (-2 * π) * Real.exp (2 * π) = 1 by rw [← Real.exp_add]; norm_num]
-  have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
-  have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
-  -- Use norm_tsum_logDeriv_expo_le and bound r/(1-r)³ ≤ 8r for r < 1/2
-  have htsum_bound := norm_tsum_logDeriv_expo_le (norm_exp_two_pi_I_lt_one z)
-  have hsum_le_8q : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ 8 * ‖q‖ := by
-    have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by nlinarith [sq_nonneg (1 - ‖q‖)]
-    calc ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / (1 / 8) := by
-          apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) h1
-      _ = 8 * ‖q‖ := by ring
-  have hq_eq_exp : ‖q‖ = Real.exp (-2 * π * z.im) := by
-    have hre : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-      simp [Complex.I_re, Complex.I_im, mul_comm]
-    rw [Complex.norm_exp, hre]
-  calc 24 * ‖∑' n : ℕ+, ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr
-    _ ≤ 24 * (8 * ‖q‖) := by gcongr
-    _ = 192 * ‖q‖ := by ring
-    _ = 192 * Real.exp (-(2 * π) * z.im) := by rw [hq_eq_exp]; ring_nf
-
-/-- E₂ → 1 at i∞. -/
-lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
-  suffices h : Filter.Tendsto (fun z : ℍ => E₂ z - 1) atImInfty (nhds 0) by
-    simpa using h.add_const 1
-  exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
+  have h := exp_decay_sub_atImInfty one_pos E₂_periodic_comp_ofComplex E₂_holo'
+    EisensteinSeries.isBoundedAtImInfty_E2
+  simpa [neg_mul, show valueAtInfty E₂ = 1 from E₂_tendsto_one_atImInfty.limUnder_eq] using h
 
 /-- E₄ → 1 at i∞. -/
 lemma E₄_tendsto_one_atImInfty : Filter.Tendsto E₄.toFun atImInfty (nhds 1) :=
@@ -123,7 +116,7 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
 lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
-  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' E₂_isBoundedAtImInfty
+  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' EisensteinSeries.isBoundedAtImInfty_E2
 
 /-! ## Construction of ModularForm from serre_D -/
 
@@ -201,7 +194,7 @@ def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
 lemma serre_DE₂_tendsto_atImInfty :
     Filter.Tendsto (serre_D 1 E₂) atImInfty (nhds (-(1/12 : ℂ))) := by
   simpa [neg_div] using serre_D_tendsto_neg_k_div_12 1 E₂ E₂_holo'
-    E₂_isBoundedAtImInfty E₂_tendsto_one_atImInfty
+    EisensteinSeries.isBoundedAtImInfty_E2 E₂_tendsto_one_atImInfty
 
 /-! ## Generic q-expansion summability and derivative bounds -/
 

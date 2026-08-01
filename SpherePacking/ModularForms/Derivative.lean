@@ -616,7 +616,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)) :
     rw [hcomp_eq, (hdiff_F_comp.hasDerivAt.comp (z : ℂ) hdiff_mobius.hasDerivAt).deriv]
   -- Substitute the micro-lemmas
   have hderiv_mob := deriv_moebius γ z
-  have hderiv_zpow := deriv_denom_zpow γ k z
+  have hderiv_zpow := _root_.deriv_denom_zpow γ k z
   rw [hchain, hderiv_mob, hderiv_zpow]
   -- Now we have:
   -- (2πi)⁻¹ * [deriv(F∘ofComplex)(mob z) * (1/denom²) * denom^(-k) +
@@ -1079,7 +1079,7 @@ theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
     have hmul : IsBoundedAtImInfty (fun z => (k * 12⁻¹) * (E₂ z * f z)) :=
-      hconst.mul (E₂_isBoundedAtImInfty.mul hbdd)
+      hconst.mul (EisensteinSeries.isBoundedAtImInfty_E2.mul hbdd)
     rw [isBoundedAtImInfty_iff] at hmul ⊢
     obtain ⟨M, A, hMA⟩ := hmul
     refine ⟨M, A, ?_⟩
