@@ -62,7 +62,7 @@ lemma aux2 (D : Set (EuclideanSpace ℝ (Fin d))) :
   exact S.centers_dist' _ _ hx.left hy.left hxy
 
 theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
-    [Fintype τ] [NoAtoms (volume : Measure (EuclideanSpace ℝ τ))]
+    [Fintype τ] [NullSingletonClass (volume : Measure (EuclideanSpace ℝ τ))]
     (h_measurable : ∀ x ∈ s, MeasurableSet (f x))
     (h_bounded : IsBounded (⋃ x ∈ s, f x))
     (h_volume : ∀ x ∈ s, c ≤ volume (f x))
