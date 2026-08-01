@@ -5,16 +5,17 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Eisensteinqexpansions
+public import SpherePacking.ModularForms.Delta
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
 /-! # The Eisenstein series `E₄` and `E₆`
 
-This file defines the normalised level-one Eisenstein series `E₄` and `E₆` (as
-`ModularForm Γ(1) k`, with constant term `1`) together with the quotients `φ₀`, `φ₂'`, `φ₄'` of
-Eisenstein series by the discriminant `Δ` used to build the magic function, and collects the
-properties of `E₂`, `E₄` and `E₆` needed by the project:
+This file defines the normalised level-one Eisenstein series `E k` (as `ModularForm Γ(1) k`,
+with constant term `1`; mathlib's `ModularForm.E` is typed over `𝒮ℒ`, the two coincide as
+functions on `ℍ`), its specialisations `E₄` and `E₆`, together with the quotients `φ₀`, `φ₂'`,
+`φ₄'` of Eisenstein series by the discriminant `Δ` used to build the magic function, and collects
+the properties of `E₂`, `E₄` and `E₆` needed by the project:
 
 * `E₄_periodic`, `E₆_periodic`, `E₄_S_transform`, `E₆_S_transform`: pointwise transformation laws
   under the generators of `SL(2, ℤ)`.
@@ -33,11 +34,16 @@ Boundedness of `E₂` at `i∞` is now mathlib's `EisensteinSeries.isBoundedAtIm
 open ModularForm hiding E₄ E₆
 open UpperHalfPlane Complex
 
-open scoped Real ArithmeticFunction.sigma
+open scoped Real Nat ArithmeticFunction.sigma
 
 noncomputable section
 
 /-! ## Definitions and transformation laws -/
+
+/-- The normalised Eisenstein series of weight `k` and level one, with constant term `1`.
+The scaling by `1/2` matches the normalisation, since the sum is taken over coprime pairs. -/
+def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma 1) k :=
+  (1 / 2 : ℂ) • eisensteinSeriesMF hk 0
 
 /-- The normalised Eisenstein series of weight `4` and level one, with constant term `1`. -/
 def E₄ := E 4 (by norm_num)
@@ -140,65 +146,46 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hk' : 3 ≤ k := by exact_mod_cast hk
   change (E k hk z).im = 0
-  rw [E_k_q_expansion k hk hk2 z]
-  simp only [add_im, one_im, zero_add]
-  -- Step 1: Show each term in the sum is real on the imaginary axis
-  have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
-      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
-    intro n
-    have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      simpa [z] using exp_imag_axis_arg (t := t) ht n
-    rw [hexp_arg]
-    simp only [mul_im, exp_ofReal_im, natCast_im, mul_zero, zero_mul, add_zero]
+  rw [show (E k hk) z = ModularForm.E hk' z from rfl,
+    EisensteinSeries.q_expansion_riemannZeta hk' hk2 z]
+  simp only [zpow_natCast]
+  -- Step 1: On the imaginary axis the nome is real: `q = exp (-2πt)`
+  have hq_real : cexp (2 * ↑Real.pi * Complex.I * z) =
+      ((Real.exp (-(2 * Real.pi * t)) : ℝ) : ℂ) := by
+    rw [show 2 * ↑Real.pi * Complex.I * (z : ℂ) = ((-(2 * Real.pi * t) : ℝ) : ℂ) by
+        simpa [z] using exp_imag_axis_arg t ht 1,
+      ← Complex.ofReal_exp]
   -- Step 2: Summability of the series
-  have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
-      cexp (2 * ↑Real.pi * Complex.I * z * n) := by
-    apply Summable.of_norm
-    apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
-    · intro n
-      calc ‖↑((ArithmeticFunction.sigma (k - 1)) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
-          = ‖(↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ)‖ *
-            ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := norm_mul _ _
-        _ ≤ ‖(↑n : ℂ) ^ k‖ * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
-          apply mul_le_mul_of_nonneg_right
-          · rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
-            have hbound := ArithmeticFunction.sigma_le_pow_succ (k - 1) n
-            have hk' : k - 1 + 1 = k := Nat.sub_add_cancel (by omega : 1 ≤ k)
-            rw [hk'] at hbound
-            exact_mod_cast hbound
-          · exact norm_nonneg _
-        _ = ‖(↑n : ℂ) ^ k * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := (norm_mul _ _).symm
-    · apply summable_norm_iff.mpr
-      have h := summable_pow_mul_cexp k 1 z
-      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at h
-      apply (h.comp_injective PNat.coe_injective).congr
-      intro n
-      simp only [Function.comp_apply]
-      rw [← Complex.exp_nat_mul]
-      congr 2
-      ring
+  have hsum : Summable fun n : ℕ+ =>
+      (σ (k - 1) n : ℂ) * cexp (2 * ↑Real.pi * Complex.I * z) ^ (n : ℕ) := by
+    have h := (EisensteinSeries.summable_sigma_mul_cexp_pow (k := k) (by omega) z).comp_injective
+      PNat.coe_injective
+    exact h.congr fun n => rfl
   -- Step 3: The sum has zero imaginary part
-  have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
-      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
+  have hsum_im : (∑' n : ℕ+,
+      (σ (k - 1) n : ℂ) * cexp (2 * ↑Real.pi * Complex.I * z) ^ (n : ℕ)).im = 0 := by
     rw [im_tsum hsum]
-    simp [hterm_im]
-  -- Step 4: Show the coefficient is real and product with sum is real
-  have hpow_im : ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
-    rw [show (-2 * Real.pi * Complex.I : ℂ) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k by ring]
+    simp only [hq_real, ← Complex.ofReal_pow, Complex.mul_im, Complex.natCast_im,
+      Complex.natCast_re, Complex.ofReal_im, mul_zero, zero_mul, add_zero, tsum_zero]
+  -- Step 4: The coefficient is real, so the product with the sum is real
+  have hpow_im : ((-(2 * Real.pi * Complex.I)) ^ k : ℂ).im = 0 := by
+    rw [show (-(2 * Real.pi * Complex.I) : ℂ) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k by
+      ring]
     have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
     have h2 : (Complex.I ^ k : ℂ).im = 0 := by
       obtain ⟨m, hm⟩ := hk2
       rw [hm, ← two_mul, pow_mul, I_sq]
       rcases m.even_or_odd with hm' | hm' <;> simp [hm'.neg_one_pow]
     simp [Complex.mul_im, h1, h2]
-  have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
   -- For ζ(k) when k ≥ 4, it's real (mathlib: riemannZeta_im_eq_zero_of_one_lt)
   have hzeta_im : (riemannZeta k).im = 0 := by
     rw [show (k : ℂ) = ((k : ℝ) : ℂ) from by push_cast; ring]
     exact riemannZeta_im_eq_zero_of_one_lt (by exact_mod_cast show 1 < (k : ℤ) by omega)
-  have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by simp [hzeta_im]
-  simp only [mul_im, div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
+  have hcoeff_im : ((riemannZeta k)⁻¹ * (-2 * ↑Real.pi * Complex.I) ^ k / (k - 1)! : ℂ).im = 0 := by
+    simp [Complex.div_im, Complex.mul_im, Complex.inv_im, hzeta_im, neg_mul, hpow_im]
+  rw [Complex.add_im, Complex.one_im, Complex.mul_im, hcoeff_im, hsum_im]
   ring
 
 /-- `E₄(it)` is real for all `t > 0`. -/
