@@ -56,7 +56,6 @@ public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.FG
-public import SpherePacking.ModularForms.Icc_Ico_lems
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Defs
@@ -69,14 +68,8 @@ public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.exp_lems
-public import SpherePacking.ModularForms.limunder_lems
-public import SpherePacking.ModularForms.riemannZetalems
-public import SpherePacking.ModularForms.tendstolems
 public import SpherePacking.ModularForms.tsumderivWithin
-public import SpherePacking.ModularForms.uniformcts
-public import SpherePacking.ModularForms.upperhalfplane
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.TendstoContAttr
