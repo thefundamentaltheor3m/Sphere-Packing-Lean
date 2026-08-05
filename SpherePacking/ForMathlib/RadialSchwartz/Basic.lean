@@ -284,11 +284,9 @@ instance instStarModule : StarModule ℝ (RadialSchwartzMap 𝕜 E F) where
 
 variable {f : RadialSchwartzMap 𝕜 E F}
 
-lemma mem_selfAdjoint_iff :
-  f ∈ selfAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = f := by rfl
+lemma mem_selfAdjoint_iff : f ∈ selfAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = f := by rfl
 
-lemma mem_skewAdjoint_iff :
-  f ∈ skewAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = -f := by rfl
+lemma mem_skewAdjoint_iff : f ∈ skewAdjoint (RadialSchwartzMap 𝕜 E F) ↔ 𝓕 f = -f := by rfl
 
 lemma selfAdjointPart_eq : selfAdjointPart ℝ f = (1 / 2 : ℝ) • (f + 𝓕 f) := by aesop
 
