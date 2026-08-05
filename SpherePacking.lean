@@ -56,7 +56,6 @@ public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.JacobiTheta.Basic
