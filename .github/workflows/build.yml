@@ -1,27 +1,55 @@
+# Builds the Lean project and, on top of the build, generates the documentation
+# (home page, API docs, blueprint and dependency graph) with docgen-action and
+# publishes it to the `gh-pages` branch.
+#
+# Deployment layout (GitHub Pages serves the branch from subdirectories, so the
+# production site and every preview stay live at once):
+#
+#   push to `main`    -> gh-pages root            (production: full site with API docs)
+#   push to `gauss2`  -> gh-pages /gauss2/         (blueprint + dependency graph)
+#   PR to main/gauss2 -> gh-pages /pr-preview/pr-<N>/ (blueprint + dependency graph)
+#   PR closed/merged  -> that preview directory is removed again
+#
+# The build is unchanged from before (lean-action + docgen-action); only the
+# deployment is new. Publishing is done with off-the-shelf GitHub Actions
+# (JamesIves/github-pages-deploy-action for the branch deploys and
+# rossjrw/pr-preview-action for the per-PR previews) rather than bespoke scripts.
+#
+# NOTE: for these deployments to be served, the repository's Pages source must
+# be set to "Deploy from a branch" -> branch `gh-pages` / root (Settings ->
+# Pages). The "GitHub Actions" Pages source can only host a single deployment
+# and so cannot serve the production site, the gauss2 preview and PR previews
+# side by side.
+
 on:
   push:
     branches:
       - main
+      - gauss2
   pull_request:
     branches:
       - main
+      - gauss2
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
 
-# Cancel previous runs if a new commit is pushed to the same PR or branch
-concurrency:
-  group: ${{ github.ref }}  # Group runs by the ref (branch or PR)
-  cancel-in-progress: true  # Cancel any ongoing runs in the same group
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Allow the workflow to push the built documentation to the gh-pages branch and
+# to comment the preview URL on pull requests.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
+  pull-requests: write
 
 jobs:
   build_project:
     runs-on: ubuntu-latest
     name: Build Project
+    # Skip the build on PR-close events; only the preview teardown runs then.
+    if: github.event.action != 'closed'
+    # Cancel superseded builds for the same branch/PR. Deploys live in the
+    # separate gh-pages-write group below and are never cancelled mid-write.
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Cleanup to free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
@@ -63,4 +91,155 @@ jobs:
         uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
           blueprint: true
+          # The full site (API docs + Jekyll home page) is only built for the
+          # production deploy from `main`. Previews (gauss2 and PRs) ship the
+          # blueprint + dependency graph only: faster to build, and self-contained
+          # (the blueprint's links are relative, so it works in any subdirectory).
+          api-docs: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+          build-page: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
           homepage: home_page
+          # docgen-action's own deploy uses the "GitHub Actions" Pages source,
+          # which cannot host coexisting previews. We publish to the gh-pages
+          # branch ourselves in the jobs below instead.
+          deploy: false
+
+      - name: Stage documentation for deployment
+        run: |
+          rm -rf deploy-src
+          mkdir -p deploy-src
+          if [ -d home_page/_site ]; then
+            echo "Staging full site (home_page/_site)."
+            cp -a home_page/_site/. deploy-src/
+          else
+            echo "Staging blueprint + dependency graph (home_page/blueprint)."
+            cp -a home_page/blueprint/. deploy-src/
+          fi
+          # Serve the pre-built files as-is (GitHub Pages must not re-run Jekyll).
+          touch deploy-src/.nojekyll
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site
+          path: deploy-src
+          include-hidden-files: true
+          retention-days: 3
+
+  deploy:
+    # Production (main -> root) and the gauss2 branch preview (-> /gauss2/).
+    needs: build_project
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    name: Deploy
+    # All writers to gh-pages share one group so deploys serialise and are never
+    # cancelled part-way through.
+    concurrency:
+      group: gh-pages-write
+      cancel-in-progress: false
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Download documentation artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: site
+          path: deploy-src
+
+      - name: Ensure Jekyll stays disabled on the Pages branch
+        run: mkdir -p pages-root && touch pages-root/.nojekyll
+      - name: Publish .nojekyll to the Pages branch root
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: pages-root
+          clean: false          # additive: never touches production or previews
+          force: false          # rebase rather than force-push (safe alongside previews)
+
+      - name: Deploy production site to gh-pages root
+        if: github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: deploy-src
+          force: false
+          # Replace the production site at the root, but keep the previews and
+          # the gauss2 deploy that live in their own subdirectories.
+          clean: true
+          clean-exclude: |
+            .nojekyll
+            pr-preview
+            gauss2
+          commit-message: "Deploy production site (${{ github.sha }})"
+
+      - name: Deploy gauss2 preview to gh-pages /gauss2/
+        if: github.ref == 'refs/heads/gauss2'
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: deploy-src
+          target-folder: gauss2
+          force: false
+          clean: true
+          commit-message: "Deploy gauss2 preview (${{ github.sha }})"
+
+  pr_preview:
+    # A live preview for every open PR, at /pr-preview/pr-<N>/, with a sticky
+    # comment linking it. rossjrw/pr-preview-action builds on the same deploy
+    # action used above.
+    needs: build_project
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    name: Deploy PR preview
+    concurrency:
+      group: gh-pages-write
+      cancel-in-progress: false
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Download documentation artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: site
+          path: deploy-src
+
+      - name: Ensure Jekyll stays disabled on the Pages branch
+        run: mkdir -p pages-root && touch pages-root/.nojekyll
+      - name: Publish .nojekyll to the Pages branch root
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: pages-root
+          clean: false
+          force: false
+
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          source-dir: deploy-src
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pages-base-url: thefundamentaltheor3m.github.io/Sphere-Packing-Lean
+          qr-code: "false"
+          action: deploy
+
+  remove_preview:
+    # Tear the preview down when a PR is closed or merged.
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Remove PR preview
+    concurrency:
+      group: gh-pages-write
+      cancel-in-progress: false
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Remove PR preview
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pages-base-url: thefundamentaltheor3m.github.io/Sphere-Packing-Lean
+          action: remove
