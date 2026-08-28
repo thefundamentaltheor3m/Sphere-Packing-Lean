@@ -9,7 +9,6 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import Mathlib.NumberTheory.ModularForms.Discriminant
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.Cusps
-public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.ResToImagAxis
