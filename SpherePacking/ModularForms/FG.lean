@@ -33,7 +33,7 @@ This file develops the quasimodular forms `F = (E₂ E₄ - E₆) ^ 2` and
 * `F_vanishing_order`, `G_vanishing_order`: the vanishing orders `2` and `3/2` at `i∞`.
 * `FmodG_strictAntiOn`: `t ↦ F(it) / G(it)` is strictly decreasing on `(0, ∞)`.
 * `FmodG_rightLimitAt_zero`: its right limit at `0` is `18 π⁻²`.
-* `FG_inequality_1`, `FG_inequality_2`: the resulting bounds `|F(it)| < 18 π⁻² G(it)`.
+* `FG_inequality_1`, `FG_inequality_2`: the resulting bounds `F(it) < 18 π⁻² G(it)`.
 -/
 
 @[expose] public section
@@ -595,16 +595,18 @@ lemma mul_F₁E₄_re_tendsto_zero :
     F₁_mul_E₄_isBigO_exp_atImInfty 1
 
 /-- The numerator of `FmodGReal (1 / s)` after cancelling `s ^ 10` tends to `36 * π ^ (-2 : ℤ)`. -/
-lemma FmodG_numerator_tendsto : Tendsto (fun s ↦ s ^ 2 * FReal s
+lemma FmodG_numerator_tendsto :
+  Tendsto (fun s ↦ s ^ 2 * FReal s
     - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re)
     + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) atTop (nhds (36 * π ^ (-2 : ℤ))) := by
   tendsto_cont [sq_mul_FReal_tendsto_zero, mul_F₁E₄_re_tendsto_zero,
     tendsto_resToImagAxis_of_tendsto_atImInfty E₄_tendsto_one_atImInfty]
 
 /-- The denominator of `FmodGReal (1 / s)` after cancelling `s ^ 10` tends to `2`. -/
-lemma FmodG_denominator_tendsto : Tendsto (fun s ↦ (H₄.resToImagAxis s).re ^ 3
+lemma FmodG_denominator_tendsto :
+  Tendsto (fun s ↦ (H₄.resToImagAxis s).re ^ 3
     * (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-      + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
+    + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
   tendsto_cont [tendsto_resToImagAxis_of_tendsto_atImInfty H₂_tendsto_atImInfty,
     tendsto_resToImagAxis_of_tendsto_atImInfty H₄_tendsto_atImInfty]
 
