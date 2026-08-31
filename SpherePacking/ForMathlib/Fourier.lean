@@ -9,11 +9,12 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.RingTheory.Binomial
 
-@[expose] public section
-
-/-! # Fourier Series
+/-!
+# Fourier Series
 The purpose of this file is to include some results on Fourier series.
 -/
+
+@[expose] public section
 
 open Complex Real
 

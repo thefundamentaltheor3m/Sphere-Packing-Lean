@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -11,9 +9,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
-/-! # Constructing Upper-Bounds for I₃
+/-!
+# Constructing Upper-Bounds for I₃
 
 The purpose of this file is to construct bounds on the integral `I₃` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
@@ -21,6 +18,8 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 ## TODO:
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
@@ -186,7 +185,9 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
     have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
       Real.continuous_exp.comp_continuousOn
         (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
-    simpa [f, mul_comm, mul_left_comm, div_eq_mul_inv] using continuousOn_const.mul (h1.mul h2)
+    exact (continuousOn_const.mul (h1.mul h2)).congr fun s _ => by
+      simp [f, div_eq_mul_inv]
+      ring
   have hO : f =O[atTop] fun s ↦ rexp (-(2 * π) * s) := .of_bound (c := |C₀| * rexp (π * |r|)) <| by
     filter_upwards [Filter.Ici_mem_atTop 1] with s hs
     have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=

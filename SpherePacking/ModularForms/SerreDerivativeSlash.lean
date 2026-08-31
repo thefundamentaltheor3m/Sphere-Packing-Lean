@@ -2,8 +2,6 @@ module
 
 public import SpherePacking.ModularForms.Derivative
 
-@[expose] public section
-
 /-!
 # Slash Invariance of Serre Derivative of E₂
 
@@ -23,6 +21,8 @@ The key insight is that under the slash action:
 - `D(D₂ γ) = -c²/denom²` where `c = γ₁₀`
 - The anomaly terms cancel because `α - α² * π²/3 = 0` when `α = 3/π²`
 -/
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
@@ -48,7 +48,7 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
     simp only [comp_apply, ofComplex_apply_of_im_pos hw, D₂, EisensteinSeries.D2]
   simp only [D, hderiv, div_eq_mul_inv, ← zpow_neg_one]
   rw [deriv_const_mul _ (.zpow (differentiableAt_denom γ z) (.inl hz_ne)),
-      deriv_denom_zpow γ 1 z]
+      _root_.deriv_denom_zpow γ 1 z]
   simp only [Int.reduceNeg, Int.reduceSub, zpow_neg_one]; field_simp; ring
 
 /-! ## MDifferentiable infrastructure for D₂ -/

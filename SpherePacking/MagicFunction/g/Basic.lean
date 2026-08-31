@@ -5,7 +5,6 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 public import Mathlib.Analysis.Real.Pi.Bounds
 
 public import SpherePacking.MagicFunction.a.Eigenfunction
@@ -14,13 +13,12 @@ public import SpherePacking.MagicFunction.b.Eigenfunction
 public import SpherePacking.MagicFunction.b.SpecialValues
 public import SpherePacking.Tactic.NormNumI
 
-@[expose] public section
-
 /-! # Viazovska's Magic Function
 
 In this file, we define Viazovska's magic funtction `g`.
 -/
 
+@[expose] public section
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.Fourier

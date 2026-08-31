@@ -11,12 +11,12 @@ public import Mathlib.Algebra.Module.ZLattice.Basic
 
 public import SpherePacking.Basic.PeriodicPacking
 
-@[expose] public section
-
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
 inverse powers of the norm function on subsets of Euclidean space.
 -/
+
+@[expose] public section
 
 variable {d : ℕ}
 
@@ -81,7 +81,7 @@ theorem Summable_of_Inv_Pow_Summable'
     use 0
     intro ε hε
     simp only [SummationFilter.unconditional_filter, Filter.mem_map, Filter.mem_atTop_sets,
-      ge_iff_le, le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
+      le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
     intro b
     rw [eq_top_of_bot_eq_top rfl b]
     simp only [Finset.top_eq_univ, Finset.univ_eq_empty, Finset.sum_empty]
@@ -92,7 +92,7 @@ theorem Summable_of_Inv_Pow_Summable'
     let k := d + 1
     have hk' : 0 < k := by positivity
     rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-    simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
+    simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs] at hX
     obtain ⟨C, hC⟩ := hf k
     simp only [Real.norm_eq_abs] at hC
     have hC_nonneg : 0 ≤ C := by
@@ -168,7 +168,7 @@ theorem Summable_of_Inv_Pow_Summable
   (hf : IsDecayingMap X f) :
   Summable (fun x : X => f x) := by
   if hzero : 0 ∈ X then
-    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.diff_subset
+    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.sdiff_subset
     have haux₂ : Inv_Pow_Norm_Summable_Over_Set_Euclidean (X \ {0}) := by
       exact Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset hX (by simp)
     have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ haux₂ (by simp)
@@ -222,15 +222,34 @@ open ZLattice ZSpan
 
 section Sets_Acted_Upon_By_Lattice
 
-theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
-  {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ] :
-  let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
-  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
-  let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
-  Finite ↑(X ∩ D) :=
-  -- Consider function from this thing to set of orbits. Show preimage of any singleton in
-  -- `Quotient` consists of 2^d elements. Then card is card of 2^d
-  sorry
+private lemma basis_box_neg_one_one_isBounded {d : ℕ}
+    (b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))) :
+    Bornology.IsBounded {m | ∀ i, b.repr m i ∈ Set.Ico (-1 : ℝ) 1} := by
+  classical
+  refine isBounded_iff_forall_norm_le.2 ⟨∑ i, ‖b i‖, fun x hx ↦ ?_⟩
+  calc
+    ‖x‖ = ‖∑ i, b.repr x i • b i‖ := by rw [b.sum_repr]
+    _ ≤ ∑ i, ‖b.repr x i • b i‖ := norm_sum_le _ _
+    _ = ∑ i, ‖b.repr x i‖ * ‖b i‖ := by simp_rw [norm_smul]
+    _ ≤ ∑ i, ‖b i‖ := by
+      refine Finset.sum_le_sum fun i _ ↦ ?_
+      have hi := hx i
+      rw [Set.mem_Ico] at hi
+      have hcoord : ‖b.repr x i‖ ≤ 1 := by
+        rw [Real.norm_eq_abs]
+        exact abs_le.mpr ⟨by linarith, le_of_lt hi.2⟩
+      exact mul_le_of_le_one_left (norm_nonneg _) hcoord
+
+/-- The intersection of a bounded set with a `ℤ`-lattice is finite. -/
+theorem ZLattice.setFinite_inter {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
+    {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ]
+    (hX : Bornology.IsBounded X) :
+    (X ∩ (Λ : Set (EuclideanSpace ℝ (Fin d)))).Finite := by
+  classical
+  let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ)
+  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ
+  have hspan : Submodule.span ℤ (Set.range bℝ) = Λ := bℤ.ofZLatticeBasis_span ℝ
+  simpa [hspan] using ZSpan.setFinite_inter bℝ hX
 
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
@@ -239,7 +258,7 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   [Finite (Quotient ρ.orbitRel)]
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
+  simp only [one_div, summable_iff_vanishing_norm, Real.norm_eq_abs]
   intro ε hε
   -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
   let bℤ : Basis _ ℤ Λ :=

@@ -8,6 +8,12 @@ module
 
 public import SpherePacking.MagicFunction.b.Schwartz
 
+/-!
+# The Fourier Eigenfunction Property of `b`
+
+This file establishes that the function `b` is a `-1`-eigenfunction of the Fourier transform.
+-/
+
 @[expose] public section
 
 open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
@@ -25,16 +31,20 @@ theorem perm_J₅ : (FourierTransform.fourierCLE ℂ _) (J₅) = -J₆ := by sor
 -- Should use results from `RadialSchwartz.Radial` and linearity to prove the reverse.
 
 theorem perm_₃_J₄ : (FourierTransform.fourierCLE ℂ _) (J₃ + J₄) = -(J₁ + J₂) := by
-  have h₁ : (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₁) = J₁ := by
+  have h₁ :
+      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₁) = J₁ := by
     ext x
+    change 𝓕 (𝓕 ⇑J₁) x = J₁ x
     simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
-      Real.fourierInv_eq_fourier_neg] using
+      Real.fourierInv_eq_fourier_neg, neg_neg] using
         congrArg (· (-x)) (J₁.continuous.fourierInv_fourier_eq J₁.integrable
           ((FourierTransform.fourierCLE ℂ _) J₁).integrable)
-  have h₂ : (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₂) = J₂ := by
+  have h₂ :
+      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₂) = J₂ := by
     ext x
+    change 𝓕 (𝓕 ⇑J₂) x = J₂ x
     simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
-      Real.fourierInv_eq_fourier_neg] using
+      Real.fourierInv_eq_fourier_neg, neg_neg] using
         congrArg (· (-x)) (J₂.continuous.fourierInv_fourier_eq J₂.integrable
           ((FourierTransform.fourierCLE ℂ _) J₂).integrable)
   simpa only [neg_add_rev, add_comm, map_add, map_neg, neg_neg, h₁, h₂] using

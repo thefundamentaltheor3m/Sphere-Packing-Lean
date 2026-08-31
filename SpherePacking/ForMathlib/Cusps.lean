@@ -2,6 +2,12 @@ module
 
 public import Mathlib.NumberTheory.ModularForms.BoundedAtCusp
 
+/-!
+# Cusps
+
+Auxiliary lemmas about cusps used in the modular forms development.
+-/
+
 @[expose] public section
 
 open scoped MatrixGroups ModularForm UpperHalfPlane

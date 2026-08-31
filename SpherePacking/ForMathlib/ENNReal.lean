@@ -2,6 +2,12 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
+/-!
+# Extended Non-Negative Reals
+
+Auxiliary lemmas about `ℝ≥0∞`.
+-/
+
 @[expose] public section
 
 open ENNReal Filter Topology

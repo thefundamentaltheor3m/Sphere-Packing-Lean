@@ -8,15 +8,16 @@ module
 
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
-@[expose] public section
-
-/-! # Smoothness
+/-!
+# Smoothness
 
 In this file, we prove that the integrands of all of the REAL integrals making up a are smooth. That
 is, we translate the complex holomorphicity results into smoothness results by showing first that
 the parametrisations are smooth and then composing them with the holomorphicity proofs to conclude
 that the composition of the complex integrands with the parametrisations are smooth real functions.
 -/
+
+@[expose] public section
 
 open Real ContDiff Filter Set Complex
 

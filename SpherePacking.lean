@@ -1,4 +1,4 @@
-module  -- shake: keep-all
+module  -- shake: keep-all --deprecated_module: ignore
 
 public import SpherePacking.Basic.E8
 public import SpherePacking.Basic.PeriodicPacking
@@ -6,7 +6,6 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.Cardinal
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.ENNReal
@@ -15,11 +14,11 @@ public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.Finsupp
 public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
-public import SpherePacking.ForMathlib.InnerProductSpace
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.RadialSchwartz.Basic
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-public import SpherePacking.ForMathlib.Real
+public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.UpperHalfPlane
@@ -57,9 +56,7 @@ public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.FG
-public import SpherePacking.ModularForms.Icc_Ico_lems
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Defs
@@ -72,17 +69,9 @@ public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.exp_lems
-public import SpherePacking.ModularForms.limunder_lems
-public import SpherePacking.ModularForms.qExpansion_lems
-public import SpherePacking.ModularForms.riemannZetalems
-public import SpherePacking.ModularForms.tendstolems
 public import SpherePacking.ModularForms.tsumderivWithin
-public import SpherePacking.ModularForms.uniformcts
-public import SpherePacking.ModularForms.upperhalfplane
 public import SpherePacking.Tactic.NormNumI
-public import SpherePacking.Tactic.NormNumI_Scratch
 public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.TendstoContAttr
 public import SpherePacking.Tactic.Test.NormNumI

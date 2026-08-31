@@ -9,14 +9,14 @@ public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.Tactic.TendstoCont
 
-@[expose] public section
-
 /-!
 # Jacobi theta definitions
 
 Define Jacobi theta functions `Θ₂`, `Θ₃`, `Θ₄` and their fourth powers `H₂`, `H₃`, `H₄`.
 Also record their realization as specializations of `jacobiTheta₂`.
 -/
+
+@[expose] public section
 
 open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I

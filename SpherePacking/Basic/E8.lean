@@ -7,8 +7,6 @@ module
 
 public import SpherePacking.Basic.PeriodicPacking
 
-@[expose] public section
-
 /-!
 # Basic properties of the E₈ lattice
 
@@ -41,6 +39,8 @@ See also earlier work which inspired this one, by Gareth Ma: https://github.com/
 * `E8Packing`: The E₈ packing as a periodic sphere packing.
 * `E8Packing_density`: The density of the E₈ packing is `π ^ 4 / 384`.
 -/
+
+@[expose] public section
 
 variable {R : Type*}
 
