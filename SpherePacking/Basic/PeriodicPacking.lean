@@ -158,13 +158,17 @@ theorem PeriodicSpherePacking.orbitRel_fract
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
-    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) where
+    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) :=
+  -- `ExistsUnique` is a semireducible definition, so restate it in unfolded form once here.
+  have hD_unique_covers : ∀ x, ∃ g : S.lattice, g +ᵥ x ∈ D ∧ ∀ y : S.lattice, y +ᵥ x ∈ D → y = g :=
+    fun x ↦ hD_unique_covers x
+  {
   toFun := by
     refine Quotient.lift ?_ ?_
     · intro s
       let g := Classical.choose (hD_unique_covers s.val)
-      use g.val + s.val, S.lattice_action g.prop s.prop,
-        (Classical.choose_spec (hD_unique_covers s.val)).left
+      exact ⟨g.val + s.val, Set.mem_inter (S.lattice_action g.prop s.prop)
+        (Classical.choose_spec (hD_unique_covers s.val)).left⟩
     · intro ⟨u, hu⟩ ⟨v, hv⟩ h
       change (S.addAction.orbitRel).r ⟨u, hu⟩ ⟨v, hv⟩ at h
       rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
@@ -182,7 +186,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
         change (Classical.choose _ : S.lattice).val + (y + v) ∈ D at this
         simp only [Subtype.forall] at this
         exact this
-  invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
+  invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, Set.mem_of_mem_inter_left hx⟩⟧
   left_inv := by
     apply Quotient.ind
     intro ⟨a, ha⟩
@@ -198,8 +202,8 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     · apply hg'
       exact (Classical.choose_spec (hD_unique_covers x)).left
     · apply (hg' 0 ?_).symm
-      set_option backward.isDefEq.respectTransparency false in
-      simpa using hx.right
+      simpa using Set.mem_of_mem_inter_right hx
+  }
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -224,9 +228,10 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   apply (S.addActionOrbitRelEquiv' b).trans
   exact {
-    toFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦ by
+    toFun := fun ⟨u, hu⟩ ↦ by
+      have hu_centers := Set.mem_of_mem_inter_left hu
       use u - floor (b.ofZLatticeBasis ℝ _) (u - v)
-      constructor
+      refine Set.mem_inter ?_ ?_
       · rw [sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
@@ -235,21 +240,24 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         use fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, ?_
         rw [fract, vadd_eq_add]
         abel
-    invFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦ by
+    invFun := fun ⟨u, hu⟩ ↦ by
+      have hu_centers := Set.mem_of_mem_inter_left hu
       use fract (b.ofZLatticeBasis ℝ _) u
-      constructor
+      refine Set.mem_inter ?_ ?_
       · rw [fract, sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
         exact (mem_basis_Z_span ..).mp <| Submodule.coe_mem _
       · exact fract_mem_fundamentalDomain _ _
-    left_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
+    left_inv := fun ⟨u, hu⟩ ↦ by
+      have hu_fd := Set.mem_of_mem_inter_right hu
       simp_rw [Subtype.mk.injEq]
       rw [sub_eq_add_neg, fract_add_ZSpan]
       · exact fract_eq_self.mpr hu_fd
       · apply neg_mem
         exact Submodule.coe_mem _
-    right_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
+    right_inv := fun ⟨u, hu⟩ ↦ by
+      have hu_fd := Set.mem_of_mem_inter_right hu
       simp_rw [Subtype.mk.injEq]
       rw [← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
       have hu_fd' : u - v ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
