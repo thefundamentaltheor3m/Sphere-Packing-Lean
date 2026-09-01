@@ -51,7 +51,7 @@ We have
 Inequality \eqref{eqn:ineqA} and \eqref{eqn:ineqB} are equivalent to
 \begin{align}
     F(it) + \frac{18}{\pi^2} G(it) > 0 \label{eqn:ineqAnew} \\
-    F(it) - \frac{18}{\pi^2} G(it) > 0 \label{eqn:ineqBnew}
+    F(it) - \frac{18}{\pi^2} G(it) < 0 \label{eqn:ineqBnew}
 \end{align}
 respectively.
 \end{lemma}
@@ -62,10 +62,10 @@ By \eqref{eqn:psiS-define},
 \end{equation}
 Combined with Lemma \ref{lemma:F-G-phi-psi-identities} we can rewrite \eqref{eqn:ineqA} as
 \begin{equation}
-    A(t) = -t^2 \phi_0\left(\frac{i}{t}\right) + \frac{36}{\pi^2} \psi_S\left(\frac{i}{t}\right) < 0 \Leftrightarrow \frac{F(it)}{\Delta(it)} + \frac{18}{\pi^2} \frac{G(it)}{\Delta(it)} > 0
+    A(t) = -t^2 \left(\phi_0\left(\frac{i}{t}\right) - \frac{36}{\pi^2} \psi_S\left(\frac{i}{t}\right)\right) < 0 \Leftrightarrow \frac{F(i/t)}{\Delta(i/t)} + \frac{18}{\pi^2} \frac{G(i/t)}{\Delta(i/t)} > 0
 \end{equation}
-for $t > 0$, which is equivalent to \eqref{eqn:ineqAnew} by Corollary \ref{cor:disc-pos}.
-Equivalences of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; just change the sign.
+for $t > 0$; since $\Delta$ is positive on the imaginary axis (Corollary \ref{cor:disc-pos}) and $t \mapsto 1/t$ is a bijection of $(0, \infty)$, this is equivalent to \eqref{eqn:ineqAnew}.
+The equivalence of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; just change the sign.
 \end{proof}
 
 
@@ -220,36 +220,49 @@ Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem \ref{thm:anti-serre-der-pos}, and 
 \end{proof}
 
 
-\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}
+\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}\leanok
 \eqref{eqn:ineqBnew} holds.
 \end{corollary}
 \begin{proof}
+Since $Q$ is strictly decreasing (Proposition \ref{prop:Qdec}),
 \begin{equation}
     \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2}
 \end{equation}
-and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
+and multiplying by $G(it) > 0$ (Lemma \ref{lemma:F-G-pos}), \eqref{eqn:ineqBnew} follows.
 \end{proof}
 
 
 Finally, we are ready to prove Theorem~\ref{thm:g}.
-\begin{theorem}\label{thm:g1}
+% AUDIT NOTE: with the definitions of $a$ and $b$ used in this blueprint (and in the Lean code),
+% the magic function is (πi/8640)a - (i/(240π))b: for r > √2 one has
+% a(r) = 4i sin²(πr²/2)∫₀^∞ t²φ₀(i/t)e^{-πr²t}dt and
+% b(r) = -4i sin²(πr²/2)∫₀^∞ ψ_I(it)e^{-πr²t}dt (Propositions \ref{prop:a-double-zeros} and
+% \ref{prop:b-double-zeros}), so only the minus combination produces the integrand A(t) < 0.
+% The Lean declaration `g` currently uses the plus sign and must be corrected accordingly.
+\begin{theorem}\label{thm:g1}\lean{g, g_zero, fourier_g_zero}
 \uses{prop:a-fourier, prop:b-fourier, prop:a-double-zeros, prop:b-double-zeros, prop:ineqA, prop:ineqB, prop:a0, prop:b0}
 The function
-$$g(x):=\frac{\pi\,i}{8640}a(x)+\frac{i}{240\pi}\,b(x)$$
+$$g(x):=\frac{\pi\,i}{8640}a(x)-\frac{i}{240\pi}\,b(x)$$
 satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 \end{theorem}
 \begin{proof}
-First, we prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop:a-double-zeros} and \ref{prop:b-double-zeros} we know that for $r>\sqrt{2}$
+Note first that, by Propositions~\ref{prop:a-fourier} and~\ref{prop:b-fourier},
+$$\widehat{g}=\frac{\pi\,i}{8640}\,a+\frac{i}{240\pi}\,b.$$
+
+We prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop:a-double-zeros} and \ref{prop:b-double-zeros}, parametrising the contours by $z = it$, we know that for $r>\sqrt{2}$
+$$a(r) = 4i\,\sin(\pi r^2/2)^2\int\limits_0^\infty t^2\,\phi_0(i/t)\,e^{-\pi r^2 t}\,dt, \qquad
+b(r) = -4i\,\sin(\pi r^2/2)^2\int\limits_0^\infty \psi_I(it)\,e^{-\pi r^2 t}\,dt,$$
+and hence, since $\frac{\pi i}{8640}\cdot 4i = -\frac{\pi}{2160}$ and $\frac{i}{240\pi}\cdot 4i = -\frac{\pi}{2160}\cdot\frac{36}{\pi^2}$,
 \begin{equation}\label{eqn:g A} g(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi r^2 t}\,dt\end{equation}
-where $$A(t)=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).$$
-from the Proposition~\ref{prop:ineqA} we know that $A(t)<0\quad\mbox{for}\;t\in(0,\infty).$
+where $A$ is as in \eqref{eqn:defA}.
+From Proposition~\ref{prop:ineqA} we know that $A(t)<0$ for $t\in(0,\infty)$.
 Therefore identity \eqref{eqn:g A} implies \eqref{eqn:g1}.
 
-Next, we prove \eqref{eqn:g2}. By Propositions~\ref{prop:a-another-integral} and~\ref{prop:b-another-integral} we know that for $r>0$
+Next, we prove \eqref{eqn:g2}. By Propositions~\ref{prop:a-another-integral} and~\ref{prop:b-another-integral} (which are valid on all of $[0, \infty)$), the same bookkeeping gives, for $r>0$,
 \begin{equation}\label{eqn:g B} \widehat{g}(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty B(t)\,e^{-\pi r^2 t}\,dt\end{equation}
-where $$B(t)=-t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it).$$
+where $B$ is as in \eqref{eqn:defB}, and $B(t) > 0$ for $t \in (0, \infty)$ by Proposition~\ref{prop:ineqB}. Hence $\widehat{g}(r) \geq 0$ for $r > 0$, and $\widehat{g}(0) = 1 > 0$ by the computation below.
 
-
-Finally, the property \eqref{eqn:g3} readily follows from Proposition~\ref{prop:a0} and Proposition~\ref{prop:b0}.
+Finally, the property \eqref{eqn:g3} readily follows from Proposition~\ref{prop:a0} and Proposition~\ref{prop:b0}:
+$$g(0) = \widehat{g}(0) = \frac{\pi i}{8640}\cdot\frac{-8640\,i}{\pi} = 1.$$
 This finishes the proof of Theorems~\ref{thm:g1} and~\ref{thm:g}.
 \end{proof}
