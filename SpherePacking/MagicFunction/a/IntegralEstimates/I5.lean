@@ -8,6 +8,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.IntegralEstimates.Majorants
 
 /-!
 # Constructing Upper-Bounds for I₅
@@ -21,6 +22,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 @[expose] public section
 
+open MagicFunction.a.Majorants
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
@@ -153,59 +155,21 @@ lemma I₅'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
 
 lemma I₅'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
-  use C₀, hC₀_pos
-  intro s hs
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_I_mul_le
+  refine ⟨C₀, hC₀_pos, fun s hs ↦ (I₅'_bounding_aux_1 r s hs).trans ?_⟩
   rw [mem_Ici] at hs
-  apply (I₅'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
-  have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
-  specialize hC₀ z him'_gt_half
-  simp only [z, him'] at hC₀
-  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
-    ↓reduceDIte]
-  exact hC₀
+  exact hC₀ s (by linarith)
 
 end Bounding_Integrand
-
-section Integrability
-
-lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
-  have h_exp : IntegrableOn (fun s => rexp ((-2 * π) * s)) (Ici 1) :=
-    (integrableOn_Ici_iff_integrableOn_Ioi).mpr <| by
-      simpa [mul_comm] using integrableOn_exp_mul_Ioi (by linarith [Real.pi_pos] : -2 * π < 0) 1
-  have h_bnd : ∀ᵐ s ∂volume.restrict (Ici (1:ℝ)), ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) := by
-    rw [ae_restrict_iff' measurableSet_Ici]; refine .of_forall fun s (hs : 1 ≤ s) ↦ ?_
-    simp only [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]; apply Real.exp_le_exp.mpr
-    calc -π * r / s ≤ |-(π * r) / s| := by simpa [neg_mul] using le_abs_self _
-      _ = (π * |r|) / s := by simp [abs_div, abs_neg, abs_mul, abs_of_nonneg Real.pi_pos.le,
-                                abs_of_nonneg (zero_le_one.trans hs)]
-      _ ≤ _ := div_le_self (mul_nonneg Real.pi_pos.le (abs_nonneg _)) hs
-  simpa [IntegrableOn, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv] using
-    (h_exp.const_mul C₀).bdd_mul (Real.continuous_exp.measurable.comp
-      (measurable_const.mul measurable_id.inv)).aestronglyMeasurable h_bnd
-
-end Integrability
 
 section Bounding_Integral
 
 lemma I₅'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₅'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+  obtain ⟨C₀, hpos, hb⟩ := I₅'_bounding_aux_2 r
+  exact ⟨C₀, hpos, setIntegral_mono_of_nonneg (fun _ _ ↦ norm_nonneg _) hb
+    (integrableOn_majorant_cusp r C₀)⟩
 
 theorem I₅'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₅' r‖ ≤ 2 * ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
