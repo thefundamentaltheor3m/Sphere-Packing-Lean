@@ -8,6 +8,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.IntegralEstimates.Majorants
 
 /-!
 # Constructing Upper-Bounds for I₃
@@ -21,6 +22,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 @[expose] public section
 
+open MagicFunction.a.Majorants
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
@@ -154,71 +156,21 @@ lemma I₃'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
 
 lemma I₃'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
-  use C₀, hC₀_pos
-  intro s hs
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_I_mul_le
+  refine ⟨C₀, hC₀_pos, fun s hs ↦ (I₃'_bounding_aux_1 r s hs).trans ?_⟩
   rw [mem_Ici] at hs
-  apply (I₃'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
-  have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
-  specialize hC₀ z him'_gt_half
-  simp only [z, him'] at hC₀
-  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
-    ↓reduceDIte]
-  exact hC₀
+  exact hC₀ s (by linarith)
 
 end Bounding_Integrand
-
-section Integrability
-
-lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
-  set f := fun s : ℝ ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)
-  have hcont : ContinuousOn f (Ici 1) := by
-    have h1 : ContinuousOn (fun s : ℝ ↦ rexp ((-2 * π) * s)) (Ici 1) :=
-      Real.continuous_exp.comp_continuousOn (continuousOn_const.mul continuousOn_id)
-    have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
-      Real.continuous_exp.comp_continuousOn
-        (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
-    exact (continuousOn_const.mul (h1.mul h2)).congr fun s _ => by
-      simp [f, div_eq_mul_inv]
-      ring
-  have hO : f =O[atTop] fun s ↦ rexp (-(2 * π) * s) := .of_bound (c := |C₀| * rexp (π * |r|)) <| by
-    filter_upwards [Filter.Ici_mem_atTop 1] with s hs
-    have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=
-      Real.exp_le_exp.mpr <| (le_abs_self _).trans <| by
-        simp [abs_div, abs_mul, abs_of_nonneg Real.pi_pos.le]
-        exact div_le_self (by positivity) (by rwa [abs_of_nonneg (zero_lt_one.trans_le hs).le])
-    simp only [f, Real.norm_eq_abs, Real.abs_exp, abs_mul, mul_comm, mul_left_comm,
-      mul_assoc, div_eq_mul_inv]
-    calc |C₀| * (rexp (r * (s⁻¹ * -π)) * rexp (s * (π * -2)))
-        = |C₀| * rexp ((-2 * π) * s) * rexp (-π * r / s) := by ring_nf
-      _ ≤ _ := mul_le_mul_of_nonneg_left heb (by positivity)
-      _ = _ := by ring_nf
-  simpa [f, div_eq_mul_inv, neg_mul, mul_neg, mul_comm, mul_left_comm, mul_assoc] using
-    (integrableOn_Ici_iff_integrableOn_Ioi).mpr
-      (integrable_of_isBigO_exp_neg (by positivity) hcont hO)
-
-end Integrability
 
 section Bounding_Integral
 
 lemma I₃'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₃'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos) measurableSet_Ici hC₀
+  obtain ⟨C₀, hpos, hb⟩ := I₃'_bounding_aux_2 r
+  exact ⟨C₀, hpos, setIntegral_mono_of_nonneg (fun _ _ ↦ norm_nonneg _) hb
+    (integrableOn_majorant_cusp r C₀)⟩
 
 theorem I₃'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₃' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
