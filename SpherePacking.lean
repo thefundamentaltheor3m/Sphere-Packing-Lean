@@ -16,11 +16,13 @@ public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.QSeriesBounds
 public import SpherePacking.ForMathlib.RadialSchwartz.Basic
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
+public import SpherePacking.ForMathlib.Test.QSeriesBounds
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ForMathlib.Vec
 public import SpherePacking.ForMathlib.VolumeOfBalls
@@ -29,7 +31,9 @@ public import SpherePacking.ForMathlib.tprod
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.CauchyCoeffBounds
 public import SpherePacking.MagicFunction.a.Eigenfunction
+public import SpherePacking.MagicFunction.a.FourierExpansions
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.MagicFunction.a.Integrability.CuspPath
 public import SpherePacking.MagicFunction.a.Integrability.Integrability
@@ -41,6 +45,8 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+public import SpherePacking.MagicFunction.a.PhiBounds
+public import SpherePacking.MagicFunction.a.ProductFourierExpansions
 public import SpherePacking.MagicFunction.a.Schwartz
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Basic
