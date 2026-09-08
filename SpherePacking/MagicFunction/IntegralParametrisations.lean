@@ -116,6 +116,25 @@ lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht ↦ z₆'_mem_upper
 
 end UpperHalfPlane
 
+section Continuity
+
+lemma continuous_z₂ : Continuous z₂ := by unfold z₂; fun_prop
+
+lemma continuous_z₄ : Continuous z₄ := by unfold z₄; fun_prop
+
+lemma continuous_z₅ : Continuous z₅ := by unfold z₅; fun_prop
+
+lemma continuous_z₂' : Continuous z₂' := continuous_z₂.Icc_extend'
+
+lemma continuous_z₄' : Continuous z₄' := continuous_z₄.Icc_extend'
+
+lemma continuous_z₅' : Continuous z₅' := continuous_z₅.Icc_extend'
+
+lemma continuous_z₆' : Continuous z₆' :=
+  continuous_const.mul (continuous_ofReal.comp (continuous_const.max continuous_id))
+
+end Continuity
+
 section eq_of_mem
 
 lemma z₁'_eq_z₁_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = z₁ ⟨t, ht⟩ := by

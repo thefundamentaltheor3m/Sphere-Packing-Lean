@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2025 Cameron Freer. All rights reserved.
+Copyright (c) 2026 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
@@ -73,5 +73,36 @@ lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     (by norm_num) le_rfl ha).mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 end Integrability
+
+/-! ## Comparison Lemmas (Cusp Regime) -/
+
+section NearZero
+
+/-- `exp (-c/t) * t⁻² ≤ exp (-c)` for `t ∈ (0, 1]` and `c ≥ 2`: the super-exponential decay
+as `t → 0⁺` dominates the quadratic pole. Proved by substituting `u = 1/t ≥ 1` and using
+`log u ≤ u - 1`. -/
+lemma exp_neg_div_mul_inv_sq_le (c t : ℝ) (hc : 2 ≤ c) (ht_pos : 0 < t) (ht : t ≤ 1) :
+    exp (-c / t) * t⁻¹ ^ 2 ≤ exp (-c) := by
+  have h_u_ge_1 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht_pos, ht⟩
+  set u := t⁻¹ with hu_def
+  have h_u_pos : 0 < u := by positivity
+  have h_eq : exp (-c / t) * t⁻¹ ^ 2 = exp (-c * u) * u ^ 2 := by
+    simp only [hu_def, div_eq_mul_inv]
+  rw [h_eq]
+  have h_ineq : u ^ 2 ≤ exp (c * (u - 1)) := by
+    rcases eq_or_lt_of_le h_u_ge_1 with h | h
+    · simp [← h]
+    · have hlog : log u ≤ u - 1 := log_le_sub_one_of_pos h_u_pos
+      have h7 : 2 * log u ≤ c * (u - 1) := by nlinarith
+      calc u ^ 2 = exp (log (u ^ 2)) := by rw [exp_log]; positivity
+        _ = exp (2 * log u) := by rw [log_pow]; ring_nf
+        _ ≤ exp (c * (u - 1)) := exp_le_exp.mpr h7
+  have h_split : exp (-c * u) = exp (-c) * exp (-c * (u - 1)) := by rw [← exp_add]; ring_nf
+  rw [h_split, mul_assoc]
+  refine mul_le_of_le_one_right (exp_pos _).le ?_
+  rw [neg_mul, exp_neg, inv_mul_le_one₀ (exp_pos _)]
+  exact h_ineq
+
+end NearZero
 
 end

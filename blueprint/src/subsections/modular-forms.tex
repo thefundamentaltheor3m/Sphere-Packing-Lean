@@ -114,7 +114,7 @@ For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} 
 \begin{equation}\label{eqn:Ek-definition}
 E_k(z):=\frac{1}{2}\sum_{(c,d)\in\Z^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}
+\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}\leanok
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:Ek-trans-S}
@@ -206,7 +206,7 @@ $$
 where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}\leanok
 The Dedekind eta function transforms as
 $$
     \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
@@ -531,7 +531,7 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
+\begin{corollary}\label{cor:theta-pos}\uses{lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}\leanok
 $H_2(it)$ and $H_4(it)$ are positive for $t > 0$.
 \end{corollary}
 \begin{proof}\leanok
@@ -592,7 +592,7 @@ Serre derivative $\partial_{k}$ is equivariant with the slash action of $\mathrm
     \partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
 \end{theorem}
-\begin{proof}
+\begin{proof}\leanok
 Let $G = \partial_{k}F = F' - \frac{k}{12}E_2 F$.
 From $F \in M_k(\Gamma)$, we have
 \begin{equation}
@@ -636,7 +636,7 @@ We have
     E_6' &= \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6}
 \end{align}
 \end{theorem}
-\begin{proof}
+\begin{proof}\leanok
 In terms of Serre derivatives, these are equivalent to
 \begin{align}
     \partial_{1}E_2 &= -\frac{1}{12} E_4 \label{eqn:SE2} \\
