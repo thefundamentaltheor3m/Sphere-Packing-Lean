@@ -60,13 +60,13 @@ def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[�
 def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) where
   carrier := {v | ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
-    simp only [AddCommGroup.modEq_iff_intModEq, Set.mem_setOf_eq, Pi.add_apply,
+    simp only [AddCommGroup.modEq_iff_intModEq, Set.mem_ofPred_eq, Pi.add_apply,
       Finset.sum_add_distrib]
     intro a b ha hb
     exact (ha.add hb).trans (by simp)
   zero_mem' := by simp
   smul_mem' := by
-    simp only [Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
+    simp only [Set.mem_ofPred_eq, zsmul_eq_mul, Pi.mul_apply,
       Pi.intCast_apply, Int.cast_eq]
     intro c a ha
     rw [← Finset.mul_sum]
@@ -79,16 +79,16 @@ lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
     (Submodule.evenLattice R n : Set (Fin n → R)) =
     {v | (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2]} := by
   ext v
-  simp only [evenLattice, map_coe, Set.mem_image, SetLike.mem_coe, Set.mem_setOf_eq]
+  simp only [evenLattice, map_coe, Set.mem_image, SetLike.mem_coe, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨f, hf, rfl⟩
     constructor
     · exact fun i ↦ ⟨f i, by simp⟩
     · rw [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
-        Set.mem_setOf_eq] at hf
+        Set.mem_ofPred_eq] at hf
       simp only [LinearMap.intCast_apply, ← Int.cast_sum]
       convert hf.map (Int.castRingHom R) using 2 <;> simp
-  simp only [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq]
+  simp only [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_ofPred_eq]
   rintro ⟨hv, hv'⟩
   choose w hw using hv
   use w
@@ -115,7 +115,7 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
   carrier :=
     {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
-    simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
+    simp only [Set.mem_ofPred_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
     rintro a b ha has hb hbs
     constructor
     · obtain ha | ha := ha
@@ -146,11 +146,11 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     · rw [Finset.sum_add_distrib]
       exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
   zero_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, Pi.zero_apply, forall_const,
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_ofPred_eq, Pi.zero_apply, forall_const,
       mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
     refine Or.inl ⟨0, by simp⟩
   smul_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_ofPred_eq, zsmul_eq_mul, Pi.mul_apply,
       Pi.intCast_apply, and_imp]
     intro c a ha has
     constructor
@@ -292,15 +292,15 @@ lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
   simp [Matrix.BlockTriangular, E8Matrix, Fin.forall_fin_succ]
 
 theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).det = 1 := by
-  rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]
+  rw [Matrix.det_of_isLowerTriangular _ lowerTriangular_E8Matrix]
   simp [E8Matrix, Fin.prod_univ_eight, (NeZero.ne (2 : R))]
 
 private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
-  rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
-    E8Matrix_unimodular]
-  simp
+  rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det_apply]
+  change IsUnit (E8Matrix R).det
+  simp [E8Matrix_unimodular]
 
 lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
@@ -540,7 +540,7 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   exact not_le_of_gt (lt_trans hx' this)
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
-  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
+  simp only [Submodule.span, sInf_eq_top, Set.mem_ofPred_eq]
   intros M hM
   rw [eq_top_iff, ← span_E8Matrix_eq_top ℝ, Submodule.span_le]
   exact (range_E8Matrix_row_subset ℝ).trans hM
@@ -685,10 +685,11 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
     · positivity
     · positivity
   · intro x hx
+    change x ∈ fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) at hx
     trans ∑ i, ‖E8_ℤBasis i‖
     · rw [← fract_eq_self.mpr hx]
       convert norm_fract_le (K := ℝ) _ _
-      simp; rfl
+      simp [Basis.ofZLatticeBasis_apply]
     · refine (Finset.sum_le_sum (fun i hi ↦ E8_ℤBasis_apply_norm i)).trans ?_
       norm_num
 

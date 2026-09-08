@@ -92,7 +92,7 @@ theorem Φ₁'_holo : Holo(Φ₁' r) := by
       simp [smulAux', g, num, denom, σ]
     refine MapsTo.congr ?_ this
     intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
+    rw [mem_ofPred_eq, smulAux'_im]
     exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
 
 theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
@@ -120,7 +120,7 @@ theorem Φ₃'_holo : Holo(Φ₃' r) := by
       simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
     refine MapsTo.congr ?_ this
     intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
+    rw [mem_ofPred_eq, smulAux'_im]
     exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
 
 theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
@@ -143,7 +143,7 @@ theorem Φ₅'_holo : Holo(Φ₅' r) := by
       simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
     refine MapsTo.congr ?_ this
     intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
+    rw [mem_ofPred_eq, smulAux'_im]
     exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
 
 theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet

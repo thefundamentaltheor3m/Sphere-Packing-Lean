@@ -6,6 +6,7 @@ Authors: Sphere Packing Contributors
 module
 
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
+public import Mathlib.NumberTheory.ModularForms.RamanujanFormula
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ModularForms.Derivative
@@ -15,7 +16,6 @@ public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Derivative
 public import SpherePacking.ModularForms.QExpansion
-public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.tsumderivWithin
 public import SpherePacking.Tactic.TendstoCont
@@ -39,7 +39,7 @@ This file develops the quasimodular forms `F = (E₂ E₄ - E₆) ^ 2` and
 @[expose] public section
 
 open UpperHalfPlane hiding I
-open Filter Complex ModularGroup SlashAction
+open Filter Complex ModularGroup SlashAction Derivative
 open scoped Real Manifold CongruenceSubgroup ArithmeticFunction.sigma UpperHalfPlane
 
 /-- `F = (E₂ E₄ - E₆) ^ 2`, a quasimodular form of weight `12`; it equals `9 (D E₄) ^ 2`. -/
@@ -79,11 +79,12 @@ theorem F_eq_FReal (t : ℝ) : F.resToImagAxis t = FReal t :=
 theorem G_eq_GReal (t : ℝ) : G.resToImagAxis t = GReal t :=
   ResToImagAxis.Real.eq_real_part (by unfold G; fun_prop) t
 
-/-- `F = 9 (D E₄)²`, by Ramanujan's formula `D E₄ = (E₂ E₄ - E₆) / 3`. -/
+/-- `F = 9 (D E₄)²`, by Ramanujan's formula `D E₄ = (E₂ E₄ - E₆) / 3`
+(`Derivative.normalizedDerivOfComplex_E₄`). -/
 theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   ext z
-  simp only [F, ramanujan_E₄, Pi.pow_apply, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply,
-    Pi.inv_apply, Pi.ofNat_apply, smul_eq_mul]
+  simp only [F, ModularForm.toFun_eq_coe, E₄_coe, E₆_coe, normalizedDerivOfComplex_E₄, Pi.pow_apply,
+    Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
 /-- `G` with complex scalars, the form of the definition that `fun_prop` handles. -/
@@ -100,10 +101,10 @@ theorem F_holo : MDiff F := by unfold F; fun_prop
 theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
 /-- `∂₁₀ F` is holomorphic. -/
-theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
+theorem SerreF_holo : MDiff (serreDerivative 10 F) := by unfold F; fun_prop
 
 /-- `∂₁₀ G` is holomorphic. -/
-theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
+theorem SerreG_holo : MDiff (serreDerivative 10 G) := by rw [G_eq]; fun_prop
 
 /-- `L₁₀` is holomorphic. -/
 theorem L₁₀_holo : MDiff L₁₀ := by unfold L₁₀; fun_prop
@@ -121,24 +122,32 @@ private lemma Δ_eq_E₄_cube_sub_E₆_sq : Δ = 1728⁻¹ * (E₄.toFun ^ 3 - E
   funext fun z ↦ (ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z).trans (div_eq_inv_mul _ _)
 
 /-- The modular linear differential equation satisfied by `F`. -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ * negDE₂ := by
-  change serre_D 12 (D F - 10 * 12⁻¹ * E₂ * F) = _
-  simp (disch := fun_prop) only [serre_D_eq, F, Δ_eq_E₄_cube_sub_E₆_sq, negDE₂, D_sub, D_add, D_mul,
-    D_sq, ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+theorem MLDE_F :
+    serreDerivative 12 (serreDerivative 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ * negDE₂ := by
+  change serreDerivative 12 (D F - 10 * 12⁻¹ * E₂ * F) = _
+  simp (disch := fun_prop) only [serreDerivative_eq, F, Δ_eq_E₄_cube_sub_E₆_sq, negDE₂,
+    normalizedDerivOfComplex_sub, normalizedDerivOfComplex_add, normalizedDerivOfComplex_mul,
+    normalizedDerivOfComplex_smul, normalizedDerivOfComplex_pow, Nat.reduceSub, Nat.cast_ofNat,
+    pow_one, ModularForm.toFun_eq_coe, E₄_coe, E₆_coe, normalizedDerivOfComplex_E₂,
+    normalizedDerivOfComplex_E₄, normalizedDerivOfComplex_E₆]
   ext z
-  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const, Pi.sub_apply, Pi.add_apply,
-    Pi.mul_apply, Pi.pow_apply, Pi.neg_apply, Pi.zero_apply, Function.const_apply]
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, normalizedDerivOfComplex_const, Pi.sub_apply,
+    Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.neg_apply, Pi.zero_apply, Pi.smul_apply,
+    smul_eq_mul]
   ring
 
 /-- Modular linear differential equation satisfied by `G`. -/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ * H₂ := by
-  change serre_D 12 (D G - 10 * 12⁻¹ * E₂ * G) = _
-  simp (disch := fun_prop) only [G_eq, D_mul, D_cube, D_H₂, D_add, D_smul, D_sq, D_H₄, serre_D_eq,
-    D_sub, ramanujan_E₂, E₄_eq_H_sum_sq]
+theorem MLDE_G :
+    serreDerivative 12 (serreDerivative 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ * H₂ := by
+  change serreDerivative 12 (D G - 10 * 12⁻¹ * E₂ * G) = _
+  simp (disch := fun_prop) only [G_eq, normalizedDerivOfComplex_mul, normalizedDerivOfComplex_pow,
+    D_H₂, normalizedDerivOfComplex_add, normalizedDerivOfComplex_smul, D_H₄, serreDerivative_eq,
+    normalizedDerivOfComplex_sub, Nat.reduceSub, Nat.cast_ofNat, pow_one,
+    normalizedDerivOfComplex_E₂, E₄_eq_H_sum_sq, E₄_coe_eq_H_sum_sq]
   ext z
-  simp only [pi_ofNat_eq_const, D_const, pi_inv_const_eq_const, Pi.sub_apply, Pi.add_apply,
-    Pi.mul_apply, Pi.zero_apply, Pi.pow_apply, Function.const_apply, Pi.smul_apply, smul_eq_mul,
-    H_sum_sq, Δ_eq_H₂_H₃_H₄, ← jacobi_identity]
+  simp only [pi_ofNat_eq_const, normalizedDerivOfComplex_const, pi_inv_const_eq_const, Pi.sub_apply,
+    Pi.add_apply, Pi.mul_apply, Pi.zero_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul, H_sum_sq,
+    Δ_eq_H₂_H₃_H₄, ← jacobi_identity]
   ring
 
 /-- The `q`-series `∑' n : ℕ+, n ^ a * σ b n * exp (2 π i n z)` is summable for `z : ℍ`. -/
@@ -158,7 +167,7 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
 lemma E₂_sigma_qexp (z : UpperHalfPlane) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  simp [E₂, EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_nat_mul, mul_comm, mul_left_comm,
+  simp [EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_nat_mul, mul_comm, mul_left_comm,
     mul_assoc]
 
 /-- Summable bound on compact sets for the terms of the differentiated `σ_k` `q`-series. -/
@@ -204,9 +213,10 @@ private lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ �
   have hg_eq : g = (fun _ ↦ c₀) + c • f := by
     ext w
     simp [f, hg w]
-  have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (D_const c₀) z
-  rw [hg_eq, congrFun (D_add _ _ mdifferentiable_const (hf_md.const_smul _)) z, Pi.add_apply,
-    hD_const, zero_add, congrFun (D_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
+  have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (normalizedDerivOfComplex_const c₀) z
+  rw [hg_eq, congrFun (normalizedDerivOfComplex_add _ _ mdifferentiable_const
+    (hf_md.const_smul _)) z, Pi.add_apply, hD_const, zero_add,
+    congrFun (normalizedDerivOfComplex_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
 
 /-- `D E₄ = 240 ∑' n : ℕ+, n σ₃ n qⁿ`, by differentiating the `q`-expansion of `E₄` termwise. -/
 theorem DE₄_qexp (z : UpperHalfPlane) :
@@ -216,10 +226,11 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
     (fun w ↦ by simpa using sigma_qexp_summable_generic 0 3 w)
     (sigma_qexp_deriv_bound_generic 3) z
 
-/-- `E₂ E₄ - E₆ = 720 ∑' n : ℕ+, n σ₃ n qⁿ`, since `E₂ E₄ - E₆ = 3 D E₄` (`ramanujan_E₄`). -/
+/-- `E₂ E₄ - E₆ = 720 ∑' n : ℕ+, n σ₃ n qⁿ`, since `E₂ E₄ - E₆ = 3 D E₄`
+(`Derivative.normalizedDerivOfComplex_E₄`). -/
 theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
     E₂ z * E₄ z - E₆ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
-  have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun ramanujan_E₄ z
+  have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun normalizedDerivOfComplex_E₄ z
   linear_combination -3 * h + 3 * DE₄_qexp z
 
 /-- Each term `n σ_k n exp (-2πnt)` of a differentiated `σ_k` `q`-series is positive at `z = it`. -/
@@ -264,7 +275,7 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
     negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
   rw [negDE₂, Pi.neg_apply, neg_eq_iff_eq_neg, ← neg_mul]
-  exact D_qexp_const_add_smul (c₀ := 1) (by norm_num) E₂_holo'
+  exact D_qexp_const_add_smul (c₀ := 1) (by norm_num) E2_mdifferentiable
     (fun w ↦ by rw [E₂_sigma_qexp]; ring)
     (fun w ↦ by simpa using sigma_qexp_summable_generic 0 1 w)
     (sigma_qexp_deriv_bound_generic 1) z
@@ -316,19 +327,21 @@ theorem F₁_imag_axis_real : ResToImagAxis.Real F₁ := by unfold F₁; fun_pro
 end ImagAxisProperties
 
 /-- `L₁₀` is also the Wronskian of the weight-`10` Serre derivatives, the `E₂` terms cancelling. -/
-private lemma L₁₀_eq_serre_D : L₁₀ = serre_D 10 F * G - F * serre_D 10 G := by
+private lemma L₁₀_eq_serreDerivative :
+    L₁₀ = serreDerivative 10 F * G - F * serreDerivative 10 G := by
   change D F * G - F * D G = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G)
   ring
 
 /-- `∂₂₂ L₁,₀ = (∂₁₂ ∂₁₀ F) G - F (∂₁₂ ∂₁₀ G)`, by the Leibniz rule for Serre derivatives. -/
-private lemma serre_D_22_L₁₀_eq :
-    serre_D 22 L₁₀ = serre_D 12 (serre_D 10 F) * G - F * serre_D 12 (serre_D 10 G) := by
-  have h₀ := serre_D_sub 22 (serre_D 10 F * G) (F * serre_D 10 G) (SerreF_holo.mul G_holo)
-    (F_holo.mul SerreG_holo)
-  have h₁ := serre_D_mul 12 10 (serre_D 10 F) G SerreF_holo G_holo
-  have h₂ := serre_D_mul 10 12 F (serre_D 10 G) F_holo SerreG_holo
-  norm_num at h₀ h₁ h₂
-  rw [L₁₀_eq_serre_D, h₀, h₁, h₂]
+private lemma serreDerivative_22_L₁₀_eq :
+    serreDerivative 22 L₁₀ = serreDerivative 12 (serreDerivative 10 F) * G -
+      F * serreDerivative 12 (serreDerivative 10 G) := by
+  have h₀ := serreDerivative_sub 22 (SerreF_holo.mul G_holo) (F_holo.mul SerreG_holo)
+  have h₁ := serreDerivative_mul 12 10 SerreF_holo G_holo
+  have h₂ := serreDerivative_mul 10 12 F_holo SerreG_holo
+  rw [show (12 : ℂ) + 10 = 22 by norm_num] at h₁
+  rw [show (10 : ℂ) + 12 = 22 by norm_num] at h₂
+  rw [L₁₀_eq_serreDerivative, h₀, h₁, h₂]
   ring
 
 /-!
@@ -340,9 +353,9 @@ and show it is positive on the imaginary axis.
 
 /-- `∂₂₂ L₁,₀(it) > 0` for all `t > 0` (blueprint Corollary 8.9): the differential equations for
 `F` and `G` give `∂₂₂ L₁,₀ = Δ (7200 (-E₂') G + 640 H₂ F)`, and every factor is positive. -/
-private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) := by
-  have h_eq : serre_D 22 L₁₀ = Δ * ((7200 : ℝ) • (negDE₂ * G) + (640 : ℝ) • (H₂ * F)) := by
-    rw [serre_D_22_L₁₀_eq, MLDE_F, MLDE_G]
+private theorem serreDerivative_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serreDerivative 22 L₁₀) := by
+  have h_eq : serreDerivative 22 L₁₀ = Δ * ((7200 : ℝ) • (negDE₂ * G) + (640 : ℝ) • (H₂ * F)) := by
+    rw [serreDerivative_22_L₁₀_eq, MLDE_F, MLDE_G]
     ext z
     simp only [Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.ofNat_apply,
       Pi.inv_apply, real_smul, ofReal_ofNat]
@@ -393,7 +406,7 @@ theorem D_cexp_div (c : ℂ) (z : ℍ) :
   have h : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) = cexp (c * z) * (c * 1) :=
     ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp fun w ↦ cexp (c * w)).deriv_eq.trans
       (((hasDerivAt_id (z : ℂ)).const_mul c).cexp).deriv
-  simp only [D, h]
+  simp only [normalizedDerivOfComplex, h]
   field_simp
 
 /-- If `F z / exp (a * z) → C ≠ 0` at `i∞`, then `D F / F → a / (2πi)`. -/
@@ -403,15 +416,17 @@ lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C 
   set q : ℍ → ℂ := fun w ↦ cexp (a * w)
   set g : ℍ → ℂ := fun w ↦ F w / q w with hg
   have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
-  have hq_md : MDiff q := fun τ ↦ DifferentiableAt_MDifferentiableAt
-    (G := fun t : ℂ ↦ cexp (a * t)) ((differentiableAt_id.const_mul a).cexp)
-  have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
+  have hq_md : MDiff q := by
+    have h : Differentiable ℂ fun t : ℂ ↦ cexp (a * t) := (differentiable_id.const_mul a).cexp
+    exact h.mdifferentiable.comp mdifferentiable_coe
+  have hg_md : MDiff g := hF.div hq_md hq_ne
   have hDg : Tendsto (D g / g) atImInfty (nhds 0) := by
-    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
+    simpa using Filter.Tendsto.div
+      (isZeroAtImInfty_normalizedDerivOfComplex hg_md (hlim.isBigO_one ℝ)) hlim hC
   have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
   have key : ∀ᶠ z : ℍ in atImInfty, a / (2 * π * I) + D g z / g z = D F z / F z := by
     filter_upwards [hlim.eventually_ne hC] with z hz
-    rw [← D_cexp_div a z, hF_eq, congrFun (D_mul q g hq_md hg_md) z]
+    rw [← D_cexp_div a z, hF_eq, congrFun (normalizedDerivOfComplex_mul q g hq_md hg_md) z]
     exact div_add_div _ _ (hq_ne z) hz
   simpa using (tendsto_const_nhds.add hDg).congr' key
 
@@ -472,7 +487,7 @@ end AsymptoticAnalysis
 
 /-- `L₁,₀(it) > 0` for all `t > 0`. -/
 theorem L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
-  antiSerreDerPos L₁₀_holo serre_D_L₁₀_pos_imag_axis L₁₀_eventually_pos_imag_axis
+  antiSerreDerPos L₁₀_holo serreDerivative_L₁₀_pos_imag_axis L₁₀_eventually_pos_imag_axis
 
 /-!
 ## Monotonicity of `F / G` on the Imaginary Axis
