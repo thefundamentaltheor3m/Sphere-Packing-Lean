@@ -141,115 +141,27 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 *
     H_sum_sq, Δ_eq_H₂_H₃_H₄, ← jacobi_identity]
   ring
 
-/-- The `q`-series `∑' n : ℕ+, n ^ a * σ b n * exp (2 π i n z)` is summable for `z : ℍ`. -/
-lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
-    Summable (fun n : ℕ+ ↦ (n : ℂ) ^ a * (ArithmeticFunction.sigma b n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
-  refine ((summable_norm_pow_mul_geometric_of_norm_lt_one (a + b + 1)
-    (norm_exp_two_pi_I_lt_one z)).comp_injective PNat.coe_injective).of_norm_bounded fun n ↦ ?_
-  rw [show (2 * π * I * n * z : ℂ) = n * (2 * π * I * z) by ring, Complex.exp_nat_mul]
-  simp only [Function.comp_apply, norm_mul, norm_pow, Complex.norm_natCast]
-  rw [add_assoc, pow_add]
-  gcongr
-  exact_mod_cast ArithmeticFunction.sigma_le_pow_succ b n
-
-/-- The `q`-expansion `E₂ = 1 - 24 ∑ σ₁(n) qⁿ`. This restates Mathlib's
-`EisensteinSeries.E2_eq_tsum_cexp` with `cexp (2πi n z)` in place of `𝕢 z ^ n`. -/
-lemma E₂_sigma_qexp (z : UpperHalfPlane) :
-    E₂ z = 1 - 24 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 1 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  simp [E₂, EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_nat_mul, mul_comm, mul_left_comm,
-    mul_assoc]
-
-/-- Summable bound on compact sets for the terms of the differentiated `σ_k` `q`-series. -/
-lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
-    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
-        ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * Real.pi * Complex.I * n) *
-          Complex.exp (2 * Real.pi * Complex.I * n * z.1)‖ ≤ u n := by
-  intro K hK hKc
-  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc (k + 2)
-  refine ⟨fun n ↦ u₀ n, hu₀_sum.subtype _, fun n z ↦ le_trans ?_ (hu₀_bound n z)⟩
-  have hσ : (ArithmeticFunction.sigma k n : ℝ) ≤ (2 * π * n) ^ (k + 1) :=
-    le_trans (by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ k n) <| pow_le_pow_left₀
-      (by positivity) (le_mul_of_one_le_left (by positivity) (by linarith [Real.two_le_pi])) _
-  simpa [abs_of_pos Real.pi_pos, Real.pi_pos, pow_succ] using hσ
-
-/-- `E₄ = 1 + 240 ∑' n : ℕ+, σ₃ n qⁿ`. -/
-lemma E₄_sigma_qexp (z : UpperHalfPlane) :
-    E₄ z = 1 + 240 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 3 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  refine (EisensteinSeries.q_expansion_bernoulli (by norm_num : 3 ≤ 4) (by decide) z).trans ?_
-  norm_num [bernoulli, bernoulli'_four, ← Complex.exp_nat_mul, mul_comm, mul_assoc, mul_left_comm]
-
-/-- Termwise differentiation of a `c₀ + c • ∑' n : ℕ+, a n * qⁿ` expansion: if a holomorphic `g`
-agrees pointwise with such a series (`c ≠ 0`), then `D g z = c * ∑' n, n * a n * qⁿ`. -/
-private lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ → ℂ} (hc : c ≠ 0)
-    (hg_md : MDiff g)
-    (hg : ∀ w : ℍ, g w = c₀ + c * ∑' n : ℕ+, a n * cexp (2 * π * Complex.I * n * w))
-    (hsum : ∀ w : ℍ, Summable fun n : ℕ+ ↦ a n * cexp (2 * π * Complex.I * n * w))
-    (hbound : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
-        ‖a n * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * k.1)‖ ≤ u n) (z : ℍ) :
-    D g z = c * ∑' n : ℕ+, n * a n * cexp (2 * π * Complex.I * n * z) := by
-  let f : ℍ → ℂ := fun w ↦ ∑' n : ℕ+, a n * cexp (2 * π * Complex.I * n * w)
-  have hDf : D f z = ∑' n : ℕ+, n * a n * cexp (2 * π * Complex.I * n * z) :=
-    D_qexp_tsum_pnat a z (hsum z) hbound
-  have hf_md : MDiff f := by
-    have h : f = c⁻¹ • fun w ↦ g w - c₀ := by
-      ext w
-      rw [Pi.smul_apply, hg w, smul_eq_mul, add_sub_cancel_left, inv_mul_cancel_left₀ hc]
-    rw [h]
-    exact (hg_md.sub mdifferentiable_const).const_smul _
-  have hg_eq : g = (fun _ ↦ c₀) + c • f := by
-    ext w
-    simp [f, hg w]
-  have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (D_const c₀) z
-  rw [hg_eq, congrFun (D_add _ _ mdifferentiable_const (hf_md.const_smul _)) z, Pi.add_apply,
-    hD_const, zero_add, congrFun (D_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
-
 /-- `D E₄ = 240 ∑' n : ℕ+, n σ₃ n qⁿ`, by differentiating the `q`-expansion of `E₄` termwise. -/
-theorem DE₄_qexp (z : UpperHalfPlane) :
-    D E₄.toFun z = 240 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z) :=
+theorem DE₄_qexp (z : ℍ) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * I * n * z) :=
   D_qexp_const_add_smul (by norm_num) E₄.holo' E₄_sigma_qexp
     (fun w ↦ by simpa using sigma_qexp_summable_generic 0 3 w)
     (sigma_qexp_deriv_bound_generic 3) z
 
-/-- `E₂ E₄ - E₆ = 720 ∑' n : ℕ+, n σ₃ n qⁿ`, since `E₂ E₄ - E₆ = 3 D E₄` (`ramanujan_E₄`). -/
-theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
-    E₂ z * E₄ z - E₆ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
-  have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun ramanujan_E₄ z
-  linear_combination -3 * h + 3 * DE₄_qexp z
-
-/-- Each term `n σ_k n exp (-2πnt)` of a differentiated `σ_k` `q`-series is positive at `z = it`. -/
-private lemma sigma_qexp_term_re_pos (k : ℕ) (t : ℝ) (ht : 0 < t) (n : ℕ+) :
-    0 < ((n : ℂ) * (ArithmeticFunction.sigma k n : ℂ) *
-      cexp (2 * π * I * n * (⟨I * t, by simp [ht]⟩ : ℍ))).re := by
-  rw [mul_right_comm (2 * π * I), exp_imag_axis_arg t ht n]
-  simp only [Complex.mul_re, Complex.exp_ofReal_re, Complex.exp_ofReal_im, mul_zero, sub_zero,
-    Complex.natCast_re, Complex.natCast_im]
-  refine mul_pos (mul_pos ?_ ?_) (Real.exp_pos _)
-  · exact_mod_cast n.pos
-  · exact_mod_cast ArithmeticFunction.sigma_pos k n n.ne_zero
-
-/-- A differentiated `σ_k` `q`-series has positive real part at `z = it` for `t > 0`. -/
-private lemma sigma_qexp_tsum_re_pos (k : ℕ) (t : ℝ) (ht : 0 < t) :
-    0 < (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma k n : ℂ) *
-      cexp (2 * π * I * n * (⟨I * t, by simp [ht]⟩ : ℍ))).re := by
-  have hsum : Summable fun n : ℕ+ ↦ (n : ℂ) * (ArithmeticFunction.sigma k n : ℂ) *
-      cexp (2 * π * I * n * (⟨I * t, by simp [ht]⟩ : ℍ)) := by
-    simpa [pow_one] using sigma_qexp_summable_generic 1 k ⟨I * t, by simp [ht]⟩
-  rw [Complex.re_tsum hsum]
-  exact Summable.tsum_pos ⟨_, Complex.hasSum_re hsum.hasSum⟩
-    (fun n ↦ (sigma_qexp_term_re_pos k t ht n).le) 1 (sigma_qexp_term_re_pos k t ht 1)
+/-- `negDE₂ = 24 ∑' n : ℕ+, n σ₁ n qⁿ`, by differentiating the `q`-expansion of `E₂` termwise. -/
+theorem negDE₂_qexp (z : ℍ) :
+    negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * I * n * z) := by
+  rw [negDE₂, Pi.neg_apply, neg_eq_iff_eq_neg, ← neg_mul]
+  exact D_qexp_const_add_smul (c₀ := 1) (by norm_num) E₂_holo'
+    (fun w ↦ by rw [E₂_sigma_qexp]; ring)
+    (fun w ↦ by simpa using sigma_qexp_summable_generic 0 1 w)
+    (sigma_qexp_deriv_bound_generic 1) z
 
 /-- `D E₄` is real on the imaginary axis. -/
 lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by fun_prop
 
 /-- The real part of `(D E₄)(it)` is positive for `t > 0`. -/
-lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
-    0 < ((D E₄.toFun).resToImagAxis t).re := by
+lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < ((D E₄.toFun).resToImagAxis t).re := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, DE₄_qexp, Complex.mul_re,
     Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   exact mul_pos (by norm_num) (sigma_qexp_tsum_re_pos 3 t ht)
@@ -259,22 +171,11 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
 lemma DE₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
   ⟨DE₄_imag_axis_real, DE₄_imag_axis_re_pos⟩
 
-/-- `negDE₂ = 24 ∑' n : ℕ+, n σ₁ n qⁿ`, by differentiating the `q`-expansion of `E₂` termwise. -/
-theorem negDE₂_qexp (z : UpperHalfPlane) :
-    negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  rw [negDE₂, Pi.neg_apply, neg_eq_iff_eq_neg, ← neg_mul]
-  exact D_qexp_const_add_smul (c₀ := 1) (by norm_num) E₂_holo'
-    (fun w ↦ by rw [E₂_sigma_qexp]; ring)
-    (fun w ↦ by simpa using sigma_qexp_summable_generic 0 1 w)
-    (sigma_qexp_deriv_bound_generic 1) z
-
 /-- `negDE₂` is real on the imaginary axis. -/
 lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by unfold negDE₂; fun_prop
 
 /-- The real part of `negDE₂(it)` is positive for `t > 0`. -/
-lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
-    0 < (negDE₂.resToImagAxis t).re := by
+lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < (negDE₂.resToImagAxis t).re := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, negDE₂_qexp, Complex.mul_re,
     Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   exact mul_pos (by norm_num) (sigma_qexp_tsum_re_pos 1 t ht)
@@ -334,23 +235,30 @@ private lemma serre_D_22_L₁₀_eq :
 /-!
 ### Serre Derivative Positivity of L₁,₀
 
-We compute `∂₂₂ L₁,₀` explicitly via the modular linear differential equations for `F` and `G`,
-and show it is positive on the imaginary axis.
+The two sides of the differential equations `MLDE_F` and `MLDE_G` have definite signs on the
+imaginary axis (blueprint Corollary `cor:MLDE-pos`), which makes `∂₂₂ L₁,₀` positive there.
 -/
 
-/-- `∂₂₂ L₁,₀(it) > 0` for all `t > 0` (blueprint Corollary 8.9): the differential equations for
-`F` and `G` give `∂₂₂ L₁,₀ = Δ (7200 (-E₂') G + 640 H₂ F)`, and every factor is positive. -/
+/-- First half of `cor:MLDE-pos`: `∂₁₂ ∂₁₀ F - 5/6 E₄ F = 7200 Δ (-E₂')` is positive. -/
+theorem MLDE_F_imag_axis_pos :
+    ResToImagAxis.Pos (serre_D 12 (serre_D 10 F) - 5 * 6⁻¹ * E₄.toFun * F) := by
+  rw [MLDE_F, add_sub_cancel_left]
+  fun_prop
+
+/-- Second half of `cor:MLDE-pos`: `∂₁₂ ∂₁₀ G - 5/6 E₄ G = -640 Δ H₂` is negative. -/
+theorem MLDE_G_imag_axis_neg :
+    ResToImagAxis.Pos (5 * 6⁻¹ * E₄.toFun * G - serre_D 12 (serre_D 10 G)) := by
+  rw [MLDE_G, sub_sub_cancel]
+  fun_prop
+
+/-- `∂₂₂ L₁,₀` is positive by `∂₂₂ L₁,₀ = (∂₁₂ ∂₁₀ F - 5/6 E₄ F) G + F (5/6 E₄ G - ∂₁₂ ∂₁₀ G)`. -/
 private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) := by
-  have h_eq : serre_D 22 L₁₀ = Δ * ((7200 : ℝ) • (negDE₂ * G) + (640 : ℝ) • (H₂ * F)) := by
-    rw [serre_D_22_L₁₀_eq, MLDE_F, MLDE_G]
-    ext z
-    simp only [Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.ofNat_apply,
-      Pi.inv_apply, real_smul, ofReal_ofNat]
+  have h_eq : serre_D 22 L₁₀ = (serre_D 12 (serre_D 10 F) - 5 * 6⁻¹ * E₄.toFun * F) * G +
+      F * (5 * 6⁻¹ * E₄.toFun * G - serre_D 12 (serre_D 10 G)) := by
+    rw [serre_D_22_L₁₀_eq]
     ring
   rw [h_eq]
-  have := Δ_imag_axis_pos
-  have := H₂_imag_axis_pos
-  fun_prop (disch := positivity)
+  exact (MLDE_F_imag_axis_pos.mul G_imag_axis_pos).add (F_imag_axis_pos.mul MLDE_G_imag_axis_neg)
 
 /-!
 ## Asymptotic Analysis of `F` at Infinity
@@ -377,43 +285,19 @@ private lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (h
 /-- `(E₂E₄ - E₆)(z) / exp(2πiz) → 720` as `im(z) → ∞`. -/
 theorem E₂E₄_sub_E₆_div_q_tendsto :
     Tendsto (fun z : ℍ ↦ (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z)) atImInfty (nhds 720) := by
+  have h_DE₄ (z : ℍ) :
+      E₂ z * E₄ z - E₆ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
+    have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun ramanujan_E₄ z
+    linear_combination -3 * h + 3 * DE₄_qexp z
   have h_eq : ∀ z : ℍ, (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z) =
       720 * ∑' m : ℕ, (↑(m + 1) * ↑(σ 3 (m + 1)) : ℂ) * cexp (2 * π * I * z * m) := fun z ↦ by
-    rw [E₂_mul_E₄_sub_E₆ z, tsum_pnat_eq_tsum_succ (f := fun n : ℕ ↦ (n * σ 3 n *
+    rw [h_DE₄ z, tsum_pnat_eq_tsum_succ (f := fun n : ℕ ↦ (n * σ 3 n *
       cexp (2 * π * I * n * z) : ℂ)), mul_div_assoc, ← tsum_div_const]
     exact congrArg _ (tsum_congr fun m ↦ by push_cast [mul_div_assoc, ← Complex.exp_sub]; ring_nf)
   have hbound : ∀ m : ℕ, ‖(↑(m + 1) * ↑(σ 3 (m + 1)) : ℂ)‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := fun m ↦ by
     exact_mod_cast (Nat.mul_le_mul_left _ (ArithmeticFunction.sigma_le_pow_succ 3 _)).trans_eq
       (by ring)
   simpa [h_eq] using (qexp_tendsto_of_poly_bound hbound).const_mul (720 : ℂ)
-
-/-- The normalized log-derivative of `w ↦ exp (c * w)` is the constant `c / (2πi)`. -/
-theorem D_cexp_div (c : ℂ) (z : ℍ) :
-    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
-  have h : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) = cexp (c * z) * (c * 1) :=
-    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp fun w ↦ cexp (c * w)).deriv_eq.trans
-      (((hasDerivAt_id (z : ℂ)).const_mul c).cexp).deriv
-  simp only [D, h]
-  field_simp
-
-/-- If `F z / exp (a * z) → C ≠ 0` at `i∞`, then `D F / F → a / (2πi)`. -/
-lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C : ℂ} (hC : C ≠ 0)
-    (hlim : Tendsto (fun z : ℍ ↦ F z / cexp (a * z)) atImInfty (nhds C)) :
-    Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
-  set q : ℍ → ℂ := fun w ↦ cexp (a * w)
-  set g : ℍ → ℂ := fun w ↦ F w / q w with hg
-  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
-  have hq_md : MDiff q := fun τ ↦ DifferentiableAt_MDifferentiableAt
-    (G := fun t : ℂ ↦ cexp (a * t)) ((differentiableAt_id.const_mul a).cexp)
-  have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
-  have hDg : Tendsto (D g / g) atImInfty (nhds 0) := by
-    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
-  have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
-  have key : ∀ᶠ z : ℍ in atImInfty, a / (2 * π * I) + D g z / g z = D F z / F z := by
-    filter_upwards [hlim.eventually_ne hC] with z hz
-    rw [← D_cexp_div a z, hF_eq, congrFun (D_mul q g hq_md hg_md) z]
-    exact div_add_div _ _ (hq_ne z) hz
-  simpa using (tendsto_const_nhds.add hDg).congr' key
 
 /-- `F(z) / exp(2πi · 2z) → 720²` as `im(z) → ∞`: `F` vanishes to order 2 at `i∞`. -/
 theorem F_vanishing_order : Tendsto (fun z : ℍ ↦ F z / cexp (2 * π * Complex.I * 2 * z))
@@ -426,7 +310,7 @@ theorem D_F_div_F_tendsto : Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhd
   simpa using logderiv_tendsto_of_div_exp_tendsto F_holo (by norm_num) F_vanishing_order
 
 /-!
-### `G`-Side Asymptotic Analysis
+## Asymptotic Analysis of `G` at Infinity
 
 Vanishing order and log-derivative limits for `G`, leading to eventual positivity of `L₁,₀`.
 -/
@@ -513,10 +397,6 @@ theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) :=
   strictAntiOn_of_deriv_neg (convex_Ioi 0) FmodGReal_differentiableOn.continuousOn fun t ht ↦
     deriv_FmodGReal_neg t (by rwa [interior_Ioi] at ht)
 
-/-- Reduce a power of `I * w` via `I ^ 4 = 1`. -/
-lemma I_mul_npow (w : ℂ) (n : ℕ) : (I * w) ^ n = I ^ (n % 4) * w ^ n := by
-  rw [mul_pow, I_pow_eq_pow_mod]
-
 /-- Functional equation of `F` under the modular inversion `S`. -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -559,21 +439,13 @@ The following lemmas establish the asymptotic behavior needed to compute the lim
 `FmodGReal` as `t → 0⁺`.
 -/
 
-/-- A level-one modular form tending to `1` at `i∞` satisfies `f - 1 = O(exp(-2π im τ))`. -/
-private lemma sub_one_isBigO_exp_atImInfty {k : ℤ} (f : ModularForm Γ(1) k)
-    (hf : Tendsto ⇑f atImInfty (nhds 1)) :
-    (fun z : ℍ ↦ f z - 1) =O[atImInfty] fun z ↦ Real.exp (-(2 * π) * z.im) := by
-  simpa [show valueAtInfty ⇑f = 1 from hf.limUnder_eq] using
-    exp_decay_sub_atImInfty one_pos (SlashInvariantFormClass.periodic_comp_ofComplex f (by simp))
-      (ModularFormClass.holo f) (ModularFormClass.bdd_at_infty f)
-
-/-- `F₁` has exponential decay `O(exp(-2π im τ))` at infinity, as `F₁ = 3 D E₄`. -/
+/-- `F₁` has exponential decay `O(exp(-2π im τ))` at infinity, since `F₁ / q → 720`
+(`E₂E₄_sub_E₆_div_q_tendsto`). -/
 lemma F₁_isBigO_exp_atImInfty : F₁ =O[atImInfty] fun τ ↦ Real.exp (-(2 * π) * τ.im) := by
-  have hprod : (fun z ↦ (E₂ z - 1) * E₄ z) =O[atImInfty] fun z ↦ Real.exp (-(2 * π) * z.im) := by
-    simpa using E₂_sub_one_isBigO_exp.mul E₄_isBoundedAtImInfty
-  rw [show F₁ = (E₂ - 1) * E₄.toFun + (E₄.toFun - 1) - (E₆.toFun - 1) by unfold F₁; ring]
-  exact (hprod.add (sub_one_isBigO_exp_atImInfty E₄ E₄_tendsto_one_atImInfty)).sub
-    (sub_one_isBigO_exp_atImInfty E₆ E₆_tendsto_one_atImInfty)
+  simpa [F₁, Pi.mul_def, Pi.sub_def, Complex.norm_exp, Complex.mul_re, Complex.mul_im,
+    mul_assoc] using
+    (Asymptotics.isTheta_of_div_tendsto_nhds_ne_zero E₂E₄_sub_E₆_div_q_tendsto
+      (by norm_num)).isBigO_symm.norm_right
 
 /-- `F = F₁ ^ 2` has exponential decay `O(exp(-4π im τ))` at infinity. -/
 lemma F_isBigO_exp_atImInfty : F =O[atImInfty] fun τ ↦ Real.exp (-(4 * π) * τ.im) :=

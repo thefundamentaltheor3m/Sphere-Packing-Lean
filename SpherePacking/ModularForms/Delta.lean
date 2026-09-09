@@ -128,6 +128,7 @@ private lemma tprod_pos (t : ℝ) (ht : 0 < t) :
   exact Real.exp_pos _
 
 /-- `Δ` is real and positive on the positive imaginary axis. -/
+@[fun_prop]
 lemma Δ_imag_axis_pos : ResToImagAxis.Pos Δ := by
   refine ⟨fun t ht => ?_, fun t ht => ?_⟩
   · rw [resToImagAxis_Δ_eq t ht, Complex.ofReal_im]
