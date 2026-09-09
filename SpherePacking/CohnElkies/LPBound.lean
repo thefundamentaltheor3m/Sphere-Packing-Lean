@@ -5,7 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Logic.IsEmpty.Basic
+public import Mathlib.Basic.IsEmpty.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
@@ -587,7 +587,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
         -- intro hContra
         -- rw [← P.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers Fact.out]
         unfold PeriodicSpherePacking.numReps
-        haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
+        have : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
           rw [nonempty_quotient_iff]
           assumption
         exact Fintype.card_ne_zero

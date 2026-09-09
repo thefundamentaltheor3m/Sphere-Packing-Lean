@@ -65,9 +65,7 @@ public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.ModularForms.PhiTransform
 public import SpherePacking.ModularForms.QExpansion
-public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.tsumderivWithin

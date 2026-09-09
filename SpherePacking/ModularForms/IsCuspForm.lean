@@ -18,10 +18,7 @@ open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalInteg
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat CongruenceSubgroup Manifold
 
-
 noncomputable section Definitions
-
-
 
 variable {α ι : Type*}
 
@@ -34,20 +31,12 @@ def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : Modula
   holo' := f.holo'
   bdd_at_cusps' := fun hc ↦ bdd_at_cusps f hc
 
-lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
-  ModForm_mk _ _ f ≠ 0 := by
-  rw [@DFunLike.ne_iff] at *
-  obtain ⟨x, hx⟩ := hf
-  use x
-  simp only [CuspForm.zero_apply, ne_eq, ModForm_mk, zero_apply] at *
-  exact hx
-
 def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k →ₗ[ℂ] ModularForm Γ k
   where
   toFun f := ModForm_mk Γ k f
   map_add' := by
     intro f g
-    simp only [ModForm_mk, CuspForm.coe_add]
+    simp only [ModForm_mk, FunLike.coe_add]
     rfl
   map_smul' := by
     intro m f
@@ -56,23 +45,6 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
 
 def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : Submodule ℂ (ModularForm Γ k) :=
   LinearMap.range (CuspForm_to_ModularForm Γ k)
-
-def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
-    CuspForm Γ k ≃ₗ[ℂ] CuspFormSubmodule Γ k := by
-  apply LinearEquiv.ofInjective
-  rw [@injective_iff_map_eq_zero]
-  intro f hf
-  rw [CuspForm_to_ModularForm] at hf
-  simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk] at hf
-  ext z
-  have := congr_fun (congr_arg (fun x => x.toFun) hf) z
-  simpa using this
-
-lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
-    (hf : f ∈ CuspFormSubmodule Γ k) :
-    ∃ g : CuspForm Γ k, f = CuspForm_to_ModularForm Γ k g := by
-  rw [CuspFormSubmodule, LinearMap.mem_range] at hf
-  aesop
 
 instance (priority := 100) CuspFormSubmodule.funLike :
     FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
@@ -104,18 +76,6 @@ lemma CuspForm_to_ModularForm_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : Modu
   simp_rw [CuspForm_to_ModularForm] at hg
   have hgg := congr_arg (fun x ↦ x.toSlashInvariantForm) hg
   simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk] at *
-  exact hgg
-
-lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
-    (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toFun =
-    f.toFun := by
-  rw [IsCuspForm_to_CuspForm]
-  rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
-  have hg := hf.choose_spec
-  simp_rw [CuspForm_to_ModularForm] at hg
-  have hgg := congr_arg (fun x ↦ x.toFun) hg
-  simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk, SlashInvariantForm.toFun_eq_coe,
-    SlashInvariantForm.coe_mk, toSlashInvariantForm_coe, CuspForm.toSlashInvariantForm_coe] at *
   exact hgg
 
 /-- Build a `CuspForm` from a `SlashInvariantForm` that is holomorphic and tends to 0. -/
@@ -187,8 +147,3 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
   · intro h
     rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range]
     exact ⟨cuspFormOfCoeffZero f h, by ext; rfl⟩
-
-lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
-    f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
-  have := IsCuspForm_iff_coeffZero_eq_zero k f
-  apply this
