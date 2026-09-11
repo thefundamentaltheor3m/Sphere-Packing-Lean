@@ -300,7 +300,7 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc :
   simp only [density, limsup, limsSup, eventually_map, eventually_atTop]
   apply le_antisymm
   -- The following are almost identical. Can we condense the proof?
-  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_ofPred_eq, lowerBounds]
     intro x hx y hy
     rcases hx with ⟨a, ha⟩
     apply hy
@@ -309,7 +309,7 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc :
     rw [scale_finiteDensity' hd S hc]
     apply ha
     exact (le_div_iff₀' hc).mpr hb'
-  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_ofPred_eq, lowerBounds]
     intro x hx y hy
     rcases hx with ⟨a, ha⟩
     apply hy

@@ -49,7 +49,7 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 -- def bilinFormOfRealInner.dualSubmodule : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
 -- carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_[ℝ] = ↑n }
 -- zero_mem' := by
--- simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
+-- simp only [Subtype.forall, Set.mem_ofPred_eq, inner_zero_left]
 -- intro a _
 -- use 0
 -- rw [Int.cast_zero]
@@ -232,7 +232,7 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
             rw [Measure.restrict_apply_self, Measure.restrict_apply_superset hInclusion]
           exact lt_of_lt_of_le hUpos this
         intro y hy
-        rw [Set.mem_setOf_eq]
+        rw [Set.mem_ofPred_eq]
         specialize hU₃ y hy
         exact Ne.symm (ne_of_lt hU₃)
       rw [Measure.restrict_apply_self]

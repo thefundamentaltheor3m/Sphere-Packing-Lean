@@ -158,7 +158,6 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   congr
   rw [div_pow, ← cpow_mul_nat, mul_neg, neg_neg]
   ring_nf!
-  -- goal is now `(↑x)⁻¹ ^ 2 * ((I * (↑x)⁻¹) ^ 2)⁻¹ = -1`
   -- goal is `(↑x)⁻¹ ^ (2 : ℕ) * ((I * (↑x)⁻¹) ^ (2 : ℂ))⁻¹ = -1`; note the `cpow` exponent
   rw [cpow_ofNat, mul_pow, I_sq]
   field_simp
@@ -395,7 +394,7 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       rw [H₃_negI_action, H₄_negI_action]
       exact h
   · intro s hs
-    simp_rw [Set.mem_setOf_eq, Set.mem_range] at hs
+    simp_rw [Set.mem_ofPred_eq, Set.mem_range] at hs
     obtain ⟨s, rfl⟩ := hs
     rw [Set.mem_iInter, SetLike.mem_coe]
     intro hs
