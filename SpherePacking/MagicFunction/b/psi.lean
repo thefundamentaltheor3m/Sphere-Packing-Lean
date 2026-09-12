@@ -1,13 +1,14 @@
 /-
-Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
+Copyright (c) 2026 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan, Raphael Appenzeller
+Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 -/
 module
 
 
 -- import Mathlib
 
+public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
@@ -263,6 +264,11 @@ lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H
   rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _,
     ← sub_neg_eq_add, ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
 -- proof of ψS_eq complete.
+
+theorem ψS_eq_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ := by
+  ext z
+  simp only [Pi.div_apply, ψS, G]
+  sorry
 
 end eq
 

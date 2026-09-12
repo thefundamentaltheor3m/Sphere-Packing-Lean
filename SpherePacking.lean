@@ -41,6 +41,7 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+public import SpherePacking.MagicFunction.a.Phi
 public import SpherePacking.MagicFunction.a.Schwartz
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Basic

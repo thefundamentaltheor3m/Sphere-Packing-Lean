@@ -6,7 +6,7 @@ Authors: Sidharth Hariharan
 module
 
 
-public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.MagicFunction.a.Phi
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
 /-!
