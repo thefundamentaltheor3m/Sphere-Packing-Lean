@@ -35,15 +35,15 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psi-new}
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, def:phi4-phi2-phi0, lemma:psi-new}\lean{φ₀_eq_F_div_disc, ψS_eq_G_div_disc}\leanok
 We have
 \begin{align}
     \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
     \psi_S &= -\frac{1}{2} \frac{G}{\Delta}\label{eqn:psiS-G}
 \end{align}
 \end{lemma}
-\begin{proof}
-\eqref{eqn:phi0-F} is clear.
+\begin{proof}\leanok
+\eqref{eqn:phi0-F} is clear from the definitions.
 \eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psi-new}.
 \end{proof}
 
