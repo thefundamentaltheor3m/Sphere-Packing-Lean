@@ -26,7 +26,11 @@ open Real
 
 namespace Complex
 
-/-- Bound a shifted q-series above its reference height of absolute summability. -/
+/-- Bound a shifted q-series above its reference height of absolute summability.
+
+For a function-level bound using canonical `qExpansion` coefficients, with summability derived
+from analytic assumptions, see `UpperHalfPlane.norm_le_qExpansion_of_coeff_vanish` in
+`SpherePacking.ModularForms.ResToImagAxis`. -/
 lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     (ha : Summable fun m : ℕ ↦ ‖a m‖ * Real.exp (-(2 * π * c) * m))
     (z : ℂ) (hz : c ≤ z.im) :
