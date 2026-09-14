@@ -297,7 +297,7 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     apply Summable.of_norm_bounded_eventually (g := fun n => u n / (2 * π)) (hu_sum.div_const _)
     rw [Filter.eventually_cofinite]
     refine Set.Finite.subset (Set.finite_singleton 0) fun n hn => ?_
-    simp only [Set.mem_setOf_eq, not_le] at hn
+    simp only [Set.mem_ofPred_eq, not_le] at hn
     by_contra h_ne
     have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
     have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
@@ -368,18 +368,18 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
       ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
   -- Extend a to ℕ with a' 0 = 0
   let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
-  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
+  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dite_eq_left n.pos
   -- Derivative bounds: extend u using summable_pnat_iff_summable_nat
   have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
         cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
-    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
+    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dite_eq_left n.pos
     refine ⟨u', summable_pnat_iff_summable_nat.mp (hu_sum.congr fun n => by rw [hu']),
       fun n k => ?_⟩
     by_cases hn : 0 < n
-    · simp only [a', u', dif_pos hn]; exact hu_bound _ k
+    · simp only [a', u', dite_eq_left hn]; exact hu_bound _ k
     · simp only [Nat.not_lt, Nat.le_zero] at hn; simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
   have hD := D_qexp_tsum a' z (summable_pnat_iff_summable_nat.mp
@@ -752,7 +752,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
       simpa [id, mul_one] using (hasDerivAt_id (t : ℂ)).const_mul I
     simpa [h, Function.comp_def] using (hF'.comp (t : ℂ) hh).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
-  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dite_eq_left ht, z]
   ring_nf; simp only [I_sq]; ring
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
@@ -866,7 +866,7 @@ lemma neg_after_zero_of_deriv_neg {g : ℝ → ℝ} {t₀ : ℝ}
     simpa [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs,
            abs_of_pos hh_pos] using sub_left_lt_of_lt_add hs2
   have hest := hball hmem
-  simp only [Set.mem_setOf_eq, hg0, sub_zero, smul_eq_mul, norm_eq_abs, abs_of_pos hh_pos] at hest
+  simp only [Set.mem_ofPred_eq, hg0, sub_zero, smul_eq_mul, norm_eq_abs, abs_of_pos hh_pos] at hest
   have := (abs_le.mp hest).2
   rw [show s = t₀ + (s - t₀) by ring]
   linarith [div_neg_of_neg_of_pos (mul_neg_of_pos_of_neg hh_pos hd) (by norm_num : (0 : ℝ) < 2)]
@@ -940,13 +940,13 @@ theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hMD : MDifferentiable 𝓘(
       have hda := hasDerivAt_resToImagAxis_re hMD hs
       rw [hda.deriv]
       have h_ria : F.resToImagAxis s = F ⟨I * s, by simp [hs]⟩ := by
-        simp [resToImagAxis, ResToImagAxis, dif_pos hs]
+        simp [resToImagAxis, ResToImagAxis, dite_eq_left hs]
       have hz : F (⟨I * s, by simp [hs]⟩ : ℍ) = 0 := by
         apply Complex.ext
         · rw [zero_re, ← h_ria]; exact hgs
         · rw [zero_im, ← h_ria]; exact (hF_real s hs)
       have : 0 < ((D F).resToImagAxis s).re := by
-        simpa [resToImagAxis, ResToImagAxis, dif_pos hs,
+        simpa [resToImagAxis, ResToImagAxis, dite_eq_left hs,
           serre_D_apply, hz, mul_zero, sub_zero] using hSDF_pos s hs
       nlinarith [pi_pos]
   exact key t ht
