@@ -47,7 +47,11 @@ lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     ((Summable.tsum_le_tsum key hs (ha.mul_right _)).trans_eq tsum_mul_right)
 
 /-- Bound a q-series whose coefficients vanish below `n₀`, retaining the reference-height
-correction in the decay factor. Unlike a shifted series, the coefficient norm sum is unshifted. -/
+correction in the decay factor. Unlike a shifted series, the coefficient norm sum is unshifted.
+
+The correction is necessary: take `n₀ = 1`, `b 1 = 1`, all other coefficients zero, and
+`z = c * I` with `c > 0`. Replacing `z.im - c` by `z.im` would give the false inequality
+`exp (-2 * π * c) ≤ exp (-4 * π * c)`. -/
 lemma norm_qseries_le_of_coeff_vanish {b : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     (hb : ∀ m < n₀, b m = 0)
     (hs : Summable fun m : ℕ ↦ ‖b m‖ * Real.exp (-(2 * π * c) * m))
