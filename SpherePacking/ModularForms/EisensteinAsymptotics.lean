@@ -196,7 +196,7 @@ lemma serre_DE₂_tendsto_atImInfty :
   simpa [neg_div] using serre_D_tendsto_neg_k_div_12 1 E₂ E₂_holo'
     EisensteinSeries.isBoundedAtImInfty_E2 E₂_tendsto_one_atImInfty
 
-/-! ## Generic q-expansion summability and derivative bounds -/
+/-! ## Generic q-expansion summability -/
 
 /-- Summability of (m+1)^k * exp(-2πm) via comparison with shifted sum. -/
 lemma summable_pow_shift (k : ℕ) :
@@ -209,54 +209,3 @@ lemma summable_pow_shift (k : ℕ) :
   simp_rw [h_eq]
   exact ((h.comp_injective Nat.succ_injective).congr fun i => by
     simp [Function.comp_apply, Nat.succ_eq_add_one]).mul_left _
-
-/-- Derivative bounds for q-expansion coefficients.
-Given `‖a n‖ ≤ n^k`, produces bounds
-`‖a n * 2πin * exp(2πin z)‖ ≤ 2π * n^(k+1) * exp(-2πn * y_min)`
-on compact K ⊆ {z : 0 < z.im}. This is a key hypothesis for `D_qexp_tsum_pnat`. -/
-lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ}
-    (ha : ∀ n : ℕ+, ‖a n‖ ≤ (n : ℝ)^k) :
-    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
-        ‖a n * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * z.1)‖ ≤ u n := by
-  intro K hK_sub hK_compact
-  by_cases hK_nonempty : K.Nonempty
-  · obtain ⟨k_min, hk_min_mem, hk_min_le⟩ := hK_compact.exists_isMinOn hK_nonempty
-      Complex.continuous_im.continuousOn
-    have hy_min_pos : 0 < k_min.im := hK_sub hk_min_mem
-    have hpos : 0 < 2 * π * k_min.im := by nlinarith [pi_pos]
-    have h := Real.summable_pow_mul_exp_neg_nat_mul (k + 1) hpos
-    have hconv : Summable (fun n : ℕ+ =>
-        2 * π * ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
-      have : Summable (fun n : ℕ+ =>
-          ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := h.subtype _
-      simpa [mul_assoc] using this.mul_left (2 * π)
-    use fun n => 2 * π * (n : ℝ)^(k + 1) * rexp (-2 * π * ↑n * k_min.im)
-    constructor
-    · exact hconv.congr fun n => by ring_nf
-    · intro n ⟨z, hz_mem⟩
-      have hz_im : k_min.im ≤ z.im := hk_min_le hz_mem
-      have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
-      have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
-        rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
-            Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
-      calc ‖a n * (2 * π * I * ↑↑n) * cexp (2 * π * I * ↑↑n * z)‖
-          = ‖a n‖ * ‖(2 * π * I * ↑↑n)‖ * ‖cexp (2 * π * I * ↑↑n * z)‖ := by
-            rw [norm_mul, norm_mul]
-        _ ≤ (n : ℝ)^k * (2 * π * n) * rexp (-2 * π * n * z.im) := by
-            rw [h_norm_2pin]
-            have hexp : ‖cexp (2 * π * I * ↑↑n * z)‖ ≤ rexp (-2 * π * n * z.im) := by
-              rw [Complex.norm_exp]
-              have : (2 * π * I * ↑↑n * z).re = -2 * π * n * z.im := by
-                simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-                  Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-                  mul_zero, mul_one, zero_add, add_zero, sub_zero]; ring
-              rw [this]
-            gcongr; exact ha n
-        _ ≤ (n : ℝ)^k * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
-            apply mul_le_mul_of_nonneg_left _ (by positivity)
-            apply Real.exp_le_exp_of_le
-            apply mul_le_mul_of_nonpos_left hz_im
-            nlinarith [pi_pos, hn_pos]
-        _ = 2 * π * (n : ℝ)^(k + 1) * rexp (-2 * π * n * k_min.im) := by ring
-  · exact ⟨0, summable_zero, fun n z => absurd ⟨z.1, z.2⟩ hK_nonempty⟩
