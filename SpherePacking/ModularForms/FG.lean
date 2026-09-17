@@ -53,7 +53,7 @@ noncomputable def F₁ := E₂ * E₄.toFun - E₆.toFun
 noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 /-- `negDE₂ = -D E₂`, which has positive `q`-coefficients (`negDE₂_qexp`). -/
-noncomputable def negDE₂ := - (D E₂)
+notation "negDE₂" => - (D E₂)
 
 /-- `L₁₀ = (D F) G - F (D G)`, the Wronskian of `F` and `G`; its sign governs the monotonicity of
 `F / G` on the imaginary axis. -/
@@ -123,7 +123,7 @@ lemma Δ_eq_E₄_cube_sub_E₆_sq : Δ = 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFu
 /-- The modular linear differential equation satisfied by `F`. -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ * negDE₂ := by
   change serre_D 12 (D F - 10 * 12⁻¹ * E₂ * F) = _
-  simp (disch := fun_prop) only [serre_D_eq, F, Δ_eq_E₄_cube_sub_E₆_sq, negDE₂, D_sub, D_add, D_mul,
+  simp (disch := fun_prop) only [serre_D_eq, F, Δ_eq_E₄_cube_sub_E₆_sq, D_sub, D_add, D_mul,
     D_sq, ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
   ext z
   simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const, Pi.sub_apply, Pi.add_apply,
@@ -151,7 +151,7 @@ theorem DE₄_qexp (z : ℍ) :
 /-- `negDE₂ = 24 ∑' n : ℕ+, n σ₁ n qⁿ`, by differentiating the `q`-expansion of `E₂` termwise. -/
 theorem negDE₂_qexp (z : ℍ) :
     negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * I * n * z) := by
-  rw [negDE₂, Pi.neg_apply, neg_eq_iff_eq_neg, ← neg_mul]
+  rw [Pi.neg_apply, neg_eq_iff_eq_neg, ← neg_mul]
   exact D_qexp_const_add_smul (c₀ := 1) (by norm_num) E₂_holo'
     (fun w ↦ by rw [E₂_sigma_qexp]; ring)
     (fun w ↦ by simpa using sigma_qexp_summable_generic 0 1 w)
@@ -172,10 +172,10 @@ lemma DE₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
   ⟨DE₄_imag_axis_real, DE₄_imag_axis_re_pos⟩
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by unfold negDE₂; fun_prop
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by fun_prop
 
 /-- The real part of `negDE₂(it)` is positive for `t > 0`. -/
-lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < (negDE₂.resToImagAxis t).re := by
+lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < (Function.resToImagAxis negDE₂ t).re := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, negDE₂_qexp, Complex.mul_re,
     Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   exact mul_pos (by norm_num) (sigma_qexp_tsum_re_pos 1 t ht)
