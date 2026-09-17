@@ -117,7 +117,7 @@ theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal
   (hasDerivAt_resToImagAxis_re G_holo ht).differentiableAt
 
 /-- The discriminant `Δ = 1728⁻¹ (E₄ ^ 3 - E₆ ^ 2)`, as an identity of functions on `ℍ`. -/
-private lemma Δ_eq_E₄_cube_sub_E₆_sq : Δ = 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2) :=
+lemma Δ_eq_E₄_cube_sub_E₆_sq : Δ = 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2) :=
   funext fun z ↦ (ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z).trans (div_eq_inv_mul _ _)
 
 /-- The modular linear differential equation satisfied by `F`. -/
