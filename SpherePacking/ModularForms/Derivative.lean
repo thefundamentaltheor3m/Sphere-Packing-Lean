@@ -417,15 +417,12 @@ lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ → ℂ} 
   let f : ℍ → ℂ := fun w ↦ ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)
   have hDf : D f z = ∑' n : ℕ+, n * a n * cexp (2 * π * I * n * z) :=
     D_qexp_tsum_pnat a z (hsum z) hbound
-  have hf_md : MDiff f := by
-    have h : f = c⁻¹ • fun w ↦ g w - c₀ := by
-      ext w
-      rw [Pi.smul_apply, hg w, smul_eq_mul, add_sub_cancel_left, inv_mul_cancel_left₀ hc]
-    rw [h]
-    exact (hg_md.sub mdifferentiable_const).const_smul _
   have hg_eq : g = (fun _ ↦ c₀) + c • f := by
     ext w
     simp [f, hg w]
+  have hf_md : MDiff f := by
+    rw [show f = c⁻¹ • (g - fun _ ↦ c₀) by rw [hg_eq, add_sub_cancel_left, inv_smul_smul₀ hc]]
+    exact (hg_md.sub mdifferentiable_const).const_smul _
   have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (D_const c₀) z
   rw [hg_eq, congrFun (D_add _ _ mdifferentiable_const (hf_md.const_smul _)) z, Pi.add_apply,
     hD_const, zero_add, congrFun (D_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
