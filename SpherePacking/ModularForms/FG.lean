@@ -5,20 +5,9 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
-public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.ModularForms.Eisenstein
-public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Derivative
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
-public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.tsumderivWithin
-public import SpherePacking.Tactic.TendstoCont
 
 /-!
 # The Modular Forms `F` and `G`
