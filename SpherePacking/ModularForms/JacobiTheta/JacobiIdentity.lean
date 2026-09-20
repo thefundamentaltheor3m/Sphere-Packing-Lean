@@ -202,7 +202,8 @@ private lemma Θ₂_div_exp_tendsto :
   simp_rw [Θ₂_as_jacobiTheta₂, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
   exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty
 
-private lemma H₂_div_exp_tendsto :
+/-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
+lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
