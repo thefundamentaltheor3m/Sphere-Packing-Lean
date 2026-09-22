@@ -41,8 +41,11 @@ theorem g_zero : g 0 = 1 := by
   norm_cast
   exact pi_ne_zero
 
-theorem fourier_g_zero : (FourierTransform.fourierCLE ℂ _) g 0 = 1 := by
-  simp only [g, map_add, map_smul, eig_a, eig_b, add_apply, smul_apply, a_zero, smul_eq_mul]
+theorem fourier_g_zero : 𝓕 g 0 = 1 := by
+  have ha : 𝓕 a = a := eig_a
+  have hb : 𝓕 b = -b := eig_b
+  simp only [g, FourierAdd.fourier_add, FourierSMul.fourier_smul, ha, hb, add_apply, smul_apply,
+    a_zero, smul_eq_mul]
   have : (-b) 0 = -(b 0) := rfl
   ring_nf
   simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg, this, b_zero, neg_zero, mul_zero, one_div,
@@ -51,7 +54,7 @@ theorem fourier_g_zero : (FourierTransform.fourierCLE ℂ _) g 0 = 1 := by
   norm_cast
   exact pi_ne_zero
 
-theorem g_zero_eq_fourier_g_zero : g 0 = (FourierTransform.fourierCLE ℂ _) g 0 := by
+theorem g_zero_eq_fourier_g_zero : g 0 = 𝓕 g 0 := by
   rw [g_zero, fourier_g_zero]
 
 end Zero
@@ -80,7 +83,7 @@ theorem g_eq_integral_A {x : ℝ⁸} (hx : √2 < ‖x‖) :
   sorry
 
 /-- Integral representation of Fourier transform of `g` in terms of `B`. -/
-theorem g_Fourier_eq_integral_B {x : ℝ⁸} (hx : √2 < ‖x‖) :
+theorem g_Fourier_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖) :
     𝓕 g x =
       π / 2160 * Real.sin (π * ‖x‖ ^ 2 / 2) ^ 2
         * ∫ (t : ℝ) in Set.Ioi 0, B t * rexp (- π * ‖x‖ ^ 2 * t) := by
@@ -91,3 +94,9 @@ theorem A_neg {t : ℝ} (ht : 0 < t) : (A t).re < 0 := by sorry
 
 /-- `B` is positive on `(0, ∞)`. -/
 theorem B_pos {t : ℝ} (ht : 0 < t) : 0 < (B t).re := by sorry
+
+/-- `g` is nonpositive outside of the ball of radius `√2`. -/
+theorem g_nonpos {x : ℝ⁸} (hx : √2 ≤ ‖x‖) : (g x).re ≤ 0 := by sorry
+
+/-- Fourier transform of `g` is nonnegative everywhere. -/
+theorem g_Fourier_nonneg (x : ℝ⁸) : 0 ≤ (𝓕 g x).re := by sorry
