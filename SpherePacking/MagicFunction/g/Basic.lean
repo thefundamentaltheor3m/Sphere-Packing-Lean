@@ -23,6 +23,7 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.Fourier
   MagicFunction.b.Fourier MagicFunction.a.SpecialValues MagicFunction.b.SpecialValues
+open scoped FourierTransform
 
 /-- The Magic Function, `g`. -/
 noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 * π)) • b
@@ -54,3 +55,39 @@ theorem g_zero_eq_fourier_g_zero : g 0 = (FourierTransform.fourierCLE ℂ _) g 0
   rw [g_zero, fourier_g_zero]
 
 end Zero
+
+noncomputable def A (t : ℝ) :=
+  - t ^ 2 * φ₀'' (I / t) - 36 * π ^ (-2 : ℤ) * ψI' (Complex.I * t)
+
+noncomputable def B (t : ℝ) :=
+  - t ^ 2 * φ₀'' (I / t) + 36 * π ^ (-2 : ℤ) * ψI' (Complex.I * t)
+
+lemma A_eq {t : ℝ} (ht : 0 < t) :
+    A t =
+      - t ^ 2 * φ₀ ⟨I / t, by simp [ht]⟩
+        - 36 * π ^ (-2 : ℤ) * ψI ⟨I * t, by simp [ht]⟩ := by rw [A, φ₀''_def, ψI'_def]
+
+lemma B_eq {t : ℝ} (ht : 0 < t) :
+    B t =
+      - t ^ 2 * φ₀ ⟨I / t, by simp [ht]⟩
+        + 36 * π ^ (-2 : ℤ) * ψI ⟨I * t, by simp [ht]⟩ := by rw [B, φ₀''_def, ψI'_def]
+
+/-- Integral representation of `g` in terms of `A`. -/
+theorem g_eq_integral_A {x : ℝ⁸} (hx : √2 < ‖x‖) :
+    g x =
+      π / 2160 * Real.sin (π * ‖x‖ ^ 2 / 2) ^ 2
+        * ∫ (t : ℝ) in Set.Ioi 0, A t * rexp (- π * ‖x‖ ^ 2 * t) := by
+  sorry
+
+/-- Integral representation of Fourier transform of `g` in terms of `B`. -/
+theorem g_Fourier_eq_integral_B {x : ℝ⁸} (hx : √2 < ‖x‖) :
+    𝓕 g x =
+      π / 2160 * Real.sin (π * ‖x‖ ^ 2 / 2) ^ 2
+        * ∫ (t : ℝ) in Set.Ioi 0, B t * rexp (- π * ‖x‖ ^ 2 * t) := by
+  sorry
+
+/-- `A` is negative on `(0, ∞)`. -/
+theorem A_neg {t : ℝ} (ht : 0 < t) : (A t).re < 0 := by sorry
+
+/-- `B` is positive on `(0, ∞)`. -/
+theorem B_pos {t : ℝ} (ht : 0 < t) : 0 < (B t).re := by sorry

@@ -5,9 +5,6 @@ Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 -/
 module
 
-
--- import Mathlib
-
 public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
@@ -54,6 +51,10 @@ def ψS : ℍ → ℂ := ψI ∣[-2] S
 def ψI' (z : ℂ) : ℂ := if hz : 0 < z.im then ψI ⟨z, hz⟩ else 0
 def ψS' (z : ℂ) : ℂ := if hz : 0 < z.im then ψS ⟨z, hz⟩ else 0
 def ψT' (z : ℂ) : ℂ := if hz : 0 < z.im then ψT ⟨z, hz⟩ else 0
+
+lemma ψI'_def {z : ℂ} (hz : 0 < z.im) : ψI' z = ψI ⟨z, hz⟩ := by simp [ψI', hz]
+lemma ψS'_def {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ := by simp [ψS', hz]
+lemma ψT'_def {z : ℂ} (hz : 0 < z.im) : ψT' z = ψT ⟨z, hz⟩ := by simp [ψT', hz]
 
 end defs
 
