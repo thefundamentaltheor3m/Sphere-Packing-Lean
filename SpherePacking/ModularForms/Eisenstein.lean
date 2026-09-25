@@ -102,25 +102,25 @@ lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := φ�
 
 /-! ## `q`-expansion coefficients and non-vanishing -/
 
-private lemma E4_eq' :
-    (E₄ : ℍ → ℂ) = (ModularForm.E (k := 4) (by norm_num) : ℍ → ℂ) := rfl
+/-- The project's `Γ(1)`-typed `E₄` equals Mathlib's `𝒮ℒ`-typed `ModularForm.E₄` as functions. -/
+lemma E₄_coe : (E₄ : ℍ → ℂ) = ModularForm.E₄ := rfl
 
-private lemma E6_eq' :
-    (E₆ : ℍ → ℂ) = (ModularForm.E (k := 6) (by norm_num) : ℍ → ℂ) := rfl
+/-- The project's `Γ(1)`-typed `E₆` equals Mathlib's `𝒮ℒ`-typed `ModularForm.E₆` as functions. -/
+lemma E₆_coe : (E₆ : ℍ → ℂ) = ModularForm.E₆ := rfl
 
 lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
     fun m => if m = 0 then 1 else (240 : ℂ) * (σ 3 m) := by
   ext m
-  rw [E4_eq', EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
+  rw [E₄_coe, EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
   split
   · rfl
   · simp [bernoulli, bernoulli'_four]; ring
 
 lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 :=
-  E4_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+  E₄_coe ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
-  E6_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+  E₆_coe ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
