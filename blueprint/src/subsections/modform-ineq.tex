@@ -1,6 +1,6 @@
 \section{Proof of Theorem \ref{thm:g}}\label{sec: g}
 Our proof of the Theorem~\ref{thm:g} relies on the following two inequalities for modular objects.
-\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, cor:ineqAnew}
+\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, cor:ineqAnew}\lean{A, A_neg}\leanok
 Consider the function $A:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defA}
 A(t):=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).
@@ -12,7 +12,7 @@ Then
 for all $t > 0$.
 \end{proposition}
 
-\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, cor:ineqBnew}
+\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, cor:ineqBnew}\lean{B, B_pos}\leanok
 Consider the function $B:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defB}
     B(t) := -t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it)
@@ -35,15 +35,15 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psi-new}
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, def:phi4-phi2-phi0, lemma:psi-new}\lean{φ₀_eq_F_div_disc, ψS_eq_G_div_disc}\leanok
 We have
 \begin{align}
     \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
     \psi_S &= -\frac{1}{2} \frac{G}{\Delta}\label{eqn:psiS-G}
 \end{align}
 \end{lemma}
-\begin{proof}
-\eqref{eqn:phi0-F} is clear.
+\begin{proof}\leanok
+\eqref{eqn:phi0-F} is clear from the definitions.
 \eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psi-new}.
 \end{proof}
 
@@ -234,6 +234,7 @@ and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
 Finally, we are ready to prove Theorem~\ref{thm:g}.
 \begin{theorem}\label{thm:g1}
 \uses{prop:a-fourier, prop:b-fourier, prop:a-double-zeros, prop:b-double-zeros, prop:ineqA, prop:ineqB, prop:a0, prop:b0}
+\lean{g, g_nonpos, g_Fourier_nonneg, g_zero, fourier_g_zero}\leanok
 The function
 $$g(x):=\frac{\pi\,i}{8640}a(x)+\frac{i}{240\pi}\,b(x)$$
 satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
