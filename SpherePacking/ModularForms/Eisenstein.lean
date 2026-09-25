@@ -13,9 +13,9 @@ public import Mathlib.Tactic.NormNum.Parity
 
 This file defines the normalised level-one Eisenstein series `E k` (as `ModularForm Γ(1) k`,
 with constant term `1`; mathlib's `ModularForm.E` is typed over `𝒮ℒ`, the two coincide as
-functions on `ℍ`), its specialisations `E₄` and `E₆`, together with the quotients `φ₀`, `φ₂'`,
-`φ₄'` of Eisenstein series by the discriminant `Δ` used to build the magic function, and collects
-the properties of `E₂`, `E₄` and `E₆` needed by the project:
+functions on `ℍ`), its specialisations `E₄` and `E₆`, and collects the properties of `E₂`, `E₄`
+and `E₆` needed by the project (the quotients `φ₀`, `φ₂'`, `φ₄'` by `Δ` live in
+`SpherePacking.MagicFunction.a.Phi`):
 
 * `E₄_periodic`, `E₆_periodic`, `E₄_S_transform`, `E₆_S_transform`: pointwise transformation laws
   under the generators of `SL(2, ℤ)`.
@@ -78,27 +78,6 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
   simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
   field_simp [ne_zero z] at h
   exact h
-
-/-! ## The quotients `φ₀`, `φ₂'`, `φ₄'`
-
-The blueprint's `φ₀`, `φ₋₂`, `φ₋₄`; negative signs cannot appear in subscripts of
-identifiers, hence the primes. -/
-
-/-- The quotient `(E₂E₄ - E₆)² / Δ`, the blueprint's `φ₀`. -/
-def φ₀ (z : ℍ) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
-
-/-- The quotient `E₄(E₂E₄ - E₆) / Δ`, the blueprint's `φ₋₂`. -/
-def φ₂' (z : ℍ) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
-
-/-- The quotient `E₄² / Δ`, the blueprint's `φ₋₄`. -/
-def φ₄' (z : ℍ) := ((E₄ z) ^ 2) / (Δ z)
-
-/-- The extension of `φ₀` to `ℂ`, vanishing outside the upper half plane. -/
-def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
-
-lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by simp [φ₀'', hz]
-
-lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := φ₀''_def z.im_pos
 
 /-! ## `q`-expansion coefficients and non-vanishing -/
 
