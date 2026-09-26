@@ -55,7 +55,7 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by
   have hfc2 := CuspForm_to_ModularForm_coe _ _ f hf
   ext z
-  simp only [ModularForm.zero_apply] at *
+  simp only [zero_apply] at *
   have hy := congr_arg (fun x ↦ x.1) hfc2
   have hz := congr_fun hy z
   simp only [SlashInvariantForm.toFun_eq_coe, CuspForm.toSlashInvariantForm_coe,
@@ -64,7 +64,7 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
   have := rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero k hk)
     (IsCuspForm_to_CuspForm Γ(1) k f hf)
   rw [this]
-  simp only [CuspForm.zero_apply]
+  simp only [zero_apply]
 
 lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 :=
   (rank_modularForm_congr CongruenceSubgroup.Gamma_one_coe_eq_SL).trans

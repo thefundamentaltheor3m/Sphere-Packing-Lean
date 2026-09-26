@@ -39,7 +39,7 @@ lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (h
   rw [@DFunLike.ne_iff] at *
   obtain ⟨x, hx⟩ := hf
   use x
-  simp only [CuspForm.zero_apply, ne_eq, ModForm_mk, zero_apply] at *
+  simp only [zero_apply, ne_eq, ModForm_mk] at *
   exact hx
 
 def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k →ₗ[ℂ] ModularForm Γ k
@@ -47,7 +47,7 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
   toFun f := ModForm_mk Γ k f
   map_add' := by
     intro f g
-    simp only [ModForm_mk, CuspForm.coe_add]
+    simp only [ModForm_mk, FunLike.coe_add]
     rfl
   map_smul' := by
     intro m f
