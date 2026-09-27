@@ -8,6 +8,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.IntegralEstimates.Majorants
 
 /-!
 # Constructing Upper-Bounds for I₂
@@ -21,6 +22,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 @[expose] public section
 
+open MagicFunction.a.Majorants
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
@@ -69,35 +71,11 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     · rw [norm_exp]
       simp
 
-lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
-    (-1 / (↑t + I)) = -t / (t ^ 2 + 1) + (1 / (t ^ 2 + 1) * I) := by
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  calc
-  _ = (-1 / (t + I)) * ((t - I) / (t - I)) := by
-      conv_lhs => rw [← mul_one (-1 / (t + I))]
-      congr; symm
-      apply div_self
-      intro h
-      conv at h => rw [sub_eq_zero]
-      -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
-      have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = 1 := by rw [h]; exact I_im
-      exact zero_ne_one ((h₁.symm).trans h₂)
-  _ = _ := by
-      conv_lhs => rw [div_mul_div_comm (-1) (t + I)]
-      simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, ← add_div]
-      congr
-      · ac_rfl
-      · ring_nf
-        rw [I_sq]
-        ring
-
+/-- The imaginary part along the top edge, from the shared computation
+`Majorants.im_neg_one_div_add_I`. -/
 lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) := by
-  intro t ht
-  conv_lhs => rw [parametrisation_eq t ht, add_im]
-  norm_cast
-  rw [zero_add, mul_I_im, ofReal_re]
+  intro t _
+  simpa using im_neg_one_div_add_I t
 
 lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (↑t + I)).im := by
   intro t ht
@@ -116,17 +94,10 @@ lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im
 
 lemma I₂'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
     ‖g r t‖ ≤ C₀ * rexp (-2 * π * (-1 / (t + I)).im) * 2 * rexp (-π * r) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
-  use C₀, hC₀_pos
-  intro t ht
-  apply (I₂'_bounding_aux_1 r t ht).trans
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_le
+  refine ⟨C₀, hC₀_pos, fun t ht ↦ (I₂'_bounding_aux_1 r t ht).trans ?_⟩
   gcongr
-  have him : 1 / 2 < (-1 / (↑t + I)).im := im_parametrisation_lower t ht
-  have hpos : 0 < (-1 / (↑t + I)).im := one_half_pos.trans him
-  let z : ℍ := ⟨-1 / (t + I), hpos⟩
-  specialize hC₀ z him
-  simp only [φ₀'', hpos, ↓reduceDIte]
-  exact hC₀
+  exact hC₀ _ (im_parametrisation_lower t ht)
 
 lemma I₂'_bounding_aux_3 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
     ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) := by
@@ -158,15 +129,9 @@ section Bounding_Integral
 
 lemma I₂'_bounding_aux_4 (r : ℝ) : ∃ C₀ > 0,
     ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
-  · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_3 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ioo hC₀
+  obtain ⟨C₀, hpos, hb⟩ := I₂'_bounding_aux_3 r
+  exact ⟨C₀, hpos, setIntegral_mono_of_nonneg (fun _ _ ↦ norm_nonneg _) hb
+    (Bound_integrableOn r C₀)⟩
 
 theorem I₂'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₂' r‖ ≤ C₁ * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_4 r
@@ -185,43 +150,6 @@ theorem I₂'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₂' r‖ ≤ C₁ * rexp (
 end Bounding_Integral
 
 end Bounding
-
-----------------------------------------------------------------
-
-section Higher_iteratedFDerivs
-
-
-
-end Higher_iteratedFDerivs
-
-----------------------------------------------------------------
-
-noncomputable section Schwartz_Decay
-
-open SchwartzMap
-
-section Zeroth_Derivative
-
-theorem decay'₀ : ∀ (k : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖I₂' x‖ ≤ C := by
-
-  sorry
-
-end Zeroth_Derivative
-
-section Higher_iteratedFDerivs
-
-theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C := by
-
-  sorry
-
-end Higher_iteratedFDerivs
-
--- def I₂'_Schwartz : 𝓢(ℝ, ℂ) where
--- toFun := I₂'
--- smooth' := sorry
--- decay' := by extract_goal; sorry
-
-end Schwartz_Decay
 
 end I₂
 

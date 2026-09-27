@@ -27,9 +27,8 @@ This file contains the proof of Lemma 7.4 in the blueprint, which gives an upper
 between any function whose Fourier coefficients are O(n^k) and its discriminant.
 
 # TODO:
-The only `sorry`s are in the section `calc_aux`, which consists of auxiliary lemmas that are used in
-various `calc_steps` lemmas, which in turn make up the proof of the main theorem. Below, we give a
-comprehensive list of things to be done, including but not limited to the `sorry`s in this file.
+This file is `sorry`-free. Below we list remaining cleanups, mostly auxiliary lemmas in
+`calc_aux` that should be replaced by mathlib results.
 - [ ] `aux_5`: prove `fun i ↦ (1 - cexp (2 * ↑π * I * ↑↑i * z)) ^ 24` is Multipliable
 - [ ] `step_10`, `step_12`: prove `tprod_le_tprod` in SpherePacking.ForMathlib.tprod
 - [ ] `step_11`: prove `summable_real_norm_mul_geometric_of_norm_lt_one` in
@@ -567,71 +566,6 @@ theorem ArithmeticFunction.sigma_asymptotic' (k : ℕ) :
 
 end sigma
 
-section Corollaries
-
-theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
-    norm (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
-  -- This is a reasonable thing to do because all inputs are in nonnegative
-  let c : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
-  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
-  have hcd (n : ℕ) : c n = d n := by congr
-  have hdpoly : d =O[atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
-    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := by exact Nat.pow_succ'
-    norm_cast
-    simp only [h₁]
-    push_cast
-    refine IsBigO.mul (isBigO_refl _ atTop) ?_
-    have h := ArithmeticFunction.sigma_asymptotic' 3
-    simp only [Nat.reduceAdd] at h
-    norm_cast at h ⊢
-  have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-    -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop] at hdpoly ⊢
-    obtain ⟨R, m, hR⟩ := hdpoly
-    use R, m
-    intro n hn
-    have hnnonneg : 0 ≤ n := calc 0
-      _ ≤ (m : ℤ) := by positivity
-      _ ≤ ↑n := hn
-    have hnnat : n.toNat = n := by
-      simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
-    have hmnnat : m ≤ n.toNat := by
-      zify
-      rw [hnnat]
-      exact hn
-    specialize hR n.toNat hmnnat
-    rw [← hcd, hnnat] at hR
-    calc norm (c n)
-    _ ≤ R * n.toNat ^ 5 := hR
-      -- rwa [Real.norm_natCast] at hR
-    _ = R * |↑n| ^ 5 := by
-      simp only [mul_eq_mul_left_iff]
-      norm_cast
-      left
-      rw [cast_pow, hnnat]
-      simp [hnnonneg, abs_of_nonneg]
-  use DivDiscBound c 4
-  constructor
-  · rw [gt_iff_lt]
-    refine DivDiscBound_pos c 4 ?_ 5 hcpoly
-    have : c 4 = 4 * (σ 3 4) := rfl
-    rw [this]
-    simp only [ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, cast_eq_zero, false_or]
-    have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
-    rw [this]
-    simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
-      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall]
-    exact ⟨2, (by norm_num), (by norm_num)⟩
-  · simp only [φ₀]
-    intro z hz
-    calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly
-          (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
-      _ = _ := by congr 2; ring
-    · sorry
-    · -- This is where I need to use Bhavik's result
-      sorry
-
-end Corollaries
 
 end PolyFourierCoeffBound
 
