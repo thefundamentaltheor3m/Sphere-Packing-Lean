@@ -8,6 +8,7 @@ module
 
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.IntegralEstimates.Majorants
 
 /-!
 # Constructing Upper-Bounds for I₁
@@ -21,6 +22,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 @[expose] public section
 
+open MagicFunction.a.Majorants
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
@@ -154,62 +156,21 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
 
 lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
-  use C₀, hC₀_pos
-  intro s hs
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_I_mul_le
+  refine ⟨C₀, hC₀_pos, fun s hs ↦ (I₁'_bounding_aux_1 r s hs).trans ?_⟩
   rw [mem_Ici] at hs
-  apply (I₁'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
-  have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
-  specialize hC₀ z him'_gt_half
-  simp only [z, him'] at hC₀
-  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
-    ↓reduceDIte]
-  exact hC₀
+  exact hC₀ s (by linarith)
 
 end Bounding_Integrand
-
-section Integrability
-
-lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
-  set μ := volume.restrict (Ici (1 : ℝ))
-  have h_g : Integrable (fun s ↦ C₀ * rexp (-2 * π * s)) μ :=
-    ((integrableOn_Ici_iff_integrableOn_Ioi).mpr
-      (integrableOn_exp_mul_Ioi (by linarith [pi_pos]) 1)).const_mul C₀
-  have hφ : AEStronglyMeasurable (fun s ↦ rexp (-π * r / s)) μ :=
-    (Real.continuous_exp.measurable.comp (measurable_const.mul measurable_inv)).aestronglyMeasurable
-  have hb : ∀ᵐ s ∂μ, ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) :=
-    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s (hs : 1 ≤ s) ↦ by
-      simp only [Real.norm_eq_abs, abs_of_nonneg (exp_pos _).le]
-      refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
-      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
-      exact div_le_self (by positivity) hs
-  change Integrable
-    (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s))
-    (volume.restrict (Ici (1 : ℝ)))
-  simpa [μ, mul_comm] using h_g.bdd_mul hφ hb
-
-end Integrability
 
 section Bounding_Integral
 
 lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+  obtain ⟨C₀, hpos, hb⟩ := I₁'_bounding_aux_2 r
+  exact ⟨C₀, hpos, setIntegral_mono_of_nonneg (fun _ _ ↦ norm_nonneg _) hb
+    (integrableOn_majorant_cusp r C₀)⟩
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
@@ -219,11 +180,6 @@ theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
   _ = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
   _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
   _ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := hC₀
-
--- The following may be useful:
--- #check MeasureTheory.integral_mono_of_nonneg -- integrability can't be avoided...
--- #check MeasureTheory.setLIntegral_mono
--- #check MeasureTheory.setIntegral_mono_on
 
 end Bounding_Integral
 
