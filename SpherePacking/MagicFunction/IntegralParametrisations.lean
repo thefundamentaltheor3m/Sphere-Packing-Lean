@@ -161,22 +161,10 @@ section transforms_mem
 open Matrix Matrix.SpecialLinearGroup UpperHalfPlane ModularGroup
 open scoped MatrixGroups ComplexConjugate
 
-lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
-
-lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
-
-lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
-
-lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
-  simp only [← ModularGroup.ST_eq]; norm_cast
-
-lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
-  simp only [← ModularGroup.S_eq]; norm_cast
-
 lemma neg_inv_one_add_eq_ST_coe (z : ℍ) :
     -1 / ((z : ℂ) + 1) = UpperHalfPlane.coe ((S * T) • z) := by
   rw [specialLinearGroup_apply]
-  simp_all [ST_eq]
+  simp_all
 
 lemma neg_inv_one_add_mem (z : ℍ) : 0 < (-1 / ((z : ℂ) + 1)).im := by
   rw [neg_inv_one_add_eq_ST_coe, coe_im]
@@ -190,7 +178,7 @@ lemma neg_inv_one_add_eq_ST (z : ℍ) :
 lemma neg_inv_eq_S_coe (z : ℍ) :
     -1 / z = UpperHalfPlane.coe (S • z) := by
   rw [specialLinearGroup_apply]
-  simp_all [S_eq]
+  simp_all
 
 lemma neg_inv_mem (z : ℍ) : 0 < (-1 / (z : ℂ)).im := by
   rw [neg_inv_eq_S_coe, coe_im]
@@ -200,6 +188,19 @@ lemma neg_inv_eq_S (z : ℍ) :
     ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
   apply UpperHalfPlane.ext
   rw [← neg_inv_eq_S_coe]
+
+/-- The Möbius map `w ↦ -1/w` sends the upper-half-plane set `ℍ₀ ⊆ ℂ` to itself.
+    (Set-level analogue of `neg_inv_mem`, which is stated for the subtype `ℍ`.) -/
+theorem neg_inv_mem_of_mem {w : ℂ} (hw : w ∈ ℍ₀) : -1 / w ∈ ℍ₀ := by
+  simpa [neg_div, one_div] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w, hw⟩
+
+/-- `w ↦ -1/w` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_mapsto : MapsTo (fun w : ℂ ↦ -1 / w) ℍ₀ ℍ₀ := fun _ hw ↦ neg_inv_mem_of_mem hw
+
+/-- For a real shift `c` (`c.im = 0`), `z ↦ -1/(z + c)` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_add_mapsto {c : ℂ} (hc : c.im = 0) :
+    MapsTo (fun z : ℂ ↦ -1 / (z + c)) ℍ₀ ℍ₀ := fun z hz ↦
+  neg_inv_mem_of_mem (show z + c ∈ ℍ₀ by rw [mem_ofPred_eq, add_im, hc, add_zero]; exact hz)
 
 end transforms_mem
 
