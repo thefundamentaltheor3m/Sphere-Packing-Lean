@@ -5,7 +5,7 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.MagicFunction.a.Phi
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.Delta
 
