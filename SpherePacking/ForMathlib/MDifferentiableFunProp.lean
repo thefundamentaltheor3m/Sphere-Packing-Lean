@@ -22,6 +22,11 @@ theorem E₄_MDifferentiable : MDiff E₄.toFun := E₄.holo'
 
 theorem E₆_MDifferentiable : MDiff E₆.toFun := E₆.holo'
 
+/-- Modular forms are `MDifferentiable`; the generic form lets `fun_prop` handle coerced modular
+forms such as Mathlib's `ModularForm.E₄`. -/
+theorem ModularForm.mdifferentiable {Γ : Subgroup (Matrix.GeneralLinearGroup (Fin 2) ℝ)} {k : ℤ}
+    (f : ModularForm Γ k) : MDiff f := f.holo'
+
 /-
 Register `MDifferentiable` as a `fun_prop` so that we can use it in `fun_prop`-based proofs.
 To be upstreamed in mathlib PR [#33808](https://github.com/leanprover-community/mathlib4/pull/33808)
@@ -38,3 +43,4 @@ attribute [fun_prop]
   mdifferentiable_const
   E₄_MDifferentiable
   E₆_MDifferentiable
+  ModularForm.mdifferentiable

@@ -76,13 +76,12 @@ private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
 
 private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (-2 : ℤ) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [SL_slash_apply, ModularGroup.denom_S]
 
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe, pow_two]
+  rw [SL_slash_apply, ModularGroup.denom_S]
+  simp
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
@@ -108,24 +107,24 @@ private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
   simp
 
 private lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T • z) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [SL_slash_apply, denom_apply]
+  simp [ModularGroup.coe_T]
 
 private lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) =  (F) (T • z) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [SL_slash_apply, denom_apply]
+  simp [ModularGroup.coe_T]
  -- no need for slashT'', as ← slashT already fulfils that role
 
 -- the following statements will be applied of F = H₂, H₃, H₄ or (H₃+H₄)/H₂^2
 private lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (-2 : ℤ) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe, Matrix.mul_apply, Fin.sum_univ_two]
+  rw [SL_slash_apply, denom_apply]
+  simp [ModularGroup.coe_S, ModularGroup.coe_T]
 
 private lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, denom]
-  simp [SpecialLinearGroup.map_apply_coe, Matrix.mul_apply, Fin.sum_univ_two, pow_two]
+  rw [SL_slash_apply, denom_apply]
+  simp [ModularGroup.coe_S, ModularGroup.coe_T]
 
 private lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
@@ -500,8 +499,8 @@ lemma ψS_slash_ST_apply (z : ℍ) :
     (ψS ∣[-2] (S * T)) z = ψS ⟨-1 / (z + 1), neg_inv_one_add_mem z⟩ * (z + 1) ^ 2 := by
   rw [SL_slash_apply ψS (S * T) z, ← neg_inv_one_add_eq_ST z]
   congr 1
-  rw [denom]
-  simp [SpecialLinearGroup.map_apply_coe, Matrix.mul_apply, Fin.sum_univ_two]
+  rw [denom_apply]
+  simp [ModularGroup.coe_S, ModularGroup.coe_T]
 
 lemma ψS_slash_ST_apply' (z : ℍ) : (ψS ∣[-2] (S * T)) z = ψS' (-1 / (z + 1)) * (z + 1) ^ 2 := by
   rw [ψS_slash_ST_apply, ← ψS'_eq_ψS_of_mem]
@@ -509,8 +508,8 @@ lemma ψS_slash_ST_apply' (z : ℍ) : (ψS ∣[-2] (S * T)) z = ψS' (-1 / (z + 
 lemma ψS_slash_S_apply (z : ℍ) : (ψS ∣[-2] S) z = ψS ⟨-1 / z, neg_inv_mem z⟩ * z ^ 2 := by
   rw [SL_slash_apply ψS S z, ← neg_inv_eq_S z]
   congr 1
-  rw [denom]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [ModularGroup.denom_S]
+  simp
 
 lemma ψS_slash_S_apply' (z : ℍ) : (ψS ∣[-2] S) z = ψS' (-1 / z) * z ^ 2 := by
   rw [ψS_slash_S_apply, ← ψS'_eq_ψS_of_mem]
