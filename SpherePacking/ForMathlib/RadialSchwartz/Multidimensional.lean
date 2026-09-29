@@ -53,7 +53,7 @@ def ofDecayOn {f : ℝ → ℂ} {a : ℝ}
         filter_upwards [eventually_lt_nhds hx] with y hy
         simp only [F', Real.smoothTransition.zero_of_nonpos (by linarith : y - a + 1 ≤ 0),
           Complex.ofReal_zero, zero_mul]
-      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds, iteratedFDeriv_zero_fun]
+      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds, iteratedFDeriv_fun_zero]
       simp
     · have hEq : F' =ᶠ[nhds x] f := by
         filter_upwards [eventually_gt_nhds hx] with y hy
