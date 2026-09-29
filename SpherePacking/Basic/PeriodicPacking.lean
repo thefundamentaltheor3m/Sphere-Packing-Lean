@@ -82,7 +82,7 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     · exact fun x hx ↦ h_volume x (ht_subset hx)
     · exact Set.Pairwise.mono ht_subset h_disjoint
     · exact ht_infinite.not_finite h_wlog
-  · haveI : Countable s := h_countable
+  · have : Countable s := h_countable
     obtain ⟨L, hL⟩ := h_bounded.subset_ball 0
     have h_volume' := volume.mono hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure, Set.biUnion_eq_iUnion,
@@ -105,7 +105,7 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     · exact fun ⟨x, hx⟩ ↦ h_measurable x hx
 
 lemma aux4 (hD_isBounded : IsBounded D) (hd : 0 < d) : Finite ↑(S.centers ∩ D) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   apply aux3 (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))) ?_ ?_
       (aux1 S D hD_isBounded)
   · intros
@@ -158,13 +158,17 @@ theorem PeriodicSpherePacking.orbitRel_fract
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     (D : Set (EuclideanSpace ℝ (Fin d))) (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
-    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) where
+    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D) :=
+  -- `ExistsUnique` is a semireducible definition, so restate it in unfolded form once here.
+  have hD_unique_covers : ∀ x, ∃ g : S.lattice, g +ᵥ x ∈ D ∧ ∀ y : S.lattice, y +ᵥ x ∈ D → y = g :=
+    fun x ↦ hD_unique_covers x
+  {
   toFun := by
     refine Quotient.lift ?_ ?_
     · intro s
       let g := Classical.choose (hD_unique_covers s.val)
-      use g.val + s.val, S.lattice_action g.prop s.prop,
-        (Classical.choose_spec (hD_unique_covers s.val)).left
+      exact ⟨g.val + s.val, Set.mem_inter (S.lattice_action g.prop s.prop)
+        (Classical.choose_spec (hD_unique_covers s.val)).left⟩
     · intro ⟨u, hu⟩ ⟨v, hv⟩ h
       change (S.addAction.orbitRel).r ⟨u, hu⟩ ⟨v, hv⟩ at h
       rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
@@ -182,7 +186,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
         change (Classical.choose _ : S.lattice).val + (y + v) ∈ D at this
         simp only [Subtype.forall] at this
         exact this
-  invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
+  invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, Set.mem_of_mem_inter_left hx⟩⟧
   left_inv := by
     apply Quotient.ind
     intro ⟨a, ha⟩
@@ -198,8 +202,8 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     · apply hg'
       exact (Classical.choose_spec (hD_unique_covers x)).left
     · apply (hg' 0 ?_).symm
-      set_option backward.isDefEq.respectTransparency false in
-      simpa using hx.right
+      simpa using Set.mem_of_mem_inter_right hx
+  }
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
@@ -224,9 +228,10 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   apply (S.addActionOrbitRelEquiv' b).trans
   exact {
-    toFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦ by
+    toFun := fun ⟨u, hu⟩ ↦ by
+      have hu_centers := Set.mem_of_mem_inter_left hu
       use u - floor (b.ofZLatticeBasis ℝ _) (u - v)
-      constructor
+      refine Set.mem_inter ?_ ?_
       · rw [sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
@@ -235,21 +240,24 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         use fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, ?_
         rw [fract, vadd_eq_add]
         abel
-    invFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦ by
+    invFun := fun ⟨u, hu⟩ ↦ by
+      have hu_centers := Set.mem_of_mem_inter_left hu
       use fract (b.ofZLatticeBasis ℝ _) u
-      constructor
+      refine Set.mem_inter ?_ ?_
       · rw [fract, sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
         exact (mem_basis_Z_span ..).mp <| Submodule.coe_mem _
       · exact fract_mem_fundamentalDomain _ _
-    left_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
+    left_inv := fun ⟨u, hu⟩ ↦ by
+      have hu_fd := Set.mem_of_mem_inter_right hu
       simp_rw [Subtype.mk.injEq]
       rw [sub_eq_add_neg, fract_add_ZSpan]
       · exact fract_eq_self.mpr hu_fd
       · apply neg_mem
         exact Submodule.coe_mem _
-    right_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
+    right_inv := fun ⟨u, hu⟩ ↦ by
+      have hu_fd := Set.mem_of_mem_inter_right hu
       simp_rw [Subtype.mk.injEq]
       rw [← EmbeddingLike.apply_eq_iff_eq (b.ofZLatticeBasis ℝ _).repr, map_sub]
       have hu_fd' : u - v ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
@@ -320,7 +328,7 @@ theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hd : 0 < d) :
     haveI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
-  letI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+  let := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
   exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
@@ -338,7 +346,7 @@ theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     haveI := @Fintype.ofFinite _ <| aux4' S b hd
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
-  letI := @Fintype.ofFinite _ <| aux4' S b hd
+  let := @Fintype.ofFinite _ <| aux4' S b hd
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
   exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
@@ -354,8 +362,8 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| aux4'' S b hd v
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
-  letI := Fintype.ofFinite ι
-  letI := @Fintype.ofFinite _ <| aux4'' S b hd v
+  let := Fintype.ofFinite ι
+  let := @Fintype.ofFinite _ <| aux4'' S b hd v
   rw [numReps]
   convert Finset.card_eq_of_equiv_fintype ?_
   exact (Equiv.subtypeEquivRight (fun x => by rw [Set.mem_toFinset])).trans
@@ -393,7 +401,7 @@ noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (
 theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
   0 ≤ S.numReps' hd hD_isBounded := by
-  letI := S.instFintypeNumReps' hd hD_isBounded
+  let := S.instFintypeNumReps' hd hD_isBounded
   rw [PeriodicSpherePacking.numReps']
   exact Nat.zero_le (Fintype.card ↑(S.centers ∩ D))
 
@@ -401,7 +409,7 @@ theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d) 
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
   S.numReps = S.numReps' hd hD_isBounded := by
-  letI := S.instFintypeNumReps' hd hD_isBounded
+  let := S.instFintypeNumReps' hd hD_isBounded
   rw [PeriodicSpherePacking.numReps']
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
   exact Set.toFinset_card (S.centers ∩ D)
@@ -858,7 +866,7 @@ private lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
 theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rcases le_iff_eq_or_lt.mp hC with (rfl | hC)
   · simp_rw [add_zero]
     apply Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
@@ -890,7 +898,7 @@ theorem volume_ball_ratio_tendsto_nhds_one'
       Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
   -- I love ENNReal (I don't)
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   apply Tendsto.congr' (f₁ := fun R ↦
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
@@ -1155,7 +1163,7 @@ theorem PeriodicSpherePacking.density_eq'
   apply congrArg _ _
   refine (ENNReal.toReal_eq_toReal_iff' ?hx ?hy).mp ?_
   · rw [← lt_top_iff_ne_top]
-    letI := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
+    let := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
     exact IsBounded.measure_lt_top this
   · exact ENNReal.coe_ne_top
   · rw [ENNReal.coe_toReal, NNReal.coe_mk]
@@ -1181,7 +1189,7 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   simp only [Set.toFinset_card, ENat.toENNReal_coe, ENNReal.div_eq_zero_iff, mul_eq_zero,
     Nat.cast_eq_zero, ENNReal.coe_ne_top, or_false]
   left
-  letI instFintype := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+  let instFintype := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
   rw [Fintype.card_eq_zero_iff]
   refine Set.isEmpty_coe_sort.mpr ?h.a
   suffices S.centers = ∅ by
