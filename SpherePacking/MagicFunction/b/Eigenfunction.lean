@@ -16,7 +16,7 @@ This file establishes that the function `b` is a `-1`-eigenfunction of the Fouri
 
 @[expose] public section
 
-open MagicFunction.b.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
+open MagicFunction.b.RadialSchwartzIntegrals MagicFunction.FourierEigenfunctions RadialSchwartzMap
 
 open scoped FourierTransform
 
@@ -24,54 +24,26 @@ namespace MagicFunction.b.Fourier
 
 section Integral_Permutations
 
-theorem perm_J₁_J₂ : (FourierTransform.fourierCLE ℂ _) (J₁ + J₂) = -(J₃ + J₄) := by sorry
+theorem perm_J₁_J₂ : 𝓕 (J₁ + J₂) = -(J₃ + J₄) := by sorry
 
-theorem perm_J₅ : (FourierTransform.fourierCLE ℂ _) (J₅) = -J₆ := by sorry
+theorem perm_J₅ : 𝓕 J₅ = -J₆ := by sorry
 
--- Should use results from `RadialSchwartz.Radial` and linearity to prove the reverse.
+theorem perm_J₃_J₄ : 𝓕 (J₃ + J₄) = -(J₁ + J₂) := by
+  rw [← neg_neg (J₃ + J₄), ← perm_J₁_J₂, FourierTransform.fourier_neg, fourier_apply_apply]
 
-theorem perm_₃_J₄ : (FourierTransform.fourierCLE ℂ _) (J₃ + J₄) = -(J₁ + J₂) := by
-  have h₁ :
-      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₁) = J₁ := by
-    ext x
-    change 𝓕 (𝓕 ⇑J₁) x = J₁ x
-    simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
-      Real.fourierInv_eq_fourier_neg, neg_neg] using
-        congrArg (· (-x)) (J₁.continuous.fourierInv_fourier_eq J₁.integrable
-          ((FourierTransform.fourierCLE ℂ _) J₁).integrable)
-  have h₂ :
-      (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) J₂) = J₂ := by
-    ext x
-    change 𝓕 (𝓕 ⇑J₂) x = J₂ x
-    simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
-      Real.fourierInv_eq_fourier_neg, neg_neg] using
-        congrArg (· (-x)) (J₂.continuous.fourierInv_fourier_eq J₂.integrable
-          ((FourierTransform.fourierCLE ℂ _) J₂).integrable)
-  simpa only [neg_add_rev, add_comm, map_add, map_neg, neg_neg, h₁, h₂] using
-    congrArg (-(FourierTransform.fourierCLE ℂ _) ·) perm_J₁_J₂ |>.symm
-
-theorem perm_J₆ : (FourierTransform.fourierCLE ℂ _) (J₆) = -J₅ := by
-  let F := FourierTransform.fourierCLE ℂ 𝓢(EuclideanSpace ℝ (Fin 8), ℂ)
-  have h : F.symm J₆ = F J₆ := by
-    ext x
-    simp only [F, FourierTransform.fourierCLE_symm_apply, FourierTransform.fourierCLE_apply,
-      fourier_coe, fourierInv_coe, Real.fourierInv_eq_fourier_comp_neg]
-    suffices (fun x ↦ J₆ (-x)) = ⇑J₆ by exact congr(𝓕 $this x)
-    ext
-    simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
-  have := (congrArg F.symm perm_J₅).symm
-  simp only [F, map_neg, ContinuousLinearEquiv.symm_apply_apply, ← h] at this ⊢
-  rw [← this, neg_neg]
+theorem perm_J₆ : 𝓕 J₆ = -J₅ := by
+  rw [← neg_neg J₆, ← perm_J₅, FourierTransform.fourier_neg, fourier_apply_apply]
 
 end Integral_Permutations
 
 section Eigenfunction
 
-theorem eig_b : (FourierTransform.fourierCLE ℂ _) b = -b := by
-  rw [b_eq_sum_integrals_SchwartzIntegrals]
-  have hrw : J₁ + J₂ + J₃ + J₄ + J₅ + J₆ = (J₁ + J₂) + (J₃ + J₄) + J₅ + J₆ := by ac_rfl
-  rw [hrw, map_add, map_add, map_add, perm_J₁_J₂, perm_J₅, perm_₃_J₄, perm_J₆]
-  abel
+theorem eig_b : 𝓕 b = -b := calc
+  _ = 𝓕 (J₁ + J₂ + J₃ + J₄ + J₅ + J₆) := by rw [b_eq_sum_RadialSchwartzIntegrals]
+  _ = 𝓕 (J₁ + J₂) + 𝓕 (J₃ + J₄) + 𝓕 J₅ + 𝓕 J₆ := by simp only [FourierAdd.fourier_add]; ac_rfl
+  _ = -(J₃ + J₄) + -(J₁ + J₂) + -J₆ + -J₅ := by
+      rw [perm_J₁_J₂, perm_J₃_J₄, perm_J₅, perm_J₆]
+  _ = _ := by rw [b_eq_sum_RadialSchwartzIntegrals]; abel
 
 end Eigenfunction
 

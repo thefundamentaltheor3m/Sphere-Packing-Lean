@@ -85,7 +85,7 @@ $G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{cor:t
 \begin{corollary}\label{cor:ineqAnew}\uses{lemma:F-G-pos}\lean{FG_inequality_1}\leanok
 \eqref{eqn:ineqAnew} holds.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 This directly follows from Lemma \ref{lemma:F-G-pos}.
 \end{proof}
 
@@ -97,7 +97,7 @@ $F$ and $G$ satisfy the following differential equations:
     \partial_{12}\partial_{10} G - \frac{5}{6} E_{4} G &= -640 \Delta H_{2} \label{eqn:ddg}
 \end{align}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 Both can be shown by direct computations.
 By Ramanujan's identities (Theorem \ref{thm:ramanujan-formula}) and the product rule of Serre derivatives (Theorem \ref{thm:serre-der-prod-rule}), we have
 \begin{align}
@@ -158,7 +158,7 @@ We have
     \lim_{t \to 0^+} Q(t) = \frac{18}{\pi^2}.
 \end{equation}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 We have
 \begin{equation}
     \lim_{t \to 0^+} Q(t) = \lim_{t \to 0^+} \frac{F(it)}{G(it)} = \lim_{t \to \infty} \frac{F(i/t)}{G(i/t)}.
@@ -194,7 +194,7 @@ Let $F$ be a quasimodular form where the vanishing order of $F$ at infinity is $
 \begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:MLDE-pos, thm:anti-serre-der-pos, lemma:log-der-inf}\lean{FmodG_strictAntiOn}\leanok
 The function $t \mapsto Q(t)$ is strictly decreasing.
 \end{proposition}
-\begin{proof}
+\begin{proof}\leanok
 It is enough to show that
 \begin{align}
     \frac{\dd}{\dd t} \left(\frac{F(it)}{G(it)}\right) < 0 &\Leftrightarrow (- 2\pi) \frac{F'(it)G(it) - F(it) G'(it)}{G(it)^{2}} < 0 \\
@@ -220,10 +220,10 @@ Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem \ref{thm:anti-serre-der-pos}, and 
 \end{proof}
 
 
-\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}
+\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}\leanok
 \eqref{eqn:ineqBnew} holds.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 \begin{equation}
     \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2}
 \end{equation}

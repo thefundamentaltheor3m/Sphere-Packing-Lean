@@ -16,7 +16,7 @@ This file establishes that the function `a` is a `+1`-eigenfunction of the Fouri
 
 @[expose] public section
 
-open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
+open MagicFunction.a.RadialSchwartzIntegrals MagicFunction.FourierEigenfunctions RadialSchwartzMap
 
 open scoped FourierTransform
 
@@ -24,51 +24,23 @@ namespace MagicFunction.a.Fourier
 
 section Integral_Permutations
 
-lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
-    [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
-    (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = fun x => f (-x) :=
-by
-  ext x; change 𝓕 (𝓕 ⇑f) x = f (-x)
-  simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using
-    congrArg (fun g : V → E => g (-x))
-      (f.continuous.fourierInv_fourier_eq
-        f.integrable ((FourierTransform.fourierCLE ℂ _) f).integrable)
+theorem perm_I₁_I₂ : 𝓕 (I₁ + I₂) = I₃ + I₄ := by sorry
 
-lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
-    [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) (hf : Function.Even f) :
-    (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = f :=
-by
-  ext x; simpa [hf x] using congrArg (fun g => g x) (fourier_involution (V:=V) (E:=E) f)
+theorem perm_I₅ : 𝓕 I₅ = I₆ := by sorry
 
-theorem perm_I₁_I₂ : (FourierTransform.fourierCLE ℂ _) (I₁ + I₂) = I₃ + I₄ := by sorry
+theorem perm_I₃_I₄ : 𝓕 (I₃ + I₄) = I₁ + I₂ := by simp [← perm_I₁_I₂]
 
-theorem perm_I₅ : (FourierTransform.fourierCLE ℂ _) (I₅) = I₆ := by sorry
-
--- Should use results from `RadialSchwartz.Radial` to prove the reverse.
-
-theorem perm_₃_I₄ : (FourierTransform.fourierCLE ℂ _) (I₃ + I₄) = I₁ + I₂ := by
-  exact perm_I₁_I₂ ▸
-    radial_inversion (I₁ + I₂) (fun _ => by
-      simp [I₁, I₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
-
--- should use fourier_involution and the radial symmetry of I₅
-theorem perm_I₆ : (FourierTransform.fourierCLE ℂ _) (I₆) = I₅ :=
-by
-  simpa [← perm_I₅] using
-    radial_inversion I₅ (fun _ => by
-      simp [I₅, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
+theorem perm_I₆ : 𝓕 I₆ = I₅ := by simp [← perm_I₅]
 
 end Integral_Permutations
 
 section Eigenfunction
 
-theorem eig_a : (FourierTransform.fourierCLE ℂ _) a = a := by
-  rw [a_eq_sum_integrals_SchwartzIntegrals]
-  have hrw : I₁ + I₂ + I₃ + I₄ + I₅ + I₆ = (I₁ + I₂) + (I₃ + I₄) + I₅ + I₆ := by ac_rfl
-  rw [hrw, map_add, map_add, map_add, perm_I₁_I₂, perm_I₅, perm_₃_I₄, perm_I₆]
-  ac_rfl
+theorem eig_a : 𝓕 a = a := calc
+  _ = 𝓕 (I₁ + I₂ + I₃ + I₄ + I₅ + I₆) := by rw [a_eq_sum_RadialSchwartzIntegrals]
+  _ = 𝓕 (I₁ + I₂) + 𝓕 (I₃ + I₄) + 𝓕 I₅ + 𝓕 I₆ := by simp only [FourierAdd.fourier_add]; ac_rfl
+  _ = (I₃ + I₄) + (I₁ + I₂) + I₆ + I₅ := by rw [perm_I₁_I₂, perm_I₃_I₄, perm_I₅, perm_I₆]
+  _ = _ := by rw [a_eq_sum_RadialSchwartzIntegrals]; ac_rfl
 
 end Eigenfunction
 end MagicFunction.a.Fourier

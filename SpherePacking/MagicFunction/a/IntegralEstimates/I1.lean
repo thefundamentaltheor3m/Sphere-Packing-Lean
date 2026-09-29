@@ -220,11 +220,6 @@ theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
   _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
   _ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := hC₀
 
--- The following may be useful:
--- #check MeasureTheory.integral_mono_of_nonneg -- integrability can't be avoided...
--- #check MeasureTheory.setLIntegral_mono
--- #check MeasureTheory.setIntegral_mono_on
-
 end Bounding_Integral
 
 end Bounding
