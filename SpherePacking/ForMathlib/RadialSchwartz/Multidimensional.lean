@@ -36,44 +36,35 @@ smooth transition function. -/
 @[simps!]
 def ofDecayOn {f : ℝ → ℂ} {a : ℝ}
     (smooth : ContDiff ℝ ∞ f)
-    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a - 1 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     𝓢(ℝ, ℂ) :=
   let F' : ℝ → ℂ := fun x ↦ Real.smoothTransition (x - a + 1) * f x
   SchwartzMap.mkOfCocompact F' (by fun_prop) <| by
     intro k n
     obtain ⟨C, hC⟩ := decay k n
-    use C
+    use max C 0
     rw [Filter.Eventually, Filter.mem_cocompact]
     use Set.Icc (a - 1) a, isCompact_Icc
     intro x hx
     simp only [Set.mem_compl_iff, Set.mem_Icc, not_and_or, not_le] at hx
     simp only [Set.mem_setOf_eq]
     obtain hx | hx := hx
-    · have h1 : iteratedFDeriv ℝ n F' x = iteratedFDerivWithin ℝ n F' (Iio (a - 1)) x :=
-        (iteratedFDerivWithin_of_isOpen _ isOpen_Iio).symm (by simpa)
-      have h2 : iteratedFDerivWithin ℝ n F' (Iio (a - 1)) x =
-          iteratedFDerivWithin ℝ n 0 (Iio (a - 1)) x := by
-        apply iteratedFDerivWithin_congr _ (by grind)
-        intro y hy
-        simp only [Pi.zero_apply, mul_eq_zero, Complex.ofReal_eq_zero, F']
-        grind [Real.smoothTransition.zero_iff_nonpos]
-      rw [h1, h2]
-      grw [← hC (a - 1) (by simp)]
-      simp only [Real.norm_eq_abs, iteratedFDerivWithin_zero, Pi.zero_apply, norm_zero, mul_zero]
-      positivity
-    · have : iteratedFDeriv ℝ n F' x = iteratedFDeriv ℝ n f x := by calc
-        _ = iteratedFDerivWithin ℝ n F' (Ioi a) x :=
-            (iteratedFDerivWithin_of_isOpen _ isOpen_Ioi).symm (by grind)
-        _ = iteratedFDerivWithin ℝ n f (Ioi a) x := by
-            apply iteratedFDerivWithin_congr _ (by grind)
-            grind [Set.EqOn, Real.smoothTransition.eq_one_iff_one_le, Complex.ofReal_one]
-        _ = iteratedFDeriv ℝ n f x :=
-            iteratedFDerivWithin_of_isOpen _ isOpen_Ioi (by grind)
-      grind
+    · have hEq : F' =ᶠ[nhds x] fun _ ↦ 0 := by
+        filter_upwards [eventually_lt_nhds hx] with y hy
+        simp only [F', Real.smoothTransition.zero_of_nonpos (by linarith : y - a + 1 ≤ 0),
+          Complex.ofReal_zero, zero_mul]
+      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds, iteratedFDeriv_zero_fun]
+      simp
+    · have hEq : F' =ᶠ[nhds x] f := by
+        filter_upwards [eventually_gt_nhds hx] with y hy
+        simp only [F', Real.smoothTransition.one_of_one_le (by linarith : 1 ≤ y - a + 1),
+          Complex.ofReal_one, one_mul]
+      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds]
+      exact (hC x hx.le).trans (le_max_left _ _)
 
 theorem ofDecayOn_eqOn {f : ℝ → ℂ} {a : ℝ}
     (smooth : ContDiff ℝ ∞ f)
-    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a - 1 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     Set.EqOn f (ofDecayOn smooth decay) (Set.Ici a) := by
   grind [ofDecayOn, mkOfCocompact_toFun, Set.EqOn, Real.smoothTransition.eq_one_iff_one_le,
     Complex.ofReal_one, SchwartzMap.mkOfCocompact, mk_apply]
@@ -106,7 +97,7 @@ def toRadialSchwartzMap (f : 𝓢(ℝ, ℂ)) : RadialSchwartzMap 𝕜 F ℂ :=
 @[simps!]
 def _root_.RadialSchwartzMap.ofDecay {f : ℝ → ℂ} {a : ℝ}
     (smooth : ContDiff ℝ ∞ f)
-    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a - 1 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     RadialSchwartzMap 𝕜 F ℂ :=
   (ofDecayOn smooth decay).toRadialSchwartzMap F
 

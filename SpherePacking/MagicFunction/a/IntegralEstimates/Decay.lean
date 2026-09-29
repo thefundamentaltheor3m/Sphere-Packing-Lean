@@ -35,6 +35,15 @@ theorem integrableOn_exp_mul_const_mul_pow_Ici {a c : ℝ} (ha : 0 ≤ a) (hc : 
   rw [rpow_one, rpow_natCast, neg_neg]
   ring
 
+/-- For `0 < b`, the `n`-th moment of `s ↦ exp (-b * s)` on `[0, ∞)` is `n! / b ^ (n + 1)`. -/
+lemma integral_exp_mul_pow_Ici (n : ℕ) {b : ℝ} (hb : 0 < b) :
+    (∫ s in Ici (0 : ℝ), exp (-b * s) * s ^ n) = (n.factorial : ℝ) / b ^ (n + 1) := by
+  rw [integral_Ici_eq_integral_Ioi]
+  have h := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := (n : ℝ) + 1) (by positivity) hb
+  rw [Real.rpow_add (by positivity), Real.rpow_natCast, Real.rpow_one] at h
+  simpa [Real.rpow_natCast, neg_mul, Real.Gamma_nat_eq_factorial,
+    pow_succ, one_div, inv_pow, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using h
+
 namespace MagicFunction
 
 open Nat
@@ -76,54 +85,8 @@ theorem pow_mul_integral_le {r : ℝ} (hr : 0 ≤ r) {n : ℕ} :
       · filter_upwards with x
         change x ∈ Set.Ici 1 → x ∈ Set.Ici 0
         grind
-  _ = (n / π * rexp (-1)) ^ n *
-        ∫ s in Ici (0 : ℝ), 1 / (2 * π) ^ n * rexp (-2 * π * s) * (2 * π * s) ^ n := by
-      congr with s
-      field
-  _ = (n / π * rexp (-1)) ^ n * 1 / (2 * π) ^ n *
-        ∫ s in Ici (0 : ℝ), rexp (-2 * π * s) * (2 * π * s) ^ n := by
-      rw [mul_div_assoc, mul_assoc]
-      congr 1
-      simp only [← smul_eq_mul (a := 1 / (2 * π) ^ n), ← integral_smul]
-      grind [smul_eq_mul (a := 1 / (2 * π) ^ n)]
-  _ = (n / π * rexp (-1)) ^ n * 1 / (2 * π) ^ (n + 1) * Gamma (n + 1) := by
-      rw [Gamma_eq_integral (by positivity), mul_div_assoc, mul_div_assoc,
-        show 1 / (2 * π) ^ (n + 1) = 1 / (2 * π) ^ n * 1 / (2 * π) by field,
-        mul_assoc, mul_assoc, mul_div_assoc, mul_assoc]
-      congr 2
-      -- Now this is a change of variables inside an integral
-      let f : ℝ → ℝ := fun x ↦ 2 * π * x
-      let f' : ℝ → ℝ := fun _ ↦ 2 * π
-      let g : ℝ → ℝ := fun x ↦ rexp (-x) * x ^ n
-      let s : Set ℝ := Ici 0
-      have hs : MeasurableSet s := measurableSet_Ici
-      have hf' : ∀ x ∈ s, HasDerivWithinAt f (f' x) s x := by
-        intro x hx
-        convert_to HasDerivWithinAt ((2 * π) • id) ((2 * π) • 1) s x
-        · aesop
-        · aesop
-        exact (hasDerivWithinAt_id x s).fun_const_smul (c := (2 * π))
-      have hf : InjOn f s := by aesop
-      rw [← integral_Ici_eq_integral_Ioi]
-      convert_to ∫ (x : ℝ) in s, g (f x) = 1 / (2 * π) * ∫ (x : ℝ) in s, g x
-      · simp [s, g, f]
-      · simp [s, g]
-      have hfs : f '' s = s := by
-        ext x
-        simp only [mem_image, mem_Ici, s]
-        constructor <;> intro hx
-        · obtain ⟨y, hy₁, hy₂⟩ := hx
-          rw [← hy₂]
-          positivity
-        · refine ⟨x / (2 * π), by positivity, ?_⟩
-          field
-      conv_rhs => rw [← hfs]
-      simp only [integral_image_eq_integral_abs_deriv_smul hs hf' hf g, f', integral_smul]
-      rw [smul_eq_mul, ← mul_assoc]
-      conv_lhs => rw [← one_mul (a := ∫ _ in _, _)]
-      congr
-      rw [abs_mul, abs_of_nonneg (pi_nonneg), abs_of_nonneg (by positivity)]
-      field_simp
-  _ = _ := by rw [Gamma_nat_eq_factorial n]; field
+  _ = _ := by
+      rw [mul_div_assoc, ← integral_exp_mul_pow_Ici (b := 2 * π) n (by positivity)]
+      simp only [neg_mul]
 
 end MagicFunction
