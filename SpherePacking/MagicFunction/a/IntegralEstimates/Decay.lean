@@ -30,7 +30,7 @@ theorem integrableOn_exp_mul_const_mul_pow_Ici {a c : ℝ} (ha : 0 ≤ a) (hc : 
     (n : ℕ) : IntegrableOn (fun s : ℝ => rexp (c * s) * (d * s ^ n)) (Ici a) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
   refine IntegrableOn.congr_fun (((integrableOn_rpow_mul_exp_neg_mul_rpow (s := n) (p := 1)
-    (b := -c) (neg_one_lt_zero.trans_le n.cast_nonneg) le_rfl (neg_pos.2 hc)).mono_set
+    (b := -c) (neg_one_lt_zero.trans_le n.cast_nonneg) zero_lt_one (neg_pos.2 hc)).mono_set
     (Ioi_subset_Ioi ha)).const_mul d) (fun s _ => ?_) measurableSet_Ioi
   rw [rpow_one, rpow_natCast, neg_neg]
   ring
