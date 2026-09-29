@@ -587,7 +587,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
         -- intro hContra
         -- rw [← P.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers Fact.out]
         unfold PeriodicSpherePacking.numReps
-        haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
+        have : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
           rw [nonempty_quotient_iff]
           assumption
         exact Fintype.card_ne_zero
