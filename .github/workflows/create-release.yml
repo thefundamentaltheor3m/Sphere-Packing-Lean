@@ -37,6 +37,23 @@ jobs:
         fi
 
     - name: lean-release-tag action
+      id: tag
+      continue-on-error: true
+      uses: leanprover-community/lean-release-tag@9ca7ed09e240259871327bfc3a3a8d8c4bcb41aa # 2025-08-02
+      with:
+        before: ${{ steps.range.outputs.before }}
+        after: ${{ steps.range.outputs.after }}
+        do-release: true
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Pushing the tag occasionally fails with a transient GitHub server error,
+    # so retry once after a short wait. Tags that already exist are skipped.
+    - name: Wait before retrying
+      if: steps.tag.outcome == 'failure'
+      run: sleep 60
+
+    - name: lean-release-tag action (retry)
+      if: steps.tag.outcome == 'failure'
       uses: leanprover-community/lean-release-tag@9ca7ed09e240259871327bfc3a3a8d8c4bcb41aa # 2025-08-02
       with:
         before: ${{ steps.range.outputs.before }}
