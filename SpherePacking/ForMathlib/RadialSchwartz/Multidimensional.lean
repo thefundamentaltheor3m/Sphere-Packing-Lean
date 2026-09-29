@@ -47,7 +47,7 @@ def ofDecayOn {f : ℝ → ℂ} {a : ℝ}
     use Set.Icc (a - 1) a, isCompact_Icc
     intro x hx
     simp only [Set.mem_compl_iff, Set.mem_Icc, not_and_or, not_le] at hx
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     obtain hx | hx := hx
     · have hEq : F' =ᶠ[nhds x] fun _ ↦ 0 := by
         filter_upwards [eventually_lt_nhds hx] with y hy
