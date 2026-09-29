@@ -261,7 +261,8 @@ lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H
 This follows from `ψS_eq'`, the Jacobi identity `H₂ + H₄ = H₃`, and `Δ = (H₂H₃H₄)² / 256`. -/
 theorem ψS_eq_neg_one_half_smul_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ := by
   ext z
-  have hΔ := Δ_eq_H₂_H₃_H₄ z
+  have hΔ : Δ z = (1 / 256 : ℂ) * (H₂ z * H₃ z * H₄ z) ^ 2 := by
+    simpa using congrFun Δ_eq_H₂_H₃_H₄ z
   obtain ⟨⟨h₂, h₃⟩, h₄⟩ : (H₂ z ≠ 0 ∧ H₃ z ≠ 0) ∧ H₄ z ≠ 0 := by
     simpa [hΔ, not_or] using ModularForm.discriminant_ne_zero z
   have hJ : H₃ z = H₂ z + H₄ z := (congrFun jacobi_identity z).symm
