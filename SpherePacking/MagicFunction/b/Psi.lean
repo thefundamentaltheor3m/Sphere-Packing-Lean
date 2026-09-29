@@ -27,7 +27,7 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
--- namespace MagicFunction.b.psi
+-- namespace MagicFunction.b.Psi
 
 noncomputable section matrices
 

@@ -48,7 +48,7 @@ public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction
 public import SpherePacking.MagicFunction.b.Schwartz
 public import SpherePacking.MagicFunction.b.SpecialValues
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.Basic
 public import SpherePacking.MainTheorem
 public import SpherePacking.ModularForms.Delta
