@@ -1,13 +1,14 @@
 /-
-Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
+Copyright (c) 2026 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan, Raphael Appenzeller
+Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 -/
 module
 
 
 -- import Mathlib
 
+public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
@@ -26,7 +27,7 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
--- namespace MagicFunction.b.psi
+-- namespace MagicFunction.b.Psi
 
 noncomputable section matrices
 
@@ -254,6 +255,20 @@ lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H
   rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _,
     ← sub_neg_eq_add, ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
 -- proof of ψS_eq complete.
+
+/-- `ψS` in terms of the weight-10 form `G` and the discriminant: `ψS = -G / (2Δ)`.
+This follows from `ψS_eq'`, the Jacobi identity `H₂ + H₄ = H₃`, and `Δ = (H₂H₃H₄)² / 256`. -/
+theorem ψS_eq_neg_one_half_smul_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ := by
+  ext z
+  have hΔ := Δ_eq_H₂_H₃_H₄ z
+  obtain ⟨⟨h₂, h₃⟩, h₄⟩ : (H₂ z ≠ 0 ∧ H₃ z ≠ 0) ∧ H₄ z ≠ 0 := by
+    simpa [hΔ, not_or] using ModularForm.discriminant_ne_zero z
+  have hJ : H₃ z = H₂ z + H₄ z := (congrFun jacobi_identity z).symm
+  rw [hJ] at h₃ hΔ
+  rw [ψS_eq', G_eq]
+  simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply, Pi.add_apply,
+    Pi.smul_apply, smul_eq_mul, H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, hJ, hΔ]
+  field
 
 end eq
 
