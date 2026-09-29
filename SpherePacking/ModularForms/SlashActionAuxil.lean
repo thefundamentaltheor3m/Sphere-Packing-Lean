@@ -25,14 +25,26 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-def α : Γ 2 :=
-  ⟨⟨!![1, 2; 0, 1], by simp⟩, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+/-- The matrix `[[1, 2], [0, 1]]` as an element of `SL(2, ℤ)`. -/
+def αSL : SL(2, ℤ) := ⟨!![1, 2; 0, 1], by simp⟩
 
-def β : Γ 2 :=
-  ⟨⟨!![1, 0; 2, 1], by simp⟩, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+/-- The matrix `[[1, 0], [2, 1]]` as an element of `SL(2, ℤ)`. -/
+def βSL : SL(2, ℤ) := ⟨!![1, 0; 2, 1], by simp⟩
 
-def negI : Γ 2 :=
-  ⟨⟨!![-1, 0; 0, -1], by simp⟩, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+/-- The matrix `-I` as an element of `SL(2, ℤ)`. -/
+def negISL : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
+
+@[simp] theorem coe_αSL : (αSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 2; 0, 1] := rfl
+
+@[simp] theorem coe_βSL : (βSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 0; 2, 1] := rfl
+
+@[simp] theorem coe_negISL : (negISL : Matrix (Fin 2) (Fin 2) ℤ) = !![-1, 0; 0, -1] := rfl
+
+def α : Γ 2 := ⟨αSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def β : Γ 2 := ⟨βSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def negI : Γ 2 := ⟨negISL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
 
 theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [T]; decide⟩ := by
   ext i j
