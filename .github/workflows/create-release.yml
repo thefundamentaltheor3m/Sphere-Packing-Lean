@@ -6,6 +6,8 @@ on:
       - 'main'
     paths:
       - 'lean-toolchain'
+  # Allows retrying manually, e.g. if pushing the tag failed transiently.
+  workflow_dispatch:
 
 jobs:
   lean-release-tag:
@@ -14,10 +16,30 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: Checkout the repository
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        fetch-depth: 0
+
+    # On manual runs there is no push range, so use the most recent commit that
+    # changed `lean-toolchain`. The action skips tags that already exist.
+    - name: Determine commit range
+      id: range
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          latest=$(git log -1 --pretty=format:"%H" -- lean-toolchain)
+          echo "before=$(git rev-parse "$latest^")" >> "$GITHUB_OUTPUT"
+          echo "after=$latest" >> "$GITHUB_OUTPUT"
+        else
+          echo "before=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          echo "after=${{ github.event.after }}" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: lean-release-tag action
       uses: leanprover-community/lean-release-tag@9ca7ed09e240259871327bfc3a3a8d8c4bcb41aa # 2025-08-02
       with:
-        # before: ${{ github.event.before }}
-        # after: ${{ github.event.after }}
+        before: ${{ steps.range.outputs.before }}
+        after: ${{ steps.range.outputs.after }}
         do-release: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
