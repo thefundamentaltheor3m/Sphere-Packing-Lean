@@ -6,8 +6,6 @@ Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 module
 
 
--- import Mathlib
-
 public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
@@ -27,14 +25,9 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
--- namespace MagicFunction.b.Psi
-
 noncomputable section matrices
 
 /- The matrices `S` and `T` are given by `ModularGroup.S` and `ModularGroup.T`. -/
-
--- #check ModularGroup.S
--- #check ModularGroup.T
 
 def ModularGroup.I : SL(2, ℤ) := ⟨!![1, 0; 0, 1], by decide⟩
 
@@ -45,7 +38,7 @@ noncomputable section defs
 /- We begin by defining the `h` function. The `ψ` functions are defined in terms of `h`
 via slash actions. -/
 
-def h : ℍ → ℂ := 128 • (H₃_MF + H₄_MF) / (H₂_MF ^ 2)
+def h : ℍ → ℂ := 128 • (H₃ + H₄) / (H₂ ^ 2)
 
 def ψI : ℍ → ℂ := h - h ∣[-2] (S * T)
 def ψT : ℍ → ℂ := ψI ∣[-2] T
@@ -151,19 +144,19 @@ end aux
 
 /- We can now prove the main results of this section. Namely Lemma 7.16 in the blueprint -/
 
-lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H₂_MF) / H₃_MF ^ 2) := by
+lemma ψI_eq : ψI = 128 • ((H₃ + H₄) / (H₂ ^ 2) + (H₄ - H₂) / H₃ ^ 2) := by
   rw [ψI, h]
   conv_rhs => rw [smul_add]
-  conv_lhs => rw [sub_eq_add_neg, smul_div_assoc 128 (⇑H₃_MF + ⇑H₄_MF) (⇑H₂_MF ^ 2)]
+  conv_lhs => rw [sub_eq_add_neg, smul_div_assoc 128 (H₃ + H₄) (H₂ ^ 2)]
   simp only [Int.reduceNeg, add_right_inj]
-  have h2' (z : ℍ) : (H₂_MF : ℍ → ℂ) ((S * T) • z) =
-      ((H₂_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
+  have h2' (z : ℍ) : (H₂ : ℍ → ℂ) ((S * T) • z) =
+      ((H₂ : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
     simp only [slashST'']
-  have h3' (z : ℍ) : (H₃_MF : ℍ → ℂ) ((S * T) • z) =
-      ((H₃_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
+  have h3' (z : ℍ) : (H₃ : ℍ → ℂ) ((S * T) • z) =
+      ((H₃ : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
     simp only [slashST'']
-  have h4' (z : ℍ) : (H₄_MF : ℍ → ℂ) ((S * T) • z) =
-      ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
+  have h4' (z : ℍ) : (H₄ : ℍ → ℂ) ((S * T) • z) =
+      ((H₄ : ℍ → ℂ) ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
     simp only [slashST'']
   ext z
   rw [Pi.neg_apply, slashST']
@@ -171,7 +164,7 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
       128 • ((F3 ((S * T) • z) + F4 ((S * T) • z)) / ((F2 ((S * T) • z)) ^ 2)) := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
       Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
-  rw [rewriting, h2', h3' , h4', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, slash_mul, slash_mul, slash_mul,
+  rw [rewriting, h2', h3' , h4', slash_mul, slash_mul, slash_mul,
     H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash,
     SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
@@ -188,45 +181,44 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
   rw [sub_eq_add_neg]
 -- this completes the proof of ψI_eq
 
-lemma ψT_eq : ψT = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
+lemma ψT_eq : ψT = 128 * ((H₃ + H₄) / (H₂ ^ 2) + (H₂ + H₃) / H₄ ^ 2) := by
   rw [ψT, ψI_eq]
   ext z
   rw [slashT']
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
-  have H2slashT' (z : ℍ) : (H₂_MF : ℍ → ℂ) (T • z) = ((H₂_MF : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
-    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z ⇑H₂_MF))
-        (congrArg Complex.im (slashT z ⇑H₂_MF)))
-  have H3slashT' (z : ℍ) : (H₃_MF : ℍ → ℂ) (T • z) = ((H₃_MF : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
-    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z ⇑H₃_MF))
-        (congrArg Complex.im (slashT z ⇑H₃_MF)))
-  have H4slashT' (z : ℍ): (H₄_MF : ℍ → ℂ) (T • z) = ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
-    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z ⇑H₄_MF))
-        (congrArg Complex.im (slashT z ⇑H₄_MF)))
-  rw [H2slashT', H3slashT', H4slashT', H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action,
+  have H2slashT' (z : ℍ) : (H₂ : ℍ → ℂ) (T • z) = ((H₂ : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
+    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z H₂))
+        (congrArg Complex.im (slashT z H₂)))
+  have H3slashT' (z : ℍ) : (H₃ : ℍ → ℂ) (T • z) = ((H₃ : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
+    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z H₃))
+        (congrArg Complex.im (slashT z H₃)))
+  have H4slashT' (z : ℍ): (H₄ : ℍ → ℂ) (T • z) = ((H₄ : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
+    exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z H₄))
+        (congrArg Complex.im (slashT z H₄)))
+  rw [H2slashT', H3slashT', H4slashT', H₂_T_action, H₃_T_action,
     H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 -- proof of ψT_eq complete.
 
 -- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
 -- here is the description that can be found in Maryna's paper.
-lemma ψS_eq' : ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
+lemma ψS_eq' : ψS = 128 * ((H₄ - H₂) / (H₃ ^ 2) - (H₂ + H₃) / H₄ ^ 2) := by
   rw [ψS, ψI_eq]
   ext z
   rw [slashS']
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
-  have H2slashS'' (z : ℍ) : (H₂_MF : ℍ → ℂ) (S • z) =
-      ((H₂_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
-    exact slashS'' z ⇑H₂_MF
-  have H3slashS'' (z : ℍ) : (H₃_MF : ℍ → ℂ) (S • z) =
-      ((H₃_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
-    exact slashS'' z ⇑H₃_MF
-  have H4slashS'' (z : ℍ): (H₄_MF : ℍ → ℂ) (S • z) =
-      ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
-    exact slashS'' z ⇑H₄_MF
-  rw [H2slashS'', H3slashS'', H4slashS'', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, H₂_S_action,
-    H₃_S_action, H₄_S_action]
+  have H2slashS'' (z : ℍ) : (H₂ : ℍ → ℂ) (S • z) =
+      ((H₂ : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
+    exact slashS'' z H₂
+  have H3slashS'' (z : ℍ) : (H₃ : ℍ → ℂ) (S • z) =
+      ((H₃ : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
+    exact slashS'' z H₃
+  have H4slashS'' (z : ℍ): (H₄ : ℍ → ℂ) (S • z) =
+      ((H₄ : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
+    exact slashS'' z H₄
+  rw [H2slashS'', H3slashS'', H4slashS'', H₂_S_action, H₃_S_action, H₄_S_action]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
     exact ne_zero z
@@ -250,12 +242,10 @@ lemma ψS_eq' : ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H�
   nth_rw 2 [add_comm]
   rw [← sub_eq_add_neg, ← pow_two, ← pow_two, ← neg_add, ← neg_div', ← sub_eq_add_neg ]
   nth_rw 2 [add_comm]
--- proof of ψS_eq' complete.
 
-lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H₄_MF) / (H₃_MF ^ 2)) := by
-  rw [ψS_eq', sub_eq_add_neg (H₄_MF : ℍ → ℂ), add_comm (H₄_MF : ℍ → ℂ) _,
+lemma ψS_eq : ψS = 128 * (- ((H₂ + H₃) / H₄ ^ 2) - (H₂ - H₄) / (H₃ ^ 2)) := by
+  rw [ψS_eq', sub_eq_add_neg (H₄ : ℍ → ℂ), add_comm (H₄ : ℍ → ℂ) _,
     ← sub_neg_eq_add, ← neg_sub', neg_div, ← neg_add', add_comm, neg_add']
--- proof of ψS_eq complete.
 
 /-- `ψS` in terms of the weight-10 form `G` and the discriminant: `ψS = -G / (2Δ)`.
 This follows from `ψS_eq'`, the Jacobi identity `H₂ + H₄ = H₃`, and `Δ = (H₂H₃H₄)² / 256`. -/
@@ -268,7 +258,7 @@ theorem ψS_eq_neg_one_half_smul_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ :=
   rw [hJ] at h₃ hΔ
   rw [ψS_eq', G_eq]
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply, Pi.add_apply,
-    Pi.smul_apply, smul_eq_mul, H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, hJ, hΔ]
+    Pi.smul_apply, smul_eq_mul, hJ, hΔ]
   field
 
 end eq
@@ -280,18 +270,15 @@ lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   rw [ψT_eq , ψI_eq , slashT']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe, H₃_MF_coe, H₄_MF_coe,
-    H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [← slashT z H₂, ← slashT z H₃, ← slashT z H₄, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
--- proof of ψT_slash_T complete.
 
 lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
   ext z
   rw [ψS_eq' , ψI_eq , slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
-    H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z H₂, slashS'' z H₃, slashS'' z H₄, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -312,16 +299,15 @@ lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
   rw [div_self z_square_nonzero, mul_one, mul_assoc, ← pow_two, ← mul_div, ← div_div, mul_div,
     div_self z_square_nonzero, mul_one, ← mul_add]
   nth_rw 2 [add_comm]
--- proof of ψS_slash_S complete
 
 lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   ext z
   rw [ψS_eq', ψT_eq, slashST']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
-  rw [slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
-    slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash,
-    SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [slashST'' z H₂, slashST'' z H₃, slashST'' z H₄, slash_mul, slash_mul, slash_mul, H₂_S_action,
+    H₃_S_action, H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.neg_apply, neg_neg, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -349,21 +335,19 @@ lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   rw [ψS_eq', slashT']
   simp only [Pi.mul_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply,  Pi.sub_apply]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+  rw [← slashT z H₂, ← slashT z H₃, ← slashT z H₄,
     H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.ofNat_apply, Pi.neg_apply, sub_neg_eq_add, Pi.mul_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
   rw [sub_eq_add_neg, add_comm, ← sub_neg_eq_add, ← neg_sub', mul_neg, add_comm,
     ← sub_eq_add_neg, add_comm (H₃ z) _ ]
--- proof of ψS_slash_T complete
 
 lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   ext z
   rw [ψT_eq, slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.neg_apply]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
-    H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z H₂, slashS'' z H₃, slashS'' z H₄, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
