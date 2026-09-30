@@ -42,10 +42,8 @@ theorem g_zero : g 0 = 1 := by
   exact pi_ne_zero
 
 theorem fourier_g_zero : 𝓕 g 0 = 1 := by
-  have ha : 𝓕 a = a := eig_a
-  have hb : 𝓕 b = -b := eig_b
-  simp only [g, FourierAdd.fourier_add, FourierSMul.fourier_smul, ha, hb, add_apply, smul_apply,
-    a_zero, smul_eq_mul]
+  simp only [g, FourierAdd.fourier_add, FourierSMul.fourier_smul, eig_a, eig_b, add_apply,
+    smul_apply, a_zero, smul_eq_mul]
   have : (-b) 0 = -(b 0) := rfl
   ring_nf
   simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg, this, b_zero, neg_zero, mul_zero, one_div,

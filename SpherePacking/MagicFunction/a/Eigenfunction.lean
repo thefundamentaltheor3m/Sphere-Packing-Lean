@@ -64,7 +64,8 @@ end Integral_Permutations
 
 section Eigenfunction
 
-theorem eig_a : (FourierTransform.fourierCLE ℂ _) a = a := by
+theorem eig_a : 𝓕 a = a := by
+  change FourierTransform.fourierCLE ℂ _ a = a
   rw [a_eq_sum_integrals_SchwartzIntegrals]
   have hrw : I₁ + I₂ + I₃ + I₄ + I₅ + I₆ = (I₁ + I₂) + (I₃ + I₄) + I₅ + I₆ := by ac_rfl
   rw [hrw, map_add, map_add, map_add, perm_I₁_I₂, perm_I₅, perm_₃_I₄, perm_I₆]
