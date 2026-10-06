@@ -21,18 +21,28 @@ by zero outside the upper half plane.
 open UpperHalfPlane Complex
 
 /-- The quotient `(E₂E₄ - E₆)² / Δ`, the blueprint's `φ₀`. -/
-noncomputable def φ₀ (z : ℍ) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
+noncomputable def φ₀ (z : ℍ) := ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2 / Δ z
 
 /-- The quotient `E₄(E₂E₄ - E₆) / Δ`, the blueprint's `φ₋₂`. -/
-noncomputable def φ₂' (z : ℍ) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
+noncomputable def φ₂' (z : ℍ) := E₄ z * ((E₂ z) * (E₄ z) - (E₆ z)) / Δ z
 
 /-- The quotient `E₄² / Δ`, the blueprint's `φ₋₄`. -/
-noncomputable def φ₄' (z : ℍ) := ((E₄ z) ^ 2) / (Δ z)
+noncomputable def φ₄' (z : ℍ) := (E₄ z) ^ 2 / Δ z
 
 /-- The extension of `φ₀` to `ℂ`, vanishing outside the upper half plane. -/
 noncomputable def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
 
+/-- The extension of `φ₋₂` to `ℂ`, vanishing outside the upper half plane. -/
+noncomputable def φ₂'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₂' ⟨z, hz⟩ else 0
+
+/-- The extension of `φ₋₄` to `ℂ`, vanishing outside the upper half plane. -/
+noncomputable def φ₄'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₄' ⟨z, hz⟩ else 0
+
 lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by simp [φ₀'', hz]
+
+lemma φ₂''_def {z : ℂ} (hz : 0 < z.im) : φ₂'' z = φ₂' ⟨z, hz⟩ := by simp [φ₂'', hz]
+
+lemma φ₄''_def {z : ℂ} (hz : 0 < z.im) : φ₄'' z = φ₄' ⟨z, hz⟩ := by simp [φ₄'', hz]
 
 lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := φ₀''_def z.im_pos
 
