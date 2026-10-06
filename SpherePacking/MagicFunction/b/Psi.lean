@@ -52,39 +52,30 @@ section eq
 /- We express `ψI`, `ψT`, `ψS` in terms of the `H`-functions directly (Lemma 7.16 in the blueprint).
 The proofs distribute the slash action over `•`, `+`, `-`, `/` and `^ 2` at the level of functions,
 so that only the `S`- and `T`-actions on `H₂`, `H₃`, `H₄` remain; the resulting identity of
-functions is then checked pointwise by `ring`. -/
+functions is then checked pointwise by `ring`. `nsmul_eq_mul` is excluded from `simp` so that
+`128 • F` is not turned into a product (whose slash action has no determined weight split) before
+`SL_smul_slash` pulls the scalar out. -/
 
 /-- The weight `-2` slash action of a quotient `F / G ^ 2` of two weight `2` functions, with the
 weight in the form `simp` can match. -/
+@[simp]
 private lemma div_sq_slash (γ : SL(2, ℤ)) (F G : ℍ → ℂ) :
     (F / G ^ 2) ∣[(-2 : ℤ)] γ = F ∣[(2 : ℤ)] γ / (G ∣[(2 : ℤ)] γ) ^ 2 := by
   rw [show (-2 : ℤ) = 2 - (2 : ℕ) * 2 by norm_num, div_slash_SL2, pow_slash_SL2]
 
 lemma ψI_eq : ψI = 128 • ((H₃ + H₄) / (H₂ ^ 2) + (H₄ - H₂) / H₃ ^ 2) := by
-  rw [ψI, h]
-  simp only [div_sq_slash, SL_smul_slash, add_slash, slash_mul, neg_slash, neg_neg, H₂_S_action,
-    H₃_S_action, H₄_S_action, H₂_T_action, H₃_T_action, H₄_T_action]
   ext z
-  simp only [Pi.smul_apply, Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply,
-    Pi.neg_apply, Pi.ofNat_apply, nsmul_eq_mul, Nat.cast_ofNat]
+  simp [-nsmul_eq_mul, ψI, h, slash_mul]
   ring
 
 lemma ψT_eq : ψT = 128 * ((H₃ + H₄) / (H₂ ^ 2) + (H₂ + H₃) / H₄ ^ 2) := by
-  rw [ψT, ψI_eq]
-  simp only [SL_smul_slash, add_slash, sub_slash, div_sq_slash, H₂_T_action, H₃_T_action,
-    H₄_T_action]
   ext z
-  simp only [Pi.smul_apply, Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply,
-    Pi.neg_apply, Pi.ofNat_apply, nsmul_eq_mul, Nat.cast_ofNat]
+  simp [-nsmul_eq_mul, ψT, ψI_eq]
   ring
 
 lemma ψS_eq : ψS = 128 * ((H₄ - H₂) / (H₃ ^ 2) - (H₂ + H₃) / H₄ ^ 2) := by
-  rw [ψS, ψI_eq]
-  simp only [SL_smul_slash, add_slash, sub_slash, div_sq_slash, H₂_S_action, H₃_S_action,
-    H₄_S_action]
   ext z
-  simp only [Pi.smul_apply, Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply,
-    Pi.neg_apply, Pi.ofNat_apply, nsmul_eq_mul, Nat.cast_ofNat]
+  simp [-nsmul_eq_mul, ψS, ψI_eq]
   ring
 
 /-- `ψS` in terms of the weight-10 form `G` and the discriminant: `ψS = -G / (2Δ)`.
@@ -112,28 +103,18 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [slash_mul, ψS_slash_S, ψT]
 
 lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
-  rw [ψT, ← slash_mul, ψI_eq]
-  simp only [SL_smul_slash, add_slash, sub_slash, div_sq_slash, slash_mul, neg_slash, neg_neg,
-    H₂_T_action, H₃_T_action, H₄_T_action]
+  simp [-nsmul_eq_mul, ψT, ψI_eq, ← sub_eq_add_neg]
 
 -- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
 -- absolute value, but point is that this way the Js look even more similar to the Is!
 lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
-  rw [ψS, ← slash_mul, ψI_eq]
-  simp only [SL_smul_slash, add_slash, sub_slash, div_sq_slash, slash_mul, neg_slash, neg_neg,
-    H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action, H₃_T_action, H₄_T_action]
   ext z
-  simp only [Pi.smul_apply, Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply,
-    Pi.neg_apply, Pi.ofNat_apply, nsmul_eq_mul, Nat.cast_ofNat]
+  simp [-nsmul_eq_mul, ψS, ψI_eq]
   ring
 
 lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
-  rw [ψT, ← slash_mul, ψI_eq]
-  simp only [SL_smul_slash, add_slash, sub_slash, div_sq_slash, slash_mul, neg_slash, neg_neg,
-    H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action, H₃_T_action, H₄_T_action]
   ext z
-  simp only [Pi.smul_apply, Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.div_apply, Pi.pow_apply,
-    Pi.neg_apply, Pi.ofNat_apply, nsmul_eq_mul, Nat.cast_ofNat]
+  simp [-nsmul_eq_mul, ψT, ψI_eq]
   ring
 
 lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by

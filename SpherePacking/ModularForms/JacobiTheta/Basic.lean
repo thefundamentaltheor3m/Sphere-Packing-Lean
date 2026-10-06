@@ -27,6 +27,7 @@ lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI.1) = H₃ := modular_slash_ne
 lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI.1) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
 
 /-- These three transformation laws follow directly from tsum definition. -/
+@[simp]
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
   suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
@@ -55,6 +56,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     rw [Complex.exp_add]
     rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
 
+@[simp]
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   ext x
   simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]
@@ -69,6 +71,7 @@ lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   · rw [hb.neg_one_zpow, Odd.neg_one_zpow]
     simp [sq, hb]
 
+@[simp]
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
   ext x
@@ -96,6 +99,7 @@ lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
   simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
+@[simp]
 lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   ext ⟨x, hx⟩
   have hx' : x ≠ 0 := by simp [Complex.ext_iff, hx.ne.symm]
@@ -147,6 +151,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   _ = -H₄ ⟨x, hx⟩ := by
     simp [H₄, Θ₄_as_jacobiTheta₂]
 
+@[simp]
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
   have hx' : (x : ℂ) ≠ 0 := by obtain ⟨x, hx⟩ := x; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
@@ -162,6 +167,7 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   rw [cpow_ofNat, mul_pow, I_sq]
   field_simp
 
+@[simp]
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
     ModularForm.slash_neg' _ _ (by decide), slash_one]
