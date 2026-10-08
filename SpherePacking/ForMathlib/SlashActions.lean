@@ -47,3 +47,16 @@ theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk 
   rw [SL_slash, ← slash_neg _ _ hk]
   congr
   aesop
+
+/-- `SlashAction.add_slash` for a difference. -/
+@[simp]
+theorem SlashAction.sub_slash {β G α : Type*} [Monoid G] [AddGroup α] [SlashAction β G α] (k : β)
+    (g : G) (a b : α) : (a - b) ∣[k] g = a ∣[k] g - b ∣[k] g := by
+  rw [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash, sub_eq_add_neg]
+
+/-- `ModularForm.mul_slash_SL2` iterated: the slash action of `f ^ n` in weight `n * k`. -/
+theorem ModularForm.pow_slash_SL2 (k : ℤ) (n : ℕ) (A : SL(2, ℤ)) (f : ℍ → ℂ) :
+    (f ^ n) ∣[n * k] A = (f ∣[k] A) ^ n := by
+  induction n with
+  | zero => simp [is_invariant_one]
+  | succ n ih => rw [pow_succ, Nat.cast_succ, add_mul, one_mul, mul_slash_SL2, ih, pow_succ]
