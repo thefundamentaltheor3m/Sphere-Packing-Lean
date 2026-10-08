@@ -103,7 +103,7 @@ lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
-  rwa [DFunLike.ne_iff] at h ⊢
+  rw [DFunLike.ne_iff] at h ⊢; exact h
 
 lemma E4_ne_zero : E₄ ≠ 0 := Ek_ne_zero 4 (by norm_num) (by decide)
 

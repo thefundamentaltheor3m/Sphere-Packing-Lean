@@ -22,7 +22,7 @@ theorem hasProd_le_nonneg {a₁ a₂ : ℝ} (h : ∀ i, f i ≤ g i) (h0 : ∀ i
     (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
   apply le_of_tendsto_of_tendsto' hf hg
   intro s
-  exact Finset.prod_le_prod (fun i _ => h0 i) (fun i _ => h i)
+  exact Finset.prod_le_prod₀ (fun i _ => h0 i) (fun i _ => h i)
 
 lemma tprod_le_of_nonneg_of_multipliable (hfnn : 0 ≤ f) (hfg : f ≤ g) (hf : Multipliable f)
     (hg : Multipliable g) : ∏' b, f b ≤ ∏' b, g b :=

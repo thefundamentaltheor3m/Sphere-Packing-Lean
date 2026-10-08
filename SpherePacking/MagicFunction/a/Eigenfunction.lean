@@ -57,8 +57,7 @@ theorem perm_₃_I₄ : (FourierTransform.fourierCLE ℂ _) (I₃ + I₄) = I₁
 theorem perm_I₆ : (FourierTransform.fourierCLE ℂ _) (I₆) = I₅ :=
 by
   simpa [← perm_I₅] using
-    radial_inversion I₅ (fun _ => by
-      simp [I₅, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
+    radial_inversion I₅ (isRadial_schwartzMap_multidimensional_of_schwartzMap_real _ _).even
 
 end Integral_Permutations
 
