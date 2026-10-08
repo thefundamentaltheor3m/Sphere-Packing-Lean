@@ -25,7 +25,6 @@ open scoped FourierTransform
 
 open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.Fourier
   MagicFunction.b.Fourier MagicFunction.a.SpecialValues MagicFunction.b.SpecialValues
-open scoped FourierTransform
 
 /-- The Magic Function, `g`. -/
 noncomputable def g : RadialSchwartzMap ℂ ℝ⁸ ℂ := ((π * I) / 8640) • a + (I / (240 * π)) • b
@@ -51,23 +50,16 @@ theorem fourier_g_apply (x : ℝ⁸) : 𝓕 g x = (π * I) / 8640 * a x - I / (2
     RadialSchwartzMap.neg_apply, smul_eq_mul, mul_neg, ← sub_eq_add_neg]
 
 theorem g_zero : g 0 = 1 := by
-  simp only [g, add_apply, smul_apply, a_zero, neg_mul, smul_eq_mul, b_zero, mul_zero, add_zero]
-  ring_nf
-  simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg]
-  apply Complex.mul_inv_cancel
-  norm_cast
-  exact pi_ne_zero
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr pi_ne_zero
+  rw [g_apply, a_zero, b_zero, mul_zero, add_zero]
+  field_simp
+  simp [I_sq]
 
 theorem fourier_g_zero : 𝓕 g 0 = 1 := by
-  simp only [g, FourierAdd.fourier_add, FourierSMul.fourier_smul, eig_a, eig_b, add_apply,
-    smul_apply, a_zero, smul_eq_mul]
-  have : (-b) 0 = -(b 0) := rfl
-  ring_nf
-  simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg, this, b_zero, neg_zero, mul_zero, one_div,
-    zero_mul, add_zero]
-  apply Complex.mul_inv_cancel
-  norm_cast
-  exact pi_ne_zero
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr pi_ne_zero
+  rw [fourier_g_apply, a_zero, b_zero, mul_zero, sub_zero]
+  field_simp
+  simp [I_sq]
 
 theorem g_zero_eq_fourier_g_zero : g 0 = 𝓕 g 0 := by
   rw [g_zero, fourier_g_zero]
