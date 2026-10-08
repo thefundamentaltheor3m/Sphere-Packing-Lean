@@ -5,6 +5,7 @@ public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.ForMathlib.Analysis.Complex.Exponential
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.Cusps
@@ -35,6 +36,7 @@ public import SpherePacking.MagicFunction.a.Integrability.CuspPath
 public import SpherePacking.MagicFunction.a.Integrability.Integrability
 public import SpherePacking.MagicFunction.a.Integrability.RealDecay
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.IntegralEstimates.Decay
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I3

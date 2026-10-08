@@ -10,80 +10,98 @@ public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 public import Mathlib.Analysis.Normed.Group.RadialFunction
-public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+public import SpherePacking.ForMathlib.RadialSchwartz.Basic
+public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 
 /-!
 # Multidimensional Radial Schwartz Functions
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-open SchwartzMap Function RCLike
+open SchwartzMap Function RCLike ContDiff Set
 
-section SchwartzMap_multidimensional_of_schwartzMap_real
+namespace SchwartzMap
 
--- The `‖·‖²` differentiability helpers formerly here are now mathlib's
--- `hasStrictFDerivAt_norm_sq` / `DifferentiableAt.norm_sq` / `Differentiable.norm_sq`.
-
-variable (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F] (f : 𝓢(ℝ, ℂ))
-
-@[simps!]
-noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ) :=
-    f.compCLM ℝ (Function.hasTemperateGrowth_norm_sq F) <| by
-  use 1, 1
-  intro _
-  simp only [norm_pow, norm_norm]
-  nlinarith
-
-/-- The multidimensional lift `x ↦ f (‖x‖ ^ 2)` of a real Schwartz function is radial. -/
-@[fun_prop]
-theorem isRadial_schwartzMap_multidimensional_of_schwartzMap_real :
-    IsRadial (schwartzMap_multidimensional_of_schwartzMap_real F f) := by
-  simp only [schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
-  fun_prop
+section ofDecay
 
 @[fun_prop]
-theorem contDiff_ofReal {n} : ContDiff ℝ n Complex.ofReal :=
+theorem _root_.Complex.contDiff_ofReal {n} : ContDiff ℝ n Complex.ofReal :=
   ContinuousLinearMap.contDiff Complex.ofRealCLM
 
-open ContDiff Set
 -- TODO: it suffices to be contdiff on [a, ∞)
-theorem eq_schwartzMap {f : ℝ → ℂ} {a : ℝ}
+
+/-- A Schwartz map constructed from a smooth function decaying on a subset by multiplying by a
+smooth transition function. -/
+@[simps!]
+def ofDecayOn {f : ℝ → ℂ} {a : ℝ}
     (smooth : ContDiff ℝ ∞ f)
-    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a - 1 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
-    ∃ F : 𝓢(ℝ, ℂ), Set.EqOn f F (Set.Ici a) := by
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    𝓢(ℝ, ℂ) :=
   let F' : ℝ → ℂ := fun x ↦ Real.smoothTransition (x - a + 1) * f x
-  refine ⟨SchwartzMap.mkOfCocompact F' (by fun_prop) ?_, ?_⟩
-  · intro k n
+  SchwartzMap.mkOfCocompact F' (by fun_prop) <| by
+    intro k n
     obtain ⟨C, hC⟩ := decay k n
-    use C
+    use max C 0
     rw [Filter.Eventually, Filter.mem_cocompact]
     use Set.Icc (a - 1) a, isCompact_Icc
     intro x hx
     simp only [Set.mem_compl_iff, Set.mem_Icc, not_and_or, not_le] at hx
     simp only [Set.mem_ofPred_eq]
     obtain hx | hx := hx
-    · have h1 : iteratedFDeriv ℝ n F' x = iteratedFDerivWithin ℝ n F' (Iio (a - 1)) x :=
-        (iteratedFDerivWithin_of_isOpen _ isOpen_Iio).symm (by simpa)
-      have h2 : iteratedFDerivWithin ℝ n F' (Iio (a - 1)) x =
-          iteratedFDerivWithin ℝ n 0 (Iio (a - 1)) x := by
-        apply iteratedFDerivWithin_congr _ (by grind)
-        intro y hy
-        simp only [Pi.zero_apply, mul_eq_zero, Complex.ofReal_eq_zero, F']
-        grind [Real.smoothTransition.zero_iff_nonpos]
-      rw [h1, h2]
-      grw [← hC (a - 1) (by simp)]
-      simp only [Real.norm_eq_abs, iteratedFDerivWithin_zero, Pi.zero_apply, norm_zero, mul_zero]
-      positivity
-    · have : iteratedFDeriv ℝ n F' x = iteratedFDeriv ℝ n f x := by calc
-        _ = iteratedFDerivWithin ℝ n F' (Ioi a) x :=
-            (iteratedFDerivWithin_of_isOpen _ isOpen_Ioi).symm (by grind)
-        _ = iteratedFDerivWithin ℝ n f (Ioi a) x := by
-            apply iteratedFDerivWithin_congr _ (by grind)
-            grind [Set.EqOn, Real.smoothTransition.eq_one_iff_one_le, Complex.ofReal_one]
-        _ = iteratedFDeriv ℝ n f x :=
-            iteratedFDerivWithin_of_isOpen _ isOpen_Ioi (by grind)
-      grind
-  · grind [mkOfCocompact_toFun, Set.EqOn, Real.smoothTransition.eq_one_iff_one_le,
-      Complex.ofReal_one, SchwartzMap.mkOfCocompact, mk_apply]
+    · have hEq : F' =ᶠ[nhds x] fun _ ↦ 0 := by
+        filter_upwards [eventually_lt_nhds hx] with y hy
+        simp only [F', Real.smoothTransition.zero_of_nonpos (by linarith : y - a + 1 ≤ 0),
+          Complex.ofReal_zero, zero_mul]
+      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds, iteratedFDeriv_fun_zero]
+      simp
+    · have hEq : F' =ᶠ[nhds x] f := by
+        filter_upwards [eventually_gt_nhds hx] with y hy
+        simp only [F', Real.smoothTransition.one_of_one_le (by linarith : 1 ≤ y - a + 1),
+          Complex.ofReal_one, one_mul]
+      rw [(hEq.iteratedFDeriv ℝ n).self_of_nhds]
+      exact (hC x hx.le).trans (le_max_left _ _)
+
+theorem ofDecayOn_eqOn {f : ℝ → ℂ} {a : ℝ}
+    (smooth : ContDiff ℝ ∞ f)
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    Set.EqOn f (ofDecayOn smooth decay) (Set.Ici a) := by
+  grind [ofDecayOn, mkOfCocompact_toFun, Set.EqOn, Real.smoothTransition.eq_one_iff_one_le,
+    Complex.ofReal_one, SchwartzMap.mkOfCocompact, mk_apply]
+
+end ofDecay
+
+section toRadial
+
+-- The `‖·‖²` differentiability helpers formerly here are now mathlib's
+-- `hasStrictFDerivAt_norm_sq` / `DifferentiableAt.norm_sq` / `Differentiable.norm_sq`.
+
+variable (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F]
+
+@[simps!]
+def compNormSq (f : 𝓢(ℝ, ℂ)) : 𝓢(F, ℂ) :=
+    f.compCLM ℝ (Function.hasTemperateGrowth_norm_sq F) <| by
+  use 1, 1
+  intro _
+  simp only [norm_pow, norm_norm]
+  nlinarith
+
+variable {𝕜 : Type*} [NormedField 𝕜] [NormedSpace 𝕜 ℂ] [SMulCommClass ℝ 𝕜 ℂ]
+
+/-- A radial Schwartz map on `F` obtained by composing a Schwartz map on `ℝ` with `‖·‖ ^ 2`. -/
+@[simps!]
+def toRadialSchwartzMap (f : 𝓢(ℝ, ℂ)) : RadialSchwartzMap 𝕜 F ℂ :=
+  RadialSchwartzMap.mk (compNormSq F f) (Function.isRadial_norm_sq F).comp_right
+
+/-- A radial Schwartz map on `F` built from a smooth function on `ℝ` decaying on `[a, ∞)`. -/
+@[simps!]
+def _root_.RadialSchwartzMap.ofDecay {f : ℝ → ℂ} {a : ℝ}
+    (smooth : ContDiff ℝ ∞ f)
+    (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
+    RadialSchwartzMap 𝕜 F ℂ :=
+  (ofDecayOn smooth decay).toRadialSchwartzMap F
+
+end toRadial
+
+end SchwartzMap
