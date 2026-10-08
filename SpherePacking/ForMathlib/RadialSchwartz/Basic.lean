@@ -6,11 +6,13 @@ Authors: Sidharth Hariharan, Seewoo Lee
 module
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
+public import Mathlib.Analysis.Normed.Group.RadialFunction
 
 /-! # Radial Schwartz Functions
 
-This file defines the notion of a radial function, and uses it to define the submodule the Schwartz
-space consisting of radial functions. It proves that the Fourier transform is an involution on this
+This file uses Mathlib's notion of a radial function (`Function.IsRadial`) to define the submodule of
+the Schwartz space consisting of radial functions. It proves that the Fourier transform is an involution on this
 submodule. It proves `FourierTransform`, `FourierPair`, `ContinuousFourier`, `FourierAdd` and
 `FourierSMul` instances (and the corresponding instances for 𝓕⁻) and `StarAddMonoid` and
 `StarModule` instances (where the module structure is over ℝ).
@@ -19,74 +21,6 @@ See [Mathlib PR #43179](https://github.com/leanprover-community/mathlib4/pull/43
 -/
 
 @[expose] public section
-
-namespace Function
-
-variable {D E F : Type*}
-
-/-- A function on a space with a norm is *radial* if factors through the norm. -/
-def IsRadial [Norm E] (f : E → F) : Prop := f.FactorsThrough (‖·‖ : E → ℝ)
-
-lemma isRadial_def [Norm E] (f : E → F) :
-    f.IsRadial ↔ ∀ {x y : E}, ‖x‖ = ‖y‖ → f x = f y := by
-  simp [IsRadial, Function.FactorsThrough]
-
-/-- The radial part of a function. If f is a radial function, then `f = f.radialPart ∘ ‖·‖`. -/
-noncomputable def radialPart [Norm E] [hF : Nonempty F] (f : E → F) : ℝ → F :=
-  Function.extend (‖·‖ : E → ℝ) f <| fun _ ↦ Classical.choice hF
-
-namespace IsRadial
-
-lemma eq_radialPart_comp_norm [Norm E] [Nonempty F] {f : E → F} (hf : f.IsRadial) :
-    f = f.radialPart ∘ (‖·‖ : E → ℝ) := by
-  ext x
-  rw [radialPart]
-  exact (hf.extend_apply _ _).symm
-
-lemma even [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial) : f.Even := fun x ↦ hf (norm_neg x)
-
-lemma comp_right [Norm D] {f : D → E} {g : E → F} (hf : f.IsRadial) :
-  (g ∘ f).IsRadial := by grind [isRadial_def]
-
-end IsRadial
-section Norm
-
-open IsRadial
-
-lemma RCLike.normSq_radial {K : Type*} [RCLike K] : IsRadial (RCLike.normSq (K := K)) := by
-  intro _ _ _
-  simpa [RCLike.normSq_eq_def']
-
-lemma Complex.normSq_radial : IsRadial (Complex.normSq) := RCLike.normSq_radial
-
-variable [Norm E]
-
-variable (E) in
-lemma _root_.Norm.isRadial : (‖·‖ : E → ℝ).IsRadial := by grind [isRadial_def]
-
-lemma comp_norm (g : ℝ → F) : (g ∘ (‖·‖ : E → ℝ)).IsRadial := by
-  simp [IsRadial.comp_right, Norm.isRadial]
-
-variable (E) in
-lemma isRadial_norm_sq : IsRadial (‖·‖ ^ 2 : E → ℝ) := by grind [isRadial_def]
-
-end Norm
-
-section Isometries
-
-lemma IsRadial.comp_isometry [SeminormedAddGroup E] {f : E → F} (hf : f.IsRadial) {g : E → E}
-    (hg : Isometry g) (hg₀ : g 0 = 0) : f ∘ g = f :=
-  funext fun x ↦ hf <| hg.norm_map_of_map_zero hg₀ x
-
-lemma isRadial_iff_comp_linearIsometryEquiv [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (f : E → F) : f.IsRadial ↔ ∀ g : E ≃ₗᵢ[ℝ] E, f ∘ g = f := by
-  refine ⟨fun hf g ↦ hf.comp_isometry g.isometry (by simp), fun h x y hxy ↦ ?_⟩
-  specialize h (ℝ ∙ (x - y))ᗮ.reflection
-  rw [← Submodule.reflection_sub hxy, ← f.comp_apply (g := (ℝ ∙ (x - y))ᗮ.reflection), h]
-
-end Isometries
-
-end Function
 
 section RadialSchwartz
 
