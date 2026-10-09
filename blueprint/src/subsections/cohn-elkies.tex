@@ -40,7 +40,16 @@ This finishes the proof of the theorem for periodic packings.
   The result follows immediately from Theorem~\ref{thm:periodic-packing-optimal} and \Cref{thm:Cohn-Elkies-periodic}.
 \end{proof}
 
-The main step in our proof of \cref{MainTheorem} is the explicit construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
+\subsection{The Shape of an Optimal Function}
+
+The main step in our proof of \cref{MainTheorem} is the explicit construction of an optimal function for $d = 8$. Before stating what we shall prove, we record what \emph{optimality} forces upon such a function; this analysis, which follows the discussion in \cite[p.~8]{CohnICM}, dictates the entire construction of Section~\ref{sec: fourier double zeroes}.
+
+Suppose $f$ is a Schwartz function satisfying \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2} whose bound in Theorem~\ref{thm:Cohn-Elkies-periodic} is attained by some $\Lambda$-periodic packing with centres $X$. Then every inequality in the proof of Theorem~\ref{thm:Cohn-Elkies-periodic} must be an equality. Equality in \eqref{eqn: sharp X 1} forces $f(x - y) = 0$ for all distinct $x \in X$, $y \in X/\Lambda$; when $X = \Lambda$, this says that \emph{$f$ vanishes at all non-zero lattice points}. Moreover, $f(0) \geq 0$ (else the bound would be negative), so \eqref{eqn:Cohn-Elkies-condition-1} forces these vanishing points of norm $\geq 1$ to be \emph{double} zeroes of the radial profile of $f$: a sign change there would contradict $f \leq 0$ on $\{\|x\| \geq 1\}$. Finally, equality in \eqref{eqn: sharp X 2} forces $\widehat{f}(m) = 0$ for all non-zero $m \in \Lambda^*$; for $\Lambda = \Lambda_8$, which is self-dual, these are the same points again.
+
+Since the conditions \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2} depend only on $\norm{x}$, we may restrict our search to \emph{radial} functions (Definition~\ref{def:radial-function}), and by Lemma~\ref{lemma:eigenfunction-decomposition} it suffices to construct a $+1$- and a $-1$-eigenfunction of the Fourier transform, each with (double) zeroes at the appropriate lattice points, and take a suitable linear combination.
+
+It will be convenient to work at the scale of $\Lambda_8$ itself, whose non-zero vectors have norms $\sqrt{2n}$, $n \geq 1$, rather than rescaling the lattice to separation $1$. We therefore aim for the following.
+
 \begin{theorem}\label{thm:g}\uses{thm:g1}
 There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
 \begin{align}
@@ -49,4 +58,9 @@ g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn:g1}\\
 g(0)&=\widehat{g}(0)=1.\label{eqn:g3}
 \end{align}
 \end{theorem}
-Theorem \ref{thm:Cohn-Elkies-general} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies \cref{MainTheorem}.
+
+Theorem \ref{thm:Cohn-Elkies-general} applied to the rescaled function $f(x):=g(\sqrt{2}\, x)$, which satisfies \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2} with $f(0)/\widehat{f}(0) = 16\, g(0)/\widehat{g}(0) = 16$, immediately implies \cref{MainTheorem}: recalling that $\Vol{B_{2k}(0, r)} = r^{2k}\pi^k/k!$ (a fact already available in Mathlib), the resulting bound is
+\[
+  16 \cdot \Vol{B_8(0, 1/2)} = 16 \cdot \frac{1}{2^8}\cdot\frac{\pi^4}{24} = \frac{\pi^4}{384},
+\]
+which is precisely the density of the $E_8$ packing. In general the bound is $g(0)/\widehat{g}(0)$ times this density, so it is sharp precisely because of the normalisation \eqref{eqn:g3}: an optimal $g$ must satisfy $g(0) = \widehat{g}(0)$.
