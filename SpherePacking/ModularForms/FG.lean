@@ -1207,8 +1207,7 @@ theorem FmodG_rightLimitAt_zero :
     exact mul_div_mul_left _ _ (pow_ne_zero 10 hs.ne')
   have hlim : Tendsto rhs atTop (nhds (18 * π ^ (-2 : ℤ))) := by
     convert numerator_tendsto_at_infty.div denominator_tendsto_at_infty (by norm_num) using 2
-    · rfl
-    · ring
+    ring
   exact (hlim.comp tendsto_inv_nhdsGT_zero).congr' <|
     (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
       simpa [one_div, inv_inv] using ht.symm

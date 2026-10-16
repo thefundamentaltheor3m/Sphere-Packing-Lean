@@ -60,7 +60,7 @@ protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
   Summable.le_tsum' ENat.summable a
 
 protected theorem le_tsum_of_mem {s : Set α} {a : α} (ha : a ∈ s) : f a ≤ ∑' x : s, f x :=
-  ENat.le_tsum (⟨a,ha⟩ : s)
+  ENat.le_tsum (f := fun x : s ↦ f x) ⟨a, ha⟩
 
 @[simp] protected theorem tsum_eq_zero : ∑' i, f i = 0 ↔ ∀ i, f i = 0 :=
   Summable.tsum_eq_zero_iff ENat.summable
@@ -173,7 +173,7 @@ protected theorem tsum_comp_le_tsum_of_injective {f : α → β} (hf : Injective
 protected theorem tsum_le_tsum_comp_of_surjective {f : α → β} (hf : Surjective f) (g : β → ℕ∞) :
     ∑' y, g y ≤ ∑' x, g (f x) :=
   calc ∑' y, g y = ∑' y, g (f (surjInv hf y)) := by simp only [surjInv_eq hf]
-    _ ≤ ∑' x, g (f x) := ENat.tsum_comp_le_tsum_of_injective (injective_surjInv hf) _
+    _ ≤ ∑' x, g (f x) := ENat.tsum_comp_le_tsum_of_injective (injective_surjInv hf) (g ∘ f)
 
 protected theorem tsum_comp_eq_tsum_of_bijective {f : α → β} (hf : f.Bijective) (g : β → ℕ∞) :
     ∑' x, g (f x) = ∑' y, g y :=
@@ -186,7 +186,7 @@ protected theorem tsum_comp_eq_tsum_of_equiv (e : α ≃ β) (g : β → ℕ∞)
 
 protected theorem tsum_subtype_mono (f : α → ℕ∞) {s t : Set α} (h : s ⊆ t) :
     ∑' x : s, f x ≤ ∑' x : t, f x :=
-  ENat.tsum_comp_le_tsum_of_injective (inclusion_injective h) _
+  ENat.tsum_comp_le_tsum_of_injective (inclusion_injective h) (fun x : t ↦ f x)
 
 protected theorem tsum_subtype_sigma {β : α → Type*} (f : ∀ a, β a → ℕ∞) :
     ∑' p : Σa, β a, f p.1 p.2 = ∑' (a) (b), f a b :=
