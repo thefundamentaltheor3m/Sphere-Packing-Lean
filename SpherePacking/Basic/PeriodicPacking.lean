@@ -578,7 +578,7 @@ private theorem hD_isAddFundamentalDomain
   nullMeasurableSet := hD_measurable.nullMeasurableSet
   ae_covers := Filter.Eventually.of_forall fun x ↦ (hD_unique_covers x).exists
   aedisjoint := by
-    apply Measure.pairwise_aedisjoint_of_aedisjoint_forall_ne_zero
+    apply pairwise_aedisjoint_of_aedisjoint_forall_ne_zero
     · intro g hg
       apply Disjoint.aedisjoint
       rw [Set.disjoint_iff]
@@ -722,7 +722,7 @@ theorem PeriodicSpherePacking.aux2_ge'
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
-  · rwa [Subtype.ext_iff] at this ⊢
+  · rw [Subtype.ext_iff] at this ⊢; exact this
   · rw [S.basis_Z_span]
     exact hy
 
@@ -739,7 +739,7 @@ theorem PeriodicSpherePacking.aux2_le'
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
-  · rwa [Subtype.ext_iff] at this ⊢
+  · rw [Subtype.ext_iff] at this ⊢; exact this
   · rw [S.basis_Z_span]
     exact hy
 
@@ -853,7 +853,6 @@ private lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < �
     have := hk k' hk₁
     rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,
       ENNReal.ofReal_rpow_of_nonneg] at this
-    · positivity
     · positivity
     · positivity
   refine Tendsto.ennrpow_const d (tendsto_ofReal (Tendsto.const_sub 1 ?_))

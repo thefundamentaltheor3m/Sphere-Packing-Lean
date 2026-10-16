@@ -9,6 +9,7 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
+public import Mathlib.Analysis.Normed.Group.RadialFunction
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
@@ -34,6 +35,13 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ
   intro _
   simp only [norm_pow, norm_norm]
   nlinarith
+
+/-- The multidimensional lift `x ↦ f (‖x‖ ^ 2)` of a real Schwartz function is radial. -/
+@[fun_prop]
+theorem isRadial_schwartzMap_multidimensional_of_schwartzMap_real :
+    IsRadial (schwartzMap_multidimensional_of_schwartzMap_real F f) := by
+  simp only [schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+  fun_prop
 
 @[fun_prop]
 theorem contDiff_ofReal {n} : ContDiff ℝ n Complex.ofReal :=
