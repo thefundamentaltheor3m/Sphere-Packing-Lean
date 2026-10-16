@@ -196,9 +196,6 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
   push_cast
   linear_combination -((π : ℂ) * (n ^ 2 + n) * t) * I_sq
 
-lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
-  simp [norm_exp]
-
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
   use (∑' n : ℤ, rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ^ 4, 1
