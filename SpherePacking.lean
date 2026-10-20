@@ -24,7 +24,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.Test.QSeriesBounds
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ForMathlib.Vec
 public import SpherePacking.ForMathlib.VolumeOfBalls
