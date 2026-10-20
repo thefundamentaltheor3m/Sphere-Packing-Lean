@@ -46,14 +46,16 @@ initialize registerBuiltinAttribute {
       if h : args.size ≥ 5 then
         match args[4].getAppFnArgs with
         | (`nhds, _) => pure ()
+        | (`nhdsWithin, _) => pure ()
         | (other, _) =>
-          throwError "`@[tendsto_cont]`: target filter must be `nhds _`, \
-            got `{other}`"
+          throwError "`@[tendsto_cont]`: target filter must be \
+            `nhds _` or `nhdsWithin _ _`, got `{other}`"
       else
         throwError "`@[tendsto_cont]`: declaration type is not a fully \
           applied `Tendsto`"
     | (other, _) =>
       throwError "`@[tendsto_cont]`: declaration type must be \
-        `Tendsto f l (nhds a)`, got head `{other}`"
+        `Tendsto f l (nhds a)` or `Tendsto f l (nhdsWithin a s)`, \
+        got head `{other}`"
     tendstoContExt.add declName
 }
