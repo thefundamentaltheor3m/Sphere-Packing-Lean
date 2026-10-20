@@ -118,7 +118,7 @@ and using these we can compute
     &= \frac{25}{72} (E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2, \\
     \partial_{12}\partial_{10}F - \frac{5}{6} E_4 F &= \frac{25}{72}(E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2 - \frac{5}{6} E_4 (E_2 E_4 - E_6)^2 \\
     &= \frac{25}{72} ((E_2 E_6 - E_4^2)^2 - E_4 (E_2 E_4 - E_6)^2) \\
-    &= \frac{25}{72} (- E_2^2 E_4^3 + E_2^2 E_6^2 + E_4^4 - E_4 E_6^3) \\
+    &= \frac{25}{72} (- E_2^2 E_4^3 + E_2^2 E_6^2 + E_4^4 - E_4 E_6^2) \\
     &= -\frac{25}{72} (E_4^3 - E_6^2) (E_2^2 - E_4) \\
     &= 7200 \cdot \frac{E_4^3 - E_6^2}{1728} \cdot \frac{-E_2^2 + E_4}{12}\\
     &= 7200 \Delta (-E_2')
@@ -127,10 +127,10 @@ which proves \eqref{eqn:ddf}.
 Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} and Lemma \ref{lemma:lv1-lv2-identities}.
 \end{proof}
 
-\begin{corollary}\label{cor:MLDE-pos}\uses{lemma:FG-de, cor:disc-pos, cor:theta-pos, def:E2}\leanok
+\begin{corollary}\label{cor:MLDE-pos}\uses{lemma:FG-de, cor:disc-pos, cor:theta-pos, def:E2}\lean{MLDE_F_imag_axis_pos, MLDE_G_imag_axis_neg}\leanok
 \eqref{eqn:ddf} (resp. \eqref{eqn:ddg}) is positive (resp. negative) on the (positive) imaginary axis.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 From \eqref{eqn:E2} and Lemma \ref{cor:disc-pos},
 \ifplastex
 \begin{equation*}
@@ -178,13 +178,13 @@ From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
 \end{align}
 \end{proof}
 
-\begin{lemma}\label{lemma:log-der-inf}\uses{lemma:der-q-series}
+\begin{lemma}\label{lemma:log-der-inf}\uses{lemma:der-q-series}\lean{logderiv_tendsto_of_div_exp_tendsto, D_F_div_F_tendsto, D_G_div_G_tendsto}\leanok
 Let $F$ be a quasimodular form where the vanishing order of $F$ at infinity is $n_0 > 0$, i.e. $F(z) = \sum_{n \geq n_0} a_n q^{n}$ with $a_{n_0} \ne 0$. Then
 \begin{equation}
     \lim_{t \to \infty} \frac{F'(it)}{F(it)} = n_0.
 \end{equation}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
     By Lemma \ref{lemma:der-q-series},
     \begin{equation}
         \lim_{t \to \infty} \frac{F'(it)}{F(it)} = \lim_{t \to \infty} \frac{\sum_{n \ge n_0} n a_n e^{-2 \pi n t}}{\sum_{n \ge n_0} a_n e^{-2 \pi n t}} = \lim_{t \to \infty} \frac{n_0 a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})}{a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})} = n_0.
@@ -220,7 +220,7 @@ Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem \ref{thm:anti-serre-der-pos}, and 
 \end{proof}
 
 
-\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}\leanok
+\begin{corollary}\label{cor:ineqBnew}\uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}\leanok
 \eqref{eqn:ineqBnew} holds.
 \end{corollary}
 \begin{proof}\leanok
