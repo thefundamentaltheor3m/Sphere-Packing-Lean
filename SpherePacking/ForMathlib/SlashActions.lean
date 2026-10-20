@@ -48,12 +48,16 @@ theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk 
   congr
   aesop
 
--- See mathlib PR https://github.com/leanprover-community/mathlib4/pull/44356
-/-- `SlashAction.add_slash` for a difference. -/
+/-! The remainder of this file is upstreamed in mathlib PR
+https://github.com/leanprover-community/mathlib4/pull/44356 (merged 2026-10-18), and is stated
+exactly as there. Delete it once the project's mathlib is bumped past that PR. -/
+
 @[simp]
-theorem SlashAction.sub_slash {β G α : Type*} [Monoid G] [AddGroup α] [SlashAction β G α] (k : β)
-    (g : G) (a b : α) : (a - b) ∣[k] g = a ∣[k] g - b ∣[k] g := by
-  rw [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash, sub_eq_add_neg]
+theorem SlashAction.sub_slash {β G α : Type*} [Monoid G] [AddGroup α]
+    [SlashAction β G α] (k : β) (g : G) (a b : α) : (a - b) ∣[k] g = a ∣[k] g - b ∣[k] g := by
+  rw [sub_eq_add_neg, add_slash, neg_slash, sub_eq_add_neg]
+
+namespace ModularForm
 
 theorem zpow_slash (n k : ℤ) (A : GL (Fin 2) ℝ) (f : ℍ → ℂ) :
     (f ^ n) ∣[n * k] A = |(A.det : ℝ)| ^ (n - 1) • (f ∣[k] A) ^ n := by
@@ -80,7 +84,8 @@ theorem pow_slash_SL2 (n : ℕ) (k : ℤ) (A : SL(2, ℤ)) (f : ℍ → ℂ) :
     (f ^ n) ∣[n * k] A = (f ∣[k] A) ^ n := by
   simp [SL_slash, pow_slash]
 
-@[simp]
 theorem inv_slash_SL2 (k : ℤ) (A : SL(2, ℤ)) (f : ℍ → ℂ) :
     (f⁻¹) ∣[k] A = (f ∣[-k] A)⁻¹ := by
   simp [SL_slash, inv_slash]
+
+end ModularForm
