@@ -5,7 +5,7 @@ Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Data.Complex.Basic
+public import Mathlib.Basic.Complex.Basic
 
 /-!
 # The `norm_numI` Tactic

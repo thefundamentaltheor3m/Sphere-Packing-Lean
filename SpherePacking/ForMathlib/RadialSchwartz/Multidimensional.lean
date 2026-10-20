@@ -9,6 +9,7 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
+public import Mathlib.Analysis.Normed.Group.RadialFunction
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
@@ -35,6 +36,13 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ
   simp only [norm_pow, norm_norm]
   nlinarith
 
+/-- The multidimensional lift `x ↦ f (‖x‖ ^ 2)` of a real Schwartz function is radial. -/
+@[fun_prop]
+theorem isRadial_schwartzMap_multidimensional_of_schwartzMap_real :
+    IsRadial (schwartzMap_multidimensional_of_schwartzMap_real F f) := by
+  simp only [schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+  fun_prop
+
 @[fun_prop]
 theorem contDiff_ofReal {n} : ContDiff ℝ n Complex.ofReal :=
   ContinuousLinearMap.contDiff Complex.ofRealCLM
@@ -54,7 +62,7 @@ theorem eq_schwartzMap {f : ℝ → ℂ} {a : ℝ}
     use Set.Icc (a - 1) a, isCompact_Icc
     intro x hx
     simp only [Set.mem_compl_iff, Set.mem_Icc, not_and_or, not_le] at hx
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     obtain hx | hx := hx
     · have h1 : iteratedFDeriv ℝ n F' x = iteratedFDerivWithin ℝ n F' (Iio (a - 1)) x :=
         (iteratedFDerivWithin_of_isOpen _ isOpen_Iio).symm (by simpa)
