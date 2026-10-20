@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.Analysis.Complex.Basic
@@ -128,40 +127,25 @@ lemma cauchyCoeff_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
           (norm_nonneg _) (by positivity)
     _ = ((n : ℝ) + 1) * (A * (n : ℝ) ^ k * (B * (n : ℝ) ^ ℓ)) := by
         rw [Finset.sum_const, nsmul_eq_mul, Finset.Nat.card_antidiagonal]; push_cast; ring
-    _ ≤ 2 * (n : ℝ) * (A * (n : ℝ) ^ k * (B * (n : ℝ) ^ ℓ)) := by
-        have : (0 : ℝ) ≤ A * (n : ℝ) ^ k * (B * (n : ℝ) ^ ℓ) := by positivity
-        nlinarith
-    _ = 2 * A * B * (n : ℝ) ^ (k + ℓ + 1) := by ring
+    _ ≤ 2 * (n : ℝ) * (A * (n : ℝ) ^ k * (B * (n : ℝ) ^ ℓ)) :=
+        mul_le_mul_of_nonneg_right (by linarith) (by positivity)
     _ = 2 * A * B * ‖(n : ℝ) ^ (k + ℓ + 1)‖ := by
-        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; ring
 
 /-- bg has polynomial growth O(n^5). -/
 lemma bg_poly : bg =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  -- bg(n) = 720 * n * σ₃(n). Since σ₃(n) ≤ n^4, the product is O(n^5).
-  rw [Asymptotics.isBigO_iff]
-  use 720
-  filter_upwards [Filter.eventually_gt_atTop 0] with n hn
-  simp only [bg]
-  rw [Complex.norm_mul, Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast]
-  simp only [Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 5)]
+  refine .of_bound 720 (.of_forall fun n ↦ ?_)
   have hσ : (σ 3 n : ℝ) ≤ n ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 n
-  have h720 : ‖(720 : ℂ)‖ = 720 := by norm_num
-  calc ‖(720 : ℂ)‖ * n * ((σ 3) n : ℝ)
-      ≤ 720 * n * n ^ 4 := by rw [h720]; nlinarith
-    _ = 720 * n ^ 5 := by ring
+  simp only [bg, norm_mul, Complex.norm_ofNat, Complex.norm_natCast, Real.norm_eq_abs,
+    abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 5)]
+  nlinarith [n.cast_nonneg (α := ℝ)]
 
 /-- bE₄ has polynomial growth O(n^4). -/
 lemma bE₄_poly : bE₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
-  -- bE₄(n) = 240 * σ₃(n) for n ≥ 1. Since σ₃(n) ≤ n^4, the product is O(n^4).
-  rw [Asymptotics.isBigO_iff]
-  use 240
+  refine .of_bound 240 ?_
   filter_upwards [Filter.eventually_gt_atTop 0] with n hn
-  simp only [bE₄, Nat.ne_of_gt hn, ↓reduceIte]
-  rw [Complex.norm_mul, Complex.norm_natCast]
-  simp only [Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 4)]
   have hσ : (σ 3 n : ℝ) ≤ n ^ 4 := by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ 3 n
-  have h240 : ‖(240 : ℂ)‖ = 240 := by norm_num
-  calc ‖(240 : ℂ)‖ * ((σ 3) n : ℝ) ≤ 240 * n ^ 4 := by rw [h240]; nlinarith
+  simpa [bE₄, hn.ne', Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 4)] using hσ
 
 /-! ## Even Re-indexing Lemmas
 
@@ -169,9 +153,7 @@ Properties of the `evenCoeff` re-indexing map used for q→r series conversion. 
 
 /-- evenCoeff at an even index equals the original coefficient. -/
 lemma evenCoeff_even (b : ℕ → ℂ) (n : ℕ) : evenCoeff b (2 * n) = b n := by
-  have he : Even (2 * (n : ℤ)) := even_two_mul _
-  have h2 : ((2 * (n : ℤ)) / 2).toNat = n := by omega
-  simp only [evenCoeff, if_pos he, h2]
+  simp only [evenCoeff, if_pos (even_two_mul (n : ℤ)), show ((2 * (n : ℤ)) / 2).toNat = n by omega]
 
 /-- evenCoeff at a non-even index is zero. -/
 lemma evenCoeff_odd (b : ℕ → ℂ) {k : ℤ} (hk : ¬ Even k) : evenCoeff b k = 0 := if_neg hk
@@ -184,13 +166,7 @@ lemma cauchyCoeff_zero_of_right_zero {a b : ℕ → ℂ} (hb0 : b 0 = 0) :
 /-- Cauchy product at 1 is zero if both factors vanish at 0. -/
 lemma cauchyCoeff_one_zero_of_both_zero {a b : ℕ → ℂ} (ha0 : a 0 = 0) (hb0 : b 0 = 0) :
     cauchyCoeff a b 1 = 0 := by
-  simp only [cauchyCoeff]
-  apply Finset.sum_eq_zero
-  intro ⟨i, j⟩ hij
-  simp only [Finset.mem_antidiagonal] at hij
-  rcases Nat.eq_zero_or_pos i with hi | hi
-  · simp only [hi, ha0, zero_mul]
-  · simp only [Nat.lt_one_iff.mp (by omega : j < 1), hb0, mul_zero]
+  simp [cauchyCoeff, Finset.Nat.antidiagonal_succ, ha0, hb0]
 
 /-- `evenCoeff` of a Cauchy product vanishes for `k < 2` (negative `k` included) when the right
 factor vanishes at 0. -/
