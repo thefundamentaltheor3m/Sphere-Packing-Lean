@@ -17,6 +17,7 @@ public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.QExpansionBounds
 public import SpherePacking.ForMathlib.QSeriesBounds
 public import SpherePacking.ForMathlib.RadialSchwartz.Basic
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
@@ -48,14 +49,15 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 public import SpherePacking.MagicFunction.a.IntegralEstimates.Majorants
+public import SpherePacking.MagicFunction.a.Phi
 public import SpherePacking.MagicFunction.a.PhiBounds
 public import SpherePacking.MagicFunction.a.Schwartz
 public import SpherePacking.MagicFunction.a.SpecialValues
 public import SpherePacking.MagicFunction.b.Basic
 public import SpherePacking.MagicFunction.b.Eigenfunction
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.b.Schwartz
 public import SpherePacking.MagicFunction.b.SpecialValues
-public import SpherePacking.MagicFunction.b.psi
 public import SpherePacking.MagicFunction.g.Basic
 public import SpherePacking.MainTheorem
 public import SpherePacking.ModularForms.Delta
