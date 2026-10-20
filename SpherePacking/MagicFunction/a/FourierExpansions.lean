@@ -225,7 +225,7 @@ lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := 
   have hc : 2 * π * (1 / 2 : ℝ) = π := by ring
   simpa only [B_E₄, hc, add_zero, Nat.cast_zero, mul_zero, zero_mul, Real.exp_zero, mul_one] using
     Complex.norm_qseries_shift_le 0 (c := 1 / 2)
-      (by simpa only [hc] using summable_norm_mul_exp bE₄_poly) (z : ℂ) hz
+      (by simpa only [hc] using summable_norm_mul_exp bE₄_poly) hz
 
 /-- `E₂E₄ − E₆` decays like `exp(-2π·im)` on `im ≥ 1/2`, with constant `B_g`. -/
 lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
@@ -237,7 +237,7 @@ lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
     have : m = 0 := by omega
     simp [this, bg]
   have h := Complex.norm_qseries_le_of_coeff_vanish 1 (c := 1 / 2)
-    hvan (by simpa only [hc] using summable_norm_mul_exp bg_poly) (z : ℂ) hz
+    hvan (by simpa only [hc] using summable_norm_mul_exp bg_poly) hz
   have hexp : -(2 * π) * (z.im - 1 / 2) = π + -(2 * π) * z.im := by ring
   rw [hc, Nat.cast_one, mul_one, show (z : ℂ).im = z.im from rfl, hexp, Real.exp_add] at h
   simpa only [B_g, mul_assoc, mul_left_comm] using h
