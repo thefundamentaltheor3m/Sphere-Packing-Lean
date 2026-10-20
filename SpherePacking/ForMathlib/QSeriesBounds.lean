@@ -33,19 +33,17 @@ from analytic assumptions, see `UpperHalfPlane.norm_le_qExpansion_of_coeff_vanis
 `SpherePacking.ModularForms.ResToImagAxis`. -/
 lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     (ha : Summable fun m : ℕ ↦ ‖a m‖ * Real.exp (-(2 * π * c) * m))
-    (z : ℂ) (hz : c ≤ z.im) :
+    {z : ℂ} (hz : c ≤ z.im) :
     ‖∑' m : ℕ, a m * exp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ ≤
       (∑' m : ℕ, ‖a m‖ * Real.exp (-(2 * π * c) * m)) *
         Real.exp (-(2 * π) * n₀ * z.im) := by
   have key (m : ℕ) : ‖a m * exp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ ≤
       ‖a m‖ * Real.exp (-(2 * π * c) * m) * Real.exp (-(2 * π) * n₀ * z.im) := by
-    rw [norm_mul, norm_exp, mul_assoc ‖a m‖]
-    apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-    rw [← Real.exp_add, Real.exp_le_exp]
-    simp only [show (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re =
-      -(2 * π) * (m + n₀) * z.im by simp [mul_re, mul_im]]
-    nlinarith [mul_le_mul_of_nonneg_left hz
-      (mul_nonneg (by positivity : (0 : ℝ) ≤ 2 * π) m.cast_nonneg)]
+    have hre : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+      simp [mul_re, mul_im]
+    rw [norm_mul, norm_exp, hre, mul_assoc ‖a m‖, ← Real.exp_add]
+    gcongr
+    linarith [mul_le_mul_of_nonneg_left hz (by positivity : (0 : ℝ) ≤ 2 * π * m)]
   have hs := Summable.of_nonneg_of_le (fun m ↦ norm_nonneg _) key (ha.mul_right _)
   exact (norm_tsum_le_tsum_norm hs).trans
     ((Summable.tsum_le_tsum key hs (ha.mul_right _)).trans_eq tsum_mul_right)
@@ -59,7 +57,7 @@ The correction is necessary: take `n₀ = 1`, `b 1 = 1`, all other coefficients 
 lemma norm_qseries_le_of_coeff_vanish {b : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     (hb : ∀ m < n₀, b m = 0)
     (hs : Summable fun m : ℕ ↦ ‖b m‖ * Real.exp (-(2 * π * c) * m))
-    (z : ℂ) (hz : c ≤ z.im) :
+    {z : ℂ} (hz : c ≤ z.im) :
     ‖∑' m : ℕ, b m * exp (2 * π * I * m * z)‖ ≤
       (∑' m : ℕ, ‖b m‖ * Real.exp (-(2 * π * c) * m)) *
         Real.exp (-(2 * π) * n₀ * (z.im - c)) := by
@@ -67,14 +65,11 @@ lemma norm_qseries_le_of_coeff_vanish {b : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
       ‖b m‖ * Real.exp (-(2 * π * c) * m) * Real.exp (-(2 * π) * n₀ * (z.im - c)) := by
     by_cases hm : m < n₀
     · simp [hb m hm]
-    rw [norm_mul, norm_exp, mul_assoc ‖b m‖]
-    apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-    rw [← Real.exp_add, Real.exp_le_exp]
-    simp only [show (2 * π * I * (m : ℂ) * z).re = -(2 * π) * m * z.im by
-      simp [mul_re, mul_im]]
-    have hm' : (n₀ : ℝ) ≤ m := by exact_mod_cast Nat.le_of_not_gt hm
-    nlinarith [mul_le_mul_of_nonneg_left
-      (mul_le_mul_of_nonneg_right hm' (sub_nonneg.mpr hz))
+    have hre : (2 * π * I * (m : ℂ) * z).re = -(2 * π) * m * z.im := by simp [mul_re, mul_im]
+    have hm' : (n₀ : ℝ) ≤ m := mod_cast not_lt.mp hm
+    rw [norm_mul, norm_exp, hre, mul_assoc ‖b m‖, ← Real.exp_add]
+    gcongr
+    linarith [mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hm' (sub_nonneg.mpr hz))
       (by positivity : (0 : ℝ) ≤ 2 * π)]
   have hsum := Summable.of_nonneg_of_le (fun m ↦ norm_nonneg _) key (hs.mul_right _)
   exact (norm_tsum_le_tsum_norm hsum).trans

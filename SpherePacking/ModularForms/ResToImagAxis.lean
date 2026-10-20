@@ -459,9 +459,7 @@ private lemma summable_norm_qExpansion_mul_exp {F : ℍ → ℂ}
     (hbdd : IsBoundedAtImInfty F) {c : ℝ} (hc : 0 < c) :
     Summable fun m : ℕ ↦ ‖(qExpansion 1 F).coeff m‖ * rexp (-(2 * π * c) * m) := by
   let zc : ℍ := ⟨c * Complex.I, by simpa using hc⟩
-  have hs := (hasSum_qExpansion one_pos hper hhol hbdd zc).summable.norm
-  convert hs using 1
-  ext m
+  refine (hasSum_qExpansion one_pos hper hhol hbdd zc).summable.norm.congr fun m ↦ ?_
   rw [norm_smul, norm_pow, Function.Periodic.norm_qParam, div_one, ← Real.exp_nat_mul]
   congr 2
   simp [zc]
@@ -474,7 +472,7 @@ lemma norm_le_qExpansion_of_coeff_vanish {F : ℍ → ℂ}
     (hper : Function.Periodic (F ∘ ofComplex) 1) (hhol : MDiff F)
     (hbdd : IsBoundedAtImInfty F) (n₀ : ℕ)
     (hvan : ∀ m < n₀, (qExpansion 1 F).coeff m = 0)
-    {c : ℝ} (hc : 0 < c) (z : ℍ) (hz : c ≤ z.im) :
+    {c : ℝ} (hc : 0 < c) {z : ℍ} (hz : c ≤ z.im) :
     ‖F z‖ ≤ (∑' m : ℕ, ‖(qExpansion 1 F).coeff m‖ * rexp (-(2 * π * c) * m)) *
       rexp (-(2 * π) * n₀ * (z.im - c)) := by
   have hterm (m : ℕ) : Function.Periodic.qParam 1 z ^ m = cexp (2 * π * Complex.I * m * z) := by
@@ -484,7 +482,7 @@ lemma norm_le_qExpansion_of_coeff_vanish {F : ℍ → ℂ}
   rw [← (hasSum_qExpansion one_pos hper hhol hbdd z).tsum_eq]
   simp_rw [smul_eq_mul, hterm]
   exact Complex.norm_qseries_le_of_coeff_vanish n₀ hvan
-    (summable_norm_qExpansion_mul_exp hper hhol hbdd hc) z hz
+    (summable_norm_qExpansion_mul_exp hper hhol hbdd hc) hz
 
 end UpperHalfPlane
 
@@ -517,7 +515,7 @@ lemma isBigO_atImInfty_of_fourier_shift
   rw [Filter.eventually_atImInfty]
   refine ⟨c, fun z hz ↦ ?_⟩
   rw [hF z, Real.norm_of_nonneg (Real.exp_pos _).le]
-  simpa [mul_assoc] using Complex.norm_qseries_shift_le n₀ ha (z : ℂ) hz
+  simpa [mul_assoc] using Complex.norm_qseries_shift_le n₀ ha hz
 
 /--
 If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients
