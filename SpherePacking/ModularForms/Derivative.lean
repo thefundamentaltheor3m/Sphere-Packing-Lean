@@ -10,8 +10,11 @@ public import Mathlib.Analysis.Complex.Liouville
 /-!
 # Derivatives of Modular Forms
 
-Definition of the (Serre) derivative of modular forms and Ramanujan's formulas for the derivatives
-of the Eisenstein series.
+The normalised derivative `D F = (2πi)⁻¹ F'` and the Serre derivative `serre_D k F` of functions on
+`ℍ`, with their algebraic rules and slash-equivariance; termwise differentiation of `q`-series
+(`D_qexp_tsum_pnat`, `D_qexp_const_add_smul`); the behaviour of `D` and `serre_D` on the imaginary
+axis (`antiSerreDerPos`); Cauchy estimates at `i∞` and the log-derivative limit
+`logderiv_tendsto_of_div_exp_tendsto`.
 -/
 
 @[expose] public section
@@ -231,6 +234,15 @@ lemma pi_ofNat_eq_const (n : ℕ) [n.AtLeastTwo] :
 lemma pi_inv_const_eq_const (c : ℂ) :
     (Function.const ℍ c)⁻¹ = Function.const ℍ c⁻¹ := rfl
 
+/-- The normalized log-derivative of `w ↦ cexp (c * w)` is the constant `c / (2πi)`. -/
+theorem D_cexp_div (c : ℂ) (z : ℍ) :
+    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
+  have h : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) = cexp (c * z) * (c * 1) :=
+    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp fun w ↦ cexp (c * w)).deriv_eq.trans
+      (((hasDerivAt_id (z : ℂ)).const_mul c).cexp).deriv
+  simp only [D, h]
+  field_simp
+
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
 /-- Helper: HasDerivAt for a·exp(2πicw) with chain rule. -/
@@ -297,7 +309,7 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     apply Summable.of_norm_bounded_eventually (g := fun n => u n / (2 * π)) (hu_sum.div_const _)
     rw [Filter.eventually_cofinite]
     refine Set.Finite.subset (Set.finite_singleton 0) fun n hn => ?_
-    simp only [Set.mem_setOf_eq, not_le] at hn
+    simp only [Set.mem_ofPred_eq, not_le] at hn
     by_contra h_ne
     have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
     have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
@@ -368,18 +380,18 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
       ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
   -- Extend a to ℕ with a' 0 = 0
   let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
-  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
+  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dite_eq_left n.pos
   -- Derivative bounds: extend u using summable_pnat_iff_summable_nat
   have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
         cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
-    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
+    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dite_eq_left n.pos
     refine ⟨u', summable_pnat_iff_summable_nat.mp (hu_sum.congr fun n => by rw [hu']),
       fun n k => ?_⟩
     by_cases hn : 0 < n
-    · simp only [a', u', dif_pos hn]; exact hu_bound _ k
+    · simp only [a', u', dite_eq_left hn]; exact hu_bound _ k
     · simp only [Nat.not_lt, Nat.le_zero] at hn; simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
   have hD := D_qexp_tsum a' z (summable_pnat_iff_summable_nat.mp
@@ -390,6 +402,30 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
     _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
           rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+
+/-- Termwise differentiation of a `c₀ + c • ∑' n : ℕ+, a n * qⁿ` expansion: if a holomorphic `g`
+agrees pointwise with such a series (`c ≠ 0`), then `D g z = c * ∑' n, n * a n * qⁿ`. The
+summability and derivative-bound hypotheses are those of `D_qexp_tsum_pnat`. -/
+lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ → ℂ} (hc : c ≠ 0)
+    (hg_md : MDiff g)
+    (hg : ∀ w : ℍ, g w = c₀ + c * ∑' n : ℕ+, a n * cexp (2 * π * I * n * w))
+    (hsum : ∀ w : ℍ, Summable fun n : ℕ+ ↦ a n * cexp (2 * π * I * n * w))
+    (hbound : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
+        ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * k.1)‖ ≤ u n) (z : ℍ) :
+    D g z = c * ∑' n : ℕ+, n * a n * cexp (2 * π * I * n * z) := by
+  let f : ℍ → ℂ := fun w ↦ ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)
+  have hDf : D f z = ∑' n : ℕ+, n * a n * cexp (2 * π * I * n * z) :=
+    D_qexp_tsum_pnat a z (hsum z) hbound
+  have hg_eq : g = (fun _ ↦ c₀) + c • f := by
+    ext w
+    simp [f, hg w]
+  have hf_md : MDiff f := by
+    rw [show f = c⁻¹ • (g - fun _ ↦ c₀) by rw [hg_eq, add_sub_cancel_left, inv_smul_smul₀ hc]]
+    exact (hg_md.sub mdifferentiable_const).const_smul _
+  have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (D_const c₀) z
+  rw [hg_eq, congrFun (D_add _ _ mdifferentiable_const (hf_md.const_smul _)) z, Pi.add_apply,
+    hD_const, zero_add, congrFun (D_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
 
 /--
 Serre derivative of weight $k$.
@@ -752,7 +788,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
       simpa [id, mul_one] using (hasDerivAt_id (t : ℂ)).const_mul I
     simpa [h, Function.comp_def] using (hF'.comp (t : ℂ) hh).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
-  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dite_eq_left ht, z]
   ring_nf; simp only [I_sq]; ring
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
@@ -866,7 +902,7 @@ lemma neg_after_zero_of_deriv_neg {g : ℝ → ℝ} {t₀ : ℝ}
     simpa [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs,
            abs_of_pos hh_pos] using sub_left_lt_of_lt_add hs2
   have hest := hball hmem
-  simp only [Set.mem_setOf_eq, hg0, sub_zero, smul_eq_mul, norm_eq_abs, abs_of_pos hh_pos] at hest
+  simp only [Set.mem_ofPred_eq, hg0, sub_zero, smul_eq_mul, norm_eq_abs, abs_of_pos hh_pos] at hest
   have := (abs_le.mp hest).2
   rw [show s = t₀ + (s - t₀) by ring]
   linarith [div_neg_of_neg_of_pos (mul_neg_of_pos_of_neg hh_pos hd) (by norm_num : (0 : ℝ) < 2)]
@@ -940,13 +976,13 @@ theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hMD : MDifferentiable 𝓘(
       have hda := hasDerivAt_resToImagAxis_re hMD hs
       rw [hda.deriv]
       have h_ria : F.resToImagAxis s = F ⟨I * s, by simp [hs]⟩ := by
-        simp [resToImagAxis, ResToImagAxis, dif_pos hs]
+        simp [resToImagAxis, ResToImagAxis, dite_eq_left hs]
       have hz : F (⟨I * s, by simp [hs]⟩ : ℍ) = 0 := by
         apply Complex.ext
         · rw [zero_re, ← h_ria]; exact hgs
         · rw [zero_im, ← h_ria]; exact (hF_real s hs)
       have : 0 < ((D F).resToImagAxis s).re := by
-        simpa [resToImagAxis, ResToImagAxis, dif_pos hs,
+        simpa [resToImagAxis, ResToImagAxis, dite_eq_left hs,
           serre_D_apply, hz, mul_zero, sub_zero] using hSDF_pos s hs
       nlinarith [pi_pos]
   exact key t ht
@@ -1064,6 +1100,25 @@ theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
           (diffContOnCl_comp_ofComplex_of_mdifferentiable hf
             (closedBall_center_subset_upperHalfPlane z)) (h_sphere_bdd z hz)
     _ = M / (π * z.im) := by ring
+
+/-- If `F z / exp (a * z) → C ≠ 0` at `i∞`, then `D F / F → a / (2πi)`. -/
+lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C : ℂ} (hC : C ≠ 0)
+    (hlim : Tendsto (fun z : ℍ ↦ F z / cexp (a * z)) atImInfty (nhds C)) :
+    Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
+  set q : ℍ → ℂ := fun w ↦ cexp (a * w)
+  set g : ℍ → ℂ := fun w ↦ F w / q w with hg
+  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
+  have hq_md : MDiff q := fun τ ↦ DifferentiableAt_MDifferentiableAt
+    (G := fun t : ℂ ↦ cexp (a * t)) ((differentiableAt_id.const_mul a).cexp)
+  have hg_md : MDiff g := MDifferentiable_div hF hq_md hq_ne
+  have hDg : Tendsto (D g / g) atImInfty (nhds 0) := by
+    simpa using (D_tendsto_zero_of_isBoundedAtImInfty hg_md (hlim.isBigO_one ℝ)).div hlim hC
+  have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
+  have key : ∀ᶠ z : ℍ in atImInfty, a / (2 * π * I) + D g z / g z = D F z / F z := by
+    filter_upwards [hlim.eventually_ne hC] with z hz
+    rw [← D_cexp_div a z, hF_eq, congrFun (D_mul q g hq_md hg_md) z]
+    exact div_add_div _ _ (hq_ne z) hz
+  simpa using (tendsto_const_nhds.add hDg).congr' key
 
 /-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
 
