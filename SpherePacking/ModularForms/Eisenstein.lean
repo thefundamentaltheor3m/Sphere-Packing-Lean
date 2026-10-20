@@ -6,6 +6,7 @@ Authors: Sphere Packing Contributors
 module
 
 public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.tsumderivWithin
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 public import Mathlib.Tactic.NormNum.Parity
 
@@ -13,9 +14,9 @@ public import Mathlib.Tactic.NormNum.Parity
 
 This file defines the normalised level-one Eisenstein series `E k` (as `ModularForm Γ(1) k`,
 with constant term `1`; mathlib's `ModularForm.E` is typed over `𝒮ℒ`, the two coincide as
-functions on `ℍ`), its specialisations `E₄` and `E₆`, together with the quotients `φ₀`, `φ₂'`,
-`φ₄'` of Eisenstein series by the discriminant `Δ` used to build the magic function, and collects
-the properties of `E₂`, `E₄` and `E₆` needed by the project:
+functions on `ℍ`), its specialisations `E₄` and `E₆`, and collects the properties of `E₂`, `E₄`
+and `E₆` needed by the project (the quotients `φ₀`, `φ₂'`, `φ₄'` by `Δ` live in
+`SpherePacking.MagicFunction.a.Phi`):
 
 * `E₄_periodic`, `E₆_periodic`, `E₄_S_transform`, `E₆_S_transform`: pointwise transformation laws
   under the generators of `SL(2, ℤ)`.
@@ -23,8 +24,13 @@ the properties of `E₂`, `E₄` and `E₆` needed by the project:
   (`240 · σ₃` for `E₄`).
 * `Ek_ne_zero`, `E4_ne_zero`, `E6_ne_zero`: non-vanishing, via mathlib's
   `EisensteinSeries.E_ne_zero`.
+* `E₂_sigma_qexp`, `E₄_sigma_qexp`: the `q`-expansions `E₂ = 1 - 24 ∑ σ₁(n) qⁿ` and
+  `E₄ = 1 + 240 ∑ σ₃(n) qⁿ` written with `cexp (2πinz)`, together with the summability and
+  derivative bounds `sigma_qexp_summable_generic`, `sigma_qexp_deriv_bound_generic` for the
+  `σ`-twisted `q`-series that appear when differentiating them termwise.
 * `E_even_imag_axis_real`, `E₂_imag_axis_real`, `E₄_imag_axis_real`, `E₆_imag_axis_real`:
-  realness on the positive imaginary axis.
+  realness on the positive imaginary axis; `sigma_qexp_tsum_re_pos`: positivity of the
+  differentiated `σ_k` `q`-series there.
 
 Boundedness of `E₂` at `i∞` is now mathlib's `EisensteinSeries.isBoundedAtImInfty_E2`.
 -/
@@ -79,27 +85,6 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
   field_simp [ne_zero z] at h
   exact h
 
-/-! ## The quotients `φ₀`, `φ₂'`, `φ₄'`
-
-The blueprint's `φ₀`, `φ₋₂`, `φ₋₄`; negative signs cannot appear in subscripts of
-identifiers, hence the primes. -/
-
-/-- The quotient `(E₂E₄ - E₆)² / Δ`, the blueprint's `φ₀`. -/
-def φ₀ (z : ℍ) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
-
-/-- The quotient `E₄(E₂E₄ - E₆) / Δ`, the blueprint's `φ₋₂`. -/
-def φ₂' (z : ℍ) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
-
-/-- The quotient `E₄² / Δ`, the blueprint's `φ₋₄`. -/
-def φ₄' (z : ℍ) := ((E₄ z) ^ 2) / (Δ z)
-
-/-- The extension of `φ₀` to `ℂ`, vanishing outside the upper half plane. -/
-def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
-
-lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by simp [φ₀'', hz]
-
-lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := φ₀''_def z.im_pos
-
 /-! ## `q`-expansion coefficients and non-vanishing -/
 
 private lemma E4_eq' :
@@ -124,11 +109,60 @@ lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
-  rwa [DFunLike.ne_iff] at h ⊢
+  rw [DFunLike.ne_iff] at h ⊢; exact h
 
 lemma E4_ne_zero : E₄ ≠ 0 := Ek_ne_zero 4 (by norm_num) (by decide)
 
 lemma E6_ne_zero : E₆ ≠ 0 := Ek_ne_zero 6 (by norm_num) (by decide)
+
+/-! ## `q`-expansions in terms of `cexp (2πinz)`
+
+Mathlib states the `q`-expansions of `E₂` and `E₄` in terms of `𝕢 z ^ n`; the lemmas below restate
+them with `cexp (2 π i n z)` and `ℕ+`-indexing, the form used when differentiating termwise
+(`D_qexp_tsum_pnat`), together with the summability and derivative bounds this requires. -/
+
+/-- The `q`-series `∑' n : ℕ+, n ^ a * σ b n * exp (2 π i n z)` is summable for `z : ℍ`.
+
+The case `a = 0` is mathlib's `EisensteinSeries.summable_sigma_mul_cexp_pow`, up to
+`𝕢 z ^ n` versus `cexp (2πinz)` and `ℕ` versus `ℕ+` indexing; the cases `a ≥ 1` are the ones
+needed for the termwise-differentiated series. -/
+lemma sigma_qexp_summable_generic (a b : ℕ) (z : ℍ) :
+    Summable (fun n : ℕ+ ↦ (n : ℂ) ^ a * (σ b n : ℂ) * cexp (2 * π * Complex.I * n * z)) := by
+  refine ((summable_norm_pow_mul_geometric_of_norm_lt_one (a + b + 1)
+    (norm_exp_two_pi_I_lt_one z)).comp_injective PNat.coe_injective).of_norm_bounded fun n ↦ ?_
+  rw [show (2 * π * Complex.I * n * z : ℂ) = n * (2 * π * Complex.I * z) by ring,
+    Complex.exp_nat_mul]
+  simp only [Function.comp_apply, norm_mul, norm_pow, Complex.norm_natCast]
+  rw [add_assoc, pow_add]
+  gcongr
+  exact_mod_cast ArithmeticFunction.sigma_le_pow_succ b n
+
+/-- Summable bound on compact sets for the terms of the differentiated `σ_k` `q`-series, the
+`hsum_deriv` hypothesis of `D_qexp_tsum_pnat`. -/
+lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
+        ‖(σ k n : ℂ) * (2 * π * Complex.I * n) * cexp (2 * π * Complex.I * n * z.1)‖ ≤ u n := by
+  intro K hK hKc
+  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc (k + 2)
+  refine ⟨fun n ↦ u₀ n, hu₀_sum.subtype _, fun n z ↦ le_trans ?_ (hu₀_bound n z)⟩
+  have hσ : (σ k n : ℝ) ≤ (2 * π * n) ^ (k + 1) :=
+    le_trans (by exact_mod_cast ArithmeticFunction.sigma_le_pow_succ k n) <| pow_le_pow_left₀
+      (by positivity) (le_mul_of_one_le_left (by positivity) (by linarith [Real.two_le_pi])) _
+  simpa [abs_of_pos Real.pi_pos, Real.pi_pos, pow_succ] using hσ
+
+/-- The `q`-expansion `E₂ = 1 - 24 ∑ σ₁(n) qⁿ`. This restates Mathlib's
+`EisensteinSeries.E2_eq_tsum_cexp` with `cexp (2πi n z)` in place of `𝕢 z ^ n`. -/
+lemma E₂_sigma_qexp (z : ℍ) :
+    E₂ z = 1 - 24 * ∑' (n : ℕ+), (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * z) := by
+  simp [E₂, EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_nat_mul, mul_comm, mul_left_comm,
+    mul_assoc]
+
+/-- `E₄ = 1 + 240 ∑' n : ℕ+, σ₃ n qⁿ`. -/
+lemma E₄_sigma_qexp (z : ℍ) :
+    E₄ z = 1 + 240 * ∑' (n : ℕ+), (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z) := by
+  refine (EisensteinSeries.q_expansion_bernoulli (by norm_num : 3 ≤ 4) (by decide) z).trans ?_
+  norm_num [bernoulli, bernoulli'_four, ← Complex.exp_nat_mul, mul_comm, mul_assoc, mul_left_comm]
 
 /-! ## Realness on the imaginary axis -/
 
@@ -138,6 +172,28 @@ lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
     (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
   simp [Complex.ext_iff, mul_right_comm]
+
+/-- Each term `n σ_k n exp (-2πnt)` of a differentiated `σ_k` `q`-series is positive at `z = it`. -/
+lemma sigma_qexp_term_re_pos (k : ℕ) (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    0 < (n * σ k n *
+      cexp (2 * π * Complex.I * n * (⟨Complex.I * t, by simp [ht]⟩ : ℍ))).re := by
+  rw [mul_right_comm (2 * π * Complex.I), exp_imag_axis_arg t ht n]
+  simp only [Complex.mul_re, Complex.exp_ofReal_re, Complex.exp_ofReal_im, mul_zero, sub_zero,
+    Complex.natCast_re, Complex.natCast_im]
+  refine mul_pos (mul_pos ?_ ?_) (Real.exp_pos _)
+  · exact_mod_cast n.pos
+  · exact_mod_cast ArithmeticFunction.sigma_pos k n n.ne_zero
+
+/-- A differentiated `σ_k` `q`-series has positive real part at `z = it` for `t > 0`. -/
+lemma sigma_qexp_tsum_re_pos (k : ℕ) (t : ℝ) (ht : 0 < t) :
+    0 < (∑' n : ℕ+, n * σ k n *
+      cexp (2 * π * Complex.I * n * (⟨Complex.I * t, by simp [ht]⟩ : ℍ))).re := by
+  have hsum : Summable fun n : ℕ+ ↦ n * σ k n *
+      cexp (2 * π * Complex.I * n * (⟨Complex.I * t, by simp [ht]⟩ : ℍ)) := by
+    simpa [pow_one] using sigma_qexp_summable_generic 1 k ⟨Complex.I * t, by simp [ht]⟩
+  rw [Complex.re_tsum hsum]
+  exact Summable.tsum_pos ⟨_, Complex.hasSum_re hsum.hasSum⟩
+    (fun n ↦ (sigma_qexp_term_re_pos k t ht n).le) 1 (sigma_qexp_term_re_pos k t ht 1)
 
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
