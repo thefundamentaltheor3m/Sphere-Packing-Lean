@@ -162,7 +162,11 @@ lemma g_qexp_nat (z : ℍ) :
     intro m hm
     have hm0 : m ≠ 0 := by rintro rfl; simp [bg] at hm
     exact ⟨⟨m, Nat.pos_of_ne_zero hm0⟩, rfl⟩
-  rw [E₂_mul_E₄_sub_E₆, ← tsum_mul_left, ← PNat.coe_injective.tsum_eq
+  have hg : E₂ z * E₄ z - E₆ z =
+      720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * ↑π * Complex.I * n * z) := by
+    have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun ramanujan_E₄ z
+    linear_combination -3 * h + 3 * DE₄_qexp z
+  rw [hg, ← tsum_mul_left, ← PNat.coe_injective.tsum_eq
     (f := fun m : ℕ ↦ bg m * cexp (2 * ↑π * Complex.I * ↑m * ↑z)) hsupp]
   refine tsum_congr (fun n ↦ ?_)
   simp only [bg]
