@@ -35,7 +35,8 @@ The standard q-expansion uses `q = exp(2πiz)`, while `fouterm` uses `exp(πinz)
 ## References
 
 - Blueprint Corollaries 7.5-7.7
-- `SpherePacking.ModularForms.FG`: q-expansion identities (`E₂_mul_E₄_sub_E₆`, `E₄_sigma_qexp`)
+- `SpherePacking.ModularForms.Eisenstein` and `FG`: q-expansion identities (`E₄_sigma_qexp`,
+  `DE₄_qexp` with `ramanujan_E₄`)
 -/
 
 @[expose] public section
