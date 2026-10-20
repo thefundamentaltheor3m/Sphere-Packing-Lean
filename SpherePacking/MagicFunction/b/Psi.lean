@@ -63,25 +63,24 @@ functions is then checked pointwise by `ring`. `nsmul_eq_mul` is excluded from `
 /-- The weight `-2` slash action of a quotient `F / G ^ 2` of two weight `2` functions, with the
 weight in the form `simp` can match. `grind` matches the two splitting lemmas on their right-hand
 sides, so the compound weight `2 - 2 * 2` never has to be matched syntactically against `-2`. -/
-@[simp]
 private lemma div_sq_slash (γ : SL(2, ℤ)) (F G : ℍ → ℂ) :
     (F / G ^ 2) ∣[(-2 : ℤ)] γ = F ∣[(2 : ℤ)] γ / (G ∣[(2 : ℤ)] γ) ^ 2 := by
   grind [=_ div_slash_SL2, =_ pow_slash_SL2]
 
 lemma ψI_eq : ψI = 128 • ((H₃ + H₄) / (H₂ ^ 2) + (H₄ - H₂) / H₃ ^ 2) := by
   ext z
-  simp [-nsmul_eq_mul, ψI, h, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action,
-    H₃_T_action, H₄_T_action]
+  simp [-nsmul_eq_mul, ψI, h, slash_mul, div_sq_slash, H₂_S_action, H₃_S_action, H₄_S_action,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   ring
 
 lemma ψT_eq : ψT = 128 * ((H₃ + H₄) / (H₂ ^ 2) + (H₂ + H₃) / H₄ ^ 2) := by
   ext z
-  simp [-nsmul_eq_mul, ψT, ψI_eq, H₂_T_action, H₃_T_action, H₄_T_action]
+  simp [-nsmul_eq_mul, ψT, ψI_eq, div_sq_slash, H₂_T_action, H₃_T_action, H₄_T_action]
   ring
 
 lemma ψS_eq : ψS = 128 * ((H₄ - H₂) / (H₃ ^ 2) - (H₂ + H₃) / H₄ ^ 2) := by
   ext z
-  simp [-nsmul_eq_mul, ψS, ψI_eq, H₂_S_action, H₃_S_action, H₄_S_action]
+  simp [-nsmul_eq_mul, ψS, ψI_eq, div_sq_slash, H₂_S_action, H₃_S_action, H₄_S_action]
   ring
 
 /-- `ψS` in terms of the weight-10 form `G` and the discriminant: `ψS = -G / (2Δ)`.
@@ -109,20 +108,21 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [slash_mul, ψS_slash_S, ψT]
 
 lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
-  simp [-nsmul_eq_mul, ψT, ψI_eq, ← sub_eq_add_neg, H₂_T_action, H₃_T_action, H₄_T_action]
+  simp [-nsmul_eq_mul, ψT, ψI_eq, ← sub_eq_add_neg, div_sq_slash, H₂_T_action, H₃_T_action,
+    H₄_T_action]
 
 -- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
 -- absolute value, but point is that this way the Js look even more similar to the Is!
 lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
-  simp [-nsmul_eq_mul, ψS, ψI_eq, H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action, H₃_T_action,
-    H₄_T_action]
+  simp [-nsmul_eq_mul, ψS, ψI_eq, div_sq_slash, H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action,
+    H₃_T_action, H₄_T_action]
   ring
 
 lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   ext z
-  simp [-nsmul_eq_mul, ψT, ψI_eq, H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action, H₃_T_action,
-    H₄_T_action]
+  simp [-nsmul_eq_mul, ψT, ψI_eq, div_sq_slash, H₂_S_action, H₃_S_action, H₄_S_action, H₂_T_action,
+    H₃_T_action, H₄_T_action]
   ring
 
 lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by
