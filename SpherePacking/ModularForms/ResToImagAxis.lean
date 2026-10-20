@@ -136,6 +136,12 @@ theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := ResToImagAx
 @[fun_prop]
 theorem ResToImagAxis.Real.one : ResToImagAxis.Real (fun _ => 1) := ResToImagAxis.Real.const 1
 
+/-- Numeral constant functions `(n : ℍ → ℂ)` are real on the imaginary axis. -/
+@[fun_prop]
+theorem ResToImagAxis.Real.ofNat (n : ℕ) [n.AtLeastTwo] :
+    ResToImagAxis.Real (@OfNat.ofNat (ℍ → ℂ) n _) := fun t ht ↦ by
+  simp [Function.resToImagAxis, ResToImagAxis, ht]
+
 @[fun_prop]
 theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) : ResToImagAxis.Real (-F)
     := by
@@ -236,6 +242,12 @@ theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun 
 @[fun_prop]
 theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) :=
   ResToImagAxis.Pos.const 1 one_pos
+
+/-- Numeral constant functions `(n : ℍ → ℂ)` are positive on the imaginary axis. -/
+@[fun_prop]
+theorem ResToImagAxis.Pos.ofNat (n : ℕ) [n.AtLeastTwo] :
+    ResToImagAxis.Pos (@OfNat.ofNat (ℍ → ℂ) n _) :=
+  ⟨ResToImagAxis.Real.ofNat n, fun t ht ↦ by simp [Function.resToImagAxis, ResToImagAxis, ht]⟩
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
@@ -350,6 +362,10 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
 theorem ResToImagAxis.I_mul_t_eq (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) :
     F ⟨I * t, by simp [ht]⟩ = F.resToImagAxis t := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+
+/-- Reduce a power of `I * w` via `I ^ 4 = 1`; used to evaluate functional equations at `z = it`. -/
+lemma I_mul_npow (w : ℂ) (n : ℕ) : (I * w) ^ n = I ^ (n % 4) * w ^ n := by
+  rw [mul_pow, I_pow_eq_pow_mod]
 
 /-- If `F` is real-valued, then `F` is equal to the real part of itself on imaginary axis. -/
 theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
