@@ -14,8 +14,9 @@ including their linearity/Leibniz rules, slash equivariance, and boundedness at 
 (`Derivative.serreDerivativeMF` packages `∂ₖ` of a modular form as a modular form).
 
 This file collects the project-specific complements: termwise differentiation of `q`-series
-(`D_qexp_tsum_pnat`), and the interaction of `D` and `∂ₖ` with the restriction to the imaginary
-axis (realness, positivity via monotonicity arguments).
+(`D_qexp_tsum_pnat`, `D_qexp_const_add_smul`), the interaction of `D` and `∂ₖ` with the restriction
+to the imaginary axis (realness, positivity via monotonicity arguments), and the log-derivative
+limit `logderiv_tendsto_of_div_exp_tendsto`.
 -/
 
 @[expose] public section
@@ -55,6 +56,15 @@ lemma pi_ofNat_eq_const (n : ℕ) [n.AtLeastTwo] :
 fires. -/
 @[simp]
 lemma pi_inv_const_eq_const (c : ℂ) : (fun _ : ℍ ↦ c)⁻¹ = fun _ ↦ c⁻¹ := rfl
+
+/-- The normalized log-derivative of `w ↦ exp (c * w)` is the constant `c / (2πi)`. -/
+theorem D_cexp_div (c : ℂ) (z : ℍ) :
+    D (fun w ↦ cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
+  have h : deriv ((fun w : ℍ ↦ cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) = cexp (c * z) * (c * 1) :=
+    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp fun w ↦ cexp (c * w)).deriv_eq.trans
+      (((hasDerivAt_id (z : ℂ)).const_mul c).cexp).deriv
+  simp only [normalizedDerivOfComplex, h]
+  field_simp
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
@@ -215,6 +225,31 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
     _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
           rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+
+/-- Termwise differentiation of a `c₀ + c • ∑' n : ℕ+, a n * qⁿ` expansion: if a holomorphic `g`
+agrees pointwise with such a series (`c ≠ 0`), then `D g z = c * ∑' n, n * a n * qⁿ`. The
+summability and derivative-bound hypotheses are those of `D_qexp_tsum_pnat`. -/
+lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ → ℂ} (hc : c ≠ 0)
+    (hg_md : MDiff g)
+    (hg : ∀ w : ℍ, g w = c₀ + c * ∑' n : ℕ+, a n * cexp (2 * π * I * n * w))
+    (hsum : ∀ w : ℍ, Summable fun n : ℕ+ ↦ a n * cexp (2 * π * I * n * w))
+    (hbound : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
+        ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * k.1)‖ ≤ u n) (z : ℍ) :
+    D g z = c * ∑' n : ℕ+, n * a n * cexp (2 * π * I * n * z) := by
+  let f : ℍ → ℂ := fun w ↦ ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)
+  have hDf : D f z = ∑' n : ℕ+, n * a n * cexp (2 * π * I * n * z) :=
+    D_qexp_tsum_pnat a z (hsum z) hbound
+  have hg_eq : g = (fun _ ↦ c₀) + c • f := by
+    ext w
+    simp [f, hg w]
+  have hf_md : MDiff f := by
+    rw [show f = c⁻¹ • (g - fun _ ↦ c₀) by rw [hg_eq, add_sub_cancel_left, inv_smul_smul₀ hc]]
+    exact (hg_md.sub mdifferentiable_const).const_smul _
+  have hD_const : D (fun _ : ℍ ↦ c₀) z = 0 := congrFun (normalizedDerivOfComplex_const c₀) z
+  rw [hg_eq, congrFun (normalizedDerivOfComplex_add _ _ mdifferentiable_const
+    (hf_md.const_smul _)) z, Pi.add_apply, hD_const, zero_add,
+    congrFun (normalizedDerivOfComplex_smul c f hf_md) z, Pi.smul_apply, smul_eq_mul, hDf]
 
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
@@ -401,3 +436,26 @@ theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hMD : MDifferentiable 𝓘(
           serreDerivative_apply, hz, mul_zero, sub_zero] using hSDF_pos s hs
       nlinarith [pi_pos]
   exact key t ht
+
+/-! ### Log-derivative limits at `i∞` -/
+
+/-- If `F z / exp (a * z) → C ≠ 0` at `i∞`, then `D F / F → a / (2πi)`. -/
+lemma logderiv_tendsto_of_div_exp_tendsto {F : ℍ → ℂ} (hF : MDiff F) {a C : ℂ} (hC : C ≠ 0)
+    (hlim : Tendsto (fun z : ℍ ↦ F z / cexp (a * z)) atImInfty (nhds C)) :
+    Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (a / (2 * π * I))) := by
+  set q : ℍ → ℂ := fun w ↦ cexp (a * w)
+  set g : ℍ → ℂ := fun w ↦ F w / q w with hg
+  have hq_ne : ∀ w : ℍ, q w ≠ 0 := fun w ↦ Complex.exp_ne_zero _
+  have hq_md : MDiff q := by
+    have h : Differentiable ℂ fun t : ℂ ↦ cexp (a * t) := (differentiable_id.const_mul a).cexp
+    exact h.mdifferentiable.comp mdifferentiable_coe
+  have hg_md : MDiff g := hF.div hq_md hq_ne
+  have hDg : Tendsto (D g / g) atImInfty (nhds 0) := by
+    simpa using Filter.Tendsto.div
+      (isZeroAtImInfty_normalizedDerivOfComplex hg_md (hlim.isBigO_one ℝ)) hlim hC
+  have hF_eq : F = q * g := by ext w; simp only [hg, Pi.mul_apply, mul_div_cancel₀ _ (hq_ne w)]
+  have key : ∀ᶠ z : ℍ in atImInfty, a / (2 * π * I) + D g z / g z = D F z / F z := by
+    filter_upwards [hlim.eventually_ne hC] with z hz
+    rw [← D_cexp_div a z, hF_eq, congrFun (normalizedDerivOfComplex_mul q g hq_md hg_md) z]
+    exact div_add_div _ _ (hq_ne z) hz
+  simpa using (tendsto_const_nhds.add hDg).congr' key
