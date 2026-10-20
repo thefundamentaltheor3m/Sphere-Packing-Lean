@@ -60,10 +60,7 @@ for any integer starting index. -/
 lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     (hpoly : c =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
     (z : ℍ) (n₀ : ℤ) : Summable fun (i : ℕ) ↦ fouterm c z (i + n₀) := by
-  -- Key fact: ‖exp(πiz)‖ < 1 for z : ℍ
   have hr : ‖Complex.exp (π * Complex.I * z)‖ < 1 := norm_exp_pi_I_z_lt_one z
-  -- Factor fouterm c z (i + n₀) = u(i) * r^i
-  -- where r = cexp(π * I * z) and u(i) = cexp(π * I * n₀ * z) * c(i + n₀)
   let r := cexp (π * Complex.I * z)
   let const := cexp (π * Complex.I * n₀ * z)
   let u : ℕ → ℂ := fun i ↦ const * c (i + n₀)
@@ -72,10 +69,8 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     rw [show (↑π * Complex.I * (↑i + ↑n₀) * ↑z : ℂ) =
         ↑π * Complex.I * ↑n₀ * ↑z + ↑π * Complex.I * ↑i * ↑z by ring, Complex.exp_add]
     ring_nf
-  -- u has polynomial growth: ‖u n‖ = ‖const‖ * ‖c(n+n₀)‖ is O(n^k)
   have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
     simpa [u, Nat.cast_pow] using (hpoly' c n₀ k hpoly).const_mul_left const
-  -- Apply summability theorem
   simp_rw [h_factor]
   exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hu)
 
@@ -232,10 +227,7 @@ lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
     ‖E₂ z * E₄ z - E₆ z‖ ≤ B_g * rexp (-(2 * π) * z.im) := by
   rw [g_qexp_nat z]
   have hc : 2 * π * (1 / 2 : ℝ) = π := by ring
-  have hvan : ∀ m < 1, bg m = 0 := by
-    intro m hm
-    have : m = 0 := by omega
-    simp [this, bg]
+  have hvan : ∀ m < 1, bg m = 0 := fun m hm ↦ by simp [Nat.lt_one_iff.mp hm, bg]
   have h := Complex.norm_qseries_le_of_coeff_vanish 1 (c := 1 / 2)
     hvan (by simpa only [hc] using summable_norm_mul_exp bg_poly) hz
   have hexp : -(2 * π) * (z.im - 1 / 2) = π + -(2 * π) * z.im := by ring

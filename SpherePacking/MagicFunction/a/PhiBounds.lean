@@ -106,29 +106,28 @@ theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
 These express the same bounds as asymptotic estimates along the imaginary axis
 (`z = it` as `t → ∞`), using the existing `ResToImagAxis` restriction. -/
 
-/-- Corollary 7.5 (Big O form): `φ₀ = O(exp(-2πt))` as `t → ∞`. -/
-theorem φ₀_isBigO : φ₀.resToImagAxis =O[Filter.atTop] (fun t ↦ Real.exp (-2 * π * t)) := by
-  rw [Asymptotics.isBigO_iff]; use C_φ₀
+/-- A bound `‖F z‖ ≤ C * g z.im` on `1/2 < im z` gives `F.resToImagAxis = O(g)` as `t → ∞`. -/
+private lemma isBigO_resToImagAxis_of_bound {F : ℍ → ℂ} {g : ℝ → ℝ} {C : ℝ}
+    (hg : ∀ t, 0 ≤ g t) (h : ∀ z : ℍ, 1 / 2 < z.im → ‖F z‖ ≤ C * g z.im) :
+    F.resToImagAxis =O[Filter.atTop] g := by
+  refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [Filter.eventually_gt_atTop (1 / 2 : ℝ)] with t ht
   have ht' : 0 < t := by linarith
-  simpa [ResToImagAxis, ht', UpperHalfPlane.im, Real.norm_eq_abs] using
-    φ₀_bound ⟨Complex.I * t, by simp [ht']⟩ (by simpa [UpperHalfPlane.im] using ht)
+  rw [Real.norm_of_nonneg (hg t)]
+  simpa [ResToImagAxis, ht', UpperHalfPlane.im] using
+    h ⟨Complex.I * t, by simp [ht']⟩ (by simpa [UpperHalfPlane.im] using ht)
+
+/-- Corollary 7.5 (Big O form): `φ₀ = O(exp(-2πt))` as `t → ∞`. -/
+theorem φ₀_isBigO : φ₀.resToImagAxis =O[Filter.atTop] (fun t ↦ Real.exp (-2 * π * t)) :=
+  isBigO_resToImagAxis_of_bound (fun _ ↦ (Real.exp_pos _).le) φ₀_bound
 
 /-- Corollary 7.6 (Big O form): `φ₂' = O(1)` as `t → ∞`. -/
-theorem φ₂'_isBigO : φ₂'.resToImagAxis =O[Filter.atTop] (fun _ ↦ (1 : ℝ)) := by
-  rw [Asymptotics.isBigO_iff]; use C_φ₂'
-  filter_upwards [Filter.eventually_gt_atTop (1 / 2 : ℝ)] with t ht
-  have ht' : 0 < t := by linarith
-  simpa [ResToImagAxis, ht'] using
-    φ₂'_bound ⟨Complex.I * t, by simp [ht']⟩ (by simpa [UpperHalfPlane.im] using ht)
+theorem φ₂'_isBigO : φ₂'.resToImagAxis =O[Filter.atTop] (fun _ ↦ (1 : ℝ)) :=
+  isBigO_resToImagAxis_of_bound (fun _ ↦ zero_le_one) fun z hz ↦ by simpa using φ₂'_bound z hz
 
 /-- Corollary 7.7 (Big O form): `φ₄' = O(exp(2πt))` as `t → ∞`. -/
-theorem φ₄'_isBigO : φ₄'.resToImagAxis =O[Filter.atTop] (fun t ↦ Real.exp (2 * π * t)) := by
-  rw [Asymptotics.isBigO_iff]; use C_φ₄'
-  filter_upwards [Filter.eventually_gt_atTop (1 / 2 : ℝ)] with t ht
-  have ht' : 0 < t := by linarith
-  simpa [ResToImagAxis, ht', UpperHalfPlane.im, Real.norm_eq_abs] using
-    φ₄'_bound ⟨Complex.I * t, by simp [ht']⟩ (by simpa [UpperHalfPlane.im] using ht)
+theorem φ₄'_isBigO : φ₄'.resToImagAxis =O[Filter.atTop] (fun t ↦ Real.exp (2 * π * t)) :=
+  isBigO_resToImagAxis_of_bound (fun _ ↦ (Real.exp_pos _).le) φ₄'_bound
 
 end MagicFunction.a
 
