@@ -6,8 +6,14 @@ Authors: Sidharth Hariharan
 module
 
 
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.IntegralParametrisations
+
+/-!
+# The Function `b`
+
+This file defines Viazovska's function `b` via its integral representations.
+-/
 
 @[expose] public section
 

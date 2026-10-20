@@ -10,6 +10,12 @@ public import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 public import Mathlib.Data.ENat.Lattice
 public import Mathlib.Order.CompletePartialOrder
 
+/-!
+# Sphere Packings
+
+Basic definitions for sphere packings and their densities.
+-/
+
 @[expose] public section
 
 /-!
@@ -209,7 +215,7 @@ namespace Metric.PeriodicSpherePacking
 
 lemma scale_lattice_discrete_aux (S : PeriodicSpherePacking ℝ E) {c : ℝ} (hc : 0 < c) :
     DiscreteTopology ↥(c • S.lattice) := by
-  letI : DiscreteTopology S.lattice := S.lattice_discrete
+  let : DiscreteTopology S.lattice := S.lattice_discrete
   change DiscreteTopology
     ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice : Set E))
   exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
@@ -229,7 +235,7 @@ noncomputable def Metric.PeriodicSpherePacking.scale (S : PeriodicSpherePacking 
     use x + y, S.lattice_action hx hy, smul_add ..
   lattice_discrete := Metric.PeriodicSpherePacking.scale_lattice_discrete_aux S hc
   lattice_isZLattice := by
-    letI : DiscreteTopology ↥(c • S.lattice) :=
+    let : DiscreteTopology ↥(c • S.lattice) :=
       Metric.PeriodicSpherePacking.scale_lattice_discrete_aux S hc
     refine ⟨?_⟩
     rw [← S.lattice_isZLattice.span_top]
@@ -350,7 +356,7 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : EuclideanSpace.SpherePacking d) 
     rw [scale_finiteDensity' hd S hc]
     apply ha
     exact (le_div_iff₀' hc).mpr hb'
-  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_ofPred_eq, lowerBounds]
     intro x hx y hy
     rcases hx with ⟨a, ha⟩
     apply hy
@@ -436,6 +442,7 @@ theorem inter_ball_encard_le (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
   · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
   · exact measure_ball_lt_top.ne
@@ -451,6 +458,7 @@ theorem inter_ball_encard_ge (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
   · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
   · exact measure_ball_lt_top.ne
@@ -458,7 +466,7 @@ theorem inter_ball_encard_ge (R : ℝ) :
 theorem centers_inter_ball_finite (R : ℝ) : Finite ↑(S.centers ∩ ball 0 R) := by
   apply Set.encard_lt_top_iff.mp
   by_cases hd : 0 < d
-  · haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     apply ENat.toENNReal_lt.mp
     apply lt_of_le_of_lt (S.inter_ball_encard_le R)
     apply ENNReal.div_lt_top ?_ (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
@@ -479,6 +487,7 @@ theorem finiteDensity_ge (R : ℝ) :
       ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.le_div_iff_mul_le] <;> try left
@@ -492,6 +501,7 @@ theorem finiteDensity_le (R : ℝ) :
       ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.div_le_iff_le_mul] <;> try left

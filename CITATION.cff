@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: >
+  If you use this project in your work, please cite it using the metadata below.
+title: "Sphere Packing in Lean"
+version: 0.1.0
+date-released: 2025-06-13
+authors:
+  - family-names: Birkbeck
+    given-names: Christopher
+    orcid: https://orcid.org/0000-0002-7546-9028
+  - family-names: Hariharan
+    given-names: Sidharth
+    orcid: https://orcid.org/0009-0000-8176-902X
+  - family-names: Lee
+    given-names: Seewoo
+    orcid: https://orcid.org/0000-0002-5710-2257
+  - family-names: Ma
+    given-names: Ho Kiu Gareth
+    orcid: https://orcid.org/0009-0008-2940-8233
+  - family-names: Mehta
+    given-names: Bhavik
+    orcid: https://orcid.org/0000-0001-7892-7891
+  - family-names: Viazovska
+    given-names: Maryna
+    orcid: https://orcid.org/0000-0001-7567-5254
+repository-code: https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean
+url: https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean
+abstract: >
+  A collaborative research project to develop a formal exposition of Viazovska's solution to the sphere packing problem in dimension 8 and related topics. Launched 28 February, 2024, by Sidharth Hariharan and Maryna Viazovska; led by Christopher Birkbeck, Sidharth Hariharan, Seewoo Lee, Gareth Ma, Bhavik Mehta, and Maryna Viazovska; released and opened to public participation on 13 June, 2025; and ongoing.
+keywords:
+  - number theory
+  - modular forms
+  - metric geometry
+  - optimisation
+  - collaborative mathematics
+  - expository project

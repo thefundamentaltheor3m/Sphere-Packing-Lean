@@ -8,6 +8,12 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Order
 public import Mathlib.Topology.Order.T5
 public import SpherePacking.ForMathlib.ENat
 
+/-!
+# Extended Cardinality
+
+Auxiliary lemmas about `Set.encard` and infinite sums over `ℕ∞`.
+-/
+
 @[expose] public section
 
 
@@ -48,13 +54,13 @@ protected theorem tsum_le_tsum (h : f ≤ g) : ∑' a, f a ≤ ∑' a, g a :=
   Summable.tsum_le_tsum h ENat.summable ENat.summable
 
 protected theorem sum_le_tsum {f : α → ℕ∞} (s : Finset α) : ∑ x ∈ s, f x ≤ ∑' x, f x :=
-  Summable.sum_le_tsum s (fun _ _ ↦ zero_le _) ENat.summable
+  Summable.sum_le_tsum s (fun _ _ ↦ zero_le) ENat.summable
 
 protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
   Summable.le_tsum' ENat.summable a
 
 protected theorem le_tsum_of_mem {s : Set α} {a : α} (ha : a ∈ s) : f a ≤ ∑' x : s, f x :=
-  ENat.le_tsum (⟨a,ha⟩ : s)
+  ENat.le_tsum (f := fun x : s ↦ f x) ⟨a, ha⟩
 
 @[simp] protected theorem tsum_eq_zero : ∑' i, f i = 0 ↔ ∀ i, f i = 0 :=
   Summable.tsum_eq_zero_iff ENat.summable
@@ -73,13 +79,13 @@ protected theorem tsum_subtype_union_disjoint {s t : Set α} (hd : Disjoint s t)
 
 protected theorem tsum_subtype_le_of_subset {s t : Set α} (h : s ⊆ t) :
     ∑' (x : s), f x ≤ ∑' (x : t), f x := by
-  rw [← Set.diff_union_of_subset h, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
+  rw [← Set.sdiff_union_of_subset h, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
   exact le_add_self
 
 protected theorem tsum_subtype_union_le (s t : Set α) :
     ∑' (x : ↑(s ∪ t)), f (x : α) ≤ ∑' (x : s), f x + ∑' (x : t), f x := by
-  rw [← Set.diff_union_self, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
-  exact add_le_add_left (ENat.tsum_subtype_le_of_subset diff_subset) _
+  rw [← Set.sdiff_union_self, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
+  exact add_le_add_left (ENat.tsum_subtype_le_of_subset Set.sdiff_subset) _
 
 protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
     ∑' (x : ↑(insert a s)), f x = f a + ∑' (x : s), f x := by
@@ -102,10 +108,9 @@ theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b 
   obtain ⟨t, hts, hcard⟩ := hs.exists_subset_card_eq (b + 1)
   exact ⟨t, by simpa, by simp [encard_coe_eq_coe_finsetCard, hcard, Nat.cast_lt, - Nat.cast_add]⟩
 
-@[simp]
-theorem add_eq_top {x y : ℕ∞} : x + y = ⊤ ↔ x = ⊤ ∨ y = ⊤ :=
-  WithTop.add_eq_top
-
+-- `ENat.add_eq_top` is now in mathlib (a `@[simp]` `ℕ∞` specialisation of `WithTop.add_eq_top`).
+-- `add_ne_top` is kept as an `ℕ∞` specialisation because the general `WithTop` lemma does not fire
+-- on the `ℕ∞` addition syntactically; the `@[simp]` `add_eq_top` above powers its `by simp` proof.
 theorem add_ne_top {x y : ℕ∞} : x + y ≠ ⊤ ↔ x ≠ ⊤ ∧ y ≠ ⊤ :=
   by simp
 
@@ -123,7 +128,7 @@ protected theorem tsum_eq_top_of_support_infinite (hf : f.support.Infinite) : �
   refine ⟨hfin.toFinset, hbt.trans_le ?_⟩
   rw [hfin.encard_eq_coe_toFinset_card, Finset.card_eq_sum_ones, Nat.cast_sum]
   refine Finset.sum_le_sum fun i hi ↦ ?_
-  simp only [Nat.cast_one, ENat.one_le_iff_ne_zero]
+  simp only [Nat.cast_one, Order.one_le_iff_ne_zero]
   exact htf <| by simpa using hi
 
 protected theorem tsum_const_eq_top {ι : Type*} [Infinite ι] {c : ℕ∞} (hc : c ≠ 0) :
@@ -162,13 +167,13 @@ protected theorem tsum_subtype_const_eq_top_of_ne_zero {s : Set α} (hs : s.Infi
 
 protected theorem tsum_comp_le_tsum_of_injective {f : α → β} (hf : Injective f) (g : β → ℕ∞) :
     ∑' x, g (f x) ≤ ∑' y, g y :=
-  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le _) (fun _ ↦ le_rfl)
+  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le) (fun _ ↦ le_rfl)
     ENat.summable ENat.summable
 
 protected theorem tsum_le_tsum_comp_of_surjective {f : α → β} (hf : Surjective f) (g : β → ℕ∞) :
     ∑' y, g y ≤ ∑' x, g (f x) :=
   calc ∑' y, g y = ∑' y, g (f (surjInv hf y)) := by simp only [surjInv_eq hf]
-    _ ≤ ∑' x, g (f x) := ENat.tsum_comp_le_tsum_of_injective (injective_surjInv hf) _
+    _ ≤ ∑' x, g (f x) := ENat.tsum_comp_le_tsum_of_injective (injective_surjInv hf) (g ∘ f)
 
 protected theorem tsum_comp_eq_tsum_of_bijective {f : α → β} (hf : f.Bijective) (g : β → ℕ∞) :
     ∑' x, g (f x) = ∑' y, g y :=
@@ -181,7 +186,7 @@ protected theorem tsum_comp_eq_tsum_of_equiv (e : α ≃ β) (g : β → ℕ∞)
 
 protected theorem tsum_subtype_mono (f : α → ℕ∞) {s t : Set α} (h : s ⊆ t) :
     ∑' x : s, f x ≤ ∑' x : t, f x :=
-  ENat.tsum_comp_le_tsum_of_injective (inclusion_injective h) _
+  ENat.tsum_comp_le_tsum_of_injective (inclusion_injective h) (fun x : t ↦ f x)
 
 protected theorem tsum_subtype_sigma {β : α → Type*} (f : ∀ a, β a → ℕ∞) :
     ∑' p : Σa, β a, f p.1 p.2 = ∑' (a) (b), f a b :=

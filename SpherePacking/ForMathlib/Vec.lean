@@ -2,6 +2,12 @@ module
 
 public import Mathlib.Data.Fin.VecNotation
 
+/-!
+# Vectors
+
+Auxiliary lemmas about finite vectors.
+-/
+
 @[expose] public section
 
 variable {m : ℕ} {α : Type*}

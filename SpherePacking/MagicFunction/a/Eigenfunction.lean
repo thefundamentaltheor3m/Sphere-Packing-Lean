@@ -8,6 +8,12 @@ module
 
 public import SpherePacking.MagicFunction.a.Schwartz
 
+/-!
+# The Fourier Eigenfunction Property of `a`
+
+This file establishes that the function `a` is a `+1`-eigenfunction of the Fourier transform.
+-/
+
 @[expose] public section
 
 open MagicFunction.a.SchwartzIntegrals MagicFunction.FourierEigenfunctions SchwartzMap
@@ -23,7 +29,7 @@ lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace �
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
     (FourierTransform.fourierCLE ℂ _) ((FourierTransform.fourierCLE ℂ _) f) = fun x => f (-x) :=
 by
-  ext x; change 𝓕 (𝓕 f) x = f (-x)
+  ext x; change 𝓕 (𝓕 ⇑f) x = f (-x)
   simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using
     congrArg (fun g : V → E => g (-x))
       (f.continuous.fourierInv_fourier_eq
@@ -51,14 +57,14 @@ theorem perm_₃_I₄ : (FourierTransform.fourierCLE ℂ _) (I₃ + I₄) = I₁
 theorem perm_I₆ : (FourierTransform.fourierCLE ℂ _) (I₆) = I₅ :=
 by
   simpa [← perm_I₅] using
-    radial_inversion I₅ (fun _ => by
-      simp [I₅, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
+    radial_inversion I₅ (isRadial_schwartzMap_multidimensional_of_schwartzMap_real _ _).even
 
 end Integral_Permutations
 
 section Eigenfunction
 
-theorem eig_a : (FourierTransform.fourierCLE ℂ _) a = a := by
+theorem eig_a : 𝓕 a = a := by
+  change FourierTransform.fourierCLE ℂ _ a = a
   rw [a_eq_sum_integrals_SchwartzIntegrals]
   have hrw : I₁ + I₂ + I₃ + I₄ + I₅ + I₆ = (I₁ + I₂) + (I₃ + I₄) + I₅ + I₆ := by ac_rfl
   rw [hrw, map_add, map_add, map_add, perm_I₁_I₂, perm_I₅, perm_₃_I₄, perm_I₆]

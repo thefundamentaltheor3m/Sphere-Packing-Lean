@@ -5,8 +5,6 @@ public import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ForMathlib.AtImInfty
 
-@[expose] public section
-
 /-!
 # Limits at infinity
 
@@ -16,6 +14,8 @@ namespace.
 TODO:
 * Are any of these results in Mathlib, perhaps phrased in some other way?
 -/
+
+@[expose] public section
 
 open scoped Real
 open UpperHalfPlane hiding I

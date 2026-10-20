@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -11,9 +9,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
-/-! # Constructing Upper-Bounds for I₅
+/-!
+# Constructing Upper-Bounds for I₅
 
 The purpose of this file is to construct bounds on the integral `I₅` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
@@ -21,6 +18,8 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 ## TODO:
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
@@ -200,7 +199,7 @@ lemma I₅'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
+    have h₁ : CompleteSpace ℝ := inferInstance
     have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
     conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
     positivity

@@ -2,8 +2,6 @@
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
-
-M4R File
 -/
 module
 
@@ -11,9 +9,8 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
-@[expose] public section
-
-/-! # Constructing Upper-Bounds for I₆
+/-!
+# Constructing Upper-Bounds for I₆
 
 The purpose of this file is to construct bounds on the integral `I₆` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
@@ -21,6 +18,8 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 ## TODO:
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
+
+@[expose] public section
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
@@ -105,7 +104,7 @@ lemma I₆'_bounding_aux_3 (r : ℝ) (hr : 0 ≤ r) : ∃ C₀ > 0,
     ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
+    have h₁ : CompleteSpace ℝ := inferInstance
     have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
     conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
     positivity

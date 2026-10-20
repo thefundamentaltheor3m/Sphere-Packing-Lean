@@ -9,8 +9,14 @@ module
 public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
 public import Mathlib.Analysis.RCLike.Basic
-public import Mathlib.Data.Complex.Basic
+public import Mathlib.Basic.Complex.Basic
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+
+/-!
+# Integral Parametrisations
+
+Parametrisations of the contours used to define the magic-function integrals.
+-/
 
 @[expose] public section
 
@@ -57,7 +63,7 @@ open scoped UpperHalfPlane
 lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
-    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
+    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
@@ -66,7 +72,7 @@ lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
 lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
-    mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
+    mul_zero, I_im, ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
@@ -75,7 +81,7 @@ lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
 lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
-    ofReal_re, one_mul, zero_add, gt_iff_lt]
+    ofReal_re, one_mul, zero_add]
   exact ht.1
 
 lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by
@@ -155,22 +161,10 @@ section transforms_mem
 open Matrix Matrix.SpecialLinearGroup UpperHalfPlane ModularGroup
 open scoped MatrixGroups ComplexConjugate
 
-lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
-
-lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
-
-lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
-
-lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
-  simp only [← ModularGroup.ST_eq]; norm_cast
-
-lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
-  simp only [← ModularGroup.S_eq]; norm_cast
-
 lemma neg_inv_one_add_eq_ST_coe (z : ℍ) :
     -1 / ((z : ℂ) + 1) = UpperHalfPlane.coe ((S * T) • z) := by
   rw [specialLinearGroup_apply]
-  simp_all [ST_eq]
+  simp_all
 
 lemma neg_inv_one_add_mem (z : ℍ) : 0 < (-1 / ((z : ℂ) + 1)).im := by
   rw [neg_inv_one_add_eq_ST_coe, coe_im]
@@ -184,7 +178,7 @@ lemma neg_inv_one_add_eq_ST (z : ℍ) :
 lemma neg_inv_eq_S_coe (z : ℍ) :
     -1 / z = UpperHalfPlane.coe (S • z) := by
   rw [specialLinearGroup_apply]
-  simp_all [S_eq]
+  simp_all
 
 lemma neg_inv_mem (z : ℍ) : 0 < (-1 / (z : ℂ)).im := by
   rw [neg_inv_eq_S_coe, coe_im]
@@ -194,6 +188,19 @@ lemma neg_inv_eq_S (z : ℍ) :
     ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
   apply UpperHalfPlane.ext
   rw [← neg_inv_eq_S_coe]
+
+/-- The Möbius map `w ↦ -1/w` sends the upper-half-plane set `ℍ₀ ⊆ ℂ` to itself.
+    (Set-level analogue of `neg_inv_mem`, which is stated for the subtype `ℍ`.) -/
+theorem neg_inv_mem_of_mem {w : ℂ} (hw : w ∈ ℍ₀) : -1 / w ∈ ℍ₀ := by
+  simpa [neg_div, one_div] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w, hw⟩
+
+/-- `w ↦ -1/w` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_mapsto : MapsTo (fun w : ℂ ↦ -1 / w) ℍ₀ ℍ₀ := fun _ hw ↦ neg_inv_mem_of_mem hw
+
+/-- For a real shift `c` (`c.im = 0`), `z ↦ -1/(z + c)` maps `ℍ₀` into `ℍ₀`. -/
+theorem neg_inv_add_mapsto {c : ℂ} (hc : c.im = 0) :
+    MapsTo (fun z : ℂ ↦ -1 / (z + c)) ℍ₀ ℍ₀ := fun z hz ↦
+  neg_inv_mem_of_mem (show z + c ∈ ℍ₀ by rw [mem_ofPred_eq, add_im, hc, add_zero]; exact hz)
 
 end transforms_mem
 

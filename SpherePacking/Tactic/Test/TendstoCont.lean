@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2025 Cameron Freer. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Cameron Freer
+-/
 module
 
 public import SpherePacking.Tactic.TendstoCont
@@ -7,6 +12,14 @@ public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+
+/-!
+# Tests for the `tendsto_cont` tactic
+
+The `#guard_msgs` tests in this file are sensitive to any other diagnostics emitted at the
+guarded commands, so this file must keep a style-conformant header (otherwise
+`linter.style.header` warnings can leak into the `#guard_msgs` output and fail CI).
+-/
 
 @[expose] public section
 
@@ -253,12 +266,14 @@ section InlineArgs
 private def inlineFn : ℝ → ℝ := fun _ => 3
 
 private theorem inlineFn_tendsto : Tendsto inlineFn atTop (nhds 3) := by
-  simpa [inlineFn] using tendsto_const_nhds
+  change Tendsto (fun _ : ℝ => (3 : ℝ)) atTop (nhds 3)
+  exact tendsto_const_nhds
 
 private def inlineFn₂ : ℝ → ℝ := fun _ => 2
 
 private theorem inlineFn₂_tendsto : Tendsto inlineFn₂ atTop (nhds 2) := by
-  simpa [inlineFn₂] using tendsto_const_nhds
+  change Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhds 2)
+  exact tendsto_const_nhds
 
 -- Without inline arg, no candidate exists
 /-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
@@ -303,7 +318,8 @@ section AttrRegistration
 private def attrFn : ℝ → ℝ := fun _ => 0
 
 private theorem attrFn_tendsto : Tendsto attrFn (nhds 0) (nhds 0) := by
-  simpa [attrFn] using tendsto_const_nhds
+  change Tendsto (fun _ : ℝ => (0 : ℝ)) (nhds 0) (nhds 0)
+  exact tendsto_const_nhds
 
 -- Before registration: fails
 /-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `𝓝 0` -/

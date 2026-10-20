@@ -2,6 +2,12 @@ module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
 
+/-!
+# `ℤ`-Lattices
+
+Auxiliary lemmas about `ℤ`-lattices.
+-/
+
 @[expose] public section
 
 open ZSpan Module

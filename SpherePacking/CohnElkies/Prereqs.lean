@@ -25,6 +25,12 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.ForMathlib.InvPowSummability
 
+/-!
+# Prerequisites for the Cohn–Elkies Bound
+
+Auxiliary results on Schwartz functions used in the proof of the Cohn–Elkies bound.
+-/
+
 @[expose] public section
 
 open BigOperators Bornology
@@ -43,7 +49,7 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 -- def bilinFormOfRealInner.dualSubmodule : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
 -- carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_[ℝ] = ↑n }
 -- zero_mem' := by
--- simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
+-- simp only [Subtype.forall, Set.mem_ofPred_eq, inner_zero_left]
 -- intro a _
 -- use 0
 -- rw [Int.cast_zero]
@@ -226,7 +232,7 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
             rw [Measure.restrict_apply_self, Measure.restrict_apply_superset hInclusion]
           exact lt_of_lt_of_le hUpos this
         intro y hy
-        rw [Set.mem_setOf_eq]
+        rw [Set.mem_ofPred_eq]
         specialize hU₃ y hy
         exact Ne.symm (ne_of_lt hU₃)
       rw [Measure.restrict_apply_self]
@@ -250,12 +256,12 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
   · exact fun a ↦ SchwartzMap.ext (congrFun a)
   · intro hf
     rw [hf]
-    exact coeFn_zero
+    exact FunLike.coe_zero
 
 omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
   (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
-  simp [← f.toFun_eq_zero_iff_zero]
+  rw [← f.toFun_eq_zero_iff_zero]
   exact f.continuous.integral_zero_iff_zero_of_nonneg f.integrable hnn
 
 end SchwartzMap

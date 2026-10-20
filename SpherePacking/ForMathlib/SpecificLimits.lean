@@ -11,6 +11,12 @@ module
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Analysis.Complex.Basic
 
+/-!
+# Specific Limits
+
+Auxiliary lemmas computing specific limits used elsewhere in the project.
+-/
+
 @[expose] public section
 
 open Filter

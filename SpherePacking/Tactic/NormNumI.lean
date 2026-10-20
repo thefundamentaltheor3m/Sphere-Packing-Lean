@@ -5,7 +5,13 @@ Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Data.Complex.Basic
+public import Mathlib.Basic.Complex.Basic
+
+/-!
+# The `norm_numI` Tactic
+
+A tactic for normalising expressions involving the imaginary unit `I`.
+-/
 
 @[expose] public section
 
@@ -24,12 +30,13 @@ theorem split_one : (1 : ℂ) = ⟨1, 0⟩ := rfl
 theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ}
     (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
     z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := by
-  substs h₁ h₂
+  subst h₁ h₂
   rfl
 
 theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ :=
-  Ring.mul_congr h₁ h₂ rfl
+    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ := by
+  subst h₁ h₂
+  exact Complex.ext (by simp [Complex.mul_re]) (by simp [Complex.mul_im])
 
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
     z⁻¹ = ⟨x / (x * x + y * y), - y / (x * x + y * y)⟩ := by
@@ -132,8 +139,10 @@ meta def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) 
   let ⟨a, b, pf⟩ ← parse z
   let ra ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) a
   let rb ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) b
-  let { expr := (a' : Q(ℝ)), proof? := (pf_a : Q($a = $a')) } ← ra.toSimpResult | unreachable!
-  let { expr := (b' : Q(ℝ)), proof? := (pf_b : Q($b = $b')) } ← rb.toSimpResult | unreachable!
+  let { expr := (a' : Q(ℝ)), proof? := (pf_a : Q($a = $a')), cache := _ } ←
+    ra.toSimpResult | unreachable!
+  let { expr := (b' : Q(ℝ)), proof? := (pf_b : Q($b = $b')), cache := _ } ←
+    rb.toSimpResult | unreachable!
   return ⟨a', b', q(eq_eq $pf $pf_a $pf_b)⟩
 
 elab "norm_numI" : conv => do
@@ -141,7 +150,7 @@ elab "norm_numI" : conv => do
   unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
   have z : Q(ℂ) := z
   let ⟨a, b, pf⟩ ← normalize z
-  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
+  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf, cache := true }
 
 -- Testing the `parse` function
 elab "norm_numI_parse" : conv => do
@@ -167,10 +176,10 @@ such that `norm_num` successfully recognises both the real and imaginary parts o
   let ⟨az, bz, pfz⟩ ← NormNumI.parse z
   let ⟨aw, bw, pfw⟩ ← NormNumI.parse w
   let ⟨ba, ra⟩ ← deriveBool q($az = $aw)
-  match ba with
+  match (dependent := true) ba with
   | true =>
     let ⟨bb, rb⟩ ← deriveBool q($bz = $bw)
-    match bb with
+    match (dependent := true) bb with
     | true => return Result'.isBool true q(NormNumI.eq_of_eq_of_eq_of_eq $pfz $pfw $ra $rb)
     | false => return Result'.isBool false q(NormNumI.ne_of_im_ne $pfz $pfw $rb)
   | false => return Result'.isBool false q(NormNumI.ne_of_re_ne $pfz $pfw $ra)

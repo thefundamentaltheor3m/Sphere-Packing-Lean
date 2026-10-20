@@ -5,6 +5,12 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Basic
 public import Mathlib.Topology.Instances.ENat
 public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 
+/-!
+# Extended Naturals
+
+Auxiliary lemmas about infinite sums over `ℕ∞`.
+-/
+
 @[expose] public section
 
 theorem ENat.tsum_const {α : Type*} (c : ENat) :
@@ -26,7 +32,7 @@ theorem ENat.tsum_const {α : Type*} (c : ENat) :
       (n : ℕ∞) < s.card := by simp only [Nat.cast_lt, hs, Nat.lt_succ_self n]
       _ ≤ t.card := by simpa using Finset.card_le_card ht
       _ = t.card * 1 := by simp
-      _ ≤ t.card * c := mul_le_mul_right (ENat.one_le_iff_ne_zero.2 hc) _
+      _ ≤ t.card * c := mul_le_mul_right (Order.one_le_iff_ne_zero.2 hc) _
 
 theorem ENat.tsum_set_const {α : Type*} (s : Set α) (c : ENat) :
     ∑' (_ : s), c = s.encard * c := by

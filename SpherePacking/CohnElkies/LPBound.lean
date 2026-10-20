@@ -5,7 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Logic.IsEmpty.Basic
+public import Mathlib.Basic.IsEmpty.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
@@ -14,6 +14,12 @@ public import Mathlib.Analysis.Complex.Basic
 public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.Basic.PeriodicPacking
+
+/-!
+# The Cohn–Elkies Linear Programming Bound
+
+This file proves the Cohn–Elkies linear programming bound on sphere packing densities.
+-/
 
 @[expose] public section
 
@@ -156,7 +162,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
-      add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
+      add_zero, zero_apply, ofReal_eq_zero]
     exact h𝓕frezero x
   exact fourier_ne_zero hne_zero h𝓕fzero
 
@@ -581,7 +587,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
         -- intro hContra
         -- rw [← P.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers Fact.out]
         unfold PeriodicSpherePacking.numReps
-        haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
+        have : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
           rw [nonempty_quotient_iff]
           assumption
         exact Fintype.card_ne_zero
@@ -645,7 +651,7 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
   cases isEmpty_or_nonempty ↑P.centers
   · case inl instEmpty =>
     rw [P.density_of_centers_empty hd]
-    exact zero_le _
+    exact zero_le
   · case inr instNonempty =>
     let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (P.basis_index_equiv)

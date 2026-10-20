@@ -6,8 +6,6 @@ public import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
-@[expose] public section
-
 /-!
 # Auxiliary theorems for the slash actions groups SL(2, ℤ) and Γ(2)
 
@@ -19,21 +17,45 @@ These theorems will be used to prove that 4-th powers of Jacobi theta functions 
 are modular forms of weight 2 and level Γ(2).
 -/
 
+@[expose] public section
+
 open scoped ModularForm MatrixGroups
 open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
+/-- The matrix `[[1, 2], [0, 1]]` as an element of `SL(2, ℤ)`. -/
+def αSL : SL(2, ℤ) := ⟨!![1, 2; 0, 1], by simp⟩
 
-def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
+/-- The matrix `[[1, 0], [2, 1]]` as an element of `SL(2, ℤ)`. -/
+def βSL : SL(2, ℤ) := ⟨!![1, 0; 2, 1], by simp⟩
 
-def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
+/-- The matrix `-I` as an element of `SL(2, ℤ)`. -/
+def negISL : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
 
-theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by ext; simp [α, T, sq]
+@[simp] theorem coe_αSL : (αSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 2; 0, 1] := rfl
 
-theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by ext; simp [β, S, α, negI]
+@[simp] theorem coe_βSL : (βSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 0; 2, 1] := rfl
+
+@[simp] theorem coe_negISL : (negISL : Matrix (Fin 2) (Fin 2) ℤ) = !![-1, 0; 0, -1] := rfl
+
+def α : Γ 2 := ⟨αSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def β : Γ 2 := ⟨βSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def negI : Γ 2 := ⟨negISL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [T]; decide⟩ := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [α, sq, SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+
+theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [β, α, negI, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+      Matrix.adjugate_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j; fin_cases i <;> fin_cases j <;> rfl
@@ -53,10 +75,12 @@ theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]; simp [S]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]
+  simp [SpecialLinearGroup.map_apply_coe]
 
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]; simp [T]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]
+  simp [SpecialLinearGroup.map_apply_coe]
 
 end slash_action
 
@@ -200,8 +224,13 @@ lemma Γ2_descent (A : Γ 2) (h : A.1 1 0 ≠ 0) :
   simp only [Subgroup.coe_mul, SubgroupClass.coe_zpow, SpecialLinearGroup.coe_mul,
     α_zpow_val, β_zpow_val, Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply,
     Matrix.cons_val_zero, Matrix.cons_val_one] at hn hm ⊢
-  convert hm.trans hn using 1
-  ring_nf
+  have h_entry :
+      (2 * m * 1 + 1 * 0) * A.val.val 0 0 +
+          (2 * m * (2 * n) + 1 * 1) * A.val.val 1 0 =
+        A.val.val 1 0 + 2 * m * (A.val.val 0 0 + 2 * n * A.val.val 1 0) := by
+    ring
+  rw [h_entry]
+  exact hm.trans hn
 
 theorem Γ2_generate : (⊤ : Subgroup (Γ 2)) = Subgroup.closure {α, β, negI} := by
   refine le_antisymm ?_ le_top

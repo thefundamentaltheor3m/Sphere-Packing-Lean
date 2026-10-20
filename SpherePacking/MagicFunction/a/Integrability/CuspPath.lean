@@ -7,8 +7,6 @@ module
 
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
-@[expose] public section
-
 /-!
 # Cusp-Approaching Path Continuity
 
@@ -18,6 +16,8 @@ Helpers for cusp-approaching paths, specifically continuity of φ₀ along paths
 
 - `continuousOn_φ₀''_cusp_path`: t ↦ φ₀''(-1/(I*t)) is continuous on (0, ∞)
 -/
+
+@[expose] public section
 
 open MeasureTheory Complex Real Set MagicFunction.a.ComplexIntegrands
 

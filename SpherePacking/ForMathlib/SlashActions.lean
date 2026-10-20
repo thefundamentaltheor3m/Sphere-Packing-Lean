@@ -3,6 +3,12 @@ module
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.NumberTheory.ModularForms.SlashActions
 
+/-!
+# Slash Actions
+
+Auxiliary lemmas about slash actions of the modular group.
+-/
+
 @[expose] public section
 
 -- Maybe this belongs in NumberTheory/ModularForms/SlashActions.lean, next to ModularForm.mul_slash
