@@ -48,7 +48,7 @@ public def SchwartzMap.mkOfCocompact (f : E → F) (smooth : ContDiff ℝ ∞ f)
     obtain ⟨C, hC⟩ := decay k n
     rw [Filter.Eventually, Filter.mem_cocompact] at hC
     obtain ⟨t, ht, ht'⟩ := hC
-    simp only [Set.subset_def, Set.mem_compl_iff, Set.mem_setOf_eq] at ht'
+    simp only [Set.subset_def, Set.mem_compl_iff, Set.mem_ofPred_eq] at ht'
     set g : E → ℝ := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖
     have : Continuous g := by
       apply Continuous.mul
