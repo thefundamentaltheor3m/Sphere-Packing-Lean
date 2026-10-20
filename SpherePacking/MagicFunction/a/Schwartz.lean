@@ -120,29 +120,23 @@ noncomputable section SchwartzMap
 
 namespace MagicFunction.a.RadialSchwartzIntegrals
 
-def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₁'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₁'_decayOn
+def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₁'_smooth'
+  MagicFunction.a.SchwartzProperties.I₁'_decayOn
 
-def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₂'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₂'_decayOn
+def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₂'_smooth'
+  MagicFunction.a.SchwartzProperties.I₂'_decayOn
 
-def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₃'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₃'_decayOn
+def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₃'_smooth'
+  MagicFunction.a.SchwartzProperties.I₃'_decayOn
 
-def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₄'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₄'_decayOn
+def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₄'_smooth'
+  MagicFunction.a.SchwartzProperties.I₄'_decayOn
 
-def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₅'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₅'_decayOn
+def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₅'_smooth'
+  MagicFunction.a.SchwartzProperties.I₅'_decayOn
 
-def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 1) MagicFunction.a.SchwartzProperties.I₆'_smooth' <| by
-  simp only [sub_self]
-  exact MagicFunction.a.SchwartzProperties.I₆'_decayOn
+def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₆'_smooth'
+  MagicFunction.a.SchwartzProperties.I₆'_decayOn
 
 def I₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₁'.toRadialSchwartzMap ℝ⁸
 
@@ -174,6 +168,7 @@ def a' : 𝓢(ℝ, ℂ) :=
 @[simps!]
 def a : RadialSchwartzMap ℂ ℝ⁸ ℂ := a'.toRadialSchwartzMap ℝ⁸
 
+-- TODO: we may want a `Set.EqOn` result equating these with the original integrals on `[0, ∞)`.
 theorem a_eq_sum_RadialSchwartzIntegrals : a =
     MagicFunction.a.RadialSchwartzIntegrals.I₁
   + MagicFunction.a.RadialSchwartzIntegrals.I₂

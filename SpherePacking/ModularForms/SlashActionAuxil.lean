@@ -25,15 +25,37 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
+/-- The matrix `[[1, 2], [0, 1]]` as an element of `SL(2, ℤ)`. -/
+def αSL : SL(2, ℤ) := ⟨!![1, 2; 0, 1], by simp⟩
 
-def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
+/-- The matrix `[[1, 0], [2, 1]]` as an element of `SL(2, ℤ)`. -/
+def βSL : SL(2, ℤ) := ⟨!![1, 0; 2, 1], by simp⟩
 
-def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
+/-- The matrix `-I` as an element of `SL(2, ℤ)`. -/
+def negISL : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
 
-theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by ext; simp [α, T, sq]
+@[simp] theorem coe_αSL : (αSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 2; 0, 1] := rfl
 
-theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by ext; simp [β, S, α, negI]
+@[simp] theorem coe_βSL : (βSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 0; 2, 1] := rfl
+
+@[simp] theorem coe_negISL : (negISL : Matrix (Fin 2) (Fin 2) ℤ) = !![-1, 0; 0, -1] := rfl
+
+def α : Γ 2 := ⟨αSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def β : Γ 2 := ⟨βSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+def negI : Γ 2 := ⟨negISL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+
+theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [T]; decide⟩ := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [α, sq, SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+
+theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [β, α, negI, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+      Matrix.adjugate_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j; fin_cases i <;> fin_cases j <;> rfl
@@ -53,10 +75,12 @@ theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]; simp [S]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]
+  simp [SpecialLinearGroup.map_apply_coe]
 
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]; simp [T]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]
+  simp [SpecialLinearGroup.map_apply_coe]
 
 end slash_action
 
