@@ -35,7 +35,8 @@ The standard q-expansion uses `q = exp(2πiz)`, while `fouterm` uses `exp(πinz)
 ## References
 
 - Blueprint Corollaries 7.5-7.7
-- `SpherePacking.ModularForms.FG`: q-expansion identities (`E₂_mul_E₄_sub_E₆`, `E₄_sigma_qexp`)
+- `SpherePacking.ModularForms.Eisenstein` and `FG`: q-expansion identities (`E₄_sigma_qexp`,
+  `DE₄_qexp` with `ramanujan_E₄`)
 -/
 
 @[expose] public section
@@ -60,10 +61,7 @@ for any integer starting index. -/
 lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     (hpoly : c =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
     (z : ℍ) (n₀ : ℤ) : Summable fun (i : ℕ) ↦ fouterm c z (i + n₀) := by
-  -- Key fact: ‖exp(πiz)‖ < 1 for z : ℍ
   have hr : ‖Complex.exp (π * Complex.I * z)‖ < 1 := norm_exp_pi_I_z_lt_one z
-  -- Factor fouterm c z (i + n₀) = u(i) * r^i
-  -- where r = cexp(π * I * z) and u(i) = cexp(π * I * n₀ * z) * c(i + n₀)
   let r := cexp (π * Complex.I * z)
   let const := cexp (π * Complex.I * n₀ * z)
   let u : ℕ → ℂ := fun i ↦ const * c (i + n₀)
@@ -72,10 +70,8 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     rw [show (↑π * Complex.I * (↑i + ↑n₀) * ↑z : ℂ) =
         ↑π * Complex.I * ↑n₀ * ↑z + ↑π * Complex.I * ↑i * ↑z by ring, Complex.exp_add]
     ring_nf
-  -- u has polynomial growth: ‖u n‖ = ‖const‖ * ‖c(n+n₀)‖ is O(n^k)
   have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
     simpa [u, Nat.cast_pow] using (hpoly' c n₀ k hpoly).const_mul_left const
-  -- Apply summability theorem
   simp_rw [h_factor]
   exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hu)
 
@@ -167,7 +163,11 @@ lemma g_qexp_nat (z : ℍ) :
     intro m hm
     have hm0 : m ≠ 0 := by rintro rfl; simp [bg] at hm
     exact ⟨⟨m, Nat.pos_of_ne_zero hm0⟩, rfl⟩
-  rw [E₂_mul_E₄_sub_E₆, ← tsum_mul_left, ← PNat.coe_injective.tsum_eq
+  have hg : E₂ z * E₄ z - E₆ z =
+      720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * ↑π * Complex.I * n * z) := by
+    have h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z) := congrFun ramanujan_E₄ z
+    linear_combination -3 * h + 3 * DE₄_qexp z
+  rw [hg, ← tsum_mul_left, ← PNat.coe_injective.tsum_eq
     (f := fun m : ℕ ↦ bg m * cexp (2 * ↑π * Complex.I * ↑m * ↑z)) hsupp]
   refine tsum_congr (fun n ↦ ?_)
   simp only [bg]
@@ -225,19 +225,16 @@ lemma norm_E₄_le (z : ℍ) (hz : 1 / 2 ≤ z.im) : ‖E₄ z‖ ≤ B_E₄ := 
   have hc : 2 * π * (1 / 2 : ℝ) = π := by ring
   simpa only [B_E₄, hc, add_zero, Nat.cast_zero, mul_zero, zero_mul, Real.exp_zero, mul_one] using
     Complex.norm_qseries_shift_le 0 (c := 1 / 2)
-      (by simpa only [hc] using summable_norm_mul_exp bE₄_poly) (z : ℂ) hz
+      (by simpa only [hc] using summable_norm_mul_exp bE₄_poly) hz
 
 /-- `E₂E₄ − E₆` decays like `exp(-2π·im)` on `im ≥ 1/2`, with constant `B_g`. -/
 lemma norm_g_le (z : ℍ) (hz : 1 / 2 ≤ z.im) :
     ‖E₂ z * E₄ z - E₆ z‖ ≤ B_g * rexp (-(2 * π) * z.im) := by
   rw [g_qexp_nat z]
   have hc : 2 * π * (1 / 2 : ℝ) = π := by ring
-  have hvan : ∀ m < 1, bg m = 0 := by
-    intro m hm
-    have : m = 0 := by omega
-    simp [this, bg]
+  have hvan : ∀ m < 1, bg m = 0 := fun m hm ↦ by simp [Nat.lt_one_iff.mp hm, bg]
   have h := Complex.norm_qseries_le_of_coeff_vanish 1 (c := 1 / 2)
-    hvan (by simpa only [hc] using summable_norm_mul_exp bg_poly) (z : ℂ) hz
+    hvan (by simpa only [hc] using summable_norm_mul_exp bg_poly) hz
   have hexp : -(2 * π) * (z.im - 1 / 2) = π + -(2 * π) * z.im := by ring
   rw [hc, Nat.cast_one, mul_one, show (z : ℂ).im = z.im from rfl, hexp, Real.exp_add] at h
   simpa only [B_g, mul_assoc, mul_left_comm] using h
