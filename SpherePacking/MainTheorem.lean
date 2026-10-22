@@ -10,7 +10,7 @@ Statement of the main theorem: `E₈` realises the optimal sphere packing densit
 
 @[expose] public section
 
-open SpherePacking E8
+open EuclideanSpace E8
 
 theorem SpherePacking.MainTheorem : SpherePackingConstant 8 = E8Packing.density :=
   sorry

@@ -24,7 +24,7 @@ This file proves the Cohn–Elkies linear programming bound on sphere packing de
 @[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
+open EuclideanSpace Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
   Bornology Summable Module
 
 variable {d : ℕ}
