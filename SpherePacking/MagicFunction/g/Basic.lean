@@ -16,6 +16,15 @@ public import SpherePacking.Tactic.NormNumI
 /-! # Viazovska's Magic Function
 
 In this file, we define Viazovska's magic funtction `g`.
+
+## Sign conventions
+
+With `b` defined as in the blueprint (`def:b-definition`, i.e. with `J₆ = -2 ∫_i^{i∞} ψS`), the
+integral representations `a_eq_integral` and `b_eq_integral` read
+`a = 4i sin²(π‖x‖²/2) ∫₀^∞ t² φ₀(i/t) e^{-π‖x‖²t} dt` and
+`b = -4i sin²(π‖x‖²/2) ∫₀^∞ ψI(it) e^{-π‖x‖²t} dt` for `‖x‖ > √2`. The combination whose
+integrand is `A(t) = -t² φ₀(i/t) - 36 π⁻² ψI(it)` (which is negative, giving `g ≤ 0` outside the
+ball of radius `√2`) is therefore `g = (πi/8640) a - (i/(240π)) b`; see `g_eq_integral_A`.
 -/
 
 @[expose] public section
@@ -26,7 +35,7 @@ open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.
 open scoped FourierTransform
 
 /-- The Magic Function, `g`. -/
-noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 * π)) • b
+noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a - (I / (240 * π)) • b
 
 -- Note that in the proof, we need `g` to be Real-valued. We need to decide how we want to state
 -- this: either `g ∘ Complex.im = 0` or we actually construct an element of `𝓢(ℝ⁸, ℝ)`...
@@ -34,7 +43,7 @@ noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 *
 section Zero
 
 theorem g_zero : g 0 = 1 := by
-  simp only [g, add_apply, smul_apply, a_zero, neg_mul, smul_eq_mul, b_zero, mul_zero, add_zero]
+  simp only [g, sub_apply, smul_apply, a_zero, neg_mul, smul_eq_mul, b_zero, mul_zero, sub_zero]
   ring_nf
   simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg]
   apply Complex.mul_inv_cancel
@@ -42,12 +51,14 @@ theorem g_zero : g 0 = 1 := by
   exact pi_ne_zero
 
 theorem fourier_g_zero : 𝓕 g 0 = 1 := by
-  simp only [g, FourierAdd.fourier_add, FourierSMul.fourier_smul, eig_a, eig_b, add_apply,
-    smul_apply, a_zero, smul_eq_mul]
-  have : (-b) 0 = -(b 0) := rfl
+  have hb : 𝓕 (-b) = b := by rw [FourierTransform.fourier_neg, eig_b, neg_neg]
+  have h : 𝓕 g = ((π * I) / 8640) • a + (I / (240 * π)) • b := by
+    rw [g, sub_eq_add_neg, ← smul_neg, FourierAdd.fourier_add, FourierSMul.fourier_smul,
+      FourierSMul.fourier_smul, eig_a, hb]
+  rw [h, add_apply, smul_apply, smul_apply, a_zero, b_zero, smul_eq_mul, smul_eq_mul, mul_zero,
+    add_zero]
   ring_nf
-  simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg, this, b_zero, neg_zero, mul_zero, one_div,
-    zero_mul, add_zero]
+  simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg]
   apply Complex.mul_inv_cancel
   norm_cast
   exact pi_ne_zero
