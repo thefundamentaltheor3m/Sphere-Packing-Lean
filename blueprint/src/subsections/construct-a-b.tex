@@ -210,7 +210,7 @@ Note that we can take the constants $C_0$, $C_{-2}$, and $C_{-4}$ as
     \end{equation}
 \end{lemma}
 \begin{proof}
-    \todo{The Lean statements \verb|I₁'_bounding|, \verb|I₃'_bounding|, \verb|I₅'_bounding| currently quantify the constant \emph{after} $r$ (``for all $r$ there exists $C$''), which is weaker than the uniform bound stated here; their proofs do go through the uniform bound of Corollary \ref{cor:phi0-bound}, so the quantifiers should be swapped.}
+    \todo{The Lean statements \texttt{I\_j'\_bounding} ($j = 1, 3, 5$) currently quantify the constant \emph{after} $r$ (``for all $r$ there exists $C$''), which is weaker than the uniform bound stated here; their proofs do go through the uniform bound of Corollary \ref{cor:phi0-bound}, so the quantifiers should be swapped.}
     We only prove the bound for $I_1(r)$, as the other two are similar.
     By the change of variable $z = -1 + i t$ for $t \in [0,1]$, we have
     $$
