@@ -68,9 +68,13 @@ theorem g_zero_eq_fourier_g_zero : g 0 = 𝓕 g 0 := by
 
 end Zero
 
+/-- `A(t) = -t² φ₀(i/t) - 36 π⁻² ψI(it)`, the integrand in the representation of `g` outside the
+ball of radius `√2` (Blueprint `prop:ineqA`). -/
 noncomputable def A (t : ℝ) :=
   - t ^ 2 * φ₀'' (I / t) - 36 * π ^ (-2 : ℤ) * ψI' (Complex.I * t)
 
+/-- `B(t) = -t² φ₀(i/t) + 36 π⁻² ψI(it)`, the integrand in the representation of `𝓕 g`
+(Blueprint `prop:ineqB`). -/
 noncomputable def B (t : ℝ) :=
   - t ^ 2 * φ₀'' (I / t) + 36 * π ^ (-2 : ℤ) * ψI' (Complex.I * t)
 
@@ -83,6 +87,22 @@ lemma B_eq {t : ℝ} (ht : 0 < t) :
     B t =
       - t ^ 2 * φ₀ ⟨I / t, by simp [ht]⟩
         + 36 * π ^ (-2 : ℤ) * ψI ⟨I * t, by simp [ht]⟩ := by rw [B, φ₀''_def, ψI'_def]
+
+/-- `A` in terms of `F` and `G`: for `t > 0`,
+`A t = -t² / Δ(i/t) * (F(i/t) + 18 π⁻² G(i/t))`. This follows from `φ₀ = F / Δ`
+(`φ₀_eq_F_div_disc`), `ψS = -G / (2Δ)` (`ψS_eq_neg_one_half_smul_G_div_disc`) and
+`ψI(it) = -t² ψS(i/t)` (`ψI'_I_mul_eq`). Blueprint `lemma:ineqABnew-equiv`. -/
+lemma A_eq_FG {t : ℝ} (ht : 0 < t) :
+    A t = -t ^ 2 / Δ ⟨I / t, by simp [ht]⟩
+      * (F ⟨I / t, by simp [ht]⟩ + 18 * π ^ (-2 : ℤ) * G ⟨I / t, by simp [ht]⟩) := by
+  sorry
+
+/-- `B` in terms of `F` and `G`: for `t > 0`,
+`B t = -t² / Δ(i/t) * (F(i/t) - 18 π⁻² G(i/t))`. Blueprint `lemma:ineqABnew-equiv`. -/
+lemma B_eq_FG {t : ℝ} (ht : 0 < t) :
+    B t = -t ^ 2 / Δ ⟨I / t, by simp [ht]⟩
+      * (F ⟨I / t, by simp [ht]⟩ - 18 * π ^ (-2 : ℤ) * G ⟨I / t, by simp [ht]⟩) := by
+  sorry
 
 /-- Integral representation of `g` in terms of `A`. -/
 theorem g_eq_integral_A {x : ℝ⁸} (hx : √2 < ‖x‖) :
@@ -98,10 +118,12 @@ theorem g_Fourier_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖) :
         * ∫ (t : ℝ) in Set.Ioi 0, B t * rexp (- π * ‖x‖ ^ 2 * t) := by
   sorry
 
-/-- `A` is negative on `(0, ∞)`. -/
+/-- `A` is negative on `(0, ∞)`: by `A_eq_FG`, this is `FG_inequality_1` at `1 / t` together with
+the positivity of `Δ` on the imaginary axis (`Δ_imag_axis_pos`). Blueprint `prop:ineqA`. -/
 theorem A_neg {t : ℝ} (ht : 0 < t) : (A t).re < 0 := by sorry
 
-/-- `B` is positive on `(0, ∞)`. -/
+/-- `B` is positive on `(0, ∞)`: by `B_eq_FG`, this is `FG_inequality_2` at `1 / t` together with
+the positivity of `Δ` on the imaginary axis (`Δ_imag_axis_pos`). Blueprint `prop:ineqB`. -/
 theorem B_pos {t : ℝ} (ht : 0 < t) : 0 < (B t).re := by sorry
 
 /-- `g` is nonpositive outside of the ball of radius `√2`. -/

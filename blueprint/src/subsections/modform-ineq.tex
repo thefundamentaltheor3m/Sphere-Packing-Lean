@@ -47,7 +47,7 @@ We have
 \eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psi-new}.
 \end{proof}
 
-\begin{lemma}\label{lemma:ineqABnew-equiv}\uses{lemma:F-G-phi-psi-identities, def:psiI-psiT-psiS, cor:disc-pos}
+\begin{lemma}\label{lemma:ineqABnew-equiv}\uses{lemma:F-G-phi-psi-identities, def:psiI-psiT-psiS, cor:disc-pos}\lean{ψI'_I_mul_eq, A_eq_FG, B_eq_FG}\leanok
 Inequality \eqref{eqn:ineqA} and \eqref{eqn:ineqB} are equivalent to
 \begin{align}
     F(it) + \frac{18}{\pi^2} G(it) > 0 \label{eqn:ineqAnew} \\
@@ -236,9 +236,10 @@ Finally, we are ready to prove Theorem~\ref{thm:g}.
 \uses{prop:a-fourier, prop:b-fourier, prop:a-double-zeros, prop:b-double-zeros, prop:ineqA, prop:ineqB, prop:a0, prop:b0}
 \lean{g, g_nonpos, g_Fourier_nonneg, g_zero, fourier_g_zero}\leanok
 The function
-$$g(x):=\frac{\pi\,i}{8640}a(x)+\frac{i}{240\pi}\,b(x)$$
+$$g(x):=\frac{\pi\,i}{8640}a(x)-\frac{i}{240\pi}\,b(x)$$
 satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 \end{theorem}
+Note the sign of the second term: with $b$ defined as in \eqref{eqn:b-definition} (which is the definition in \cite{Via2017}), Proposition \ref{prop:b-double-zeros} gives $b(r) = -4i \sin(\pi r^2/2)^2 \int_0^\infty \psi_I(it) e^{-\pi r^2 t}\,dt$ for $r > \sqrt{2}$, so the combination whose integrand is $A(t)$ below is $\frac{\pi i}{8640} a - \frac{i}{240 \pi} b$. (In \cite{Via2017} the function $g$ is written with a plus sign, but its equation (58) for $b$ has the opposite sign of its equations (52)--(53); both conventions give the same function $g$.)
 \begin{proof}
 First, we prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop:a-double-zeros} and \ref{prop:b-double-zeros} we know that for $r>\sqrt{2}$
 \begin{equation}\label{eqn:g A} g(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi r^2 t}\,dt\end{equation}

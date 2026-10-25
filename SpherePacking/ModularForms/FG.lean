@@ -109,6 +109,16 @@ theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal
 lemma Δ_eq_E₄_cube_sub_E₆_sq : Δ = 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2) :=
   funext fun z ↦ (ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z).trans (div_eq_inv_mul _ _)
 
+/-- The logarithmic derivative of `Δ` is `E₂`: `D Δ = E₂ Δ` (Blueprint `cor:logder-disc-E2`).
+Follows from `Δ_eq_E₄_cube_sub_E₆_sq`, the derivative rules `D_smul`, `D_sub`, `D_cube`, `D_sq`
+and the Ramanujan identities `ramanujan_E₄`, `ramanujan_E₆`. -/
+theorem D_Δ : D Δ = E₂ * Δ := by
+  sorry
+
+/-- `Δ` is annihilated by the weight-`12` Serre derivative: `∂₁₂ Δ = D Δ - E₂ Δ = 0`. -/
+theorem serre_D_Δ : serre_D 12 Δ = 0 := by
+  sorry
+
 /-- The modular linear differential equation satisfied by `F`. -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ * negDE₂ := by
   change serre_D 12 (D F - 10 * 12⁻¹ * E₂ * F) = _
