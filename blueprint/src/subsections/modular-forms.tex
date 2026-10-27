@@ -114,7 +114,7 @@ For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} 
 \begin{equation}\label{eqn:Ek-definition}
 E_k(z):=\frac{1}{2}\sum_{(c,d)\in\Z^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeriesSIF}
+\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeriesSIF, E₄_S_transform, E₆_S_transform}\leanok
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:Ek-trans-S}
@@ -130,7 +130,7 @@ Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 
 Since modular forms are holomorphic and periodic they have a Fourier expansions. One thing that we
 will need is the growth of the Fourier coefficients, which is given by the following lemma.
 
-\begin{lemma}\label{lemma:mod_form_poly_growth}\leanok : Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
+\begin{lemma}\label{lemma:mod_form_poly_growth}\lean{ModularFormClass.qExpansion_isBigO}\leanok : Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
 \end{lemma}
 
 \begin{proof}\leanok
@@ -206,7 +206,7 @@ $$
 where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{ModularForm.eta_comp_eq_csqrt_I_inv}\uses{def:dedekind_eta}\leanok
 The Dedekind eta function transforms as
 $$
     \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
@@ -316,7 +316,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\lean{ModularForm.dimension_level_one, weight_four_one_dimensional, weight_six_one_dimensional, weight_eight_one_dimensional, cuspform_weight_lt_12_zero}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
@@ -516,7 +516,7 @@ H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
-\begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma:theta-transform-S-T, lemma:theta-modular, lemma:disc-cuspform}
+\begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma:theta-transform-S-T, lemma:theta-modular, lemma:disc-cuspform, lemma:jacobi-identity}\lean{E₄_eq_H_sum_sq, E₆_eq_H, Δ_eq_H₂_H₃_H₄}\leanok
 We have
 \begin{align}
     E_4 &= \frac{1}{2}(H_{2}^{2} + H_{3}^{2} + H_{4}^{2}) = H_{2}^{2} + H_{2}H_{4} + H_{4}^{2} \label{eqn:e4theta} \\
@@ -528,10 +528,18 @@ We have
 We can prove these similarly as Lemma \ref{lemma:jacobi-identity}.
 Right hand sides of \eqref{eqn:e4theta}, \eqref{eqn:e6theta}, and \eqref{eqn:disctheta} are all modular forms of level $\Gamma_1$ and desired weights, where \eqref{eqn:disctheta} is a cusp form since $H_2$ is.
 Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = \dim M_6(\Gamma_1) = \dim S_{12}(\Gamma_1) = 1$ and comparing the first nonzero $q$-coefficients.
+Alternatively, \eqref{eqn:e6theta} follows from \eqref{eqn:e4theta} by applying the Serre derivative $\partial_4$ and using \eqref{eqn:SE4} together with Proposition \ref{prop:theta-der}.
+\end{proof}
+
+\begin{lemma}\label{lemma:theta-nonvanishing}\uses{lemma:lv1-lv2-identities, cor:disc-nonvanishing}\lean{H₂_ne_zero, H₃_ne_zero, H₄_ne_zero, Θ₂_ne_zero}\leanok
+The functions $H_2$, $H_3$, $H_4$ (hence also $\Theta_2$, $\Theta_3$, $\Theta_4$) have no zeros in $\h$.
+\end{lemma}
+\begin{proof}
+Immediate from \eqref{eqn:disctheta} and the non-vanishing of $\Delta$ (Corollary \ref{cor:disc-nonvanishing}).
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
+\begin{corollary}\label{cor:theta-pos}\uses{lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}\leanok
 $H_2(it)$ and $H_4(it)$ are positive for $t > 0$.
 \end{corollary}
 \begin{proof}\leanok
@@ -653,7 +661,7 @@ Differentiating and squaring then gives us the following:
 Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
 By \Cref{cor:dim-mf}, they should be multiples of $E_4, E_6, E_4^2$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
-\begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition}
+\begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition, lemma:disc-E4E6}\lean{D_Δ, serre_D_Δ}\leanok
 \begin{equation}\label{eqn:logder-disc-E2}
     \Delta' = E_2 \Delta.
 \end{equation}
@@ -666,7 +674,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity, cor:dim-mf}\lean{serre_D_H₂, serre_D_H₃, serre_D_H₄, D_H₂, D_H₃, D_H₄}\leanok
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\
@@ -680,7 +688,7 @@ or equivalently,
     \partial_{2} H_{4} &= -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2}) \label{eqn:H4-serre-der}
 \end{align}
 \end{proposition}
-\begin{proof}
+\begin{proof}\leanok
 Equivalences are obvious from the definition of the Serre derivative.
 Define $f_{2}, f_{3}, f_{4}$ be the differences of the left and right hand sides of \eqref{eqn:H2-serre-der}, \eqref{eqn:H3-serre-der}, \eqref{eqn:H4-serre-der}.
 \begin{align}
@@ -730,12 +738,12 @@ The Serre derivative satisfies the following product rule: for any quasimodular 
 \end{proof}
 
 We also have the following useful theorem for proving positivity of quasimodular forms on the imaginary axis, which is \cite[Proposition 3.5, Corollary 3.6]{Lee}.
-\begin{theorem}\label{thm:anti-serre-der-pos}\uses{def:serre-der, cor:logder-disc-E2}
+\begin{theorem}\label{thm:anti-serre-der-pos}\uses{def:serre-der, cor:logder-disc-E2}\lean{antiSerreDerPos}\leanok
 Let $F$ be a holomorphic quasimodular cusp form with real Fourier coefficients.
 Assume that there exists $k$ such that $(\partial_{k}F)(it) > 0$ for all $t > 0$.
 If the first Fourier coefficient of $F$ is positive, then $F(it) > 0$ for all $t > 0$.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leanok
 By \eqref{eqn:logder-disc-E2}, we have
 \begin{align}
     \frac{\dd}{\dd t} \left( \frac{F(it)}{\Delta(it)^{\frac{k}{12}}}\right)

@@ -105,6 +105,21 @@ theorem ψS_eq_neg_one_half_smul_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ :=
     Pi.smul_apply, smul_eq_mul, hJ, hΔ]
   field
 
+/-- `ψI` in terms of the theta functions and the discriminant:
+`ψI = H₄³ (5 H₂² + 5 H₂ H₄ + 2 H₄²) / (2Δ)` (Blueprint Lemma `lemma:psi-new`, eqn `psiI-new`).
+Same argument as `ψS_eq_neg_one_half_smul_G_div_disc`, starting from `ψI_eq`. -/
+theorem ψI_eq_one_half_smul_H₄_cube_div_disc :
+    ψI = (1 / 2 : ℂ) • (H₄ ^ 3 * ((5 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (2 : ℂ) • H₄ ^ 2))
+      / Δ := by
+  sorry
+
+/-- `ψT = H₃³ (5 H₂² - 5 H₂ H₃ + 2 H₃²) / (2Δ)` (Blueprint Lemma `lemma:psi-new`, eqn `psiT-new`).
+Same argument as `ψS_eq_neg_one_half_smul_G_div_disc`, starting from `ψT_eq`. -/
+theorem ψT_eq_one_half_smul_H₃_cube_div_disc :
+    ψT = (1 / 2 : ℂ) • (H₃ ^ 3 * ((5 : ℂ) • H₂ ^ 2 - (5 : ℂ) • H₂ * H₃ + (2 : ℂ) • H₃ ^ 2))
+      / Δ := by
+  sorry
+
 end eq
 
 section rels
@@ -214,3 +229,48 @@ lemma ψS_slash_S_explicit₅ {t : ℝ} (ht : t ∈ Ioc 0 1) :
   ψS_slash_S_explicit (im_z₅'_pos ht)
 
 end rels_explicit
+
+section imag_axis
+
+/-- On the imaginary axis, `ψI (it) = -t² ψS (i / t)`: this is `ψS_slash_S_explicit` at `z = it`,
+using `-1 / (it) = i / t` and `(it)² = -t²`. It is the identity used to rewrite the inequalities
+`A < 0` and `B > 0` in terms of `F` and `G` (Blueprint Lemma `lemma:ineqABnew-equiv`). -/
+lemma ψI'_I_mul_eq {t : ℝ} (ht : 0 < t) : ψI' (I * t) = -t ^ 2 * ψS' (I / t) := by
+  sorry
+
+end imag_axis
+
+section bounds
+
+open Filter Asymptotics Topology
+
+/-- `|ψI z| ≤ C e^{2π Im z}` for `Im z > 1/2` (Blueprint Lemma `lemma:psi-bound`): by
+`ψI_eq_one_half_smul_H₄_cube_div_disc`, the numerator of `ψI` is bounded at `i∞` while `1 / Δ`
+grows like `e^{2π Im z}`. -/
+theorem norm_ψI_le :
+    ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖ψI z‖ ≤ C * Real.exp (2 * π * z.im) := by
+  sorry
+
+/-- `|ψT z| ≤ C e^{2π Im z}` for `Im z > 1/2` (Blueprint Lemma `lemma:psi-bound`). -/
+theorem norm_ψT_le :
+    ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖ψT z‖ ≤ C * Real.exp (2 * π * z.im) := by
+  sorry
+
+/-- `|ψS z| ≤ C e^{-π Im z}` for `Im z > 1/2` (Blueprint Lemma `lemma:psi-bound`): the numerator
+`H₂³ (…)` of `ψS = -G / (2Δ)` vanishes to order `3/2` at `i∞` (`G_vanishing_order`). -/
+theorem norm_ψS_le :
+    ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖ψS z‖ ≤ C * Real.exp (-π * z.im) := by
+  sorry
+
+/-- `ψI (it) = O(t⁻² e^{-π/t})` as `t → 0⁺` (Blueprint `cor:psiI-near-0-infty`), from
+`ψI'_I_mul_eq` and `norm_ψS_le`. -/
+theorem ψI'_isBigO_nhdsGT_zero :
+    (fun t : ℝ ↦ ψI' (I * t)) =O[𝓝[>] 0] fun t ↦ t ^ (-2 : ℤ) * Real.exp (-π / t) := by
+  sorry
+
+/-- `ψI (it) = O(e^{2πt})` as `t → ∞` (Blueprint `cor:psiI-near-0-infty`), from `norm_ψI_le`. -/
+theorem ψI'_isBigO_atTop :
+    (fun t : ℝ ↦ ψI' (I * t)) =O[atTop] fun t ↦ Real.exp (2 * π * t) := by
+  sorry
+
+end bounds

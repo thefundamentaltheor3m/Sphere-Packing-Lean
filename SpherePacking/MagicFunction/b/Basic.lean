@@ -126,7 +126,10 @@ def J₄' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Ψ₄ x t
 
 def J₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Ψ₅ x t
 
-def J₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Ψ₆ x t
+/-- `J₆' r = -2 ∫_i^{i∞} ψS(z) e^{πirz} dz`. The sign is the one in the blueprint
+(`def:b-definition`) and in Viazovska's definition of `b`; it is forced by `𝓕 J₅ = -J₆`
+(`perm_J₅`), which is what makes `b` a `-1`-eigenfunction of the Fourier transform. -/
+def J₆' : ℝ → ℂ := fun x ↦ -2 * ∫ t in Ici (1 : ℝ), Ψ₆ x t
 
 def b' : ℝ → ℂ := fun x ↦ J₁' x + J₂' x + J₃' x + J₄' x + J₅' x + J₆' x
 
@@ -218,7 +221,7 @@ lemma J₅'_eq₀ (r : ℝ) : J₅' r = -2 * ∫ t in (0 : ℝ)..1,
   simp only [ψS_slash_S_explicit₅ ht]
   ac_rfl
 
-lemma J₆'_eq₀ (r : ℝ) : J₆' r = 2 * ∫ t in Ici (1 : ℝ),
+lemma J₆'_eq₀ (r : ℝ) : J₆' r = -2 * ∫ t in Ici (1 : ℝ),
     I * ψS' (z₆' t) * cexp (π * I * r * (z₆' t)) := by
   rw [J₆', Ψ₆_def r, Ψ₆'_def r]
   ring_nf
