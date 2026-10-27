@@ -16,9 +16,9 @@ This file proves the Serre derivative identities for the Jacobi theta functions 
 
 ## Main results
 
-* `serre_D_H₂` : `serre_D 2 H₂ = (1/6) * (H₂ ^ 2 + 2 * H₂ * H₄)`
-* `serre_D_H₃` : `serre_D 2 H₃ = (1/6) * (H₂ ^ 2 - H₄ ^ 2)`
-* `serre_D_H₄` : `serre_D 2 H₄ = -(1/6) * (2 * H₂ * H₄ + H₄ ^ 2)`
+* `serreDerivative_H₂` : `serreDerivative 2 H₂ = (1/6) * (H₂ ^ 2 + 2 * H₂ * H₄)`
+* `serreDerivative_H₃` : `serreDerivative 2 H₃ = (1/6) * (H₂ ^ 2 - H₄ ^ 2)`
+* `serreDerivative_H₄` : `serreDerivative 2 H₄ = -(1/6) * (2 * H₂ * H₄ + H₄ ^ 2)`
 * `D_H₂`, `D_H₃`, `D_H₄` : the corresponding formulas for the ordinary derivative `D`
 * `E₄_eq_H_sum_sq` : `E₄ = H₂ ^ 2 + H₂ * H₄ + H₄ ^ 2`
 
@@ -40,7 +40,7 @@ less than 12, hence zero. From `theta_g = theta_h = 0` we deduce `f₂ = f₃ = 
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
-  ModularForm SlashAction MatrixGroups CongruenceSubgroup
+  ModularForm SlashAction MatrixGroups CongruenceSubgroup Derivative
 
 local notation "Γ " n:100 => Gamma n
 
@@ -51,24 +51,24 @@ local notation "Γ " n:100 => Gamma n
 
 /-- Error term for the ∂₂H₂ identity: f₂ = ∂₂H₂ - (1/6)(H₂² + 2H₂H₄) -/
 noncomputable def f₂ : ℍ → ℂ :=
-  serre_D 2 H₂ - (1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))
+  serreDerivative 2 H₂ - (1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))
 
 /-- Error term for the ∂₂H₃ identity: f₃ = ∂₂H₃ - (1/6)(H₂² - H₄²) -/
 noncomputable def f₃ : ℍ → ℂ :=
-  serre_D 2 H₃ - (1/6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2)
+  serreDerivative 2 H₃ - (1/6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2)
 
 /-- Error term for the ∂₂H₄ identity: f₄ = ∂₂H₄ + (1/6)(2H₂H₄ + H₄²) -/
 noncomputable def f₄ : ℍ → ℂ :=
-  serre_D 2 H₄ + (1/6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄))
+  serreDerivative 2 H₄ + (1/6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄))
 
-/-- f₂ decomposes as serre_D 2 H₂ + (-1/6) • (H₂ * (H₂ + 2*H₄)) -/
+/-- f₂ decomposes as serreDerivative 2 H₂ + (-1/6) • (H₂ * (H₂ + 2*H₄)) -/
 lemma f₂_decompose :
-    f₂ = serre_D (2 : ℤ) H₂ + ((-1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))) := by
+    f₂ = serreDerivative (2 : ℤ) H₂ + ((-1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))) := by
   ext z; simp [f₂, sub_eq_add_neg]; ring
 
-/-- f₄ decomposes as serre_D 2 H₄ + (1/6) • (H₄ * (2*H₂ + H₄)) -/
+/-- f₄ decomposes as serreDerivative 2 H₄ + (1/6) • (H₄ * (2*H₂ + H₄)) -/
 lemma f₄_decompose :
-    f₄ = serre_D (2 : ℤ) H₄ + ((1/6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄))) := by
+    f₄ = serreDerivative (2 : ℤ) H₄ + ((1/6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄))) := by
   rfl
 
 /-- f₂ is MDifferentiable -/
@@ -83,34 +83,36 @@ lemma f₄_MDifferentiable : MDiff f₄ := by unfold f₄; fun_prop
 /-- The error terms satisfy `f₂ + f₄ = f₃`, by the Jacobi identity `H₂ + H₄ = H₃`. -/
 lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
   ext z; simp only [Pi.add_apply, f₂, f₃, f₄]
-  -- Key relation: serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z (via Jacobi identity)
-  have h_serre : serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z := by
-    have h := congrFun (serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable) z
+  -- Key relation (via the Jacobi identity):
+  --   serreDerivative 2 H₂ z + serreDerivative 2 H₄ z = serreDerivative 2 H₃ z
+  have h_serre : serreDerivative 2 H₂ z + serreDerivative 2 H₄ z = serreDerivative 2 H₃ z := by
+    have h := congrFun (serreDerivative_add 2 (F := H₂) (G := H₄) H₂_SIF_MDifferentiable
+      H₄_SIF_MDifferentiable) z
     simp only [Pi.add_apply] at h
     rw [jacobi_identity] at h
     exact h.symm
-  calc serre_D 2 H₂ z - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z)) +
-        (serre_D 2 H₄ z + 1/6 * (H₄ z * (2 * H₂ z + H₄ z)))
-      = (serre_D 2 H₂ z + serre_D 2 H₄ z) +
+  calc serreDerivative 2 H₂ z - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z)) +
+        (serreDerivative 2 H₄ z + 1/6 * (H₄ z * (2 * H₂ z + H₄ z)))
+      = (serreDerivative 2 H₂ z + serreDerivative 2 H₄ z) +
         (1/6 * (H₄ z * (2 * H₂ z + H₄ z)) - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z))) := by ring
-    _ = serre_D 2 H₃ z +
+    _ = serreDerivative 2 H₃ z +
         (1/6 * (H₄ z * (2 * H₂ z + H₄ z)) - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z))) := by rw [h_serre]
-    _ = serre_D 2 H₃ z - 1/6 * (H₂ z ^ 2 - H₄ z ^ 2) := by ring
+    _ = serreDerivative 2 H₃ z - 1/6 * (H₂ z ^ 2 - H₄ z ^ 2) := by ring
 
 /-!
 ## Transformation of the error terms under S and T
 
-The transformation rules follow from `serre_D_slash_equivariant` together with the
+The transformation rules follow from `serreDerivative_slash_equivariant` together with the
 `S`/`T`-transformation rules of `H₂`, `H₃`, `H₄`.
 -/
 
 /-- `f₂` transforms under `S` as `f₂ ∣[4] S = -f₄`. -/
 lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
-  -- Step 1: (serre_D 2 H₂)|[4]S = -serre_D 2 H₄ (via equivariance)
-  have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₄ := by
+  -- Step 1: (serreDerivative 2 H₂)|[4]S = -serreDerivative 2 H₄ (via equivariance)
+  have h_serre_term : (serreDerivative (2 : ℤ) H₂ ∣[(4 : ℤ)] S) = -serreDerivative (2 : ℤ) H₄ := by
     rw [show (4 : ℤ) = 2 + 2 from rfl,
-        serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable S, H₂_S_action]
-    simpa using serre_D_smul 2 (-1) H₄ H₄_SIF_MDifferentiable
+        serreDerivative_slash_equivariant (F := H₂) (γ := S) H₂_SIF_MDifferentiable, H₂_S_action]
+    simpa using serreDerivative_smul 2 (-1) (F := H₄) H₄_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]S = -(H₄ + 2•H₂)
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
@@ -119,7 +121,7 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] S) = H₄ * (H₄ + (2 : ℂ) • H₂) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₂_S_action, h_lin_comb]
     ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
-  -- Combine: f₂|[4]S = -serre_D 2 H₄ - (1/6) * H₄ * (2*H₂ + H₄) = -f₄
+  -- Combine: f₂|[4]S = -serreDerivative 2 H₄ - (1/6) * H₄ * (2*H₂ + H₄) = -f₄
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₄
   ext z
@@ -128,11 +130,11 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
 
 /-- `f₂` transforms under `T` as `f₂ ∣[4] T = -f₂`. -/
 lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
-  -- Step 1: (serre_D 2 H₂)|[4]T = -serre_D 2 H₂ (via equivariance)
-  have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T) = -serre_D (2 : ℤ) H₂ := by
+  -- Step 1: (serreDerivative 2 H₂)|[4]T = -serreDerivative 2 H₂ (via equivariance)
+  have h_serre_term : (serreDerivative (2 : ℤ) H₂ ∣[(4 : ℤ)] T) = -serreDerivative (2 : ℤ) H₂ := by
     rw [show (4 : ℤ) = 2 + 2 from rfl,
-        serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable T, H₂_T_action]
-    simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
+        serreDerivative_slash_equivariant (F := H₂) (γ := T) H₂_SIF_MDifferentiable, H₂_T_action]
+    simpa using serreDerivative_smul 2 (-1) (F := H₂) H₂_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]T = H₂ + 2•H₄ using Jacobi: H₃ = H₂ + H₄
   -- -H₂ + 2H₃ = -H₂ + 2(H₂ + H₄) = H₂ + 2H₄
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = H₂ + (2 : ℂ) • H₄ := by
@@ -143,17 +145,17 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]T = (-H₂) * (H₂ + 2•H₄)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] T) = -H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₂_T_action, h_lin_comb]
-  -- Combine: f₂|[4]T = -serre_D 2 H₂ - (1/6)(-H₂)(H₂ + 2H₄) = -f₂
+  -- Combine: f₂|[4]T = -serreDerivative 2 H₂ - (1/6)(-H₂)(H₂ + 2H₄) = -f₂
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   ext z; simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.mul_apply, smul_eq_mul]; ring
 
 /-- `f₄` transforms under `S` as `f₄ ∣[4] S = -f₂`. -/
 lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
-  -- Step 1: (serre_D 2 H₄)|[4]S = -serre_D 2 H₂ (via equivariance)
-  have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₂ := by
+  -- Step 1: (serreDerivative 2 H₄)|[4]S = -serreDerivative 2 H₂ (via equivariance)
+  have h_serre_term : (serreDerivative (2 : ℤ) H₄ ∣[(4 : ℤ)] S) = -serreDerivative (2 : ℤ) H₂ := by
     rw [show (4 : ℤ) = 2 + 2 from rfl,
-        serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable S, H₄_S_action]
-    simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
+        serreDerivative_slash_equivariant (F := H₄) (γ := S) H₄_SIF_MDifferentiable, H₄_S_action]
+    simpa using serreDerivative_smul 2 (-1) (F := H₂) H₂_SIF_MDifferentiable
   -- Step 2: (2•H₂ + H₄)|[2]S = -(2•H₄ + H₂)
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
@@ -162,7 +164,7 @@ lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] S) = H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₄_S_action, h_lin_comb]
     ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
-  -- Combine: f₄|[4]S = -serre_D 2 H₂ + (1/6) * H₂ * (H₂ + 2H₄) = -f₂
+  -- Combine: f₄|[4]S = -serreDerivative 2 H₂ + (1/6) * H₂ * (H₂ + 2H₄) = -f₂
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   unfold f₂
   ext z
@@ -171,10 +173,10 @@ lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
 
 /-- `f₄` transforms under `T` as `f₄ ∣[4] T = f₃`. -/
 lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
-  -- Step 1: (serre_D 2 H₄)|[4]T = serre_D 2 H₃ (via equivariance)
-  have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] T) = serre_D (2 : ℤ) H₃ := by
+  -- Step 1: (serreDerivative 2 H₄)|[4]T = serreDerivative 2 H₃ (via equivariance)
+  have h_serre_term : (serreDerivative (2 : ℤ) H₄ ∣[(4 : ℤ)] T) = serreDerivative (2 : ℤ) H₃ := by
     rw [show (4 : ℤ) = 2 + 2 from rfl,
-        serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable T, H₄_T_action]
+        serreDerivative_slash_equivariant (F := H₄) (γ := T) H₄_SIF_MDifferentiable, H₄_T_action]
   -- Step 2: (2•H₂ + H₄)|[2]T = H₄ - H₂ using Jacobi: H₃ = H₂ + H₄
   -- -2H₂ + H₃ = -2H₂ + (H₂ + H₄) = H₄ - H₂
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] T) = H₄ - H₂ := by
@@ -185,9 +187,9 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   -- Step 3: Product (H₄ * (2•H₂ + H₄))|[4]T = H₃ * (H₄ - H₂)
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] T) = H₃ * (H₄ - H₂) := by
     rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₄_T_action, h_lin_comb]
-  -- Combine: f₄|[4]T = serre_D 2 H₃ + (1/6) * H₃ * (H₄ - H₂) = f₃
+  -- Combine: f₄|[4]T = serreDerivative 2 H₃ + (1/6) * H₃ * (H₄ - H₂) = f₃
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
-  -- Now: serre_D 2 H₃ + (1/6) • H₃ * (H₄ - H₂) = f₃
+  -- Now: serreDerivative 2 H₃ + (1/6) • H₃ * (H₄ - H₂) = f₃
   -- Key: H₂² - H₄² = (H₂ - H₄)(H₂ + H₄) = (H₂ - H₄) * H₃
   unfold f₃
   ext z
@@ -344,27 +346,27 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
 
 /-- `f₂` tends to `0` at infinity, since `H₂ → 0`. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
-  have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
+  have h_serre_H₂ := serreDerivative_tendsto_zero_of_tendsto_zero 2 H₂
     H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
   have h_prod : Tendsto (fun z ↦ H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
     tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
   change Tendsto
-    (fun z ↦ serre_D 2 H₂ z - (1 / 6 : ℂ) * (H₂ z * (H₂ z + 2 * H₄ z)))
+    (fun z ↦ serreDerivative 2 H₂ z - (1 / 6 : ℂ) * (H₂ z * (H₂ z + 2 * H₄ z)))
     atImInfty (𝓝 0)
   simpa using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
-/-- `f₄` tends to `0` at infinity: `serre_D 2 H₄ → -1/6` cancels against
+/-- `f₄` tends to `0` at infinity: `serreDerivative 2 H₄ → -1/6` cancels against
 `(1/6) * H₄ * (2 * H₂ + H₄) → 1/6`. -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
-  have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
+  have h_serre_H₄ : Tendsto (serreDerivative 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
     simpa [show -(2 : ℂ) / 12 = -(1 / 6 : ℂ) by norm_num] using
-      serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
+      serreDerivative_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
         H₄_tendsto_atImInfty
   have h_scaled : Tendsto (fun z ↦ (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
       atImInfty (𝓝 (1/6 : ℂ)) := by
     tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
   change Tendsto
-    (fun z ↦ serre_D 2 H₄ z + (1 / 6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
+    (fun z ↦ serreDerivative 2 H₄ z + (1 / 6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
     atImInfty (𝓝 0)
   simpa using h_serre_H₄.add h_scaled
 
@@ -486,6 +488,9 @@ theorem E₄_eq_H_sum_sq : _root_.E₄.toFun = H_sum_sq := by
   change _root_.E₄.toFun z = H_sum_sq z
   exact hz
 
+/-- `E₄_eq_H_sum_sq` for Mathlib's `ModularForm.E₄`, the same function on `ℍ`. -/
+theorem E₄_coe_eq_H_sum_sq : ⇑ModularForm.E₄ = H_sum_sq := E₄_eq_H_sum_sq
+
 /-!
 ## Vanishing of the error terms
 -/
@@ -570,23 +575,23 @@ lemma f₃_eq_zero : f₃ = 0 := by
 -/
 
 /-- Serre derivative of H₂: ∂₂H₂ = (1/6)(H₂² + 2H₂H₄) -/
-theorem serre_D_H₂ :
-    serre_D 2 H₂ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
+theorem serreDerivative_H₂ :
+    serreDerivative 2 H₂ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
   funext z; have := congrFun f₂_eq_zero z
   simp only [f₂, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply, smul_eq_mul,
     Pi.zero_apply, sub_eq_zero] at this
   convert this using 1; ring
 
 /-- Serre derivative of H₃: ∂₂H₃ = (1/6)(H₂² - H₄²) -/
-theorem serre_D_H₃ : serre_D 2 H₃ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
+theorem serreDerivative_H₃ : serreDerivative 2 H₃ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
   funext z; have := congrFun f₃_eq_zero z
   simp only [f₃, Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul, Pi.zero_apply,
     sub_eq_zero] at this
   exact this
 
 /-- Serre derivative of H₄: ∂₂H₄ = -(1/6)(2H₂H₄ + H₄²) -/
-theorem serre_D_H₄ :
-    serre_D 2 H₄ = fun z ↦ -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
+theorem serreDerivative_H₄ :
+    serreDerivative 2 H₄ = fun z ↦ -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
   funext z; have := congrFun f₄_eq_zero z
   simp only [f₄, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, Pi.zero_apply,
     add_eq_zero_iff_eq_neg] at this
@@ -596,10 +601,10 @@ theorem serre_D_H₄ :
 theorem D_H₂ :
     D H₂ = (1 / 6 : ℂ) • (H₂ ^ 2 + (2 : ℂ) • (H₂ * H₄)) + (1 / 6 : ℂ) • (E₂ * H₂) := by
   ext z
-  have h : D H₂ z = serre_D 2 H₂ z + 2 * 12⁻¹ * E₂ z * H₂ z := by
-    simp only [serre_D_apply]
+  have h : D H₂ z = serreDerivative 2 H₂ z + 2 * 12⁻¹ * E₂ z * H₂ z := by
+    simp only [serreDerivative_apply]
     ring
-  rw [h, congrFun serre_D_H₂]
+  rw [h, congrFun serreDerivative_H₂]
   simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
@@ -607,10 +612,10 @@ theorem D_H₂ :
 theorem D_H₃ :
     D H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₃) := by
   ext z
-  have h : D H₃ z = serre_D 2 H₃ z + 2 * 12⁻¹ * E₂ z * H₃ z := by
-    simp only [serre_D_apply]
+  have h : D H₃ z = serreDerivative 2 H₃ z + 2 * 12⁻¹ * E₂ z * H₃ z := by
+    simp only [serreDerivative_apply]
     ring
-  rw [h, congrFun serre_D_H₃]
+  rw [h, congrFun serreDerivative_H₃]
   simp only [Pi.add_apply, Pi.sub_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
@@ -618,9 +623,9 @@ theorem D_H₃ :
 theorem D_H₄ :
     D H₄ = (-(1 / 6 : ℂ)) • ((2 : ℂ) • (H₂ * H₄) + H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₄) := by
   ext z
-  have h : D H₄ z = serre_D 2 H₄ z + 2 * 12⁻¹ * E₂ z * H₄ z := by
-    simp only [serre_D_apply]
+  have h : D H₄ z = serreDerivative 2 H₄ z + 2 * 12⁻¹ * E₂ z * H₄ z := by
+    simp only [serreDerivative_apply]
     ring
-  rw [h, congrFun serre_D_H₄]
+  rw [h, congrFun serreDerivative_H₄]
   simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
   ring
