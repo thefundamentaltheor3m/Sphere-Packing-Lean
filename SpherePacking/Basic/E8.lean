@@ -300,8 +300,7 @@ private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
   rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det_apply]
   change IsUnit (E8Matrix R).det
-  rw [E8Matrix_unimodular]
-  exact isUnit_one
+  simp [E8Matrix_unimodular]
 
 lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
@@ -686,14 +685,11 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
     · positivity
     · positivity
   · intro x hx
+    change x ∈ fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) at hx
     trans ∑ i, ‖E8_ℤBasis i‖
     · rw [← fract_eq_self.mpr hx]
       convert norm_fract_le (K := ℝ) _ _
-      rename_i i _
-      -- restate with `E8Lattice` in place of the defeq `E8Packing.lattice`
-      change ‖E8_ℤBasis i‖ = ‖(E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) i‖
-      rw [Module.Basis.ofZLatticeBasis_apply]
-      rfl
+      simp [Basis.ofZLatticeBasis_apply]
     · refine (Finset.sum_le_sum (fun i hi ↦ E8_ℤBasis_apply_norm i)).trans ?_
       norm_num
 

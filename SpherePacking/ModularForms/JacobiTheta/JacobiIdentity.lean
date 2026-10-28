@@ -63,10 +63,6 @@ lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
   simp only [jacobi_f_eq_mul, (by norm_num : (4 : ℤ) = 2 + 2),
     mul_slash_SL2 2 2 T _ _, jacobi_g_T_action, neg_mul_neg]
 
-/-- Full `SL₂(ℤ)` invariance of `f` with weight 4. -/
-lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
-  slashaction_generators_SL2Z jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
-
 /-- `jacobi_f` as a slash-invariant form of weight 4 and level `Γ(1)`. -/
 noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 4 where
   toFun := jacobi_f
@@ -149,11 +145,6 @@ private lemma theta_prod_sq_T_action : (theta_prod_sq ∣[(12 : ℤ)] T) = theta
   rw [theta_prod_sq_eq_mul, (by norm_num : (12 : ℤ) = 6 + 6),
     mul_slash_SL2 6 6 T _ _, theta_prod_T_action, neg_mul_neg]
 
-private lemma theta_prod_sq_SL2Z_invariant :
-    ∀ γ : SL(2, ℤ), theta_prod_sq ∣[(12 : ℤ)] γ = theta_prod_sq :=
-  slashaction_generators_SL2Z theta_prod_sq 12
-    theta_prod_sq_S_action theta_prod_sq_T_action
-
 private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
   unfold theta_prod_sq
   fun_prop
@@ -185,7 +176,8 @@ private lemma theta_prod_sq_proportional :
   obtain ⟨c, hc⟩ := CuspForm.exists_smul_discriminant_of_weight_eq_twelve f
   exact ⟨c, fun z ↦ by simpa using DFunLike.congr_fun hc z⟩
 
-private lemma H₂_div_exp_tendsto :
+/-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
+lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
