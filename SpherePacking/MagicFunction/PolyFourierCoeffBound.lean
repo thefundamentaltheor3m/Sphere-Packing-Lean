@@ -6,6 +6,7 @@ Authors: Sidharth Hariharan
 module
 
 
+public import Mathlib.NumberTheory.ModularForms.Bounds
 public import Mathlib.Topology.Algebra.InfiniteSum.Field
 public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.SpecificLimits
@@ -631,6 +632,33 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     · sorry
     · -- This is where I need to use Bhavik's result
       sorry
+
+/-- `|φ₋₂ z| ≤ C` for `Im z > 1/2` (Blueprint `cor:phi2-bound`): the numerator
+`E₄ (E₂ E₄ - E₆) = 3 E₄ (D E₄)` of `φ₂'` vanishes to order `1` at `i∞`, which exactly cancels
+the growth of `1 / Δ`. Same strategy as `norm_φ₀_le`, with `n₀ = 2` in
+`DivDiscBoundOfPolyFourierCoeff`. -/
+theorem norm_φ₂'_le : ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖φ₂' z‖ ≤ C := by
+  sorry
+
+/-- `|φ₋₄ z| ≤ C e^{2π Im z}` for `Im z > 1/2` (Blueprint `cor:phi4-bound`). Same strategy as
+`norm_φ₀_le`, with `n₀ = 0` in `DivDiscBoundOfPolyFourierCoeff`. -/
+theorem norm_φ₄'_le :
+    ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖φ₄' z‖ ≤ C * rexp (2 * π * z.im) := by
+  sorry
+
+open scoped Topology in
+/-- `φ₀ (i/t) = O(e^{-2π/t})` as `t → 0⁺` (Blueprint `cor:phi0-near-0-infty`): apply `norm_φ₀_le`
+at `z = i / t`, whose imaginary part `1 / t` exceeds `1 / 2` for `t < 2`. -/
+theorem φ₀''_isBigO_nhdsGT_zero :
+    (fun t : ℝ ↦ φ₀'' (I / t)) =O[𝓝[>] 0] fun t ↦ rexp (-2 * π / t) := by
+  sorry
+
+/-- `φ₀ (i/t) = O(t⁻² e^{2πt})` as `t → ∞` (Blueprint `cor:phi0-near-0-infty`): by the
+`S`-transformation `φ₀_S_transform`, `φ₀(i/t) = φ₀(it) - 12/(πt) φ₂'(it) + 36/(π²t²) φ₄'(it)`, and
+the three terms are bounded by `norm_φ₀_le`, `norm_φ₂'_le`, `norm_φ₄'_le`. -/
+theorem φ₀''_isBigO_atTop :
+    (fun t : ℝ ↦ φ₀'' (I / t)) =O[atTop] fun t ↦ t ^ (-2 : ℤ) * rexp (2 * π * t) := by
+  sorry
 
 end Corollaries
 

@@ -269,9 +269,22 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
 
   sorry
 
--- theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
--- Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
--- Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
+/-- Blueprint `lemma:inv-power-summable`: the centres of a periodic sphere packing have summable
+inverse norm powers. This is `Summable_Inverse_Powers_of_Finite_Orbits` for the action
+`P.addAction` of `P.lattice` on `P.centers`, whose orbit space is finite: it is in bijection with
+the centres in a bounded fundamental domain (see the equivalences
+`Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ D)` in `SpherePacking.Basic.PeriodicPacking`). -/
+theorem PeriodicSpherePacking.inv_pow_norm_summable (P : PeriodicSpherePacking d) :
+    Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers := by
+  sorry
+
+/-- Blueprint `lemma:Schwartz-summable`: a Schwartz function is (absolutely) summable over the
+centres of a periodic sphere packing. From `PeriodicSpherePacking.inv_pow_norm_summable` and the
+decay of `f` (`SchwartzMap.decay'`), via `Summable_of_Inv_Pow_Summable`. -/
+theorem PeriodicSpherePacking.summable_schwartz (P : PeriodicSpherePacking d)
+    (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
+    Summable (fun x : P.centers ↦ f x) := by
+  sorry
 
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
 
