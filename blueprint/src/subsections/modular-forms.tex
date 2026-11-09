@@ -316,7 +316,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\lean{ModularForm.dimension_level_one, weight_four_one_dimensional, weight_six_one_dimensional, weight_eight_one_dimensional, cuspform_weight_lt_12_zero}\leanok
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\lean{ModularForm.dimension_level_one, ModularForm.levelOne_weight_four_rank_one, ModularForm.levelOne_weight_six_rank_one, ModularForm.rank_eq_one_add_rank_cuspForm, CuspForm.rank_eq_zero_of_weight_lt_twelve, cuspform_weight_lt_12_zero}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
@@ -674,7 +674,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity, cor:dim-mf}\lean{serre_D_H₂, serre_D_H₃, serre_D_H₄, D_H₂, D_H₃, D_H₄}\leanok
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity, cor:dim-mf}\lean{serreDerivative_H₂, serreDerivative_H₃, serreDerivative_H₄, D_H₂, D_H₃, D_H₄}\leanok
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\
