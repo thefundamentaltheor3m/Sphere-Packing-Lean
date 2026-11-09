@@ -636,8 +636,9 @@ theorem D_H₄ :
 
 /-- `E₆ = ½ (H₂ + 2H₄) (2H₂ + H₄) (H₄ - H₂)`. Together with `E₄_eq_H_sum_sq` and `Δ_eq_H₂_H₃_H₄`,
 this expresses the level-one forms `E₄`, `E₆`, `Δ` through `H₂` and `H₄`
-(Blueprint Lemma `lemma:lv1-lv2-identities`). One route: apply `serre_D 4` to `E₄_eq_H_sum_sq`
-and use `ramanujan_E₄'`, `serre_D_add`, `serre_D_mul`, `serre_D_H₂`, `serre_D_H₄`. -/
+(Blueprint Lemma `lemma:lv1-lv2-identities`). One route: apply `serreDerivative 4` to
+`E₄_eq_H_sum_sq` and use `normalizedDerivOfComplex_E₄`, `serreDerivative_add`,
+`serreDerivative_mul`, `serreDerivative_H₂`, `serreDerivative_H₄`. -/
 theorem E₆_eq_H (z : ℍ) :
     _root_.E₆ z = (1 / 2 : ℂ) * ((H₂ z + 2 * H₄ z) * (2 * H₂ z + H₄ z) * (H₄ z - H₂ z)) := by
   sorry

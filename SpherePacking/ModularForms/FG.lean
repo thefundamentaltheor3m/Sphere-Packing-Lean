@@ -128,7 +128,7 @@ theorem D_Δ : D Δ = E₂ * Δ := by
   sorry
 
 /-- `Δ` is annihilated by the weight-`12` Serre derivative: `∂₁₂ Δ = D Δ - E₂ Δ = 0`. -/
-theorem serre_D_Δ : serre_D 12 Δ = 0 := by
+theorem serreDerivative_Δ : serreDerivative 12 Δ = 0 := by
   sorry
 
 /-- The modular linear differential equation satisfied by `F`. -/
