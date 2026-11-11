@@ -6,8 +6,6 @@ This project attempts to formalise some notions about Sphere Packing in Lean. Im
 * [Zulip Chat](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions)
 * [GitHub Project Page](https://github.com/users/thefundamentaltheor3m/projects/2/views/1)
 * [Blueprint (web version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint/)
-* [Dependency Graph (web version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint/dep_graph_document.html)
-* [Blueprint (PDF version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint.pdf)
 * [API Documentation](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/)
 
 This project was kickstarted at EPFL by Maryna Viazovska and Sidharth Hariharan in March 2024. It is currently being maintained by Christopher Birkbeck, Sidharth Hariharan, Bhavik Mehta and Seewoo Lee. Contributions welcome: see below for more details.
