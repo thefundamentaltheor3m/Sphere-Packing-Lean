@@ -12,7 +12,7 @@ Recall the definition of a Fourier transform.
 
 The following computational result will be of use later on.
 
-\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}
+\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_upperHalfPlane}\leanok
   \begin{equation}
     \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
@@ -43,7 +43,7 @@ Another reason we are interested in Schwartz Functions is that they behave well 
 
 We begin by stating a general summability result over specific subsets of $\R^d$.
 
-\begin{lemma}\label{lemma:inv-power-summable}
+\begin{lemma}\label{lemma:inv-power-summable}\lean{Summable_Inverse_Powers_of_Finite_Orbits, PeriodicSpherePacking.inv_pow_norm_summable}\leanok
   Let $X \subset \R^d$ be a set of sphere packing centres of separation $1$ that is periodic with some lattice $\Lambda \subset \R^d$. Then, there exists $k \in \N$ sufficiently large such that
   \[
     \sum_{x \in X} \frac{1}{\norm{x}^{k}} < \infty.
@@ -68,7 +68,7 @@ We begin by stating a general summability result over specific subsets of $\R^d$
 
 The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above.
 
-\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space}
+\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space, lemma:inv-power-summable}\lean{PeriodicSpherePacking.summable_schwartz}\leanok
   Let $f : \R^d \to \C$ be a Schwartz function and let $X \subset \R^d$ be periodic with respect to some lattice $\Lambda \subset \R^d$. Then,
   \[
     \sum_{x \in X} |f(x)| < \infty.
@@ -98,7 +98,7 @@ While the Poisson Summation Formula over lattices can be stated in greater gener
 Later, we will use Theorem \ref{thm:Poisson-summation-formula} to prove that the certain functions $a(x)$ and $b(x)$ that will be defined later are eigenfunctions of the Fourier transform.
 To apply the theorem, we need to show that these functions are Schwartz functions. We will do so by verifying the following sufficient condition.
 
-\begin{theorem}\label{thm:smooth-fast-decay-schwartz}
+\begin{theorem}\label{thm:smooth-fast-decay-schwartz}\lean{eq_schwartzMap, schwartzMap_multidimensional_of_schwartzMap_real}\leanok
     Assume $f : \R \to \C$ is smooth on $[0, \infty)$ and for all $k, n \in \N$, there exists $C \in \R$ such that
     $$
     x^{\frac{k}{2}} \cdot |f^{(n)}(x)| \leq C.
@@ -109,3 +109,6 @@ To apply the theorem, we need to show that these functions are Schwartz function
     $$
     is a Schwartz function.
 \end{theorem}
+\begin{proof}\leanok
+    The Lean version is in two steps: \verb|eq_schwartzMap| modifies $f$ near $-\infty$ into a Schwartz function on $\R$ agreeing with $f$ on $[0, \infty)$ (it currently assumes $f$ smooth on all of $\R$), and \verb|schwartzMap_multidimensional_of_schwartzMap_real| composes with $x \mapsto \|x\|^2$, which has temperate growth.
+\end{proof}
