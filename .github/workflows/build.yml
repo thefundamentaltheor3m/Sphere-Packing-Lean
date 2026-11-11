@@ -48,17 +48,41 @@ jobs:
           ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^#check' {} +)
 
       - name: Build the project
-        uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6 # v1.6.2
+        uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
         with:
           use-github-cache: false
-      - name: "lake exe mk_all --check --module"
+      - name: "lake exe mk_all --check --module --lib SpherePacking"
         run: |
           set -e
-          lake exe mk_all --check --module
+          lake exe mk_all --check --module --lib SpherePacking
 
-      - name: Compile blueprint and documentation
+      - name: Restore Verso package builds
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            .lake/packages/VersoBlueprint/.lake
+            .lake/packages/verso/.lake
+            .lake/packages/verso-slides/.lake
+            .lake/packages/subverso/.lake
+            .lake/packages/MD4Lean/.lake
+            .lake/packages/illuminate/.lake
+            .lake/packages/lean_vir/.lake
+            .lake/packages/Cli/.lake
+          key: ${{ runner.os }}-verso-packages-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+
+      - name: Build the blueprint
+        # The Verso blueprint links every node to its Lean declarations, so this also checks that
+        # all names referenced by the blueprint exist (replacing `checkdecls`).
+        run: |
+          lake build SpherePackingBlueprint
+          lake exe vbp build
+          mkdir -p home_page
+          rm -rf home_page/blueprint
+          cp -r _out/site/html-multi home_page/blueprint
+
+      - name: Compile documentation
         # workaround for https://github.com/leanprover-community/docgen-action/issues/28
         uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
-          blueprint: true
+          blueprint: false
           homepage: home_page
