@@ -1,8 +1,8 @@
 import VersoBlueprint
 
 /-!
-TeX macros shared by all blueprint chapters (the Verso counterpart of the old
-`blueprint/src/macros/common.tex`). Every chapter imports this module.
+TeX macros shared by all blueprint chapters (ported from the LaTeX blueprint's
+`macros/common.tex`). Every chapter imports this module.
 -/
 
 tex_prelude r#"

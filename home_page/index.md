@@ -12,6 +12,7 @@ In 2022, Maryna Viazovska was awarded the Fields Medal for solving the sphere pa
 
 * [Zulip chat](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions) for coordination
 * [Blueprint]({{ site.url }}/blueprint/)
+* [Dependency graph]({{ site.url }}/blueprint/Dependency-Graph/)
 * [Doc pages for this repository]({{ site.url }}/docs/)
 * [Project dashboard](https://github.com/users/thefundamentaltheor3m/projects/2/views/1)
 * [Viazovska's original paper](https://doi.org/10.4007/annals.2017.185.3.7)

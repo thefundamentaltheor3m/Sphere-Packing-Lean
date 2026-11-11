@@ -30,7 +30,7 @@ integral sign; Schwartzness of $`a` and $`b` is then obtained from the smooth-cu
 the Fourier transform of the Gaussian ({bpref "lemma:Gaussian-Fourier"}[]) and the transformation
 laws of the integrands, and the double zeroes are exhibited by deforming contours.
 
-# The Integrands for $`a`
+# The Integrands for *a*
 
 To define the function $`a`, we consider the following functions:
 
@@ -183,7 +183,7 @@ The numerator of $`\phi_{-4}` is $`E_4^2`, with $`n_0 = 0`; apply
 Note that we can take the constants $`C_0`, $`C_{-2}`, and $`C_{-4}` as
 $$`\begin{aligned} C_0 &= 9 \cdot 240^2 \cdot e^{\pi} \cdot \frac{E_4'(i/2)^{2}}{\Delta(i/2)} \\ C_{-2} &= 3 \cdot \frac{E_4(i/2) E_4'(i/2)}{\Delta(i/2)} \\ C_{-4} &= e^{-\pi} \cdot \frac{E_4(i/2)^{2}}{\Delta(i/2)}. \end{aligned}`
 
-# Decay of the Integrals $`I_j`
+# Decay of the Integrals Iⱼ
 
 :::lemma_ "lem:bound-I1-I3-I5" (lean := "MagicFunction.a.IntegralEstimates.I₁.I₁'_bounding, MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding, MagicFunction.a.IntegralEstimates.I₅.I₅'_bounding") (uses := "def:a-definition, cor:phi0-bound")
 There exists $`C > 0` such that for all $`r \geq 0`,
@@ -253,7 +253,7 @@ $$`C \int_{1}^{\infty} e^{-\alpha s} \, s^n \, \dd{s} \leq C \int_{0}^{\infty} e
 Defining $`C' := \frac{C \cdot n!}{\alpha^{n+1}}` finishes the proof.
 :::
 
-# Smoothness of the Integrals $`I_j`, and Schwartzness of $`a`
+# Smoothness of the Integrals Iⱼ, and Schwartzness of *a*
 
 :::lemma_ "lem:Ij-smooth" (uses := "def:a-definition, cor:phi0-bound")
 The functions $`I_1, \ldots, I_5` are smooth on $`\R`, and $`I_6` is smooth on $`(-2, \infty)`.
@@ -305,7 +305,7 @@ term of type $`\mathcal{S}(\R, \C)`, transporting it to $`\mathcal{S}(\R^8, \C)`
 the resulting Schwartz function is equal to the function $`a` of {bpref "def:a-definition"}[].
 :::
 
-# The Eigenfunction Property of $`a`
+# The Eigenfunction Property of *a*
 
 We now prove that $`a` satisfies condition (7.1). The Fourier transform acts on the summands of
 $`a` by permuting them: writing (by a slight abuse of notation) $`I_j` also for the radial function
@@ -370,7 +370,7 @@ $$`\mathcal{F}(a) = \mathcal{F}(I_1 + I_2) + \mathcal{F}(I_3 + I_4) + \mathcal{F
 by {bpref "lemma:perm-I12"}[], {bpref "lemma:perm-I56"}[] and {bpref "lemma:perm-I-reverse"}[].
 :::
 
-# Double Zeroes of $`a`
+# Double Zeroes of *a*
 
 Next, we check that $`a` has double zeroes at all $`\Lambda_8`-lattice points of length greater
 then $`\sqrt{2}`.
@@ -440,7 +440,7 @@ The factor $`\sin(\pi r^2/2)^2` vanishes to second order at $`r = \sqrt{2n}` for
 $`n`, so {bpref "prop:a-double-zeros"}[] exhibits the required double zeroes of $`a` at all
 $`\Lambda_8`-vectors of length greater than $`\sqrt 2`.
 
-# Special Values of $`a`
+# Special Values of *a*
 
 Finally, we find another convenient integral representation for $`a` and compute the value of
 $`a` at $`0`.
@@ -481,7 +481,7 @@ parentheses of (7.23) that blows up at that order is $`-\frac{8640}{\pi^3 r^4}`.
 $$`a(0) = \lim_{r \to 0} 4i\left(\frac{\pi r^2}{2}\right)^2 \cdot \left(-\frac{8640}{\pi^3 r^4}\right) = \frac{-8640\, i}{\pi}.`
 :::
 
-# The Integrands for $`b`
+# The Integrands for *b*
 
 Now we construct function $`b`. To this end we consider the function
 
@@ -603,7 +603,7 @@ $$`\begin{aligned} J_1(r) &= \int_{-1}^{-1 + i} \psi_S\!\left(\frac{-1}{z + 1}\r
 The proofs of the analytic properties of $`b` below follow those for $`a` with these expressions in
 place of the $`\phi_0`-integrands; we record the statements and indicate only the differences.
 
-# Schwartzness of $`b`
+# Schwartzness of *b*
 
 As in the case of $`a(x)`, we start with exponential bounds for the $`\psi`-functions.
 
@@ -668,7 +668,7 @@ decaying rapidly on $`[0, \infty)`, so {bpref "cor:schwartz-of-nonneg-decay"}[] 
 $`\theta = -1` shows that $`b = b_\rad(\|\cdot\|^2)` is Schwartz.
 :::
 
-# The Eigenfunction Property of $`b`
+# The Eigenfunction Property of *b*
 
 The Fourier transform also permutes the summands of $`b`, but with a sign change:
 $$`\mathcal{F}(J_1 + J_2) = -(J_3 + J_4), \tag{7.54}`
@@ -716,7 +716,7 @@ By linearity, {bpref "lemma:perm-J12"}[], {bpref "lemma:perm-J56"}[] and
 $$`\mathcal{F}(b) = -(J_3 + J_4) - (J_1 + J_2) - J_6 - J_5 = -b.`
 :::
 
-# Double Zeroes and Special Values of $`b`
+# Double Zeroes and Special Values of *b*
 
 Now we regard the radial function $`b` as a function on $`\R_{\geq0}` and check that $`b` has
 double roots at $`\Lambda_8`-points.

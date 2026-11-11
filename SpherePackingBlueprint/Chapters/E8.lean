@@ -8,9 +8,9 @@ open Verso.Genre
 open Verso.Genre.Manual
 open Informal
 
-#doc (Manual) "The $`E_8` lattice" =>
+#doc (Manual) "The E₈ lattice" =>
 
-# Definitions of $`E_8` lattice
+# Definitions of E₈ lattice
 
 There are several equivalent definitions of the $`E_8` lattice. Below, we formalise two of them,
 and prove they are equivalent.
@@ -47,7 +47,7 @@ $`2` and are all either integers and half-integers, concluding the proof.
 (Note: this proof doesn't depend on that $`\B_8` is linearly independent.)
 :::
 
-# Basic Properties of $`E_8` lattice
+# Basic Properties of E₈ lattice
 
 In this section, we establish basic properties of the $`E_8` lattice and the $`\B_8` vectors.
 
@@ -107,7 +107,7 @@ $`\B_8` is a basis ({bpref "E8-is-basis"}[]) and hence linearly independent over
 
 *TODO: Prove $`E_8` is positive-definite.*
 
-# The $`E_8` sphere packing
+# The E₈ sphere packing
 
 :::definition "E8Packing" (lean := "E8Packing") (uses := "E8-Lattice, E8-vector-norms")
 The *$`E_8` sphere packing* is the (periodic) sphere packing with separation $`\sqrt{2}`, whose set

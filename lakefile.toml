@@ -9,19 +9,18 @@ weak.linter.mathlibStandardSet = true
 weak.linter.flexible = false
 
 # The blueprint (natural-language statements and proofs linked to the Lean declarations),
-# rendered with `lake exe vbp build`. Pinned to the last commit on the `v4.35.0-rc4` toolchain;
-# move to the `v4.35.0` branch (or a later tag) together with the next Lean bump.
+# rendered with `lake exe vbp build`. Bump `rev` together with the Lean toolchain.
 [[require]]
 name = "VersoBlueprint"
 git = "https://github.com/leanprover/verso-blueprint"
-rev = "7bd0c10f0b77d75ab81fe2a2005f6a6428983d27"
+rev = "v4.35.0"
 
 # Mathlib last, so that its pins of shared dependencies (proofwidgets, batteries, …) take
 # precedence over those of VersoBlueprint (needed for `lake exe cache get`).
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4.git"
-rev = "v4.35.0-rc4"
+rev = "v4.35.0"
 
 [[lean_lib]]
 name = "SpherePacking"

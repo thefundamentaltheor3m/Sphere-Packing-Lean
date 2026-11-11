@@ -192,7 +192,7 @@ This is exercise 1.2.8 of \[first course\].
 
 More generally, we have
 
-:::lemma_ "lemma:E2-transform-general" (lean := "E₂_slash_transform") (uses := "lemma:E2-transform-S, def:E2")
+:::lemma_ "lemma:E2-transform-general" (lean := "EisensteinSeries.E2_slash_action") (uses := "lemma:E2-transform-S, def:E2")
 $$`(cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}). \tag{6.7}`
 :::
 
@@ -537,7 +537,7 @@ Instead, we only use $`E_2` (defined in {bpref "def:E2"}[]) and define the norma
 operator $`D` ({bpref "def:derivative"}[]) and the Serre derivative $`\partial_k`
 ({bpref "def:serre-der"}[]) as the main tools to work with quasimodular forms.
 
-:::definition "def:derivative" (lean := "D")
+:::definition "def:derivative" (lean := "Derivative.normalizedDerivOfComplex")
 Let $`F` be a quasimodular form. We define the (normalized) derivative of $`F` as
 $$`F' = DF := \frac{1}{2\pi i} \frac{\dd}{\dd z} F. \tag{6.34}`
 :::
@@ -545,7 +545,7 @@ $$`F' = DF := \frac{1}{2\pi i} \frac{\dd}{\dd z} F. \tag{6.34}`
 Normalizing the derivative by $`1/(2 \pi i)` as in (6.34) is standard in the theory of modular
 forms, since it makes the $`q`-expansion coefficients nicer.
 
-:::lemma_ "lemma:der-q-series" (lean := "D_qexp_tsum_pnat") (uses := "def:derivative")
+:::lemma_ "lemma:der-q-series" (lean := "D_qexp_term, D_qexp_tsum_pnat") (uses := "def:derivative")
 We have an equality of operators $`D = q \frac{\dd}{\dd q}`. In particular, the $`q`-series of the
 derivative of a quasimodular form $`F(z) = \sum_{n \ge n_0} a_n q^n` is
 $`F'(z) = \sum_{n \ge n_0} n a_n q^n`.
@@ -559,13 +559,13 @@ $`\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}`.
 The most important example of quasimodular form is the weight 2 Eisenstein series $`E_2`
 ({bpref "def:E2"}[]). Using it, we can define the *Serre derivative* of a quasimodular form.
 
-:::definition "def:serre-der" (lean := "serre_D") (uses := "def:derivative, def:E2")
+:::definition "def:serre-der" (lean := "Derivative.serreDerivative") (uses := "def:derivative, def:E2")
 For $`k \in \mathbb{R}`, define the weight $`k` Serre derivative $`\partial_{k}` of a modular form
 $`F` as
 $$`\partial_{k}F := F' - \frac{k}{12} E_2 F. \tag{6.35}`
 :::
 
-:::theorem "thm:serre-der-equiv-action" (lean := "serre_D_slash_equivariant") (uses := "def:serre-der, def:E2, lemma:E2-transform-general")
+:::theorem "thm:serre-der-equiv-action" (lean := "Derivative.serreDerivative_slash_equivariant") (uses := "def:serre-der, def:E2, lemma:E2-transform-general")
 Serre derivative $`\partial_{k}` is equivariant with the slash action of
 $`\mathrm{SL}_{2}(\mathbb{Z})` in the following sense:
 $$`\partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).`
@@ -583,7 +583,7 @@ $$`\begin{aligned} ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\
 As a direct consequence of {bpref "thm:serre-der-equiv-action"}[], we can check that the Serre
 derivative preserves the modularity of a modular form.
 
-:::theorem "thm:serre-der-modularity" (lean := "serre_D_slash_invariant") (uses := "def:serre-der, def:Mk, thm:serre-der-equiv-action")
+:::theorem "thm:serre-der-modularity" (lean := "Derivative.serreDerivativeMF, Derivative.serreDerivative_slash_invariant") (uses := "def:serre-der, def:Mk, thm:serre-der-equiv-action")
 Let $`F` be a modular form of weight $`k` and level $`\Gamma`. Then, $`\partial_{k}F` is a modular
 form of weight $`k + 2` of the same level.
 :::
@@ -597,7 +597,7 @@ $`\gamma \in \Gamma`.
 $`k` and depth $`s`, then $`\partial_{k-s}F` is a quasimodular form of weight $`k + 2` *and depth
 $`\le s`* of the same level. We will not prove this here.
 
-:::theorem "thm:ramanujan-formula" (lean := "ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'") (uses := "thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf")
+:::theorem "thm:ramanujan-formula" (lean := "Derivative.normalizedDerivOfComplex_E₂, Derivative.normalizedDerivOfComplex_E₄, Derivative.normalizedDerivOfComplex_E₆, Derivative.serreDerivative_E₂, Derivative.serreDerivative_E₄, Derivative.serreDerivative_E₆") (uses := "thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf")
 We have
 $$`\begin{align} E_2' &= \frac{E_2^2 - E_4}{12} \tag{6.36} \\ E_4' &= \frac{E_2 E_4 - E_6}{3} \tag{6.37} \\ E_6' &= \frac{E_2 E_6 - E_4^2}{2} \tag{6.38} \end{align}`
 :::
@@ -651,7 +651,7 @@ $$`\begin{aligned} 3 E_4 f_2^{2} &= 3 (H_2^2 + H_2 H_4 + H_4^2) f_2^{2} = ((2 H_
 and by considering $`q`-series ($`E_4` has an invertible $`q`-series), we get $`f_2 = 0`.
 :::
 
-:::theorem "thm:serre-der-prod-rule" (lean := "serre_D_mul") (uses := "def:serre-der")
+:::theorem "thm:serre-der-prod-rule" (lean := "Derivative.serreDerivative_mul") (uses := "def:serre-der")
 The Serre derivative satisfies the following product rule: for any quasimodular forms $`F` and
 $`G`,
 $$`\partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).`
