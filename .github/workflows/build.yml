@@ -48,7 +48,7 @@ jobs:
           ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^#check' {} +)
 
       - name: Build the project
-        uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
+        uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1.7.1
         with:
           use-github-cache: false
       - name: "lake exe mk_all --check --module"
