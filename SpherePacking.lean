@@ -7,12 +7,10 @@ public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.Analysis.Complex.Exponential
 public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
-public import SpherePacking.ForMathlib.Finsupp
 public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.InvPowSummability
@@ -25,7 +23,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.UpperHalfPlane
-public import SpherePacking.ForMathlib.Vec
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.ForMathlib.tprod
@@ -70,9 +67,7 @@ public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
 public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.ModularForms.PhiTransform
 public import SpherePacking.ModularForms.QExpansion
-public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.tsumderivWithin
