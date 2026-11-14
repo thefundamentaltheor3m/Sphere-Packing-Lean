@@ -30,7 +30,7 @@ namespace Complex
 
 For a function-level bound using canonical `qExpansion` coefficients, with summability derived
 from analytic assumptions, see `UpperHalfPlane.norm_le_qExpansion_of_coeff_vanish` in
-`SpherePacking.ModularForms.ResToImagAxis`. -/
+`SpherePacking.ForMathlib.QExpansionBounds`. -/
 lemma norm_qseries_shift_le {a : ℕ → ℂ} (n₀ : ℕ) {c : ℝ}
     (ha : Summable fun m : ℕ ↦ ‖a m‖ * Real.exp (-(2 * π * c) * m))
     {z : ℂ} (hz : c ≤ z.im) :

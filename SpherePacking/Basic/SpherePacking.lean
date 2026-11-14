@@ -164,7 +164,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
 
 lemma scale_lattice_discrete (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
     DiscreteTopology ↥(c • S.lattice) := by
-  let : DiscreteTopology S.lattice := S.lattice_discrete
+  have : DiscreteTopology S.lattice := S.lattice_discrete
   change DiscreteTopology ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice :
     Set (EuclideanSpace ℝ (Fin d))))
   exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
@@ -181,7 +181,7 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     use x + y, S.lattice_action hx hy, smul_add ..
   lattice_discrete := scale_lattice_discrete S hc
   lattice_isZLattice := by
-    let : DiscreteTopology ↥(c • S.lattice) := scale_lattice_discrete S hc
+    have : DiscreteTopology ↥(c • S.lattice) := scale_lattice_discrete S hc
     refine ⟨?_⟩
     rw [← S.lattice_isZLattice.span_top]
     ext v
@@ -277,7 +277,7 @@ lemma density_le_one {d : ℕ} (S : SpherePacking d) : S.density ≤ 1 := by
 @[simp]
 lemma scale_finiteDensity {d : ℕ} (_ : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  -- haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
+  -- have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
     rw [_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R]
     rw [smul_zero, Real.norm_eq_abs, abs_of_nonneg hc.le]

@@ -6,7 +6,9 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 /-!
 # The Eisenstein Series `E₂`
 
-Properties of the quasi-modular Eisenstein series `E₂`.
+Properties of the quasi-modular Eisenstein series `E₂`. The series itself is Mathlib's
+`EisensteinSeries.E2`; this file introduces the notation `E₂` for it and records the pointwise
+transformation laws used by the project.
 -/
 
 @[expose] public section
@@ -20,42 +22,19 @@ open scoped ArithmeticFunction.sigma
 
 noncomputable section
 
-/-- Compatibility alias for Mathlib's `EisensteinSeries.G2`. -/
-def G₂ : ℍ → ℂ := EisensteinSeries.G2
-
-/-- Compatibility alias for Mathlib's `EisensteinSeries.E2`. -/
-def E₂ : ℍ → ℂ := EisensteinSeries.E2
-
-/-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
-def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := EisensteinSeries.D2 γ
-
-lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
-    ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-  calc
-    G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-          simpa [G₂] using (EisensteinSeries.G2_eq_tsum_cexp z)
-    _ = (2 * riemannZeta 2) - 8 * π ^ 2 *
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-          congr 2
-          apply tsum_congr
-          intro n
-          rw [← Complex.exp_nat_mul]
-          congr 1
-          ring_nf
+/-- Notation for Mathlib's normalised weight `2` Eisenstein series `EisensteinSeries.E2`. -/
+notation "E₂" => EisensteinSeries.E2
 
 /-- E₂ is 1-periodic: E₂(z + 1) = E₂(z). -/
 lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
-  have h := congrFun (EisensteinSeries.E2_slash_action ModularGroup.T) z
-  rw [modular_slash_T_apply] at h
-  simpa [E₂, EisensteinSeries.D2_T] using h
+  rw [← modular_T_smul, EisensteinSeries.E2_T_smul]
 
 lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
     E₂ z + 6 / (π * Complex.I * z) := by
   have h := congrFun (EisensteinSeries.E2_slash_action ModularGroup.S) z
   have h' : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
       E₂ z - (1 / (2 * riemannZeta 2)) * (2 * π * Complex.I / z) := by
-    simpa [E₂, EisensteinSeries.D2_S, smul_eq_mul] using h
+    simpa [EisensteinSeries.D2_S, smul_eq_mul] using h
   rw [riemannZeta_two] at h'
   have hpi : (π : ℂ) ≠ 0 := by simp
   have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
@@ -68,11 +47,6 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
       ring_nf
       simp [Complex.I_sq, add_comm]
 
-/-- E₂ transforms under SL(2,ℤ) as: E₂ ∣[2] γ = E₂ - α • D₂ γ where α = 1/(2ζ(2)). -/
-lemma E₂_slash_transform (γ : SL(2, ℤ)) :
-    (E₂ ∣[(2 : ℤ)] γ) = E₂ - (1 / (2 * riemannZeta 2)) • D₂ γ := by
-  simpa [E₂, D₂] using (EisensteinSeries.E2_slash_action γ)
-
 /-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)). -/
 lemma E₂_S_transform (z : ℍ) :
     E₂ (ModularGroup.S • z) = z ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) := by
@@ -83,52 +57,10 @@ lemma E₂_S_transform (z : ℍ) :
   -- `only` is required here; without it simp rewrites the congrArg term structure
   simpa only [mul_assoc, inv_mul_cancel₀ hz2, mul_one] using congrArg (· * ((z : ℂ) * (z : ℂ))) h
 
-lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
-    cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z)) =
-    ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
-  let q : ℂ := cexp (2 * π * Complex.I * z)
-  let f : ℕ → ℂ := fun n => (n : ℂ) ^ 1 * q ^ n / (1 - q ^ n)
-  let g : ℕ → ℂ := fun n => sigma 1 n * q ^ n
-  have h :
-      ∑' n : ℕ+, f n = ∑' n : ℕ+, g n := by
-    simpa [f, g, q] using
-      (tsum_pow_div_one_sub_eq_tsum_sigma (r := q) (UpperHalfPlane.norm_exp_two_pi_I_lt_one z) 1)
-  have hf := tsum_pnat_eq_tsum_succ (f := f)
-  have hg := tsum_pnat_eq_tsum_succ (f := g)
-  rw [hf, hg] at h
-  calc
-    ∑' n : ℕ, (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) /
-        (1 - cexp (2 * π * Complex.I * (n + 1) * z))
-      = ∑' n : ℕ, f (n + 1) := by
-          apply tsum_congr
-          intro n
-          have hpow : cexp (2 * π * Complex.I * (n + 1) * z) = q ^ (n + 1) := by
-            dsimp [q]
-            rw [← Complex.exp_nat_mul]
-            congr 1
-            have hn : (((n + 1 : ℕ) : ℂ)) = (n : ℂ) + 1 := by
-              norm_num [Nat.cast_add]
-            rw [hn]
-            ring
-          simp [f, pow_one, hpow]
-    _ = ∑' n : ℕ, g (n + 1) := h
-    _ = ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
-          apply tsum_congr
-          intro n
-          have hpow : cexp (2 * π * Complex.I * (n + 1) * z) = q ^ (n + 1) := by
-            dsimp [q]
-            rw [← Complex.exp_nat_mul]
-            congr 1
-            have hn : (((n + 1 : ℕ) : ℂ)) = (n : ℂ) + 1 := by
-              norm_num [Nat.cast_add]
-            rw [hn]
-            ring
-          simp [g, hpow]
-
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) /
                         (1 - cexp (2 * π * Complex.I * n * z)) := by
-  rw [E₂, EisensteinSeries.E2]
+  rw [EisensteinSeries.E2]
   simp [smul_eq_mul]
   rw [EisensteinSeries.G2_eq_tsum_cexp]
   rw [mul_sub]
