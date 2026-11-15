@@ -75,3 +75,17 @@ lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
 end Integrability
 
 end
+
+section IntegralBound
+
+/-- Blueprint `lem:integral-bound`: for every `n`, the quantity
+`r ^ n ∫₁^∞ e^{-2πs} e^{-πr/s} ds` is bounded uniformly in `r ≥ 0`. Combined with
+`I₁'_bounding`, `I₃'_bounding`, `I₅'_bounding`, this shows that `I₁'`, `I₃'`, `I₅'` decay faster
+than any polynomial. Proof sketch: `r ^ n e^{-πr/s} ≤ C s ^ n` for `s ≥ 1`, and
+`∫₀^∞ s ^ n e^{-2πs} ds = n! / (2π) ^ (n + 1)`. -/
+theorem pow_mul_integral_exp_mul_exp_div_le (n : ℕ) :
+    ∃ C : ℝ, ∀ r : ℝ, 0 ≤ r →
+      r ^ n * ∫ s in Ici (1 : ℝ), exp (-2 * π * s) * exp (-π * r / s) ≤ C := by
+  sorry
+
+end IntegralBound
