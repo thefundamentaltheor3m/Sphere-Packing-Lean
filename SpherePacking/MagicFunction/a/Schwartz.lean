@@ -120,22 +120,28 @@ noncomputable section SchwartzMap
 
 namespace MagicFunction.a.RadialSchwartzIntegrals
 
-def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₁'_smooth'
+def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₁'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₁'_decayOn
 
-def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₂'_smooth'
+def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₂'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₂'_decayOn
 
-def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₃'_smooth'
+def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₃'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₃'_decayOn
 
-def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₄'_smooth'
+def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₄'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₄'_decayOn
 
-def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₅'_smooth'
+def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₅'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₅'_decayOn
 
-def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) MagicFunction.a.SchwartzProperties.I₆'_smooth'
+def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
+  MagicFunction.a.SchwartzProperties.I₆'_smooth'.contDiffOn
   MagicFunction.a.SchwartzProperties.I₆'_decayOn
 
 def I₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₁'.toRadialSchwartzMap ℝ⁸
