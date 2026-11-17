@@ -20,11 +20,6 @@ elsewhere and presents them concisely.
 
 @[expose] public section
 
--- NOTE: We are not ready for the contents of this file. We first need to fix
--- the dimension bridge for Schwartz functions.
-
--- #exit
-
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
@@ -47,13 +42,13 @@ We need to use the Leibniz Integral Rule to differentiate under the integral sig
 `hasDerivAt_integral_of_dominated_loc_of_deriv_le` in `Mathlib.Analysis.Calculus.ParametricIntegral`
 -/
 
-theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by
+theorem I₁'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₁' (Ici (-3 / 2)) := by
   sorry
 
-theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
+theorem I₂'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₂' (Ici (-3 / 2)) := by
   sorry
 
-theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
+theorem I₃'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₃' (Ici (-3 / 2)) := by
   have hI : RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
     ext x
     have hEqOn : EqOn (Φ₃ x) (fun t => cexp (2 * π * I * x) * Φ₁ x t) (uIcc 0 1) := fun t ht => by
@@ -68,15 +63,15 @@ theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
     simpa [I₃', I₁'] using (intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn).trans
       (intervalIntegral.integral_const_mul (cexp (2 * π * I * x)) (f := Φ₁ x) (a := (0 : ℝ))
         (b := 1))
-  simpa [hI] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
+  simpa [hI] using ((contDiff_const.mul ofRealCLM.contDiff).cexp.contDiffOn).mul I₁'_smooth'
 
-theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
+theorem I₄'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₄' (Ici (-3 / 2)) := by
   sorry
 
-theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
+theorem I₅'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₅' (Ici (-3 / 2)) := by
   sorry
 
-theorem I₆'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₆' := by
+theorem I₆'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.I₆' (Ici (-3 / 2)) := by
   sorry
 
 end Smooth
@@ -120,28 +115,28 @@ noncomputable section SchwartzMap
 
 namespace MagicFunction.a.RadialSchwartzIntegrals
 
-def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₁'_smooth'.contDiffOn
+def I₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₁'_smooth'
   MagicFunction.a.SchwartzProperties.I₁'_decayOn
 
-def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₂'_smooth'.contDiffOn
+def I₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₂'_smooth'
   MagicFunction.a.SchwartzProperties.I₂'_decayOn
 
-def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₃'_smooth'.contDiffOn
+def I₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₃'_smooth'
   MagicFunction.a.SchwartzProperties.I₃'_decayOn
 
-def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₄'_smooth'.contDiffOn
+def I₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₄'_smooth'
   MagicFunction.a.SchwartzProperties.I₄'_decayOn
 
-def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₅'_smooth'.contDiffOn
+def I₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₅'_smooth'
   MagicFunction.a.SchwartzProperties.I₅'_decayOn
 
-def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.a.SchwartzProperties.I₆'_smooth'.contDiffOn
+def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by norm_num)
+  MagicFunction.a.SchwartzProperties.I₆'_smooth'
   MagicFunction.a.SchwartzProperties.I₆'_decayOn
 
 def I₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₁'.toRadialSchwartzMap ℝ⁸

@@ -17,9 +17,9 @@ public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 /-!
 # Multidimensional Radial Schwartz Functions
 
-A function smooth only on a half-line `[a - ε, ∞)` and decaying on `[a, ∞)` can be turned into a
-genuine Schwartz map by multiplying it with a smooth transition function that vanishes to the left
-and is identically `1` on `[a, ∞)`.
+A function smooth only on a half-line `[b, ∞)` and decaying on `[a, ∞)` can be turned into a
+genuine Schwartz map by multiplying it with a smooth transition function that vanishes on
+`(-∞, a - δ]` and is identically `1` on `[a, ∞)`, for any transition width `0 < δ < a - b`.
 
 ## Main declarations
 
@@ -71,62 +71,71 @@ theorem _root_.ContDiffOn.contDiff_smul_of_tsupport_subset_interior {g : E → �
     (hsupp : tsupport g ⊆ interior s) : ContDiff 𝕜 n fun x ↦ g x • f x :=
   hf.contDiff_bilinear_of_tsupport_subset_interior (B := ContinuousLinearMap.lsmul 𝕜 𝕜) hg hsupp
 
-/-- A `smoothTransition` cutoff at an arbitrary threshold `a`, applied to a function smooth on
-`Ici b` for any `b < a`, valued in an arbitrary real normed space. -/
-theorem _root_.contDiff_smoothTransition_smul [NormedSpace ℝ F] {f : ℝ → F} {a b : ℝ} {n : ℕ∞}
-    (hab : b < a) (hf : ContDiffOn ℝ n f (Ici b)) :
-    ContDiff ℝ n fun x ↦ (x - a).smoothTransition • f x := by
+/-- A `smoothTransition` cutoff rising from `0` at `a - δ` to `1` at `a`, applied to a function
+smooth on `Ici b` for any `b < a - δ`, valued in an arbitrary real normed space. -/
+theorem _root_.contDiff_smoothTransition_smul [NormedSpace ℝ F] {f : ℝ → F} {a b δ : ℝ} {n : ℕ∞}
+    (hδ : 0 < δ) (hb : b < a - δ) (hf : ContDiffOn ℝ n f (Ici b)) :
+    ContDiff ℝ n fun x ↦ ((x - a) / δ + 1).smoothTransition • f x := by
   refine hf.contDiff_smul_of_tsupport_subset_interior (by fun_prop) ?_
   rw [tsupport, interior_Ici,
-    show Function.support (fun x : ℝ ↦ (x - a).smoothTransition) = Ioi a by
-      ext x; simp [Real.smoothTransition.zero_iff_nonpos], closure_Ioi]
-  exact Ici_subset_Ioi.mpr hab
+    show Function.support (fun x : ℝ ↦ ((x - a) / δ + 1).smoothTransition) = Ioi (a - δ) by
+      ext x
+      rw [Function.mem_support, ne_eq, Real.smoothTransition.zero_iff_nonpos, not_le,
+        div_add_one hδ.ne', lt_div_iff₀ hδ, zero_mul, mem_Ioi]
+      constructor <;> intro h <;> linarith,
+    closure_Ioi]
+  exact Ici_subset_Ioi.mpr hb
 
 end Cutoff
 
-/-- The cutoff `fun x ↦ (x - a + 1).smoothTransition * f x` is globally smooth as soon as `f` is
-smooth on `Ici (a - ε)` for some `ε > 1`.
+/-- The cutoff `fun x ↦ ((x - a) / δ + 1).smoothTransition * f x` is globally smooth as soon as `f`
+is smooth on `Ici b` for some `b < a - δ`.
 
-The threshold is chosen so that the cutoff is `1` on `Ici a` and `0` on `Iic (a - 1)`, so the
-product agrees with `f` on `Ici a`; `f` must therefore be smooth on a neighbourhood of
-`Ici (a - 1)`, which is exactly what `1 < ε` provides. The boundary case `ε = 1` is also true —
-`smoothTransition` is flat at `0` — but needs a genuine estimate rather than this locality
+The transition window is `[a - δ, a]`: the cutoff is `0` on `Iic (a - δ)` and `1` on `Ici a`, so
+the product agrees with `f` on `Ici a` for every width `δ > 0`. Smoothness of `f` is therefore
+needed only on a neighbourhood of `Ici (a - δ)`, which is what `b < a - δ` provides. Keeping `δ`
+free matters in practice: a function given by an integral that converges only on `Ioi b` admits no
+cutoff of width `δ ≥ a - b`, however small the margin. The boundary case `b = a - δ` is also
+true — `smoothTransition` is flat at `0` — but needs a genuine estimate rather than this locality
 argument. -/
-theorem _root_.contDiff_smoothTransition_mul {f : ℝ → ℂ} {a ε : ℝ} {n : ℕ∞} (hε : 1 < ε)
-    (smooth : ContDiffOn ℝ n f (Ici (a - ε))) :
-    ContDiff ℝ n (fun x ↦ (x - a + 1).smoothTransition * f x) := by
-  simpa [Complex.real_smul, sub_sub_eq_add_sub, sub_add_eq_add_sub] using
-    contDiff_smoothTransition_smul (a := a - 1) (b := a - ε) (by linarith) smooth
+theorem _root_.contDiff_smoothTransition_mul {f : ℝ → ℂ} {a b δ : ℝ} {n : ℕ∞} (hδ : 0 < δ)
+    (hb : b < a - δ) (smooth : ContDiffOn ℝ n f (Ici b)) :
+    ContDiff ℝ n (fun x ↦ ((x - a) / δ + 1).smoothTransition * f x) := by
+  simpa [Complex.real_smul] using contDiff_smoothTransition_smul hδ hb smooth
 
 /-- A Schwartz map constructed from a smooth function decaying on a subset by multiplying by a
 smooth transition function. -/
 @[simps!]
-def ofDecayOn {f : ℝ → ℂ} {a ε : ℝ} (hε : 1 < ε)
-    (smooth : ContDiffOn ℝ ∞ f (Set.Ici (a - ε)))
+def ofDecayOn {f : ℝ → ℂ} {a b δ : ℝ} (hδ : 0 < δ) (hb : b < a - δ)
+    (smooth : ContDiffOn ℝ ∞ f (Set.Ici b))
     (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     𝓢(ℝ, ℂ) :=
-  let F' : ℝ → ℂ := fun x ↦ Real.smoothTransition (x - a + 1) * f x
-  SchwartzMap.mkOfCocompact F' (contDiff_smoothTransition_mul hε smooth) <| by
+  let F' : ℝ → ℂ := fun x ↦ Real.smoothTransition ((x - a) / δ + 1) * f x
+  SchwartzMap.mkOfCocompact F' (contDiff_smoothTransition_mul hδ hb smooth) <| by
     intro k n
     obtain ⟨C, hC⟩ := decay k n
     use max C 0
-    filter_upwards [(isCompact_Icc (a := a - 1) (b := a)).compl_mem_cocompact] with x hx
-    obtain hx | hx : x < a - 1 ∨ a < x := by grind
+    filter_upwards [(isCompact_Icc (a := a - δ) (b := a)).compl_mem_cocompact] with x hx
+    obtain hx | hx : x < a - δ ∨ a < x := by grind
     · have hEq : F' =ᶠ[nhds x] 0 := (eventually_lt_nhds hx).mono fun y hy ↦ by
-        simp [F', Real.smoothTransition.zero_of_nonpos (by linarith : y - a + 1 ≤ 0)]
+        simp [F', Real.smoothTransition.zero_of_nonpos
+          (by rw [div_add_one hδ.ne', div_le_iff₀ hδ, zero_mul]; linarith :
+            (y - a) / δ + 1 ≤ 0)]
       simp [(hEq.iteratedFDeriv ℝ n).self_of_nhds]
     · have hEq : F' =ᶠ[nhds x] f := (eventually_gt_nhds hx).mono fun y hy ↦ by
-        simp [F', Real.smoothTransition.one_of_one_le (by linarith : 1 ≤ y - a + 1)]
+        simp [F', Real.smoothTransition.one_of_one_le
+          (le_add_of_nonneg_left (div_nonneg (by linarith) hδ.le) : (1 : ℝ) ≤ (y - a) / δ + 1)]
       exact ((hEq.iteratedFDeriv ℝ n).self_of_nhds ▸ hC x hx.le).trans (le_max_left _ _)
 
 /-- `ofDecayOn` does not change `f` on `[a, ∞)`, where the transition function is identically
 `1`. -/
-theorem ofDecayOn_eqOn {f : ℝ → ℂ} {a ε : ℝ} (hε : 1 < ε)
-    (smooth : ContDiffOn ℝ ∞ f (Set.Ici (a - ε)))
+theorem ofDecayOn_eqOn {f : ℝ → ℂ} {a b δ : ℝ} (hδ : 0 < δ) (hb : b < a - δ)
+    (smooth : ContDiffOn ℝ ∞ f (Set.Ici b))
     (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
-    Set.EqOn f (ofDecayOn hε smooth decay) (Set.Ici a) := by
-  grind [ofDecayOn, mkOfCocompact_toFun, Set.EqOn, Real.smoothTransition.eq_one_iff_one_le,
-    Complex.ofReal_one, SchwartzMap.mkOfCocompact, mk_apply]
+    Set.EqOn f (ofDecayOn hδ hb smooth decay) (Set.Ici a) := fun x hx ↦ by
+  rw [ofDecayOn, mkOfCocompact, mk_apply, Real.smoothTransition.one_of_one_le
+    (le_add_of_nonneg_left (div_nonneg (by simpa using hx) hδ.le))]
+  simp
 
 end ofDecay
 
@@ -155,11 +164,11 @@ def toRadialSchwartzMap (f : 𝓢(ℝ, ℂ)) : RadialSchwartzMap 𝕜 F ℂ :=
 
 /-- A radial Schwartz map on `F` built from a smooth function on `ℝ` decaying on `[a, ∞)`. -/
 @[simps!]
-def _root_.RadialSchwartzMap.ofDecay {f : ℝ → ℂ} {a ε : ℝ} (hε : 1 < ε)
-    (smooth : ContDiffOn ℝ ∞ f (Set.Ici (a - ε)))
+def _root_.RadialSchwartzMap.ofDecay {f : ℝ → ℂ} {a b δ : ℝ} (hδ : 0 < δ) (hb : b < a - δ)
+    (smooth : ContDiffOn ℝ ∞ f (Set.Ici b))
     (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     RadialSchwartzMap 𝕜 F ℂ :=
-  (ofDecayOn hε smooth decay).toRadialSchwartzMap F
+  (ofDecayOn hδ hb smooth decay).toRadialSchwartzMap F
 
 end toRadial
 

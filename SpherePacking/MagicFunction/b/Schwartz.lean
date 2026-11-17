@@ -47,22 +47,22 @@ We need to use the Leibniz Integral Rule to differentiate under the integral sig
 `hasDerivAt_integral_of_dominated_loc_of_deriv_le` in `Mathlib.Analysis.Calculus.ParametricIntegral`
 -/
 
-theorem J₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₁' := by
+theorem J₁'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₁' (Ici (-3 / 4)) := by
   sorry
 
-theorem J₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₂' := by
+theorem J₂'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₂' (Ici (-3 / 4)) := by
   sorry
 
-theorem J₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₃' := by
+theorem J₃'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₃' (Ici (-3 / 4)) := by
   sorry
 
-theorem J₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₄' := by
+theorem J₄'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₄' (Ici (-3 / 4)) := by
   sorry
 
-theorem J₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₅' := by
+theorem J₅'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₅' (Ici (-3 / 4)) := by
   sorry
 
-theorem J₆'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₆' := by
+theorem J₆'_smooth' : ContDiffOn ℝ ∞ RealIntegrals.J₆' (Ici (-3 / 4)) := by
   sorry
 
 end Smooth
@@ -106,28 +106,28 @@ noncomputable section SchwartzMap
 
 namespace MagicFunction.b.RadialSchwartzIntegrals
 
-def J₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₁'_smooth'.contDiffOn
+def J₁' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₁'_smooth'
   MagicFunction.b.SchwartzProperties.J₁'_decayOn
 
-def J₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₂'_smooth'.contDiffOn
+def J₂' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₂'_smooth'
   MagicFunction.b.SchwartzProperties.J₂'_decayOn
 
-def J₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₃'_smooth'.contDiffOn
+def J₃' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₃'_smooth'
   MagicFunction.b.SchwartzProperties.J₃'_decayOn
 
-def J₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₄'_smooth'.contDiffOn
+def J₄' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₄'_smooth'
   MagicFunction.b.SchwartzProperties.J₄'_decayOn
 
-def J₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₅'_smooth'.contDiffOn
+def J₅' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₅'_smooth'
   MagicFunction.b.SchwartzProperties.J₅'_decayOn
 
-def J₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (ε := 2) one_lt_two
-  MagicFunction.b.SchwartzProperties.J₆'_smooth'.contDiffOn
+def J₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1 / 2) (by norm_num) (by norm_num)
+  MagicFunction.b.SchwartzProperties.J₆'_smooth'
   MagicFunction.b.SchwartzProperties.J₆'_decayOn
 
 def J₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := J₁'.toRadialSchwartzMap ℝ⁸
