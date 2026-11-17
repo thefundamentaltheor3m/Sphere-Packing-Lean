@@ -16,6 +16,8 @@ the Schwartz space consisting of radial functions. It proves that the Fourier tr
 submodule. It proves `FourierTransform`, `FourierPair`, `ContinuousFourier`, `FourierAdd` and
 `FourierSMul` instances (and the corresponding instances for 𝓕⁻) and `StarAddMonoid` and
 `StarModule` instances (where the module structure is over ℝ).
+
+See [Mathlib PR #43179](https://github.com/leanprover-community/mathlib4/pull/43179)
 -/
 
 @[expose] public section
@@ -39,6 +41,9 @@ namespace RadialSchwartzMap
 variable {𝕜 E F : Type*} [NormedField 𝕜] [NormedAddCommGroup E] [NormedAddCommGroup F]
   [NormedSpace ℝ F] [NormedSpace 𝕜 F] [SMulCommClass ℝ 𝕜 F]
 
+/-- Create a `RadialSchwartzMap` -/
+def mk [NormedSpace ℝ E] (f : 𝓢(E, F)) (hf : IsRadial f) : RadialSchwartzMap 𝕜 E F := ⟨f, hf⟩
+
 section NormedSpace
 
 variable [NormedSpace ℝ E]
@@ -49,6 +54,21 @@ instance instFunLike : FunLike (RadialSchwartzMap 𝕜 E F) E F where
 
 @[simp, norm_cast]
 lemma coe_coe (f : RadialSchwartzMap 𝕜 E F) : ⇑(f : 𝓢(E, F)) = f := rfl
+
+@[simp]
+lemma zero_apply (x : E) : (0 : RadialSchwartzMap 𝕜 E F) x = 0 := rfl
+
+@[simp]
+lemma add_apply (f g : RadialSchwartzMap 𝕜 E F) (x : E) : (f + g) x = f x + g x := rfl
+
+@[simp]
+lemma neg_apply (f : RadialSchwartzMap 𝕜 E F) (x : E) : (-f) x = -f x := rfl
+
+@[simp]
+lemma sub_apply (f g : RadialSchwartzMap 𝕜 E F) (x : E) : (f - g) x = f x - g x := rfl
+
+@[simp]
+lemma smul_apply (c : 𝕜) (f : RadialSchwartzMap 𝕜 E F) (x : E) : (c • f) x = c • f x := rfl
 
 lemma isRadial (f : RadialSchwartzMap 𝕜 E F) : IsRadial f := f.2
 
@@ -119,7 +139,6 @@ lemma fourier_coe (f : RadialSchwartzMap 𝕜 E F) :
 
 section inverse
 
--- TODO: Trim down hypotheses for this result.
 lemma _root_.Function.Even.fourierInv {f : E → F} (hf : (𝓕 f).Even) {w : E} :
     𝓕⁻ f w = 𝓕 f w := by
   rw [fourierInv_eq_fourier_neg]
@@ -132,7 +151,6 @@ lemma _root_.SchwartzMap.fourier_eq_fourierInv_of_mem_radialSchwartzMap {f : �
   rw [fourierInv_coe, SchwartzMap.fourier_coe]
   exact Function.Even.fourierInv <| IsRadial.even (hf.fourier)
 
--- Is this necessary?
 lemma _root_.SchwartzMap.eqOn_fourier_fourierInv_radialSchwartzMap :
     Set.EqOn (𝓕⁻ : 𝓢(E, F) → 𝓢(E, F)) (𝓕 : 𝓢(E, F) → 𝓢(E, F)) (RadialSchwartzMap 𝕜 E F) :=
   fun _ hf ↦ SchwartzMap.fourier_eq_fourierInv_of_mem_radialSchwartzMap 𝕜 hf
@@ -158,11 +176,13 @@ instance instFourierPair : FourierPair (RadialSchwartzMap 𝕜 E F) (RadialSchwa
 variable {f : RadialSchwartzMap 𝕜 E F}
 
 /-- The Fourier transform is an involution on radial Schwartz functions. -/
+@[simp]
 lemma fourier_apply_apply : 𝓕 (𝓕 f) = f := by
   rw [← fourierInv_eq_fourier]
   exact instFourierPair.fourierInv_fourier_eq f
 
 /-- The inverse Fourier transform is an involution on radial Schwartz functions. -/
+@[simp]
 lemma fourierInv_apply_apply : 𝓕⁻ (𝓕⁻ f) = f := by
   rw [fourierInv_eq_fourier]
   exact fourier_apply_apply
