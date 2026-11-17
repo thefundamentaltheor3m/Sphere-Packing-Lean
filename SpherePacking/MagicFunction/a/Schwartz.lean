@@ -139,17 +139,65 @@ def I₆' : 𝓢(ℝ, ℂ) := ofDecayOn (a := 0) (δ := 1) (by norm_num) (by nor
   MagicFunction.a.SchwartzProperties.I₆'_smooth'
   MagicFunction.a.SchwartzProperties.I₆'_decayOn
 
-def I₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₁'.toRadialSchwartzMap ℝ⁸
+/- As a sanity check, the `SchwartzMap` versions agree with the other versions on [0, ∞) - in
+particular, on all norms. -/
 
-def I₂ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₂'.toRadialSchwartzMap ℝ⁸
+lemma I₁'_eqOn : Set.EqOn I₁' RealIntegrals.I₁' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₁'_smooth'
+    MagicFunction.a.SchwartzProperties.I₁'_decayOn).symm
 
-def I₃ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₃'.toRadialSchwartzMap ℝ⁸
+lemma I₂'_eqOn : Set.EqOn I₂' RealIntegrals.I₂' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₂'_smooth'
+    MagicFunction.a.SchwartzProperties.I₂'_decayOn).symm
 
-def I₄ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₄'.toRadialSchwartzMap ℝ⁸
+lemma I₃'_eqOn : Set.EqOn I₃' RealIntegrals.I₃' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₃'_smooth'
+    MagicFunction.a.SchwartzProperties.I₃'_decayOn).symm
 
-def I₅ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₅'.toRadialSchwartzMap ℝ⁸
+lemma I₄'_eqOn : Set.EqOn I₄' RealIntegrals.I₄' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₄'_smooth'
+    MagicFunction.a.SchwartzProperties.I₄'_decayOn).symm
 
-def I₆ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₆'.toRadialSchwartzMap ℝ⁸
+lemma I₅'_eqOn : Set.EqOn I₅' RealIntegrals.I₅' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₅'_smooth'
+    MagicFunction.a.SchwartzProperties.I₅'_decayOn).symm
+
+lemma I₆'_eqOn : Set.EqOn I₆' RealIntegrals.I₆' (Set.Ici 0) :=
+  (ofDecayOn_eqOn (δ := 1) (by norm_num) (by norm_num)
+    MagicFunction.a.SchwartzProperties.I₆'_smooth'
+    MagicFunction.a.SchwartzProperties.I₆'_decayOn).symm
+
+def I₁ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₁'.toRadialSchwartzMap ℂ ℝ⁸
+
+def I₂ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₂'.toRadialSchwartzMap ℂ ℝ⁸
+
+def I₃ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₃'.toRadialSchwartzMap ℂ ℝ⁸
+
+def I₄ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₄'.toRadialSchwartzMap ℂ ℝ⁸
+
+def I₅ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₅'.toRadialSchwartzMap ℂ ℝ⁸
+
+def I₆ : RadialSchwartzMap ℂ ℝ⁸ ℂ := I₆'.toRadialSchwartzMap ℂ ℝ⁸
+
+/- As a sanity-check, the `RadialSchwartzMap` versions exactly equal the real integrals composed
+with norm squared. -/
+
+lemma I₁_eq_comp_normSq {x : ℝ⁸} : I₁ x = RealIntegrals.I₁' (‖x‖ ^ 2) := by apply I₁'_eqOn; simp
+
+lemma I₂_eq_comp_normSq {x : ℝ⁸} : I₂ x = RealIntegrals.I₂' (‖x‖ ^ 2) := by apply I₂'_eqOn; simp
+
+lemma I₃_eq_comp_normSq {x : ℝ⁸} : I₃ x = RealIntegrals.I₃' (‖x‖ ^ 2) := by apply I₃'_eqOn; simp
+
+lemma I₄_eq_comp_normSq {x : ℝ⁸} : I₄ x = RealIntegrals.I₄' (‖x‖ ^ 2) := by apply I₄'_eqOn; simp
+
+lemma I₅_eq_comp_normSq {x : ℝ⁸} : I₅ x = RealIntegrals.I₅' (‖x‖ ^ 2) := by apply I₅'_eqOn; simp
+
+lemma I₆_eq_comp_normSq {x : ℝ⁸} : I₆ x = RealIntegrals.I₆' (‖x‖ ^ 2) := by apply I₆'_eqOn; simp
 
 end MagicFunction.a.RadialSchwartzIntegrals
 
@@ -167,7 +215,7 @@ def a' : 𝓢(ℝ, ℂ) :=
 
 /-- The +1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[simps!]
-def a : RadialSchwartzMap ℂ ℝ⁸ ℂ := a'.toRadialSchwartzMap ℝ⁸
+def a : RadialSchwartzMap ℂ ℝ⁸ ℂ := a'.toRadialSchwartzMap ℂ ℝ⁸
 
 -- TODO: we may want a `Set.EqOn` result equating these with the original integrals on `[0, ∞)`.
 theorem a_eq_sum_RadialSchwartzIntegrals : a =

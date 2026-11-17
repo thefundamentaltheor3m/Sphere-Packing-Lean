@@ -144,6 +144,7 @@ section toRadial
 -- The `‖·‖²` differentiability helpers formerly here are now mathlib's
 -- `hasStrictFDerivAt_norm_sq` / `DifferentiableAt.norm_sq` / `Differentiable.norm_sq`.
 
+variable (𝕜 : Type*) [NormedField 𝕜] [NormedSpace 𝕜 ℂ] [SMulCommClass ℝ 𝕜 ℂ]
 variable (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F]
 
 /-- Precomposition of a Schwartz map on `ℝ` with `‖·‖ ^ 2`, as a Schwartz map on `F`. -/
@@ -155,12 +156,13 @@ def compNormSq (f : 𝓢(ℝ, ℂ)) : 𝓢(F, ℂ) :=
     simp only [norm_pow, norm_norm]
     nlinarith
 
-variable {𝕜 : Type*} [NormedField 𝕜] [NormedSpace 𝕜 ℂ] [SMulCommClass ℝ 𝕜 ℂ]
-
 /-- A radial Schwartz map on `F` obtained by composing a Schwartz map on `ℝ` with `‖·‖ ^ 2`. -/
 @[simps!]
 def toRadialSchwartzMap (f : 𝓢(ℝ, ℂ)) : RadialSchwartzMap 𝕜 F ℂ :=
   RadialSchwartzMap.mk (compNormSq F f) (Function.isRadial_norm_sq F).comp_right
+
+lemma toRadialSchwartzMap_eq_comp_normSq (f : 𝓢(ℝ, ℂ)) {x : F} :
+    f.toRadialSchwartzMap 𝕜 F x = f (‖x‖ ^ 2) := rfl
 
 /-- A radial Schwartz map on `F` built from a smooth function on `ℝ` decaying on `[a, ∞)`. -/
 @[simps!]
@@ -168,7 +170,7 @@ def _root_.RadialSchwartzMap.ofDecay {f : ℝ → ℂ} {a b δ : ℝ} (hδ : 0 <
     (smooth : ContDiffOn ℝ ∞ f (Set.Ici b))
     (decay : ∀ (k n : ℕ), ∃ (C : ℝ), ∀ x, a ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     RadialSchwartzMap 𝕜 F ℂ :=
-  (ofDecayOn hδ hb smooth decay).toRadialSchwartzMap F
+  (ofDecayOn hδ hb smooth decay).toRadialSchwartzMap 𝕜 F
 
 end toRadial
 
