@@ -168,9 +168,8 @@ lemma I₄'_bounding_aux_4 (r : ℝ) : ∃ C₀ > 0,
     ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
   · refine ⟨1, by positivity, ?_⟩
-    have h₁ : CompleteSpace ℝ := inferInstance
     have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
+    rw [integral_undef h₂]
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₄'_bounding_aux_3 r
   use C₀, hC₀_pos

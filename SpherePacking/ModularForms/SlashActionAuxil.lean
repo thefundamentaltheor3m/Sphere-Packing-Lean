@@ -78,10 +78,10 @@ private theorem α_zpow_val (k : ℤ) : (α ^ k : SL(2, ℤ)).val = !![1, 2 * k;
   induction k using Int.induction_on with
   | zero => exact Matrix.one_fin_two
   | succ n ih =>
-    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    simp only [_root_.zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
   | pred n ih =>
-    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+    simp only [_root_.zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
       Matrix.adjugate_fin_two, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
 
@@ -90,10 +90,10 @@ private theorem β_zpow_val (k : ℤ) : (β ^ k : SL(2, ℤ)).val = !![1, 0; 2 *
   induction k using Int.induction_on with
   | zero => exact Matrix.one_fin_two
   | succ n ih =>
-    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    simp only [_root_.zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
   | pred n ih =>
-    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+    simp only [_root_.zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
       Matrix.adjugate_fin_two, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
 
@@ -123,7 +123,7 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
         have := val.2; rw [Matrix.det_fin_two] at this; grind
       have h_val : val = negI * α^(-k) := by
         refine Subtype.ext ?_
-        simp only [SpecialLinearGroup.coe_mul, zpow_neg, SpecialLinearGroup.coe_inv]
+        simp only [SpecialLinearGroup.coe_mul, _root_.zpow_neg, SpecialLinearGroup.coe_inv]
         rw [α_zpow_val]
         ext i j; fin_cases i <;> fin_cases j
           <;> simp [negI, Matrix.mul_apply, Matrix.adjugate_fin_two, hk, h, h_2, h11]
@@ -132,7 +132,7 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
       have hα_mem : α ∈ Subgroup.closure {α, β, negI} :=
         Subgroup.subset_closure (Set.mem_insert _ _)
       convert Subgroup.mul_mem _ hnegI_mem (Subgroup.inv_mem _ (Subgroup.zpow_mem _ hα_mem k))
-      simp only [zpow_neg, Subgroup.coe_mul, Subgroup.coe_inv, SubgroupClass.coe_zpow, h_val]
+      simp only [_root_.zpow_neg, Subgroup.coe_mul, Subgroup.coe_inv, SubgroupClass.coe_zpow, h_val]
   · have h_det : (A.val.val 0 0) * (A.val.val 1 1) = 1 := by
       have := A.1.2; rw [Matrix.det_fin_two] at this
       simp_all only [Fin.isValue, Int.reduceNeg, not_or, mul_zero, sub_zero]

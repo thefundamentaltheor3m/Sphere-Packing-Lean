@@ -224,8 +224,8 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
                 apply tsum_congr
                 intro b
                 have x_neq_b: x.val ≠ b.val := by
-                  by_contra!
-                  rw [this] at hx
+                  by_contra h
+                  rw [h] at hx
                   have b_in_d := b.property.right
                   contradiction
                 dsimp [Ne] at x_neq_b

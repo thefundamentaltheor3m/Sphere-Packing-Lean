@@ -75,7 +75,7 @@ protected theorem tsum_subtype_eq_top_of_eq_top {s : Set α} (h : ∃ a ∈ s, f
 
 protected theorem tsum_subtype_union_disjoint {s t : Set α} (hd : Disjoint s t) :
     ∑' (x : ↑(s ∪ t)), f x = ∑' (x : s), f x + ∑' (x : t), f x :=
-  Summable.tsum_union_disjoint hd ENat.summable ENat.summable
+  Summable.tsum_union_of_disjoint hd ENat.summable ENat.summable
 
 protected theorem tsum_subtype_le_of_subset {s t : Set α} (h : s ⊆ t) :
     ∑' (x : s), f x ≤ ∑' (x : t), f x := by
