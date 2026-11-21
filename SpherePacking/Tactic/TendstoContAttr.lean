@@ -6,6 +6,8 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.Tactic.FunProp
+import Lean.MonadEnv
+import Lean.ScopedEnvExtension
 
 /-!
 # `@[tendsto_cont]` attribute
