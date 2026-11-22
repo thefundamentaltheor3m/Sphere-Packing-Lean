@@ -161,7 +161,7 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   simp [mul_pow, hx']
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
-  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
+  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, S_mul_S_eq,
     ModularForm.slash_neg' _ _ (by decide), slash_one]
 
 lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
