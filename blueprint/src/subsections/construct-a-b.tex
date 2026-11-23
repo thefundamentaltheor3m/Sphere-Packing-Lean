@@ -588,11 +588,6 @@ Direct computation from Lemma~\ref{lemma:psi-new} and the $q$-expansions of the 
 Now, we are ready to define function $b$.
 Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
 
-
-% AUDIT NOTE: the Lean definition `MagicFunction.b.RealIntegrals.J₆'` currently carries the
-% factor +2 instead of the -2 below. The -2 convention used here is the one consistent with the
-% Lean statements `perm_J₅ : 𝓕 J₅ = -J₆` and `b_zero : b 0 = 0`, as well as with
-% Proposition \ref{prop:b-double-zeros}; the Lean definition should be corrected accordingly.
 \begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}\lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}\leanok
 Define $b_\rad : \R \to \C$ by
 \begin{equation}
