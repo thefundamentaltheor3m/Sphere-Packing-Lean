@@ -78,11 +78,11 @@ entire construction of the section “Fourier eigenfunctions with double zeroes 
 Suppose $`f` is a Schwartz function satisfying (5.1) and (5.2) whose bound in
 {bpref "thm:Cohn-Elkies-periodic"}[] is attained by some $`\Lambda`-periodic packing with centres
 $`X`. Then every inequality in the proof of {bpref "thm:Cohn-Elkies-periodic"}[] must be an
-equality. Equality in (5.3) forces $`f(x - y) = 0` for all distinct $`x \in X`,
-$`y \in X/\Lambda`; when $`X = \Lambda`, this says that *$`f` vanishes at all non-zero lattice
-points*. Moreover, $`f(0) \geq 0` (else the bound would be negative), so (5.1) forces these
-vanishing points of norm $`\geq 1` to be *double* zeroes of the radial profile of $`f`: a sign
-change there would contradict $`f \leq 0` on $`\{\|x\| \geq 1\}`. Finally, equality in (5.4)
+equality. In our case, our candidate packing is a lattice packing, so we set $`X = \Lambda`.
+Moreover, it is enough to find a radial function $`f`. Equality in (5.3) then says that *$`f`
+vanishes at all non-zero lattice points*. By (5.1), those of norm $`> 1` must be *double* zeroes
+of the radial profile of $`f`, since a sign change there would contradict $`f \leq 0` on
+$`\{\|x\| \geq 1\}`; at norm exactly $`1`, a simple zero is possible. Finally, equality in (5.4)
 forces $`\widehat{f}(m) = 0` for all non-zero $`m \in \Lambda^*`; for $`\Lambda = \Lambda_8`,
 which is self-dual, these are the same points again.
 

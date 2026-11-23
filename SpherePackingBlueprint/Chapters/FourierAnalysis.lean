@@ -29,9 +29,9 @@ $$`\mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z
 :::
 
 :::proof "lemma:Gaussian-Fourier"
-Mathlib knows the Fourier transform of the Gaussian $`x \mapsto e^{-b\|x\|^2}` on a
-$`d`-dimensional inner product space for any $`b \in \C` with $`\Re(b) > 0`: it equals
-$`y \mapsto (\pi/b)^{d/2}\,e^{-\pi^2\|y\|^2/b}` (see `fourier_gaussian_innerProductSpace`). Taking
+For any $`b \in \C` with $`\Re(b) > 0`, the Fourier transform of the Gaussian
+$`x \mapsto e^{-b\|x\|^2}` on a $`d`-dimensional inner product space is
+$`y \mapsto (\pi/b)^{d/2}\,e^{-\pi^2\|y\|^2/b}`. Taking
 $`d = 8` and $`b = -\pi i z`, which satisfies $`\Re(b) = \pi \Im(z) > 0`, we obtain
 $$`\left(\frac{\pi}{-\pi i z}\right)^{4} e^{-\pi^2\|y\|^2/(-\pi i z)} = z^{-4}\, e^{\pi i \|y\|^2(-1/z)},`
 where no branch-cut issues arise because the exponent $`d/2 = 4` is an integer.
@@ -49,11 +49,7 @@ $`\|x\|\to\infty` faster then any inverse power of $`\|x\|`, and the same holds 
 derivatives of $`f`, ie, if for all $`k \in \N` and $`n \in \N^d`, there exists a constant
 $`C \in \R` such that for all $`x \in \R^d`, $`\norm{x}^k \cdot \abs{f^{(n)}(x)} \leq C`, where
 $`f^{(n)}` denotes the $`n`-th partial derivative of $`f`. The set of all Schwartz functions from
-$`\R^d` to $`\C` is called the *Schwartz space*. It is an $`\R`-vector space. (The Mathlib
-definition `SchwartzMap` is stated, more generally, for functions between normed spaces
-$`E \to F`, with the $`n`-th iterated Fréchet derivative and its operator norm in place of partial
-derivatives; the two formulations agree for $`\R^d \to \C`. The same generality applies to the
-results below.)
+$`\R^d` to $`\C` is called the *Schwartz space*. It is an $`\R`-vector space.
 :::
 
 :::lemma_ "lemma:Fourier-transform-is-automorphism" (lean := "SchwartzMap.fourierTransformCLM") (uses := "def:Fourier-Transform, def:Schwartz-Space")
@@ -87,7 +83,7 @@ $$`\mathcal{F}(\mathcal{F}(f))(x) = f(-x).`
 
 :::proof "lemma:fourier-involution"
 Schwartz functions are integrable with integrable Fourier transforms, so the Fourier inversion
-theorem (available in Mathlib as `Continuous.fourierInv_fourier_eq`, together with the identity
+theorem (together with the identity
 $`\mathcal{F}^{-1}(f)(x) = \mathcal{F}(f)(-x)`) applies.
 :::
 
@@ -200,10 +196,9 @@ is a Schwartz function.
 :::
 
 :::proof "lemma:schwartz-comp-normsq"
-Mathlib's `SchwartzMap.compCLM` (due to M. Doll) shows that precomposition with a function of
-temperate growth that grows at least polynomially produces a (continuous linear) map between
-Schwartz spaces. The function $`x \mapsto \|x\|^2` has temperate growth
-(`Function.hasTemperateGrowth_norm_sq`) and satisfies the required lower bound
+Precomposition with a function of temperate growth that grows at least polynomially maps Schwartz
+functions to Schwartz functions. The function $`x \mapsto \|x\|^2` has temperate growth and
+satisfies the required lower bound
 $`\|x\| \le 1 + \|x\|^2`, so the composition $`f \circ \|\cdot\|^2` is Schwartz.
 :::
 
@@ -220,8 +215,8 @@ $`x \leq -1` and $`\Theta(x) = 1` for $`x \geq 0`.
 :::
 
 :::proof "lemma:smooth-cutoff"
-Take $`\Theta(x) := \theta(x + 1)`, where $`\theta` is Mathlib's smooth transition function
-`Real.smoothTransition`, which is smooth, takes values in $`[0,1]`, vanishes on $`(-\infty, 0]`
+Take $`\Theta(x) := \theta(x + 1)`, where $`\theta` is the standard smooth transition function,
+which is smooth, takes values in $`[0,1]`, vanishes on $`(-\infty, 0]`
 and equals $`1` on $`[1, \infty)`. Explicitly, $`\theta(x) = \frac{\rho(x)}{\rho(x) + \rho(1-x)}`
 where $`\rho(x) = e^{-1/x}` for $`x > 0` and $`\rho(x) = 0` for $`x \leq 0`.
 :::

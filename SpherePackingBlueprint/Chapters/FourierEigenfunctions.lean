@@ -80,10 +80,10 @@ Now, define $`a(x) := a_{\rad}(\|x\|^2)` for $`x \in \R^8`.
 In the original paper, the integrals $`I_1` and $`I_2` are combined, as well as $`I_3` and $`I_4`,
 with the contours running from $`\mp 1` to $`i`.
 Since the integrands are holomorphic on $`\h` (multiply out (7.7)), the choice of contours between
-these endpoints does not matter; we choose rectangular ones because the versions of the
-Cauchy–Goursat theorem available in Mathlib are stated for rectangles.
-In the formalisation, each $`I_j` is realised as an integral over the real parametrising variable
-$`t \in [0,1]` (or $`t \in [1, \infty)` for $`I_6`), so that the `intervalIntegral` API applies.
+these endpoints does not matter; we choose rectangular ones, as these are the contours to which
+the Cauchy–Goursat theorem is most easily applied.
+In the formalisation, each $`I_j` is written as an integral over the real parametrising variable
+$`t \in [0,1]` (or $`t \in [1, \infty)` for $`I_6`).
 
 # Bounds for the Integrands
 
@@ -109,9 +109,6 @@ where
 $$`C_f = \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod_{n \ge 1} (1 - e^{-\pi n})^{24}}.`
 The summation in the numerator converges absolutely because of polynomial growth, and the
 denominator converges to the positive value $`e^{\pi} \cdot \Delta(i/2)` by the product formula.
-The manipulations of infinite products used here (multiplicativity of the absolute value over
-convergent products, and monotonicity of convergent products with nonnegative terms) are available
-in Mathlib.
 :::
 
 To apply {bpref "lemma:mod-div-disc-bound"}[] to $`\phi_0`, $`\phi_{-2}` and $`\phi_{-4}` — and,
@@ -194,9 +191,7 @@ $$`|I_1(r)|, |I_3(r)|, |I_5(r)| \leq C \int_1^{\infty} e^{-2\pi s} \, e^{-\pi r 
 We only prove the bound for $`I_1(r)`, as the other two are similar.
 By the change of variable $`z = -1 + i t` for $`t \in [0,1]`, we have
 $$`I_1(r) = -i \int_0^1 \phi_0\left(\frac{-1}{i t}\right) t^2 e^{-\pi i r} \cdot e^{-\pi r t} \, \dd t.`
-With the change of variable $`s = 1 / t` (an application, in the formalisation, of Mathlib's
-one-dimensional change-of-variables theorem
-`MeasureTheory.integral_image_eq_integral_abs_deriv_smul`), we get
+With the change of variable $`s = 1 / t`, we get
 $$`I_1(r) = -i \int_1^{\infty} \phi_0(i s) \cdot s^{-4} \cdot e^{-\pi i r} \cdot e^{-\pi r / s} \, \dd s`
 and, by the triangle inequality and monotonicity of the integral,
 $$`|I_1(r)| \leq \int_1^{\infty} |\phi_0(i s)| \cdot s^{-4} \cdot |e^{-\pi i r}| \cdot e^{-\pi r / s} \, \dd s \le \int_1^{\infty} |\phi_0(is)| \cdot e^{-\pi r / s} \, \dd s.`
@@ -247,8 +242,7 @@ $`r^n \cdot e^{-\pi r/s} \leq C s^n`. Hence, for all $`r \geq 0`, we can write
 $$`r^n \cdot \int_{1}^{\infty} e^{-\alpha s} \, e^{-\pi r /s} \, \dd{s} = \int_{1}^{\infty} e^{-\alpha s} \, \left(\abs{r}^n \cdot e^{-\pi r /s}\right) \, \dd{s} \leq C \int_{1}^{\infty} e^{-\alpha s} \, s^n \, \dd{s}`
 The $`\Gamma` function is given by
 $$`\Gamma(x) = \int_{0}^{\infty} e^{-u} \, u^{x-1} \, \dd{u}`
-for all $`x > 0` (in Mathlib, `Real.Gamma_eq_integral`). Hence, writing $`u = \alpha s` and using
-$`\Gamma(n+1) = n!` (`Real.Gamma_nat_eq_factorial`), we get
+for all $`x > 0`. Hence, writing $`u = \alpha s` and using $`\Gamma(n+1) = n!`, we get
 $$`C \int_{1}^{\infty} e^{-\alpha s} \, s^n \, \dd{s} \leq C \int_{0}^{\infty} e^{-\alpha s} \, s^n \, \dd{s} = C \int_{0}^{\infty} \frac{1}{\alpha^{n+1}} e^{-u} \, u^n \, \dd{u} = \frac{C}{\alpha^{n+1}} \Gamma(n+1) = \frac{C \cdot n!}{\alpha^{n+1}}`
 Defining $`C' := \frac{C \cdot n!}{\alpha^{n+1}}` finishes the proof.
 :::
@@ -267,8 +261,7 @@ Each $`I_j` is an integral of $`g_j(z)\, e^{\pi i r z}` over a fixed contour, wi
 holomorphic; formally, over the real parametrising variable. For $`j \leq 5` the contour is compact
 and the integrand, together with each of its $`r`-derivatives
 $`g_j(z) (\pi i z)^n e^{\pi i r z}`, is dominated locally uniformly in $`r` by an integrable
-function; the Leibniz integral rule (in Mathlib,
-`hasDerivAt_integral_of_dominated_loc_of_deriv_le`) therefore applies repeatedly and yields
+function; differentiation under the integral sign therefore applies repeatedly and yields
 smoothness on $`\R`. For $`I_6`, {bpref "cor:phi0-bound"}[] bounds the integrand by a multiple of
 $`e^{-\pi(r+2)t}` on the contour $`z = it`, $`t \geq 1`; this is integrable precisely when
 $`r > -2`, and dominates all $`r`-derivatives locally uniformly on $`(-2, \infty)`, giving
@@ -331,9 +324,8 @@ $$`\phi_0\left(-1-\frac{1}{w-1}\right)\left(\frac{-1}{w}+1\right)^2 w^2 = \phi_0
 so that $`F_1(\xi) + F_2(\xi)` is the integral of
 $`\phi_0\left(\frac{-1}{w-1}\right)(w-1)^2 e^{\pi i \|\xi\|^2 w}` along the concatenated arc from
 $`1` to $`i`. This integrand is holomorphic on $`\h` (multiply out (7.7)) and continuous up to the
-boundary, so by the Cauchy–Goursat theorem (in the formalisation: the Mathlib version for
-rectangles, together with a version for the regions between a quarter-circle and the two sides of
-the enclosing square) the arc may be replaced by the rectangular path $`1 \to 1 + i \to i`. The two
+boundary, so by the Cauchy–Goursat theorem the arc may be replaced by the rectangular path
+$`1 \to 1 + i \to i`. The two
 resulting integrals are precisely $`I_3(\|\xi\|^2)` and $`I_4(\|\xi\|^2)`.
 :::
 
@@ -375,21 +367,24 @@ by {bpref "lemma:perm-I12"}[], {bpref "lemma:perm-I56"}[] and {bpref "lemma:perm
 Next, we check that $`a` has double zeroes at all $`\Lambda_8`-lattice points of length greater
 then $`\sqrt{2}`.
 The contour deformations in this argument involve unbounded contours; the following consequence of
-the Cauchy–Goursat theorem, formalised as part of this project, is what we need.
+the Cauchy–Goursat theorem, which is available in Mathlib, is what we need.
 
-:::lemma_ "lem:CG-unbounded" (lean := "Complex.tendsto_integral_boundary_open_rect_one_side_atTop_nhds_sum_other_two_sides, Complex.integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable")
+:::lemma_ "lem:CG-unbounded" (lean := "Complex.integral_boundary_unbounded_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on, Complex.tendsto_integral_boundary_unbounded_rect_one_side_atTop_nhds_sum_other_two_sides")
 *Cauchy–Goursat for unbounded rectangular contours.*
-Let $`f : \C \to \C` be continuous on the closed strip
-$`\{x_1 \leq \Re z \leq x_2,\ \Im z \geq y\}`, holomorphic on its interior, with $`f(z) \to 0` as
-$`\Im z \to \infty` (uniformly in $`\Re z`), and integrable on the two vertical rays. Then
+Let $`x_1 \leq x_2` and $`y` be real numbers, and let $`f : \C \to \C` be continuous on the
+half-strip $`S := \{x_1 \leq \Re z \leq x_2,\ \Im z \geq y\}` and holomorphic on its interior.
+Suppose that $`f(z) \to 0` as $`\Im z \to \infty` with $`z` in the vertical strip
+$`\{x_1 \leq \Re z \leq x_2\}` (that is, uniformly for $`x_1 \leq \Re z \leq x_2`), and that $`f`
+is integrable on the two vertical rays $`x_1 + i[y, \infty)` and $`x_2 + i[y, \infty)`. Then
 $$`\int_{x_1 + iy}^{x_1 + i\infty} f(z)\, \dd z = \int_{x_1 + iy}^{x_2 + iy} f(z)\, \dd z + \int_{x_2 + iy}^{x_2 + i\infty} f(z)\, \dd z.`
 :::
 
 :::proof "lem:CG-unbounded"
-Apply the Cauchy–Goursat theorem for rectangles (available in Mathlib) to the truncated rectangles
-with upper edge at height $`T`, and let $`T \to \infty`: the integral over the upper edge tends to
-$`0` by the decay hypothesis, and the integrals over the truncated vertical sides tend to the
-integrals over the rays by integrability.
+Apply the Cauchy–Goursat theorem for rectangles to the truncated rectangles
+$`\{x_1 \leq \Re z \leq x_2,\ y \leq \Im z \leq T\}` and let $`T \to \infty`: the integral over
+the upper edge $`[x_1 + iT, x_2 + iT]` tends to $`0` because the decay is uniform on the strip, and
+the integrals over the truncated vertical sides tend to the integrals over the rays by
+integrability.
 :::
 
 Using (7.15), (7.16), and (7.17), we can control the behavior of $`\phi_0` near $`0` and
@@ -407,10 +402,17 @@ For the second estimate, by (7.7), (7.16), and (7.17), we have
 $$`\left|\phi_0\left(\frac{i}{t}\right)\right| \le |\phi_0(it)| + \frac{12}{\pi t} |\phi_{-2}(it)| + \frac{36}{\pi^2 t^2} |\phi_{-4}(it)| \le C_0 e^{-2 \pi t} + \frac{12}{\pi t} \cdot C_{-2} + \frac{36}{\pi^2 t^2} \cdot C_{-4} e^{2 \pi t} = O(t^{-2}e^{2 \pi t}).`
 :::
 
-In particular, for $`r > 2` the integrand $`\phi_0(-1/z)\, z^2\, e^{\pi i r z}` is bounded by a
-multiple of $`e^{\pi (2 - r)\Im z}` for $`\Im z \geq 2`, so it tends to $`0` as
-$`\Im(z) \to \infty` and is integrable on vertical rays; the same applies to its translates by
-$`\pm 1`. This provides the hypotheses of {bpref "lem:CG-unbounded"}[] in the following proof. (In
+In particular, fix a vertical strip $`x_1 \leq \Re z \leq x_2` and let $`r > 2`. By (7.7),
+$`\phi_0(-1/z)\, z^2 = z^2 \phi_0(z) - \frac{12 i}{\pi} z\, \phi_{-2}(z) - \frac{36}{\pi^2}\phi_{-4}(z)`,
+and on the strip $`|z|` is bounded by a multiple of $`\Im z` when $`\Im z \geq 1`. Hence there is a
+constant $`C`, depending on $`x_1` and $`x_2`, such that the integrand
+$`\phi_0(-1/z)\, z^2\, e^{\pi i r z}` is bounded by $`C e^{\pi (2 - r)\Im z}` for $`\Im z \geq 1`
+and $`x_1 \leq \Re z \leq x_2`. So it tends to $`0` as $`\Im(z) \to \infty`, uniformly on the
+strip, and is integrable on vertical rays in the strip; the same applies to its translates by
+$`\pm 1`. The bound is *not* uniform in $`\Re z` over all of $`\C` (the factor $`z^2` grows along
+horizontal lines), which is why {bpref "lem:CG-unbounded"}[] is stated for a fixed strip. This
+provides the hypotheses of {bpref "lem:CG-unbounded"}[] in the following proof, applied to the
+strips $`-1 \leq \Re z \leq 0` and $`0 \leq \Re z \leq 1` with $`y = 1`. (In
 the radial variable, these are inputs of the form $`r = \|x\|^2 > 2`, i.e. $`\|x\| > \sqrt 2`.)
 
 :::proposition "prop:a-double-zeros" (uses := "cor:phi0-near-0-infty, def:a-definition, cor:disc-nonvanishing, lem:CG-unbounded")
@@ -425,7 +427,8 @@ Writing $`-4\sin(\pi r^2/2)^2 = e^{\pi i r^2} - 2 + e^{-\pi i r^2}` and absorbin
 into shifts $`z \mapsto z \pm 1` of the integration variable, we can write
 $$`\begin{aligned} d(r)=&\int\limits_{-1}^{i\infty-1}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz- 2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\\ +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz. \end{aligned}`
 From (7.7) we deduce that if $`r>\sqrt{2}` then
-$`\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\to 0` as $`\Im(z)\to\infty`. Therefore, we
+$`\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\to 0` as $`\Im(z)\to\infty`, uniformly for
+$`\Re z` in any bounded interval. Therefore, we
 can deform the paths of integration by {bpref "lem:CG-unbounded"}[]
 and rewrite
 $$`\begin{aligned} d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz\\ -2&\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz -2\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\\ +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz. \end{aligned}`
@@ -463,7 +466,7 @@ Therefore, the identity (7.23) holds for $`r>\sqrt{2}`.
 On the other hand, from the definition (7.8) we see that $`a(r)` is analytic in some neighborhood
 of $`[0,\infty)`. The asymptotic expansion (7.24) implies that the right hand side of (7.23) is
 also analytic in some neighborhood of $`[0,\infty)`. Hence, by the identity principle for analytic
-functions (available in Mathlib as `AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq`), the
+functions, the
 identity (7.23) holds on the whole interval $`[0,\infty)`. This finishes the proof of the
 proposition.
 :::
@@ -763,7 +766,8 @@ $$`c(r)=\int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r^2 \,z}\,dz-2\int\lim
 By (7.27) and (7.32), $`\psi_I(z+1) = \psi_I(z - 1) = \psi_T(z)`.
 From the Fourier expansion (7.41) we know that $`\psi_I(z)=e^{-2\pi i z}+O(1)` as
 $`\Im(z)\to\infty`.
-By assumption $`r^2>2`, hence the integrands tend to $`0` as $`\Im(z) \to \infty` and we can deform
+By assumption $`r^2>2`, hence the integrands tend to $`0` as $`\Im(z) \to \infty`, uniformly in
+$`\Re z` (as $`\psi_I` is $`2`-periodic), and we can deform
 the paths of integration by {bpref "lem:CG-unbounded"}[]:
 $$`\begin{aligned} \int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r^2 \,z}\,dz=& \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz\\ \int\limits_{1}^{i\infty+1}\psi_I(z-1)\,e^{\pi i r^2 \,z}\,dz=& \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz, \end{aligned} \tag{7.59}`
 where the first integrals on the right run along the rectangular contours through $`-1 + i` resp.
