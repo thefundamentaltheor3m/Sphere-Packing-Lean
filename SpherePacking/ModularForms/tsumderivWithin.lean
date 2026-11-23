@@ -2,7 +2,6 @@ module
 
 public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
 public import Mathlib.Analysis.Normed.Group.FunctionSeries
-public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Topology.ContinuousMap.Compact
 public import SpherePacking.ModularForms.exp_lems
 

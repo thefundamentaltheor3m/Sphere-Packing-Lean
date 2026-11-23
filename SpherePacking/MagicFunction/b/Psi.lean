@@ -5,9 +5,8 @@ Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 -/
 module
 
-public import SpherePacking.ModularForms.FG
-public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.ModularForms.FG
 
 /-!
 # The ψ Functions

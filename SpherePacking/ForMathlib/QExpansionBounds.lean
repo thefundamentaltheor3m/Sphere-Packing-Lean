@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Geometry.Manifold.Notation
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 public import SpherePacking.ForMathlib.QSeriesBounds
 

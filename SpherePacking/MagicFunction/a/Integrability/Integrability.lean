@@ -5,13 +5,6 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 
 /-!

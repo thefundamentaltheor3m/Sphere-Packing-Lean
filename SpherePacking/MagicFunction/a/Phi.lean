@@ -5,7 +5,6 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.FG
 
 /-! # The quotients `φ₀`, `φ₂'`, `φ₄'`

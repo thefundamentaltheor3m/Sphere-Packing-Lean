@@ -5,15 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Basic.IsEmpty.Basic
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.Analysis.Complex.Basic
-
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.ForMathlib.VolumeOfBalls
-public import SpherePacking.Basic.PeriodicPacking
 
 /-!
 # The Cohn–Elkies Linear Programming Bound

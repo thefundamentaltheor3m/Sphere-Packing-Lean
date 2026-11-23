@@ -7,8 +7,6 @@ module
 
 public import SpherePacking.ModularForms.Delta
 public import SpherePacking.ModularForms.tsumderivWithin
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
-public import Mathlib.Tactic.NormNum.Parity
 
 /-! # The Eisenstein series `E₄` and `E₆`
 
