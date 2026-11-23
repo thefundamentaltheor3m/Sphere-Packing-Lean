@@ -7,10 +7,6 @@ module
 
 
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-public import SpherePacking.MagicFunction.IntegralParametrisations
-public import SpherePacking.ModularForms.FG
-
-public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
 /-!
 # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane

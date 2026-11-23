@@ -7,7 +7,6 @@ module
 
 
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-public import Mathlib.RingTheory.Binomial
 
 /-!
 # Fourier Series

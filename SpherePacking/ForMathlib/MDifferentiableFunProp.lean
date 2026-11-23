@@ -1,11 +1,5 @@
 module
 
-public import Mathlib.Geometry.Manifold.MFDeriv.Defs
-public import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
-public import Mathlib.Geometry.Manifold.Notation
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
-public import Mathlib.Tactic.FunProp
-
 public import SpherePacking.ModularForms.Eisenstein
 
 /-!

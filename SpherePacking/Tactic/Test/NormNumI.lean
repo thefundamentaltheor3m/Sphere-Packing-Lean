@@ -6,8 +6,6 @@ Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 module
 
 public import SpherePacking.Tactic.NormNumI
-public import Mathlib.Tactic.NormNum
-public import Mathlib.Data.ZMod.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 /-!

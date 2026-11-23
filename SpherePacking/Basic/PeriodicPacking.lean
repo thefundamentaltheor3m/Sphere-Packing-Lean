@@ -6,12 +6,10 @@ Authors: Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Dynamics.Ergodic.Action.Regular
 
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard
-public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.ZLattice
 
 /-!

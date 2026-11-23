@@ -1,7 +1,6 @@
 module
 
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
-public import SpherePacking.ModularForms.SlashActionAuxil
 
 /-!
 # The Eisenstein Series `E₂`

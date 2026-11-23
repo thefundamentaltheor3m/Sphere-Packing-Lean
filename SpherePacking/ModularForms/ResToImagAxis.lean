@@ -1,8 +1,5 @@
 module
 
-public import Mathlib.Geometry.Manifold.Notation
-public import Mathlib.NumberTheory.ModularForms.QExpansion
-
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.QExpansionBounds
 public import SpherePacking.ModularForms.SlashActionAuxil

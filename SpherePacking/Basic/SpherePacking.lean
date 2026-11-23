@@ -6,12 +6,7 @@ Authors: Sidharth Hariharan, Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-public import Mathlib.Topology.Metrizable.Basic
-public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
 
 public import SpherePacking.ForMathlib.VolumeOfBalls
 

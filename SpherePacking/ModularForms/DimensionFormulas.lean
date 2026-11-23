@@ -1,9 +1,6 @@
 module
 
-public import Mathlib.Algebra.Order.Star.Rat
-public import Mathlib.LinearAlgebra.Dimension.Localization
 public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
-public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.IsCuspForm
 
 /-!

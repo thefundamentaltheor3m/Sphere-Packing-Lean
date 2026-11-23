@@ -3,8 +3,6 @@ module
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.Tactic.TendstoCont
 
 /-!

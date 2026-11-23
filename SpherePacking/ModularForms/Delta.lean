@@ -5,14 +5,9 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import Mathlib.Analysis.SpecialFunctions.Log.Summable
 public import Mathlib.NumberTheory.ModularForms.Discriminant
-public import Mathlib.NumberTheory.ModularForms.QExpansion
-public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ModularForms.E2
-public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.Tactic.NormNumI
 
 

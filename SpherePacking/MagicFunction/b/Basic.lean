@@ -7,7 +7,6 @@ module
 
 
 public import SpherePacking.MagicFunction.b.Psi
-public import SpherePacking.MagicFunction.IntegralParametrisations
 
 /-!
 # The Function `b`
