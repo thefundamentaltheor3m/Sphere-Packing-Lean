@@ -84,7 +84,7 @@ noncomputable section PSF_L
 -- instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
 
 /-
-This section defines the Poisson Summation Formual, Lattice Version (`PSF_L`). This is a direct
+This section defines the Poisson Summation Formula, Lattice Version (`PSF_L`). This is a direct
 dependency of the Cohn-Elkies proof.
 -/
 
