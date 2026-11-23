@@ -1,8 +1,11 @@
 module
 
-public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.QExpansionBounds
-public import SpherePacking.ModularForms.SlashActionAuxil
+public import Mathlib.NumberTheory.ModularForms.Basic
+
+import Mathlib.NumberTheory.ModularForms.QExpansion
+import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ForMathlib.QSeriesBounds
+import SpherePacking.ModularForms.SlashActionAuxil
 
 /-!
 # Restriction to the Imaginary Axis

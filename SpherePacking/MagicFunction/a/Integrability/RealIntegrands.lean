@@ -5,7 +5,9 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 /-!
 # Smoothness

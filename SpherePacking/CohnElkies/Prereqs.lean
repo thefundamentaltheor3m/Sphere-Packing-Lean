@@ -11,10 +11,11 @@ module
 ## COHN-ELKIES FILE WORK.
 -/
 
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.Analysis.RCLike.Inner
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
-public import SpherePacking.ForMathlib.InvPowSummability
 
 /-!
 # Prerequisites for the Cohn–Elkies Bound
