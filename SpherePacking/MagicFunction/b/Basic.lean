@@ -5,7 +5,6 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 public import SpherePacking.MagicFunction.b.Psi
 
 /-!

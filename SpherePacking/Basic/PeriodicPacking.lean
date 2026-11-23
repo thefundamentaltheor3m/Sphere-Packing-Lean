@@ -6,7 +6,6 @@ Authors: Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
-
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard

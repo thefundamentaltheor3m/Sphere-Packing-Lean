@@ -10,7 +10,6 @@ public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.Tactic.NormNumI
 
-
 /-! # The modular discriminant `Δ`
 
 Mathlib's `ModularForm.discriminant` provides the modular discriminant together with its

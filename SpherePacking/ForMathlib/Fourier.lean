@@ -5,7 +5,6 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 module
 
-
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 /-!

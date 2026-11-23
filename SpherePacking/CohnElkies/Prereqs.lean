@@ -10,10 +10,10 @@ module
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
+
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.RCLike.Inner
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
-
 public import SpherePacking.ForMathlib.InvPowSummability
 
 /-!

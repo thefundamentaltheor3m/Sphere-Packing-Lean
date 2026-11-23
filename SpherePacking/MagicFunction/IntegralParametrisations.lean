@@ -5,9 +5,8 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
-public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
+public import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
 # Integral Parametrisations

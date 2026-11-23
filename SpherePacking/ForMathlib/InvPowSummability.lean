@@ -6,7 +6,6 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 module
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
-
 public import SpherePacking.Basic.PeriodicPacking
 
 /-!

@@ -5,8 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import SpherePacking.Tactic.TendstoCont
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+public import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Tests for the `tendsto_cont` tactic

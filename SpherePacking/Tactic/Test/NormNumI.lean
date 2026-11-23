@@ -5,8 +5,8 @@ Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.Tactic.NormNumI
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import SpherePacking.Tactic.NormNumI
 
 /-!
 # Tests for the `norm_num1` (`NormNumI`) tactic

@@ -7,9 +7,8 @@ The contents of this file should eventually be moved to Mathlib/Analysis/Specifi
 -/
 module
 
-
-public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.SpecificLimits.Normed
 
 /-!
 # Specific Limits

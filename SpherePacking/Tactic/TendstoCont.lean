@@ -5,9 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Topology.Algebra.Ring.Basic
-public import Mathlib.Tactic.Ring
 public meta import SpherePacking.Tactic.TendstoContAttr
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Ring.Basic
 
 /-!
 # `tendsto_cont` tactic
