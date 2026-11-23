@@ -56,9 +56,33 @@ jobs:
           set -e
           lake exe mk_all --check --module
 
+      # The API-docs build runs doc-gen4 over Lean core and all of Mathlib, which
+      # leaves a very large heap resident. When Lake then forks `git` for the
+      # `srcUri.github` targets, the kernel's default overcommit heuristic refuses
+      # the fork and Lean reports
+      #   error: resource exhausted (error code: 12, not enough memory)
+      # failing the whole docs build. Allowing overcommit and enlarging swap lets
+      # those short-lived forks through.
+      - name: Give the docs build headroom to fork
+        run: |
+          set -euo pipefail
+          sudo sysctl -w vm.overcommit_memory=1
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 16G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
       - name: Compile blueprint and documentation
-        # workaround for https://github.com/leanprover-community/docgen-action/issues/28
-        uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
+        # Both fixes we previously needed from dwrensha's fork are now upstream:
+        # the docbuild `require` ordering (docgen-action#32) and forcing
+        # doc-gen4's HTML pass to re-run after a cache hit (docgen-action#38).
+        # `ruby-version` is pinned to 3.1 because home_page/Gemfile uses the
+        # `github-pages` gem, which does not build on the action's 3.4 default.
+        uses: leanprover-community/docgen-action@dacc1acc2a3f532cc577266979ba9c36c7593f7c
         with:
           blueprint: true
           homepage: home_page
+          ruby-version: "3.1"
