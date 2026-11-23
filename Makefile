@@ -1,9 +1,9 @@
-.PHONY: pdf web serve all
+.PHONY: blueprint serve
 
-TARGETS := pdf web serve all
+# Build the Verso blueprint site into `_out/site/html-multi`.
+blueprint:
+	lake exe vbp build
 
-# Usage: make <pdf|web|serve|all>
-$(TARGETS):
-	rm -rf blueprint/print
-	mkdir blueprint/print
-	leanblueprint $@
+# Build the blueprint and serve it locally (prints the preview URL).
+serve:
+	lake exe vbp build --serve
