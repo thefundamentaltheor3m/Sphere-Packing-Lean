@@ -18,7 +18,21 @@ permissions:
 
 jobs:
   build_project:
-    runs-on: ubuntu-latest
+    # Pinned deliberately: do not change this back to `ubuntu-latest`.
+    #
+    # GitHub moved that label from ubuntu-24.04 to ubuntu-26.04 between 11 and
+    # 14 Nov 2026, and every run on main has failed since. On ubuntu-26.04:
+    #
+    #   * the API-docs build (push to main only) dies right after doc-gen4's
+    #     `coreDocs` with `resource exhausted (error code: 12, not enough
+    #     memory)` when Lake spawns `git` for the `srcUri.github` targets;
+    #   * `setup-ruby` does not recognise the image and reports it as
+    #     self-hosted, and ubuntu-26.04 has no Ruby <= 3.1 builds at all, which
+    #     `home_page`'s `github-pages` gem needs (ruby/setup-ruby#954).
+    #
+    # From-scratch docs builds (docs cache miss) last succeeded on ubuntu-24.04
+    # in runs 42019010046 and 39395332246.
+    runs-on: ubuntu-24.04
     name: Build Project
     steps:
       - name: Cleanup to free disk space
@@ -57,8 +71,13 @@ jobs:
           lake exe mk_all --check --module
 
       - name: Compile blueprint and documentation
-        # workaround for https://github.com/leanprover-community/docgen-action/issues/28
-        uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
+        # Both fixes we previously needed from dwrensha's fork are now upstream:
+        # the docbuild `require` ordering (docgen-action#32) and forcing
+        # doc-gen4's HTML pass to re-run after a cache hit (docgen-action#38).
+        # `ruby-version` is pinned to 3.1 because home_page/Gemfile uses the
+        # `github-pages` gem, which does not build on the action's 3.4 default.
+        uses: leanprover-community/docgen-action@dacc1acc2a3f532cc577266979ba9c36c7593f7c
         with:
           blueprint: true
           homepage: home_page
+          ruby-version: "3.1"
