@@ -129,7 +129,7 @@ def J₄' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Ψ₄ x t
 
 def J₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Ψ₅ x t
 
-def J₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Ψ₆ x t
+def J₆' : ℝ → ℂ := fun x ↦ -2 * ∫ t in Ici (1 : ℝ), Ψ₆ x t
 
 def b' : ℝ → ℂ := fun x ↦ J₁' x + J₂' x + J₃' x + J₄' x + J₅' x + J₆' x
 
