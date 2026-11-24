@@ -1,8 +1,5 @@
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
-public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 /-!

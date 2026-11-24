@@ -6,8 +6,6 @@ Authors: Sidharth Hariharan, Seewoo Lee
 module
 
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-public import Mathlib.Analysis.InnerProductSpace.Projection.Reflection
-public import Mathlib.Analysis.Normed.Group.RadialFunction
 
 /-! # Radial Schwartz Functions
 

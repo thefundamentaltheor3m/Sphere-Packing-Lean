@@ -5,9 +5,8 @@ Authors: Sidharth Hariharan, Raphael Appenzeller, Seewoo Lee
 -/
 module
 
-public import SpherePacking.ModularForms.FG
-public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
 public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.ModularForms.FG
 
 /-!
 # The ψ Functions
@@ -102,7 +101,7 @@ end eq
 section rels
 
 lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
-  rw [ψS, ← slash_mul, modular_S_sq, slash_neg' _ _ (by decide), slash_one]
+  rw [ψS, ← slash_mul, S_mul_S_eq, slash_neg' _ _ (by decide), slash_one]
 
 lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [slash_mul, ψS_slash_S, ψT]

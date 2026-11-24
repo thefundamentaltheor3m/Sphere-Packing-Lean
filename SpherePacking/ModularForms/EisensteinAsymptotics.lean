@@ -6,8 +6,6 @@ Authors: Sphere Packing Contributors
 module
 
 public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
-public import Mathlib.Analysis.Real.Pi.Bounds
 
 /-!
 # Asymptotic Behavior of Eisenstein Series

@@ -5,9 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 public import Mathlib.Topology.Algebra.InfiniteSum.Field
-public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.tprod
 public import SpherePacking.MagicFunction.a.Phi

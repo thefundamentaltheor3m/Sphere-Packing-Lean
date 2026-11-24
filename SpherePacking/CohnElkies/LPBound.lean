@@ -5,15 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Basic.IsEmpty.Basic
-public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
-public import Mathlib.Analysis.Complex.Basic
-
 public import SpherePacking.CohnElkies.Prereqs
-public import SpherePacking.ForMathlib.VolumeOfBalls
-public import SpherePacking.Basic.PeriodicPacking
 
 /-!
 # The Cohn–Elkies Linear Programming Bound
@@ -224,8 +216,8 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
                 apply tsum_congr
                 intro b
                 have x_neq_b: x.val ≠ b.val := by
-                  by_contra!
-                  rw [this] at hx
+                  by_contra h
+                  rw [h] at hx
                   have b_in_d := b.property.right
                   contradiction
                 dsimp [Ne] at x_neq_b

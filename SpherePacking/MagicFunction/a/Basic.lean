@@ -5,9 +5,8 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
-public import SpherePacking.MagicFunction.a.Phi
 public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.MagicFunction.a.Phi
 
 /-!
 # The Function `a`

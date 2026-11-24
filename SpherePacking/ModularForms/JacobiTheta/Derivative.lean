@@ -1,12 +1,7 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
-public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
 
 /-!
 # Derivatives of the Jacobi theta functions
@@ -421,7 +416,7 @@ lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=
-  ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
+  H_sum_sq_tendsto.ne_zero one_ne_zero
 
 /-- 3 * H_sum_sq ≠ 0 -/
 lemma three_H_sum_sq_ne_zero : (fun z ↦ 3 * H_sum_sq z) ≠ 0 :=

@@ -6,13 +6,7 @@ Authors: Sidharth Hariharan, Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-public import Mathlib.Topology.Metrizable.Basic
-public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
-
 public import SpherePacking.ForMathlib.VolumeOfBalls
 
 /-!
@@ -103,7 +97,7 @@ theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d)
       x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ :=
   rfl
 
-abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
+noncomputable abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
   ⋃ x : S.centers, ball (x : EuclideanSpace ℝ (Fin d)) (S.separation / 2)
 
 noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : ℝ≥0∞ :=

@@ -5,7 +5,6 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
@@ -212,9 +211,8 @@ lemma I₃'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    have h₁ : CompleteSpace ℝ := inferInstance
     have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
+    rw [integral_undef h₂]
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₃'_bounding_aux_2 r
   use C₀, hC₀_pos

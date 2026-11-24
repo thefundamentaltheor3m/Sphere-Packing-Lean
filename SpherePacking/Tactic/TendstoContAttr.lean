@@ -7,6 +7,8 @@ module
 
 public import Mathlib.Tactic.FunProp
 
+import Lean.ScopedEnvExtension
+
 /-!
 # `@[tendsto_cont]` attribute
 

@@ -6,12 +6,9 @@ Authors: Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Dynamics.Ergodic.Action.Regular
-
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.Encard
-public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.ZLattice
 
 /-!
@@ -96,8 +93,8 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
         · left; positivity
         · right; exact (volume_ball_lt_top _).ne
         · exact (volume_ball_lt_top _).ne
-      · exact ENNReal.summable
-      · exact ENNReal.summable
+      · exact CompleteLattice.summable
+      · exact CompleteLattice.summable
       · intro x
         exact h_volume x.val x.prop
     · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy

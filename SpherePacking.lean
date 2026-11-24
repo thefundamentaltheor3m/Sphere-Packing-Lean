@@ -12,7 +12,6 @@ public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.Fourier
-public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.QExpansionBounds
@@ -22,7 +21,6 @@ public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.ForMathlib.tprod

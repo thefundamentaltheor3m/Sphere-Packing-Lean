@@ -5,13 +5,7 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 module
 
-public import Mathlib.Algebra.Order.Star.Real
-public import Mathlib.Analysis.Calculus.ContDiff.Bounds
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
-public import Mathlib.Analysis.InnerProductSpace.Calculus
-public import Mathlib.Analysis.Normed.Group.RadialFunction
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
-public import SpherePacking.ForMathlib.RadialSchwartz.Basic
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 
 /-!
