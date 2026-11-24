@@ -81,3 +81,38 @@ jobs:
           blueprint: true
           homepage: home_page
           ruby-version: "3.1"
+          # Upload and deploy are done below instead, in a separate job. When
+          # `deploy-pages` runs in the same job as `upload-pages-artifact`, it
+          # can query the artifact API a few milliseconds after the upload is
+          # finalised and get back zero artifacts, failing with "No artifacts
+          # named github-pages were found" (actions/deploy-pages#451,
+          # docgen-action#43). In run 45281893877 the gap was 30ms. Splitting
+          # the deploy into its own job puts job-startup latency in between,
+          # which is also the pattern GitHub's own Pages starter workflow uses.
+          #
+          # It matters here beyond the deploy itself: `actions/cache` saves with
+          # `post-if: success()`, so a failed deploy step also threw away the
+          # Mathlib docs cache, making every retry another ~55 minute
+          # from-scratch docs build.
+          deploy: false
+
+      - name: Upload website (API documentation, blueprint and any home page)
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ${{ env.DOCS_EXISTS == 'true' && 'home_page/_site' || 'home_page/' }}
+
+  deploy_pages:
+    name: Deploy to GitHub Pages
+    needs: build_project
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        # v5.0.1, to match upload-pages-artifact v5.0.0 above. The action
+        # bundles v4.0.5, which is two majors behind its uploader.
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
