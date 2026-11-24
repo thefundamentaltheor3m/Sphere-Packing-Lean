@@ -1,6 +1,8 @@
 module
 
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Defs
+
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 
 /-!
 # The Eisenstein Series `E₂`

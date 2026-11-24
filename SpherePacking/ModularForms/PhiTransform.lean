@@ -7,6 +7,9 @@ module
 
 public import SpherePacking.MagicFunction.a.Phi
 
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.E2
+
 /-!
 # Transformation Rules for φ₀
 

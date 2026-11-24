@@ -5,8 +5,10 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 module
 
-public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
-public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+
+import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
 
 /-!
 # Multidimensional Radial Schwartz Functions

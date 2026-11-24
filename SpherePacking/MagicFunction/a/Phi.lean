@@ -7,6 +7,9 @@ module
 
 public import SpherePacking.ModularForms.FG
 
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.E2
+
 /-! # The quotients `φ₀`, `φ₂'`, `φ₄'`
 
 This file defines the quotients `φ₀`, `φ₂'`, `φ₄'` of Eisenstein series by the discriminant `Δ`

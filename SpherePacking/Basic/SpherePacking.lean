@@ -6,8 +6,9 @@ Authors: Sidharth Hariharan, Gareth Ma
 module
 
 public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.Order.CompletePartialOrder
-public import SpherePacking.ForMathlib.VolumeOfBalls
+public import Mathlib.Analysis.Normed.Lp.MeasurableSpace
+
+import SpherePacking.ForMathlib.VolumeOfBalls
 
 /-!
 # Sphere Packings

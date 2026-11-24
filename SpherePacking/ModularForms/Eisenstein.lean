@@ -5,8 +5,16 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Delta
-public import SpherePacking.ModularForms.tsumderivWithin
+public import Mathlib.NumberTheory.ArithmeticFunction.Misc
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Defs
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.ModularForms.ResToImagAxis
+
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Summable
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.exp_lems
+import SpherePacking.ModularForms.tsumderivWithin
 
 /-! # The Eisenstein series `E₄` and `E₆`
 

@@ -1,6 +1,12 @@
 module
 
 public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+import Mathlib.Analysis.Normed.Group.Tannery
+import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ForMathlib.SlashActions
 
 /-!
 # Jacobi theta basics
