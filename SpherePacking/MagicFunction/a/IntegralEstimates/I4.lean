@@ -5,10 +5,11 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ForMathlib.SetIntegralMono
-public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-public import SpherePacking.Tactic.ComplexGrind
+
+import SpherePacking.ForMathlib.SetIntegralMono
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Constructing Upper-Bounds for I₄

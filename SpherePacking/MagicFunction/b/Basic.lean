@@ -5,8 +5,9 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ForMathlib.IntegralCongr
 public import SpherePacking.MagicFunction.b.Defs
+
+import SpherePacking.ForMathlib.IntegralCongr
 
 /-!
 # The Function `b`: explicit integral formulas

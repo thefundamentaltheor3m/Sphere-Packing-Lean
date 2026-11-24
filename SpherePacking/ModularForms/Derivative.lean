@@ -1,7 +1,12 @@
 module
 
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-public import SpherePacking.Tactic.ComplexGrind
+public import Mathlib.NumberTheory.ModularForms.Derivative
+public import SpherePacking.ModularForms.ResToImagAxis
+
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.tsumderivWithin
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Derivatives of Modular Forms

@@ -7,9 +7,13 @@ module
 
 public import Mathlib.Algebra.Module.ZLattice.Covolume
 public import SpherePacking.Basic.SpherePacking
-public import SpherePacking.ForMathlib.ENNReal
-public import SpherePacking.ForMathlib.Encard
-public import SpherePacking.ForMathlib.ZLattice
+
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+import SpherePacking.ForMathlib.ENNReal
+import SpherePacking.ForMathlib.ENat
+import SpherePacking.ForMathlib.Encard
+import SpherePacking.ForMathlib.VolumeOfBalls
+import SpherePacking.ForMathlib.ZLattice
 
 /-!
 # Periodic Sphere Packings

@@ -1,9 +1,11 @@
 module
 
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-public import SpherePacking.ForMathlib.SlashActions
-public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.Tactic.TendstoCont
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
+
+import Mathlib.Geometry.Manifold.StructureGroupoid
+import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 
 /-!
 # Jacobi theta definitions

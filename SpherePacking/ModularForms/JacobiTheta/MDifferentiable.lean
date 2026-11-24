@@ -1,6 +1,9 @@
 module
 
+public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ModularForms.JacobiTheta.Basic
+
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 /-!
 # Jacobi theta differentiability

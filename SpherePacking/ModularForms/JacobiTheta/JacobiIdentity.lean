@@ -1,6 +1,15 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+public import Mathlib.NumberTheory.ModularForms.Discriminant
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Jacobi theta identities

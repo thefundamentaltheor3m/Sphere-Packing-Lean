@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Phi
+
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Cusp-Approaching Path Continuity

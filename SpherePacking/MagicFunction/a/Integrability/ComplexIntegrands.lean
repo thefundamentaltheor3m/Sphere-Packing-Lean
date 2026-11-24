@@ -5,7 +5,12 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+import SpherePacking.ModularForms.Delta
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane

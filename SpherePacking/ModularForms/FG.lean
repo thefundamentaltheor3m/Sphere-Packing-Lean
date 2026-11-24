@@ -5,9 +5,23 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import Mathlib.NumberTheory.ModularForms.RamanujanFormula
-public import SpherePacking.ModularForms.JacobiTheta.Derivative
-public import SpherePacking.ModularForms.QExpansion
+public import Mathlib.NumberTheory.ModularForms.Discriminant
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
+import Mathlib.NumberTheory.ModularForms.RamanujanFormula
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta.Derivative
+import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.ModularForms.QExpansion
+import SpherePacking.Tactic.NormNumI
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # The Modular Forms `F` and `G`

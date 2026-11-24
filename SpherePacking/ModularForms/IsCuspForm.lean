@@ -1,7 +1,8 @@
 module
 
 public import Mathlib.NumberTheory.ModularForms.QExpansion
-public import SpherePacking.ForMathlib.Cusps
+
+import SpherePacking.ForMathlib.Cusps
 
 /-!
 # Cusp Forms

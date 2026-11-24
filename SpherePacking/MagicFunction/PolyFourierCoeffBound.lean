@@ -5,11 +5,14 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Topology.Algebra.InfiniteSum.Field
-public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.tprod
 public import SpherePacking.MagicFunction.a.Phi
-public import SpherePacking.Tactic.ExpRing
+
+import Mathlib.Topology.Algebra.InfiniteSum.Field
+import SpherePacking.ForMathlib.SpecificLimits
+import SpherePacking.ForMathlib.tprod
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.E2
+import SpherePacking.Tactic.ExpRing
 
 /-!
 # Bounding Functions with Polynomially-Growing Fourier Coefficients

@@ -1,6 +1,10 @@
 module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+public import Mathlib.Basic.ENNReal.Basic
+
+import Mathlib.Basic.ENNReal.Inv
+import Mathlib.Order.Filter.Defs
+import Mathlib.Topology.Defs.Basic
 
 /-!
 # Extended Non-Negative Reals

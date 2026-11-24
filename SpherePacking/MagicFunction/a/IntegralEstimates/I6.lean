@@ -5,9 +5,11 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ForMathlib.SetIntegralMono
-public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.ForMathlib.SetIntegralMono
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.Tactic.ExpRing
 
 /-!
 # Constructing Upper-Bounds for I₆

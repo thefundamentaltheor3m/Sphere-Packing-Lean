@@ -5,11 +5,13 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 -- import Mathlib
-
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.ForMathlib.ComplexFunProp
+import SpherePacking.ForMathlib.IntegralCongr
+import SpherePacking.Tactic.ExpRing
 
 /-!
 # `a` is a Schwartz Function

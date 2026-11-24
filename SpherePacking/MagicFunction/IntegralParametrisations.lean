@@ -6,8 +6,9 @@ Authors: Sidharth Hariharan
 module
 
 public import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import SpherePacking.Tactic.ComplexGrind
+
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Integral Parametrisations

@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.NumberTheory.ModularForms.QExpansion
-public import SpherePacking.ForMathlib.QSeriesBounds
+
+import SpherePacking.ForMathlib.QSeriesBounds
 
 /-!
 # Pointwise bounds from canonical q-expansions

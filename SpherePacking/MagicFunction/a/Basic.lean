@@ -5,9 +5,10 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ForMathlib.IntegralCongr
 public import SpherePacking.MagicFunction.a.Defs
-public import SpherePacking.Tactic.ExpRing
+
+import SpherePacking.ForMathlib.IntegralCongr
+import SpherePacking.Tactic.ExpRing
 
 /-!
 # The Function `a`: explicit integral formulas

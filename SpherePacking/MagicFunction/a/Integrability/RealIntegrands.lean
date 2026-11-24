@@ -5,8 +5,10 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.ForMathlib.ComplexFunProp
-public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.ForMathlib.ComplexFunProp
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 /-!
 # Smoothness
