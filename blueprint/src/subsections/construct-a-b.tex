@@ -392,30 +392,30 @@ In particular, fix a vertical strip $x_1 \leq \Re z \leq x_2$ and let $r > 2$. B
 \begin{proposition}
 \label{prop:a-double-zeros}
 \uses{cor:phi0-near-0-infty, def:a-definition, cor:disc-nonvanishing, lem:CG-unbounded}
-For $r>\sqrt{2}$ we can express $a(r)$ in the following form
+For $r>2$ we can express $a_\rad(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
-    a(r)=4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0\Big(\frac{i}{t}\Big)\,t^2\,e^{-\pi r^2 \,t}\,dt.
+    a_\rad(r)=4i\sin(\pi r/2)^2\,\int\limits_{0}^{\infty}\phi_0\Big(\frac{i}{t}\Big)\,t^2\,e^{-\pi r \,t}\,dt.
 \end{equation}
 \end{proposition}
 \begin{proof}
 We denote the right hand side of \eqref{eqn: a double zeroes} by $d(r)$.
-Convergence of the integral for $r > \sqrt{2}$ follows from Corollary~\ref{cor:phi0-near-0-infty}.
-Writing $-4\sin(\pi r^2/2)^2 = e^{\pi i r^2} - 2 + e^{-\pi i r^2}$ and absorbing the exponentials into shifts $z \mapsto z \pm 1$ of the integration variable, we can write
+Convergence of the integral for $r > 2$ follows from Corollary~\ref{cor:phi0-near-0-infty}.
+Writing $-4\sin(\pi r/2)^2 = e^{\pi i r} - 2 + e^{-\pi i r}$ and absorbing the exponentials into shifts $z \mapsto z \pm 1$ of the integration variable, we can write
 \begin{align}
-    d(r)=&\int\limits_{-1}^{i\infty-1}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz-
-    2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-    +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
+    d(r)=&\int\limits_{-1}^{i\infty-1}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r \,z}\,dz-
+    2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r \,z}\,dz.\notag
 \end{align}
-From \eqref{eqn:phi0-trans-S} we deduce that if $r>\sqrt{2}$ then
-$\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\to 0$ as $\Im(z)\to\infty$, uniformly for $\Re z$ in any bounded interval. Therefore, we can deform the paths of integration by Lemma~\ref{lem:CG-unbounded}
+From \eqref{eqn:phi0-trans-S} we deduce that if $r>2$ then
+$\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r \,z}\to 0$ as $\Im(z)\to\infty$, uniformly for $\Re z$ in any bounded interval. Therefore, we can deform the paths of integration by Lemma~\ref{lem:CG-unbounded}
 and rewrite
 \begin{align}
-    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
-    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-    -2&\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz
-    -2\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
-    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
+    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r \,z}\,dz
+    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r \,z}\,dz\notag\\
+    -2&\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r \,z}\,dz
+    -2\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r \,z}\,dz
+    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r \,z}\,dz.\notag
 \end{align}
 Now from \eqref{eqn:phi0-trans-S} we find
 \begin{align}&\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2-2\phi_0\Big(\frac{-1}{z}\Big)\,z^2+
@@ -427,15 +427,15 @@ Now from \eqref{eqn:phi0-trans-S} we find
 \end{align}
 using the $1$-periodicity of $\phi_0$, $\phi_{-2}$, $\phi_{-4}$. Thus, we obtain
 \begin{align}
-    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
-    -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
-    +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 \,z}\,dz=a(r).\notag
+    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r \,z}\,dz
+    -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r \,z}\,dz
+    +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r \,z}\,dz=a_\rad(r).\notag
 \end{align}
 This finishes the proof.
 \end{proof}
 
-The factor $\sin(\pi r^2/2)^2$ vanishes to second order at $r = \sqrt{2n}$ for every integer $n$, so Proposition~\ref{prop:a-double-zeros} exhibits the required double zeroes of $a$ at all $\Lambda_8$-vectors of length greater than $\sqrt 2$.
+The factor $\sin(\pi r/2)^2$ vanishes to second order at $r = 2n$ for every integer $n$. Since $a(x) = a_\rad(\|x\|^2)$ and every $\Lambda_8$-vector $x$ has $\|x\|^2 = 2n$ for some $n \in \N_{\geq 0}$, Proposition~\ref{prop:a-double-zeros} exhibits the required double zeroes of $a$ at all $\Lambda_8$-vectors of length greater than $\sqrt 2$.
 
 \subsection{Special Values of $a$}
 
@@ -443,33 +443,33 @@ Finally, we find another convenient integral representation for $a$ and compute 
 
 \begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}
 For $r\geq0$ we have
-\begin{align}\label{eqn:a-another-integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
+\begin{align}\label{eqn:a-another-integral}a_\rad(r)=&4i\,\sin(\pi r/2)^2\,\Bigg(\frac{36}{\pi^3\,(r-2)}-\frac{8640}{\pi^3\,r^2}+\frac{18144}{\pi^3\,r}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
-Suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:a-double-zeros}
-$$a(r)=4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi r^2 t}\,dt. $$
+Suppose that $r>2$. Then by Proposition~\ref{prop:a-double-zeros}
+$$a_\rad(r)=4i\,\sin(\pi r/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi r t}\,dt. $$
 From \eqref{eqn:phi0-trans-S} we obtain
 \begin{equation}\label{eqn: phi asymptotic}
 \phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
 \end{equation}
-For $r>\sqrt{2}$ we have
+For $r>2$ we have
 \begin{equation}
-\int\limits_0^\infty \left(\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt
-=\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}.\end{equation}
-Therefore, the identity \eqref{eqn:a-another-integral} holds for $r>\sqrt{2}$.
+\int\limits_0^\infty \left(\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}\right)\,e^{-\pi r t}\,dt
+=\frac{36}{\pi^3\,(r-2)}-\frac{8640}{\pi^3\,r^2}+\frac{18144}{\pi^3\,r}.\end{equation}
+Therefore, the identity \eqref{eqn:a-another-integral} holds for $r>2$.
 
-On the other hand, from the definition~\eqref{eqn:a-rad-definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn:a-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:a-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition~\eqref{eqn:a-rad-definition} we see that $a_\rad(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn:a-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:a-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
-From the identity~\eqref{eqn:a-another-integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$.
+From the identity~\eqref{eqn:a-another-integral} we see that the values $a_\rad(r)$ are in $i\R$ for all $r\in\R_{\geq0}$.
 % In particular, we have
 \begin{proposition}\label{prop:a0}\uses{prop:a-another-integral}\lean{MagicFunction.a.SpecialValues.a_zero}\leanok
 We have $a(0) = \frac{-8640\, i}{\pi}$.
 \end{proposition}
 \begin{proof}
-As $r \to 0$, the factor $\sin(\pi r^2/2)^2$ vanishes to order $r^4$; the only term inside the parentheses of \eqref{eqn:a-another-integral} that blows up at that order is $-\frac{8640}{\pi^3 r^4}$. Hence
+We have $a(0) = a_\rad(0)$. As $r \to 0$, the factor $\sin(\pi r/2)^2$ vanishes to order $r^2$; the only term inside the parentheses of \eqref{eqn:a-another-integral} that blows up at that order is $-\frac{8640}{\pi^3 r^2}$. Hence
 \[
-  a(0) = \lim_{r \to 0} 4i\left(\frac{\pi r^2}{2}\right)^2 \cdot \left(-\frac{8640}{\pi^3 r^4}\right) = \frac{-8640\, i}{\pi}.
+  a(0) = a_\rad(0) = \lim_{r \to 0} 4i\left(\frac{\pi r}{2}\right)^2 \cdot \left(-\frac{8640}{\pi^3 r^2}\right) = \frac{-8640\, i}{\pi}.
 \]
 \end{proof}
 
@@ -709,7 +709,7 @@ By linearity, Lemmas~\ref{lemma:perm-J12}, \ref{lemma:perm-J56} and \ref{lemma:p
 
 \subsection{Double Zeroes and Special Values of $b$}
 
-Now we regard the radial function $b$ as a function on $\R_{\geq0}$ and check that $b$ has double roots at $\Lambda_8$-points.
+Now we regard the radial profile $b_\rad$ as a function on $\R_{\geq0}$ and check that $b$ has double roots at $\Lambda_8$-points.
 
 \begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psi-slash-relations}
 We have
@@ -743,68 +743,70 @@ $$\psi_T+\psi_S=h|_{-2}T-h|_{-2}STS=h-h|_{-2}ST=\psi_I.$$
 \end{proof}
 
 \begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}
-For $r>\sqrt{2}$ function $b(r)$ can be expressed as
+For $r>2$ the function $b_\rad(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
-    b(r)=-4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r^2 \,t}\,dt.
+    b_\rad(r)=-4i\sin(\pi r/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r \,t}\,dt.
 \end{equation}
 \end{proposition}
 \begin{proof}
 We denote the right hand side of~\eqref{eqn: b double zeroes} by $c(r)$.
-By Corollary \ref{cor:psiI-near-0-infty}, the integral in~\eqref{eqn: b double zeroes} converges for $r>\sqrt{2}$.
-As in Proposition~\ref{prop:a-double-zeros}, we write $-4\sin(\pi r^2/2)^2 = e^{\pi i r^2} - 2 + e^{-\pi i r^2}$ and shift variables:
-$$c(r)=\int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r^2 \,z}\,dz-2\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz+
-\int\limits_{1}^{i\infty+1}\psi_I(z-1)\,e^{\pi i r^2 \,z}\,dz.$$
+By Corollary \ref{cor:psiI-near-0-infty}, the integral in~\eqref{eqn: b double zeroes} converges for $r>2$.
+As in Proposition~\ref{prop:a-double-zeros}, we write $-4\sin(\pi r/2)^2 = e^{\pi i r} - 2 + e^{-\pi i r}$ and shift variables:
+$$c(r)=\int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r \,z}\,dz-2\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r \,z}\,dz+
+\int\limits_{1}^{i\infty+1}\psi_I(z-1)\,e^{\pi i r \,z}\,dz.$$
 By \eqref{eqn:psiT-define} and \eqref{eqn:psi-rel-TT}, $\psi_I(z+1) = \psi_I(z - 1) = \psi_T(z)$.
 From the Fourier expansion~\eqref{eqn: psi fourier I} we know that $\psi_I(z)=e^{-2\pi i z}+O(1)$ as $\Im(z)\to\infty$.
-By assumption $r^2>2$, hence the integrands tend to $0$ as $\Im(z) \to \infty$, uniformly in $\Re z$ (as $\psi_I$ is $2$-periodic), and we can deform the paths of integration by Lemma~\ref{lem:CG-unbounded}:
+By assumption $r>2$, hence the integrands tend to $0$ as $\Im(z) \to \infty$, uniformly in $\Re z$ (as $\psi_I$ is $2$-periodic), and we can deform the paths of integration by Lemma~\ref{lem:CG-unbounded}:
 \begin{align}
-\int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r^2 \,z}\,dz=&
-\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz\label{eqn: inside proof 1}\\
-\int\limits_{1}^{i\infty+1}\psi_I(z-1)\,e^{\pi i r^2 \,z}\,dz=&
-\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz,\notag
+\int\limits_{-1}^{i\infty-1}\psi_I(z+1)\,e^{\pi i r \,z}\,dz=&
+\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r \,z}\,dz\label{eqn: inside proof 1}\\
+\int\limits_{1}^{i\infty+1}\psi_I(z-1)\,e^{\pi i r \,z}\,dz=&
+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz+\int\limits_{i}^{i\infty}\psi_T(z)\,e^{\pi i r \,z}\,dz,\notag
 \end{align}
 where the first integrals on the right run along the rectangular contours through $-1 + i$ resp.\ $1 + i$. We obtain
-\begin{align}\label{eqn: c1}c(r)=&\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz
--2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz\\
-&+2\int\limits_{i}^{i\infty}(\psi_T(z)-\psi_I(z))\,e^{\pi i r^2 \,z}\,dz.\nonumber
+\begin{align}\label{eqn: c1}c(r)=&\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz
+-2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r \,z}\,dz\\
+&+2\int\limits_{i}^{i\infty}(\psi_T(z)-\psi_I(z))\,e^{\pi i r \,z}\,dz.\nonumber
     \end{align}
-By Lemma~\ref{lemma:psi-sum}, $\psi_T - \psi_I = -\psi_S$, so the last integral is $J_6(r^2)$, and
-\begin{align}c(r)=&\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz
--2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz\notag\\
-&-2\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i r^2 \,z}\,dz\notag\\
-=&b(r).\notag
+By Lemma~\ref{lemma:psi-sum}, $\psi_T - \psi_I = -\psi_S$, so the last integral is $J_6(r)$, and
+\begin{align}c(r)=&\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r \,z}\,dz
+-2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r \,z}\,dz\notag\\
+&-2\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i r \,z}\,dz\notag\\
+=&b_\rad(r).\notag
     \end{align}
 \end{proof}
-At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
+As for $a$, the factor $\sin(\pi r/2)^2$ vanishes to second order at $r = 2n$, so Proposition~\ref{prop:b-double-zeros} exhibits the required double zeroes of $b(x) = b_\rad(\|x\|^2)$ at all $\Lambda_8$-vectors of length greater than $\sqrt 2$.
+
+At the end of this section we find another integral representation of $b_\rad(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
 
 \begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition}
 For $r\geq0$ we have
-\begin{equation}\label{eqn:b-another-integral}b(r)=-4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
+\begin{equation}\label{eqn:b-another-integral}b_\rad(r)=-4i\,\sin(\pi r/2)^2\,\left(\frac{144}{\pi\,r}+\frac{1}{\pi\,(r-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
 The proof is analogous to the proof of Proposition~\ref{prop:a-another-integral}.
-First, suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:b-double-zeros}, parametrising $z = it$ (so that $\dd z = i\,\dd t$),
-$$b(r)=-4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r^2 t}\,dt. $$
+First, suppose that $r>2$. Then by Proposition~\ref{prop:b-double-zeros}, parametrising $z = it$ (so that $\dd z = i\,\dd t$),
+$$b_\rad(r)=-4i\,\sin(\pi r/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r t}\,dt. $$
 (Note the sign: unlike in Proposition~\ref{prop:a-another-integral}, there is no factor $z^2 = -t^2$ in the integrand to absorb the $i$ coming from $\dd z$.)
 From \eqref{eqn: psi fourier I} we obtain
 \begin{equation}\label{eqn: psi asymptotic}
 \psi_I(it)=e^{2\pi t}+144+O(e^{-\pi t})\quad\mbox{as}\;t\to\infty.
 \end{equation}
-For $r>\sqrt{2}$ we have
+For $r>2$ we have
 \begin{equation}
-\int\limits_0^\infty \left(e^{2\pi t}+144\right)\,e^{-\pi r^2 t}\,dt
-=\frac{1}{\pi\,(r^2-2)}+\frac{144}{\pi\,r^2}.\end{equation}
-Therefore, the identity \eqref{eqn:b-another-integral} holds for $r>\sqrt{2}$.
+\int\limits_0^\infty \left(e^{2\pi t}+144\right)\,e^{-\pi r t}\,dt
+=\frac{1}{\pi\,(r-2)}+\frac{144}{\pi\,r}.\end{equation}
+Therefore, the identity \eqref{eqn:b-another-integral} holds for $r>2$.
 
-On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn:b-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:b-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition \eqref{eqn:b-definition} we see that $b_\rad(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn:b-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:b-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
-We see from \eqref{eqn:b-another-integral} that $b(r)\in i\R$ for all $r\in\R_{\geq0}$.
+We see from \eqref{eqn:b-another-integral} that $b_\rad(r)\in i\R$ for all $r\in\R_{\geq0}$.
 Another immediate corollary of this proposition is
 
 \begin{proposition}\label{prop:b0}\uses{prop:b-another-integral}\lean{MagicFunction.b.SpecialValues.b_zero}\leanok
 We have $b(0) = 0$.
 \end{proposition}
 \begin{proof}
-As $r \to 0$, the factor $\sin(\pi r^2/2)^2$ vanishes to order $r^4$, while the expression in parentheses in \eqref{eqn:b-another-integral} has only a simple pole in $r^2$ (the term $\frac{144}{\pi r^2}$). Hence the product tends to $0$.
+We have $b(0) = b_\rad(0)$. As $r \to 0$, the factor $\sin(\pi r/2)^2$ vanishes to order $r^2$, while the expression in parentheses in \eqref{eqn:b-another-integral} has only a simple pole at $r = 0$ (the term $\frac{144}{\pi r}$). Hence the product tends to $0$.
 \end{proof}
