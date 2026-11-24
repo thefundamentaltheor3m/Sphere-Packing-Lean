@@ -12,6 +12,7 @@ public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.InvPowSummability
+public import SpherePacking.ForMathlib.LaplaceTransform
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.QExpansionBounds
 public import SpherePacking.ForMathlib.QSeriesBounds
@@ -24,6 +25,7 @@ public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.ForMathlib.tprod
 public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.MagicFunction.LaplaceContinuation
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Defs
