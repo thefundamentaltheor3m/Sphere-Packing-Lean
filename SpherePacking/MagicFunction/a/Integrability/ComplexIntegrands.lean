@@ -52,7 +52,7 @@ end Helpers
 
 namespace MagicFunction.a.ComplexIntegrands
 
-variable {r : ℝ} (hr : r ≥ 0)
+variable {s : ℝ} (hs : s ≥ 0)
 
 section Holo_Lemmas
 
@@ -79,44 +79,44 @@ theorem φ₀''_neg_inv_add_holo {c : ℂ} (hc : c.im = 0) :
     (fun z hz ↦ ne_of_mem_of_not_mem (hmem z hz) zero_not_mem_upperHalfPlaneSet)) ?_
   exact neg_inv_add_mapsto hc
 
-theorem Φ₁'_holo : Holo(Φ₁' r) := by
+theorem Φ₁'_holo : Holo(Φ₁' s) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   exact (φ₀''_neg_inv_add_holo (c := 1) (by simp)).mul
     ((differentiable_fun_id.differentiableOn.add_const 1).pow 2)
 
-theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
+theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' s) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₂'_holo : Holo(Φ₂' r) := Φ₁'_holo
+theorem Φ₂'_holo : Holo(Φ₂' s) := Φ₁'_holo
 
-theorem Φ₂'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₂' r) ℍ₀ := Φ₁'_contDiffOn_ℂ
+theorem Φ₂'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₂' s) ℍ₀ := Φ₁'_contDiffOn_ℂ
 
-theorem Φ₃'_holo : Holo(Φ₃' r) := by
+theorem Φ₃'_holo : Holo(Φ₃' s) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   simpa only [Pi.mul_def, Pi.pow_apply, sub_eq_add_neg] using
     (φ₀''_neg_inv_add_holo (c := -1) (by simp)).mul
       ((differentiable_fun_id.differentiableOn.add_const _).pow 2)
 
-theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
+theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' s) ℍ₀ := Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₄'_holo : Holo(Φ₄' r) := Φ₃'_holo
+theorem Φ₄'_holo : Holo(Φ₄' s) := Φ₃'_holo
 
-theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' r) ℍ₀ := Φ₃'_contDiffOn_ℂ
+theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' s) ℍ₀ := Φ₃'_contDiffOn_ℂ
 
-theorem Φ₅'_holo : Holo(Φ₅' r) := by
+theorem Φ₅'_holo : Holo(Φ₅' s) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   simpa only [Pi.mul_def, add_zero] using
     (φ₀''_neg_inv_add_holo (c := 0) (by simp)).mul (differentiableOn_pow 2)
 
-theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
+theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' s) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id (mapsTo_id _)).mul
+theorem Φ₆'_holo : Holo(Φ₆' s) := (φ₀''_holo.comp differentiableOn_id (mapsTo_id _)).mul
   (Complex.differentiable_exp.comp <| (differentiable_const _).mul
     differentiable_fun_id).differentiableOn
 
-theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ := Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
+theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' s) ℍ₀ := Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
 end Holo_Lemmas
 
@@ -130,17 +130,17 @@ private theorem ContDiffOn.restrict_scalars_complex {s : Set ℂ} {f : ℂ → �
   exact @ContDiffWithinAt.restrict_scalars ℝ _ ℂ _ _ ℂ _ _ s f x n ℂ _ _ _
     IsScalarTower.right _ IsScalarTower.right (h x hx)
 
-theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' s) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' s) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' s) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' s) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' s) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars_complex
+theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' s) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars_complex
 
 end ContDiffOn_Real
 

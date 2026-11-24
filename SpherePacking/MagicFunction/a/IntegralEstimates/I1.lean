@@ -15,7 +15,7 @@ The purpose of this file is to construct bounds on the integral `I₁` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 ## TODO:
-- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+- Integrability of `g` and `C₀ * rexp (-2 * π * u) * rexp (-π * s / u)`
 -/
 
 @[expose] public section
@@ -29,7 +29,7 @@ namespace MagicFunction.a.IntegralEstimates.I₁
 
 noncomputable section Change_of_Variables
 
-variable (r : ℝ)
+variable (s : ℝ)
 
 /-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
 way `intervalIntegral` is defined. -/
@@ -48,11 +48,11 @@ def f : ℝ → ℝ := fun t ↦ 1 / t
 
 def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 
-def g : ℝ → ℝ → ℂ := fun r s ↦ -I
-  * φ₀'' (I * s)
-  * (s ^ (-4 : ℤ))
-  * cexp (-π * I * r)
-  * cexp (-π * r / s)
+def g : ℝ → ℝ → ℂ := fun s u ↦ -I
+  * φ₀'' (I * u)
+  * (u ^ (-4 : ℤ))
+  * cexp (-π * I * s)
+  * cexp (-π * s / u)
 
 lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
 
@@ -78,8 +78,8 @@ end Setup
 
 section Change
 
-lemma Changing_Domain_of_Integration (r : ℝ) :
-    ∫ s in Ici (1 : ℝ), (g r s) = ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) := by
+lemma Changing_Domain_of_Integration (s : ℝ) :
+    ∫ u in Ici (1 : ℝ), (g s u) = ∫ (u : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g s u) := by
   congr
   ext x
   constructor <;> intro hx
@@ -95,16 +95,16 @@ lemma Changing_Domain_of_Integration (r : ℝ) :
     simp only [one_div, mem_Ici]
     exact one_le_inv_iff₀.mpr hy₁
 
-lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
-    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) :=
-  integral_image_eq_integral_abs_deriv_smul aux_measurable aux_hasDeriv aux_injOn (g r)
+lemma Changing_Variables (s : ℝ) : ∫ (u : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g s u) =
+    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g s (f t)) :=
+  integral_image_eq_integral_abs_deriv_smul aux_measurable aux_hasDeriv aux_injOn (g s)
 
-lemma Writing_as_intervalIntegral (r : ℝ) :
-    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) = ∫ t in (0 : ℝ)..1, |f' t| • (g r (f t)) := by
+lemma Writing_as_intervalIntegral (s : ℝ) :
+    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g s (f t)) = ∫ t in (0 : ℝ)..1, |f' t| • (g s (f t)) := by
   rw [integral_of_le zero_le_one]
 
-lemma Reconciling_Change_of_Variables (r : ℝ) :
-    I₁' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
+lemma Reconciling_Change_of_Variables (s : ℝ) :
+    I₁' s = ∫ t in Ioc 0 1, |f' t| • (g s (f t)) := by
   simp only [I₁'_eq_Ioc, f, f', g]
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   apply ae_of_all
@@ -125,7 +125,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   ring_nf
   ac_rfl
 
-theorem Complete_Change_of_Variables (r : ℝ) : I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
+theorem Complete_Change_of_Variables (s : ℝ) : I₁' s = ∫ u in Ici (1 : ℝ), (g s u) := by
   rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
 
 end Change
@@ -138,32 +138,32 @@ section Bounding
 
 section Bounding_Integrand
 
-lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
-  intro s hs
-  rw [mem_Ici] at hs
+lemma I₁'_bounding_aux_1 (s : ℝ) : ∀ x ∈ Ici 1, ‖g s x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * s / x) := by
+  intro u hu
+  rw [mem_Ici] at hu
   simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
     norm_zpow, norm_real, norm_eq_abs, norm_exp, neg_re, mul_re, ofReal_re, I_re, mul_zero,
     ofReal_im, I_im, mul_one, _root_.sub_self, zero_mul, mul_im, add_zero, neg_zero,
     Real.exp_zero, div_ofReal_re, sub_zero]
-  conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
+  conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑u)‖]
   gcongr
-  rw [abs_of_nonneg (zero_le_one.trans hs)]
+  rw [abs_of_nonneg (zero_le_one.trans hu)]
   apply inv_le_one_of_one_le₀
-  exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
+  exact one_le_zpow₀ hu <| Int.zero_le_ofNat 4
 
-lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
-    ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
+lemma I₁'_bounding_aux_2 (s : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
+    ‖g s x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * s / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
-  intro s hs
-  rw [mem_Ici] at hs
-  apply (I₁'_bounding_aux_1 r s hs).trans
+  intro u hu
+  rw [mem_Ici] at hu
+  apply (I₁'_bounding_aux_1 s u hu).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
+  have him : (I * u).im = u := by simp
+  have hpos : 0 < u := by positivity
+  have hpos' : 0 < (I * ↑u).im := by rw [him]; exact hpos
+  let z : ℍ := ⟨I * u, hpos'⟩
+  have him' : z.im = u := by simp [z, him, UpperHalfPlane.im]
   have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
   specialize hC₀ z him'_gt_half
   simp only [z, him'] at hC₀
@@ -175,22 +175,22 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+lemma Bound_integrableOn (s C₀ : ℝ) :
+    IntegrableOn (fun u ↦ C₀ * rexp (-2 * π * u) * rexp (-π * s / u)) (Ici 1) volume := by
   set μ := volume.restrict (Ici (1 : ℝ))
-  have h_g : Integrable (fun s ↦ C₀ * rexp (-2 * π * s)) μ :=
+  have h_g : Integrable (fun u ↦ C₀ * rexp (-2 * π * u)) μ :=
     ((integrableOn_Ici_iff_integrableOn_Ioi).mpr
       (integrableOn_exp_mul_Ioi (by linarith [pi_pos]) 1)).const_mul C₀
-  have hφ : AEStronglyMeasurable (fun s ↦ rexp (-π * r / s)) μ :=
+  have hφ : AEStronglyMeasurable (fun u ↦ rexp (-π * s / u)) μ :=
     (Real.continuous_exp.measurable.comp (measurable_const.mul measurable_inv)).aestronglyMeasurable
-  have hb : ∀ᵐ s ∂μ, ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) :=
-    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s (hs : 1 ≤ s) ↦ by
+  have hb : ∀ᵐ u ∂μ, ‖rexp (-π * s / u)‖ ≤ rexp (π * |s|) :=
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun u (hu : 1 ≤ u) ↦ by
       simp only [Real.norm_eq_abs, abs_of_nonneg (exp_pos _).le]
       refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
-      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
-      exact div_le_self (by positivity) hs
+      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ u)]
+      exact div_le_self (by positivity) hu
   change Integrable
-    (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s))
+    (fun u ↦ C₀ * rexp (-2 * π * u) * rexp (-π * s / u))
     (volume.restrict (Ici (1 : ℝ)))
   simpa [μ, mul_comm] using h_g.bdd_mul hφ hb
 
@@ -198,25 +198,25 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
-    ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
+lemma I₁'_bounding_1_aux_3 (s : ℝ) : ∃ C₀ > 0, ∫ (u : ℝ) in Ici 1, ‖g s u‖ ≤
+    ∫ (u : ℝ) in Ici 1, C₀ * rexp (-2 * π * u) * rexp (-π * s / u) := by
+  wlog hint : IntegrableOn (fun t ↦ ‖g s t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
+    have h₂ : ¬ (Integrable (fun t ↦ ‖g s t‖) (volume.restrict (Ici 1))) := hint
     rw [integral_undef h₂]
     positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 s
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn s C₀) measurableSet_Ici hC₀
 
-theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
-    ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 r
+theorem I₁'_bounding (s : ℝ) : ∃ C₀ > 0,
+    ‖I₁' s‖ ≤ ∫ u in Ici (1 : ℝ), C₀ * rexp (-2 * π * u) * rexp (-π * s / u) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 s
   use C₀, hC₀_pos
   calc
-  _ = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
-  _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
-  _ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := hC₀
+  _ = ‖∫ u in Ici (1 : ℝ), g s u‖ := by simp only [Complete_Change_of_Variables, g]
+  _ ≤ ∫ u in Ici (1 : ℝ), ‖g s u‖ := norm_integral_le_integral_norm (g s)
+  _ ≤ ∫ u in Ici (1 : ℝ), C₀ * rexp (-2 * π * u) * rexp (-π * s / u) := hC₀
 
 -- The following may be useful:
 -- #check MeasureTheory.integral_mono_of_nonneg -- integrability can't be avoided...
