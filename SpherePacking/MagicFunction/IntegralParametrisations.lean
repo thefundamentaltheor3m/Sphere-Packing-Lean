@@ -161,7 +161,7 @@ lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
 
 lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
 
-lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
+lemma det_aux : !![(0 : ℤ), -1; 1, 0].det = 1 := by decide
 
 lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
   simp only [← ModularGroup.S_eq]; norm_cast

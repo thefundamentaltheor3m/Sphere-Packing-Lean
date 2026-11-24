@@ -394,7 +394,7 @@ In particular, fix a vertical strip $x_1 \leq \Re z \leq x_2$ and let $r > 2$. B
 \uses{cor:phi0-near-0-infty, def:a-definition, cor:disc-nonvanishing, lem:CG-unbounded}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
-    a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
+    a(r)=4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0\Big(\frac{i}{t}\Big)\,t^2\,e^{-\pi r^2 \,t}\,dt.
 \end{equation}
 \end{proposition}
 \begin{proof}
@@ -745,7 +745,7 @@ $$\psi_T+\psi_S=h|_{-2}T-h|_{-2}STS=h-h|_{-2}ST=\psi_I.$$
 \begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}
 For $r>\sqrt{2}$ function $b(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
-    b(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz.
+    b(r)=-4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r^2 \,t}\,dt.
 \end{equation}
 \end{proposition}
 \begin{proof}
