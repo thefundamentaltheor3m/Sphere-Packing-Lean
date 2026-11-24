@@ -89,7 +89,9 @@ jobs:
           # from-scratch docs build, so the docs cache was not saved either.
           deploy: false
 
-      # Same step and path the action would use with `deploy: true`.
+      # Same step the action would run with `deploy: true`. The action uploads
+      # `home_page/_site` only when `home_page` is a Jekyll site (it has a
+      # `Gemfile`), as it is here; otherwise it would upload `home_page/` itself.
       - name: Upload website (API documentation, blueprint and home page)
         if: github.event_name == 'push'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
@@ -99,12 +101,21 @@ jobs:
   # A separate job, so that the artifact lookup happens well after the upload
   # is finalized, and so that a failed deployment neither discards the docs
   # cache saved at the end of `build_project` nor requires rebuilding the docs:
-  # re-running just this job is enough.
+  # re-running just this job is enough, as long as the artifact still exists
+  # (`upload-pages-artifact` keeps it for one day).
   deploy_pages:
     name: Deploy to GitHub Pages
     if: github.event_name == 'push'
     needs: build_project
     runs-on: ubuntu-24.04
+    # Shows the deployed URL in the run summary. The `github-pages` environment
+    # only accepts deployments from `main`, which is the only branch we push-build.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+        id: deployment
+        # v5, to match `upload-pages-artifact` v5 above (docgen-action still
+        # pairs it with deploy-pages v4.0.5, the combination that failed).
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
