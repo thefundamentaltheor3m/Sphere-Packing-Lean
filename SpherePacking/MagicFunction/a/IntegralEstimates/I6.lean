@@ -15,7 +15,7 @@ The purpose of this file is to construct bounds on the integral `I₆` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 ## TODO:
-- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+- Integrability of `g` and `C₀ * rexp (-2 * π * u) * rexp (-π * s / u)`
 -/
 
 @[expose] public section
@@ -27,15 +27,15 @@ open scoped Function UpperHalfPlane
 
 namespace MagicFunction.a.IntegralEstimates.I₆
 
-variable (r : ℝ)
+variable (s : ℝ)
 
 section Setup
 
-noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ I
+noncomputable def g : ℝ → ℝ → ℂ := fun s t ↦ I
   * φ₀'' (I * t)
-  * cexp (-π * r * t)
+  * cexp (-π * s * t)
 
-lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), g r t := by simp [I₆'_eq, g]
+lemma I₆'_eq_integral_g_Ioo (s : ℝ) : I₆' s = 2 * ∫ t in Ici (1 : ℝ), g s t := by simp [I₆'_eq, g]
 
 end Setup
 
@@ -45,15 +45,15 @@ section Bounding
 
 section Bounding_Integrand
 
-lemma I₆'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ici 1, ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) := by
+lemma I₆'_bounding_aux_1 (s : ℝ) : ∀ t ∈ Ici 1, ‖g s t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * s * t) := by
   simp [g, neg_mul, norm_I, one_mul, norm_exp]
 
-lemma I₆'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ici (1 : ℝ),
-    ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
+lemma I₆'_bounding_aux_2 (s : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ici (1 : ℝ),
+    ‖g s t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * s * t) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro t ht
-  rw [I₆'_bounding_aux_1 r t ht]
+  rw [I₆'_bounding_aux_1 s t ht]
   rw [mem_Ici] at ht
   gcongr
   have him : (I * t).im = t := by simp
@@ -70,19 +70,19 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hr : 0 ≤ r) :
-  IntegrableOn (fun t ↦ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) (Ici (1 : ℝ)) volume := by
-  have hb_pos : 0 < π * (r + 2) := mul_pos Real.pi_pos (by linarith)
-  have h0 : IntegrableOn (fun t : ℝ => rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) := by
-    simpa using exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := π * (r + 2)) hb_pos
-  have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) :=
+lemma Bound_integrableOn (s C₀ : ℝ) (hs : 0 ≤ s) :
+  IntegrableOn (fun t ↦ C₀ * rexp (-2 * π * t) * rexp (-π * s * t)) (Ici (1 : ℝ)) volume := by
+  have hb_pos : 0 < π * (s + 2) := mul_pos Real.pi_pos (by linarith)
+  have h0 : IntegrableOn (fun t : ℝ => rexp (-(π * (s + 2)) * t)) (Ioi (1 : ℝ)) := by
+    simpa using exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := π * (s + 2)) hb_pos
+  have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (s + 2)) * t)) (Ioi (1 : ℝ)) :=
     h0.const_mul C₀
   have h_eq (t : ℝ) :
-      C₀ * rexp (-(π * (r + 2)) * t) =
-        C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-    have ht : -(π * (r + 2)) * t = (-2 * π * t) + (-π * r * t) := by ring_nf
+      C₀ * rexp (-(π * (s + 2)) * t) =
+        C₀ * rexp (-2 * π * t) * rexp (-π * s * t) := by
+    have ht : -(π * (s + 2)) * t = (-2 * π * t) + (-π * s * t) := by ring_nf
     simp [ht, Real.exp_add, mul_comm, mul_left_comm]
-  have h2 : IntegrableOn (fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
+  have h2 : IntegrableOn (fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * s * t))
         (Ioi (1 : ℝ)) volume := by
     refine h1.congr_fun ?_ measurableSet_Ioi
     intro t _
@@ -90,7 +90,7 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hr : 0 ≤ r) :
   exact
     (integrableOn_Ici_iff_integrableOn_Ioi
         (μ := (volume : Measure ℝ))
-        (f := fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
+        (f := fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * s * t))
         (b := (1 : ℝ))).2
       h2
 
@@ -98,50 +98,50 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₆'_bounding_aux_3 (r : ℝ) (hr : 0 ≤ r) : ∃ C₀ > 0,
-    ∫ t in Ici (1 : ℝ), ‖g r t‖ ≤
-    ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
+lemma I₆'_bounding_aux_3 (s : ℝ) (hs : 0 ≤ s) : ∃ C₀ > 0,
+    ∫ t in Ici (1 : ℝ), ‖g s t‖ ≤
+    ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * s * t) := by
+  wlog hint : IntegrableOn (fun t ↦ ‖g s t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
+    have h₂ : ¬ (Integrable (fun t ↦ ‖g s t‖) (volume.restrict (Ici 1))) := hint
     rw [integral_undef h₂]
     positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_2 r
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_2 s
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hr) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn s C₀ hs) measurableSet_Ici hC₀
 
-theorem I₆'_bounding (r : ℝ) (hr : 0 ≤ r) : ∃ C₁ > 0,
-    ‖I₆' r‖ ≤ ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_3 r hr
+theorem I₆'_bounding (s : ℝ) (hs : 0 ≤ s) : ∃ C₁ > 0,
+    ‖I₆' s‖ ≤ ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * s * t) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_3 s hs
   refine ⟨2 * C₀, by positivity, ?_⟩
   calc
-  _ = ‖2 * ∫ t in Ici (1 : ℝ), g r t‖ := by simp only [I₆'_eq_integral_g_Ioo, g]
-  _ ≤ 2 * ∫ t in Ici (1 : ℝ), ‖g r t‖ := by
+  _ = ‖2 * ∫ t in Ici (1 : ℝ), g s t‖ := by simp only [I₆'_eq_integral_g_Ioo, g]
+  _ ≤ 2 * ∫ t in Ici (1 : ℝ), ‖g s t‖ := by
       simp only [norm_mul, Complex.norm_ofNat, Nat.ofNat_pos, mul_le_mul_iff_right₀]
-      exact norm_integral_le_integral_norm (g r)
-  _ ≤ 2 * ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by gcongr
+      exact norm_integral_le_integral_norm (g s)
+  _ ≤ 2 * ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * s * t) := by gcongr
   _ = _ := by
       rw [← smul_eq_mul, ← MeasureTheory.integral_smul (2 : ℝ)]
       congr; ext t
       rw [smul_eq_mul]
       ac_rfl
 
-theorem I₆'_bounding_eq (r : ℝ) (hr : 0 ≤ r) : ∃ C₂ > 0,
-    ‖I₆' r‖ ≤ C₂ * rexp (-π * (r ^ 2 + 2)) / (r ^ 2 + 2) :=
+theorem I₆'_bounding_eq (s : ℝ) (hs : 0 ≤ s) : ∃ C₂ > 0,
+    ‖I₆' s‖ ≤ C₂ * rexp (-π * (s ^ 2 + 2)) / (s ^ 2 + 2) :=
 by
-  obtain ⟨C₁, _, hC₁⟩ := I₆'_bounding r hr
-  let A : ℝ := ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t)
-  let K : ℝ := rexp (-π * (r ^ 2 + 2)) / (r ^ 2 + 2)
+  obtain ⟨C₁, _, hC₁⟩ := I₆'_bounding s hs
+  let A : ℝ := ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * s * t)
+  let K : ℝ := rexp (-π * (s ^ 2 + 2)) / (s ^ 2 + 2)
   have hKpos : 0 < K := by
-    have hden : 0 < r ^ 2 + 2 := by
-      have : 0 ≤ r ^ 2 := by simpa using sq_nonneg r
+    have hden : 0 < s ^ 2 + 2 := by
+      have : 0 ≤ s ^ 2 := by simpa using sq_nonneg s
       linarith
     simpa [K] using div_pos (Real.exp_pos _) hden
   refine ⟨|A| / K + 1, add_pos_of_nonneg_of_pos (div_nonneg (abs_nonneg _) hKpos.le) one_pos, ?_⟩
-  have h : ‖I₆' r‖ ≤ (|A| / K + 1) * K := by
+  have h : ‖I₆' s‖ ≤ (|A| / K + 1) * K := by
     have hKne : K ≠ 0 := ne_of_gt hKpos
     calc
-      ‖I₆' r‖ ≤ A := hC₁
+      ‖I₆' s‖ ≤ A := hC₁
       _ ≤ |A| + K := (le_abs_self A).trans (le_add_of_nonneg_right hKpos.le)
       _ = (|A| / K + 1) * K := by
         have h1 : (|A| / K) * K = |A| := by field_simp [div_eq_mul_inv, hKne]

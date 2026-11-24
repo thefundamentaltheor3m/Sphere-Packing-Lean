@@ -69,48 +69,48 @@ section Integrands
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
   MagicFunction.Parametrisations
 
-variable {r : ℝ} (hr : r ≥ 0)
+variable {s : ℝ} (hs : s ≥ 0)
 
 namespace MagicFunction.a.RealIntegrands
 
-theorem Φ₁_contDiffOn : ContDiffOn ℝ ∞ (Φ₁ r) (Ioc (0 : ℝ) 1) := by
+theorem Φ₁_contDiffOn : ContDiffOn ℝ ∞ (Φ₁ s) (Ioc (0 : ℝ) 1) := by
   simp only [Φ₁_def, ← smul_eq_mul I _]
   apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₁' r) ∘ z₁') (Ioc (0 : ℝ) 1)
+  change ContDiffOn ℝ ∞ ((Φ₁' s) ∘ z₁') (Ioc (0 : ℝ) 1)
   refine Φ₁'_contDiffOn.comp z₁'_contDiffOn ?_
   exact z₁'_mapsto
 
-theorem Φ₂_contDiffOn : ContDiffOn ℝ ∞ (Φ₂ r) (Icc (0 : ℝ) 1) := by
+theorem Φ₂_contDiffOn : ContDiffOn ℝ ∞ (Φ₂ s) (Icc (0 : ℝ) 1) := by
   simp only [Φ₂_def]
-  change ContDiffOn ℝ ∞ ((Φ₂' r) ∘ z₂') (Icc (0 : ℝ) 1)
+  change ContDiffOn ℝ ∞ ((Φ₂' s) ∘ z₂') (Icc (0 : ℝ) 1)
   refine Φ₂'_contDiffOn.comp z₂'_contDiffOn ?_
   exact z₂'_mapsto
 
-theorem Φ₃_contDiffOn : ContDiffOn ℝ ∞ (Φ₃ r) (Ioc (0 : ℝ) 1) := by
+theorem Φ₃_contDiffOn : ContDiffOn ℝ ∞ (Φ₃ s) (Ioc (0 : ℝ) 1) := by
   simp only [Φ₃_def, ← smul_eq_mul I _]
   apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₃' r) ∘ z₃') (Ioc (0 : ℝ) 1)
+  change ContDiffOn ℝ ∞ ((Φ₃' s) ∘ z₃') (Ioc (0 : ℝ) 1)
   refine Φ₃'_contDiffOn.comp z₃'_contDiffOn ?_
   exact z₃'_mapsto
 
-theorem Φ₄_contDiffOn : ContDiffOn ℝ ∞ (Φ₄ r) (Icc (0 : ℝ) 1) := by
+theorem Φ₄_contDiffOn : ContDiffOn ℝ ∞ (Φ₄ s) (Icc (0 : ℝ) 1) := by
   simp only [Φ₄_def, ← smul_eq_mul (-1 : ℂ) _]
   apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₄' r) ∘ z₄') (Icc (0 : ℝ) 1)
+  change ContDiffOn ℝ ∞ ((Φ₄' s) ∘ z₄') (Icc (0 : ℝ) 1)
   refine Φ₄'_contDiffOn.comp z₄'_contDiffOn ?_
   exact z₄'_mapsto
 
-theorem Φ₅_contDiffOn : ContDiffOn ℝ ∞ (Φ₅ r) (Ioc (0 : ℝ) 1) := by
+theorem Φ₅_contDiffOn : ContDiffOn ℝ ∞ (Φ₅ s) (Ioc (0 : ℝ) 1) := by
   simp only [Φ₅_def, ← smul_eq_mul I _]
   apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₅' r) ∘ z₅') (Ioc (0 : ℝ) 1)
+  change ContDiffOn ℝ ∞ ((Φ₅' s) ∘ z₅') (Ioc (0 : ℝ) 1)
   refine Φ₅'_contDiffOn.comp z₅'_contDiffOn ?_
   exact z₅'_mapsto
 
-theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) := by
+theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ s) (Ici (1 : ℝ)) := by
   simp only [Φ₆_def, ← smul_eq_mul I _]
   apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₆' r) ∘ z₆') (Ici (1 : ℝ))
+  change ContDiffOn ℝ ∞ ((Φ₆' s) ∘ z₆') (Ici (1 : ℝ))
   refine Φ₆'_contDiffOn.comp z₆'_contDiffOn ?_
   exact z₆'_mapsto
 
