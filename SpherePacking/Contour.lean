@@ -1,0 +1,68 @@
+module
+
+public import Mathlib
+
+@[expose] public noncomputable section
+
+open unitInterval Set
+
+#check curveIntegral
+def Path.IsPiecewiseC1' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
+    (γ : Path a b) : Prop :=
+  ∃ (n : ℕ) (t : Fin (n + 1) → ℝ), Monotone t ∧ t 0 = 0 ∧ t (Fin.last n) = 1 ∧
+    ∀ i : Fin n, ContDiffOn ℝ 1 γ.extend (Icc (t i.castSucc) (t i.succ))
+
+def Path.IsPiecewise {X : Type*} [TopologicalSpace X] {a b : X}
+    (γ : Path a b) (P : {a : X} → {b : X} → Path a b → Prop) : Prop :=
+  ∃ (n : ℕ) (t : Fin (n + 1) → I), Monotone t ∧ t 0 = 0 ∧ t (Fin.last n) = 1 ∧
+    ∀ i : Fin n, P (Path.subpath γ (t i.castSucc) (t i.succ))
+
+abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
+    (γ : Path a b) : Prop :=
+  IsPiecewise γ fun p ↦ ContDiffOn ℝ 1 p.extend I
+
+/-- The contour integral `∫_γ f(z) dz`, i.e. the curve integral of the 1-form
+`ω z = (v ↦ f z * v)`. -/
+noncomputable abbrev contourIntegral {a b : ℂ} (f : ℂ → ℂ) (γ : Path a b) : ℂ :=
+  curveIntegral (fun z ↦ ContinuousLinearMap.lsmul ℂ ℂ (f z)) γ
+
+notation3 "∮ "(...)" in "γ", "r:60:(scoped f => contourIntegral f γ) => r
+
+variable {a b c : ℂ} (f : ℂ → ℂ) (γ : Path a b) (τ : Path b c)
+
+theorem goal0 :  ∮ z in γ, f z = ∫ z in 0..1, f (γ.extend z) * (deriv γ.extend z) := by
+  simp [contourIntegral, curveIntegral_eq_intervalIntegral_deriv]
+
+theorem contourIntegral_def : ∮ z in γ, f z =
+    curveIntegral (fun z ↦ ContinuousLinearMap.lsmul ℂ ℂ (f z)) γ :=
+  rfl
+
+theorem contourIntegral_append : ∮ z in γ.trans τ, f z = ∮ z in γ, f z + ∮ z in τ, f z := by
+  sorry
+
+--#check contDiffOn
+
+--def IsNice (p : Path a b) : Prop :=
+-- Set.piecewise
+
+theorem goal1 {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ) (hs : SimplyConnectedSpace s)
+    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = F b - F a := by
+  sorry
+
+theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
+    (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = 0 := by
+  rw [goal1 (F := F) (h := by assumption) (hs := hs) (hf := hf)]
+  rw [sub_self]
+
+--convex
+theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
+    Complex.IsExactOn f s := by
+  sorry
+
+theorem goal4 (s : Set ℂ) (γ : Path a a) (h : ContDiffOn ℝ 1 γ.extend I)
+    (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
+    ∮ z in γ, f z = 0 := by
+  have : Complex.IsExactOn f s := by
+    apply goal3 _ _ hs hf
+  obtain ⟨F, hF⟩ := this
+  apply goal2 _ _ _ h hs F hF
