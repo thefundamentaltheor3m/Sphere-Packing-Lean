@@ -5,7 +5,9 @@ Authors: Sidharth Hariharan
 -/
 module
 
+public import SpherePacking.ForMathlib.IntegralCongr
 public import SpherePacking.MagicFunction.a.Defs
+public import SpherePacking.Tactic.ExpRing
 
 /-!
 # The Function `a`: explicit integral formulas
@@ -29,38 +31,17 @@ lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
     * t ^ 2
     * cexp (-π * I * r)
     * cexp (-π * r * t) := by
-  simp only [I₁', Φ₁, Φ₁']
-  apply integral_congr
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
-  intro t ht₀ ht₁
-  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
-  simp only [z₁'_eq_of_mem hmem]
-  calc
-  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (I + t)) := by
-      conv_rhs => rw [mul_assoc, mul_assoc]
-      conv_lhs => rw [mul_assoc]
-      congr 2 <;> ring_nf
-      rw [I_sq]
-      ring_nf
-  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * I * r) * cexp (-π * r * t) := by
-      conv_rhs => rw [mul_assoc]
-      rw [← Complex.exp_add]
-      congr
-      ring_nf
-  _ = _ := by
-      rw [mul_pow, I_sq]
-      ring_nf
+  simp (disch := grind) only [I₁', Φ₁, Φ₁', z₁'_eq_of_mem]
+  congr! 1 with t
+  exp_ring
 
 lemma I₁'_eq' (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * I * r)
     * cexp (-π * r * t) := by
-  rw [I₁'_eq r]
-  rw [← smul_eq_mul (-I), ← integral_smul]
-  simp only [smul_eq_mul (-I), neg_mul]
-  congr
-  ext x
+  rw [I₁'_eq r, ← intervalIntegral.integral_const_mul]
+  congr! 1 with t
   ring
 
 lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
@@ -83,60 +64,26 @@ lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
     * cexp (-π * I * r)
     * cexp (π * I * r * t)
     * cexp (-π * r) := by
-  simp only [I₂', Φ₂, Φ₂']
-  apply integral_congr
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
-  intro t ht₀ ht₁
-  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
-  simp only [z₂'_eq_of_mem hmem]
-  calc
-  _ = φ₀'' (-1 / (t + I)) * (t + I) ^ 2 * cexp (π * I * r * (-1 + t + I)) := by
-      congr 2 <;> ring_nf
-  _ = _ := by
-      conv_rhs => rw [mul_assoc, mul_assoc]
-      rw [← Complex.exp_add, ← Complex.exp_add]
-      congr
-      ring_nf
-      rw [I_sq]
-      ring_nf
+  simp (disch := grind) only [I₂', Φ₂, Φ₂', z₂'_eq_of_mem]
+  congr! 1 with t
+  exp_ring
 
 lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (π * I * r)
     * cexp (-π * r * t) := by
-  simp only [I₃', Φ₃, Φ₃']
-  apply integral_congr
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
-  intro t ht₀ ht₁
-  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
-  simp only [z₃'_eq_of_mem hmem]
-  calc
-  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (-I + t)) := by
-      conv_rhs => rw [mul_assoc, mul_assoc]
-      conv_lhs => rw [mul_assoc]
-      congr 2 <;> ring_nf
-      rw [I_sq]
-      ring_nf
-  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (π * I * r) * cexp (-π * r * t) := by
-    conv_rhs => rw [mul_assoc]
-    rw [← Complex.exp_add]
-    congr
-    ring_nf
-  _ = _ := by
-    rw [mul_pow, I_sq]
-    ring_nf
+  simp (disch := grind) only [I₃', Φ₃, Φ₃', z₃'_eq_of_mem]
+  congr! 1 with t
+  exp_ring
 
 lemma I₃'_eq' (r : ℝ) : I₃' r = -I * ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (π * I * r)
     * cexp (-π * r * t) := by
-  rw [I₃'_eq r]
-  rw [← smul_eq_mul (-I), ← integral_smul]
-  simp only [smul_eq_mul (-I), neg_mul]
-  congr
-  ext x
+  rw [I₃'_eq r, ← intervalIntegral.integral_const_mul]
+  congr! 1 with t
   ring
 
 lemma I₃'_eq_Ioc (r : ℝ) : I₃' r = ∫ (t : ℝ) in Ioc 0 1, -I
@@ -159,53 +106,25 @@ lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
     * cexp (π * I * r)
     * cexp (-π * I * r * t)
     * cexp (-π * r) := by
-  simp only [I₄', Φ₄, Φ₄']
-  apply integral_congr
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
-  intro t ht₀ ht₁
-  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
-  simp only [z₄'_eq_of_mem hmem]
-  calc
-  _ = -1 * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r * (1 - t + I)) := by ring_nf
-  _ = _ := by
-      conv_rhs => rw [mul_assoc, mul_assoc]
-      rw [← Complex.exp_add, ← Complex.exp_add]
-      ring_nf
-      rw [I_sq]
-      ring_nf
+  simp (disch := grind) only [I₄', Φ₄, Φ₄', z₄'_eq_of_mem]
+  congr! 1 with t
+  exp_ring
 
 lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * r * t) := by
-  simp only [I₅', Φ₅, Φ₅']; congr 1
-  apply integral_congr
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
-  intro t ht₀ ht₁
-  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
-  simp only [z₅'_eq_of_mem hmem]
-  calc
-  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * t) := by
-      conv_rhs => rw [mul_assoc, mul_assoc]
-      conv_lhs => rw [mul_assoc]
-      congr 2
-      ring_nf
-      rw [I_sq]
-      ring_nf
-  _ = _ := by
-    rw [mul_pow, I_sq]
-    ring_nf
+  simp (disch := grind) only [I₅', Φ₅, Φ₅', z₅'_eq_of_mem]
+  congr! 2 with t
+  exp_ring
 
 lemma I₅'_eq' (r : ℝ) : I₅' r = 2 * I * ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * r * t) := by
-  rw [I₅'_eq r]
-  simp only [neg_mul, integral_neg, mul_neg, neg_neg, mul_assoc, ← smul_eq_mul I]
-  rw [← integral_smul]
-  congr; ext x
-  simp only [smul_eq_mul I]
-  ring_nf
+  rw [I₅'_eq r, ← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_const_mul]
+  congr! 1 with t
+  ring
 
 lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
     * φ₀'' (-1 / (I * t))
@@ -222,27 +141,16 @@ lemma I₅'_eq'_Ioc (r : ℝ) : I₅' r = 2 * I * ∫ (t : ℝ) in Ioc 0 1,
 lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * φ₀'' (I * t)
     * cexp (-π * r * t) := by
-  simp only [I₆', Φ₆, Φ₆']
-  congr 1
-  apply MeasureTheory.setIntegral_congr_fun (X := ℝ) (E := ℂ) (measurableSet_Ici)
-  simp only [EqOn, neg_mul]
-  intro t ht
-  rw [z₆'_eq_of_mem ht]
-  conv_rhs => rw [mul_assoc]
-  congr
-  ring_nf
-  rw [I_sq]
-  ring_nf
+  simp (disch := grind) only [I₆', Φ₆, Φ₆', z₆'_eq_of_mem]
+  congr! 2 with t
+  exp_ring
 
 lemma I₆'_eq' (r : ℝ) : I₆' r = 2 * I * ∫ t in Ici (1 : ℝ),
   φ₀'' (I * t)
   * cexp (-π * r * t) := by
-  rw [I₆'_eq r]
-  simp only [mul_assoc, ← smul_eq_mul I]
-  rw [← MeasureTheory.integral_smul]
-  congr; ext t
-  simp only [smul_eq_mul I]
-  ring_nf
+  rw [I₆'_eq r, ← MeasureTheory.integral_const_mul, ← MeasureTheory.integral_const_mul]
+  congr! 1 with t
+  ring
 
 end Eq
 

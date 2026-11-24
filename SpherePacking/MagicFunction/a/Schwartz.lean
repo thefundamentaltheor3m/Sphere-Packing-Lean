@@ -54,19 +54,12 @@ theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
 theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
   have hI : RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
     ext x
-    have hEqOn : EqOn (Φ₃ x) (fun t => cexp (2 * π * I * x) * Φ₁ x t) (uIcc 0 1) := fun t ht => by
-      rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-      have h1 := z₁'_eq_of_mem ht; have h3 := z₃'_eq_of_mem ht
-      simp_rw [
-        Φ₃_def, Φ₃'_def, Φ₁_def, Φ₁'_def,
-        show z₃' t - 1 = I * t by simp [h3],
-        show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
-        show z₁' t + 1 = I * t by simp [h1],
-        mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
-    simpa [I₃', I₁'] using (intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn).trans
-      (intervalIntegral.integral_const_mul (cexp (2 * π * I * x)) (f := Φ₁ x) (a := (0 : ℝ))
-        (b := 1))
-  simpa [hI] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
+    rw [I₃'_eq, I₁'_eq, ← intervalIntegral.integral_const_mul]
+    congr! 1 with t
+    exp_ring
+  have := I₁'_smooth'
+  rw [hI]
+  fun_prop
 
 theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   sorry

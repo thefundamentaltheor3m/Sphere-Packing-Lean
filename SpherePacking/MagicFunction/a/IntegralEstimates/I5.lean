@@ -5,8 +5,10 @@ Authors: Sidharth Hariharan
 -/
 module
 
+public import SpherePacking.ForMathlib.SetIntegralMono
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Constructing Upper-Bounds for I₅
@@ -23,7 +25,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
-open scoped Function UpperHalfPlane
+open scoped Function UpperHalfPlane ComplexGrind
 
 namespace MagicFunction.a.IntegralEstimates.I₅
 
@@ -105,25 +107,14 @@ lemma Writing_as_intervalIntegral (r : ℝ) :
 lemma Reconciling_Change_of_Variables (r : ℝ) :
     I₅' r = -2 * ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
   simp only [I₅'_eq_Ioc, f, f', g]
-  congr 1
-  apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
-  apply ae_of_all
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  simp only [Int.reduceNeg, zpow_neg, real_smul]
+  congr! 2 with t ht
   have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by rw [neg_div, abs_neg, abs_of_nonneg (by positivity)]
-  have h₃ : -1 / (I * t) = I / t := by
-    rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
-  have ht₀' : (t : ℂ) ^ 2 ≠ 0 := by
-    norm_cast
-    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    exact ne_of_gt ht₀
+  have h₃ : -1 / (I * t) = I * (1 / t : ℝ) := by push_cast; grind
+  have ht' : (t : ℂ) ≠ 0 := by grind
   rw [h₁, h₃]
-  simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
-    one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
-  rw [eq_div_iff ht₀', neg_mul, neg_inj]
-  ring_nf
-  ac_rfl
+  simp only [real_smul]
+  push_cast
+  field_simp
 
 theorem Complete_Change_of_Variables (r : ℝ) : I₅' r = -2 * ∫ s in Ici (1 : ℝ), (g r s) := by
   rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
@@ -196,14 +187,9 @@ section Bounding_Integral
 
 lemma I₅'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    rw [integral_undef h₂]
-    positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₅'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+  exact ⟨C₀, hC₀_pos, setIntegral_mono_on_of_nonneg measurableSet_Ici (fun _ _ ↦ norm_nonneg _)
+    (Bound_integrableOn r C₀) hC₀⟩
 
 theorem I₅'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₅' r‖ ≤ 2 * ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by

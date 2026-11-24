@@ -20,6 +20,7 @@ Helpers for cusp-approaching paths, specifically continuity of φ₀ along paths
 @[expose] public section
 
 open MeasureTheory Complex Real Set MagicFunction.a.ComplexIntegrands
+open scoped ComplexGrind
 
 noncomputable section
 
@@ -27,9 +28,7 @@ noncomputable section
 Since -1/(I*t) = I/t and Im(I/t) = 1/t > 0 for t > 0, this factors through φ₀_continuous. -/
 lemma continuousOn_φ₀''_cusp_path :
     ContinuousOn (fun t : ℝ => φ₀'' (-1 / (I * t))) (Set.Ioi 0) :=
-  φ₀''_holo.continuousOn.comp
-    (continuousOn_const.div (continuousOn_const.mul continuous_ofReal.continuousOn)
-      (fun t ht => mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr (ne_of_gt ht))))
+  φ₀''_holo.continuousOn.comp (by fun_prop (disch := grind))
     (fun t ht => by simpa [div_mul_eq_div_div] using mem_Ioi.mp ht)
 
 end

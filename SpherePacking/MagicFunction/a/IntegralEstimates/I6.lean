@@ -5,6 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
+public import SpherePacking.ForMathlib.SetIntegralMono
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 
@@ -78,10 +79,8 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hr : 0 ≤ r) :
   have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) :=
     h0.const_mul C₀
   have h_eq (t : ℝ) :
-      C₀ * rexp (-(π * (r + 2)) * t) =
-        C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-    have ht : -(π * (r + 2)) * t = (-2 * π * t) + (-π * r * t) := by ring_nf
-    simp [ht, Real.exp_add, mul_comm, mul_left_comm]
+      C₀ * rexp (-(π * (r + 2)) * t) = C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
+    exp_ring
   have h2 : IntegrableOn (fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
         (Ioi (1 : ℝ)) volume := by
     refine h1.congr_fun ?_ measurableSet_Ioi
@@ -101,14 +100,9 @@ section Bounding_Integral
 lemma I₆'_bounding_aux_3 (r : ℝ) (hr : 0 ≤ r) : ∃ C₀ > 0,
     ∫ t in Ici (1 : ℝ), ‖g r t‖ ≤
     ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    rw [integral_undef h₂]
-    positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hr) measurableSet_Ici hC₀
+  exact ⟨C₀, hC₀_pos, setIntegral_mono_on_of_nonneg measurableSet_Ici (fun _ _ ↦ norm_nonneg _)
+    (Bound_integrableOn r C₀ hr) hC₀⟩
 
 theorem I₆'_bounding (r : ℝ) (hr : 0 ≤ r) : ∃ C₁ > 0,
     ‖I₆' r‖ ≤ ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t) := by

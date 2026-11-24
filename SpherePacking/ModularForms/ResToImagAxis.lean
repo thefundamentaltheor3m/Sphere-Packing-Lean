@@ -3,6 +3,7 @@ module
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.QExpansionBounds
 public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Restriction to the Imaginary Axis
@@ -102,6 +103,7 @@ theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 
     _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
     _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
 
+open scoped ComplexGrind in
 /-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
 theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
     let z : ℍ := ⟨I * t, by simp [ht]⟩
@@ -112,10 +114,7 @@ theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t)
     apply UpperHalfPlane.ext
     simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
     change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
-    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
-    field_simp [hne, I_sq]
-    ring_nf
-    simp only [I_sq, mul_neg, mul_one]
+    grind
   simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
   congr 1; apply UpperHalfPlane.ext
   simp only [div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
