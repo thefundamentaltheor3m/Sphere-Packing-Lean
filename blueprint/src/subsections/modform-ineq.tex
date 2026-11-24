@@ -233,9 +233,9 @@ and multiplying by $G(it) > 0$ (Lemma \ref{lemma:F-G-pos}), \eqref{eqn:ineqBnew}
 
 Finally, we are ready to prove Theorem~\ref{thm:g}.
 % AUDIT NOTE: with the definitions of $a$ and $b$ used in this blueprint (and in the Lean code),
-% the magic function is (πi/8640)a - (i/(240π))b: for r > 2 one has
-% a_rad(r) = 4i sin²(πr/2)∫₀^∞ t²φ₀(i/t)e^{-πrt}dt and
-% b_rad(r) = -4i sin²(πr/2)∫₀^∞ ψ_I(it)e^{-πrt}dt (Propositions \ref{prop:a-double-zeros} and
+% the magic function is (πi/8640)a - (i/(240π))b: for s > 2 one has
+% a_rad(s) = 4i sin²(πs/2)∫₀^∞ t²φ₀(i/t)e^{-πst}dt and
+% b_rad(s) = -4i sin²(πs/2)∫₀^∞ ψ_I(it)e^{-πst}dt (Propositions \ref{prop:a-double-zeros} and
 % \ref{prop:b-double-zeros}), so only the minus combination produces the integrand A(t) < 0.
 % The Lean declaration `g` currently uses the plus sign and must be corrected accordingly.
 \begin{theorem}\label{thm:g1}\lean{g, g_zero, fourier_g_zero}
@@ -249,17 +249,17 @@ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 Note first that, by Propositions~\ref{prop:a-fourier} and~\ref{prop:b-fourier},
 $$\widehat{g}=\frac{\pi\,i}{8640}\,a+\frac{i}{240\pi}\,b.$$
 
-We prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop:a-double-zeros} and \ref{prop:b-double-zeros}, parametrising the contours by $z = it$, we know that for $r>2$
-$$a_\rad(r) = 4i\,\sin(\pi r/2)^2\int\limits_0^\infty t^2\,\phi_0(i/t)\,e^{-\pi r t}\,dt, \qquad
-b_\rad(r) = -4i\,\sin(\pi r/2)^2\int\limits_0^\infty \psi_I(it)\,e^{-\pi r t}\,dt,$$
-and hence, since $\frac{\pi i}{8640}\cdot 4i = -\frac{\pi}{2160}$ and $\frac{i}{240\pi}\cdot 4i = -\frac{\pi}{2160}\cdot\frac{36}{\pi^2}$, for $x \in \R^8$ with $r = \|x\|^2 > 2$,
-\begin{equation}\label{eqn:g A} g(x)=\frac{\pi}{2160}\,\sin(\pi r/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi r t}\,dt\end{equation}
+We prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop:a-double-zeros} and \ref{prop:b-double-zeros}, parametrising the contours by $z = it$, we know that for $s>2$
+$$a_\rad(s) = 4i\,\sin(\pi s/2)^2\int\limits_0^\infty t^2\,\phi_0(i/t)\,e^{-\pi s t}\,dt, \qquad
+b_\rad(s) = -4i\,\sin(\pi s/2)^2\int\limits_0^\infty \psi_I(it)\,e^{-\pi s t}\,dt,$$
+and hence, since $\frac{\pi i}{8640}\cdot 4i = -\frac{\pi}{2160}$ and $\frac{i}{240\pi}\cdot 4i = -\frac{\pi}{2160}\cdot\frac{36}{\pi^2}$, for $x \in \R^8$ with $s = \|x\|^2 > 2$,
+\begin{equation}\label{eqn:g A} g(x)=\frac{\pi}{2160}\,\sin(\pi s/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi s t}\,dt\end{equation}
 where $A$ is as in \eqref{eqn:defA}.
 From Proposition~\ref{prop:ineqA} we know that $A(t)<0$ for $t\in(0,\infty)$.
 Therefore identity \eqref{eqn:g A} implies \eqref{eqn:g1}.
 
-Next, we prove \eqref{eqn:g2}. By Propositions~\ref{prop:a-another-integral} and~\ref{prop:b-another-integral} (which are valid on all of $[0, \infty)$), the same bookkeeping gives, for $x \in \R^8$ with $r = \|x\|^2 > 0$,
-\begin{equation}\label{eqn:g B} \widehat{g}(x)=\frac{\pi}{2160}\,\sin(\pi r/2)^2\,\int\limits_0^\infty B(t)\,e^{-\pi r t}\,dt\end{equation}
+Next, we prove \eqref{eqn:g2}. By Propositions~\ref{prop:a-another-integral} and~\ref{prop:b-another-integral} (which are valid on all of $[0, \infty)$), the same bookkeeping gives, for $x \in \R^8$ with $s = \|x\|^2 > 0$,
+\begin{equation}\label{eqn:g B} \widehat{g}(x)=\frac{\pi}{2160}\,\sin(\pi s/2)^2\,\int\limits_0^\infty B(t)\,e^{-\pi s t}\,dt\end{equation}
 where $B$ is as in \eqref{eqn:defB}, and $B(t) > 0$ for $t \in (0, \infty)$ by Proposition~\ref{prop:ineqB}. Hence $\widehat{g}(x) \geq 0$ for $x \neq 0$, and $\widehat{g}(0) = 1 > 0$ by the computation below.
 
 Finally, the property \eqref{eqn:g3} readily follows from Proposition~\ref{prop:a0} and Proposition~\ref{prop:b0}:
