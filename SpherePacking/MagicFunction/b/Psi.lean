@@ -8,6 +8,11 @@ module
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.ModularForms.FG
 
+import SpherePacking.ForMathlib.SlashActions
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.JacobiTheta.Basic
+import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+
 /-!
 # The ψ Functions
 

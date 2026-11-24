@@ -1,9 +1,12 @@
 module
 
-public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
-public import Mathlib.Analysis.Normed.Group.FunctionSeries
-public import Mathlib.Topology.ContinuousMap.Compact
-public import SpherePacking.ModularForms.exp_lems
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+import Mathlib.Analysis.Calculus.UniformLimitsDeriv
+import Mathlib.Analysis.Normed.Group.FunctionSeries
+import Mathlib.Topology.ContinuousMap.Bounded.Normed
+import SpherePacking.ModularForms.exp_lems
 
 /-!
 # Termwise differentiation of series

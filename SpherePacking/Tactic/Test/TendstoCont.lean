@@ -5,8 +5,11 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-public import SpherePacking.Tactic.TendstoCont
+public import Mathlib.Basic.Complex.Basic
+public import Mathlib.Topology.MetricSpace.Pseudo.Defs
+
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Tests for the `tendsto_cont` tactic

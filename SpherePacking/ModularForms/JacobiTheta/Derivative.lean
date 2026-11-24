@@ -1,7 +1,17 @@
 module
 
-public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+public import Mathlib.NumberTheory.ModularForms.Derivative
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Derivatives of the Jacobi theta functions
