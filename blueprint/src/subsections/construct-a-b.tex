@@ -8,6 +8,56 @@ We will show in Section \ref{sec: g} that an appropriate linear combination of f
 
 Both functions are defined as $x \mapsto f(\|x\|^2)$, where $f : \R \to \C$ is a sum of six contour integrals of (quasi)modular forms against the Gaussian $e^{\pi i s z}$. The programme of this section is as follows. Bounds on the relevant (quasi)modular forms (obtained from Lemma~\ref{lemma:mod-div-disc-bound}) yield rapid decay of the integrals and their derivatives on $[0, \infty)$; smoothness on a neighbourhood of $[0,\infty)$ follows by differentiation under the integral sign; Schwartzness of $a$ and $b$ is then obtained from the smooth-cutoff criterion of Corollary~\ref{cor:schwartz-of-nonneg-decay}. The eigenfunction properties \eqref{eqn:a-fourier} and \eqref{eqn:b-fourier} follow from the Fourier transform of the Gaussian (Lemma~\ref{lemma:Gaussian-Fourier}) and the transformation laws of the integrands, and the double zeroes are exhibited by deforming contours.
 
+\subsection{Analytic continuation of Laplace transform}
+
+The following proposition will be used to prove analytic continuation of $a$ and $b$
+
+\begin{proposition}\label{prop:laplace-continuation}
+    Let $\psi:\mathbb{H}\to\mathbb{C}$ where it is locally integrable on $i\mathbb{R}_+$.
+    Assume that there exists $C>0$ and $a_k, b_k \in \mathbb{C}$ for $k = 0, 1, \dots, n$ such that
+    \[
+    \psi(it) = \sum_{k=0}^{n} a_k e^{2\pi k t} + t\sum_{k=0}^{n} b_k e^{2\pi k t} + O(e^{-Ct})\quad t\to\infty.
+    \]
+    For $\Re(s) > 2n$, define
+    \[
+    W(s) = \int_0^\infty \psi(it) e^{-\pi s t} dt.
+    \]
+    Then
+    \[
+    W(s) = \sum_{k=0}^{n}\left(\frac{a_k}{\pi(s-2k)} + \frac{b_k}{\pi^2(s-2k)^2}\right) + \int_0^\infty \left(\psi(it) - \left(\sum_{k=0}^{n} a_k e^{2\pi k t} + t\sum_{k=0}^{n} b_k e^{2\pi k t}\right)\right) e^{-\pi s t} dt.
+    \]
+    Moreover, the integral on the right hand side converges absolutely and is holomorphic in $s$ on the half-plane $\Re(s) > -C/\pi$.
+    Hence the right hand side provides a meromorphic continuation of $W$ to $\Re(s) > -C/\pi$, with at most double poles at $s = 2k$ for $k = 0, 1, \dots, n$.
+\end{proposition}
+\begin{proof}
+    This is \cite[Proposition~2.1]{FGH}; we sketch the idea.
+    Write $P(t) := \sum_{k=0}^{n} a_k e^{2\pi k t} + t\sum_{k=0}^{n} b_k e^{2\pi k t}$ for the main terms of the expansion, and split
+    \[
+    \psi(it) = P(t) + \bigl(\psi(it) - P(t)\bigr).
+    \]
+    For $\Re(s) > 2n$ both pieces are integrable against $e^{-\pi s t}$, and the contribution of $P$ is computed term by term from the elementary integrals
+    \[
+    \int_0^\infty e^{2\pi k t}\, e^{-\pi s t}\, dt = \frac{1}{\pi(s - 2k)}, \qquad
+    \int_0^\infty t\, e^{2\pi k t}\, e^{-\pi s t}\, dt = \frac{1}{\pi^2(s - 2k)^2} \qquad (\Re(s) > 2k),
+    \]
+    which gives the stated formula for $W(s)$.
+
+    For the remainder, the integrand $\bigl(\psi(it) - P(t)\bigr) e^{-\pi s t}$ is integrable near $t = 0$ for every $s \in \C$, by local integrability of $\psi$ and boundedness of $P$ there, and is $O(e^{-(C + \pi \Re(s)) t})$ as $t \to \infty$, which is integrable precisely when $\Re(s) > -C/\pi$.
+    These bounds are locally uniform in $s$, so the integral converges absolutely and defines a holomorphic function on $\Re(s) > -C/\pi$ (by differentiation under the integral sign).
+    The explicit sum is a rational function of $s$ with at most double poles at $s = 2k$, so the right hand side is meromorphic on $\Re(s) > -C/\pi$ and agrees with $W$ on $\Re(s) > 2n$.
+\end{proof}
+
+\begin{proposition}\label{prop:sinsq-laplace-continuation}
+    With the notation above, the function
+    \[
+    U(s) := \sin^2\left(\frac{\pi s}{2}\right) W(s)
+    \]
+    is holomorphic on $\Re(s) > -C/\pi$.
+\end{proposition}
+\begin{proof}
+    The $\sin^2$ term cancels out poles in $W(s)$.
+\end{proof}
+
 \subsection{The Integrands for $a$}
 
 To define the function $a$, we consider the following functions:
@@ -441,25 +491,55 @@ The factor $\sin(\pi s/2)^2$ vanishes to second order at $s = 2n$ for every inte
 
 Finally, we find another convenient integral representation for $a$ and compute the value of $a$ at $0$.
 
-\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}
+\begin{lemma}\label{lemma:phi0-asymptotic}\uses{lemma:phi0-transform, cor:phi0-bound, lemma:mod-div-disc-bound, lemma:poly-growth-mul, lemma:Ek-Fourier, thm:ramanujan-formula, def:disc-definition}
+We have
+\begin{equation}\label{eqn: phi asymptotic}
+\phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Putting $z = it$ in \eqref{eqn:phi0-trans-S} and multiplying by $t^2$ gives
+\[
+t^2\,\phi_0(i/t) = t^2\,\phi_0(it) - \frac{12}{\pi}\,t\,\phi_{-2}(it) + \frac{36}{\pi^2}\,\phi_{-4}(it).
+\]
+Write $q = e^{2\pi i z}$. From $E_4 = 1 + 240 q + O(q^2)$ (Lemma~\ref{lemma:Ek-Fourier}), $E_2 E_4 - E_6 = 720 q + O(q^2)$ (Ramanujan's formula \eqref{eqn:DE4}) and $\Delta = q - 24 q^2 + O(q^3)$ (the product formula \eqref{eqn:disc-definition}), the numerators
+\[
+E_4^2 - (q^{-1} + 504)\,\Delta \qquad\text{and}\qquad E_4(E_2E_4 - E_6) - 720\,\Delta
+\]
+of $\phi_{-4} - q^{-1} - 504$ and $\phi_{-2} - 720$ are both $O(q^2)$, i.e.\ have $n_0 \geq 4$ in the convention of Lemma~\ref{lemma:mod-div-disc-bound}, and their Fourier coefficients grow polynomially by Lemma~\ref{lemma:poly-growth-mul}. Lemma~\ref{lemma:mod-div-disc-bound} therefore gives
+\[
+\phi_{-4}(it) = e^{2\pi t} + 504 + O(e^{-2\pi t}), \qquad \phi_{-2}(it) = 720 + O(e^{-2\pi t}) \qquad\text{as } t \to \infty,
+\]
+and $\phi_0(it) = O(e^{-2\pi t})$ by Corollary~\ref{cor:phi0-bound}. Substituting, we get
+\[
+t^2\,\phi_0(i/t) = \frac{36}{\pi^2}\,e^{2\pi t} + \frac{36 \cdot 504}{\pi^2} - \frac{12 \cdot 720}{\pi}\,t + O(t^2\,e^{-2\pi t}),
+\]
+which is \eqref{eqn: phi asymptotic}.
+\end{proof}
+
+\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:a-definition, lemma:phi0-asymptotic, prop:laplace-continuation, prop:sinsq-laplace-continuation, cor:phi0-near-0-infty}
 For $s\geq0$ we have
 \begin{align}\label{eqn:a-another-integral}a_\rad(s)=&4i\,\sin(\pi s/2)^2\,\Bigg(\frac{36}{\pi^3\,(s-2)}-\frac{8640}{\pi^3\,s^2}+\frac{18144}{\pi^3\,s}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi s t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $s\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
-Suppose that $s>2$. Then by Proposition~\ref{prop:a-double-zeros}
-$$a_\rad(s)=4i\,\sin(\pi s/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi s t}\,dt. $$
-From \eqref{eqn:phi0-trans-S} we obtain
-\begin{equation}\label{eqn: phi asymptotic}
-\phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
-\end{equation}
-For $s>2$ we have
-\begin{equation}
-\int\limits_0^\infty \left(\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}\right)\,e^{-\pi s t}\,dt
-=\frac{36}{\pi^3\,(s-2)}-\frac{8640}{\pi^3\,s^2}+\frac{18144}{\pi^3\,s}.\end{equation}
-Therefore, the identity \eqref{eqn:a-another-integral} holds for $s>2$.
+We apply Proposition~\ref{prop:laplace-continuation} to the function $\psi(z) := -z^2\,\phi_0(-1/z)$, for which $\psi(it) = t^2\,\phi_0(i/t)$.
+By \eqref{eqn:phi0-near-0}, $\psi(it) = O(t^2 e^{-2\pi/t})$ as $t \to 0$, so $\psi$ is integrable on $i(0, b]$ for every $b > 0$.
+By the asymptotic expansion \eqref{eqn: phi asymptotic} of Lemma~\ref{lemma:phi0-asymptotic}, the hypotheses of Proposition~\ref{prop:laplace-continuation} hold with $n = 1$, coefficients
+\[
+a_0 = \frac{18144}{\pi^2}, \qquad a_1 = \frac{36}{\pi^2}, \qquad b_0 = -\frac{8640}{\pi}, \qquad b_1 = 0,
+\]
+and any $0 < C < 2\pi$. The proposition shows that, for $s > 2$,
+\begin{align}
+\int\limits_{0}^{\infty}\phi_0\Big(\frac{i}{t}\Big)\,t^2\,e^{-\pi s t}\,dt
+=&\frac{36}{\pi^3\,(s-2)}-\frac{8640}{\pi^3\,s^2}+\frac{18144}{\pi^3\,s}\notag\\
++&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi s t}\,dt,\notag
+\end{align}
+and that the integral on the right hand side converges absolutely and is holomorphic in $s$ for $\Re(s) > -C/\pi$; as $C < 2\pi$ was arbitrary, this holds for $\Re(s) > -2$, in particular for all $s \in \R_{\geq 0}$.
+Combining this with Proposition~\ref{prop:a-double-zeros}, the identity \eqref{eqn:a-another-integral} holds for $s>2$.
 
-On the other hand, from the definition~\eqref{eqn:a-rad-definition} we see that $a_\rad(s)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn:a-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:a-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition~\eqref{eqn:a-rad-definition} we see that $a_\rad(s)$ is analytic in some neighborhood of $[0,\infty)$.
+The expression in parentheses in \eqref{eqn:a-another-integral} is the meromorphic continuation of $W(s) = \int_0^\infty \phi_0(i/t)\,t^2\,e^{-\pi s t}\,dt$ given by Proposition~\ref{prop:laplace-continuation}, so the right hand side of \eqref{eqn:a-another-integral} is $4i\,U(s)$ in the notation of Proposition~\ref{prop:sinsq-laplace-continuation}. By that proposition it is holomorphic on $\Re(s) > -2$, and in particular analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:a-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 From the identity~\eqref{eqn:a-another-integral} we see that the values $a_\rad(s)$ are in $i\R$ for all $s\in\R_{\geq0}$.
 % In particular, we have
@@ -779,27 +859,34 @@ As for $a$, the factor $\sin(\pi s/2)^2$ vanishes to second order at $s = 2n$, s
 
 At the end of this section we find another integral representation of $b_\rad(s)$ for $s\in\R_{\geq0}$ and compute special values of $b$.
 
-\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition}
+\begin{lemma}\label{lemma:psiI-asymptotic}\uses{lemma:psiI-psiT-psiS-fourier}
+We have
+\begin{equation}\label{eqn: psi asymptotic}
+\psi_I(it)=e^{2\pi t}+144+O(e^{-\pi t})\quad\mbox{as}\;t\to\infty.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $z = it$ in the Fourier expansion \eqref{eqn: psi fourier I}: then $q = e^{-2\pi t}$, so $q^{-1} = e^{2\pi t}$ and $O(q^{1/2}) = O(e^{-\pi t})$.
+\end{proof}
+
+\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, def:b-definition, lemma:psiI-asymptotic, prop:laplace-continuation, prop:sinsq-laplace-continuation, cor:psiI-near-0-infty}
 For $s\geq0$ we have
 \begin{equation}\label{eqn:b-another-integral}b_\rad(s)=-4i\,\sin(\pi s/2)^2\,\left(\frac{144}{\pi\,s}+\frac{1}{\pi\,(s-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi s t}\,dt\right).\end{equation}
 The integral converges absolutely for all $s\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
-The proof is analogous to the proof of Proposition~\ref{prop:a-another-integral}.
-First, suppose that $s>2$. Then by Proposition~\ref{prop:b-double-zeros}, parametrising $z = it$ (so that $\dd z = i\,\dd t$),
-$$b_\rad(s)=-4i\,\sin(\pi s/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi s t}\,dt. $$
-(Note the sign: unlike in Proposition~\ref{prop:a-another-integral}, there is no factor $z^2 = -t^2$ in the integrand to absorb the $i$ coming from $\dd z$.)
-From \eqref{eqn: psi fourier I} we obtain
-\begin{equation}\label{eqn: psi asymptotic}
-\psi_I(it)=e^{2\pi t}+144+O(e^{-\pi t})\quad\mbox{as}\;t\to\infty.
-\end{equation}
-For $s>2$ we have
-\begin{equation}
-\int\limits_0^\infty \left(e^{2\pi t}+144\right)\,e^{-\pi s t}\,dt
-=\frac{1}{\pi\,(s-2)}+\frac{144}{\pi\,s}.\end{equation}
-Therefore, the identity \eqref{eqn:b-another-integral} holds for $s>2$.
+The proof is analogous to the proof of Proposition~\ref{prop:a-another-integral}: we apply Proposition~\ref{prop:laplace-continuation} to $\psi := \psi_I$.
+By \eqref{eqn:psiI-near-0}, $\psi_I(it) = O(t^2 e^{-\pi/t})$ as $t \to 0$, so $\psi_I$ is integrable on $i(0, b]$ for every $b > 0$.
+By the asymptotic expansion \eqref{eqn: psi asymptotic} of Lemma~\ref{lemma:psiI-asymptotic}, the hypotheses of Proposition~\ref{prop:laplace-continuation} hold with $n = 1$, $a_0 = 144$, $a_1 = 1$, $b_0 = b_1 = 0$ and $C = \pi$. The proposition shows that, for $s > 2$,
+\[
+\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi s t}\,dt
+=\frac{144}{\pi\,s}+\frac{1}{\pi\,(s-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi s t}\,dt,
+\]
+and that the integral on the right hand side converges absolutely and is holomorphic in $s$ for $\Re(s) > -1$, in particular for all $s \in \R_{\geq 0}$.
+Combining this with Proposition~\ref{prop:b-double-zeros}, the identity \eqref{eqn:b-another-integral} holds for $s>2$.
 
-On the other hand, from the definition \eqref{eqn:b-definition} we see that $b_\rad(s)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn:b-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:b-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition \eqref{eqn:b-definition} we see that $b_\rad(s)$ is analytic in some neighborhood of $[0,\infty)$.
+The expression in parentheses in \eqref{eqn:b-another-integral} is the meromorphic continuation of $W(s) = \int_0^\infty \psi_I(it)\,e^{-\pi s t}\,dt$ given by Proposition~\ref{prop:laplace-continuation}, so the right hand side of \eqref{eqn:b-another-integral} is $-4i\,U(s)$ in the notation of Proposition~\ref{prop:sinsq-laplace-continuation}. By that proposition it is holomorphic on $\Re(s) > -1$, and in particular analytic in some neighborhood of $[0,\infty)$. Hence, by the identity principle for analytic functions, the identity \eqref{eqn:b-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 We see from \eqref{eqn:b-another-integral} that $b_\rad(s)\in i\R$ for all $s\in\R_{\geq0}$.
 Another immediate corollary of this proposition is
