@@ -491,7 +491,7 @@ The factor $\sin(\pi s/2)^2$ vanishes to second order at $s = 2n$ for every inte
 
 Finally, we find another convenient integral representation for $a$ and compute the value of $a$ at $0$.
 
-\begin{lemma}\label{lemma:phi0-asymptotic}\uses{lemma:phi0-transform, cor:phi0-bound, lemma:mod-div-disc-bound, lemma:poly-growth-mul, lemma:Ek-Fourier, thm:ramanujan-formula, def:disc-definition}
+\begin{lemma}\label{lemma:phi0-asymptotic}\uses{lemma:phi0-transform, cor:phi0-bound, lemma:mod-div-disc-bound, lemma:poly-growth-mul, lemma:Ek-Fourier, thm:ramanujan-formula, def:disc-definition}\lean{MagicFunction.φ₀''_I_div_mul_sq_sub_isBigO_atTop}\leanok
 We have
 \begin{equation}\label{eqn: phi asymptotic}
 \phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
@@ -791,7 +791,7 @@ By linearity, Lemmas~\ref{lemma:perm-J12}, \ref{lemma:perm-J56} and \ref{lemma:p
 
 Now we regard the radial profile $b_\rad$ as a function on $\R_{\geq0}$ and check that $b$ has double roots at $\Lambda_8$-points.
 
-\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psi-slash-relations}
+\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psi-slash-relations}\lean{MagicFunction.ψI'_I_mul_isBigO_nhdsGT_zero, MagicFunction.ψI'_I_mul_isBigO_atTop}\leanok
 We have
 \begin{align}
     \psi_I(it) &= O(t^2 e^{-\pi/t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\
@@ -822,7 +822,7 @@ Now we observe that $T$ and $STS(ST)^{-1}$ are also in $\Gamma_0(2)$. Therefore,
 $$\psi_T+\psi_S=h|_{-2}T-h|_{-2}STS=h-h|_{-2}ST=\psi_I.$$
 \end{proof}
 
-\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}
+\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}\lean{MagicFunction.integrableOn_ψI'_mul_cexp, MagicFunction.b'_eq_neg_four_mul_I_mul_sin_sq_mul_integral, MagicFunction.b_eq_neg_four_mul_I_mul_sin_sq_mul_integral}\leanok
 For $s>2$ the function $b_\rad(s)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
     b_\rad(s)=-4i\sin(\pi s/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi s \,t}\,dt.
@@ -859,7 +859,7 @@ As for $a$, the factor $\sin(\pi s/2)^2$ vanishes to second order at $s = 2n$, s
 
 At the end of this section we find another integral representation of $b_\rad(s)$ for $s\in\R_{\geq0}$ and compute special values of $b$.
 
-\begin{lemma}\label{lemma:psiI-asymptotic}\uses{lemma:psiI-psiT-psiS-fourier}
+\begin{lemma}\label{lemma:psiI-asymptotic}\uses{lemma:psiI-psiT-psiS-fourier}\lean{MagicFunction.ψI'_I_mul_sub_isBigO_atTop}\leanok
 We have
 \begin{equation}\label{eqn: psi asymptotic}
 \psi_I(it)=e^{2\pi t}+144+O(e^{-\pi t})\quad\mbox{as}\;t\to\infty.

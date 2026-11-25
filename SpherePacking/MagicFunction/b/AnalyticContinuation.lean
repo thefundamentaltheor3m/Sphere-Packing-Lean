@@ -11,14 +11,24 @@ public import SpherePacking.MagicFunction.b.Schwartz
 # Double zeroes of `b`
 
 For `s > 2`, `b(s) = -4i sin(π s / 2)² ∫₀^∞ ψ_I(it) e^{-π s t} dt`, where `s` is the squared
-radius `‖x‖²`.
+radius `‖x‖²`. We also state the behaviour of `ψ_I(it)` as `t → 0` and `t → ∞`.
 -/
 
 @[expose] public section
 
-open Set MeasureTheory Real Complex
+open Set Filter Topology MeasureTheory Real Complex
 
 namespace MagicFunction
+
+/-- `ψ_I(it) = O(t² e^{-π/t})` as `t → 0`. -/
+theorem ψI'_I_mul_isBigO_nhdsGT_zero :
+    (fun t : ℝ ↦ ψI' (I * t)) =O[𝓝[>] 0] fun t ↦ t ^ 2 * rexp (-π / t) := by
+  sorry
+
+/-- `ψ_I(it) = O(e^{2πt})` as `t → ∞`. -/
+theorem ψI'_I_mul_isBigO_atTop :
+    (fun t : ℝ ↦ ψI' (I * t)) =O[atTop] fun t ↦ rexp (2 * π * t) := by
+  sorry
 
 theorem integrableOn_ψI'_mul_cexp {s : ℝ} (hr : 2 < s) :
     IntegrableOn (fun t : ℝ ↦ ψI' (I * t) * cexp (-π * s * t)) (Ioi 0) := by
@@ -35,5 +45,10 @@ theorem b_eq_neg_four_mul_I_mul_sin_sq_mul_integral {x : EuclideanSpace ℝ (Fin
   rw [FourierEigenfunctions.b_apply,
     b'_eq_neg_four_mul_I_mul_sin_sq_mul_integral (lt_sq_of_sqrt_lt hx)]
   norm_num
+
+/-- `ψ_I(it) = e^{2πt} + 144 + O(e^{-πt})` as `t → ∞`. -/
+theorem ψI'_I_mul_sub_isBigO_atTop :
+    (fun t : ℝ ↦ ψI' (I * t) - (cexp (2 * π * t) + 144)) =O[atTop] fun t ↦ rexp (-π * t) := by
+  sorry
 
 end MagicFunction
