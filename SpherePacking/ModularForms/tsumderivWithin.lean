@@ -126,7 +126,7 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ {z : ℂ | 0 < z.im}) 
           norm_cast
           rw [← Complex.norm_pow];
           congr;
-          rw [← exp_nat_mul];
+          rw [← exp_natCast_mul];
           ring_nf
     rw [hw1]
     norm_cast

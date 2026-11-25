@@ -53,7 +53,7 @@ theorem Θ₃_as_jacobiTheta₂ (τ : ℍ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ)
 
 theorem Θ₄_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
     Θ₄_term n τ = jacobiTheta₂_term n (1 / 2 : ℂ) τ := by
-  rw [Θ₄_term, jacobiTheta₂_term, ← exp_pi_mul_I, ← exp_int_mul, ← Complex.exp_add]
+  rw [Θ₄_term, jacobiTheta₂_term, ← exp_pi_mul_I, ← Complex.exp_intCast_mul, ← Complex.exp_add]
   ring_nf
 
 theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
