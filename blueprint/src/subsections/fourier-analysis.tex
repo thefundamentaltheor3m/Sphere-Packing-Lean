@@ -12,13 +12,13 @@ Recall the definition of a Fourier transform.
 
 The following computational result will be of use later on.
 
-\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_upperHalfPlane, fourier_gaussian_innerProductSpace}\leanok
+\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_upperHalfPlane_eight, fourier_gaussian_upperHalfPlane}\leanok
   For every $z \in \h$, the Gaussian $x \mapsto e^{\pi i \|x\|^2 z}$ on $\R^8$ satisfies
   \begin{equation}
     \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   For any $b \in \C$ with $\Re(b) > 0$, the Fourier transform of the Gaussian $x \mapsto e^{-b\|x\|^2}$ on a $d$-dimensional inner product space is $y \mapsto (\pi/b)^{d/2}\,e^{-\pi^2\|y\|^2/b}$. Taking $d = 8$ and $b = -\pi i z$, which satisfies $\Re(b) = \pi \Im(z) > 0$, we obtain
   \[
     \left(\frac{\pi}{-\pi i z}\right)^{4} e^{-\pi^2\|y\|^2/(-\pi i z)}

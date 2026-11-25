@@ -104,14 +104,14 @@ theorem ψS_eq_neg_one_half_smul_G_div_disc : ψS = (-1 / 2 : ℂ) • G / Δ :=
 /-- `ψI` in terms of the theta functions and the discriminant:
 `ψI = H₄³ (5 H₂² + 5 H₂ H₄ + 2 H₄²) / (2Δ)` (Blueprint Lemma `lemma:psi-new`, eqn `psiI-new`).
 Same argument as `ψS_eq_neg_one_half_smul_G_div_disc`, starting from `ψI_eq`. -/
-theorem ψI_eq_one_half_smul_H₄_cube_div_disc :
+theorem ψI_eq_div_disc :
     ψI = (1 / 2 : ℂ) • (H₄ ^ 3 * ((5 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (2 : ℂ) • H₄ ^ 2))
       / Δ := by
   sorry
 
 /-- `ψT = H₃³ (5 H₂² - 5 H₂ H₃ + 2 H₃²) / (2Δ)` (Blueprint Lemma `lemma:psi-new`, eqn `psiT-new`).
 Same argument as `ψS_eq_neg_one_half_smul_G_div_disc`, starting from `ψT_eq`. -/
-theorem ψT_eq_one_half_smul_H₃_cube_div_disc :
+theorem ψT_eq_div_disc :
     ψT = (1 / 2 : ℂ) • (H₃ ^ 3 * ((5 : ℂ) • H₂ ^ 2 - (5 : ℂ) • H₂ * H₃ + (2 : ℂ) • H₃ ^ 2))
       / Δ := by
   sorry
@@ -241,7 +241,7 @@ section bounds
 open Filter Asymptotics Topology
 
 /-- `|ψI z| ≤ C e^{2π Im z}` for `Im z > 1/2` (Blueprint Lemma `lemma:psi-bound`): by
-`ψI_eq_one_half_smul_H₄_cube_div_disc`, the numerator of `ψI` is bounded at `i∞` while `1 / Δ`
+`ψI_eq_div_disc`, the numerator of `ψI` is bounded at `i∞` while `1 / Δ`
 grows like `e^{2π Im z}`. -/
 theorem norm_ψI_le :
     ∃ C > 0, ∀ z : ℍ, 1 / 2 < z.im → ‖ψI z‖ ≤ C * Real.exp (2 * π * z.im) := by
