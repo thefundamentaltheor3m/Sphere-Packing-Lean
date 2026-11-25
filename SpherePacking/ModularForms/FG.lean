@@ -174,7 +174,7 @@ lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by fun_prop
 
 /-- The real part of `(D E₄)(it)` is positive for `t > 0`. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < ((D E₄.toFun).resToImagAxis t).re := by
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, DE₄_qexp, Complex.mul_re,
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, DE₄_qexp, Complex.mul_re,
     Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   exact mul_pos (by norm_num) (sigma_qexp_tsum_re_pos 3 t ht)
 
@@ -188,7 +188,7 @@ lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by fun_prop
 
 /-- The real part of `negDE₂(it)` is positive for `t > 0`. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) : 0 < (Function.resToImagAxis negDE₂ t).re := by
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, negDE₂_qexp, Complex.mul_re,
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, negDE₂_qexp, Complex.mul_re,
     Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   exact mul_pos (by norm_num) (sigma_qexp_tsum_re_pos 1 t ht)
 
@@ -392,11 +392,11 @@ theorem deriv_FmodGReal (t : ℝ) (ht : 0 < t) :
       (G ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
   have hF_real := F_imag_axis_real t ht
   have hG_real := G_imag_axis_real t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht] at hF_real hG_real
   rw [(show HasDerivAt FmodGReal _ t from
     (hasDerivAt_resToImagAxis_re F_holo ht).div (hasDerivAt_resToImagAxis_re G_holo ht)
       (G_imag_axis_pos.2 t ht).ne').deriv, L₁₀_eq_FD_G_sub_F_DG]
-  simp only [GReal, Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, mul_re, sub_re,
+  simp only [GReal, Function.resToImagAxis, resToImagAxis_of_pos _ ht, mul_re, sub_re,
     hF_real, hG_real, mul_zero, sub_zero, zero_mul]
   ring
 
@@ -405,7 +405,7 @@ theorem deriv_FmodGReal_neg (t : ℝ) (ht : 0 < t) : deriv FmodGReal t < 0 := by
   rw [deriv_FmodGReal t ht]
   have hL := L₁₀_pos.2 t ht
   have hG := G_imag_axis_pos.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hL hG
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht] at hL hG
   exact div_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (by positivity)
 
 /-- **Proposition 8.12**: `FmodGReal` is strictly decreasing on `(0, ∞)`. -/

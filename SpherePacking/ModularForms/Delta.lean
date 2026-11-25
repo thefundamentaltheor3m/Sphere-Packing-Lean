@@ -99,7 +99,8 @@ private lemma resToImagAxis_Δ_eq (t : ℝ) (ht : 0 < t) :
       (Function.LeftInverse.map_tprod (f := fR) (g := Complex.ofRealHom.toMonoidHom)
         (hg := by change Continuous (fun x : ℝ => (x : ℂ)); exact Complex.continuous_ofReal)
         (hg' := Complex.continuous_re) (hgg' := by intro x; simp))
-  simp [ResToImagAxis, ht, Δ_eq_cexp_prod, h1, h2, hMap', fR]
+  simp [Function.resToImagAxis, UpperHalfPlane.resToImagAxis_of_pos _ ht, Δ_eq_cexp_prod, h1, h2,
+    hMap', fR]
 
 private lemma tprod_pos (t : ℝ) (ht : 0 < t) :
     0 < ∏' n : ℕ, (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by

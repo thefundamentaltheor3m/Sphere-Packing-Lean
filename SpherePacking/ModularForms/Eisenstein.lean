@@ -206,7 +206,7 @@ This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_
 theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     ResToImagAxis.Real (E k hk).toFun := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hk' : 3 ≤ k := by exact_mod_cast hk
   change (E k hk z).im = 0
@@ -264,7 +264,7 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
 @[fun_prop]
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht]
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   change (E₂ z).im = 0
   rw [E₂_eq]

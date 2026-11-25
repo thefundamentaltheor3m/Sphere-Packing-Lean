@@ -7,6 +7,7 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 import Mathlib.Analysis.Normed.Group.Tannery
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.SlashActions
+import TauCeti.NumberTheory.ModularForms.JacobiTheta.OneVariable
 
 /-!
 # Jacobi theta basics
@@ -492,73 +493,22 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       simpa using le_mul_of_one_le_right
         (by rw [← mul_add, add_comm]; exact mul_nonneg Real.pi_nonneg (this k)) hz
 
+/-- For real `z`, the two-variable theta function `θ₂(z, τ)` tends to `1` at `i∞`. -/
+theorem jacobiTheta₂_apply_tendsto_atImInfty {z : ℂ} (hz : z.im = 0) :
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ z x) atImInfty (𝓝 1) := by
+  have h : Tendsto (fun x : ℍ ↦ jacobiTheta (I * x.im)) atImInfty (𝓝 1) :=
+    TauCeti.tendsto_jacobiTheta_comap_im_atTop.comp <|
+      tendsto_comap_iff.2 (by simpa [Function.comp_def] using tendsto_im_atImInfty)
+  rw [tendsto_iff_norm_sub_tendsto_zero] at h ⊢
+  exact squeeze_zero (fun _ ↦ norm_nonneg _) (fun _ ↦ TauCeti.norm_jacobiTheta₂_sub_one_le hz) h
+
 theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
-    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
-  simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
-  convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (π * I * n ^ 2 * z))
-    (𝓕 := atImInfty)
-    (g := fun k ↦ if k = 0 then 1 else 0)
-    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
-  · simp
-  · apply summable_ofReal.mp
-    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
-    rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
-      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
-      ← ofReal_pow, ofReal_re] at this
-    exact this
-  · intro k
-    split_ifs with hk
-    · subst hk
-      simp
-    · rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
-        ← ofReal_pow, im_ofReal_mul, ← mul_assoc]
-      simpa using tendsto_im_atImInfty.const_mul_atTop (by positivity)
-  · rw [eventually_atImInfty]
-    use 1, fun z hz k ↦ ?_
-    simp_rw [mul_right_comm _ I, norm_exp_mul_I]
-    simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) :=
+  jacobiTheta₂_apply_tendsto_atImInfty (by simp)
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
-    Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
-  have hnorm (z : ℍ) (k : ℤ) :
-      ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
-    simpa [jacobiTheta₂_term, coe_im] using
-      (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
-  simp_rw [jacobiTheta₂, jacobiTheta₂_term]
-  convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (2 * π * I * n * (1 / 2 : ℂ) + π * I * n ^ 2 * z))
-    (𝓕 := atImInfty)
-    (g := fun k ↦ if k = 0 then 1 else 0)
-    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
-  · simp
-  · apply summable_ofReal.mp
-    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
-    rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
-      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
-      ← ofReal_pow, ofReal_re] at this
-    exact this
-  · intro k
-    split_ifs with hk
-    · subst hk
-      simp
-    · rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp_rw [hnorm]
-      have hk2_pos : 0 < (k : ℝ) ^ 2 := by
-        exact sq_pos_of_ne_zero (Int.cast_ne_zero.mpr hk)
-      exact (Real.tendsto_exp_atBot).comp
-        (tendsto_im_atImInfty.const_mul_atTop_of_neg (by nlinarith [Real.pi_pos, hk2_pos]))
-  · rw [eventually_atImInfty]
-    use 1, fun z hz k ↦ ?_
-    rw [hnorm]
-    have hcoef_nonpos : (-π * (k : ℝ) ^ 2) ≤ 0 := by
-      nlinarith [Real.pi_pos, sq_nonneg (k : ℝ)]
-    have hmul : (-π * (k : ℝ) ^ 2) * z.im ≤ (-π * (k : ℝ) ^ 2) * 1 := by
-      exact mul_le_mul_of_nonpos_left hz hcoef_nonpos
-    simpa using Real.exp_le_exp.mpr hmul
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) :=
+  jacobiTheta₂_apply_tendsto_atImInfty (by simp)
 
 theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
@@ -636,41 +586,24 @@ lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
   intro n
   exact Θ₂_term_imag_axis_real n t ht
 
-/-- `(-1 : ℂ)^n` has zero imaginary part for any integer n. -/
-lemma neg_one_zpow_im_eq_zero (n : ℤ) : ((-1 : ℂ) ^ n).im = 0 := by
-  rcases Int.even_or_odd n with hn | hn <;> (rw [hn.neg_one_zpow]; simp)
-
-/-- Each term Θ₄_term n (I*t) has zero imaginary part for t > 0. -/
-lemma Θ₄_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
-    (Θ₄_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
-  unfold Θ₄_term
-  change ((-1 : ℂ) ^ n * cexp (Real.pi * I * (n : ℂ) ^ 2 * (I * t))).im = 0
-  -- Simplify the exponent: π * I * n² * (I*t) = -π * n² * t
-  have hexpr : Real.pi * I * (n : ℂ) ^ 2 * (I * t) =
-      (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ) := by
-    have hI : I ^ 2 = -1 := I_sq
+open scoped ComplexOrder in
+/-- `Θ₄(it) = θ(1 + it)` is real and positive for `t > 0`. -/
+lemma Θ₄_imag_axis_pos (t : ℝ) (ht : 0 < t) : 0 < Θ₄ ⟨I * t, by simp [ht]⟩ := by
+  have h : Θ₄ ⟨I * t, by simp [ht]⟩ = jacobiTheta (1 + I * t) := by
+    rw [Θ₄_as_jacobiTheta₂, jacobiTheta_eq_jacobiTheta₂]
+    refine tsum_congr fun n ↦ ?_
+    rw [jacobiTheta₂_term, jacobiTheta₂_term, Complex.exp_eq_exp_iff_exists_int]
+    obtain ⟨m, hm⟩ := Int.even_mul_pred_self n
+    refine ⟨-m, ?_⟩
+    have hm : (n : ℂ) * (n - 1) = m + m := mod_cast hm
     push_cast
-    ring_nf
-    simp only [hI]
-    ring
-  rw [hexpr]
-  -- Now we have (-1)^n * exp(real), both are real
-  have hexp_real : (cexp (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ)).im = 0 := exp_ofReal_im _
-  have hneg_one_real : ((-1 : ℂ) ^ n).im = 0 := neg_one_zpow_im_eq_zero n
-  simp only [Complex.mul_im, hneg_one_real, hexp_real, mul_zero, zero_mul, add_zero]
+    linear_combination (-(π : ℂ) * I) * hm
+  exact h ▸ TauCeti.jacobiTheta_one_add_I_mul_pos ht
 
 /-- Θ₄(I*t) has zero imaginary part for t > 0. -/
 lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
-    (Θ₄ ⟨I * t, by simp [ht]⟩).im = 0 := by
-  unfold Θ₄
-  let z : ℍ := ⟨I * t, by simp [ht]⟩
-  have hsum : Summable fun n : ℤ ↦ Θ₄_term n z := by
-    simp_rw [Θ₄_term_as_jacobiTheta₂_term]
-    rw [summable_jacobiTheta₂_term_iff]
-    exact z.im_pos
-  apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
-  intro n
-  exact Θ₄_term_imag_axis_real n t ht
+    (Θ₄ ⟨I * t, by simp [ht]⟩).im = 0 :=
+  (Complex.lt_def.mp (Θ₄_imag_axis_pos t ht)).2.symm
 
 /-- The imaginary part of a natural power vanishes when the base is real. -/
 lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) : (z ^ m).im = 0 := by
@@ -686,7 +619,7 @@ exponentials.
 @[fun_prop]
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, H₂]
   -- H₂ = Θ₂^4, and Θ₂(I*t) has zero imaginary part,
   -- so H₂(I*t) = Θ₂(I*t)^4 has zero imaginary part
   have hΘ₂_im := Θ₂_imag_axis_real t ht
@@ -751,7 +684,7 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   constructor
   · exact H₂_imag_axis_real
   · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+    simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, H₂]
     -- H₂ = Θ₂^4 where Θ₂(it) is real and positive
     -- For z with z.im = 0 and z.re > 0, (z^4).re = (z.re)^4 > 0
     have hΘ₂_im := Θ₂_imag_axis_real t ht
@@ -778,76 +711,16 @@ Blueprint: Corollary 6.43 - follows from Θ₄ being real on the imaginary axis.
 @[fun_prop]
 theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
   intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₄]
+  simp only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, H₄]
   have hΘ₄_im := Θ₄_imag_axis_real t ht
   exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₄_im 4
 
-/--
-`H₄(it) > 0` for all `t > 0`.
-Blueprint: Corollary 6.43 - H₄ is positive on the imaginary axis.
-
-Proof strategy: Use the modular S-transformation relating H₄ and H₂.
-From H₄_S_action: (H₄ ∣[2] S) = -H₂
-From ResToImagAxis.SlashActionS: relates values at t and 1/t.
-This gives H₂(i/t) = t² * H₄(it), so H₄(it) > 0 follows from H₂(i/t) > 0.
--/
+open scoped ComplexOrder in
+/-- `H₄(it) > 0` for all `t > 0`. Blueprint: Corollary 6.43. This follows from `Θ₄(it) > 0`. -/
 @[fun_prop]
-theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
-  constructor
-  · exact H₄_imag_axis_real
-  · intro t ht
-    -- Strategy: Use H₄_S_action and ResToImagAxis.SlashActionS to relate
-    -- H₄ positivity to H₂ positivity via the modular S-transformation
-    have h1t_pos : 0 < 1 / t := one_div_pos.mpr ht
-    -- Apply SlashActionS at 1/t
-    have hSlash := ResToImagAxis.SlashActionS H₄ 2 h1t_pos
-    -- Use H₄_S_action: (H₄ ∣[2] S) = -H₂
-    rw [H₄_S_action] at hSlash
-    -- Now hSlash : (-H₂).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
-    -- Simplify: I^(-2) = -1
-    have hI_neg2 : (I : ℂ) ^ (-2 : ℤ) = -1 := by
-      change (I ^ 2)⁻¹ = -1
-      rw [I_sq]
-      norm_num
-    -- Simplify: (1/t)^(-2) = t^2
-    have h1t_neg2 : ((1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
-      have ht_ne : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr (ne_of_gt ht)
-      simp only [one_div, ofReal_inv, _root_.zpow_neg]
-      -- Goal: ((↑t)⁻¹ ^ 2)⁻¹ = ↑t ^ 2
-      field_simp
-    -- Simplify 1/(1/t) = t
-    have h1_div_1t : 1 / (1 / t) = t := by field_simp
-    -- The negation of resToImagAxis
-    have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, h1t_pos, ↓reduceDIte, Pi.neg_apply]
-    -- Substitute into hSlash
-    rw [hNeg, hI_neg2, h1t_neg2, h1_div_1t] at hSlash
-    -- hSlash : -(H₂.resToImagAxis (1/t)) = -1 * t^2 * H₄.resToImagAxis t
-    -- Simplify: H₂.resToImagAxis (1/t) = t^2 * H₄.resToImagAxis t
-    have hEq : H₂.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₄.resToImagAxis t := by
-      have h : -H₂.resToImagAxis (1 / t) = -(↑t ^ 2 * H₄.resToImagAxis t) := by
-        simp only [neg_mul, one_mul] at hSlash ⊢
-        exact hSlash
-      exact neg_inj.mp h
-    -- H₂.resToImagAxis (1/t).re > 0 from H₂_imag_axis_pos
-    have hH₂_pos := H₂_imag_axis_pos.2 (1 / t) h1t_pos
-    -- H₄.resToImagAxis t is real (im = 0)
-    have hH₄_real := H₄_imag_axis_real t ht
-    -- From hEq, extract real parts
-    have hRe : (H₂.resToImagAxis (1 / t)).re = ((t : ℂ) ^ 2 * H₄.resToImagAxis t).re := by
-      rw [hEq]
-    -- Since t^2 is real positive and H₄.resToImagAxis t is real:
-    -- (t^2 * H₄.resToImagAxis t).re = t^2 * (H₄.resToImagAxis t).re
-    have hProd_re : ((t : ℂ) ^ 2 * H₄.resToImagAxis t).re =
-        (t : ℝ) ^ 2 * (H₄.resToImagAxis t).re := by
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hH₄_real ⊢
-      simp only [sq, Complex.mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero]
-      ring_nf
-      simp only [hH₄_real, mul_zero, sub_zero]
-    -- Combine: t^2 * (H₄.resToImagAxis t).re > 0 and t^2 > 0 imply (H₄.resToImagAxis t).re > 0
-    rw [hRe, hProd_re] at hH₂_pos
-    have ht2_pos : 0 < (t : ℝ) ^ 2 := sq_pos_of_pos ht
-    rw [mul_comm] at hH₂_pos
-    exact pos_of_mul_pos_left hH₂_pos (le_of_lt ht2_pos)
+theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ :=
+  ⟨H₄_imag_axis_real, fun t ht ↦ by
+    simpa only [Function.resToImagAxis, resToImagAxis_of_pos _ ht, H₄, zero_re] using
+      (Complex.lt_def.mp (pow_pos (Θ₄_imag_axis_pos t ht) 4)).1⟩
 
 end ImagAxisProperties
