@@ -14,6 +14,7 @@ public import SpherePacking.ForMathlib.Fourier
 public import SpherePacking.ForMathlib.GaussianFourier
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 public import SpherePacking.ForMathlib.QExpansionBounds
 public import SpherePacking.ForMathlib.QSeriesBounds
 public import SpherePacking.ForMathlib.RadialSchwartz.Basic
