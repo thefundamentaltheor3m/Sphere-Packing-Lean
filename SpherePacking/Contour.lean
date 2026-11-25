@@ -4,9 +4,21 @@ public import Mathlib
 
 @[expose] public noncomputable section
 
-open unitInterval Set
+open unitInterval Set Complex
 
-#check curveIntegral
+@[simp]
+theorem circleMap_one_arg (c : ℂ) (R : ℝ) : circleMap c r = Function.const ℝ c :=
+  funext fun _ => circleMap_eq_center_iff.2 rfl
+
+def circlePath (p : ℂ) (R : ℝ) : Path (p + R) (p + R) where
+  toFun x := circleMap p R x
+  continuous_toFun := by fun_prop
+  source' := by simp [circleMap]
+  target' := by
+    simp
+
+
+--#check curveIntegral
 def Path.IsPiecewiseC1' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
     (γ : Path a b) : Prop :=
   ∃ (n : ℕ) (t : Fin (n + 1) → ℝ), Monotone t ∧ t 0 = 0 ∧ t (Fin.last n) = 1 ∧
@@ -49,6 +61,7 @@ theorem goal1 {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ) (hs : Simpl
     (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = F b - F a := by
   sorry
 
+--maybe use HasDerivWithIn?
 theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
     (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = 0 := by
   rw [goal1 (F := F) (h := by assumption) (hs := hs) (hf := hf)]
@@ -59,10 +72,10 @@ theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn
     Complex.IsExactOn f s := by
   sorry
 
-theorem goal4 (s : Set ℂ) (γ : Path a a) (h : ContDiffOn ℝ 1 γ.extend I)
+theorem goal4 (s : Set ℂ) (γ : Path a a) (h : γ.IsPiecewiseC1)
     (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
     ∮ z in γ, f z = 0 := by
   have : Complex.IsExactOn f s := by
     apply goal3 _ _ hs hf
   obtain ⟨F, hF⟩ := this
-  apply goal2 _ _ _ h hs F hF
+  apply goal2 <;> assumption

@@ -8,6 +8,6 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "search.usePCRE2": true,
-  "editor.wordWrap": "on",
+  "editor.wordWrap": "off",
   "latex-workshop.latex.outDir": "../TeX_Outputs",
 }
