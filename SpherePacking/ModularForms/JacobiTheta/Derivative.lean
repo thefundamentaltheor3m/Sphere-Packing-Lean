@@ -551,8 +551,11 @@ lemma f₃_eq_zero : f₃ = 0 := by
 theorem serreDerivative_H₂ :
     serreDerivative 2 H₂ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
   have h := f₂_eq_zero; unfold f₂ at h
-  pull fun _ ↦ _ at h; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz; linear_combination hz
+  pull fun _ ↦ _ at h
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz
+  linear_combination hz
 
 /-- Serre derivative of H₃: ∂₂H₃ = (1/6)(H₂² - H₄²) -/
 theorem serreDerivative_H₃ : serreDerivative 2 H₃ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
@@ -567,26 +570,41 @@ theorem serreDerivative_H₃ : serreDerivative 2 H₃ = fun z ↦ (1/6 : ℂ) * 
 theorem serreDerivative_H₄ :
     serreDerivative 2 H₄ = fun z ↦ -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
   have h := f₄_eq_zero; unfold f₄ at h
-  pull fun _ ↦ _ at h; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz; linear_combination hz
+  pull fun _ ↦ _ at h
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz
+  linear_combination hz
 
 /-- Ordinary derivative of `H₂` in terms of `H₂`, `H₄`, and `E₂`. -/
 theorem D_H₂ :
     D H₂ = (1 / 6 : ℂ) • (H₂ ^ 2 + (2 : ℂ) • (H₂ * H₄)) + (1 / 6 : ℂ) • (E₂ * H₂) := by
-  have h := f₂_eq_zero; unfold f₂ at h; rw [serreDerivative_eq] at h
-  pull fun _ ↦ _ at h ⊢; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz ⊢; linear_combination hz
+  have h := f₂_eq_zero; unfold f₂ at h
+  rw [serreDerivative_eq] at h
+  pull fun _ ↦ _ at h ⊢
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz ⊢
+  linear_combination hz
 
 /-- Ordinary derivative of `H₃` in terms of `H₂`, `H₄`, and `E₂`. -/
 theorem D_H₃ :
     D H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₃) := by
-  have h := f₃_eq_zero; unfold f₃ at h; rw [serreDerivative_eq] at h
-  pull fun _ ↦ _ at h ⊢; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz ⊢; linear_combination hz
+  have h := f₃_eq_zero; unfold f₃ at h
+  rw [serreDerivative_eq] at h
+  pull fun _ ↦ _ at h ⊢
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz ⊢
+  linear_combination hz
 
 /-- Ordinary derivative of `H₄` in terms of `H₂`, `H₄`, and `E₂`. -/
 theorem D_H₄ :
     D H₄ = (-(1 / 6 : ℂ)) • ((2 : ℂ) • (H₂ * H₄) + H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₄) := by
-  have h := f₄_eq_zero; unfold f₄ at h; rw [serreDerivative_eq] at h
-  pull fun _ ↦ _ at h ⊢; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz ⊢; linear_combination hz
+  have h := f₄_eq_zero; unfold f₄ at h
+  rw [serreDerivative_eq] at h
+  pull fun _ ↦ _ at h ⊢
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz ⊢
+  linear_combination hz
