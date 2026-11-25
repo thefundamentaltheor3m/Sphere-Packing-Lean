@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Wenrong Zou. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Wenrong Zou
+-/
 module
 
 public import Mathlib.Topology.MetricSpace.IsometricSMul
