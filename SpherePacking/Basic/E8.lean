@@ -7,6 +7,8 @@ module
 
 public import SpherePacking.Basic.PeriodicPacking
 
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+
 /-!
 # Basic properties of the E₈ lattice
 

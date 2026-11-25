@@ -5,7 +5,12 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.CohnElkies.Prereqs
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import SpherePacking.Basic.SpherePacking
+
+import SpherePacking.Basic.PeriodicPacking
+import SpherePacking.CohnElkies.Prereqs
+import SpherePacking.ForMathlib.VolumeOfBalls
 
 /-!
 # The Cohn–Elkies Linear Programming Bound

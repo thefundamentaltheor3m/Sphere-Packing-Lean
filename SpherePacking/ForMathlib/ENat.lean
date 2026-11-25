@@ -1,8 +1,10 @@
 module
 
 public import Mathlib.Data.Set.Card
-public import Mathlib.Topology.Algebra.InfiniteSum.Ring
+public import Mathlib.Topology.Algebra.InfiniteSum.Defs
 public import Mathlib.Topology.Instances.ENat
+
+import Mathlib.Topology.Algebra.InfiniteSum.Basic
 
 /-!
 # Extended Naturals
