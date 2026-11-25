@@ -4,19 +4,21 @@ public import Mathlib
 
 @[expose] public noncomputable section
 
-open unitInterval Set Complex
+open unitInterval Set Complex Real
 
 @[simp]
-theorem circleMap_one_arg (c : ℂ) (R : ℝ) : circleMap c r = Function.const ℝ c :=
-  funext fun _ => circleMap_eq_center_iff.2 rfl
+theorem circleMap_zero_arg (p : ℂ) (R : ℝ) : circleMap p R 0 = p + R := by
+  simp [circleMap]
+
+@[simp]
+theorem circleMap_one_arg (p : ℂ) (R : ℝ) : circleMap p R (2 * π) = p + R := by
+  simp [circleMap]
 
 def circlePath (p : ℂ) (R : ℝ) : Path (p + R) (p + R) where
-  toFun x := circleMap p R x
+  toFun x := circleMap p R (2 * π * x)
   continuous_toFun := by fun_prop
-  source' := by simp [circleMap]
-  target' := by
-    simp
-
+  source' := by simp
+  target' := by simp
 
 --#check curveIntegral
 def Path.IsPiecewiseC1' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
@@ -48,6 +50,50 @@ theorem goal0 :  ∮ z in γ, f z = ∫ z in 0..1, f (γ.extend z) * (deriv γ.e
 theorem contourIntegral_def : ∮ z in γ, f z =
     curveIntegral (fun z ↦ ContinuousLinearMap.lsmul ℂ ℂ (f z)) γ :=
   rfl
+--{E : Type u_1} [NormedAddCommGroup E] [NormedSpace ℂ E] (f : ℂ → E)
+
+--hasDerivAt_circleMap
+theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (p : ℂ) (R : ℝ) :
+    circleIntegral f c R = ∮ z in circlePath c R, f z := by
+  rw [circleIntegral, goal0]
+  calc
+    ∫ (θ : ℝ) in 0..2 * π, deriv (circleMap c R) θ • f (circleMap c R θ)
+      = ∫ (θ : ℝ) in 0 * (2 * π)..(1 * (2 * π)), deriv (circleMap c R) θ • f (circleMap c R θ) := by
+      simp
+    _ =  _ := by
+      rw [← intervalIntegral.smul_integral_comp_mul_right _ (2 * π)]
+      simp
+      trans (∫ (x : ℝ) in 0..1, (2 * ↑π) * (circleMap 0 R (x * (2 * π)) * «I» * f (circleMap c R (x * (2 * π)))))
+      · symm
+        apply intervalIntegral.integral_const_mul
+      apply intervalIntegral.integral_congr_uIoo (fun x hx ↦ ?_)
+      rw [← mul_comm (f (circleMap c R (x * (2 * π))))]
+      rw [mul_comm (2 * (↑π : ℂ)), mul_assoc]
+      congr 2
+      · simp [circlePath]
+        rw [Path.extend_apply (ht := by simp_all; grind)]
+        simp
+        grind
+      · simp only [zero_le_one, uIoo_of_le, mem_Ioo] at hx
+        trans deriv (fun y ↦ circleMap c R (2 * π * y)) x
+        swap
+        · refine Eq.symm (Filter.EventuallyEq.deriv_eq ?_)
+          unfold Filter.EventuallyEq
+          refine eventually_nhds_iff.mpr ?_
+          refine ⟨Ioo 0 1, ?_, isOpen_Ioo, by simpa⟩
+          simp only [mem_Ioo, and_imp]
+          intro y yp yl
+          unfold circlePath
+          rw [Path.extend_apply (ht := by grind)]
+          simp
+        symm
+        trans (deriv ((circleMap c R) ∘ (fun (y : ℝ) ↦ (2 * π) * y))) x
+        · rfl
+        rw [deriv.scomp x ?_ (by fun_prop)]
+        · simp only [deriv_const_mul_id', deriv_circleMap, real_smul, ofReal_mul, ofReal_ofNat]
+          grind
+        apply Differentiable.differentiableAt
+        apply differentiable_circleMap
 
 theorem contourIntegral_append : ∮ z in γ.trans τ, f z = ∮ z in γ, f z + ∮ z in τ, f z := by
   sorry
