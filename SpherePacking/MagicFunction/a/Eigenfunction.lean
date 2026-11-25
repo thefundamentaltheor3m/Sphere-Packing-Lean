@@ -5,6 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
+public import SpherePacking.MagicFunction.a.ArcIntegrals
 public import SpherePacking.MagicFunction.a.Schwartz
 
 /-!
@@ -41,7 +42,13 @@ lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ
 by
   ext x; simpa [hf x] using congrArg (fun g => g x) (fourier_involution (V:=V) (E:=E) f)
 
-theorem perm_I₁_I₂ : (FourierTransform.fourierCLE ℂ _) (I₁ + I₂) = I₃ + I₄ := by sorry
+/-- The Fourier transform of `I₁ + I₂` is `I₃ + I₄`: see
+`MagicFunction.a.ArcIntegrals.fourier_I₁_add_fourier_I₂`. -/
+theorem perm_I₁_I₂ : (FourierTransform.fourierCLE ℂ _) (I₁ + I₂) = I₃ + I₄ := by
+  ext ξ
+  rw [map_add, add_apply, add_apply]
+  change 𝓕 (⇑I₁) ξ + 𝓕 (⇑I₂) ξ = I₃ ξ + I₄ ξ
+  exact MagicFunction.a.ArcIntegrals.fourier_I₁_add_fourier_I₂ ξ
 
 theorem perm_I₅ : (FourierTransform.fourierCLE ℂ _) (I₅) = I₆ := by sorry
 

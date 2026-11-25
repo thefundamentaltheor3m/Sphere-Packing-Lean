@@ -8,7 +8,9 @@ module
 public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.MeasureTheory.Integral.CircleIntegral
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
+public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Defs
+public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.ModularForms.PhiTransform
 
 /-!
@@ -45,21 +47,25 @@ I_2^{arc}(r) = \int_0^{\pi/2} \Psi\left(\tfrac{i}{2} + \tfrac12 e^{i\theta}\righ
 These facts (`fourier_I₁_eq`, `fourier_I₂_eq`) are taken for granted (`sorry`); `Ψ₁'_eq_Φ₃'` is
 proved from `φ₀_periodic`.
 
-**A common primitive.** `Φ₃'` is holomorphic on the (convex) upper half plane (`sorry`), so it has
-a primitive `F` there (`Convex.exists_forall_hasDerivWithinAt`), which is then also a primitive of
-`Ψ₁' = Ψ₂' = Φ₃' = Φ₄'`. By the fundamental theorem of calculus:
+**A common primitive.** `Φ₃'` is holomorphic on the (convex) upper half plane (`Φ₃'_holo`), so
+it has a primitive `F` there (`Convex.exists_forall_hasDerivWithinAt`), which is then also a
+primitive of `Ψ₁' = Ψ₂' = Φ₃' = Φ₄'`. By the fundamental theorem of calculus:
 * `I₁'_arc_eq_sub_lim`: `I₁'_arc r = F r ((1 + i)/2) - lim_{θ → 0⁺} F r (w₁ θ)`;
 * `I₂'_arc_eq_sub`: `I₂'_arc r = F r i - F r ((1 + i)/2)`;
 * `I₃'_eq_sub_lim`: `I₃' r = F r (1 + i) - lim_{t → 0⁺} F r (z₃' t)`;
 * `I₄'_eq_sub`: `I₄' r = F r i - F r (1 + i)`;
-the limits assuming the integrand vanishes as the curve approaches `1`. Therefore
-`I₁'_arc + I₂'_arc = I₃' + I₄'` (`I₁'_arc_add_I₂'_arc_eq`) reduces to the equality of the two
-limits of `F` at `1` along `w₁` and along `z₃'` (`lim_F_w₁_eq_lim_F_z₃'`). To prove it, we take
-the two limits independently in `ε₁` and `ε₂`: `F (w₁ ε₁) - F (z₃' ε₂)` is the integral of `Φ₃'`
-along the segment joining the two points (`F_sub_eq_integral_segment`). Assuming that `Φ₃'` is
-bounded by `M` on a closed disc tangent to the real line at `1` (`Φ₃'_bounded_near_one`, `sorry`),
-which eventually contains both points and hence the segment, this is at most
-`M ‖w₁ ε₁ - z₃' ε₂‖ → 0` (`tendsto_F_w₁_sub_F_z₃'`).
+the limits using that the integrand vanishes as the curve approaches `1` (`tendsto_Ψ₁'_w₁`,
+`tendsto_Φ₃'_z₃'`, from the bound `‖Φ₃' r z‖ ≤ C ‖z - 1‖²` near `1`, `norm_Φ₃'_le_near_one`).
+Therefore `I₁'_arc + I₂'_arc = I₃' + I₄'` (`I₁'_arc_add_I₂'_arc_eq`) reduces to the equality of
+the two limits of `F` at `1` along `w₁` and along `z₃'` (`lim_F_w₁_eq_lim_F_z₃'`). To prove it, we
+take the two limits independently in `ε₁` and `ε₂`: `F (w₁ ε₁) - F (z₃' ε₂)` is the integral of
+`Φ₃'` along the segment joining the two points (`F_sub_eq_integral_segment`). Since `Φ₃'` is
+bounded by `M` on a closed disc tangent to the real line at `1` (`Φ₃'_bounded_near_one`, from the
+uniform bound `norm_φ₀_le` on `φ₀`), which eventually contains both points and hence the segment,
+this is at most `M ‖w₁ ε₁ - z₃' ε₂‖ → 0` (`tendsto_F_w₁_sub_F_z₃'`).
+
+Combined with `fourier_I₁_eq`, `fourier_I₂_eq`, this gives `fourier_I₁_add_fourier_I₂`:
+`𝓕 I₁ + 𝓕 I₂ = I₃ + I₄`, used to prove `MagicFunction.a.Fourier.perm_I₁_I₂`.
 -/
 
 @[expose] public section
@@ -182,17 +188,13 @@ lemma Ψ₂'_eq_Φ₃' : Ψ₂' r = Φ₃' r :=
 lemma Φ₄'_eq_Φ₃' : Φ₄' r = Φ₃' r :=
   rfl
 
-/-- `Φ₃'` is holomorphic on the upper half plane. -/
-lemma Φ₃'_differentiableOn : DifferentiableOn ℂ (Φ₃' r) ℍₒ := by
-  sorry
-
 /-- The common primitive of `Ψ₁' = Ψ₂' = Φ₃' = Φ₄'` on the (convex) upper half plane. -/
 def F : ℂ → ℂ :=
-  (Convex.exists_forall_hasDerivWithinAt (convex_halfSpace_im_gt 0) (Φ₃'_differentiableOn r)).choose
+  (Convex.exists_forall_hasDerivWithinAt (convex_halfSpace_im_gt 0) (Φ₃'_holo (r := r))).choose
 
 lemma hasDerivAt_F {z : ℂ} (hz : z ∈ ℍₒ) : HasDerivAt (F r) (Φ₃' r z) z :=
   ((Convex.exists_forall_hasDerivWithinAt (convex_halfSpace_im_gt 0)
-    (Φ₃'_differentiableOn r)).choose_spec z hz).hasDerivAt (isOpen_upperHalfPlaneSet.mem_nhds hz)
+    (Φ₃'_holo (r := r))).choose_spec z hz).hasDerivAt (isOpen_upperHalfPlaneSet.mem_nhds hz)
 
 /-! ### General facts: FTC along a curve, and the limit at a boundary endpoint -/
 
@@ -259,7 +261,7 @@ lemma w₂_mem {θ : ℝ} (h₀ : 0 ≤ θ) (h₁ : θ ≤ π / 2) : w₂ θ ∈
 values of the primitive at the endpoints `i` and `(1 + i)/2`. -/
 theorem I₂'_arc_eq_sub : I₂'_arc r = F r I - F r ((1 + I) / 2) := by
   rw [I₂'_arc, Ψ₂'_eq_Φ₃']
-  have h := integral_curve_eq_sub (Φ₃'_differentiableOn r).continuousOn
+  have h := integral_curve_eq_sub (Φ₃'_holo (r := r)).continuousOn
     (fun _ hz ↦ hasDerivAt_F r hz) (by positivity : (0 : ℝ) ≤ π / 2)
     (hasDerivAt_circleMap (I / 2) (1 / 2)) (by fun_prop) fun θ hθ ↦ w₂_mem hθ.1 hθ.2
   rw [show circleMap (I / 2) (1 / 2) (π / 2) = I from w₂_pi_div_two,
@@ -275,7 +277,7 @@ theorem tendsto_F_w₁ (hlim : Tendsto (fun θ ↦ Ψ₁' r (w₁ θ)) (𝓝[>] 
     Tendsto (fun θ ↦ F r (w₁ θ)) (𝓝[>] 0) (𝓝 (F r ((1 + I) / 2) - I₁'_arc r)) := by
   rw [I₁'_arc]
   rw [Ψ₁'_eq_Φ₃'] at hlim ⊢
-  have h := tendsto_primitive_curve (Φ₃'_differentiableOn r).continuousOn
+  have h := tendsto_primitive_curve (Φ₃'_holo (r := r)).continuousOn
     (fun _ hz ↦ hasDerivAt_F r hz) (by positivity : (0 : ℝ) < π / 2)
     (hasDerivAt_circleMap (1 / 2) (1 / 2)) (by fun_prop) (fun θ hθ ↦ w₁_mem hθ.1 hθ.2)
     (Ψ₁'_eq_Φ₃' r ▸ Ψ₁'_w₁_zero r) hlim
@@ -319,7 +321,7 @@ private lemma I₄'_eq_ℓ₄ : I₄' r = ∫ t in (0 : ℝ)..1, (fun _ ↦ -1) 
 /-- The segment `z₄'` lies entirely in the upper half plane, so `I₄'` is just the difference of the
 values of the primitive at the endpoints `i` and `1 + i`. -/
 theorem I₄'_eq_sub : I₄' r = F r I - F r (1 + I) := by
-  rw [I₄'_eq_ℓ₄, Φ₄'_eq_Φ₃', integral_curve_eq_sub (Φ₃'_differentiableOn r).continuousOn
+  rw [I₄'_eq_ℓ₄, Φ₄'_eq_Φ₃', integral_curve_eq_sub (Φ₃'_holo (r := r)).continuousOn
     (fun _ hz ↦ hasDerivAt_F r hz) zero_le_one hasDerivAt_ℓ₄ continuous_const
     fun t ht ↦ by simp [ℓ₄]]
   simp [ℓ₄]
@@ -334,7 +336,7 @@ theorem tendsto_F_z₃' (hlim : Tendsto (fun t ↦ Φ₃' r (z₃' t)) (𝓝[>] 
   have hev : ∀ᶠ t in 𝓝[>] (0 : ℝ), z₃' t = ℓ₃ t := by
     filter_upwards [Ioo_mem_nhdsGT zero_lt_one] with t ht
     exact z₃'_eq_of_mem (Ioo_subset_Icc_self ht)
-  have h := tendsto_primitive_curve (Φ₃'_differentiableOn r).continuousOn
+  have h := tendsto_primitive_curve (Φ₃'_holo (r := r)).continuousOn
     (fun _ hz ↦ hasDerivAt_F r hz) zero_lt_one hasDerivAt_ℓ₃ continuous_const
     (fun t ht ↦ by simpa [ℓ₃] using ht.1)
     (by simp [Φ₃', ℓ₃])
@@ -351,12 +353,69 @@ theorem I₃'_eq_sub_lim (hlim : Tendsto (fun t ↦ Φ₃' r (z₃' t)) (𝓝[>]
 
 /-! ### Comparison: `I₁'_arc + I₂'_arc = I₃' + I₄'` -/
 
-/-- **Assumption.** The integrand `Φ₃'` is bounded on some closed disc tangent to the real line at
-`1`, i.e. a disc `closedBall (1 + ρ i) ρ` with `ρ > 0`. (Under `z ↦ -1/(z - 1)` such a disc
-corresponds to the half plane `Im τ ≥ 1/(2ρ)`, on which `φ₀` is bounded.) -/
+/-- The integrand `Φ₃'` is bounded on a closed disc tangent to the real line at `1`, namely
+`closedBall (1 + i/2) (1/2)`. Under `τ = -1/(z - 1)` this disc (minus `1`) is mapped into the half
+plane `Im τ ≥ 1`, where `|φ₀ τ| ≤ C₀ e^{-2π Im τ} ≤ C₀` (`norm_φ₀_le`, the blueprint's
+`cor:phi0-bound`); moreover `|z - 1| ≤ 1` and `|e^{πirz}| ≤ e^{π|r|}` on the disc. -/
+lemma norm_Φ₃'_le_near_one :
+    ∃ ρ : ℝ, 0 < ρ ∧ ρ ≤ 1 / 2 ∧ ∃ C : ℝ, 0 ≤ C ∧
+      ∀ z ∈ Metric.closedBall (1 + (ρ : ℂ) * I) ρ, ‖Φ₃' r z‖ ≤ C * ‖z - 1‖ ^ 2 := by
+  obtain ⟨C₀, hC₀, hφ₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  have hM : 0 ≤ C₀ * Real.exp (π * |r|) := by positivity
+  refine ⟨1 / 2, by norm_num, le_rfl, C₀ * Real.exp (π * |r|), hM, fun z hz ↦ ?_⟩
+  -- The disc condition: `|z - 1|² ≤ Im z`.
+  have hdisc : (z.re - 1) ^ 2 + z.im ^ 2 ≤ z.im := by
+    rw [Metric.mem_closedBall, dist_eq_norm, ← sq_le_sq₀ (norm_nonneg _) (by norm_num),
+      ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] at hz
+    simp only [sub_re, sub_im, add_re, add_im, one_re, one_im, mul_re, mul_im, ofReal_re,
+      ofReal_im, I_re, I_im] at hz
+    nlinarith
+  have him0 : 0 ≤ z.im := by nlinarith
+  have him1 : z.im ≤ 1 := by nlinarith
+  by_cases hz1 : z = 1
+  · subst hz1; simp [Φ₃']
+  have hns : 0 < Complex.normSq (z - 1) := Complex.normSq_pos.2 (sub_ne_zero.2 hz1)
+  have hns' : Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 := by
+    simp [Complex.normSq_apply]; ring
+  -- `τ = -1/(z - 1)` has `Im τ = Im z / |z - 1|² ≥ 1`.
+  have hτ : 1 ≤ (-1 / (z - 1)).im := by
+    have : (-1 / (z - 1)).im = z.im / Complex.normSq (z - 1) := by
+      simp [neg_div]
+    rw [this, le_div_iff₀ hns, one_mul, hns']
+    exact hdisc
+  have hτpos : 0 < (-1 / (z - 1)).im := by linarith
+  have hφ : ‖φ₀'' (-1 / (z - 1))‖ ≤ C₀ := by
+    rw [φ₀''_def hτpos]
+    refine (hφ₀ ⟨_, hτpos⟩ (by change 1 / 2 < (-1 / (z - 1)).im; linarith)).trans ?_
+    refine mul_le_of_le_one_right hC₀.le (Real.exp_le_one_iff.2 ?_)
+    change -2 * π * (-1 / (z - 1)).im ≤ 0
+    nlinarith [pi_pos]
+  have hexp : ‖cexp (π * I * r * z)‖ ≤ Real.exp (π * |r|) := by
+    rw [Complex.norm_exp]
+    refine Real.exp_le_exp.2 ?_
+    simp only [mul_re, mul_im, ofReal_re, ofReal_im, I_re, I_im]
+    have h1 : -r ≤ |r| := neg_le_abs r
+    have h2 : 0 ≤ |r| := abs_nonneg r
+    nlinarith [pi_pos, mul_le_mul_of_nonneg_left h1 him0, mul_le_mul_of_nonneg_left him1 h2]
+  calc ‖Φ₃' r z‖ = ‖φ₀'' (-1 / (z - 1))‖ * ‖(z - 1) ^ 2‖ * ‖cexp (π * I * r * z)‖ := by
+        simp only [Φ₃', norm_mul]
+    _ ≤ C₀ * ‖z - 1‖ ^ 2 * Real.exp (π * |r|) := by rw [norm_pow]; gcongr
+    _ = C₀ * Real.exp (π * |r|) * ‖z - 1‖ ^ 2 := by ring
+
+/-- In particular, `Φ₃'` is bounded on a closed disc tangent to the real line at `1`. -/
 lemma Φ₃'_bounded_near_one :
     ∃ ρ : ℝ, 0 < ρ ∧ ∃ M : ℝ, ∀ z ∈ Metric.closedBall (1 + (ρ : ℂ) * I) ρ, ‖Φ₃' r z‖ ≤ M := by
-  sorry
+  obtain ⟨ρ, hρ, hρ', C, hC, h⟩ := norm_Φ₃'_le_near_one r
+  refine ⟨ρ, hρ, C, fun z hz ↦ (h z hz).trans ?_⟩
+  have h1 : ‖z - 1‖ ≤ 1 := by
+    have h2 : ‖z - 1‖ ≤ ‖z - (1 + (ρ : ℂ) * I)‖ + ‖(ρ : ℂ) * I‖ := by
+      have := norm_add_le (z - (1 + (ρ : ℂ) * I)) ((ρ : ℂ) * I)
+      rwa [show z - (1 + (ρ : ℂ) * I) + (ρ : ℂ) * I = z - 1 by ring] at this
+    rw [Metric.mem_closedBall, dist_eq_norm] at hz
+    simp only [norm_mul, norm_I, mul_one, norm_real, Real.norm_eq_abs, abs_of_pos hρ] at h2
+    linarith
+  calc C * ‖z - 1‖ ^ 2 ≤ C * 1 := by gcongr; exact pow_le_one₀ (norm_nonneg _) h1
+    _ = C := mul_one C
 
 /-- The difference of the values of the primitive at two points of the upper half plane is the
 integral along the segment joining them. -/
@@ -364,7 +423,7 @@ lemma F_sub_eq_integral_segment {a b : ℂ} (ha : a ∈ ℍₒ) (hb : b ∈ ℍ�
     F r a - F r b = ∫ t in (0 : ℝ)..1, (a - b) * Φ₃' r (b + t * (a - b)) := by
   have hd : ∀ t : ℝ, HasDerivAt (fun t : ℝ ↦ b + t * (a - b)) (a - b) t := fun t ↦
     (((hasDerivAt_id t).ofReal_comp.mul_const (a - b)).const_add b).congr_deriv (by simp)
-  have h := integral_curve_eq_sub (Φ₃'_differentiableOn r).continuousOn
+  have h := integral_curve_eq_sub (Φ₃'_holo (r := r)).continuousOn
     (fun _ hz ↦ hasDerivAt_F r hz) zero_le_one hd continuous_const fun t ht ↦ by
       simpa [Complex.real_smul] using (convex_halfSpace_im_gt 0).add_smul_sub_mem hb ha ht
   simp only [ofReal_one, one_mul, ofReal_zero, zero_mul, add_zero, add_sub_cancel] at h
@@ -461,13 +520,43 @@ theorem lim_F_w₁_eq_lim_F_z₃' (hlim₁ : Tendsto (fun θ ↦ Ψ₁' r (w₁ 
   exact sub_eq_zero.1 <| tendsto_nhds_unique ((h₁.comp tendsto_fst).sub (h₃.comp tendsto_snd))
     (tendsto_F_w₁_sub_F_z₃' r)
 
+/-- The integrand vanishes as one approaches `1` along any curve that eventually enters every disc
+tangent to the real line at `1`, since `‖Φ₃' r z‖ ≤ C ‖z - 1‖²` on such a disc. -/
+lemma tendsto_Φ₃'_curve {γ : ℝ → ℂ} (hγ : Tendsto γ (𝓝[>] 0) (𝓝 1))
+    (hmem : ∀ ρ : ℝ, 0 < ρ → ∀ᶠ t in 𝓝[>] 0, γ t ∈ Metric.closedBall (1 + (ρ : ℂ) * I) ρ) :
+    Tendsto (fun t ↦ Φ₃' r (γ t)) (𝓝[>] 0) (𝓝 0) := by
+  obtain ⟨ρ, hρ, -, C, -, h⟩ := norm_Φ₃'_le_near_one r
+  refine squeeze_zero_norm' ((hmem ρ hρ).mono fun t ht ↦ h _ ht) ?_
+  simpa using (((hγ.sub_const 1).norm).pow 2).const_mul C
+
+/-- The integrand `Ψ₁'` vanishes as one approaches `1` along the arc `w₁`. -/
+theorem tendsto_Ψ₁'_w₁ : Tendsto (fun θ ↦ Ψ₁' r (w₁ θ)) (𝓝[>] 0) (𝓝 0) := by
+  rw [Ψ₁'_eq_Φ₃']
+  refine tendsto_Φ₃'_curve r tendsto_w₁_one fun ρ hρ ↦ ?_
+  filter_upwards [Ioo_mem_nhdsGT (show 0 < min ρ (π / 2) by positivity)] with t ht
+  exact w₁_mem_closedBall hρ ht.1 (ht.2.le.trans (min_le_left _ _))
+    (ht.2.le.trans (min_le_right _ _))
+
+/-- The integrand `Φ₃'` vanishes as one approaches `1` along the segment `z₃'`. -/
+theorem tendsto_Φ₃'_z₃' : Tendsto (fun t ↦ Φ₃' r (z₃' t)) (𝓝[>] 0) (𝓝 0) := by
+  refine tendsto_Φ₃'_curve r tendsto_z₃'_one fun ρ hρ ↦ ?_
+  filter_upwards [Ioo_mem_nhdsGT (show 0 < min ρ 1 by positivity)] with t ht
+  exact z₃'_mem_closedBall hρ ht.1 (ht.2.le.trans (min_le_left _ _))
+    (ht.2.le.trans (min_le_right _ _))
+
 /-- The (radial profile of the) Fourier transform of `I₁ + I₂` is `I₃' + I₄'`. -/
-theorem I₁'_arc_add_I₂'_arc_eq (hlim₁ : Tendsto (fun θ ↦ Ψ₁' r (w₁ θ)) (𝓝[>] 0) (𝓝 0))
-    (hlim₃ : Tendsto (fun t ↦ Φ₃' r (z₃' t)) (𝓝[>] 0) (𝓝 0)) :
-    I₁'_arc r + I₂'_arc r = I₃' r + I₄' r := by
-  rw [I₁'_arc_eq_sub_lim r hlim₁, I₂'_arc_eq_sub, I₃'_eq_sub_lim r hlim₃, I₄'_eq_sub,
-    lim_F_w₁_eq_lim_F_z₃' r hlim₁ hlim₃]
+theorem I₁'_arc_add_I₂'_arc_eq : I₁'_arc r + I₂'_arc r = I₃' r + I₄' r := by
+  rw [I₁'_arc_eq_sub_lim r (tendsto_Ψ₁'_w₁ r), I₂'_arc_eq_sub, I₃'_eq_sub_lim r (tendsto_Φ₃'_z₃' r),
+    I₄'_eq_sub, lim_F_w₁_eq_lim_F_z₃' r (tendsto_Ψ₁'_w₁ r) (tendsto_Φ₃'_z₃' r)]
   ring
+
+open scoped FourierTransform in
+/-- The Fourier transform of `I₁ + I₂` is `I₃ + I₄`, pointwise. -/
+theorem fourier_I₁_add_fourier_I₂ (ξ : EuclideanSpace ℝ (Fin 8)) :
+    𝓕 MagicFunction.a.RadialFunctions.I₁ ξ + 𝓕 MagicFunction.a.RadialFunctions.I₂ ξ =
+      MagicFunction.a.RadialFunctions.I₃ ξ + MagicFunction.a.RadialFunctions.I₄ ξ := by
+  rw [fourier_I₁_eq, fourier_I₂_eq, I₁'_arc_add_I₂'_arc_eq]
+  rfl
 
 end Primitive
 
