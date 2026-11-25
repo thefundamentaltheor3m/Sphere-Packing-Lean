@@ -11,6 +11,7 @@ public import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
+import TauCeti.Analysis.Distribution.SchwartzSpace.ZLattice
 
 /-!
 # The Cohn–Elkies Linear Programming Bound
@@ -176,9 +177,98 @@ In this section, we will prove that the density of every periodic sphere packing
 bounded above by the Cohn-Elkies bound.
 -/
 
-include hP hCohnElkies₁ in
+/-- Every center of a periodic packing is uniquely a lattice translate of a center in `D`. -/
+private noncomputable def centersEquiv (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
+    ↑(P.centers ∩ D) × P.lattice ≃ P.centers :=
+  Equiv.ofBijective
+    (fun p ↦ ⟨p.1 + p.2, add_comm (p.2 : EuclideanSpace ℝ (Fin d)) p.1 ▸
+      P.lattice_action p.2.2 p.1.2.1⟩) <| by
+    constructor
+    · rintro ⟨⟨x, hx⟩, ℓ⟩ ⟨⟨y, hy⟩, m⟩ h
+      have h : x + (ℓ : EuclideanSpace ℝ (Fin d)) = y + m := congrArg Subtype.val h
+      have hℓ : (-ℓ) +ᵥ (x + (ℓ : EuclideanSpace ℝ (Fin d))) ∈ D := by
+        simpa [Submodule.vadd_def] using hx.2
+      have hm : (-m) +ᵥ (x + (ℓ : EuclideanSpace ℝ (Fin d))) ∈ D := by
+        rw [h]; simpa [Submodule.vadd_def] using hy.2
+      obtain rfl : ℓ = m := neg_injective ((hD_unique_covers _).unique hℓ hm)
+      obtain rfl : x = y := add_right_cancel h
+      rfl
+    · rintro ⟨z, hz⟩
+      obtain ⟨g, hg, -⟩ := hD_unique_covers z
+      refine ⟨⟨⟨g + z, P.lattice_action g.2 hz, hg⟩, -g⟩, Subtype.ext ?_⟩
+      simp
+
+private theorem summable_of_finite_prod {ι κ F : Type*} [Finite ι] [NormedAddCommGroup F]
+    [CompleteSpace F] {g : ι × κ → F} (hg : ∀ i, Summable fun k ↦ ‖g (i, k)‖) : Summable g :=
+  .of_norm <| (summable_prod_of_nonneg fun _ ↦ norm_nonneg _).2 ⟨hg, .of_finite⟩
+
+include hD_isBounded hD_unique_covers in
+omit [Nonempty P.centers] in
+/-- A translate of a Schwartz function is summable over the centers of a periodic packing. -/
+private theorem summable_centers (hd : 0 < d) (y : EuclideanSpace ℝ (Fin d)) :
+    Summable fun x : P.centers ↦ f (x - y) := by
+  have := aux4 P D hD_isBounded hd
+  rw [← (centersEquiv hD_unique_covers).summable_iff]
+  refine summable_of_finite_prod fun x ↦ ?_
+  refine (ZLattice.summable_norm_poisson_left P.lattice f (x - y)).congr fun ℓ ↦ ?_
+  congr 2
+  change (x : EuclideanSpace ℝ (Fin d)) - y + ℓ = x + ℓ - y
+  abel
+
+include hD_isBounded hD_unique_covers in
+omit [Nonempty P.centers] in
+/-- Write each center as a lattice translate of a center in `D`, and reorder the sums. -/
+private theorem tsum_centers_eq (hd : 0 < d) :
+    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - y)).re =
+      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (x - y + ℓ)).re := by
+  have := aux4 P D hD_isBounded hd
+  have := Fintype.ofFinite ↑(P.centers ∩ D)
+  set e := centersEquiv hD_unique_covers
+  have hs (y : EuclideanSpace ℝ (Fin d)) : Summable fun x : P.centers ↦ (f (x - y)).re :=
+    (Complex.hasSum_re (summable_centers hD_isBounded hD_unique_covers hd y).hasSum).summable
+  have hsum : Summable fun p : ↑(P.centers ∩ D) × P.lattice ↦
+      ∑ y : ↑(P.centers ∩ D), (f (e p - y)).re :=
+    (e.summable_iff (f := fun x : P.centers ↦ ∑ y : ↑(P.centers ∩ D), (f (x - y)).re)).2
+      (summable_sum fun y _ ↦ hs y)
+  have key (x y : ↑(P.centers ∩ D)) (ℓ : P.lattice) :
+      (f (e (x, ℓ) - y)).re = (f (x - y + ℓ)).re := by
+    congr 2
+    change (x : EuclideanSpace ℝ (Fin d)) + ℓ - y = x - y + ℓ
+    abel
+  have hℓ (x y : ↑(P.centers ∩ D)) : Summable fun ℓ : P.lattice ↦ (f (x - y + ℓ)).re :=
+    (Complex.hasSum_re (ZLattice.summable_poisson_left P.lattice f (x - y)).hasSum).summable
+  calc ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - y)).re
+      = ∑' x : P.centers, ∑ y : ↑(P.centers ∩ D), (f (x - y)).re := by simp only [tsum_fintype]
+    _ = ∑' p : ↑(P.centers ∩ D) × P.lattice, ∑ y : ↑(P.centers ∩ D), (f (e p - y)).re :=
+        (e.tsum_eq fun x : P.centers ↦ ∑ y : ↑(P.centers ∩ D), (f (x - y)).re).symm
+    _ = ∑ x : ↑(P.centers ∩ D), ∑' ℓ : P.lattice, ∑ y : ↑(P.centers ∩ D), (f (x - y + ℓ)).re := by
+        rw [hsum.tsum_prod, tsum_fintype]
+        simp only [key]
+    _ = ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), ∑' ℓ : P.lattice, (f (x - y + ℓ)).re :=
+        Finset.sum_congr rfl fun x _ ↦ Summable.tsum_finsetSum fun y _ ↦ hℓ x y
+    _ = _ := by simp only [tsum_fintype]
+
+private theorem norm_phase (r : ℝ) : ‖cexp (2 * π * I * r)‖ = 1 := by
+  rw [Complex.norm_exp]
+  simp
+
+/-- The Fourier transform of a Schwartz function is absolutely summable over the dual lattice. -/
+private theorem summable_norm_fourier (P : PeriodicSpherePacking d) :
+    Summable fun m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice ↦
+      ‖𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))‖ := by
+  rw [← ZLattice.dual_def]
+  simpa using ZLattice.summable_norm_poisson_right P.lattice f 0
+
+private theorem summable_norm_fourier_re (P : PeriodicSpherePacking d) :
+    Summable fun m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice ↦
+      ‖((𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re : ℂ)‖ :=
+  (summable_norm_fourier (f := f) P).of_nonneg_of_le (fun _ ↦ norm_nonneg _) fun m ↦ by
+    simpa using Complex.abs_re_le_norm _
+
+include hP hCohnElkies₁ hD_unique_covers in
+omit [Nonempty P.centers] in
 open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
+private theorem calc_aux_1 (hd : 0 < d) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -251,14 +341,9 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
                   split_ifs <;> simp
                 · apply summable_sum
                   intro y hy
-                  have summable_f_re: Summable (fun x => (f x).re) := by
-                    apply (Complex.hasSum_re (hf.choose_spec)).summable
                   rw [summable_abs_iff]
-                  apply Summable.comp_injective summable_f_re
-                  -- TODO - find a simpler injectivity proof
-                  intro a b hab
-                  field_simp at hab
-                  aesop
+                  exact (Complex.hasSum_re
+                    (summable_centers hD_isBounded hD_unique_covers hd _).hasSum).summable
             · apply summable_of_hasFiniteSupport
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
@@ -313,7 +398,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
 
 omit [Nonempty ↑P.centers] in
 include hD_isBounded in
-lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
+lemma calc_steps' (hd : 0 < d) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   have sum_finite := aux4 P D hD_isBounded hd
@@ -324,16 +409,11 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
   apply tsum_congr
   intro y
   rw [re_tsum]
-  apply Summable.comp_injective hf
-  intro a b
-  simp_all
+  exact (ZLattice.summable_norm_poisson_left P.lattice f (x - y)).of_norm
 
--- # NOTE:
--- There are several summability results stated as intermediate `have`s in the following theorem.
--- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
--- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
-include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
-private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
+include hP hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
+omit [Nonempty P.centers] in
+private theorem calc_steps (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
@@ -343,23 +423,18 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hf
+            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hD_unique_covers hd
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         := by
-              -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
-              -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
-              -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
-              -- Some summability stuff might be necessary as well...
-
-              sorry
+            exact tsum_centers_eq hD_isBounded hD_unique_covers hd
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
   -- other complex-valued stuff.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
-        := calc_steps' hD_isBounded hd hf
+        := calc_steps' hD_isBounded hd
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice, (𝓕 f m) *
@@ -382,11 +457,24 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
                 (x : ↑(P.centers ∩ D)) ↦
                 ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
                 ↑⟪x.val.ofLp - x_1.val.ofLp, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) := by
-              sorry
+              have := aux4 P D hD_isBounded hd
+              have := Fintype.ofFinite ↑(P.centers ∩ D)
+              rw [← (Equiv.prodComm ↑(P.centers ∩ D) _).summable_iff]
+              refine summable_of_finite_prod fun x ↦ Summable.norm ?_
+              simp only [Function.comp_apply, Equiv.prodComm_apply, Prod.swap_prod_mk,
+                Function.uncurry_apply_pair, tsum_fintype]
+              refine summable_sum fun y _ ↦ .of_norm ?_
+              exact (summable_norm_fourier_re (f := f) P).congr fun m ↦ by
+                rw [norm_mul, norm_phase, mul_one, SchwartzMap.fourier_coe]
             rw [← Summable.tsum_comm hSummable₁]
             congr! 2 with x
             rw [← Summable.tsum_comm ?summable]
-            case summable => sorry
+            case summable =>
+              have := aux4 P D hD_isBounded hd
+              refine summable_of_finite_prod fun y ↦ ?_
+              exact (summable_norm_fourier (f := f) P).congr fun m ↦ by
+                rw [Function.uncurry_apply_pair, norm_mul, norm_phase, mul_one,
+                  SchwartzMap.fourier_coe]
             congr! 4 with y m
             refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
             · rw [isUnit_iff_ne_zero]
@@ -461,7 +549,14 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
               (fun (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)) =>
               (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-              sorry
+              have := aux4 P D hD_isBounded hd
+              have := Fintype.ofFinite ↑(P.centers ∩ D)
+              refine .of_norm_bounded ((summable_norm_fourier (f := f) P).mul_right
+                ((Fintype.card ↑(P.centers ∩ D) : ℝ) ^ 2)) fun m ↦ ?_
+              rw [norm_mul, norm_pow, norm_norm, tsum_fintype]
+              gcongr
+              · exact Complex.abs_re_le_norm _
+              · exact (norm_sum_le _ _).trans (by simp [norm_phase])
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
@@ -527,7 +622,7 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
-theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
+theorem LinearProgrammingBound' (hd : 0 < d) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
@@ -628,7 +723,8 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
       -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
-  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd hf
+  exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
+    hD_unique_covers hd
 
 end Main_Theorem_For_One_Packing
 
@@ -636,7 +732,7 @@ section Main_Theorem
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingConstant d ≤
+theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
   rw [← periodic_constant_eq_constant hd,
@@ -654,6 +750,6 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
       (P.basis_index_equiv)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-      (P.fundamental_domain_unique_covers b) hd hf
+      (P.fundamental_domain_unique_covers b) hd
 
 end Main_Theorem

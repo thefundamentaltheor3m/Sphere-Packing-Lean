@@ -3,6 +3,7 @@ module
 public import SpherePacking.ModularForms.IsCuspForm
 
 import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+import TauCeti.NumberTheory.ModularForms.SturmBound
 
 /-!
 # Dimension formulas for level-one modular forms
@@ -55,5 +56,6 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
   simp only [zero_apply]
 
 lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
-    FiniteDimensional ℂ (ModularForm Γ k) := by sorry
---use the norm to turn it into a level one question.
+    FiniteDimensional ℂ (ModularForm Γ k) :=
+  have : Γ.FiniteIndex := ⟨hΓ⟩
+  inferInstance
