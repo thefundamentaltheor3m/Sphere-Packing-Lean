@@ -557,8 +557,11 @@ theorem serreDerivative_H₂ :
 /-- Serre derivative of H₃: ∂₂H₃ = (1/6)(H₂² - H₄²) -/
 theorem serreDerivative_H₃ : serreDerivative 2 H₃ = fun z ↦ (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
   have h := f₃_eq_zero; unfold f₃ at h
-  pull fun _ ↦ _ at h; ext z
-  have hz := congrFun h z; simp only [smul_eq_mul] at hz; linear_combination hz
+  pull fun _ ↦ _ at h
+  ext z
+  have hz := congrFun h z
+  simp only [smul_eq_mul] at hz
+  linear_combination hz
 
 /-- Serre derivative of H₄: ∂₂H₄ = -(1/6)(2H₂H₄ + H₄²) -/
 theorem serreDerivative_H₄ :
