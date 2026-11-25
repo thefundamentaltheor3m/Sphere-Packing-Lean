@@ -1,3 +1,19 @@
+% NOTE ON GENERALITY: In the Lean formalisation, many of the definitions and
+% results below are stated in greater generality than presented here: sphere
+% packings are defined over an arbitrary metric space (`Metric.SpherePacking`),
+% and periodic sphere packings over an arbitrary normed space over a normed
+% field (`Metric.PeriodicSpherePacking`). The Euclidean-space versions are the
+% abbreviations `EuclideanSpace.SpherePacking` and
+% `EuclideanSpace.PeriodicSpherePacking`. Where both a general (`Metric.*`) and a
+% Euclidean-space (`EuclideanSpace.*`) declaration match a blueprint statement,
+% the `\lean{...}` links point to both; operations and lemmas that exist only in
+% the general form resolve to their declarations in the `Metric` namespace. In
+% all cases, the informal exposition below describes only the Euclidean-space
+% versions.
+\begin{remark}
+  In the Lean formalisation, many of the definitions and results in this blueprint are stated for general metric spaces (and, in the case of periodic packings, for normed spaces over normed fields), as \verb|Metric.SpherePacking| and \verb|Metric.PeriodicSpherePacking|, with the Euclidean-space versions \verb|EuclideanSpace.SpherePacking| and \verb|EuclideanSpace.PeriodicSpherePacking| being abbreviations for the corresponding general declarations. Where both a general and a Euclidean-space declaration exist, we link to both; the remaining links point to the general declarations in the \verb|Metric| namespace, of which there is no separate Euclidean-space form. The informal exposition below, however, only describes the Euclidean-space versions.
+\end{remark}
+
 The Sphere Packing problem is a classic optimisation problem with widespread applications that go well beyond mathematics. The task is to determine the ``densest" possible arrangement of spheres in a given space. It remains unsolved in all but finitely many dimensions.
 
 It was famously determined, in~\cite{Via2017}, that the optimal arrangement in $\mathbb{R}^8$ is given by the $E_8$ lattice. The result is strongly dependent on the Cohn-Elkies linear programming bound (Theorem 3.1 in~\cite{ElkiesCohn}), which, if a $\R^d \to \R$ function satisfying certain conditions exists, bounds the optimal density of sphere packings in $\R^d$ in terms of it. The proof in~\cite{Via2017} uses the theory of modular forms to construct a function that can be used to bound the density of all sphere packings in $\R^8$ above by the density of the $E_8$ lattice packing. This then allows us to conclude that no packing in $\R^8$ can be denser than the $E_8$ lattice packing.
@@ -8,20 +24,20 @@ This subsection gives an overview for the setup of the problem, both informally 
 
 Arguably the most important definition in this subsection is that of \emph{packing density}, which measures which portion of $d$-dimensional Euclidean space is covered by a given sphere packing. Taking the supremum over all packings gives what we refer to as the \emph{sphere packing constant}, which is the quantity we are interested in optimising.
 
-\begin{definition}\label{SpherePacking.balls}\lean{SpherePacking.balls}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
+\begin{definition}\label{SpherePacking.balls}\lean{Metric.SpherePacking.balls}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
   Given a set $X \subset \R^d$ and a real number $r > 0$ (known as the \emph{separation radius}) such that $\|x - y\| \geq r$ for all distinct $x, y \in X$, we define the \emph{sphere packing} $\Pa(X)$ with centres at $X$ to be the union of all open balls of radius $r$ centred at points in $X$:
   \[
     \Pa(X) := \bigcup_{x \in X} B_d(x, r)
   \]
 \end{definition}
 
-\begin{remark}\label{SpherePacking}\lean{SpherePacking}\leanok
+\begin{remark}\label{SpherePacking}\lean{Metric.SpherePacking,EuclideanSpace.SpherePacking}\leanok
   Note that a sphere packing is uniquely defined from a given set of centres (which, in order to be a valid set of centres, must admit a corresponding separation radius). Therefore, as a conscious choice during the formalisation process, we will define everything that depends on sphere packings in terms of \verb|SpherePacking|, a \verb|structure| that bundles all the identifying information of a packing, but not the actual balls themselves. For the purposes of this blueprint, however, we will refrain from making this distinction.
 \end{remark}
 
 We now define a notion of density for bounded regions of space by considering the density inside balls of finite radius.
 
-\begin{definition}\label{SpherePacking.finiteDensity}\lean{SpherePacking.finiteDensity}\uses{SpherePacking, SpherePacking.balls}\leanok
+\begin{definition}\label{SpherePacking.finiteDensity}\lean{Metric.SpherePacking.finiteDensity}\uses{SpherePacking, SpherePacking.balls}\leanok
   The \emph{finite density} of a packing $\mathcal{P}$ is defined as
   \[
     \Delta_{\mathcal{P}}(R):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,R))}{\mathrm{Vol}(B_d(0,R))},\quad R>0.
@@ -30,7 +46,7 @@ We now define a notion of density for bounded regions of space by considering th
 
 As intuitive as it seems to take the density of a packing to be the limit of the finite densities as the radius of the ball goes to infinity, it is not immediately clear that this limit exists. Therefore, we define the density of a sphere packing as a limit superior instead.
 
-\begin{definition}\label{SpherePacking.density}\lean{SpherePacking.density}\uses{SpherePacking, SpherePacking.finiteDensity}\leanok
+\begin{definition}\label{SpherePacking.density}\lean{Metric.SpherePacking.density}\uses{SpherePacking, SpherePacking.finiteDensity}\leanok
   We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
   \[
     \Delta_{\mathcal{P}}:=\limsup\limits_{R\to\infty}\Delta_{\mathcal{P}}(R).
