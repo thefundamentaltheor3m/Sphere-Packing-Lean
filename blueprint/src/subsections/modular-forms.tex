@@ -661,12 +661,12 @@ Differentiating and squaring then gives us the following:
 Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
 By \Cref{cor:dim-mf}, they should be multiples of $E_4, E_6, E_4^2$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
-\begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition, lemma:disc-E4E6}\lean{D_Δ, serreDerivative_Δ}\leanok
+\begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition, lemma:disc-E4E6}\lean{ModularForm.normalizedDerivOfComplex_discriminant, ModularForm.serreDerivative_discriminant}\leanok\mathlibok
 \begin{equation}\label{eqn:logder-disc-E2}
     \Delta' = E_2 \Delta.
 \end{equation}
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \begin{equation}
 \Delta' = \frac{3 E_4^2 E_4' - 2 E_6 E_6'}{1728} = \frac{1}{1728} \left(3 E_4^2 \cdot \frac{E_2 E_4 - E_6}{3} - 2 E_6 \cdot \frac{E_2 E_6 - E_4^2}{2}\right) = \frac{E_2(E_4^3 - E_6^2)}{1728} = E_2\Delta.
