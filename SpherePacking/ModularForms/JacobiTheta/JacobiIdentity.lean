@@ -6,6 +6,7 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 
 import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
 import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ForMathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
@@ -262,8 +263,7 @@ lemma Δ_eq_H₂_H₃_H₄ (τ : ℍ) :
 
 Since `Δ = (H₂ H₃ H₄)² / 256` (`Δ_eq_H₂_H₃_H₄`) and `Δ` has no zeros on `ℍ`
 (`ModularForm.discriminant_ne_zero`), none of `H₂`, `H₃`, `H₄` vanishes on `ℍ`; hence neither do
-`Θ₂`, `Θ₃`, `Θ₄` (for `Θ₂`, see `Θ₂_ne_zero` in
-`SpherePacking.ForMathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable`). This is used to make sense of the quotients `h = 128 (H₃ + H₄) / H₂²` and
+`Θ₂`, `Θ₃`, `Θ₄`. This is used to make sense of the quotients `h = 128 (H₃ + H₄) / H₂²` and
 `ψI`, `ψT`, `ψS` (Blueprint `lemma:theta-nonvanishing`).
 -/
 
@@ -278,3 +278,9 @@ theorem H₃_ne_zero (τ : ℍ) : H₃ τ ≠ 0 := by
 /-- `H₄` has no zeros on the upper half plane. -/
 theorem H₄_ne_zero (τ : ℍ) : H₄ τ ≠ 0 := by
   sorry
+
+/-- `Θ₂ = θ₁₀` has no zeros on the upper half plane (cf. Mumford, *Tata Lectures on Theta I*,
+Ch. I, Lemma 4.1). -/
+theorem Θ₂_ne_zero (τ : ℍ) : Θ₂ τ ≠ 0 := by
+  rw [Θ₂_as_jacobiTheta₂]
+  exact mul_ne_zero (Complex.exp_ne_zero _) (jacobiTheta₂_half_mul_ne_zero τ.im_pos)
