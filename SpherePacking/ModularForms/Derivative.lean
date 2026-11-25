@@ -6,6 +6,7 @@ public import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.tsumderivWithin
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Derivatives of Modular Forms
@@ -256,6 +257,7 @@ lemma D_qexp_const_add_smul {g : ℍ → ℂ} {c₀ c : ℂ} {a : ℕ+ → ℂ} 
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
+open scoped ComplexGrind in
 /--
 Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
 
@@ -292,7 +294,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by
     simp only [normalizedDerivOfComplex]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dite_eq_left ht, z]
-  ring_nf; simp only [I_sq]; ring
+  grind
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
 lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}

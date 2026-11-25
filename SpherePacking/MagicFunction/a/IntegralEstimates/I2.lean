@@ -7,7 +7,9 @@ module
 
 public import SpherePacking.MagicFunction.a.Basic
 
+import SpherePacking.ForMathlib.SetIntegralMono
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Constructing Upper-Bounds for I₂
@@ -24,7 +26,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
-open scoped Function UpperHalfPlane
+open scoped Function UpperHalfPlane ComplexGrind
 
 namespace MagicFunction.a.IntegralEstimates.I₂
 
@@ -53,45 +55,20 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     ‖φ₀'' (-1 / (t + I))‖ * 2 * rexp (-π * r) := by
   intro t ht
   obtain ⟨ht₀, ht₁⟩ := ht
-  rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
-  gcongr
-  · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, ofReal_re, I_re, add_zero, add_im,
-      ofReal_im, I_im, zero_add, mul_one]
+  have h : ‖(t : ℂ) + I‖ ^ 2 ≤ 2 := by
+    rw [← normSq_eq_norm_sq, normSq_apply]
+    simp only [add_re, ofReal_re, I_re, add_im, ofReal_im, I_im]
     nlinarith
-  · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
-    gcongr <;> apply le_of_eq
-    · calc
-      _ = ‖cexp (((-π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (-π * r)
-    · calc
-      _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
-    · rw [norm_exp]
-      simp
+  calc ‖g r t‖ = ‖φ₀'' (-1 / (t + I))‖ * ‖(t : ℂ) + I‖ ^ 2 * rexp (-π * r) := by simp [g, norm_exp]
+    _ ≤ _ := by gcongr
 
 lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
     (-1 / (↑t + I)) = -t / (t ^ 2 + 1) + (1 / (t ^ 2 + 1) * I) := by
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  calc
-  _ = (-1 / (t + I)) * ((t - I) / (t - I)) := by
-      conv_lhs => rw [← mul_one (-1 / (t + I))]
-      congr; symm
-      apply div_self
-      intro h
-      conv at h => rw [sub_eq_zero]
-      -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
-      have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = 1 := by rw [h]; exact I_im
-      exact zero_ne_one ((h₁.symm).trans h₂)
-  _ = _ := by
-      conv_lhs => rw [div_mul_div_comm (-1) (t + I)]
-      simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, ← add_div]
-      congr
-      · ac_rfl
-      · ring_nf
-        rw [I_sq]
-        ring
+  intro t _
+  have h₁ : (t : ℂ) + I ≠ 0 := by grind
+  have h₂ : (t : ℂ) ^ 2 + 1 ≠ 0 := by norm_cast; positivity
+  field_simp
+  grind
 
 lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) := by
   intro t ht
@@ -158,14 +135,9 @@ section Bounding_Integral
 
 lemma I₂'_bounding_aux_4 (r : ℝ) : ∃ C₀ > 0,
     ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
-  · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
-    rw [integral_undef h₂]
-    positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_3 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ioo hC₀
+  exact ⟨C₀, hC₀_pos, setIntegral_mono_on_of_nonneg measurableSet_Ioo (fun _ _ ↦ norm_nonneg _)
+    (Bound_integrableOn r C₀) hC₀⟩
 
 theorem I₂'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₂' r‖ ≤ C₁ * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_4 r

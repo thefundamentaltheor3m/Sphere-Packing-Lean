@@ -6,11 +6,13 @@ public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
 public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ForMathlib.ComplexFunProp
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.ENNReal
 public import SpherePacking.ForMathlib.ENat
 public import SpherePacking.ForMathlib.Encard
 public import SpherePacking.ForMathlib.Fourier
+public import SpherePacking.ForMathlib.IntegralCongr
 public import SpherePacking.ForMathlib.InvPowSummability
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.QExpansionBounds
@@ -18,6 +20,7 @@ public import SpherePacking.ForMathlib.QSeriesBounds
 public import SpherePacking.ForMathlib.RadialSchwartz.Basic
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.SchwartzMap
+public import SpherePacking.ForMathlib.SetIntegralMono
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.VolumeOfBalls
@@ -69,8 +72,14 @@ public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.tsumderivWithin
+public import SpherePacking.Tactic.ComplexGrind
+public import SpherePacking.Tactic.ExpRing
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.TendstoContAttr
+public import SpherePacking.Tactic.Test.ComplexFunProp
+public import SpherePacking.Tactic.Test.ComplexGrind
+public import SpherePacking.Tactic.Test.ExpRing
+public import SpherePacking.Tactic.Test.IntegralCongr
 public import SpherePacking.Tactic.Test.NormNumI
 public import SpherePacking.Tactic.Test.TendstoCont

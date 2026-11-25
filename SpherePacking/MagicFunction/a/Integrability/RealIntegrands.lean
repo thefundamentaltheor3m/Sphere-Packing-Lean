@@ -7,6 +7,7 @@ module
 
 public import SpherePacking.MagicFunction.a.Basic
 
+import SpherePacking.ForMathlib.ComplexFunProp
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 /-!
@@ -27,40 +28,28 @@ section Parametrisations
 namespace MagicFunction.Parametrisations
 
 theorem z₁'_contDiffOn : ContDiffOn ℝ ∞ z₁' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₁' y = _ := fun _ hy => z₁'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.add (contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt)
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ -1 + I * t) (by fun_prop) fun t ht ↦ ?_
+  exact z₁'_eq_of_mem (mem_Icc_of_Ioc ht)
 
 theorem z₂'_contDiffOn : ContDiffOn ℝ ∞ z₂' (Icc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Icc (0 : ℝ) 1, z₂' y = _ := fun _ hy => z₂'_eq_of_mem hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact (contDiffWithinAt_const.add ofRealCLM.contDiff.contDiffWithinAt).add contDiffWithinAt_const
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ -1 + t + I) (by fun_prop) fun t ht ↦ ?_
+  exact z₂'_eq_of_mem (ht)
 
 theorem z₃'_contDiffOn : ContDiffOn ℝ ∞ z₃' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₃' y = _ := fun _ hy => z₃'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.add (contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt)
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ 1 + I * t) (by fun_prop) fun t ht ↦ ?_
+  exact z₃'_eq_of_mem (mem_Icc_of_Ioc ht)
 
 theorem z₄'_contDiffOn : ContDiffOn ℝ ∞ z₄' (Icc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Icc (0 : ℝ) 1, z₄' y = _ := fun _ hy => z₄'_eq_of_mem hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact (contDiffWithinAt_const.sub ofRealCLM.contDiff.contDiffWithinAt).add contDiffWithinAt_const
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ 1 - t + I) (by fun_prop) fun t ht ↦ ?_
+  exact z₄'_eq_of_mem (ht)
 
 theorem z₅'_contDiffOn : ContDiffOn ℝ ∞ z₅' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₅' y = _ := fun _ hy => z₅'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ I * t) (by fun_prop) fun t ht ↦ ?_
+  exact z₅'_eq_of_mem (mem_Icc_of_Ioc ht)
 
 theorem z₆'_contDiffOn : ContDiffOn ℝ ∞ z₆' (Ici (1 : ℝ)) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ici (1 : ℝ), z₆' y = _ := fun _ hy => z₆'_eq_of_mem hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt
+  refine ContDiffOn.congr (f := fun t : ℝ ↦ I * t) (by fun_prop) fun t ht ↦ ?_
+  exact z₆'_eq_of_mem (ht)
 
 end MagicFunction.Parametrisations
 

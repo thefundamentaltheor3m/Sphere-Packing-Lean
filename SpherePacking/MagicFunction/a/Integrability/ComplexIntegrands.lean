@@ -10,6 +10,7 @@ public import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.ModularForms.Delta
+import SpherePacking.Tactic.ComplexGrind
 
 /-!
 # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
@@ -36,7 +37,7 @@ open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.
 
 open Complex Real Set Filter intervalIntegral ContDiff UpperHalfPlane
 
-open scoped Function Manifold
+open scoped Function Manifold ComplexGrind
 
 local notation "ℍ₀" => upperHalfPlaneSet
 
@@ -77,17 +78,12 @@ theorem φ₀''_holo : Holo(φ₀'') := by
     `ℍ₀` and `z ↦ -1/(z+c)` maps `ℍ₀` into `ℍ₀` (`neg_inv_add_mapsto`). -/
 theorem φ₀''_neg_inv_add_holo {c : ℂ} (hc : c.im = 0) :
     DifferentiableOn ℂ (fun z ↦ φ₀'' (-1 / (z + c))) ℍ₀ := by
-  have hmem : ∀ z ∈ ℍ₀, z + c ∈ ℍ₀ := fun z hz ↦ by
-    rw [mem_ofPred_eq, add_im, hc, add_zero]; exact hz
-  refine φ₀''_holo.comp ((differentiableOn_const (-1)).div (differentiableOn_id.add_const c)
-    (fun z hz ↦ ne_of_mem_of_not_mem (hmem z hz) zero_not_mem_upperHalfPlaneSet)) ?_
-  exact neg_inv_add_mapsto hc
+  exact φ₀''_holo.comp (by fun_prop (disch := grind)) (neg_inv_add_mapsto hc)
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
-  exact (φ₀''_neg_inv_add_holo (c := 1) (by simp)).mul
-    ((differentiable_fun_id.differentiableOn.add_const 1).pow 2)
+  have := φ₀''_neg_inv_add_holo (c := 1) (by simp)
+  unfold Φ₁'
+  fun_prop
 
 theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
@@ -96,11 +92,10 @@ theorem Φ₂'_holo : Holo(Φ₂' r) := Φ₁'_holo
 theorem Φ₂'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₂' r) ℍ₀ := Φ₁'_contDiffOn_ℂ
 
 theorem Φ₃'_holo : Holo(Φ₃' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
-  simpa only [Pi.mul_def, Pi.pow_apply, sub_eq_add_neg] using
-    (φ₀''_neg_inv_add_holo (c := -1) (by simp)).mul
-      ((differentiable_fun_id.differentiableOn.add_const _).pow 2)
+  have := φ₀''_neg_inv_add_holo (c := -1) (by simp)
+  simp only [← sub_eq_add_neg] at this
+  unfold Φ₃'
+  fun_prop
 
 theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
@@ -109,16 +104,17 @@ theorem Φ₄'_holo : Holo(Φ₄' r) := Φ₃'_holo
 theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' r) ℍ₀ := Φ₃'_contDiffOn_ℂ
 
 theorem Φ₅'_holo : Holo(Φ₅' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
-  simpa only [Pi.mul_def, add_zero] using
-    (φ₀''_neg_inv_add_holo (c := 0) (by simp)).mul (differentiableOn_pow 2)
+  have := φ₀''_neg_inv_add_holo (c := 0) (by simp)
+  simp only [add_zero] at this
+  unfold Φ₅'
+  fun_prop
 
 theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id (mapsTo_id _)).mul
-  (Complex.differentiable_exp.comp <| (differentiable_const _).mul
-    differentiable_fun_id).differentiableOn
+theorem Φ₆'_holo : Holo(Φ₆' r) := by
+  have := φ₀''_holo
+  unfold Φ₆'
+  fun_prop
 
 theorem Φ₆'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₆' r) ℍ₀ := Φ₆'_holo.contDiffOn isOpen_upperHalfPlaneSet
 

@@ -12,6 +12,7 @@ import SpherePacking.ForMathlib.SpecificLimits
 import SpherePacking.ForMathlib.tprod
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.E2
+import SpherePacking.Tactic.ExpRing
 
 /-!
 # Bounding Functions with Polynomially-Growing Fourier Coefficients
@@ -85,10 +86,7 @@ section calc_aux
 
 -- These could even go in Mathlib... they look useful (if a bit random)
 
-private lemma aux_1 (x : ℂ) : norm (cexp (I * x)) = rexp (-x.im) := by
-  have h₁ : I * (↑x.im * I) = -x.im := by rw [mul_comm, mul_assoc, Complex.I_mul_I, mul_neg_one]
-  rw [← x.re_add_im, mul_add, h₁, Complex.norm_exp]
-  simp
+private lemma aux_1 (x : ℂ) : norm (cexp (I * x)) = rexp (-x.im) := by simp [norm_exp]
 
 -- Below was written by Bhavik
 private lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := calc
@@ -125,9 +123,7 @@ lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * �
 
 lemma aux_7 (a : ℤ) :
     norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
-  rw [mul_comm (π : ℂ) I, mul_assoc, mul_assoc, aux_1 (↑π * (a * z))]
-  refine exp_le_exp.2 ?_
-  simp; linarith
+  simp [norm_exp]
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod]
@@ -152,9 +148,7 @@ lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := 
 
 lemma aux_9 (i : ℕ) :
     ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [norm_mul, mul_comm (↑π) (I)]
-  rw [aux_ring, aux_1]
-  congr; simp
+  simp [norm_exp]
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
@@ -205,10 +199,8 @@ private lemma step_2 :
   congr
   rw [← tsum_mul_left]
   congr
-  ext n; ring_nf
-  rw [mul_assoc (c (n + n₀)) (cexp _), ← Complex.exp_add]
-  congr 2
-  ring
+  ext n
+  exp_ring
 
 private lemma step_3 :
     norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
@@ -224,9 +216,8 @@ private lemma step_4 :
     norm ((cexp (π * I * (n₀ - 2) * z)) *
     (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-  rw [mul_sub, sub_mul, ← Complex.exp_sub]
-  congr 6
-  ac_rfl
+  have : cexp (π * I * n₀ * z) / cexp (2 * π * I * z) = cexp (π * I * (n₀ - 2) * z) := by exp_ring
+  rw [this]
 
 private lemma step_5 :
     norm ((cexp (π * I * (n₀ - 2) * z)) *
