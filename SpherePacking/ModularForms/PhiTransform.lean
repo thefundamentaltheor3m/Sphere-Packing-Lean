@@ -6,8 +6,9 @@ Authors: Sphere Packing Contributors
 module
 
 public import SpherePacking.MagicFunction.a.Phi
-public import SpherePacking.ModularForms.E2
-public import SpherePacking.ModularForms.Delta
+
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.E2
 
 /-!
 # Transformation Rules for φ₀

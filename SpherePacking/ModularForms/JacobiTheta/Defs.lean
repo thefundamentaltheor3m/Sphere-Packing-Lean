@@ -1,13 +1,11 @@
 module
 
-public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-public import SpherePacking.ForMathlib.SlashActions
-public import SpherePacking.ForMathlib.UpperHalfPlane
-public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.Tactic.TendstoCont
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
+
+import Mathlib.Geometry.Manifold.StructureGroupoid
+import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 
 /-!
 # Jacobi theta definitions
@@ -55,7 +53,7 @@ theorem Θ₃_as_jacobiTheta₂ (τ : ℍ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ)
 
 theorem Θ₄_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
     Θ₄_term n τ = jacobiTheta₂_term n (1 / 2 : ℂ) τ := by
-  rw [Θ₄_term, jacobiTheta₂_term, ← exp_pi_mul_I, ← exp_int_mul, ← Complex.exp_add]
+  rw [Θ₄_term, jacobiTheta₂_term, ← exp_pi_mul_I, ← Complex.exp_intCast_mul, ← Complex.exp_add]
   ring_nf
 
 theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by

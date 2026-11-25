@@ -13,50 +13,57 @@ public import Mathlib.Order.CompletePartialOrder
 /-!
 # Sphere Packings
 
-Basic definitions for sphere packings and their densities.
--/
+A *sphere packing* in a metric space `X` is a set of *centers* `S.centers ⊆ X` together with a
+positive `separation`, such that distinct centers are at distance at least `separation`. Placing an
+open ball of radius `separation / 2` around each center yields the packing's (disjoint) balls.
 
-@[expose] public section
-
-/-!
-# Sphere Packings
-
-A *sphere packing* in `ℝᵈ` is a set of *centers* `X ⊆ ℝᵈ` with a positive `separation` such
-that distinct centers are at distance at least `separation`. Placing an open ball of radius
-`separation / 2` around each center yields the packing's (disjoint) balls. In this file, we define
-sphere packings and periodic sphere packings in `ℝᵈ` and the notions of sphere packing density and
-the sphere packing constant and prove basic facts about these definitions.
+The definition of a sphere packing is stated for an arbitrary metric space, and that of a periodic
+sphere packing for a normed space `E` over a normed field `K`, where it makes sense to ask that the
+centers be invariant under translation by a `ℤ`-lattice. Densities, on the other hand, require a
+measure with enough homogeneity to compare balls of different radii, so they are defined only in
+the Euclidean setting: `EuclideanSpace ℝ (Fin d)`, for which the abbreviations
+`EuclideanSpace.SpherePacking d` and `EuclideanSpace.PeriodicSpherePacking d` are provided.
 
 ## Main definitions
 
-* `SpherePacking d`: a sphere packing in dimension `d`, with `centers` and `separation`.
-* `PeriodicSpherePacking d`: a packing whose centers are invariant under a `ℤ`-lattice.
-* `SpherePacking.balls`: union of open balls of radius `separation / 2` around the centers.
-* `SpherePacking.finiteDensity S R`: fraction of `ball 0 R` covered by `S.balls`.
-* `SpherePacking.density`: the `limsup` of `finiteDensity` as `R → ∞`.
+* `Metric.SpherePacking X`: a sphere packing in a metric space `X`, with `centers` and `separation`.
+* `Metric.PeriodicSpherePacking K E`: a sphere packing in a normed `K`-space `E` whose centers are
+  invariant under translation by a `ℤ`-lattice.
+* `EuclideanSpace.SpherePacking d`, `EuclideanSpace.PeriodicSpherePacking d`: the above in
+  `EuclideanSpace ℝ (Fin d)`.
+* `Metric.SpherePacking.balls`: union of open balls of radius `separation / 2` around the centers.
+* `Metric.SpherePacking.finiteDensity S R`: fraction of `ball 0 R` covered by `S.balls`.
+* `Metric.SpherePacking.density`: the `limsup` of `finiteDensity` as `R → ∞`.
 * `SpherePackingConstant d`, `PeriodicSpherePackingConstant d`: supremum of densities.
-* `SpherePacking.scale`: scale a (periodic) packing by a positive real factor.
+* `Metric.SpherePacking.scale`: scale a (periodic) packing by a positive real factor.
 
 ## Main results
 
-* `SpherePacking.density_le_one`: every packing has density at most `1`.
-* `SpherePacking.scale_density`: density is invariant under scaling.
-* `SpherePacking.constant_eq_constant_normalized`: for `0 < d`, attained at `separation = 1`.
-* `SpherePacking.finiteDensity_le`/`finiteDensity_ge`: two-sided bounds via center counts.
-* `SpherePacking.centers_inter_ball_finite`: each ball contains only finitely many centers.
+* `Metric.SpherePacking.density_le_one`: every packing has density at most `1`.
+* `Metric.SpherePacking.scale_density`: density is invariant under scaling.
+* `Metric.SpherePacking.constant_eq_constant_normalized`: for `0 < d`, the sphere packing constant
+  is attained at `separation = 1`.
+* `Metric.SpherePacking.finiteDensity_le`/`finiteDensity_ge`: two-sided bounds via center counts.
+* `Metric.SpherePacking.centers_inter_ball_finite`: each ball contains only finitely many centers.
 
 ## Implementation notes
 
-`PeriodicSpherePacking` bundles `DiscreteTopology`/`IsZLattice` on its lattice; the induced
+`Metric.PeriodicSpherePacking` bundles `DiscreteTopology`/`IsZLattice` on its lattice; the induced
 `AddAction S.lattice S.centers` is `noncomputable` due to subtype repackaging.
 
 ## Scope for Further Work
 
-While sphere packings can be defined in arbitrary metric spaces, we consciously focus on Euclidean
-spaces here because we are more interested in the theory of sphere packing densities than we are in
-more general notions, and densities can be quite poorly behaved in other settings. We do believe
-that it may be valuable to develop the theory in more general settings in the future, and invite
-contributions in that directions that are supported by formalisations of their applications.
+Although the definitions above are stated in the generality of metric spaces and normed spaces, the
+theory of densities developed here is specific to Euclidean space, because that is the setting of
+the sphere packing problem we formalise and because densities can be quite poorly behaved in other
+settings. We do believe that it may be valuable to develop the theory of densities in more general
+settings in the future, and invite contributions in that direction that are supported by
+formalisations of their applications.
+
+A further generalisation worth considering is that of periodicity: rather than translation by a
+`ℤ`-lattice in a normed space, one could take a group `G` acting freely on a metric space `X` and
+ask that the centers be a finite union of orbits of a discrete subgroup `Γ ≤ G`. This would cover,
+for instance, packings in hyperbolic space. We do not pursue this here.
 
 ## Reference
 
@@ -69,6 +76,8 @@ file are:
 * M. S. Viazovska. The sphere packing problem in dimension 8. Annals of Mathematics,
   185(3):991–1015, 2017.
 -/
+
+@[expose] public section
 
 open BigOperators MeasureTheory Metric Pointwise Filter Module
 
@@ -86,8 +95,8 @@ structure SpherePacking (X : Type*) [MetricSpace X] where
   separation_pos : 0 < separation := by positivity
   centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
 
-/-- A periodic sphere packing in a normed  a sphere packing whose centers are invariant
-under translation by a `ℤ`-lattice in `ℝ^d`. -/
+/-- A periodic sphere packing in a normed space `E` over a normed field `K` is a sphere packing in
+`E` whose centers are invariant under translation by a `ℤ`-lattice in `E`. -/
 structure PeriodicSpherePacking (K E : Type*) [NormedField K] [NormedAddCommGroup E]
     [NormedSpace K E] extends SpherePacking E where
   lattice : Submodule ℤ E
@@ -103,8 +112,8 @@ namespace EuclideanSpace
 `EuclideanSpace ℝ (Fin d)`. -/
 abbrev SpherePacking (d : ℕ) := Metric.SpherePacking (EuclideanSpace ℝ (Fin d))
 
-/-- A sphere packing in dimension `d` is a sphere packing in the metric space
-`EuclideanSpace ℝ (Fin d)`. -/
+/-- A periodic sphere packing in dimension `d` is a periodic sphere packing in the normed
+`ℝ`-space `EuclideanSpace ℝ (Fin d)`. -/
 abbrev PeriodicSpherePacking (d : ℕ) := Metric.PeriodicSpherePacking ℝ (EuclideanSpace ℝ (Fin d))
 
 end EuclideanSpace
@@ -151,7 +160,8 @@ theorem Metric.PeriodicSpherePacking.addAction_vadd
   rfl
 
 /-- The union of open balls of radius `S.separation / 2` around the centers of a sphere packing. -/
-abbrev Metric.SpherePacking.balls {X : Type*} [MetricSpace X] (S : SpherePacking X) : Set X :=
+noncomputable abbrev Metric.SpherePacking.balls {X : Type*} [MetricSpace X] (S : SpherePacking X) :
+    Set X :=
   ⋃ x : S.centers, ball (x : X) (S.separation / 2)
 
 /-- The finite density of a sphere packing inside the ball of radius `R` centered at the origin. -/
@@ -215,7 +225,7 @@ namespace Metric.PeriodicSpherePacking
 
 lemma scale_lattice_discrete_aux (S : PeriodicSpherePacking ℝ E) {c : ℝ} (hc : 0 < c) :
     DiscreteTopology ↥(c • S.lattice) := by
-  let : DiscreteTopology S.lattice := S.lattice_discrete
+  have : DiscreteTopology S.lattice := S.lattice_discrete
   change DiscreteTopology
     ↥((Homeomorph.smulOfNeZero c hc.ne.symm) '' (S.lattice : Set E))
   exact (Homeomorph.image (Homeomorph.smulOfNeZero c hc.ne.symm)
@@ -235,7 +245,7 @@ noncomputable def Metric.PeriodicSpherePacking.scale (S : PeriodicSpherePacking 
     use x + y, S.lattice_action hx hy, smul_add ..
   lattice_discrete := Metric.PeriodicSpherePacking.scale_lattice_discrete_aux S hc
   lattice_isZLattice := by
-    let : DiscreteTopology ↥(c • S.lattice) :=
+    have : DiscreteTopology ↥(c • S.lattice) :=
       Metric.PeriodicSpherePacking.scale_lattice_discrete_aux S hc
     refine ⟨?_⟩
     rw [← S.lattice_isZLattice.span_top]
@@ -326,9 +336,8 @@ lemma density_le_one {d : ℕ} (S : EuclideanSpace.SpherePacking d) : S.density 
 lemma scale_finiteDensity {d : ℕ} (_ : 0 < d) (S : EuclideanSpace.SpherePacking d) {c : ℝ}
     (hc : 0 < c) (R : ℝ) : (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
-    convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
-    · exact Eq.symm (DistribMulAction.smul_zero c)
-    · rw [Real.norm_eq_abs, abs_eq_self.mpr hc.le]
+    rw [_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R, smul_zero,
+      Real.norm_eq_abs, abs_of_nonneg hc.le]
   rw [finiteDensity, Metric.SpherePacking.scale_balls, this, ← Set.smul_set_inter₀ hc.ne.symm]
   repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
   rw [ENNReal.mul_div_mul_left, finiteDensity]
@@ -347,7 +356,8 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : EuclideanSpace.SpherePacking d) 
     (hc : 0 < c) : (S.scale hc).density = S.density := by
   simp only [density, limsup, limsSup, eventually_map, eventually_atTop]
   apply le_antisymm
-  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+  -- The following are almost identical. Can we condense the proof?
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_ofPred_eq, lowerBounds]
     intro x hx y hy
     rcases hx with ⟨a, ha⟩
     apply hy
@@ -442,12 +452,11 @@ theorem inter_ball_encard_le (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
   · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
   · exact measure_ball_lt_top.ne
 
-/-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
+/-- This gives a lower bound on the number of points in the sphere packing X with norm less than R.
 -/
 theorem inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
@@ -458,7 +467,6 @@ theorem inter_ball_encard_ge (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
   · exact (measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
   · exact measure_ball_lt_top.ne
@@ -487,7 +495,6 @@ theorem finiteDensity_ge (R : ℝ) :
       ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.le_div_iff_mul_le] <;> try left
@@ -501,7 +508,6 @@ theorem finiteDensity_le (R : ℝ) :
       ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.div_le_iff_le_mul] <;> try left

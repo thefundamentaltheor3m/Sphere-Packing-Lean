@@ -1,10 +1,9 @@
 module
 
-public import Mathlib.Algebra.Field.ZMod
-public import Mathlib.Analysis.CStarAlgebra.Classes
-public import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 public import Mathlib.NumberTheory.ModularForms.SlashActions
+
+import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 
 /-!
 # Auxiliary theorems for the slash actions groups SL(2, ℤ) and Γ(2)
@@ -25,42 +24,25 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-/-- The matrix `[[1, 2], [0, 1]]` as an element of `SL(2, ℤ)`. -/
-def αSL : SL(2, ℤ) := ⟨!![1, 2; 0, 1], by simp⟩
+def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, Gamma_mem.mpr (by decide)⟩
 
-/-- The matrix `[[1, 0], [2, 1]]` as an element of `SL(2, ℤ)`. -/
-def βSL : SL(2, ℤ) := ⟨!![1, 0; 2, 1], by simp⟩
+def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, Gamma_mem.mpr (by decide)⟩
 
-/-- The matrix `-I` as an element of `SL(2, ℤ)`. -/
-def negISL : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
-
-@[simp] theorem coe_αSL : (αSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 2; 0, 1] := rfl
-
-@[simp] theorem coe_βSL : (βSL : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 0; 2, 1] := rfl
-
-@[simp] theorem coe_negISL : (negISL : Matrix (Fin 2) (Fin 2) ℤ) = !![-1, 0; 0, -1] := rfl
-
-def α : Γ 2 := ⟨αSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
-
-def β : Γ 2 := ⟨βSL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
-
-def negI : Γ 2 := ⟨negISL, by rw [Gamma_mem]; refine ⟨?_, ?_, ?_, ?_⟩ <;> decide⟩
+def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, Gamma_mem.mpr (by decide)⟩
 
 theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [T]; decide⟩ := by
   ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [α, sq, SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  fin_cases i <;> fin_cases j <;> rfl
 
 theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
   ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [β, α, negI, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
-      Matrix.adjugate_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
+  fin_cases i <;> fin_cases j <;> rfl
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j; fin_cases i <;> fin_cases j <;> rfl
 
-theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by ext i j; simp [negI]
+theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by
+  rw [inv_eq_iff_mul_eq_one, ← sq, modular_negI_sq]
 
 section slash_action
 
@@ -75,12 +57,10 @@ theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [SL_slash_apply, UpperHalfPlane.modular_S_smul, ModularGroup.denom_S]
 
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]
-  simp [SpecialLinearGroup.map_apply_coe]
+  rw [SL_slash_apply, UpperHalfPlane.modular_T_smul, denom_apply]; simp [ModularGroup.coe_T]
 
 end slash_action
 
@@ -97,26 +77,22 @@ private theorem α_zpow_val (k : ℤ) : (α ^ k : SL(2, ℤ)).val = !![1, 2 * k;
   induction k using Int.induction_on with
   | zero => exact Matrix.one_fin_two
   | succ n ih =>
-    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    simp only [_root_.zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
   | pred n ih =>
-    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+    simp only [_root_.zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
       Matrix.adjugate_fin_two, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
-
-/-- The `(1, 0)` entry of `α ^ k` is always `0`. -/
-private theorem α_zpow_one_zero (k : ℤ) : (α ^ k : SL(2, ℤ)).val 1 0 = 0 := by
-  simp [α_zpow_val]
 
 /-- The matrix `β ^ k` equals `[[1, 0], [2k, 1]]`. -/
 private theorem β_zpow_val (k : ℤ) : (β ^ k : SL(2, ℤ)).val = !![1, 0; 2 * k, 1] := by
   induction k using Int.induction_on with
   | zero => exact Matrix.one_fin_two
   | succ n ih =>
-    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    simp only [_root_.zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
   | pred n ih =>
-    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+    simp only [_root_.zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
       Matrix.adjugate_fin_two, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
 
@@ -146,7 +122,7 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
         have := val.2; rw [Matrix.det_fin_two] at this; grind
       have h_val : val = negI * α^(-k) := by
         refine Subtype.ext ?_
-        simp only [SpecialLinearGroup.coe_mul, zpow_neg, SpecialLinearGroup.coe_inv]
+        simp only [SpecialLinearGroup.coe_mul, _root_.zpow_neg, SpecialLinearGroup.coe_inv]
         rw [α_zpow_val]
         ext i j; fin_cases i <;> fin_cases j
           <;> simp [negI, Matrix.mul_apply, Matrix.adjugate_fin_two, hk, h, h_2, h11]
@@ -155,7 +131,7 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
       have hα_mem : α ∈ Subgroup.closure {α, β, negI} :=
         Subgroup.subset_closure (Set.mem_insert _ _)
       convert Subgroup.mul_mem _ hnegI_mem (Subgroup.inv_mem _ (Subgroup.zpow_mem _ hα_mem k))
-      simp only [zpow_neg, Subgroup.coe_mul, Subgroup.coe_inv, SubgroupClass.coe_zpow, h_val]
+      simp only [_root_.zpow_neg, Subgroup.coe_mul, Subgroup.coe_inv, SubgroupClass.coe_zpow, h_val]
   · have h_det : (A.val.val 0 0) * (A.val.val 1 1) = 1 := by
       have := A.1.2; rw [Matrix.det_fin_two] at this
       simp_all only [Fin.isValue, Int.reduceNeg, not_or, mul_zero, sub_zero]

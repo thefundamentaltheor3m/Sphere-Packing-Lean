@@ -5,11 +5,10 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 module
 
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
-public import Mathlib.Topology.Separation.CompletelyRegular
 public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
 
-public import SpherePacking.Basic.PeriodicPacking
+import SpherePacking.Basic.PeriodicPacking
 
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to

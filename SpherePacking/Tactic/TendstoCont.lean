@@ -5,12 +5,11 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Topology.Algebra.Ring.Basic
-public import Mathlib.Tactic.FunProp
-public import Mathlib.Tactic.NormNum
-public import Mathlib.Tactic.Convert
-public import Mathlib.Tactic.Ring
 public meta import SpherePacking.Tactic.TendstoContAttr
+public import Mathlib.Topology.Defs.Filter
+
+import Mathlib.Tactic.Ring.RingNF
+import Mathlib.Topology.Constructions.SumProd
 
 /-!
 # `tendsto_cont` tactic

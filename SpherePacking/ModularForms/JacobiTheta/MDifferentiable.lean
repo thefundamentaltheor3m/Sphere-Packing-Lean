@@ -1,6 +1,9 @@
 module
 
+public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ModularForms.JacobiTheta.Basic
+
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 /-!
 # Jacobi theta differentiability
@@ -111,29 +114,6 @@ lemma H₃_MDifferentiable : MDiff H₃ := by
 @[fun_prop]
 lemma H₄_MDifferentiable : MDiff H₄ := by
   simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
-
-/-- Differentiability of `t ↦ jacobiTheta₂(t/2, t)` at points in the upper half-plane. -/
-lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
-    DifferentiableAt ℂ (fun t : ℂ ↦ jacobiTheta₂ (t / 2) t) ↑τ := by
-  let f : ℂ → ℂ × ℂ := fun t ↦ (t / 2, t)
-  have hf : DifferentiableAt ℂ f ↑τ :=
-    (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ ↦ jacobiTheta₂ p.1 p.2) (f ↑τ) := by
-    simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
-  change DifferentiableAt ℂ (((fun p : ℂ × ℂ ↦ jacobiTheta₂ p.1 p.2) ∘ f)) ↑τ
-  exact DifferentiableAt.comp (x := (τ : ℂ)) hg hf
-
-lemma Θ₂_MDifferentiable : MDiff Θ₂ := by
-  intro τ
-  have hΘ₂_diff : DifferentiableAt ℂ
-      (fun t : ℂ ↦ cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) (τ : ℂ) :=
-    ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
-      (differentiableAt_jacobiTheta₂_half τ)
-  have hMD := hΘ₂_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
-  have : (fun t : ℂ ↦ cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) ∘
-      UpperHalfPlane.coe = Θ₂ := by
-    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂]; ring_nf
-  rwa [this] at hMD
 
 end H_MDifferentiable
 

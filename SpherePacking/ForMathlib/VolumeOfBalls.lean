@@ -1,9 +1,7 @@
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+public import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
-public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 /-!
 # Volumes of Balls
@@ -46,7 +44,7 @@ theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
   exact False.elim (IsEmpty.false t)
 
 theorem EuclideanSpace.volume_ball_lt_top
-    [NullSingletonClass (volume : Measure (EuclideanSpace ℝ ι))]
-    (x : EuclideanSpace ℝ ι) : volume (ball x r) < ⊤ :=
+    [NullSingletonClass (volume : Measure (EuclideanSpace ℝ ι))] (x : EuclideanSpace ℝ ι) :
+    volume (ball x r) < ⊤ :=
   -- `volume` is finite on compacts, so this is mathlib's `MeasureTheory.measure_ball_lt_top`.
   measure_ball_lt_top

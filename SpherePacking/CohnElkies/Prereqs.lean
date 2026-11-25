@@ -10,20 +10,12 @@ module
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
+
 public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Analysis.CStarAlgebra.Classes
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.Analysis.RCLike.Inner
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
-public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Topology.Metrizable.Basic
-public import Mathlib.Topology.Compactness.Lindelof
-public import Mathlib.Topology.EMetricSpace.Paracompact
-public import Mathlib.Topology.Separation.CompletelyRegular
-
-public import SpherePacking.Basic.SpherePacking
-public import SpherePacking.Basic.PeriodicPacking
-public import SpherePacking.ForMathlib.InvPowSummability
 
 /-!
 # Prerequisites for the Cohn–Elkies Bound
@@ -92,7 +84,7 @@ noncomputable section PSF_L
 -- instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
 
 /-
-This section defines the Poisson Summation Formual, Lattice Version (`PSF_L`). This is a direct
+This section defines the Poisson Summation Formula, Lattice Version (`PSF_L`). This is a direct
 dependency of the Cohn-Elkies proof.
 -/
 

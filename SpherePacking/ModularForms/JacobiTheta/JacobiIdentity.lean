@@ -1,6 +1,15 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+public import Mathlib.NumberTheory.ModularForms.Discriminant
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Jacobi theta identities
@@ -66,10 +75,6 @@ lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
   simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num,
     mul_slash_SL2 2 2 T _ _, jacobi_g_T_action, neg_mul_neg]
-
-/-- Full `SL₂(ℤ)` invariance of `f` with weight 4. -/
-lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
-  slashaction_generators_SL2Z jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- `jacobi_f` as a slash-invariant form of weight 4 and level `Γ(1)`. -/
 noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 4 where
@@ -161,11 +166,6 @@ private lemma theta_prod_sq_T_action : (theta_prod_sq ∣[(12 : ℤ)] T) = theta
   rw [theta_prod_sq_eq_mul, show (12 : ℤ) = 6 + 6 from by norm_num,
     mul_slash_SL2 6 6 T _ _, theta_prod_T_action, neg_mul_neg]
 
-private lemma theta_prod_sq_SL2Z_invariant :
-    ∀ γ : SL(2, ℤ), theta_prod_sq ∣[(12 : ℤ)] γ = theta_prod_sq :=
-  slashaction_generators_SL2Z theta_prod_sq 12
-    theta_prod_sq_S_action theta_prod_sq_T_action
-
 private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
   change MDiff (fun z ↦ (H₂ z * H₃ z * H₄ z) ^ 2)
   exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
@@ -197,11 +197,6 @@ private lemma theta_prod_sq_proportional :
   obtain ⟨c, hc⟩ := CuspForm.exists_smul_discriminant_of_weight_eq_twelve f
   exact ⟨c, fun z ↦ by simpa using DFunLike.congr_fun hc z⟩
 
-private lemma Θ₂_div_exp_tendsto :
-    Tendsto (fun z : ℍ ↦ Θ₂ z / cexp (π * I * ↑z / 4)) atImInfty (nhds 2) := by
-  simp_rw [Θ₂_as_jacobiTheta₂, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
-  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-
 /-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
 lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
@@ -209,7 +204,7 @@ lemma H₂_div_exp_tendsto :
     intro z
     rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow]
     have he : cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) := by
-      rw [← Complex.exp_nat_mul]
+      rw [← Complex.exp_natCast_mul]
       congr 1
       ring
     rw [he, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
@@ -237,7 +232,7 @@ lemma Δ_eq_H₂_H₃_H₄ (τ : ℍ) :
           (H₂ z / cexp (↑π * I * ↑z)) ^ 2 * (H₃ z) ^ 2 * (H₄ z) ^ 2 := by
         intro z
         have hq : cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 := by
-          rw [← Complex.exp_nat_mul]
+          rw [← Complex.exp_natCast_mul]
           ring_nf
         simp only [theta_prod_sq]
         rw [hq]

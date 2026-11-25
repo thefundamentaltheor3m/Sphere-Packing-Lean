@@ -5,10 +5,16 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Delta
-public import SpherePacking.ModularForms.tsumderivWithin
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
-public import Mathlib.Tactic.NormNum.Parity
+public import Mathlib.NumberTheory.ArithmeticFunction.Misc
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Defs
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.ModularForms.ResToImagAxis
+
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Summable
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.exp_lems
+import SpherePacking.ModularForms.tsumderivWithin
 
 /-! # The Eisenstein series `E₄` and `E₆`
 
@@ -87,25 +93,25 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
 
 /-! ## `q`-expansion coefficients and non-vanishing -/
 
-private lemma E4_eq' :
-    (E₄ : ℍ → ℂ) = (ModularForm.E (k := 4) (by norm_num) : ℍ → ℂ) := rfl
+/-- The project's `Γ(1)`-typed `E₄` equals Mathlib's `𝒮ℒ`-typed `ModularForm.E₄` as functions. -/
+lemma E₄_coe : (E₄ : ℍ → ℂ) = ModularForm.E₄ := rfl
 
-private lemma E6_eq' :
-    (E₆ : ℍ → ℂ) = (ModularForm.E (k := 6) (by norm_num) : ℍ → ℂ) := rfl
+/-- The project's `Γ(1)`-typed `E₆` equals Mathlib's `𝒮ℒ`-typed `ModularForm.E₆` as functions. -/
+lemma E₆_coe : (E₆ : ℍ → ℂ) = ModularForm.E₆ := rfl
 
 lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
     fun m => if m = 0 then 1 else (240 : ℂ) * (σ 3 m) := by
   ext m
-  rw [E4_eq', EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
+  rw [E₄_coe, EisensteinSeries.E_qExpansion_coeff (by norm_num) (by decide) m]
   split
   · rfl
   · simp [bernoulli, bernoulli'_four]; ring
 
 lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 :=
-  E4_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+  E₄_coe ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 :=
-  E6_eq' ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
+  E₆_coe ▸ EisensteinSeries.E_qExpansion_coeff_zero (by norm_num) (by decide)
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have h := EisensteinSeries.E_ne_zero (k := k) (by exact_mod_cast hk) hk2
@@ -131,7 +137,7 @@ lemma sigma_qexp_summable_generic (a b : ℕ) (z : ℍ) :
   refine ((summable_norm_pow_mul_geometric_of_norm_lt_one (a + b + 1)
     (norm_exp_two_pi_I_lt_one z)).comp_injective PNat.coe_injective).of_norm_bounded fun n ↦ ?_
   rw [show (2 * π * Complex.I * n * z : ℂ) = n * (2 * π * Complex.I * z) by ring,
-    Complex.exp_nat_mul]
+    Complex.exp_natCast_mul]
   simp only [Function.comp_apply, norm_mul, norm_pow, Complex.norm_natCast]
   rw [add_assoc, pow_add]
   gcongr
@@ -155,14 +161,14 @@ lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
 `EisensteinSeries.E2_eq_tsum_cexp` with `cexp (2πi n z)` in place of `𝕢 z ^ n`. -/
 lemma E₂_sigma_qexp (z : ℍ) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * z) := by
-  simp [E₂, EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_nat_mul, mul_comm, mul_left_comm,
+  simp [EisensteinSeries.E2_eq_tsum_cexp, ← Complex.exp_natCast_mul, mul_comm, mul_left_comm,
     mul_assoc]
 
 /-- `E₄ = 1 + 240 ∑' n : ℕ+, σ₃ n qⁿ`. -/
 lemma E₄_sigma_qexp (z : ℍ) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z) := by
   refine (EisensteinSeries.q_expansion_bernoulli (by norm_num : 3 ≤ 4) (by decide) z).trans ?_
-  norm_num [bernoulli, bernoulli'_four, ← Complex.exp_nat_mul, mul_comm, mul_assoc, mul_left_comm]
+  norm_num [bernoulli, bernoulli'_four, ← Complex.exp_natCast_mul, mul_comm, mul_assoc, mul_left_comm]
 
 /-! ## Realness on the imaginary axis -/
 
@@ -290,7 +296,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by
       rw [hr]
       simpa [mul_assoc, mul_left_comm, mul_comm] using
-        (Complex.exp_nat_mul (2 * ↑Real.pi * Complex.I * z) (n : ℕ)).symm
+        (Complex.exp_natCast_mul (n : ℕ) (2 * ↑Real.pi * Complex.I * z)).symm
     simp [hpow]
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /

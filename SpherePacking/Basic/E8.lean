@@ -7,6 +7,8 @@ module
 
 public import SpherePacking.Basic.PeriodicPacking
 
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+
 /-!
 # Basic properties of the E₈ lattice
 
@@ -270,7 +272,7 @@ lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
   rw [Fin.forall_fin_succ']
   refine ⟨?h1, ?h2⟩
   case h2 =>
-    simp only [E8Matrix, Fin.reduceLast, Matrix.of_row, Fin.isValue, Matrix.cons_val]
+    simp only [E8Matrix, Fin.reduceLast, Matrix.row_of, Fin.isValue, Matrix.cons_val]
     rw [Submodule.E8_eq_sup]
     refine Submodule.mem_sup_right (Submodule.subset_span ?_)
     simp [funext_iff, Fin.forall_fin_succ]
@@ -300,8 +302,7 @@ private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
   rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det_apply]
   change IsUnit (E8Matrix R).det
-  rw [E8Matrix_unimodular]
-  exact isUnit_one
+  simp [E8Matrix_unimodular]
 
 lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
@@ -518,7 +519,7 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   obtain ⟨n, hn, hn'⟩ := E8_norm_eq_sqrt_even v hv
   have : 0 ≤ (n : ℝ) := by rw [hn']; positivity
   have : 0 ≤ n := mod_cast this
-  have : n ≠ 0 := by contrapose! hv'; simpa [hv'] using hn'.symm
+  have : n ≠ 0 := by contrapose hv'; simpa [hv'] using hn'.symm
   have : 2 ≤ n := by obtain ⟨k, rfl⟩ := hn; omega
   apply le_of_sq_le_sq _ (by simp)
   rw [← hn', Real.sq_sqrt zero_le_two]
@@ -620,7 +621,7 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
     obtain ⟨b', hb', rfl⟩ := hb
     have hsub : a' - b' ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha' hb'
     have hne : a' ≠ b' := by
-      contrapose! hab
+      contrapose hab
       simp [hab]
     have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr hne
     change √2 ≤ ‖(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (a' - b')‖
@@ -687,14 +688,11 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
     · positivity
     · positivity
   · intro x hx
+    change x ∈ fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) at hx
     trans ∑ i, ‖E8_ℤBasis i‖
     · rw [← fract_eq_self.mpr hx]
       convert norm_fract_le (K := ℝ) _ _
-      rename_i i _
-      -- restate with `E8Lattice` in place of the defeq `E8Packing.lattice`
-      change ‖E8_ℤBasis i‖ = ‖(E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) i‖
-      rw [Module.Basis.ofZLatticeBasis_apply]
-      rfl
+      simp [Basis.ofZLatticeBasis_apply]
     · refine (Finset.sum_le_sum (fun i hi ↦ E8_ℤBasis_apply_norm i)).trans ?_
       norm_num
 
