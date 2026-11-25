@@ -22,7 +22,7 @@ In this file, we define Viazovska's magic funtction `g`.
 ## Sign conventions
 
 With `b` defined as in the blueprint (`def:b-definition`, i.e. with `J₆ = -2 ∫_i^{i∞} ψS`), the
-integral representations `a_eq_integral` and `b_eq_integral` read
+integral representations of Blueprint `prop:a-double-zeros` and `prop:b-double-zeros` read
 `a = 4i sin²(π‖x‖²/2) ∫₀^∞ t² φ₀(i/t) e^{-π‖x‖²t} dt` and
 `b = -4i sin²(π‖x‖²/2) ∫₀^∞ ψI(it) e^{-π‖x‖²t} dt` for `‖x‖ > √2`. The combination whose
 integrand is `A(t) = -t² φ₀(i/t) - 36 π⁻² ψI(it)` (which is negative, giving `g ≤ 0` outside the

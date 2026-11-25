@@ -395,7 +395,6 @@ In particular, fix a vertical strip $x_1 \leq \Re z \leq x_2$ and let $r > 2$. B
 \begin{proposition}
 \label{prop:a-double-zeros}
 \uses{cor:phi0-near-0-infty, def:a-definition, cor:disc-nonvanishing, lem:CG-unbounded}
-\lean{MagicFunction.a.SpecialValues.a_eq_integral}\leanok
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
     a(r)=4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0\Big(\frac{i}{t}\Big)\,t^2\,e^{-\pi r^2 \,t}\,dt.
@@ -445,7 +444,7 @@ The factor $\sin(\pi r^2/2)^2$ vanishes to second order at $r = \sqrt{2n}$ for e
 
 Finally, we find another convenient integral representation for $a$ and compute the value of $a$ at $0$.
 
-\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}\lean{MagicFunction.a.SpecialValues.a_eq_integral'}\leanok
+\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}
 For $r\geq0$ we have
 \begin{align}\label{eqn:a-another-integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
@@ -747,7 +746,7 @@ Now we observe that $T$ and $STS(ST)^{-1}$ are also in $\Gamma_0(2)$. Therefore,
 $$\psi_T+\psi_S=h|_{-2}T-h|_{-2}STS=h-h|_{-2}ST=\psi_I.$$
 \end{proof}
 
-\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, def:b-definition, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}\lean{MagicFunction.b.SpecialValues.b_eq_integral}\leanok
+\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing, lem:CG-unbounded, lemma:psi-sum, lemma:psi-slash-relations}
 For $r>\sqrt{2}$ function $b(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
     b(r)=-4i\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r^2 \,t}\,dt.
@@ -782,7 +781,7 @@ By Lemma~\ref{lemma:psi-sum}, $\psi_T - \psi_I = -\psi_S$, so the last integral 
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
 
-\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition}\lean{MagicFunction.b.SpecialValues.b_eq_integral'}\leanok
+\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition}
 For $r\geq0$ we have
 \begin{equation}\label{eqn:b-another-integral}b(r)=-4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
