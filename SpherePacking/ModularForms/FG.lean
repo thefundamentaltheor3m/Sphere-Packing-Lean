@@ -11,6 +11,7 @@ public import SpherePacking.ModularForms.JacobiTheta.Defs
 
 import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
 import Mathlib.NumberTheory.ModularForms.RamanujanFormula
+import Mathlib.Tactic.Push
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Derivative
@@ -85,10 +86,9 @@ theorem G_eq_GReal (t : ℝ) : G.resToImagAxis t = GReal t :=
 /-- `F = 9 (D E₄)²`, by Ramanujan's formula `D E₄ = (E₂ E₄ - E₆) / 3`
 (`Derivative.normalizedDerivOfComplex_E₄`). -/
 theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
-  ext z
-  simp only [F, ModularForm.toFun_eq_coe, E₄_coe, E₆_coe, normalizedDerivOfComplex_E₄, Pi.pow_apply,
-    Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
-  ring
+  simp only [F, ModularForm.toFun_eq_coe, E₄_coe, E₆_coe, normalizedDerivOfComplex_E₄]
+  pull fun _ ↦ _
+  ext z; simp only [smul_eq_mul]; ring
 
 /-- `G` with complex scalars, the form of the definition that `fun_prop` handles. -/
 lemma G_eq : G = H₂ ^ 3 * ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2) := by
@@ -133,11 +133,9 @@ theorem MLDE_F :
     normalizedDerivOfComplex_smul, normalizedDerivOfComplex_pow, Nat.reduceSub, Nat.cast_ofNat,
     pow_one, ModularForm.toFun_eq_coe, E₄_coe, E₆_coe, normalizedDerivOfComplex_E₂,
     normalizedDerivOfComplex_E₄, normalizedDerivOfComplex_E₆]
-  ext z
-  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, normalizedDerivOfComplex_const, Pi.sub_apply,
-    Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.neg_apply, Pi.zero_apply, Pi.smul_apply,
-    smul_eq_mul]
-  ring
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, normalizedDerivOfComplex_const]
+  pull fun _ ↦ _
+  ext z; simp only [smul_eq_mul]; ring
 
 /-- Modular linear differential equation satisfied by `G`. -/
 theorem MLDE_G :
@@ -147,10 +145,10 @@ theorem MLDE_G :
     D_H₂, normalizedDerivOfComplex_add, normalizedDerivOfComplex_smul, D_H₄, serreDerivative_eq,
     normalizedDerivOfComplex_sub, Nat.reduceSub, Nat.cast_ofNat, pow_one,
     normalizedDerivOfComplex_E₂, E₄_eq_H_sum_sq, E₄_coe_eq_H_sum_sq]
+  simp only [pi_ofNat_eq_const, normalizedDerivOfComplex_const, pi_inv_const_eq_const]
+  pull fun _ ↦ _
   ext z
-  simp only [pi_ofNat_eq_const, normalizedDerivOfComplex_const, pi_inv_const_eq_const, Pi.sub_apply,
-    Pi.add_apply, Pi.mul_apply, Pi.zero_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul, H_sum_sq,
-    Δ_eq_H₂_H₃_H₄, ← jacobi_identity]
+  simp only [smul_eq_mul, H_sum_sq, Δ_eq_H₂_H₃_H₄, ← jacobi_identity, Pi.add_apply]
   ring
 
 /-- `D E₄ = 240 ∑' n : ℕ+, n σ₃ n qⁿ`, by differentiating the `q`-expansion of `E₄` termwise. -/

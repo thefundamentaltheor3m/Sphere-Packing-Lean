@@ -8,6 +8,7 @@ module
 public import SpherePacking.Basic.PeriodicPacking
 
 import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+import Mathlib.Tactic.NormMatMul
 
 /-!
 # Basic properties of the E₈ lattice
@@ -334,17 +335,12 @@ private def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (F
   2⁻¹, 1, 1, 1, 1, 1, 1, 0;
   -7 * 2⁻¹, -6, -5, -4, -3, -2, -1, 2]
 
-private lemma E8Inverse_eq_cast (R : Type*) [Field R] [CharZero R] :
-    E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) := by
-  rw [← Matrix.ext_iff]
-  norm_num [Fin.forall_fin_succ, E8Inverse]
-
-private lemma E8Inverse_mul_E8Matrix_rat : E8Inverse ℚ * E8Matrix ℚ = 1 := by decide +kernel
-
 private lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
     E8Inverse R * E8Matrix R = 1 := by
-  rw [E8Matrix_eq_cast, E8Inverse_eq_cast, ← Matrix.map_mul, E8Inverse_mul_E8Matrix_rat]
-  simp
+  unfold E8Inverse E8Matrix
+  simp only [norm_matmul]
+  rw [← Matrix.ext_iff]
+  simp [Fin.forall_fin_succ]
 
 private lemma E8Matrix_mul_E8Inverse {R : Type*} [Field R] [CharZero R] :
     E8Matrix R * E8Inverse R = 1 := by
