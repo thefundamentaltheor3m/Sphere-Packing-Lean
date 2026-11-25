@@ -273,7 +273,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
   let g : ℝ → ℂ := h ∘ fun s : ℝ => (s : ℂ)
   have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
     filter_upwards [lt_mem_nhds ht] with s hs
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte,
+    simp only [Function.resToImagAxis, resToImagAxis_of_pos _ hs,
       Function.comp_apply]
     change F (⟨I * (s : ℂ), by simp [hs]⟩ : ℍ) = F (ofComplex (g s))
     rw [show g s = I * (s : ℂ) by
@@ -291,7 +291,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
     simpa [h, Function.comp_def] using (hF'.comp (t : ℂ) hh).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by
     simp only [normalizedDerivOfComplex]; field_simp
-  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dite_eq_left ht, z]
+  simp only [hD, Function.resToImagAxis, resToImagAxis_of_pos _ ht, z]
   ring_nf; simp only [I_sq]; ring
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
@@ -308,7 +308,7 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
     by_cases hs : 0 < s
     · exact hF_real s hs
-    · simp [ResToImagAxis, hs]
+    · simp [not_lt.mp hs]
   have h_im_deriv :=
     im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
   have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
@@ -428,13 +428,13 @@ theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hMD : MDifferentiable 𝓘(
       have hda := hasDerivAt_resToImagAxis_re hMD hs
       rw [hda.deriv]
       have h_ria : F.resToImagAxis s = F ⟨I * s, by simp [hs]⟩ := by
-        simp [resToImagAxis, ResToImagAxis, dite_eq_left hs]
+        simp [Function.resToImagAxis, resToImagAxis_of_pos _ hs]
       have hz : F (⟨I * s, by simp [hs]⟩ : ℍ) = 0 := by
         apply Complex.ext
         · rw [zero_re, ← h_ria]; exact hgs
         · rw [zero_im, ← h_ria]; exact (hF_real s hs)
       have : 0 < ((D F).resToImagAxis s).re := by
-        simpa [resToImagAxis, ResToImagAxis, dite_eq_left hs,
+        simpa [Function.resToImagAxis, resToImagAxis_of_pos _ hs,
           serreDerivative_apply, hz, mul_zero, sub_zero] using hSDF_pos s hs
       nlinarith [pi_pos]
   exact key t ht

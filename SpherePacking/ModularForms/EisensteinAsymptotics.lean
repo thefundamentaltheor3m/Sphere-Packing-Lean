@@ -8,6 +8,7 @@ module
 public import Mathlib.NumberTheory.ModularForms.Derivative
 public import SpherePacking.ModularForms.Eisenstein
 
+import TauCeti.NumberTheory.ModularForms.QExpansion.BigO
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ModularForms.E2
@@ -38,24 +39,15 @@ noncomputable section
 
 /-! ## Limits of Eisenstein series at infinity -/
 
-/-- If f = O(exp(-c * Im z)) as z → i∞ for c > 0, then f → 0 at i∞. -/
-lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
-    (hO : f =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
-    Filter.Tendsto f atImInfty (nhds 0) := by
-  have h : Filter.Tendsto (fun y : ℝ => Real.exp (-c * y)) Filter.atTop (nhds 0) := by
-    simpa using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 c hc
-  exact hO.trans_tendsto (h.comp tendsto_im_atImInfty)
-
 /-- A modular form tends to its value at infinity as z → i∞. -/
 lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
-  obtain ⟨c, hc, hO⟩ := ModularFormClass.exp_decay_sub_atImInfty' f
   have hΓ : (1 : ℝ) ∈ (↑(CongruenceSubgroup.Gamma 1) : Subgroup (GL (Fin 2) ℝ)).strictPeriods :=
     CongruenceSubgroup.Gamma_one_coe_eq_SL ▸ one_mem_strictPeriods_SL
   rw [qExpansion_coeff_zero (by norm_num : (0 : ℝ) < 1)
     (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) hΓ)
     (periodic_comp_ofComplex f hΓ)]
-  simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
+  exact TauCeti.ModularFormClass.tendsto_valueAtInfty f one_pos hΓ
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
 lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]

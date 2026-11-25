@@ -6,6 +6,7 @@ Authors: Bhavik Mehta, Gareth Ma
 module
 
 public import SpherePacking.Basic.PeriodicPacking
+public import TauCeti.Algebra.Module.ZLattice.Integral
 
 import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
@@ -36,6 +37,7 @@ See also earlier work which inspired this one, by Gareth Ma: https://github.com/
   integer.
 * `E8_integral_self`: The E₈ lattice is even, i.e., the norm-squared of any vector in E₈ is an even
   integer.
+* `isEven_E8Lattice`: The E₈ lattice is even, in the sense of Tau Ceti's `ZLattice.IsEven`.
 * `E8Lattice`: The E₈ lattice as a submodule of eight-dimensional Euclidean space. This additional
   definition is valuable, since it now puts the correct metric space structure on the lattice.
 * `E8Packing`: The E₈ packing as a periodic sphere packing.
@@ -528,18 +530,17 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
 noncomputable abbrev E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
   (Submodule.E8 ℝ).map (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm.toLinearMap
 
-instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
-  rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
-  use 1, by norm_num
-  rintro ⟨x, hx⟩ h
-  have hx' : ‖x‖ < 1 := by simpa [Subtype.dist_eq, dist_zero_right] using h
-  simp only [Submodule.mk_eq_zero]
-  simp only [Submodule.mem_map] at hx
-  obtain ⟨v, hv, rfl⟩ := hx
-  suffices v = 0 from congrArg (WithLp.toLp 2) this
-  refine (E8_norm_lower_bound v hv).resolve_right ?_
-  have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
-  exact not_le_of_gt (lt_trans hx' this)
+/-- The `E₈` lattice is even. -/
+theorem isEven_E8Lattice : ZLattice.IsEven E8Lattice := by
+  rw [ZLattice.isEven_iff]
+  rintro _ ⟨v, hv, rfl⟩
+  obtain ⟨_, ⟨k, rfl⟩, hk⟩ := E8_norm_eq_sqrt_even v hv
+  refine ⟨k, hk.symm.trans ?_⟩
+  push_cast
+  ring
+
+instance instDiscreteE8Lattice : DiscreteTopology E8Lattice :=
+  isEven_E8Lattice.discreteTopology
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_ofPred_eq]
