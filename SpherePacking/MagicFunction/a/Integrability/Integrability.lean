@@ -5,7 +5,10 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 
 /-!
 # Integrability

@@ -5,8 +5,9 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 
 /-!
 # Constructing Upper-Bounds for I₁

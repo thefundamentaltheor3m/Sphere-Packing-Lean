@@ -5,8 +5,11 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Topology.Algebra.InfiniteSum.Order
-public import Mathlib.Topology.Instances.Real.Lemmas
+public import Mathlib.Topology.Algebra.InfiniteSum.Defs
+public import Mathlib.Topology.MetricSpace.Pseudo.Defs
+
+import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
 
 /-! The contents of this file should go to Topology.Algebra.InfiniteSum, either
  into Basic or into another file. -/

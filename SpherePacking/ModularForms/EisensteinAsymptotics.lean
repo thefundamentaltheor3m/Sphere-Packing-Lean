@@ -5,7 +5,12 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import SpherePacking.ModularForms.Derivative
+public import Mathlib.NumberTheory.ModularForms.Derivative
+public import SpherePacking.ModularForms.Eisenstein
+
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
+import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ModularForms.E2
 
 /-!
 # Asymptotic Behavior of Eisenstein Series

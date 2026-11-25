@@ -1,9 +1,12 @@
 module
 
-public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
-public import Mathlib.Analysis.Normed.Group.FunctionSeries
-public import Mathlib.Topology.ContinuousMap.Compact
-public import SpherePacking.ModularForms.exp_lems
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+import Mathlib.Analysis.Calculus.UniformLimitsDeriv
+import Mathlib.Analysis.Normed.Group.FunctionSeries
+import Mathlib.Topology.ContinuousMap.Bounded.Normed
+import SpherePacking.ModularForms.exp_lems
 
 /-!
 # Termwise differentiation of series
@@ -123,7 +126,7 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ {z : ℂ | 0 < z.im}) 
           norm_cast
           rw [← Complex.norm_pow];
           congr;
-          rw [← exp_nat_mul];
+          rw [← exp_natCast_mul];
           ring_nf
     rw [hw1]
     norm_cast

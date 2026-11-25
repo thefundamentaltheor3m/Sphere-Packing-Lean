@@ -1,6 +1,12 @@
 module
 
 public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+import Mathlib.Analysis.Normed.Group.Tannery
+import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ForMathlib.SlashActions
 
 /-!
 # Jacobi theta basics
@@ -30,7 +36,7 @@ lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI.1) = H₄ := modular_slash_ne
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
   suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
-    simp_rw [modular_slash_T_apply, Pi.neg_apply, H₂, hΘ₂, mul_pow, ← Complex.exp_nat_mul,
+    simp_rw [modular_slash_T_apply, Pi.neg_apply, H₂, hΘ₂, mul_pow, ← Complex.exp_natCast_mul,
       mul_comm ((4 : ℕ) : ℂ), Nat.cast_ofNat, div_mul_cancel₀ (b := (4 : ℂ)) _ (by simp),
       Complex.exp_pi_mul_I, neg_one_mul]
   calc
@@ -53,7 +59,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
       ring_nf
     norm_cast
     rw [Complex.exp_add]
-    rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
+    rw [mul_comm (π * I), Complex.exp_intCast_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
 
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   ext x
@@ -61,7 +67,7 @@ lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   congr 1
   apply tsum_congr fun b ↦ ?_
   rw [coe_vadd, ofReal_one, mul_add, Complex.exp_add, mul_one, mul_comm (π * I), ← Int.cast_pow,
-    Complex.exp_int_mul, Complex.exp_pi_mul_I]
+    Complex.exp_intCast_mul, Complex.exp_pi_mul_I]
   congr 1
   rcases Int.even_or_odd b with (hb | hb)
   · rw [hb.neg_one_zpow, Even.neg_one_zpow]
@@ -102,7 +108,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   calc
   _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
-    simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
+    simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_natCast_mul, Nat.cast_ofNat, Int.reduceNeg,
       _root_.zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
     left
@@ -139,7 +145,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   _ = -cexp (-π * I / x) * cexp (π * I / x) * jacobiTheta₂ (1 / 2) x ^ 4 := by
     rw [mul_neg, ← zpow_add₀ hx', neg_add_cancel, mul_neg, zpow_zero, mul_one]
     congr 2
-    rw [← Complex.exp_nat_mul]
+    rw [← Complex.exp_natCast_mul]
     ring_nf
   _ = -jacobiTheta₂ (1 / 2) x ^ 4 := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,

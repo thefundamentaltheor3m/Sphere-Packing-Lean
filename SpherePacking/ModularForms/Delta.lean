@@ -6,9 +6,9 @@ Authors: Sphere Packing Contributors
 module
 
 public import Mathlib.NumberTheory.ModularForms.Discriminant
-public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.Tactic.NormNumI
+
+import SpherePacking.ModularForms.SlashActionAuxil
 
 /-! # The modular discriminant `Δ`
 

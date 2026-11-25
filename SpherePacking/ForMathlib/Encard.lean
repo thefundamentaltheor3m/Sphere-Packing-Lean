@@ -1,9 +1,13 @@
 module
 
-public import Mathlib.Data.ENat.Lattice
-public import Mathlib.Topology.Algebra.InfiniteSum.Order
-public import Mathlib.Topology.Order.T5
-public import SpherePacking.ForMathlib.ENat
+public import Mathlib.Data.Set.Card
+public import Mathlib.Topology.Algebra.InfiniteSum.Defs
+public import Mathlib.Topology.Instances.ENat
+
+import Mathlib.Data.ENat.Lattice
+import Mathlib.Topology.Algebra.InfiniteSum.Order
+import Mathlib.Topology.Order.T5
+import SpherePacking.ForMathlib.ENat
 
 /-!
 # Extended Cardinality
