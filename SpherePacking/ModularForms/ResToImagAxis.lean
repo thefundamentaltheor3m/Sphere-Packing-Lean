@@ -1,11 +1,11 @@
 module
 
-public import Mathlib.Geometry.Manifold.Notation
-public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import Mathlib.NumberTheory.ModularForms.Basic
 
-public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.QExpansionBounds
-public import SpherePacking.ModularForms.SlashActionAuxil
+import Mathlib.NumberTheory.ModularForms.QExpansion
+import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ForMathlib.QSeriesBounds
+import SpherePacking.ModularForms.SlashActionAuxil
 
 /-!
 # Restriction to the Imaginary Axis
@@ -100,7 +100,7 @@ theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 
   have hS := ResToImagAxis.SlashActionS F k ht
   calc F.resToImagAxis (1 / t)
       = I ^ k * I ^ (-k) * (t ^ k * t ^ (-k)) * F.resToImagAxis (1 / t) := by
-          simp only [zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
+          simp only [_root_.zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
                      mul_inv_cancel₀ (zpow_ne_zero k (ofReal_ne_zero.mpr ht.ne')), one_mul]
     _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
     _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]

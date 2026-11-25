@@ -1,9 +1,10 @@
 module
 
-public import Mathlib.Analysis.Normed.Group.Tannery
-public import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
-public import SpherePacking.ModularForms.JacobiTheta.Basic
-public import SpherePacking.ForMathlib.AtImInfty
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+
+import Mathlib.Analysis.Normed.Group.Tannery
+import SpherePacking.ForMathlib.AtImInfty
 
 /-!
 # Limits at infinity

@@ -5,13 +5,15 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib.Analysis.Real.Pi.Bounds
+public import SpherePacking.MagicFunction.a.Schwartz
+public import SpherePacking.MagicFunction.b.Schwartz
+public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.FG
 
-public import SpherePacking.MagicFunction.a.Eigenfunction
-public import SpherePacking.MagicFunction.a.SpecialValues
-public import SpherePacking.MagicFunction.b.Eigenfunction
-public import SpherePacking.MagicFunction.b.SpecialValues
-public import SpherePacking.Tactic.NormNumI
+import SpherePacking.MagicFunction.a.Eigenfunction
+import SpherePacking.MagicFunction.a.SpecialValues
+import SpherePacking.MagicFunction.b.Eigenfunction
+import SpherePacking.MagicFunction.b.SpecialValues
 
 /-! # Viazovska's Magic Function
 

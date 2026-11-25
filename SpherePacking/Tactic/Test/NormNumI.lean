@@ -5,10 +5,10 @@ Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
 module
 
-public import SpherePacking.Tactic.NormNumI
-public import Mathlib.Tactic.NormNum
-public import Mathlib.Data.ZMod.Basic
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Data.ZMod.Defs
+import Mathlib.Tactic.NormNum.Eq
+import Mathlib.Tactic.NormNum.OfScientific
+import SpherePacking.Tactic.NormNumI
 
 /-!
 # Tests for the `norm_num1` (`NormNumI`) tactic

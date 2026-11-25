@@ -1,9 +1,8 @@
 module
 
-public import Mathlib.Analysis.CStarAlgebra.Module.Defs
-public import Mathlib.Geometry.Manifold.Notation
 public import Mathlib.NumberTheory.ModularForms.QExpansion
-public import SpherePacking.ForMathlib.Cusps
+
+import SpherePacking.ForMathlib.Cusps
 
 /-!
 # Cusp Forms

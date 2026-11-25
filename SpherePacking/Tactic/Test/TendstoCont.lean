@@ -5,13 +5,11 @@ Authors: Cameron Freer
 -/
 module
 
-public import SpherePacking.Tactic.TendstoCont
-public import Mathlib.Topology.Algebra.Ring.Basic
-public import Mathlib.Topology.Order.Basic
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+public import Mathlib.Basic.Complex.Basic
+public import Mathlib.Topology.MetricSpace.Pseudo.Defs
+
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Tests for the `tendsto_cont` tactic

@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Tactic.FunProp
+public import Batteries.Tactic.Alias
+
+import Lean.ScopedEnvExtension
+import Mathlib.Init
 
 /-!
 # `@[tendsto_cont]` attribute

@@ -5,7 +5,6 @@ Authors: Sidharth Hariharan
 -/
 module
 
-
 public import SpherePacking.MagicFunction.a.Schwartz
 
 /-!
@@ -29,8 +28,7 @@ namespace MagicFunction.a.SpecialValues
 section IntegralRepresentations
 
 /-- For `‖x‖ > √2`, `a x = 4i sin²(π‖x‖²/2) ∫₀^∞ t² φ₀(i/t) e^{-π‖x‖²t} dt`. This is Blueprint
-`prop:a-double-zeros` (`a(r) = -4 sin²(πr²/2) ∫₀^{i∞} φ₀(-1/z) z² e^{πir²z} dz`) with the contour
-parametrised as `z = it`. The integral converges for `‖x‖² > 2` by `φ₀''_isBigO_nhdsGT_zero` and
+`prop:a-double-zeros`. The integral converges for `‖x‖² > 2` by `φ₀''_isBigO_nhdsGT_zero` and
 `φ₀''_isBigO_atTop`. -/
 theorem a_eq_integral {x : ℝ⁸} (hx : √2 < ‖x‖) :
     a x = 4 * I * Real.sin (π * ‖x‖ ^ 2 / 2) ^ 2
