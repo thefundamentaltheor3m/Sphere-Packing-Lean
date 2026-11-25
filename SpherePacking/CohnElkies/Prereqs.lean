@@ -17,6 +17,8 @@ public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.Analysis.RCLike.Inner
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 
+import TauCeti.Analysis.Fourier.PoissonSummation
+
 /-!
 # Prerequisites for the Cohn–Elkies Bound
 
@@ -84,50 +86,21 @@ noncomputable section PSF_L
 -- instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
 
 /-
-This section defines the Poisson Summation Formula, Lattice Version (`PSF_L`). This is a direct
-dependency of the Cohn-Elkies proof.
+This section states the Poisson summation formula over a lattice, for Schwartz functions. This is a
+direct dependency of the Cohn-Elkies proof.
 -/
-
--- Could this maybe become a `structure` with each field being a different condition?
-def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
-  /-
-    Mention here all the conditions we decide to impose functions on which to define the PSF-L.
-    For example, this could be that they must be Schwartz (cf. blueprint) or admissible (cf. Cohn-
-    Elkies). This is a placeholder for now, as is almost everything in this file.
-
-    I think Schwartz is a good choice, because we can use the results in
-    `Mathlib.Analysis.Distribution.FourierSchwartz` to conclude various things about the function.
-  -/
-  Summable f ∧
-  sorry
-
-theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
-  (v : EuclideanSpace ℝ (Fin d)) :
-  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-    ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
-  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
-  sorry
-
--- The version below is on the blueprint. I'm pretty sure it can be removed.
-theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) *
-      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ, (𝓕 f m)
-    := by
-  simpa using PSF_L Λ hf 0
 
 namespace SchwartzMap
 
+omit [Fact (0 < d)] in
+/-- The Poisson summation formula over a lattice, for Schwartz functions. -/
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
     ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
       (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
-  sorry
-
--- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
--- ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
---   := by
--- sorry
+  rw [one_div, ← ZLattice.dual_def]
+  simpa only [RCLike.inner_eq_wInner_one] using SchwartzMap.tsum_eq_tsum_dual_fourier f Λ v
 
 end SchwartzMap
 

@@ -1,0 +1,7 @@
+# Lake system configuration naming Tau Ceti's public, anonymous olean cache.
+# `lake exe cache` (`scripts/Cache.lean`) passes this file to Lake through `LAKE_CONFIG`; nothing else reads it.
+[[cache.service]]
+name = "tauceti-public"
+kind = "s3"
+artifactEndpoint = "https://cache.taucetiproject.org/artifacts"
+revisionEndpoint = "https://cache.taucetiproject.org/revisions"
