@@ -135,7 +135,7 @@ By absolute convergence, the product expands as a Cauchy product: the coefficien
 
 As corollaries, we have the following bounds for $\phi_0$, $\phi_{-2}$, and $\phi_{-4}$.
 
-\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:mod_form_poly_growth, lemma:poly-growth-mul}
+\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:mod_form_poly_growth, lemma:poly-growth-mul}\lean{MagicFunction.PolyFourierCoeffBound.norm_φ₀_le}\leanok
 There exists a constant $C_0 > 0$ such that
 \begin{equation}\label{eqn:phi0-bound}
 |\phi_0(z)| \le C_0 e^{-2 \pi \Im z}
@@ -156,7 +156,7 @@ The Fourier coefficients of $E_2$, $E_4$ and $E_6$ grow polynomially (Lemma~\ref
 i.e.\ $n_0 = 4$. The result follows from Lemma~\ref{lemma:mod-div-disc-bound}.
 \end{proof}
 
-\begin{corollary}\label{cor:phi2-bound}\uses{def:phi4-phi2-phi0, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:poly-growth-mul}
+\begin{corollary}\label{cor:phi2-bound}\uses{def:phi4-phi2-phi0, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:poly-growth-mul}\lean{MagicFunction.PolyFourierCoeffBound.norm_φ₂'_le}\leanok
 There exists a constant $C_{-2} > 0$ such that
 \begin{equation}\label{eqn:phi2-bound}
     |\phi_{-2}(z)| \le C_{-2}
@@ -167,7 +167,7 @@ for all $z$ with $\Im z > 1/2$.
 As in Corollary~\ref{cor:phi0-bound}: the numerator of $\phi_{-2}$ is $E_4(E_2E_4 - E_6)$, with $n_0 = 0 + 2 = 2$, so Lemma~\ref{lemma:mod-div-disc-bound} gives the bound with exponent $-\pi(2-2)\Im z = 0$.
 \end{proof}
 
-\begin{corollary}\label{cor:phi4-bound}\uses{def:phi4-phi2-phi0, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:poly-growth-mul}
+\begin{corollary}\label{cor:phi4-bound}\uses{def:phi4-phi2-phi0, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:poly-growth-mul}\lean{MagicFunction.PolyFourierCoeffBound.norm_φ₄'_le}\leanok
 There exists a constant $C_{-4} > 0$ such that
 \begin{equation}\label{eqn:phi4-bound}
     |\phi_{-4}(z)| \le C_{-4} e^{2 \pi \Im z}
@@ -194,6 +194,7 @@ Note that we can take the constants $C_0$, $C_{-2}$, and $C_{-4}$ as
     \end{equation}
 \end{lemma}
 \begin{proof}\leanok
+    \todo{The Lean statements \texttt{I\_j'\_bounding} ($j = 1, 3, 5$) currently quantify the constant \emph{after} $r$ (``for all $r$ there exists $C$''), which is weaker than the uniform bound stated here; their proofs do go through the uniform bound of Corollary \ref{cor:phi0-bound}, so the quantifiers should be swapped.}
     We only prove the bound for $I_1(r)$, as the other two are similar.
     By the change of variable $z = -1 + i t$ for $t \in [0,1]$, we have
     $$
@@ -225,6 +226,8 @@ For the integrals $I_2$, $I_4$, and $I_6$, whose contours do not touch the real 
     \end{equation}
 \end{lemma}
 \begin{proof}
+    \todo{As for Lemma \ref{lem:bound-I1-I3-I5}, the Lean statements currently quantify the constants after $r$.}
+    \todo{As for Lemma \ref{lem:bound-I1-I3-I5}, the Lean statements currently quantify the constants after $r$.}
     For $I_2(r)$, parametrize $z$ as $z = t + i$ for $t \in [-1,0]$, and we have
     $$
         I_2(r) = \int_{-1}^0 \phi_0\left(\frac{-1}{t + 1 + i}\right) (t + 1 + i)^2 e^{\pi i r t} e^{-\pi r} \, \dd t.
@@ -247,7 +250,7 @@ For the integrals $I_2$, $I_4$, and $I_6$, whose contours do not touch the real 
 
 The bound appearing in Lemma~\ref{lem:bound-I1-I3-I5} decays faster than any polynomial as $r \to \infty$; this is a consequence of standard facts about the $\Gamma$ function. We state the lemma for an arbitrary exponent $\alpha > 0$, so that it also applies (with $\alpha = \pi$) to the analogous bounds for $b$ in Lemma~\ref{lemma:bound-J1-J3-J5} below.
 
-\begin{lemma}\label{lem:integral-bound}
+\begin{lemma}\label{lem:integral-bound}\lean{pow_mul_integral_exp_mul_exp_div_le}\leanok
     For all $n \in \N$ and $\alpha > 0$, there exists a constant $C'$ such that for all $r \geq 0$,
     \begin{align}
         r^n \cdot \int_{1}^{\infty} e^{-\alpha s} \, e^{-\pi r /s} \, \dd s \leq C'
@@ -371,7 +374,7 @@ Apply the Cauchy--Goursat theorem for rectangles to the truncated rectangles $\{
 
 Using \eqref{eqn:phi0-bound}, \eqref{eqn:phi2-bound}, and \eqref{eqn:phi4-bound}, we can control the behavior of $\phi_0$ near $0$ and $i\infty$.
 
-\begin{corollary}\label{cor:phi0-near-0-infty}\uses{cor:phi0-bound, cor:phi2-bound, cor:phi4-bound, lemma:phi0-transform}
+\begin{corollary}\label{cor:phi0-near-0-infty}\uses{cor:phi0-bound, cor:phi2-bound, cor:phi4-bound, lemma:phi0-transform}\lean{MagicFunction.PolyFourierCoeffBound.φ₀''_isBigO_nhdsGT_zero, MagicFunction.PolyFourierCoeffBound.φ₀''_isBigO_atTop}\leanok
 We have
 \begin{align}
     \phi_0\left(\frac{i}{t}\right) &= O(e^{-2 \pi / t}) \quad \text{as } t \to 0 \label{eqn:phi0-near-0} \\
@@ -476,7 +479,7 @@ As $r \to 0$, the factor $\sin(\pi r^2/2)^2$ vanishes to order $r^4$; the only t
 \subsection{The Integrands for $b$}
 
 Now we construct function $b$. To this end we consider the function
-\begin{definition}\label{def: h}\uses{def:H2-H3-H4}\lean{h}\leanok
+\begin{definition}\label{def: h}\uses{def:H2-H3-H4, lemma:theta-nonvanishing}\lean{h}\leanok
 % \begin{equation}\label{eqn: h define}
 %     h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
 % \end{equation}
@@ -489,7 +492,7 @@ for all $\gamma\in\Gamma_0(2)$. Since the group $\Gamma_0(2)$ is generated by el
 $\left(\begin{smallmatrix}1&0\\2&1\end{smallmatrix}\right)$ and $\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$
 it suffices to check that $h$ is invariant under their action. This follows immediately
 from \eqref{eqn:H2-transform-S}--\eqref{eqn:H4-transform-S} and \eqref{eqn: h define}. Next we analyze the poles of $h$.
-It is known \cite[Chapter~I Lemma~4.1]{Mumford} that $\theta_{10}$ has no zeros in the upper-half plane and hence $h$ has poles only at the cusps.
+It is known \cite[Chapter~I Lemma~4.1]{Mumford} that $\theta_{10}$ has no zeros in the upper-half plane (see also Lemma \ref{lemma:theta-nonvanishing}) and hence $h$ has poles only at the cusps.
 At the cusp $i\infty$ this modular form has the Fourier expansion
 \ifplastex
 \begin{equation*}
@@ -552,7 +555,7 @@ We have
 
 For the growth estimates it is convenient to express the $\psi$-functions, like the $\phi$-functions, as quotients by $\Delta$.
 
-\begin{lemma}\label{lemma:psi-new}\uses{lemma:psi-explicit, lemma:jacobi-identity, lemma:lv1-lv2-identities}
+\begin{lemma}\label{lemma:psi-new}\uses{lemma:psi-explicit, lemma:jacobi-identity, lemma:lv1-lv2-identities}\lean{ψI_eq_div_disc, ψS_eq_neg_one_half_smul_G_div_disc, ψT_eq_div_disc}\leanok
     $\psi_I(z), \psi_S(z), \psi_T(z)$ can be written as
     \begin{align}
         \psi_I(z) &= \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta}, \label{eqn:psiI-new} \\
@@ -589,10 +592,6 @@ Now, we are ready to define function $b$.
 Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
 
 
-% AUDIT NOTE: the Lean definition `MagicFunction.b.RealIntegrals.J₆'` currently carries the
-% factor +2 instead of the -2 below. The -2 convention used here is the one consistent with the
-% Lean statements `perm_J₅ : 𝓕 J₅ = -J₆` and `b_zero : b 0 = 0`, as well as with
-% Proposition \ref{prop:b-double-zeros}; the Lean definition should be corrected accordingly.
 \begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}\lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}\leanok
 Define $b_\rad : \R \to \C$ by
 \begin{equation}
@@ -626,7 +625,7 @@ The proofs of the analytic properties of $b$ below follow those for $a$ with the
 
 As in the case of $a(x)$, we start with exponential bounds for the $\psi$-functions.
 
-\begin{lemma}\label{lemma:psi-bound}\uses{lemma:mod-div-disc-bound, lemma:psi-new, lemma:poly-growth-mul, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}
+\begin{lemma}\label{lemma:psi-bound}\uses{lemma:mod-div-disc-bound, lemma:psi-new, lemma:poly-growth-mul, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}\lean{norm_ψI_le, norm_ψT_le, norm_ψS_le}\leanok
     There exist constants $C_I, C_S, C_T > 0$ such that
     \begin{align}
         |\psi_I(z)| &\le C_I e^{2\pi \Im z}, \label{eqn:psiI-bound} \\
@@ -716,7 +715,7 @@ By linearity, Lemmas~\ref{lemma:perm-J12}, \ref{lemma:perm-J56} and \ref{lemma:p
 
 Now we regard the radial function $b$ as a function on $\R_{\geq0}$ and check that $b$ has double roots at $\Lambda_8$-points.
 
-\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psi-slash-relations}
+\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psi-slash-relations}\lean{ψI'_I_mul_eq, ψI'_isBigO_nhdsGT_zero, ψI'_isBigO_atTop}\leanok
 We have
 \begin{align}
     \psi_I(it) &= O(t^2 e^{-\pi/t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\
@@ -734,7 +733,7 @@ and combined with \eqref{eqn:psiS-bound} we get \eqref{eqn:psiI-near-0}.
 
 We will also need the following identity.
 
-\begin{lemma}\label{lemma:psi-sum}\uses{def:psiI-psiT-psiS}
+\begin{lemma}\label{lemma:psi-sum}\uses{def:psiI-psiT-psiS}\lean{ψT_add_ψS}\leanok
 $\psi_T+\psi_S=\psi_I$.
 \end{lemma}
 \begin{proof}

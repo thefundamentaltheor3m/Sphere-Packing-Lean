@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 
@@ -73,3 +74,17 @@ lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
 end Integrability
 
 end
+
+section IntegralBound
+
+/-- Blueprint `lem:integral-bound`: for every `n` and `α > 0`, the quantity
+`r ^ n ∫₁^∞ e^{-αs} e^{-πr/s} ds` is bounded uniformly in `r ≥ 0`. Combined with
+`I₁'_bounding`, `I₃'_bounding`, `I₅'_bounding`, this shows that `I₁'`, `I₃'`, `I₅'` decay faster
+than any polynomial (with `α = 2π`; the analogous bounds for `b` use `α = π`). Proof sketch:
+`r ^ n e^{-πr/s} ≤ C s ^ n` for `s ≥ 1`, and `∫₀^∞ s ^ n e^{-αs} ds = n! / α ^ (n + 1)`. -/
+theorem pow_mul_integral_exp_mul_exp_div_le (n : ℕ) {α : ℝ} (hα : 0 < α) :
+    ∃ C : ℝ, ∀ r : ℝ, 0 ≤ r →
+      r ^ n * ∫ s in Ici (1 : ℝ), exp (-α * s) * exp (-π * r / s) ≤ C := by
+  sorry
+
+end IntegralBound

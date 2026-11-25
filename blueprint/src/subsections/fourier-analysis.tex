@@ -12,13 +12,13 @@ Recall the definition of a Fourier transform.
 
 The following computational result will be of use later on.
 
-\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_innerProductSpace}
+\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_upperHalfPlane_eight, fourier_gaussian_upperHalfPlane}\leanok
   For every $z \in \h$, the Gaussian $x \mapsto e^{\pi i \|x\|^2 z}$ on $\R^8$ satisfies
   \begin{equation}
     \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   For any $b \in \C$ with $\Re(b) > 0$, the Fourier transform of the Gaussian $x \mapsto e^{-b\|x\|^2}$ on a $d$-dimensional inner product space is $y \mapsto (\pi/b)^{d/2}\,e^{-\pi^2\|y\|^2/b}$. Taking $d = 8$ and $b = -\pi i z$, which satisfies $\Re(b) = \pi \Im(z) > 0$, we obtain
   \[
     \left(\frac{\pi}{-\pi i z}\right)^{4} e^{-\pi^2\|y\|^2/(-\pi i z)}
@@ -46,7 +46,7 @@ A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it d
 
 The functions we construct in Section~\ref{sec: fourier double zeroes} will be \emph{radial}, and we record here the elementary facts about radial Schwartz functions that drive that construction.
 
-\begin{definition}\label{def:radial-function}
+\begin{definition}\label{def:radial-function}\lean{Function.IsRadial}\leanok\mathlibok
   Let $E$ be a normed $\R$-vector space. A function $f : E \to \C$ is \emph{radial} if $f(x) = f(y)$ whenever $\norm{x} = \norm{y}$.
 \end{definition}
 
@@ -85,7 +85,7 @@ Another reason we are interested in Schwartz Functions is that they behave well 
 
 We begin by stating a general summability result over specific subsets of $\R^d$.
 
-\begin{lemma}\label{lemma:inv-power-summable}
+\begin{lemma}\label{lemma:inv-power-summable}\lean{Summable_Inverse_Powers_of_Finite_Orbits, PeriodicSpherePacking.inv_pow_norm_summable}\leanok
   Let $X \subset \R^d$ be a set of sphere packing centres of separation $1$ that is periodic with some lattice $\Lambda \subset \R^d$. Then, for any real $k > d$,
   \[
     \sum_{x \in X} \frac{1}{\norm{x}^{k}} < \infty.
@@ -110,7 +110,7 @@ We begin by stating a general summability result over specific subsets of $\R^d$
 
 The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above.
 
-\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space}
+\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space, lemma:inv-power-summable}\lean{PeriodicSpherePacking.summable_schwartz}\leanok
   Let $f : \R^d \to \C$ be a Schwartz function and let $X \subset \R^d$ be periodic with respect to some lattice $\Lambda \subset \R^d$. Then,
   \[
     \sum_{x \in X} |f(x)| < \infty.
@@ -156,7 +156,7 @@ The first ingredient is a composition theorem already in Mathlib.
 
 Lemma~\ref{lemma:schwartz-comp-normsq} is not directly applicable to the functions of Section~\ref{sec: fourier double zeroes}: the one-dimensional integrals defining them are \emph{not} Schwartz on all of $\R$ --- they grow exponentially as $r \to -\infty$, and some of them are not even given by convergent integrals far to the left of the origin. However, only their behaviour on $[0, \infty)$ matters, since $\|x\|^2 \geq 0$. The remedy is to multiply by a smooth cutoff before composing.
 
-\begin{lemma}\label{lemma:smooth-cutoff}\lean{Real.smoothTransition}
+\begin{lemma}\label{lemma:smooth-cutoff}\lean{Real.smoothTransition}\leanok\mathlibok
   There exists a smooth function $\Theta : \R \to [0, 1]$ such that $\Theta(x) = 0$ for $x \leq -1$ and $\Theta(x) = 1$ for $x \geq 0$.
 \end{lemma}
 \begin{proof}
@@ -165,7 +165,7 @@ Lemma~\ref{lemma:schwartz-comp-normsq} is not directly applicable to the functio
 
 Note that, being smooth and constant on both $(-\infty, -1]$ and $[0, \infty)$, the function $\Theta$ has all of its derivatives supported in the compact interval $[-1, 0]$; in particular $\Theta$ and all of its derivatives are (individually) bounded. Rescaling, for any $\theta < 0$ we obtain a smooth cutoff $\Theta_\theta(x) := \Theta\left(\frac{2x}{-\theta}\right)$ which vanishes for $x \leq \theta/2$, equals $1$ for $x \geq 0$, and transitions on $[\theta/2, 0]$; for $\theta = -2$ this is $\Theta$ itself.
 
-\begin{theorem}\label{thm:cutoff-schwartz}\uses{def:Schwartz-Space, lemma:smooth-cutoff}
+\begin{theorem}\label{thm:cutoff-schwartz}\uses{def:Schwartz-Space, lemma:smooth-cutoff}\lean{eq_schwartzMap}\leanok
   Let $\theta < 0$ and let $f : \R \to \C$ be smooth on $(\theta, \infty)$ and such that for all $k, n \in \N$ there exists $C \in \R$ with
   \[
     x^{k} \cdot |f^{(n)}(x)| \leq C \quad \text{for all } x \geq 0.
@@ -173,6 +173,7 @@ Note that, being smooth and constant on both $(-\infty, -1]$ and $[0, \infty)$, 
   Then $\Theta_\theta \cdot f$ (extended by zero where $f$ is undefined) is a Schwartz function on $\R$; it agrees with $f$ on $[0, \infty)$ and vanishes on $(-\infty, \theta/2]$.
 \end{theorem}
 \begin{proof}\uses{lemma:smooth-cutoff}
+  \todo{The Lean version \texttt{eq\_schwartzMap} currently assumes that $f$ is smooth on all of $\R$ (and uses the cutoff $\Theta(x - a + 1)$, transitioning on $[a - 1, a]$), which is weaker than the statement here.}
   Write $g := \Theta_\theta \cdot f$. The last two assertions are immediate from the corresponding properties of $\Theta_\theta$.
 
   \emph{Smoothness.} The open sets $(-\infty, \theta/2)$ and $(\theta, \infty)$ cover $\R$. On the former, $g$ vanishes identically; on the latter, $g$ is a product of smooth functions. Since smoothness is a local property, $g$ is smooth on $\R$.
