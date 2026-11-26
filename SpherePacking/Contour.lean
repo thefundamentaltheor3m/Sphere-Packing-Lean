@@ -73,7 +73,7 @@ lemma integral_deriv_mul' (f g : ℝ → ℂ) (a : ℝ) :
   simp [← integral_deriv_mul]
 
 --hasDerivAt_circleMap
-theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (p : ℂ) (R : ℝ) :
+theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (R : ℝ) :
     circleIntegral f c R = ∮ z in circlePath c R, f z := by
   rw [circleIntegral, goal0]
   calc
@@ -151,17 +151,37 @@ theorem contourIntegral_append : ∮ z in γ.trans τ, f z = (∮ z in γ, f z) 
 --def IsNice (p : Path a b) : Prop :=
 -- Set.piecewise
 
-theorem goal1 {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ) (hs : SimplyConnectedSpace s)
-    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ) :
+-- Differentiable version
+theorem goal1 {s : Set ℂ} (h : ∀ x ∈ I, DifferentiableAt ℝ γ.extend x) (F : ℂ → ℂ)
+    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
+    (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = F b - F a := by
   rw [goal0]
+  calc
+  _ = (F ∘ γ.extend) 1 - (F ∘ γ.extend) 0 := by
+    rw [← intervalIntegral.integral_eq_sub_of_hasDerivAt ?_ hint]
+    intro x hx
+    apply HasDerivAt.comp
+    · apply hf
+      apply himg
+      aesop
+    rw [hasDerivAt_deriv_iff]
+    aesop
+  _ = _ := by grind
+
+-- Piecewise C1 version
+theorem goal1' {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ)
+    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
+    (himg : Set.range γ ⊆ s) :
+    ∮ z in γ, f z = F b - F a := by
   sorry
 
 --maybe use HasDerivWithIn?
 theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
-    (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ) :
+    (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
+    (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = 0 := by
-  rw [goal1 (F := F) (h := by assumption) (hs := hs) (hf := hf) (hint := hint)]
+  rw [goal1' (F := F) (h := by assumption) (hf := hf) (hint := hint) (himg := himg)]
   rw [sub_self]
 
 --convex
@@ -171,7 +191,7 @@ theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn
 
 theorem goal4 (s : Set ℂ) (γ : Path a a) (h : γ.IsPiecewiseC1)
     (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s)
-    (hint : PathIntegrable f γ) :
+    (hint : PathIntegrable f γ) (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = 0 := by
   have : Complex.IsExactOn f s := by
     apply goal3 _ _ hs hf
