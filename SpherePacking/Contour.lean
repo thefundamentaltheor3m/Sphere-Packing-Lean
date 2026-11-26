@@ -4,7 +4,7 @@ public import Mathlib
 
 @[expose] public noncomputable section
 
-open unitInterval Set Complex Real
+open unitInterval Set Complex Real MeasureTheory
 
 @[simp]
 theorem circleMap_zero_arg (p : ℂ) (R : ℝ) : circleMap p R 0 = p + R := by
@@ -30,6 +30,9 @@ def Path.IsPiecewise {X : Type*} [TopologicalSpace X] {a b : X}
     (γ : Path a b) (P : {a : X} → {b : X} → Path a b → Prop) : Prop :=
   ∃ (n : ℕ) (t : Fin (n + 1) → I), Monotone t ∧ t 0 = 0 ∧ t (Fin.last n) = 1 ∧
     ∀ i : Fin n, P (Path.subpath γ (t i.castSucc) (t i.succ))
+
+def PathIntegrable (f : ℂ → ℂ) {a b : ℂ} (γ : Path a b) : Prop :=
+  IntervalIntegrable (f ∘ γ.extend) volume 0 1
 
 abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
     (γ : Path a b) : Prop :=
@@ -104,13 +107,16 @@ theorem contourIntegral_append : ∮ z in γ.trans τ, f z = ∮ z in γ, f z + 
 -- Set.piecewise
 
 theorem goal1 {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ) (hs : SimplyConnectedSpace s)
-    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = F b - F a := by
+    (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ) :
+    ∮ z in γ, f z = F b - F a := by
+  rw [goal0]
   sorry
 
 --maybe use HasDerivWithIn?
 theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
-    (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) : ∮ z in γ, f z = 0 := by
-  rw [goal1 (F := F) (h := by assumption) (hs := hs) (hf := hf)]
+    (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ) :
+    ∮ z in γ, f z = 0 := by
+  rw [goal1 (F := F) (h := by assumption) (hs := hs) (hf := hf) (hint := hint)]
   rw [sub_self]
 
 --convex
