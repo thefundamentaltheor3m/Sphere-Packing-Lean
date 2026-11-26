@@ -1,10 +1,8 @@
 module
 
-public import Mathlib.Algebra.Order.Star.Rat
-public import Mathlib.LinearAlgebra.Dimension.Localization
-public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
-public import SpherePacking.ModularForms.Eisenstein
 public import SpherePacking.ModularForms.IsCuspForm
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
 
 /-!
 # Dimension formulas for level-one modular forms

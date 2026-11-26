@@ -6,11 +6,9 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
-public import Mathlib.MeasureTheory.Integral.ExpDecay
-public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-public import Mathlib.Analysis.Complex.Exponential
-public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+public import Mathlib.MeasureTheory.Measure.Haar.OfBasis
+
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-!
 # Exponential Decay Integrability Lemmas (Tail Regime)

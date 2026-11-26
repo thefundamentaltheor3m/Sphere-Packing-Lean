@@ -5,20 +5,23 @@ Authors: Sphere Packing Contributors
 -/
 module
 
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
-public import Mathlib.NumberTheory.ModularForms.RamanujanFormula
-public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
+public import Mathlib.NumberTheory.ModularForms.Discriminant
 public import SpherePacking.ModularForms.Eisenstein
-public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.ModularForms.JacobiTheta.Basic
-public import SpherePacking.ModularForms.JacobiTheta.Derivative
-public import SpherePacking.ModularForms.QExpansion
-public import SpherePacking.ModularForms.ResToImagAxis
-public import SpherePacking.ModularForms.tsumderivWithin
-public import SpherePacking.Tactic.TendstoCont
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
+import Mathlib.NumberTheory.ModularForms.RamanujanFormula
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta.Derivative
+import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.ModularForms.QExpansion
+import SpherePacking.Tactic.NormNumI
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # The Modular Forms `F` and `G`
@@ -316,7 +319,7 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
 theorem F_vanishing_order : Tendsto (fun z : ℍ ↦ F z / cexp (2 * π * Complex.I * 2 * z))
     atImInfty (nhds (720 ^ 2)) := by
   refine (E₂E₄_sub_E₆_div_q_tendsto.pow 2).congr fun z ↦ ?_
-  simp [F, div_pow, ← Complex.exp_nat_mul, mul_comm, mul_left_comm]
+  simp [F, div_pow, ← Complex.exp_natCast_mul, mul_comm, mul_left_comm]
 
 /-- `(D F)/F → 2` as `im(z) → ∞`, since `F` vanishes to order 2 at `i∞`. -/
 theorem D_F_div_F_tendsto : Tendsto (fun z : ℍ ↦ D F z / F z) atImInfty (nhds (2 : ℂ)) := by
@@ -333,7 +336,7 @@ theorem G_vanishing_order :
     Tendsto (fun z : ℍ ↦ G z / cexp (2 * π * I * (3/2) * z)) atImInfty (nhds 20480) := by
   have h : ∀ z : ℍ, G z / cexp (2 * π * I * (3 / 2) * z) =
       (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := fun z ↦ by
-    simp [G, div_pow, ← Complex.exp_nat_mul]
+    simp [G, div_pow, ← Complex.exp_natCast_mul]
     ring_nf
   simp_rw [h]
   tendsto_cont [H₂_div_exp_tendsto, H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
@@ -462,7 +465,7 @@ lemma F₁_isBigO_exp_atImInfty : F₁ =O[atImInfty] fun τ ↦ Real.exp (-(2 * 
 
 /-- `F = F₁ ^ 2` has exponential decay `O(exp(-4π im τ))` at infinity. -/
 lemma F_isBigO_exp_atImInfty : F =O[atImInfty] fun τ ↦ Real.exp (-(4 * π) * τ.im) :=
-  (F₁_isBigO_exp_atImInfty.pow 2).congr_right fun τ ↦ by rw [← Real.exp_nat_mul]; ring_nf
+  (F₁_isBigO_exp_atImInfty.pow 2).congr_right fun τ ↦ by rw [← Real.exp_natCast_mul]; ring_nf
 
 /-- `F₁ * E₄` has exponential decay `O(exp(-2π im τ))` at infinity, as `E₄` is bounded. -/
 lemma F₁_mul_E₄_isBigO_exp_atImInfty :

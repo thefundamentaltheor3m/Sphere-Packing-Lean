@@ -7,6 +7,8 @@ module
 
 public import SpherePacking.Basic.PeriodicPacking
 
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+
 /-!
 # Basic properties of the E₈ lattice
 
@@ -270,7 +272,7 @@ lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
   rw [Fin.forall_fin_succ']
   refine ⟨?h1, ?h2⟩
   case h2 =>
-    simp only [E8Matrix, Fin.reduceLast, Matrix.of_row, Fin.isValue, Matrix.cons_val]
+    simp only [E8Matrix, Fin.reduceLast, Matrix.row_of, Fin.isValue, Matrix.cons_val]
     rw [Submodule.E8_eq_sup]
     refine Submodule.mem_sup_right (Submodule.subset_span ?_)
     simp [funext_iff, Fin.forall_fin_succ]
@@ -517,7 +519,7 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   obtain ⟨n, hn, hn'⟩ := E8_norm_eq_sqrt_even v hv
   have : 0 ≤ (n : ℝ) := by rw [hn']; positivity
   have : 0 ≤ n := mod_cast this
-  have : n ≠ 0 := by contrapose! hv'; simpa [hv'] using hn'.symm
+  have : n ≠ 0 := by contrapose hv'; simpa [hv'] using hn'.symm
   have : 2 ≤ n := by obtain ⟨k, rfl⟩ := hn; omega
   apply le_of_sq_le_sq _ (by simp)
   rw [← hn', Real.sq_sqrt zero_le_two]
@@ -618,7 +620,7 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
     obtain ⟨b', hb', rfl⟩ := hb
     have hsub : a' - b' ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha' hb'
     have hne : a' ≠ b' := by
-      contrapose! hab
+      contrapose hab
       simp [hab]
     have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr hne
     change √2 ≤ ‖(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (a' - b')‖

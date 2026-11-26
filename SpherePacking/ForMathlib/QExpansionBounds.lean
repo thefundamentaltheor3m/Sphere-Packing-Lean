@@ -5,9 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import Mathlib.Geometry.Manifold.Notation
 public import Mathlib.NumberTheory.ModularForms.QExpansion
-public import SpherePacking.ForMathlib.QSeriesBounds
+
+import SpherePacking.ForMathlib.QSeriesBounds
 
 /-!
 # Pointwise bounds from canonical q-expansions
@@ -33,7 +33,7 @@ lemma summable_norm_qExpansion_mul_exp {F : ℍ → ℂ}
     Summable fun m : ℕ ↦ ‖(qExpansion 1 F).coeff m‖ * rexp (-(2 * π * c) * m) := by
   let zc : ℍ := ⟨c * Complex.I, by simpa using hc⟩
   refine (hasSum_qExpansion one_pos hper hhol hbdd zc).summable.norm.congr fun m ↦ ?_
-  rw [norm_smul, norm_pow, Function.Periodic.norm_qParam, div_one, ← Real.exp_nat_mul]
+  rw [norm_smul, norm_pow, Function.Periodic.norm_qParam, div_one, ← Real.exp_natCast_mul]
   congr 2
   simp [zc]
   ring
@@ -48,7 +48,7 @@ lemma norm_le_qExpansion_of_coeff_vanish {F : ℍ → ℂ}
     ‖F z‖ ≤ (∑' m : ℕ, ‖(qExpansion 1 F).coeff m‖ * rexp (-(2 * π * c) * m)) *
       rexp (-(2 * π) * n₀ * (z.im - c)) := by
   have hterm (m : ℕ) : Function.Periodic.qParam 1 z ^ m = cexp (2 * π * Complex.I * m * z) := by
-    rw [Function.Periodic.qParam, Complex.ofReal_one, div_one, ← Complex.exp_nat_mul]
+    rw [Function.Periodic.qParam, Complex.ofReal_one, div_one, ← Complex.exp_natCast_mul]
     congr 1
     ring
   rw [← (hasSum_qExpansion one_pos hper hhol hbdd z).tsum_eq]

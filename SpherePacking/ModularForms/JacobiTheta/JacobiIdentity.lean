@@ -1,6 +1,15 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+public import Mathlib.NumberTheory.ModularForms.Discriminant
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+import Mathlib.NumberTheory.ModularForms.LevelOne.DimensionFormula
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Jacobi theta identities
@@ -182,7 +191,7 @@ lemma H₂_div_exp_tendsto :
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
     have h_exp : cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) := by
-      rw [← Complex.exp_nat_mul]
+      rw [← Complex.exp_natCast_mul]
       ring_nf
     rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow,
       h_exp, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
@@ -205,7 +214,7 @@ lemma Δ_eq_H₂_H₃_H₄ : (Δ : ℍ → ℂ) = (1 / 256 : ℂ) • (H₂ * H�
           (H₂ z / cexp (↑π * I * ↑z)) ^ 2 * (H₃ z) ^ 2 * (H₄ z) ^ 2 := by
         intro z
         have h_exp : cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 := by
-          rw [← Complex.exp_nat_mul]
+          rw [← Complex.exp_natCast_mul]
           ring_nf
         simp only [theta_prod_sq, Pi.mul_apply, Pi.pow_apply]
         rw [h_exp]

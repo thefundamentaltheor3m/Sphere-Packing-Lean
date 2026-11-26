@@ -1,12 +1,17 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
-public import SpherePacking.ModularForms.Derivative
-public import SpherePacking.ModularForms.DimensionFormulas
-public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.Tactic.TendstoCont
+public import Mathlib.NumberTheory.ModularForms.Derivative
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.JacobiTheta.Defs
+
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.E2
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
+import SpherePacking.ModularForms.JacobiTheta.MDifferentiable
+import SpherePacking.Tactic.TendstoCont
 
 /-!
 # Derivatives of the Jacobi theta functions
@@ -289,12 +294,12 @@ lemma theta_g_MDifferentiable : MDiff theta_g := by rw [theta_g, f₂, f₄]; fu
 lemma theta_h_MDifferentiable : MDiff theta_h := by rw [theta_h, f₂, f₄]; fun_prop
 
 /-- `theta_g` as a `SlashInvariantForm` of level 1 -/
-noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
+private noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
   toFun := theta_g
   slash_action_eq' := slashaction_generators_GL2R theta_g 6 theta_g_S_action theta_g_T_action
 
 /-- `theta_h` as a `SlashInvariantForm` of level 1 -/
-noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
+private noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := slashaction_generators_GL2R theta_h 8 theta_h_S_action theta_h_T_action
 
@@ -373,7 +378,7 @@ lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
   tendsto_cont [H₂_tendsto_atImInfty, H₄_tendsto_atImInfty]
 
 /-- `H_sum_sq ≠ 0` -/
-lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
+lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := H_sum_sq_tendsto.ne_zero one_ne_zero
 
 /-- `3 * H_sum_sq ≠ 0` -/
 lemma three_H_sum_sq_ne_zero : (fun z ↦ 3 * H_sum_sq z) ≠ 0 :=

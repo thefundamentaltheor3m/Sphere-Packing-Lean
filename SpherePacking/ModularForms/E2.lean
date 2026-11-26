@@ -1,7 +1,8 @@
 module
 
-public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
-public import SpherePacking.ModularForms.SlashActionAuxil
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Defs
+
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
 
 /-!
 # The Eisenstein Series `E₂`
@@ -87,7 +88,7 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
               intro n
               have hpow : cexp (2 * π * Complex.I * n * z) =
                   cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-                rw [← Complex.exp_nat_mul]
+                rw [← Complex.exp_natCast_mul]
                 congr 1
                 ring
               simp [pow_one, hpow]
