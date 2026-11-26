@@ -23,6 +23,7 @@ public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.MagicFunction.AnalyticContinuation
 public import SpherePacking.MagicFunction.IntegralParametrisations
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.AnalyticContinuation
