@@ -55,6 +55,23 @@ theorem contourIntegral_def : ∮ z in γ, f z =
   rfl
 --{E : Type u_1} [NormedAddCommGroup E] [NormedSpace ℂ E] (f : ℂ → E)
 
+lemma integral_deriv_mul (f g : ℝ → ℂ) (u v a : ℝ) :
+    ∫ x in (u * a)..(v * a), g x * deriv f x =
+      ∫ x in u..v, g (a * x) * deriv (fun y ↦ f (a * y)) x := by
+  rw [← intervalIntegral.smul_integral_comp_mul_right (a := u) (b := v) (fun x ↦ g x * deriv f x) a,
+    real_smul]
+  rw [← intervalIntegral.integral_const_mul ↑a fun x ↦ g (x * a) * deriv f (x * a)]
+  congr! 1
+  ext x
+  rw [deriv_comp_mul_left]
+  simp
+  ring_nf
+
+lemma integral_deriv_mul' (f g : ℝ → ℂ) (a : ℝ) :
+    ∫ x in 0..a, g x * deriv f x =
+      ∫ x in 0..1, g (a * x) * deriv (fun y ↦ f (a * y)) x := by
+  simp [← integral_deriv_mul]
+
 --hasDerivAt_circleMap
 theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (p : ℂ) (R : ℝ) :
     circleIntegral f c R = ∮ z in circlePath c R, f z := by
@@ -98,8 +115,36 @@ theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (p : ℂ) (R : ℝ) 
         apply Differentiable.differentiableAt
         apply differentiable_circleMap
 
-theorem contourIntegral_append : ∮ z in γ.trans τ, f z = ∮ z in γ, f z + ∮ z in τ, f z := by
-  sorry
+--(γ.trans τ).extend (2⁻¹ * x) = γ.extend x
+
+lemma Path.trans_extend_two_inv_mul_of_le {X : Type*} [TopologicalSpace X] {x y z : X}
+    (γ : Path x y) (τ : Path y z) {t : ℝ} (ht : 0 ≤ t) (ht' : t ≤ 1) :
+    (γ.trans τ).extend (2⁻¹ * t) = γ.extend t := by
+  rw [Path.extend_apply _ (by simp; grind)]
+  simp [Path.trans]
+  grind
+
+theorem contourIntegral_append : ∮ z in γ.trans τ, f z = (∮ z in γ, f z) + ∮ z in τ, f z := by
+  rw [goal0, goal0, goal0, ← intervalIntegral.integral_add_adjacent_intervals (a := 0) (c := 1) (b := 2⁻¹)]
+  · congr 1
+    · #check integral_deriv_mul (g := fun x ↦ f ((γ.trans τ).extend x)) (f := ⇑(γ.trans τ).extend)
+      rw [integral_deriv_mul']
+      apply intervalIntegral.integral_congr_uIoo (fun x hx ↦ ?_)
+      congr! 1
+      · simp at hx
+        rw [Path.trans_extend_two_inv_mul_of_le _ _ (by grind) (by grind)]
+      · refine Eq.symm (Filter.EventuallyEq.deriv_eq ?_)
+        unfold Filter.EventuallyEq
+        refine eventually_nhds_iff.mpr ?_
+        refine ⟨Ioo 0 1, ?_, isOpen_Ioo, ?_⟩
+        · grind [Path.trans_extend_two_inv_mul_of_le]
+        simp at hx ⊢
+        grind
+    ·
+      sorry
+  ·
+    sorry
+  · sorry
 
 --#check contDiffOn
 
