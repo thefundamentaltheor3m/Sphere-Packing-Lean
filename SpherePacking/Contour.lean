@@ -4,7 +4,11 @@ public import Mathlib
 
 @[expose] public noncomputable section
 
+universe u
+
 open unitInterval Set Complex Real MeasureTheory
+
+variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 @[simp]
 theorem circleMap_zero_arg (p : ℂ) (R : ℝ) : circleMap p R 0 = p + R := by
@@ -38,21 +42,25 @@ abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (γ : Path a b) : Prop :=
   IsPiecewise γ fun p ↦ ContDiffOn ℝ 1 p.extend I
 
-/-- The contour integral `∫_γ f(z) dz`, i.e. the curve integral of the 1-form
-`ω z = (v ↦ f z * v)`. -/
-noncomputable abbrev contourIntegral {a b : ℂ} (f : ℂ → ℂ) (γ : Path a b) : ℂ :=
-  curveIntegral (fun z ↦ ContinuousLinearMap.lsmul ℂ ℂ (f z)) γ
+/-- The contour integral `∫_γ f(z) dz` of `f : ℂ → E` along a path `γ` in `ℂ`, defined as
+`∫ t in 0..1, γ'(t) • f (γ t)`. -/
+noncomputable abbrev contourIntegral {a b : ℂ} (f : ℂ → E) (γ : Path a b) : E :=
+  ∫ t in 0..1, deriv γ.extend t • f (γ.extend t)
 
 notation3 "∮ "(...)" in "γ", "r:60:(scoped f => contourIntegral f γ) => r
 
-variable {a b c : ℂ} (f : ℂ → ℂ) (γ : Path a b) (τ : Path b c)
-
-theorem goal0 :  ∮ z in γ, f z = ∫ z in 0..1, f (γ.extend z) * (deriv γ.extend z) := by
+/-- The contour integral is the curve integral of the 1-form `ω z = (v ↦ v • f z)`. -/
+theorem contourIntegral_def {a b : ℂ} (f : ℂ → E) (γ : Path a b) :
+    ∮ z in γ, f z = ∫ᶜ z in γ, ContinuousLinearMap.toSpanSingleton ℂ (f z) := by
   simp [contourIntegral, curveIntegral_eq_intervalIntegral_deriv]
 
-theorem contourIntegral_def : ∮ z in γ, f z =
-    curveIntegral (fun z ↦ ContinuousLinearMap.lsmul ℂ ℂ (f z)) γ :=
-  rfl
+variable {a b c : ℂ} (f : ℂ → ℂ) (γ : Path a b) (τ : Path b c)
+
+theorem goal0 : ∮ z in γ, f z = ∫ z in 0..1, f (γ.extend z) * (deriv γ.extend z) := by
+  simp [contourIntegral, mul_comm]
+
+#check circleIntegral
+
 --{E : Type u_1} [NormedAddCommGroup E] [NormedSpace ℂ E] (f : ℂ → E)
 
 lemma integral_deriv_mul (f g : ℝ → ℂ) (u v a : ℝ) :
@@ -248,10 +256,33 @@ theorem contourIntegral_append (hγ : PathIntegrable f γ) (hτ : PathIntegrable
       exact hτ
     · simp
 
+theorem Function.const_hasDerivAt {𝕜 : Type*} [NontriviallyNormedField 𝕜] {F : Type*}
+    [NormedAddCommGroup F] [NormedSpace 𝕜 F] (x : 𝕜) (c : F) :
+    HasDerivAt (Function.const 𝕜 c) 0 x := by
+  convert hasDerivAt_const x c
+  simp
+
+@[simp]
+theorem contourIntegral_of_path_refl (a : ℂ) (f : ℂ → ℂ) : ∮ z in Path.refl a, f z = 0 := by
+  rw [goal0]
+  trans ∫ (z : ℝ) in 0..1, 0
+  · congr with x
+    simp only [Path.refl_extend, ContinuousMap.const_apply, ContinuousMap.coe_const, mul_eq_zero]
+    right
+    apply HasDerivAt.deriv
+    exact Function.const_hasDerivAt x a
+  · simp
+
 --#check contDiffOn
 
 --def IsNice (p : Path a b) : Prop :=
 -- Set.piecewise
+
+--Reparametrization
+theorem contourIntegral_path_congr {a b : ℂ} (f : ℂ → ℂ) {γ τ : Path a b} (h : range γ = range τ) :
+    ∮ z in γ, f z = ∮ z in τ, f z := by
+
+  sorry
 
 -- Differentiable version
 theorem goal1 {s : Set ℂ} (h : ∀ x ∈ I, DifferentiableAt ℝ γ.extend x) (F : ℂ → ℂ)
