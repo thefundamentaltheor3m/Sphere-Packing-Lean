@@ -72,6 +72,23 @@ lemma integral_deriv_mul' (f g : ℝ → ℂ) (a : ℝ) :
       ∫ x in 0..1, g (a * x) * deriv (fun y ↦ f (a * y)) x := by
   simp [← integral_deriv_mul]
 
+lemma integral_deriv_mul_add (f g : ℝ → ℂ) (u v a d : ℝ) :
+    ∫ x in (u * a + d)..(v * a + d), g x * deriv f x =
+      ∫ x in u..v, g (a * x + d) * deriv (fun y ↦ f (a * y + d)) x := by
+  rw [mul_comm u a, mul_comm v a,
+    ← intervalIntegral.smul_integral_comp_mul_add (fun x ↦ g x * deriv f x) a d, real_smul,
+    ← intervalIntegral.integral_const_mul]
+  congr! 1
+  ext x
+  rw [deriv_comp_mul_left a (fun y ↦ f (y + d)) x, deriv_comp_add_const]
+  simp
+  ring
+
+lemma integral_deriv_mul_sub (f g : ℝ → ℂ) (u v a d : ℝ) :
+    ∫ x in (u * a - d)..(v * a - d), g x * deriv f x =
+      ∫ x in u..v, g (a * x - d) * deriv (fun y ↦ f (a * y - d)) x := by
+  simpa [sub_eq_add_neg] using integral_deriv_mul_add f g u v a (-d)
+
 --hasDerivAt_circleMap
 theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (R : ℝ) :
     circleIntegral f c R = ∮ z in circlePath c R, f z := by
@@ -124,11 +141,48 @@ lemma Path.trans_extend_two_inv_mul_of_le {X : Type*} [TopologicalSpace X] {x y 
   simp [Path.trans]
   grind
 
-theorem contourIntegral_append : ∮ z in γ.trans τ, f z = (∮ z in γ, f z) + ∮ z in τ, f z := by
+lemma Path.trans_extend_two_inv_mul_of_ge_inv_two {X : Type*} [TopologicalSpace X] {x y z : X}
+    (γ : Path x y) (τ : Path y z) {t : ℝ} (ht : 2⁻¹ ≤ t) (ht' : t ≤ 1) :
+    (γ.trans τ).extend t = τ.extend (2 * t - 1) := by
+  rw [Path.extend_apply _ (by simp; grind)]
+  simp [Path.trans]
+  grind
+
+lemma Path.deriv_trans_of_zero_lt_of_lt_two_inv {x : ℝ} (hx : 0 < x) (hx' : x < 2⁻¹) :
+    deriv (γ.trans τ).extend x = 2 * deriv (γ.extend) (2 * x) := by
+  trans deriv (fun z ↦ γ.extend (2 * z)) x
+  · refine Filter.EventuallyEq.deriv_eq ?_
+    unfold Filter.EventuallyEq
+    refine eventually_nhds_iff.mpr ?_
+    refine ⟨Ioo 0 2⁻¹, ?_, isOpen_Ioo, by grind⟩
+    simp only [mem_Ioo, and_imp]
+    intro y hy hy'
+    rw [Path.extend_apply _ (by simp; grind)]
+    simp [Path.trans]
+    grind
+  · rw [deriv_comp_mul_left]
+    simp
+
+lemma Path.deriv_trans_of_two_inv_lt_of_lt_one {x : ℝ} (hx : 2⁻¹ < x) (hx' : x < 1) :
+    deriv (γ.trans τ).extend x = 2 * deriv (τ.extend) (2 * x - 1) := by
+  trans deriv (fun z ↦ τ.extend (2 * z - 1)) x
+  · refine Filter.EventuallyEq.deriv_eq ?_
+    unfold Filter.EventuallyEq
+    refine eventually_nhds_iff.mpr ?_
+    refine ⟨Ioo 2⁻¹ 1, ?_, isOpen_Ioo, by grind⟩
+    simp only [mem_Ioo, and_imp]
+    intro y hy hy'
+    rw [Path.extend_apply _ (by simp; grind)]
+    simp [Path.trans]
+    grind
+  · rw [deriv_comp_mul_left 2 (fun y ↦ τ.extend (y - 1)) x, deriv_comp_sub_const]
+    simp
+
+theorem contourIntegral_append (hγ : PathIntegrable f γ) (hτ : PathIntegrable f τ) :
+    ∮ z in γ.trans τ, f z = (∮ z in γ, f z) + ∮ z in τ, f z := by
   rw [goal0, goal0, goal0, ← intervalIntegral.integral_add_adjacent_intervals (a := 0) (c := 1) (b := 2⁻¹)]
   · congr 1
-    · #check integral_deriv_mul (g := fun x ↦ f ((γ.trans τ).extend x)) (f := ⇑(γ.trans τ).extend)
-      rw [integral_deriv_mul']
+    · rw [integral_deriv_mul']
       apply intervalIntegral.integral_congr_uIoo (fun x hx ↦ ?_)
       congr! 1
       · simp at hx
@@ -140,11 +194,59 @@ theorem contourIntegral_append : ∮ z in γ.trans τ, f z = (∮ z in γ, f z) 
         · grind [Path.trans_extend_two_inv_mul_of_le]
         simp at hx ⊢
         grind
-    ·
-      sorry
-  ·
-    sorry
-  · sorry
+    · trans ∫ (z : ℝ) in 2⁻¹..1, f (τ.extend (2 * z - 1)) * (2 * deriv (⇑τ.extend) (2 * z - 1))
+      · refine intervalIntegral.integral_congr_Ioo_of_le (by grind) fun x hx ↦ ?_
+        simp at hx
+        rw [Path.trans_extend_two_inv_mul_of_ge_inv_two (ht := by grind) (ht' := by grind)]
+        congr 1
+        rw [Path.deriv_trans_of_two_inv_lt_of_lt_one _ _ hx.1 hx.2]
+      have := integral_deriv_mul_sub τ.extend (fun x ↦ f (τ.extend x)) 2⁻¹ 1 2 1
+      rw [show (2⁻¹ : ℝ) * 2 - 1 = 0 by norm_num, show (1 : ℝ) * 2 - 1 = 1 by norm_num] at this
+      rw [this]
+      clear this
+      congr! 2 with x
+      rw [deriv_comp_mul_left 2 (fun y ↦ τ.extend (y - 1)) x, deriv_comp_sub_const]
+      simp
+  · unfold PathIntegrable at hγ
+    let h := fun z ↦ f (γ.extend z) * deriv (⇑γ.extend) z
+    suffices IntervalIntegrable (fun z ↦ h (2 * z)) volume (0 / 2) (1 / 2) by
+      replace this : IntervalIntegrable ((2 : ℂ) • fun z ↦ h (2 * z)) volume (0 / 2) (1 / 2) := by
+        exact IntervalIntegrable.smul this 2
+      simp only [zero_div, one_div] at this
+      apply IntervalIntegrable.congr_uIoo this
+      intro z
+      simp only [inv_nonneg, Nat.ofNat_nonneg, uIoo_of_le, mem_Ioo, Pi.smul_apply, smul_eq_mul,
+        and_imp, h]
+      intro zp zl
+      rw [Path.deriv_trans_of_zero_lt_of_lt_two_inv _ _ zp zl]
+      nth_rw 2 [Path.extend_apply _ (by simp; grind)]
+      simp [Path.trans]
+      grind
+    apply IntervalIntegrable.comp_mul_left
+    · unfold h
+      exact hγ
+    · simp
+    · simp
+  · unfold PathIntegrable at hτ
+    let h := fun z ↦ f (τ.extend z) * deriv (⇑τ.extend) z
+    suffices IntervalIntegrable (fun z ↦ h (2 * z - 1)) volume ((0 + 1) / 2) ((1 + 1) / 2) by
+      replace this : IntervalIntegrable ((2 : ℂ) • fun z ↦ h (2 * z - 1)) volume
+          ((0 + 1) / 2) ((1 + 1) / 2) := by
+        exact IntervalIntegrable.smul this 2
+      rw [show ((0 : ℝ) + 1) / 2 = 2⁻¹ by norm_num, show ((1 : ℝ) + 1) / 2 = 1 by norm_num] at this
+      apply IntervalIntegrable.congr_uIoo this
+      intro z hz
+      rw [uIoo_of_le (by norm_num), mem_Ioo] at hz
+      obtain ⟨zp, zl⟩ := hz
+      simp only [Pi.smul_apply, smul_eq_mul, h]
+      rw [Path.deriv_trans_of_two_inv_lt_of_lt_one _ _ zp zl,
+        Path.trans_extend_two_inv_mul_of_ge_inv_two _ _ zp.le zl.le]
+      ring
+    apply IntervalIntegrable.comp_mul_left (f := fun x ↦ h (x - 1))
+    apply IntervalIntegrable.comp_sub_right
+    · unfold h
+      exact hτ
+    · simp
 
 --#check contDiffOn
 
