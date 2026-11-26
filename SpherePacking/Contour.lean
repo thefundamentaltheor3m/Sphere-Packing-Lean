@@ -32,7 +32,7 @@ def Path.IsPiecewise {X : Type*} [TopologicalSpace X] {a b : X}
     ∀ i : Fin n, P (Path.subpath γ (t i.castSucc) (t i.succ))
 
 def PathIntegrable (f : ℂ → ℂ) {a b : ℂ} (γ : Path a b) : Prop :=
-  IntervalIntegrable (f ∘ γ.extend) volume 0 1
+  IntervalIntegrable (fun z ↦ f (γ.extend z) * (deriv γ.extend z)) volume 0 1
 
 abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
     (γ : Path a b) : Prop :=
