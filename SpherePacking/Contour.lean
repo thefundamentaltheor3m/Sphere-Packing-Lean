@@ -169,7 +169,7 @@ theorem goal1 {s : Set ℂ} (h : ∀ x ∈ I, DifferentiableAt ℝ γ.extend x) 
     aesop
   _ = _ := by grind
 
--- Piecewise C1 version
+-- Piecewise C1 version, do as sum over pieces of differentiable version
 theorem goal1' {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ)
     (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
     (himg : Set.range γ ⊆ s) :
