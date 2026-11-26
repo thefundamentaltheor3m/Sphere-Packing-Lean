@@ -1,6 +1,7 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
 public import SpherePacking.Basic.E8
+public import SpherePacking.Basic.MultiPacking
 public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
