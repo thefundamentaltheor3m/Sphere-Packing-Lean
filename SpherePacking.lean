@@ -69,8 +69,13 @@ public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.exp_lems
 public import SpherePacking.ModularForms.tsumderivWithin
+public import SpherePacking.Tactic.ChangeVar.Circle
+public import SpherePacking.Tactic.ChangeVar.Core
+public import SpherePacking.Tactic.ChangeVar.SymLean
 public import SpherePacking.Tactic.NormNumI
 public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.TendstoContAttr
+public import SpherePacking.Tactic.Test.ChangeVar
+public import SpherePacking.Tactic.Test.ChangeVarSymLean
 public import SpherePacking.Tactic.Test.NormNumI
 public import SpherePacking.Tactic.Test.TendstoCont
