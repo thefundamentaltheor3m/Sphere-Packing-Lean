@@ -125,7 +125,8 @@ theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn
   sorry
 
 theorem goal4 (s : Set ℂ) (γ : Path a a) (h : γ.IsPiecewiseC1)
-    (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
+    (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s)
+    (hint : PathIntegrable f γ) :
     ∮ z in γ, f z = 0 := by
   have : Complex.IsExactOn f s := by
     apply goal3 _ _ hs hf
