@@ -5,6 +5,7 @@ Authors: Wenrong Zou
 -/
 module
 
+public import SpherePacking.MagicFunction.AnalyticContinuation
 public import SpherePacking.MagicFunction.a.Schwartz
 
 /-!
@@ -17,7 +18,7 @@ applied.
 
 @[expose] public section
 
-open Filter Real Complex
+open Set Filter MeasureTheory Real Complex MagicFunction.DoubleZeroes Finset
 
 namespace MagicFunction
 
@@ -36,5 +37,27 @@ theorem neg_sq_mul_φ₀''_neg_inv_I_mul (t : ℝ) :
   have h : -1 / (I * t) = I / t := by simp [div_eq_mul_inv, Complex.inv_I, mul_comm]
   rw [h, mul_pow, I_sq]
   ring
+
+/-- `t ↦ ψ(it)` is locally integrable on `[0, ∞)`, for `ψ(z) = -z² φ₀(-1/z)`. -/
+theorem locallyIntegrableOn_φ₀'' :
+    LocallyIntegrableOn (fun t : ℝ ↦ -(I * t) ^ 2 * φ₀'' (-1 / (I * t))) (Ici 0) := by
+  sorry
+
+theorem expPoly_φ₀'' (t : ℝ) :
+    expPoly 1 (fun k ↦ if k = 0 then 18144 / π ^ 2 else 36 / π ^ 2)
+      (fun k ↦ if k = 0 then -8640 / π else 0) t =
+        36 / π ^ 2 * cexp (2 * π * t) - 8640 / π * t + 18144 / π ^ 2 := by
+  simp [sum_range_succ]
+  ring
+
+theorem φ₀''_sub_expPoly_isBigO_atTop :
+    (fun t : ℝ ↦ -(I * t) ^ 2 * φ₀'' (-1 / (I * t)) -
+      expPoly 1 (fun k ↦ if k = 0 then 18144 / π ^ 2 else 36 / π ^ 2)
+        (fun k ↦ if k = 0 then -8640 / π else 0) t) =O[atTop] fun t ↦ rexp (-π * t) := by
+  have h : (fun t : ℝ ↦ t ^ 2 * rexp (-2 * π * t)) =O[atTop] fun t ↦ rexp (-π * t) :=
+    ((isLittleO_pow_exp_pos_mul_atTop 2 pi_pos).isBigO.mul
+      (Asymptotics.isBigO_refl _ _)).congr_right fun t ↦ by rw [← Real.exp_add]; ring_nf
+  refine (φ₀''_I_div_mul_sq_sub_isBigO_atTop.trans h).congr_left fun t ↦ ?_
+  rw [neg_sq_mul_φ₀''_neg_inv_I_mul, expPoly_φ₀'']
 
 end MagicFunction

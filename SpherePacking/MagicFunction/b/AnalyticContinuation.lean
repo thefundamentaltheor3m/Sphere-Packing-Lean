@@ -12,9 +12,7 @@ public import SpherePacking.MagicFunction.b.Schwartz
 # Double zeroes of `b`
 
 For `s > 2`, `b(s) = -4i sin(π s / 2)² ∫₀^∞ ψ_I(it) e^{-π s t} dt`, where `s` is the squared
-radius `‖x‖²`. We also state the behaviour of `ψ_I(it)` as `t → 0` and `t → ∞`, and write the
-expansion of `ψ_I(it)` at `t → ∞` via `expPoly`, so that the analytic continuation of Laplace
-transforms applies to `ψ_I`.
+radius `‖x‖²`. We also state the behaviour of `ψ_I(it)` as `t → 0` and `t → ∞`.
 -/
 
 @[expose] public section
@@ -31,6 +29,11 @@ theorem ψI'_I_mul_isBigO_nhdsGT_zero :
 /-- `ψ_I(it) = O(e^{2πt})` as `t → ∞`. -/
 theorem ψI'_I_mul_isBigO_atTop :
     (fun t : ℝ ↦ ψI' (I * t)) =O[atTop] fun t ↦ rexp (2 * π * t) := by
+  sorry
+
+/-- `t ↦ ψ_I(it)` is locally integrable on `[0, ∞)`. -/
+theorem locallyIntegrableOn_ψI'_I_mul :
+    LocallyIntegrableOn (fun t : ℝ ↦ ψI' (I * t)) (Ici 0) := by
   sorry
 
 theorem integrableOn_ψI'_mul_cexp {s : ℝ} (hr : 2 < s) :
@@ -61,8 +64,6 @@ theorem expPoly_ψI' (t : ℝ) :
 theorem ψI'_I_mul_sub_expPoly_isBigO_atTop :
     (fun t : ℝ ↦ ψI' (I * t) - expPoly 1 (fun k ↦ if k = 0 then 144 else 1) 0 t) =O[atTop]
       fun t ↦ rexp (-π * t) :=
-  /- We could add `gcongr` to `IsBigO` and `IsLittleO`, after we do that,
-    we could use `grw` here. -/
   ψI'_I_mul_sub_isBigO_atTop.congr_left fun t ↦ by rw [expPoly_ψI']
 
 end MagicFunction
