@@ -103,7 +103,7 @@ theorem analyticOnNhd_U (hC : 0 < C)
       h.differentiableOn
   refine DifferentiableOn.analyticOnNhd (.add (Differentiable.differentiableOn
     (Differentiable.fun_sum (by fun_prop))) ?_) (isOpen_lt continuous_const continuous_re)
-  exact h.differentiableOn.mul
+  exact (h.pow 2).differentiableOn.mul
     (analyticOnNhd_integral_sub_expPoly hC hloc hexp).differentiableOn
 
 /-- `U` is the continuation of `sin(πs/2)^2 W(s)`: they agree where the integral converges. -/
