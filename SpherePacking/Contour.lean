@@ -38,6 +38,10 @@ def Path.IsPiecewise {X : Type*} [TopologicalSpace X] {a b : X}
 def PathIntegrable (f : ℂ → ℂ) {a b : ℂ} (γ : Path a b) : Prop :=
   IntervalIntegrable (fun z ↦ f (γ.extend z) * (deriv γ.extend z)) volume 0 1
 
+lemma PathIntegrable.subpath {f : ℂ → ℂ} {a b : ℂ} {γ : Path a b} (hf : PathIntegrable f γ)
+    (t₁ t₂ : I) : PathIntegrable f (γ.subpath t₁ t₂) := by
+  sorry
+
 abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {a b : E}
     (γ : Path a b) : Prop :=
   IsPiecewise γ fun p ↦ ContDiffOn ℝ 1 p.extend I
@@ -96,16 +100,6 @@ lemma integral_deriv_mul_add' (f g : ℝ → ℂ) (u v : ℝ) :
   ∫ x in u..v, g x * deriv f x =
     ∫ x in 0..1, g ((v - u) * x + u) * deriv (fun y ↦ f ((v - u) * y + u)) x := by
   simp [← integral_deriv_mul_add]
-
-lemma exists_path_integral_deriv_mul_add' {a b : ℂ} (f : ℂ → ℂ) (γ : Path a b) (u v : ℝ) :
-    ∃ τ : Path a b, ∫ x in u..v, f (γ.extend x) * deriv (γ.extend) x = ∮ z in τ, f z := by
-  let τ : Path a b := {
-    toFun := sorry
-    continuous_toFun := sorry
-    source' := sorry
-    target' := sorry
-  }
-  sorry
 
 lemma integral_deriv_mul_sub (f g : ℝ → ℂ) (u v a d : ℝ) :
     ∫ x in (u * a - d)..(v * a - d), g x * deriv f x =
@@ -324,27 +318,31 @@ theorem goal1' {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ)
     ∮ z in γ, f z = F b - F a := by
   obtain ⟨n, pieces, hmono, hfirst, hlast, hnext⟩ := h
   unfold contourIntegral
-  simp at hnext
+  simp only at hnext
+  let δ := fun (i : Fin n) ↦ γ.subpath (pieces i.castSucc) (pieces i.succ)
   calc
   _ = ∑ i : Fin n,
         ∫ (t : ℝ) in (pieces i.castSucc)..(pieces i.succ), (deriv γ.extend t) • f (γ.extend t) := by
 
     sorry
   _ = ∑ i : Fin n,
-        ∫ (u : ℝ) in 0..1, (deriv (γ.extend) (u + pieces i.castSucc)) •
-          f (γ.extend (u + pieces i.castSucc)) := by
+        ∫ (u : ℝ) in 0..1, (deriv (δ i).extend u) • f (((δ i).extend) u) := by
     congr 1
     ext i
     -- change of variables!
     sorry
-  -- _ = ∑ i : Fin n,
-  --       ∮ z in γ,
-  _ = ∑ i : Fin n, (F (pieces i.succ) - F (pieces i.castSucc)) := by
+  _ = ∑ i : Fin n, ∮ z in δ i, f z := rfl
+  _ = ∑ i : Fin n, (F (γ (pieces i.succ)) - F (γ (pieces i.castSucc))) := by
     congr 1
     ext i
-
-    sorry
-  _ = F (pieces (Fin.last n)) - F (pieces 0) := sorry
+    refine goal1 f (δ i) (s := s) ?_ F hf ?_ ?_
+    · sorry
+    · apply hint.subpath
+    · rintro x ⟨t, ht⟩
+      apply himg
+      
+      sorry
+  _ = F (γ (pieces (Fin.last n))) - F (γ (pieces 0)) := sorry
   _ = _ := by
     congr 1
     · rw [hlast]
