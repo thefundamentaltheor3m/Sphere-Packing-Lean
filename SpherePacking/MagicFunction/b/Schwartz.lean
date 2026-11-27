@@ -171,6 +171,11 @@ def b' : 𝓢(ℝ, ℂ) :=
 def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) b'
 
+theorem coe_b' : b' = MagicFunction.b.RealIntegrals.b' := rfl
+
+theorem b_apply (x : EuclideanSpace ℝ (Fin 8)) :
+    b x = MagicFunction.b.RealIntegrals.b' (‖x‖ ^ 2) := rfl
+
 theorem b_eq_sum_integrals_RadialFunctions : b =
     MagicFunction.b.RadialFunctions.J₁
   + MagicFunction.b.RadialFunctions.J₂

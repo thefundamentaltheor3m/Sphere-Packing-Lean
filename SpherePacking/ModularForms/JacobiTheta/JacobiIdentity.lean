@@ -256,3 +256,36 @@ lemma Δ_eq_H₂_H₃_H₄ (τ : ℍ) :
   simp only [theta_prod_sq] at h
   rw [eq_div_iff (show (256 : ℂ) ≠ 0 by norm_num), mul_comm]
   exact h
+
+section theta_non_vanishing
+
+open UpperHalfPlane
+
+/-- `H₂` has no zeros on the upper half-plane. -/
+theorem H₂_ne_zero (τ : ℍ) : H₂ τ ≠ 0 := by
+  intro h₂
+  apply ModularForm.discriminant_ne_zero τ
+  rw [Δ_eq_H₂_H₃_H₄]
+  simp [h₂]
+
+/-- `H₃` has no zeros on the upper half-plane. -/
+theorem H₃_ne_zero (τ : ℍ) : H₃ τ ≠ 0 := by
+  intro h₃
+  apply ModularForm.discriminant_ne_zero τ
+  rw [Δ_eq_H₂_H₃_H₄]
+  simp [h₃]
+
+/-- `H₄` has no zeros on the upper half-plane. -/
+theorem H₄_ne_zero (τ : ℍ) : H₄ τ ≠ 0 := by
+  intro h₄
+  apply ModularForm.discriminant_ne_zero τ
+  rw [Δ_eq_H₂_H₃_H₄]
+  simp [h₄]
+
+/-- `Θ₂` has no zeros on the upper half-plane. -/
+theorem Θ₂_ne_zero (τ : ℍ) : Θ₂ τ ≠ 0 := by
+  intro h
+  apply H₂_ne_zero τ
+  simp [H₂, h]
+
+end theta_non_vanishing

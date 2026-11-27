@@ -16,7 +16,7 @@ The purpose of this file is to construct bounds on the integral `I₂` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 ## TODO:
-- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+- Integrability of `g` and `C₀ * rexp (-2 * π * u) * rexp (-π * s / u)`
 -/
 
 @[expose] public section
@@ -28,17 +28,17 @@ open scoped Function UpperHalfPlane
 
 namespace MagicFunction.a.IntegralEstimates.I₂
 
-variable (r : ℝ)
+variable (s : ℝ)
 
 section Setup
 
-noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ φ₀'' (-1 / (t + I))
+noncomputable def g : ℝ → ℝ → ℂ := fun s t ↦ φ₀'' (-1 / (t + I))
     * (t + I) ^ 2
-    * cexp (-π * I * r)
-    * cexp (π * I * r * t)
-    * cexp (-π * r)
+    * cexp (-π * I * s)
+    * cexp (π * I * s * t)
+    * cexp (-π * s)
 
-lemma I₂'_eq_integral_g_Ioo (r : ℝ) : I₂' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
+lemma I₂'_eq_integral_g_Ioo (s : ℝ) : I₂' s = ∫ t in Ioo (0 : ℝ) 1, g s t := by
   simp only [I₂'_eq, g, integral_of_le zero_le_one, integral_Ioc_eq_integral_Ioo]
 
 end Setup
@@ -49,8 +49,8 @@ section Bounding
 
 section Bounding_Integrand
 
-lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤
-    ‖φ₀'' (-1 / (t + I))‖ * 2 * rexp (-π * r) := by
+lemma I₂'_bounding_aux_1 (s : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g s t‖ ≤
+    ‖φ₀'' (-1 / (t + I))‖ * 2 * rexp (-π * s) := by
   intro t ht
   obtain ⟨ht₀, ht₁⟩ := ht
   rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
@@ -61,11 +61,11 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
   · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
     gcongr <;> apply le_of_eq
     · calc
-      _ = ‖cexp (((-π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (-π * r)
+      _ = ‖cexp (((-π * s : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+      _ = 1 := norm_exp_ofReal_mul_I (-π * s)
     · calc
-      _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
+      _ = ‖cexp (((π * s * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+      _ = 1 := norm_exp_ofReal_mul_I (π * s * t)
     · rw [norm_exp]
       simp
 
@@ -114,12 +114,12 @@ lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im
   · positivity
   · exact one_pos
 
-lemma I₂'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
-    ‖g r t‖ ≤ C₀ * rexp (-2 * π * (-1 / (t + I)).im) * 2 * rexp (-π * r) := by
+lemma I₂'_bounding_aux_2 (s : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
+    ‖g s t‖ ≤ C₀ * rexp (-2 * π * (-1 / (t + I)).im) * 2 * rexp (-π * s) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro t ht
-  apply (I₂'_bounding_aux_1 r t ht).trans
+  apply (I₂'_bounding_aux_1 s t ht).trans
   gcongr
   have him : 1 / 2 < (-1 / (↑t + I)).im := im_parametrisation_lower t ht
   have hpos : 0 < (-1 / (↑t + I)).im := one_half_pos.trans him
@@ -128,9 +128,9 @@ lemma I₂'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
   simp only [φ₀'', hpos, ↓reduceDIte]
   exact hC₀
 
-lemma I₂'_bounding_aux_3 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
-    ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_2 r -- The `PolyFourierCoeffBound` of `φ₀`
+lemma I₂'_bounding_aux_3 (s : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
+    ‖g s t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * s) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_2 s -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro t ht
   apply (hC₀ t ht).trans
@@ -146,8 +146,8 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun _ ↦ C₀ * rexp (-π) * 2 * rexp (-π * r)) (Ioo (0 : ℝ) 1) volume := by
+lemma Bound_integrableOn (s C₀ : ℝ) :
+    IntegrableOn (fun _ ↦ C₀ * rexp (-π) * 2 * rexp (-π * s)) (Ioo (0 : ℝ) 1) volume := by
   rw [integrableOn_const_iff]
   right
   exact measure_Ioo_lt_top
@@ -156,24 +156,24 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₂'_bounding_aux_4 (r : ℝ) : ∃ C₀ > 0,
-    ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
-  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
+lemma I₂'_bounding_aux_4 (s : ℝ) : ∃ C₀ > 0,
+    ∫ t in Ioo (0 : ℝ) 1, ‖g s t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * s) := by
+  wlog hint : IntegrableOn (fun t ↦ ‖g s t‖) (Ioo (0 : ℝ) 1) volume
   · refine ⟨1, by positivity, ?_⟩
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
+    have h₂ : ¬ (Integrable (fun t ↦ ‖g s t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
     rw [integral_undef h₂]
     positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_3 r
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_3 s
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ioo hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn s C₀) measurableSet_Ioo hC₀
 
-theorem I₂'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₂' r‖ ≤ C₁ * rexp (-π * r) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_4 r
+theorem I₂'_bounding (s : ℝ) : ∃ C₁ > 0, ‖I₂' s‖ ≤ C₁ * rexp (-π * s) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_4 s
   refine ⟨C₀ * rexp (-π) * 2, by positivity, ?_⟩
   calc
-  _ = ‖∫ t in Ioo (0 : ℝ) 1, g r t‖ := by rw [I₂'_eq_integral_g_Ioo]
-  _ ≤ ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ := norm_integral_le_integral_norm (g r)
-  _ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := hC₀
+  _ = ‖∫ t in Ioo (0 : ℝ) 1, g s t‖ := by rw [I₂'_eq_integral_g_Ioo]
+  _ ≤ ∫ t in Ioo (0 : ℝ) 1, ‖g s t‖ := norm_integral_le_integral_norm (g s)
+  _ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * s) := hC₀
   _ = _ := by simp
 
 -- The following may be useful:
