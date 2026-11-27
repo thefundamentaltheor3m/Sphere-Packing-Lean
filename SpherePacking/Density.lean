@@ -5,7 +5,10 @@ Authors: Felix Pernegger
 -/
 module
 
-public import Mathlib
+public import Mathlib.MeasureTheory.Measure.OpenPos
+
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Metric
+import Mathlib.Tactic.Linarith.NNRealPreprocessor
 
 /-!
 # Density of sets in metric space with a measure
@@ -43,11 +46,15 @@ noncomputable def densityQuotientAt (μ : Measure X := by volume_tac) (s : Set X
   letI B := Metric.eball x r
   μ (s ∩ B) / μ (B)
 
-/-- The lower density of a set in a pseudo extended metric space with a measure. -/
+/-- The lower density of a set in a pseudo extended metric space with a measure at a basepoint.
+
+Note that for well behaved spaces, the choice of the basepoint does not matter. -/
 noncomputable def lowerDensityAt (μ : Measure X := by volume_tac) (s : Set X) (x : X) : ℝ≥0∞ :=
   liminf (densityQuotientAt μ s x) atTop
 
-/-- The upper density of a set in a pseudo extended metric space with a measure. -/
+/-- The upper density of a set in a pseudo extended metric space with a measure at a basepoint.
+
+Note that for well behaved spaces, the choice of the basepoint does not matter. -/
 noncomputable def upperDensityAt (μ : Measure X := by volume_tac) (s : Set X) (x : X) : ℝ≥0∞ :=
   limsup (densityQuotientAt μ s x) atTop
 
@@ -101,7 +108,7 @@ theorem upperDensityAt_congr (μ : Measure X := by volume_tac) {s t : Set X}
   congr 1 with r
   exact densityQuotientAt_congr μ x r st
 
-section ProperSpace -- see the TODO at the module header
+section ProperSpace -- see TODO at the module header
 
 variable {X : Type u} [MeasurableSpace X] [PseudoMetricSpace X]
 
