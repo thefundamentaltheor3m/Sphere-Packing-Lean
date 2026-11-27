@@ -5,6 +5,7 @@ public import SpherePacking.Basic.PeriodicPacking
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.CohnElkies.LPBound
 public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.Contour
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.ENNReal
