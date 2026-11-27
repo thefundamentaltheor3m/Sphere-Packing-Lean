@@ -11,6 +11,7 @@ public import Mathlib.Analysis.Analytic.Basic
 public import Mathlib.Analysis.Asymptotics.Defs
 public import Mathlib.Analysis.Calculus.FDeriv.Defs
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Analysis.Complex.RemovableSingularity
 
 /-!
 # Analytic continuation of Laplace transforms
@@ -81,12 +82,40 @@ theorem analyticOnNhd_integral_sub_expPoly (hC : 0 < C)
       (ψ (I * t) - expPoly n a b t) * cexp (-π * s * t)) {s | -C / π < s.re} := by
   sorry
 
-/-- `sin(πs/2)^2 * ∫₀^∞ ψ(it) e^{-πst} dt` is holomorphic on `Re s > -C/π`. -/
-theorem analyticOnNhd_sin_sq_mul_integral (hC : 0 < C)
+/-- FGH (2.4) without the factor `-4`: the holomorphic continuation of `sin(πs/2)^2 W(s)` to
+`Re s > -C/π`, where `W(s) = ∫₀^∞ ψ(it) e^{-πst} dt`. It is `sin(πs/2)^2` times the right hand side
+of `integral_eq_sum_add_integral_sub`, with the removable singularities at `s = 2k` removed:
+`dslope (fun s : ℂ ↦ sin (π * s / 2)) (2 * k) s` is `sin(πs/2) / (s - 2k)` for `s ≠ 2k`. -/
+noncomputable def U (ψ : ℂ → ℂ) (n : ℕ) (a b : ℕ → ℂ) (s : ℂ) : ℂ :=
+  ∑ k ∈ range (n + 1),
+      (a k / π * sin (π * s / 2) * dslope (fun s : ℂ ↦ sin (π * s / 2)) (2 * k) s +
+        b k / π ^ 2 * dslope (fun s : ℂ ↦ sin (π * s / 2)) (2 * k) s ^ 2) +
+    sin (π * s / 2) ^ 2 * ∫ t in Ioi (0 : ℝ), (ψ (I * t) - expPoly n a b t) * cexp (-π * s * t)
+
+/-- FGH Proposition 2.2 (holomorphy): `U` is holomorphic on `Re s > -C/π`. -/
+theorem analyticOnNhd_U (hC : 0 < C)
     (hloc : LocallyIntegrableOn (fun t : ℝ ↦ ψ (I * t)) (Ici 0))
     (hexp : (fun t : ℝ ↦ ψ (I * t) - expPoly n a b t) =O[atTop] fun t ↦ rexp (-C * t)) :
-      AnalyticOnNhd ℂ (fun s : ℂ ↦ (sin (π * s / 2)) ^ 2 * ∫ t in Ioi (0 : ℝ),
-        ψ (I * t) * cexp (-π * s * t)) {s | -C / π < s.re} := by
-  sorry
+    AnalyticOnNhd ℂ (U ψ n a b) {s | -C / π < s.re} := by
+  have h : Differentiable ℂ fun s : ℂ ↦ sin (π * s / 2) := by fun_prop
+  have (k : ℕ) : Differentiable ℂ (dslope (fun s : ℂ ↦ sin (π * s / 2)) (2 * k)) :=
+    differentiableOn_univ.mp <| (Complex.differentiableOn_dslope univ_mem).mpr <|
+      h.differentiableOn
+  refine DifferentiableOn.analyticOnNhd (.add (Differentiable.differentiableOn
+    (Differentiable.fun_sum (by fun_prop))) ?_) (isOpen_lt continuous_const continuous_re)
+  exact h.differentiableOn.mul
+    (analyticOnNhd_integral_sub_expPoly hC hloc hexp).differentiableOn
+
+/-- `U` is the continuation of `sin(πs/2)^2 W(s)`: they agree where the integral converges. -/
+theorem U_eq_sin_sq_mul_integral (hC : 0 < C) (hs : 2 * n < s.re)
+    (hloc : LocallyIntegrableOn (fun t : ℝ ↦ ψ (I * t)) (Ici 0))
+    (hexp : (fun t : ℝ ↦ ψ (I * t) - expPoly n a b t) =O[atTop] fun t ↦ rexp (-C * t)) :
+    U ψ n a b s = sin (π * s / 2) ^ 2 * ∫ t in Ioi (0 : ℝ), ψ (I * t) * cexp (-π * s * t) := by
+  rw [U, integral_eq_sum_add_integral_sub hC hs hloc hexp, mul_add, Finset.mul_sum]
+  congr 1
+  refine Finset.sum_congr rfl fun k hk ↦ ?_
+  rw [dslope_of_ne _ (by rintro rfl; simp at hs hk; omega), slope_def_field,
+    show (π : ℂ) * (2 * k) / 2 = k * π by ring, Complex.sin_nat_mul_pi, sub_zero]
+  field_simp
 
 end MagicFunction.DoubleZeroes
