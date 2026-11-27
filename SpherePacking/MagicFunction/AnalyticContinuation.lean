@@ -38,6 +38,10 @@ namespace MagicFunction.DoubleZeroes
 noncomputable def expPoly (n : ℕ) (a b : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ k ∈ range (n + 1), (a k + t * b k) * cexp (2 * π * k * t)
 
+@[simp] lemma expPoly_apply (n : ℕ) (a b : ℕ → ℂ) (t : ℝ) :
+    expPoly n a b t = ∑ k ∈ range (n + 1), (a k + t * b k) * cexp (2 * π * k * t) :=
+  rfl
+
 variable {ψ : ℂ → ℂ} {n : ℕ} {a b : ℕ → ℂ} {C : ℝ} {s : ℂ}
 
 /-- `W(s) = ∫₀^∞ ψ(it) e^{-πst} dt` converges absolutely for `Re s > 2n`. -/
