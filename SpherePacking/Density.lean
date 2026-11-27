@@ -43,9 +43,11 @@ noncomputable def densityQuotientAt (μ : Measure X := by volume_tac) (s : Set X
   letI B := Metric.eball x r
   μ (s ∩ B) / μ (B)
 
+/-- The lower density of a set in a pseudo extended metric space with a measure. -/
 noncomputable def lowerDensityAt (μ : Measure X := by volume_tac) (s : Set X) (x : X) : ℝ≥0∞ :=
   liminf (densityQuotientAt μ s x) atTop
 
+/-- The upper density of a set in a pseudo extended metric space with a measure. -/
 noncomputable def upperDensityAt (μ : Measure X := by volume_tac) (s : Set X) (x : X) : ℝ≥0∞ :=
   limsup (densityQuotientAt μ s x) atTop
 
@@ -99,7 +101,7 @@ theorem upperDensityAt_congr (μ : Measure X := by volume_tac) {s t : Set X}
   congr 1 with r
   exact densityQuotientAt_congr μ x r st
 
-section ProperSpace
+section ProperSpace -- see the TODO at the module header
 
 variable {X : Type u} [MeasurableSpace X] [PseudoMetricSpace X]
 
@@ -200,6 +202,7 @@ theorem densityQuotientAt_union_le (μ : Measure X := by volume_tac) (x : X) (s 
   unfold densityQuotientAt
   grw [union_inter_distrib_right, ← ENNReal.add_div, measure_union_le]
 
+/-- The lower density of a set is superadditive. -/
 theorem lowerDensityAt_add_le_union [OpensMeasurableSpace X] (μ : Measure X := by volume_tac)
     (x : X) {s t : Set X} (ht : NullMeasurableSet t μ) (st : Disjoint s t) :
     lowerDensityAt μ s x + lowerDensityAt μ t x ≤ lowerDensityAt μ (s ∪ t) x := by
@@ -208,52 +211,12 @@ theorem lowerDensityAt_add_le_union [OpensMeasurableSpace X] (μ : Measure X := 
   congr with r
   rw [densityQuotient_union μ x r ht st, Pi.add_apply]
 
+/-- The upper density of a set is subadditive. -/
 theorem upperDensityAt_union_le (μ : Measure X := by volume_tac) (x : X) (s t : Set X) :
     upperDensityAt μ (s ∪ t) x ≤ upperDensityAt μ s x + upperDensityAt μ t x := by
   unfold upperDensityAt
   refine le_trans (limsup_le_limsup ?_) (ENNReal.limsup_add_le' _ _)
   filter_upwards with r
   exact densityQuotientAt_union_le μ x s t r
-
-/- Unfininshed
-namespace IsFiniteMeasure
-
-open Topology
-
-variable (μ : Measure X := by volume_tac) [IsFiniteMeasure μ] (s : Set X)
-
-lemma Tendsto.densityQuotientAt (μ : Measure X := by volume_tac) [IsFiniteMeasure μ]
-    (s : Set X) (x : X) :
-    Tendsto (densityQuotientAt μ s x) atTop (𝓝 (μ s / μ univ)) := by
-  change Tendsto (fun (r : ℝ≥0) ↦
-    (μ (s ∩ Metric.eball x r) / μ (Metric.eball x r))) atTop (𝓝 (μ s / μ univ))
-  rcases eq_or_ne (μ s) 0 with hs | hs
-  · apply tendsto_nhds_of_eventually_eq
-    filter_upwards with r
-    simp [hs, measure_inter_null_of_null_left (Metric.eball x r) hs]
-  rcases eq_or_ne (μ univ) 0 with hu | hu
-  ·
-  apply ENNReal.Tendsto.div
-
-
-  apply Filter.Tendsto.div (f := fun r ↦ μ (s ∩ Metric.ball x r))
-  sorry
-
-theorem lowerDensityAt_eq (μ : Measure X := by volume_tac) [IsFiniteMeasure μ] (s : Set X) (x : X) :
-    lowerDensityAt μ s x = μ s / μ Set.univ :=
-  (Tendsto.densityQuotientAt μ s x).liminf_eq
-
-theorem upperDensityAt_eq (μ : Measure X := by volume_tac) [IsFiniteMeasure μ] (s : Set X) (x : X) :
-    upperDensityAt μ s x = μ s / μ Set.univ :=
-  (Tendsto.densityQuotientAt μ s x).limsup_eq
-
-theorem lowerDensityAt_eq_upperDensityAt (μ : Measure X := by volume_tac) [IsFiniteMeasure μ]
-    (s : Set X) {x y : X} :
-    lowerDensityAt μ s x = upperDensityAt μ s y := by
-  rw [lowerDensityAt_eq μ, upperDensityAt_eq μ]
-
-end IsFiniteMeasure
-
--/
 
 end MeasureTheory
