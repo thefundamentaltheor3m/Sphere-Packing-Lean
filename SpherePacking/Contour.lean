@@ -92,6 +92,21 @@ lemma integral_deriv_mul_add (f g : ℝ → ℂ) (u v a d : ℝ) :
   simp
   ring
 
+lemma integral_deriv_mul_add' (f g : ℝ → ℂ) (u v : ℝ) :
+  ∫ x in u..v, g x * deriv f x =
+    ∫ x in 0..1, g ((v - u) * x + u) * deriv (fun y ↦ f ((v - u) * y + u)) x := by
+  simp [← integral_deriv_mul_add]
+
+lemma exists_path_integral_deriv_mul_add' {a b : ℂ} (f : ℂ → ℂ) (γ : Path a b) (u v : ℝ) :
+    ∃ τ : Path a b, ∫ x in u..v, f (γ.extend x) * deriv (γ.extend) x = ∮ z in τ, f z := by
+  let τ : Path a b := {
+    toFun := sorry
+    continuous_toFun := sorry
+    source' := sorry
+    target' := sorry
+  }
+  sorry
+
 lemma integral_deriv_mul_sub (f g : ℝ → ℂ) (u v a d : ℝ) :
     ∫ x in (u * a - d)..(v * a - d), g x * deriv f x =
       ∫ x in u..v, g (a * x - d) * deriv (fun y ↦ f (a * y - d)) x := by
@@ -307,10 +322,37 @@ theorem goal1' {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ)
     (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
     (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = F b - F a := by
-  sorry
+  obtain ⟨n, pieces, hmono, hfirst, hlast, hnext⟩ := h
+  unfold contourIntegral
+  simp at hnext
+  calc
+  _ = ∑ i : Fin n,
+        ∫ (t : ℝ) in (pieces i.castSucc)..(pieces i.succ), (deriv γ.extend t) • f (γ.extend t) := by
+
+    sorry
+  _ = ∑ i : Fin n,
+        ∫ (u : ℝ) in 0..1, (deriv (γ.extend) (u + pieces i.castSucc)) •
+          f (γ.extend (u + pieces i.castSucc)) := by
+    congr 1
+    ext i
+    -- change of variables!
+    sorry
+  -- _ = ∑ i : Fin n,
+  --       ∮ z in γ,
+  _ = ∑ i : Fin n, (F (pieces i.succ) - F (pieces i.castSucc)) := by
+    congr 1
+    ext i
+
+    sorry
+  _ = F (pieces (Fin.last n)) - F (pieces 0) := sorry
+  _ = _ := by
+    congr 1
+    · rw [hlast]
+      sorry
+    · sorry
 
 --maybe use HasDerivWithIn?
-theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
+theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1)
     (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
     (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = 0 := by
@@ -318,15 +360,15 @@ theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyC
   rw [sub_self]
 
 --convex
-theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
+theorem goal3 (s : Set ℂ) (hs' : IsOpen s) (hc : Convex ℝ s) (hf : DifferentiableOn ℂ f s) :
     Complex.IsExactOn f s := by
-  sorry
+  obtain ⟨g, _⟩ := hc.exists_forall_hasDerivWithinAt hf
+  use g
+  grind [HasDerivWithinAt.hasDerivAt, mem_nhds_iff]
 
 theorem goal4 (s : Set ℂ) (γ : Path a a) (h : γ.IsPiecewiseC1)
-    (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s)
+    (hs : IsOpen s) (hc : Convex ℝ s) (hf : DifferentiableOn ℂ f s)
     (hint : PathIntegrable f γ) (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = 0 := by
-  have : Complex.IsExactOn f s := by
-    apply goal3 _ _ hs hf
-  obtain ⟨F, hF⟩ := this
+  obtain ⟨F, hF⟩ := goal3 _ _ hs hc hf
   apply goal2 <;> assumption
