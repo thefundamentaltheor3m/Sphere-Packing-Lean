@@ -77,4 +77,12 @@ theorem analyticOnNhd_integral_sub_expPoly (hC : 0 < C)
       (ψ (I * t) - expPoly n a b t) * cexp (-π * s * t)) {s | -C / π < s.re} := by
   sorry
 
+/-- `sin(πs/2)^2 * ∫₀^∞ ψ(it) e^{-πst} dt` is holomorphic on `Re s > -C/π`. -/
+theorem analyticOnNhd_sin_sq_mul_integral (hC : 0 < C)
+    (hloc : LocallyIntegrableOn (fun t : ℝ ↦ ψ (I * t)) (Ici 0))
+    (hexp : (fun t : ℝ ↦ ψ (I * t) - expPoly n a b t) =O[atTop] fun t ↦ rexp (-C * t)) :
+      AnalyticOnNhd ℂ (fun s : ℂ ↦ (sin (π * s / 2)) ^ 2 * ∫ t in Ioi (0 : ℝ),
+        ψ (I * t) * cexp (-π * s * t)) {s | -C / π < s.re} := by
+  sorry
+
 end MagicFunction.DoubleZeroes
