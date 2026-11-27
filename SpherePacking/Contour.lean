@@ -42,19 +42,30 @@ abbrev Path.IsPiecewiseC1 {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (γ : Path a b) : Prop :=
   IsPiecewise γ fun p ↦ ContDiffOn ℝ 1 p.extend I
 
+abbrev ContourIntegrable {a b : ℂ} (f : ℂ → E) (γ : Path a b) : Prop :=
+  CurveIntegrable (fun z ↦ ContinuousLinearMap.toSpanSingleton ℂ (f z)) γ
+
 /-- The contour integral `∫_γ f(z) dz` of `f : ℂ → E` along a path `γ` in `ℂ`, defined as
 `∫ t in 0..1, γ'(t) • f (γ t)`. -/
 noncomputable abbrev contourIntegral {a b : ℂ} (f : ℂ → E) (γ : Path a b) : E :=
   ∫ t in 0..1, deriv γ.extend t • f (γ.extend t)
 
-notation3 "∮ "(...)" in "γ", "r:60:(scoped f => contourIntegral f γ) => r
+notation3 "∮ "(...)" in "γ", "r:67:(scoped f => contourIntegral f γ) => r
 
 /-- The contour integral is the curve integral of the 1-form `ω z = (v ↦ v • f z)`. -/
 theorem contourIntegral_def {a b : ℂ} (f : ℂ → E) (γ : Path a b) :
     ∮ z in γ, f z = ∫ᶜ z in γ, ContinuousLinearMap.toSpanSingleton ℂ (f z) := by
   simp [contourIntegral, curveIntegral_eq_intervalIntegral_deriv]
 
+theorem contourIntegral_append {a b c : ℂ} (f : ℂ → E)
+    (γ : Path a b) (τ : Path b c)
+    (hγ : ContourIntegrable f γ) (hτ : ContourIntegrable f τ) :
+    ∮ z in γ.trans τ, f z = ∮ z in γ, f z + ∮ z in τ, f z := by
+  rw [contourIntegral_def, contourIntegral_def, contourIntegral_def]
+  exact curveIntegral_trans hγ hτ
+
 variable {a b c : ℂ} (f : ℂ → ℂ) (γ : Path a b) (τ : Path b c)
+variable {s : Set ℂ}
 
 theorem goal0 : ∮ z in γ, f z = ∫ z in 0..1, f (γ.extend z) * (deriv γ.extend z) := by
   simp [contourIntegral, mul_comm]
@@ -98,7 +109,7 @@ lemma integral_deriv_mul_sub (f g : ℝ → ℂ) (u v a d : ℝ) :
   simpa [sub_eq_add_neg] using integral_deriv_mul_add f g u v a (-d)
 
 --hasDerivAt_circleMap
-theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (R : ℝ) :
+theorem circleIntegral_eq_contourIntegral (f : ℂ → ℂ) (c : ℂ) (R : ℝ) :
     circleIntegral f c R = ∮ z in circlePath c R, f z := by
   rw [circleIntegral, goal0]
   calc
@@ -186,7 +197,7 @@ lemma Path.deriv_trans_of_two_inv_lt_of_lt_one {x : ℝ} (hx : 2⁻¹ < x) (hx' 
   · rw [deriv_comp_mul_left 2 (fun y ↦ τ.extend (y - 1)) x, deriv_comp_sub_const]
     simp
 
-theorem contourIntegral_append (hγ : PathIntegrable f γ) (hτ : PathIntegrable f τ) :
+theorem contourIntegral_append_of_pathIntegrable (hγ : PathIntegrable f γ) (hτ : PathIntegrable f τ) :
     ∮ z in γ.trans τ, f z = (∮ z in γ, f z) + ∮ z in τ, f z := by
   rw [goal0, goal0, goal0, ← intervalIntegral.integral_add_adjacent_intervals (a := 0) (c := 1) (b := 2⁻¹)]
   · congr 1
@@ -285,7 +296,7 @@ theorem contourIntegral_path_congr {a b : ℂ} (f : ℂ → ℂ) {γ τ : Path a
   sorry
 
 -- Differentiable version
-theorem goal1 {s : Set ℂ} (h : ∀ x ∈ I, DifferentiableAt ℝ γ.extend x) (F : ℂ → ℂ)
+theorem goal1_of_differentiable {s : Set ℂ} (h : ∀ x ∈ I, DifferentiableAt ℝ γ.extend x) (F : ℂ → ℂ)
     (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
     (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = F b - F a := by
@@ -309,24 +320,43 @@ theorem goal1' {s : Set ℂ} (h : γ.IsPiecewiseC1) (F : ℂ → ℂ)
     ∮ z in γ, f z = F b - F a := by
   sorry
 
---maybe use HasDerivWithIn?
-theorem goal2 {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1) (hs : SimplyConnectedSpace s)
+theorem goal2_of_pathIntegrable {s : Set ℂ} {γ : Path a a} (h : γ.IsPiecewiseC1)
     (F : ℂ → ℂ) (hf : ∀ z ∈ s, HasDerivAt F (f z) z) (hint : PathIntegrable f γ)
     (himg : Set.range γ ⊆ s) :
     ∮ z in γ, f z = 0 := by
   rw [goal1' (F := F) (h := by assumption) (hf := hf) (hint := hint) (himg := himg)]
   rw [sub_self]
 
---convex
-theorem goal3 (s : Set ℂ) (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s) :
-    Complex.IsExactOn f s := by
+theorem goal1 (h : γ.IsPiecewiseC1) (hγs : ∀ t, γ t ∈ s)
+    (hf : ContinuousOn f s) (F : ℂ → ℂ) (hF : ∀ z ∈ s, HasDerivAt F (f z) z) :
+    ∮ z in γ, f z = F b - F a := by
   sorry
 
-theorem goal4 (s : Set ℂ) (γ : Path a a) (h : γ.IsPiecewiseC1)
-    (hs : SimplyConnectedSpace s) (hf : DifferentiableOn ℂ f s)
-    (hint : PathIntegrable f γ) (himg : Set.range γ ⊆ s) :
+theorem goal2 {γ : Path a a} (h : γ.IsPiecewiseC1) (hγs : ∀ t, γ t ∈ s)
+    (hf : ContinuousOn f s) (F : ℂ → ℂ) (hF : ∀ z ∈ s, HasDerivAt F (f z) z) :
     ∮ z in γ, f z = 0 := by
-  have : Complex.IsExactOn f s := by
-    apply goal3 _ _ hs hf
-  obtain ⟨F, hF⟩ := this
-  apply goal2 <;> assumption
+  rw [goal1 f γ h hγs hf F hF, sub_self]
+
+theorem IsSimplyConnected.exists_forall_hasDerivWithinAt {f : ℂ → ℂ}
+    (hsc : IsSimplyConnected s) (hs : IsOpen s) (hf : DifferentiableOn ℂ f s) :
+    ∃ F : ℂ → ℂ, ∀ z ∈ s, HasDerivWithinAt F (f z) s z := by
+  sorry
+
+theorem goal4 {γ : Path a a} (h : γ.IsPiecewiseC1) (hγs : ∀ t, γ t ∈ s) (hs : IsOpen s)
+    (hsc : IsSimplyConnected s) (hf : DifferentiableOn ℂ f s) :
+    ∮ z in γ, f z = 0 := by
+  obtain ⟨F, hF⟩ := hsc.exists_forall_hasDerivWithinAt hs hf
+  exact goal2 f h hγs hf.continuousOn F
+    (fun z hz ↦ (hF z hz).hasDerivAt (hs.mem_nhds hz))
+
+theorem Complex.IsConservativeOn.isExactOn_isSimplyConnected (hf' : ContinuousOn f s)
+(hf : Complex.IsConservativeOn f s) (hs : IsOpen s) (hsc : IsSimplyConnected s) :
+    Complex.IsExactOn f s := by
+  have hfd : DifferentiableOn ℂ f s :=
+    (Complex.isConservativeOn_and_continuousOn_iff_isDifferentiableOn hs).mp ⟨hf, hf'⟩
+  obtain ⟨F, hF⟩ := hsc.exists_forall_hasDerivWithinAt hs hfd
+  exact ⟨F, fun z hz ↦ (hF z hz).hasDerivAt (hs.mem_nhds hz)⟩
+
+theorem goal3 (hf : DifferentiableOn ℂ f s) (hs : IsOpen s) (hsc : IsSimplyConnected s) :
+    Complex.IsExactOn f s :=
+  hf.isConservativeOn.isExactOn_isSimplyConnected _ hf.continuousOn hs hsc
